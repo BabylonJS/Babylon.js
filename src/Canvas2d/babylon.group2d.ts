@@ -6,7 +6,7 @@
         public static sizeProperty: Prim2DPropInfo;
         public static actualSizeProperty: Prim2DPropInfo;
 
-      /**
+        /**
          * Default behavior, the group will use the caching strategy defined at the Canvas Level
          */
         public static GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY = 0;
@@ -22,11 +22,14 @@
          */
         public static GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP = 2;
 
+        /**
+         * Don't invoke directly, rely on Group2D.CreateXXX methods
+         */
         constructor() {
             super();
             this._primDirtyList = new Array<Prim2DBase>();
             this._childrenRenderableGroups = new Array<Group2D>();
-            this.groupRenderInfo = new StringDictionary<GroupInstanceInfo>();
+            this._renderGroupInstancesInfo = new StringDictionary<GroupInstanceInfo>();
         }
 
         static CreateGroup2D(parent: Prim2DBase, id: string, position: Vector2, size?: Size, cacheBehabior: number = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY): Group2D {
@@ -37,7 +40,15 @@
             return g;
         }
 
-        applyCachedTexture(vertexData: VertexData, material: StandardMaterial) {
+        static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
+            var g = new Group2D();
+            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero());
+
+            return g;
+            
+        }
+
+        protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial) {
             this._bindCacheTarget();
 
             var uv = vertexData.uvs;
@@ -53,6 +64,9 @@
             this._unbindCacheTarget();
         }
 
+        /**
+         * Call this method to remove this Group and its children from the Canvas
+         */
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
@@ -74,52 +88,47 @@
                 this._primDirtyList = null;
             }
 
-            if (this.groupRenderInfo) {
-                this.groupRenderInfo.forEach((k, v) => {
+            if (this._renderGroupInstancesInfo) {
+                this._renderGroupInstancesInfo.forEach((k, v) => {
                     v.dispose();
                 });
-                this.groupRenderInfo = null;
+                this._renderGroupInstancesInfo = null;
             }
 
             return true;
         }
 
-        /**
-         * Create an instance of the Group Primitive.
-         * A group act as a container for many sub primitives, if features:
-         * - Maintain a size, not setting one will determine it based on its content.
-         * - Play an essential role in the rendering pipeline. A group and its content can be cached into a bitmap to enhance rendering performance (at the cost of memory storage in GPU)
-         * @param owner
-         * @param id
-         * @param position
-         * @param size
-         * @param dontcache
-         */
-        protected setupGroup2D(owner: Canvas2D,
-            parent: Prim2DBase,
-            id: string,
-            position: Vector2,
-            size?: Size,
-            cacheBehavior: number = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
+        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size?: Size, cacheBehavior: number = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
             this._cacheBehavior = cacheBehavior;
             this.setupPrim2DBase(owner, parent, id, position);
             this.size = size;
             this._viewportPosition = Vector2.Zero();
         }
 
+        /**
+         * @returns Returns true if the Group render content, false if it's a logical group only
+         */
         public get isRenderableGroup(): boolean {
             return this._isRenderableGroup;
         }
 
+        /**
+         * @returns only meaningful for isRenderableGroup, will be true if the content of the Group is cached into a texture, false if it's rendered every time
+         */
         public get isCachedGroup(): boolean {
             return this._isCachedGroup;
         }
+
 
         @instanceLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => Group2D.sizeProperty = pi, false, true)
         public get size(): Size {
             return this._size;
         }
 
+        /**
+         * Get/Set the size of the group. If null the size of the group will be determine from its content.
+         * BEWARE: if the Group is a RenderableGroup and its content is cache the texture will be resized each time the group is getting bigger. For performance reason the opposite won't be true: the texture won't shrink if the group does.
+         */
         public set size(val: Size) {
             this._size = val;
         }
@@ -129,23 +138,50 @@
         }
 
         @instanceLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 2, pi => Group2D.actualSizeProperty = pi)
+        /**
+         * Get the actual size of the group, if the size property is not null, this value will be the same, but if size is null, actualSize will return the size computed from the group's bounding content.
+         */
         public get actualSize(): Size {
+            // The computed size will be floor on both width and height
+            let actualSize: Size;
+
             // Return the size if set by the user
             if (this._size) {
-                return this._size;
+                actualSize = new Size(Math.ceil(this._size.width), Math.ceil(this._size.height));
             }
 
             // Otherwise the size is computed based on the boundingInfo
-            let m = this.boundingInfo.max();
-            return new Size(m.x, m.y);
+            else {
+                let m = this.boundingInfo.max();
+                actualSize = new Size(Math.ceil(m.x), Math.ceil(m.y));
+            }
+
+            // Compare the size with the one we previously had, if it differ we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
+            if (!actualSize.equals(this._actualSize)) {
+                this._instanceDirtyFlags |= Group2D.actualSizeProperty.flagId;
+                this._actualSize = actualSize;
+                this.handleGroupChanged(Group2D.actualSizeProperty);
+            }
+
+            return actualSize;
         }
 
+        /**
+         * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.
+         * It is critical to understand than you HAVE TO play with this behavior in order to achieve a good performance/memory ratio. Caching all groups would certainly be the worst strategy of all.
+         */
         public get cacheBehavior(): number {
             return this._cacheBehavior;
         }
 
         public _addPrimToDirtyList(prim: Prim2DBase) {
             this._primDirtyList.push(prim);
+        }
+
+        public _renderCachedCanvas(context: Render2DContext) {
+            this.updateGlobalTransVis(true);
+            this._prepareGroupRender(context);
+            this._groupRender(context);
         }
 
         protected updateLevelBoundingInfo() {
@@ -155,7 +191,7 @@
             if (this.size) {
                 size = this.size;
             }
-            // Otherwise the group's level bouding info is "collapsed"
+            // Otherwise the group's level bounding info is "collapsed"
             else {
                 size = new Size(0, 0);
             }
@@ -174,7 +210,7 @@
             }
 
             // Setup the size of the rendering viewport
-            // In non cache mode, we're rendering directly to the rendering canvas, in this case we have to detect if the canvas size changed since the previous iteration, if it's the case all primitives must be preprared again because their transformation must be recompute
+            // In non cache mode, we're rendering directly to the rendering canvas, in this case we have to detect if the canvas size changed since the previous iteration, if it's the case all primitives must be prepared again because their transformation must be recompute
             if (!this._isCachedGroup) {
                 // Compute the WebGL viewport's location/size
                 let t = this._globalTransform.getTranslation();
@@ -183,7 +219,7 @@
                 s.height = Math.min(s.height, rs.height - t.y);
                 s.width = Math.min(s.width, rs.width - t.x);
                 let x = t.x;
-                let y = (rs.height - s.height) - t.y;
+                let y = t.y;
 
                 // The viewport where we're rendering must be the size of the canvas if this one fit in the rendering screen or clipped to the screen dimensions if needed
                 this._viewportPosition.x = x;
@@ -200,8 +236,15 @@
                     this._viewportSize.width = vw;
                     this._viewportSize.height = vh;
                 }
-            } else {
-                this._viewportSize = this.actualSize;
+            }
+
+            // For a cachedGroup we also check of the group's actualSize is changing, if it's the case then the rendering zone will be change so we also have to dirty all primitives to prepare them again.
+            else {
+                let newSize = this.actualSize.clone();
+                if (!newSize.equals(this._viewportSize)) {
+                    context.forceRefreshPrimitive = true;
+                }
+                this._viewportSize = newSize;
             }
 
             if ((this._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
@@ -259,9 +302,9 @@
 
                 // For each different model of primitive to render
                 let totalRenderCount = 0;
-                this.groupRenderInfo.forEach((k, v) => {
+                this._renderGroupInstancesInfo.forEach((k, v) => {
 
-                    // This part will pack the dynfloatarray and update the instanced array WebGLBufffer
+                    // This part will pack the dynamicfloatarray and update the instanced array WebGLBufffer
                     // Skip it if instanced arrays are not supported
                     if (this.owner.supportInstancedArray) {
                         for (let i = 0; i < v._instancesPartsData.length; i++) {
@@ -274,13 +317,13 @@
                             let neededSize = array.usedElementCount * array.stride * 4;
 
                             // Check if we have to (re)create the instancesBuffer because there's none or the size is too small
-                            if (!v._instancesPartsBuffer[i] || (v._instancesPartsBufferSize[i] <= neededSize)) {
+                            if (!v._instancesPartsBuffer[i] || (v._instancesPartsBufferSize[i] < neededSize)) {
                                 if (v._instancesPartsBuffer[i]) {
                                     engine.deleteInstancesBuffer(v._instancesPartsBuffer[i]);
                                 }
                                 v._instancesPartsBuffer[i] = engine.createInstancesBuffer(neededSize);
                                 v._instancesPartsBufferSize[i] = neededSize;
-                                v._dirtyInstancesData = true;
+                                v._dirtyInstancesData = false;
 
                                 // Update the WebGL buffer to match the new content of the instances data
                                 engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
@@ -294,7 +337,7 @@
                         }
                     }
 
-                    // Submit render only if we have something to render (everything may be hiden and the floatarray empty)
+                    // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!this.owner.supportInstancedArray || totalRenderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
                         let renderFailed = !v._modelCache.render(v, context);
@@ -319,16 +362,34 @@
         }
 
         private _bindCacheTarget() {
-            // Check if we have to allocate a rendering zone in the global cache texture
+            let curWidth: number;
+            let curHeight: number;
+
+            if (this._cacheNode) {
+                let size = this._cacheNode.contentSize;
+                let groupWidth = Math.ceil(this.actualSize.width);
+                let groupHeight = Math.ceil(this.actualSize.height);
+
+                if ((size.width < groupWidth) || (size.height < groupHeight)) {
+                    curWidth = Math.floor(size.width * 1.07);    // Grow 5% more to avoid frequent resizing for few pixels...
+                    curHeight = Math.floor(size.height * 1.07);
+                    //console.log(`[${this._globalTransformProcessStep}] Resize group ${this.id}, width: ${curWidth}, height: ${curHeight}`);
+                    this._cacheTexture.freeRect(this._cacheNode);
+                    this._cacheNode = null;
+                }
+            }
+
             if (!this._cacheNode) {
-                var res = this.owner._allocateGroupCache(this);
+                // Check if we have to allocate a rendering zone in the global cache texture
+                var res = this.owner._allocateGroupCache(this, this.renderGroup, curWidth ? new Size(curWidth, curHeight) : null);
                 this._cacheNode = res.node;
                 this._cacheTexture = res.texture;
                 this._cacheRenderSprite = res.sprite;
+                let size = this._cacheNode.contentSize;
             }
 
             let n = this._cacheNode;
-            this._cacheTexture.bindTextureForRect(n, true);
+            this._cacheTexture.bindTextureForPosSize(n.pos, this.actualSize, true);
         }
 
         private _unbindCacheTarget() {
@@ -351,6 +412,9 @@
                 this._cacheRenderSprite.rotation = this.rotation;
             } else if (prop.id === Prim2DBase.scaleProperty.id) {
                 this._cacheRenderSprite.scale = this.scale;
+            } else if (prop.id === Group2D.actualSizeProperty.id) {
+                this._cacheRenderSprite.spriteSize = this.actualSize.clone();
+                //console.log(`[${this._globalTransformProcessStep}] Sync Sprite ${this.id}, width: ${this.actualSize.width}, height: ${this.actualSize.height}`);
             }
         }
 
@@ -370,7 +434,7 @@
                     this._isRenderableGroup = true;
                     this._isCachedGroup = true;
                 } else {
-                    this._isRenderableGroup = false;
+                    this._isRenderableGroup = this.id === "__cachedCanvasGroup__";
                     this._isCachedGroup = false;
                 }
             }
@@ -423,6 +487,7 @@
         private _cacheGroupDirty: boolean;
         protected _childrenRenderableGroups: Array<Group2D>;
         private _size: Size;
+        private _actualSize: Size;
         private _cacheBehavior: number;
         private _primDirtyList: Array<Prim2DBase>;
         private _cacheNode: PackedRect;
@@ -431,7 +496,7 @@
         private _viewportPosition: Vector2;
         private _viewportSize: Size;
 
-        groupRenderInfo: StringDictionary<GroupInstanceInfo>;
+        _renderGroupInstancesInfo: StringDictionary<GroupInstanceInfo>;
     }
 
 }

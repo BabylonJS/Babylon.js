@@ -13,7 +13,7 @@
                 return false;
             }
 
-            // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+            // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
             var engine = instanceInfo._owner.owner.engine;
 
             engine.enableEffect(this.effect);
@@ -178,6 +178,14 @@
 
             let sprite = new Sprite2D();
             sprite.setupSprite2D(parent.owner, parent, id, new Vector2(x, y), texture, spriteSize, spriteLocation, invertY);
+            return sprite;
+        }
+
+        static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D {
+
+            let sprite = new Sprite2D();
+            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new Vector2(0, 0), texture, size, pos, false);
+
             return sprite;
         }
 

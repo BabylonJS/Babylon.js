@@ -113,7 +113,7 @@
          * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
          * For instance:
          * 0,0 means the center is top/left
-         * 0.5,0.5 means the center is at the center of the primtive
+         * 0.5,0.5 means the center is at the center of the primitive
          * 0,1 means the center is bottom/left
          * @returns The normalized center.
          */
@@ -360,12 +360,12 @@
         private _scale: number;
         private _origin: Vector2;
 
-        // Stores the step of the parent for which the current global tranform was computed
+        // Stores the step of the parent for which the current global transform was computed
         // If the parent has a new step, it means this prim's global transform must be updated
         protected _parentTransformStep: number;
 
         // Stores the step corresponding of the global transform for this prim
-        // If a child prim has an older _parentTransformStep it means the chidl's transform should be updated
+        // If a child prim has an older _parentTransformStep it means the child's transform should be updated
         protected _globalTransformStep: number;
 
         // Stores the previous 
