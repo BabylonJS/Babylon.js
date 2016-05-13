@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using BabylonExport.Entities;
 using UnityEngine;
 
@@ -34,7 +36,7 @@ namespace Unity3D2Babylon
             }
         }
 
-        private void ConvertUnityMeshToBabylon(Mesh mesh, Transform transform, GameObject gameObject, float progress)
+        private BabylonMesh ConvertUnityMeshToBabylon(Mesh mesh, Transform transform, GameObject gameObject, float progress)
         {
             BabylonMesh babylonMesh = new BabylonMesh();
             var renderer = gameObject.GetComponent<Renderer>();
@@ -144,6 +146,29 @@ namespace Unity3D2Babylon
                     babylonMesh.indices[i + 1] = mesh.triangles[i + 1];
                     babylonMesh.indices[i + 2] = mesh.triangles[i];
                 }
+                
+                if (mesh.boneWeights.Length == mesh.vertexCount)
+                {
+                    babylonMesh.matricesIndices = new int[mesh.vertexCount];
+                    babylonMesh.matricesWeights = new float[mesh.vertexCount * 4];
+
+                    for (int i = 0; i < mesh.vertexCount; i++)
+                    {
+                        // Weight Packing.
+                        babylonMesh.matricesIndices[i] = (mesh.boneWeights[i].boneIndex3 << 24) | (mesh.boneWeights[i].boneIndex2 << 16) | (mesh.boneWeights[i].boneIndex1 << 8) | mesh.boneWeights[i].boneIndex0;
+                        
+                        babylonMesh.matricesWeights[i * 4 + 0] = mesh.boneWeights[i].weight0;
+                        babylonMesh.matricesWeights[i * 4 + 1] = mesh.boneWeights[i].weight1;
+                        babylonMesh.matricesWeights[i * 4 + 2] = mesh.boneWeights[i].weight2;
+                        babylonMesh.matricesWeights[i * 4 + 3] = mesh.boneWeights[i].weight3;
+
+                        var totalWeight = mesh.boneWeights[i].weight0 + mesh.boneWeights[i].weight1 + mesh.boneWeights[i].weight2 + mesh.boneWeights[i].weight3;
+                        if (Mathf.Abs(totalWeight - 1.0f) > 0.01f)
+                        {
+                            throw new Exception("Total bone weights is not normalized for: " + mesh);
+                        }
+                    }
+                }
 
                 if (renderer != null && renderer.sharedMaterial != null)
                 {
@@ -225,6 +250,65 @@ namespace Unity3D2Babylon
                     }
                 }
             }
+
+            return babylonMesh;
+        }
+
+        private BabylonSkeleton ConvertUnitySkeletonToBabylon(Transform[] bones, Matrix4x4[] bindPoses, Transform transform, GameObject gameObject, float progress)
+        {
+            ExporterWindow.ReportProgress(progress, "Exporting Skeleton: " + gameObject.name);
+            BabylonSkeleton babylonSkeleton = new BabylonSkeleton();
+            babylonSkeleton.name = gameObject.name;
+            babylonSkeleton.id = Math.Abs(GetID(transform.gameObject).GetHashCode());
+            babylonSkeleton.needInitialSkinMatrix = false;
+            
+            // Prefilled to keep order and track parents.
+            var transformToBoneMap = new Dictionary<Transform, BabylonBone>();
+            for (var i = 0; i < bones.Length; i++)
+            {
+                var unityBone = bones[i];
+                ExporterWindow.ReportProgress(progress, "Exporting bone: " + unityBone.name + " at index " + i);
+                
+                var babylonBone = new BabylonBone();
+                babylonBone.name = unityBone.name;
+                babylonBone.index = i;
+
+                transformToBoneMap.Add(unityBone, babylonBone);
+            }
+            
+            // Attaches Matrix and parent.
+            for (var i = 0; i < bones.Length; i++)
+            {
+                var unityBone = bones[i];
+                var babylonBone = transformToBoneMap[unityBone];
+                Matrix4x4 localTransform;
+                
+                // Unity BindPose is already inverse so take the inverse again :-)
+                if (transformToBoneMap.ContainsKey(unityBone.parent))
+                {
+                    var babylonParentBone = transformToBoneMap[unityBone.parent];
+                    babylonBone.parentBoneIndex = babylonParentBone.index;
+                    localTransform = bindPoses[babylonBone.parentBoneIndex] * bindPoses[i].inverse;
+                }
+                else
+                {
+                    babylonBone.parentBoneIndex = -1;
+                    localTransform = bindPoses[i].inverse;
+                }
+                
+                transformToBoneMap[unityBone].matrix = new[] {
+                    localTransform[0, 0], localTransform[1, 0], localTransform[2, 0], localTransform[3, 0],
+                    localTransform[0, 1], localTransform[1, 1], localTransform[2, 1], localTransform[3, 1],
+                    localTransform[0, 2], localTransform[1, 2], localTransform[2, 2], localTransform[3, 2],
+                    localTransform[0, 3], localTransform[1, 3], localTransform[2, 3], localTransform[3, 3]
+                };
+            }
+
+            // Reorder and attach the skeleton.
+            babylonSkeleton.bones = transformToBoneMap.Values.OrderBy(b => b.index).ToArray();
+            babylonScene.SkeletonsList.Add(babylonSkeleton);
+
+            return babylonSkeleton;
         }
     }
 }
