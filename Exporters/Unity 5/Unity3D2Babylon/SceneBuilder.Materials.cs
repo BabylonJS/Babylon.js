@@ -394,7 +394,6 @@ namespace Unity3D2Babylon
                                 {
                                     for (var j = 0; j < albedoTexture.height; j++)
                                     {
-                                        var pixel = albedoPixels[j * albedoTexture.width + i];
                                         var metallicPixel = metallicPixels[j * albedoTexture.width + i];
                                         albedoPixels[j * albedoTexture.width + i].r *= metallicPixel.r;
                                         albedoPixels[j * albedoTexture.width + i].g *= metallicPixel.r;
@@ -489,7 +488,7 @@ namespace Unity3D2Babylon
             if (material.HasProperty("_Mode"))
             {
                 var mode = material.GetFloat("_Mode");
-                if (mode == 2.0f)
+                if (mode >= 2.0f)
                 {
                     // Transparent Albedo
                     if (babylonPbrMaterial.albedoTexture != null && babylonPbrMaterial.albedoTexture.hasAlpha)
