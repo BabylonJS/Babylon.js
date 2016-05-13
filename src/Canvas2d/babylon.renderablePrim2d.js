@@ -14,36 +14,71 @@ var BABYLON;
     var InstanceClassInfo = (function () {
         function InstanceClassInfo(base) {
             this._baseInfo = base;
-            this._nextOffset = 0;
+            this._nextOffset = new BABYLON.StringDictionary();
             this._attributes = new Array();
         }
-        InstanceClassInfo.prototype.mapProperty = function (propInfo) {
-            propInfo.instanceOffset = (this._baseInfo ? this._baseInfo._nextOffset : 0) + this._nextOffset;
-            this._nextOffset += (propInfo.size / 4);
-            this._attributes.push(propInfo);
+        InstanceClassInfo.prototype.mapProperty = function (propInfo, push) {
+            var curOff = this._nextOffset.getOrAdd(InstanceClassInfo._CurCategories, 0);
+            propInfo.instanceOffset.add(InstanceClassInfo._CurCategories, this._getBaseOffset(InstanceClassInfo._CurCategories) + curOff);
+            //console.log(`[${InstanceClassInfo._CurCategories}] New PropInfo. Category: ${propInfo.category}, Name: ${propInfo.attributeName}, Offset: ${propInfo.instanceOffset.get(InstanceClassInfo._CurCategories)}, Size: ${propInfo.size / 4}`);
+            this._nextOffset.set(InstanceClassInfo._CurCategories, curOff + (propInfo.size / 4));
+            if (push) {
+                this._attributes.push(propInfo);
+            }
         };
-        InstanceClassInfo.prototype.getInstancingAttributeInfos = function (effect) {
+        InstanceClassInfo.prototype.getInstancingAttributeInfos = function (effect, categories) {
+            var catInline = categories.join(";");
             var res = new Array();
             var curInfo = this;
             while (curInfo) {
                 for (var _i = 0, _a = curInfo._attributes; _i < _a.length; _i++) {
                     var attrib = _a[_i];
-                    var index = effect.getAttributeLocationByName(attrib.attributeName);
-                    var iai = new BABYLON.InstancingAttributeInfo();
-                    iai.index = index;
-                    iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
-                    iai.offset = attrib.instanceOffset * 4; // attrub.instanceOffset is in float, iai.offset must be in bytes
-                    res.push(iai);
+                    // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
+                    if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
+                        var index = effect.getAttributeLocationByName(attrib.attributeName);
+                        var iai = new BABYLON.InstancingAttributeInfo();
+                        iai.index = index;
+                        iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
+                        iai.offset = attrib.instanceOffset.get(catInline) * 4; // attrib.instanceOffset is in float, iai.offset must be in bytes
+                        iai.attributeName = attrib.attributeName;
+                        res.push(iai);
+                    }
                 }
                 curInfo = curInfo._baseInfo;
             }
             return res;
         };
+        InstanceClassInfo.prototype.getShaderAttributes = function (categories) {
+            var res = new Array();
+            var curInfo = this;
+            while (curInfo) {
+                for (var _i = 0, _a = curInfo._attributes; _i < _a.length; _i++) {
+                    var attrib = _a[_i];
+                    // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
+                    if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
+                        res.push(attrib.attributeName);
+                    }
+                }
+                curInfo = curInfo._baseInfo;
+            }
+            return res;
+        };
+        InstanceClassInfo.prototype._getBaseOffset = function (categories) {
+            var curOffset = 0;
+            var curBase = this._baseInfo;
+            while (curBase) {
+                curOffset += curBase._nextOffset.getOrAdd(categories, 0);
+                curBase = curBase._baseInfo;
+            }
+            return curOffset;
+        };
         return InstanceClassInfo;
-    }());
+    })();
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
+        //uniformLocation: WebGLUniformLocation;
         function InstancePropInfo() {
+            this.instanceOffset = new BABYLON.StringDictionary();
         }
         InstancePropInfo.prototype.setSize = function (val) {
             if (val instanceof BABYLON.Vector2) {
@@ -79,6 +114,7 @@ var BABYLON;
                 this.dataType = 6 /* Color4 */;
                 return;
             }
+            return;
         };
         InstancePropInfo.prototype.writeData = function (array, offset, val) {
             switch (this.dataType) {
@@ -140,38 +176,47 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    }());
+    })();
     BABYLON.InstancePropInfo = InstancePropInfo;
-    function instanceData(name) {
+    function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
             var dic = BABYLON.ClassTreeInfo.getOrRegister(target, function (base) { return new InstanceClassInfo(base); });
             var node = dic.getLevelOf(target);
-            name = name || propName;
-            var info = node.levelContent.get(name);
+            var instanceDataName = propName;
+            shaderAttributeName = shaderAttributeName || instanceDataName;
+            var info = node.levelContent.get(instanceDataName);
             if (info) {
-                throw new Error("The ID " + name + " is already taken by another instance data");
+                throw new Error("The ID " + instanceDataName + " is already taken by another instance data");
             }
             info = new InstancePropInfo();
-            info.attributeName = name;
-            node.levelContent.add(name, info);
+            info.attributeName = shaderAttributeName;
+            info.category = category || null;
+            node.levelContent.add(instanceDataName, info);
             descriptor.get = function () {
                 return null;
             };
             descriptor.set = function (val) {
                 if (!info.size) {
                     info.setSize(val);
-                    node.classContent.mapProperty(info);
+                    node.classContent.mapProperty(info, true);
+                }
+                else if (!info.instanceOffset.contains(InstanceClassInfo._CurCategories)) {
+                    node.classContent.mapProperty(info, false);
                 }
                 var obj = this;
-                if (obj._dataBuffer) {
-                    info.writeData(obj._dataBuffer.buffer, obj._dataElement.offset + info.instanceOffset, val);
+                if (obj.dataBuffer && obj.dataElements) {
+                    var offset = obj.dataElements[obj.curElement].offset + info.instanceOffset.get(InstanceClassInfo._CurCategories);
+                    info.writeData(obj.dataBuffer.buffer, offset, val);
                 }
             };
         };
     }
     BABYLON.instanceData = instanceData;
     var InstanceDataBase = (function () {
-        function InstanceDataBase() {
+        function InstanceDataBase(partId, dataElementCount) {
+            this.id = partId;
+            this.curElement = 0;
+            this.dataElementCount = dataElementCount;
         }
         Object.defineProperty(InstanceDataBase.prototype, "zBias", {
             get: function () {
@@ -202,10 +247,24 @@ var BABYLON;
             configurable: true
         });
         InstanceDataBase.prototype.getClassTreeInfo = function () {
-            if (!this._typeInfo) {
-                this._typeInfo = BABYLON.ClassTreeInfo.get(Object.getPrototypeOf(this));
+            if (!this.typeInfo) {
+                this.typeInfo = BABYLON.ClassTreeInfo.get(Object.getPrototypeOf(this));
             }
-            return this._typeInfo;
+            return this.typeInfo;
+        };
+        InstanceDataBase.prototype.allocElements = function () {
+            var res = new Array(this.dataElementCount);
+            for (var i = 0; i < this.dataElementCount; i++) {
+                res[i] = this.dataBuffer.allocElement();
+            }
+            this.dataElements = res;
+        };
+        InstanceDataBase.prototype.freeElements = function () {
+            for (var _i = 0, _a = this.dataElements; _i < _a.length; _i++) {
+                var ei = _a[_i];
+                this.dataBuffer.freeElement(ei);
+            }
+            this.dataElements = null;
         };
         __decorate([
             instanceData()
@@ -220,43 +279,47 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "origin", null);
         return InstanceDataBase;
-    }());
+    })();
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
         function RenderablePrim2D() {
             _super.apply(this, arguments);
         }
-        RenderablePrim2D.prototype.setupRenderablePrim2D = function (owner, parent, id, position, isVisible, fill, border) {
+        Object.defineProperty(RenderablePrim2D.prototype, "isTransparent", {
+            get: function () {
+                return this._isTransparent;
+            },
+            set: function (value) {
+                this._isTransparent = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RenderablePrim2D.prototype.setupRenderablePrim2D = function (owner, parent, id, position, isVisible) {
             this.setupPrim2DBase(owner, parent, id, position);
             this._isTransparent = false;
         };
-        Object.defineProperty(RenderablePrim2D.prototype, "border", {
-            get: function () {
-                return this._border;
-            },
-            set: function (value) {
-                if (value === this._border) {
-                    return;
-                }
-                this._border = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(RenderablePrim2D.prototype, "fill", {
-            get: function () {
-                return this._fill;
-            },
-            set: function (value) {
-                if (value === this._fill) {
-                    return;
-                }
-                this._fill = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        RenderablePrim2D.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this._modelRenderInstanceID) {
+                this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
+                this._modelRenderInstanceID = null;
+            }
+            if (this._modelRenderCache) {
+                this._modelRenderCache.dispose();
+                this._modelRenderCache = null;
+            }
+            if (this._instanceDataParts) {
+                this._instanceDataParts.forEach(function (p) {
+                    p.freeElements();
+                });
+                this._instanceDataParts = null;
+            }
+            return true;
+        };
         RenderablePrim2D.prototype._prepareRenderPre = function (context) {
             var _this = this;
             _super.prototype._prepareRenderPre.call(this, context);
@@ -266,107 +329,213 @@ var BABYLON;
                 this._modelRenderInstanceID = null;
             }
             // Need to create the model?
+            var setupModelRenderCache = false;
             if (!this._modelRenderCache || this._modelDirty) {
-                this._modelRenderCache = BABYLON.SmartPropertyPrim.GetOrAddModelCache(this.modelKey, function (key) { return _this.createModelRenderCache(); });
+                if (this._modelRenderCache) {
+                    this._modelRenderCache.dispose();
+                }
+                this._modelRenderCache = this.owner.engineData.GetOrAddModelCache(this.modelKey, function (key) {
+                    var mrc = _this.createModelRenderCache(key, _this.isTransparent);
+                    setupModelRenderCache = true;
+                    return mrc;
+                });
                 this._modelDirty = false;
+                // if this is still false it means the MRC already exists, so we add a reference to it
+                if (!setupModelRenderCache) {
+                    this._modelRenderCache.addRef();
+                }
             }
-            // Need to create the instance?
             var gii;
             var newInstance = false;
+            // Need to create the instance data parts?
             if (!this._modelRenderInstanceID) {
+                // Yes, flag it for later, more processing will have to be done
                 newInstance = true;
-                var id = this.createInstanceData();
-                this._instanceData = id;
-                var cti_1 = id.getClassTreeInfo();
-                if (!cti_1.classContent.instanceDataStride) {
-                    // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
-                    var curVisible = this.isVisible;
-                    this.isVisible = true;
-                    // We manually trigger refreshInstanceData for the only sake of evaluating each isntance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
-                    this.refreshInstanceData();
-                    this.isVisible = curVisible;
-                    var size = 0;
-                    cti_1.fullContent.forEach(function (k, v) {
-                        if (!v.size) {
-                            console.log("ERROR: Couldn't detect the size of the Property " + v.attributeName + " from type " + BABYLON.Tools.getClassName(cti_1.type) + ". Property is ignored.");
-                        }
-                        else {
-                            size += v.size;
-                        }
-                    });
-                    cti_1.classContent.instanceDataStride = size;
+                // Create the instance data parts of the primitive and store them
+                var parts = this.createInstanceDataParts();
+                this._instanceDataParts = parts;
+                // Check if the ModelRenderCache for this particular instance is also brand new, initialize it if it's the case
+                if (!this._modelRenderCache._partsDataStride) {
+                    var ctiArray = new Array();
+                    var dataStrides = new Array();
+                    var usedCatList = new Array();
+                    var partIdList = new Array();
+                    var joinedUsedCatList = new Array();
+                    for (var _i = 0; _i < parts.length; _i++) {
+                        var dataPart = parts[_i];
+                        var cat = this.getUsedShaderCategories(dataPart);
+                        var cti = dataPart.getClassTreeInfo();
+                        // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
+                        var curVisible = this.isVisible;
+                        this.isVisible = true;
+                        // We manually trigger refreshInstanceData for the only sake of evaluating each instance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
+                        //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
+                        var joinCat = cat.join(";");
+                        joinedUsedCatList.push(joinCat);
+                        InstanceClassInfo._CurCategories = joinCat;
+                        this.refreshInstanceDataPart(dataPart);
+                        this.isVisible = curVisible;
+                        var size = 0;
+                        cti.fullContent.forEach(function (k, v) {
+                            if (!v.category || cat.indexOf(v.category) !== -1) {
+                                if (!v.size) {
+                                    console.log("ERROR: Couldn't detect the size of the Property " + v.attributeName + " from type " + BABYLON.Tools.getClassName(cti.type) + ". Property is ignored.");
+                                }
+                                else {
+                                    size += v.size;
+                                }
+                            }
+                        });
+                        dataStrides.push(size);
+                        usedCatList.push(cat);
+                        ctiArray.push(cti);
+                        partIdList.push(dataPart.id);
+                    }
+                    this._modelRenderCache._partsDataStride = dataStrides;
+                    this._modelRenderCache._partsUsedCategories = usedCatList;
+                    this._modelRenderCache._partsJoinedUsedCategories = joinedUsedCatList;
+                    this._modelRenderCache._partsClassInfo = ctiArray;
+                    this._modelRenderCache._partIdList = partIdList;
                 }
-                gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, function (k) { return new BABYLON.GroupInstanceInfo(_this.renderGroup, cti_1, _this._modelRenderCache); });
-                if (!gii._instancesData) {
-                    // instanceDataStride's unit is byte but DynamicFloatArray is float32, so div by four to get the correct number
-                    gii._instancesData = new BABYLON.DynamicFloatArray(cti_1.classContent.instanceDataStride / 4, 50);
-                }
-                id._dataBuffer = gii._instancesData;
-                id._dataElement = id._dataBuffer.allocElement();
-                this._modelRenderInstanceID = this._modelRenderCache.addInstanceData(this._instanceData);
-            }
-            if (context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformPreviousStep !== this._globalTransformStep)) {
-                // Will return false if the instance should not be rendered (not visible or other any reasons)
-                if (!this.refreshInstanceData()) {
-                    // Free the data element
-                    if (this._instanceData._dataElement) {
-                        this._instanceData._dataBuffer.freeElement(this._instanceData._dataElement);
-                        this._instanceData._dataElement = null;
+                // The Rendering resources (Effect, VB, IB, Textures) are stored in the ModelRenderCache
+                // But it's the RenderGroup that will store all the Instanced related data to render all the primitive it owns.
+                // So for a given ModelKey we getOrAdd a GroupInstanceInfo that will store all these data
+                gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, function (k) { return new BABYLON.GroupInstanceInfo(_this.renderGroup, _this._modelRenderCache); });
+                // First time init of the GroupInstanceInfo
+                if (gii._instancesPartsData.length === 0) {
+                    for (var j = 0; j < this._modelRenderCache._partsDataStride.length; j++) {
+                        var stride = this._modelRenderCache._partsDataStride[j];
+                        gii._instancesPartsData.push(new BABYLON.DynamicFloatArray(stride / 4, 50));
+                        gii._partIndexFromId.add(this._modelRenderCache._partIdList[j].toString(), j);
+                        for (var _a = 0, _b = this._instanceDataParts; _a < _b.length; _a++) {
+                            var part = _b[_a];
+                            gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())] = this.getUsedShaderCategories(part).join(";");
+                        }
                     }
                 }
-                this._instanceDirtyFlags = 0;
+                // For each instance data part of the primitive, allocate the instanced element it needs for render
+                for (var i = 0; i < parts.length; i++) {
+                    var part = parts[i];
+                    part.dataBuffer = gii._instancesPartsData[i];
+                    part.allocElements();
+                }
+                // Add the instance data parts in the ModelRenderCache they belong, track them by storing their ID in the primitive in case we need to change the model later on, so we'll have to release the allocated instance data parts because they won't fit anymore
+                this._modelRenderInstanceID = this._modelRenderCache.addInstanceDataParts(this._instanceDataParts);
+            }
+            // If the ModelRenderCache is brand new, now is the time to call the implementation's specific setup method to create the rendering resources
+            if (setupModelRenderCache) {
+                this.setupModelRenderCache(this._modelRenderCache);
+            }
+            // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
+            // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
+            if (this._visibilityChanged || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+                // Fetch the GroupInstanceInfo if we don't already have it
                 if (!gii) {
                     gii = this.renderGroup.groupRenderInfo.get(this.modelKey);
                 }
+                // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
+                for (var _c = 0, _d = this._instanceDataParts; _c < _d.length; _c++) {
+                    var part = _d[_c];
+                    // Check if we need to allocate data elements (hidden prim which becomes visible again)
+                    if (this._visibilityChanged && !part.dataElements) {
+                        part.allocElements();
+                    }
+                    InstanceClassInfo._CurCategories = gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())];
+                    // Will return false if the instance should not be rendered (not visible or other any reasons)
+                    if (!this.refreshInstanceDataPart(part)) {
+                        // Free the data element
+                        if (part.dataElements) {
+                            part.freeElements();
+                        }
+                    }
+                }
+                this._instanceDirtyFlags = 0;
                 gii._dirtyInstancesData = true;
+                this._visibilityChanged = false; // Reset the flag as we've handled the case
             }
         };
-        RenderablePrim2D.prototype.createModelRenderCache = function () {
+        RenderablePrim2D.prototype.getDataPartEffectInfo = function (dataPartId, vertexBufferAttributes) {
+            var dataPart = BABYLON.Tools.first(this._instanceDataParts, function (i) { return i.id === dataPartId; });
+            if (!dataPart) {
+                return null;
+            }
+            var instancedArray = this.owner.supportInstancedArray;
+            var cti = dataPart.getClassTreeInfo();
+            var categories = this.getUsedShaderCategories(dataPart);
+            var att = cti.classContent.getShaderAttributes(categories);
+            var defines = "";
+            categories.forEach(function (c) { defines += "#define " + c + "\n"; });
+            if (instancedArray) {
+                defines += "#define Instanced\n";
+            }
+            return { attributes: instancedArray ? vertexBufferAttributes.concat(att) : vertexBufferAttributes, uniforms: instancedArray ? [] : att, defines: defines };
+        };
+        Object.defineProperty(RenderablePrim2D.prototype, "modelRenderCache", {
+            get: function () {
+                return this._modelRenderCache;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RenderablePrim2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
             return null;
         };
-        RenderablePrim2D.prototype.createInstanceData = function () {
+        RenderablePrim2D.prototype.setupModelRenderCache = function (modelRenderCache) {
+        };
+        RenderablePrim2D.prototype.createInstanceDataParts = function () {
             return null;
         };
-        RenderablePrim2D.prototype.refreshInstanceData = function () {
-            var d = this._instanceData;
+        RenderablePrim2D.prototype.getUsedShaderCategories = function (dataPart) {
+            return [];
+        };
+        RenderablePrim2D.prototype.refreshInstanceDataPart = function (part) {
             if (!this.isVisible) {
                 return false;
             }
-            d.isVisible = this.isVisible;
-            var t = this.renderGroup.invGlobalTransform.multiply(this._globalTransform);
+            part.isVisible = this.isVisible;
+            // Which means, if there's only one data element, we're update it from this method, otherwise it is the responsability of the derived class to call updateInstanceDataPart as many times as needed, properly (look at Text2D's implementation for more information)
+            if (part.dataElementCount === 1) {
+                this.updateInstanceDataPart(part);
+            }
+            return true;
+        };
+        RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
+            if (positionOffset === void 0) { positionOffset = null; }
+            var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
             var size = this.renderGroup.viewportSize;
             var zBias = this.getActualZOffset();
+            var offX = 0;
+            var offY = 0;
+            // If there's an offset, apply the global transformation matrix on it to get a global offset
+            if (positionOffset) {
+                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
+                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[5];
+            }
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
             // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
-            // RenderGroup Width and Height are multiplied by zBias because the VertexShader will multiply X and Y by W, which is 1/zBias. Has we divide our coordinate by these Width/Height, we will also divide by the zBias to compensate the operation made by the VertexShader.
+            // RenderGroup Width and Height are multiplied by zBias because the VertexShader will multiply X and Y by W, which is 1/zBias. As we divide our coordinate by these Width/Height, we will also divide by the zBias to compensate the operation made by the VertexShader.
             // So for X: 
             //  - tx.x = value * 2 / width: is to switch from [0, renderGroup.width] to [0, 2]
             //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1]. Don't forget it's -(1/zBias) and not -1 because everything need to be scaled by 1/zBias.
-            // Same thing for Y, except the "* -2" instead of "* 2" to switch the origin from top to bottom (has expected by the clip space)
             var w = size.width * zBias;
             var h = size.height * zBias;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, t.m[8], (t.m[12] * 2 / w) - (invZBias));
-            var ty = new BABYLON.Vector4(t.m[1] * -2 / h, t.m[5] * -2 / h, t.m[9], ((t.m[13] * 2 / h) - (invZBias)) * -1);
-            d.transformX = tx;
-            d.transformY = ty;
-            d.origin = this.origin;
+            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - (invZBias));
+            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - (invZBias));
+            part.transformX = tx;
+            part.transformY = ty;
+            part.origin = this.origin;
             // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
-            d.zBias = new BABYLON.Vector2(zBias, invZBias);
-            return true;
+            part.zBias = new BABYLON.Vector2(zBias, invZBias);
         };
-        RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 10;
+        RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
         __decorate([
-            BABYLON.modelLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return RenderablePrim2D.borderProperty = pi; }, true)
-        ], RenderablePrim2D.prototype, "border", null);
-        __decorate([
-            BABYLON.modelLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 2, function (pi) { return RenderablePrim2D.fillProperty = pi; }, true)
-        ], RenderablePrim2D.prototype, "fill", null);
+            BABYLON.modelLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return RenderablePrim2D.isTransparentProperty = pi; })
+        ], RenderablePrim2D.prototype, "isTransparent", null);
         RenderablePrim2D = __decorate([
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.renderablePrim2d.js.map

@@ -298,6 +298,7 @@ private:
     FbxArray<ModifiedPropertyInfo*> mModifiedProperties;
     void ReplaceUnsupportedProperties(FbxScene* pScene, bool pPreprocessPass, int pFormatV);
 	void StoreUnsupportedProperty(FbxObject* pObject, FbxProperty& pProperty);
+    bool IsLeafRoll(const FbxString& pNameWithoutNameSpacePrefix);
 
     FbxProgress* mProgress;
     bool mProgressPause;

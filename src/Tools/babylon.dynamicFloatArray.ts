@@ -152,7 +152,7 @@
 
                 // Free Zone is smaller or equal so it's no longer a free zone, set the new one to the current location
                 if (freeZoneSize <= usedRange) {
-                    firstFreeSlotOffset = curMoveOffset+s;
+                    firstFreeSlotOffset = curMoveOffset + s;
                     freeZoneSize = 1;
                 }
 
@@ -194,7 +194,7 @@
 
             for (let i = 0; i < addedCount; i++) {
                 let element = new DynamicFloatArrayElementInfo();
-                element.offset = (curCount+i) * this.stride;
+                element.offset = (curCount + i) * this.stride;
 
                 this._allEntries.push(element);
                 this._freeEntries[addedCount - i - 1] = element;

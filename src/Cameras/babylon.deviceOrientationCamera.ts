@@ -3,27 +3,27 @@ module BABYLON {
     export class DeviceOrientationCamera extends FreeCamera {
         //-- Begin properties for backward compatibility for inputs
         public get angularSensibility() {
-            var gamepad = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (gamepad)
-                return gamepad.angularSensibility;
+            var deviceOrientation = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
+            if (deviceOrientation)
+                return deviceOrientation.angularSensibility;
         }
         
         public set angularSensibility(value) {
-            var gamepad = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (gamepad)
-                gamepad.angularSensibility = value;
+            var deviceOrientation = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
+            if (deviceOrientation)
+                deviceOrientation.angularSensibility = value;
         }
         
         public get moveSensibility() {
-            var gamepad = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (gamepad)
-                return gamepad.moveSensibility;
+            var deviceOrientation = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
+            if (deviceOrientation)
+                return deviceOrientation.moveSensibility;
         }
         
         public set moveSensibility(value) {
-            var gamepad = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (gamepad)
-                gamepad.moveSensibility = value;
+            var deviceOrientation = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
+            if (deviceOrientation)
+                deviceOrientation.moveSensibility = value;
         }
         //-- end properties for backward compatibility for inputs
         

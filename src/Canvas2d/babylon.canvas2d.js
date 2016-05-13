@@ -11,12 +11,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var GroupsCacheMap = (function () {
-        function GroupsCacheMap() {
-            this.groupSprites = new Array();
+    var Canvas2DEngineBoundData = (function () {
+        function Canvas2DEngineBoundData() {
+            this._modelCache = new BABYLON.StringDictionary();
         }
-        return GroupsCacheMap;
-    }());
+        Canvas2DEngineBoundData.prototype.GetOrAddModelCache = function (key, factory) {
+            return this._modelCache.getOrAddWithFactory(key, factory);
+        };
+        Canvas2DEngineBoundData.prototype.DisposeModelRenderCache = function (modelRenderCache) {
+            if (!modelRenderCache.isDisposed) {
+                return false;
+            }
+            this._modelCache.remove(modelRenderCache.modelKey);
+            return true;
+        };
+        return Canvas2DEngineBoundData;
+    })();
+    BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
         function Canvas2D() {
@@ -43,38 +54,86 @@ var BABYLON;
         /**
          * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation matrix to place it in the world space.
          * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. All remaining strategies are supported.
-         * @param engine
-         * @param name
-         * @param transform
-         * @param size
-         * @param cachingStrategy
          */
-        Canvas2D.CreateWorldSpace = function (scene, name, transform, size, cachingStrategy) {
+        Canvas2D.CreateWorldSpace = function (scene, name, position, rotation, size, renderScaleFactor, sideOrientation, cachingStrategy) {
+            if (renderScaleFactor === void 0) { renderScaleFactor = 1; }
             if (cachingStrategy === void 0) { cachingStrategy = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS; }
-            if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
-                throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
+            if (cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
+                throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
             }
+            //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
+            //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
+            //}
             var c = new Canvas2D();
-            c.setupCanvas(scene, name, size, false, cachingStrategy);
-            c._worldTransform = transform;
+            c.setupCanvas(scene, name, new BABYLON.Size(size.width * renderScaleFactor, size.height * renderScaleFactor), false, cachingStrategy);
+            var plane = new BABYLON.WorldSpaceCanvas2d(name, scene, c);
+            var vertexData = BABYLON.VertexData.CreatePlane({ width: size.width / 2, height: size.height / 2, sideOrientation: sideOrientation });
+            var mtl = new BABYLON.StandardMaterial(name + "_Material", scene);
+            c.applyCachedTexture(vertexData, mtl);
+            vertexData.applyToMesh(plane, false);
+            mtl.specularColor = new BABYLON.Color3(0, 0, 0);
+            mtl.disableLighting = true;
+            mtl.useAlphaFromDiffuseTexture = true;
+            plane.position = position;
+            plane.rotationQuaternion = rotation;
+            plane.material = mtl;
             return c;
         };
         Canvas2D.prototype.setupCanvas = function (scene, name, size, isScreenSpace, cachingstrategy) {
+            var _this = this;
             if (isScreenSpace === void 0) { isScreenSpace = true; }
             if (cachingstrategy === void 0) { cachingstrategy = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS; }
+            this._engineData = scene.getEngine().getOrAddExternalDataWithFactory("__BJSCANVAS2D__", function (k) { return new Canvas2DEngineBoundData(); });
             this._cachingStrategy = cachingstrategy;
-            this._hierarchyLevelZFactor = 100;
+            this._depthLevel = 0;
+            this._hierarchyMaxDepth = 100;
+            this._hierarchyLevelZFactor = 1 / this._hierarchyMaxDepth;
             this._hierarchyLevelMaxSiblingCount = 1000;
             this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
             this.setupGroup2D(this, null, name, BABYLON.Vector2.Zero(), size);
             this._scene = scene;
             this._engine = scene.getEngine();
             this._renderingSize = new BABYLON.Size(0, 0);
+            // Register scene dispose to also dispose the canvas when it'll happens
+            scene.onDisposeObservable.add(function (d, s) {
+                _this.dispose();
+            });
             if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 this._background = BABYLON.Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
+                this._background.origin = BABYLON.Vector2.Zero();
                 this._background.levelVisible = false;
             }
             this._isScreeSpace = isScreenSpace;
+            if (this._isScreeSpace) {
+                this._afterRenderObserver = this._scene.onAfterRenderObservable.add(function (d, s) {
+                    _this._engine.clear(null, false, true);
+                    _this.render();
+                });
+            }
+            else {
+                this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(function (d, s) {
+                    _this.render();
+                });
+            }
+            this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
+            //            this._supprtInstancedArray = false; // TODO REMOVE!!!
+        };
+        Canvas2D.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this._beforeRenderObserver) {
+                this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
+                this._beforeRenderObserver = null;
+            }
+            if (this._afterRenderObserver) {
+                this._scene.onAfterRenderObservable.remove(this._afterRenderObserver);
+                this._afterRenderObserver = null;
+            }
+            if (this._groupCacheMaps) {
+                this._groupCacheMaps.forEach(function (m) { return m.dispose(); });
+                this._groupCacheMaps = null;
+            }
         };
         Object.defineProperty(Canvas2D.prototype, "scene", {
             /**
@@ -110,6 +169,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Canvas2D.prototype, "supportInstancedArray", {
+            get: function () {
+                return this._supprtInstancedArray;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Canvas2D.prototype, "backgroundFill", {
             /**
              * Property that defines the fill object used to draw the background of the Canvas.
@@ -128,12 +194,12 @@ var BABYLON;
                     return;
                 }
                 this._background.fill = value;
-                this._background.isVisible = true;
+                this._background.levelVisible = true;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Canvas2D.prototype, "border", {
+        Object.defineProperty(Canvas2D.prototype, "backgroundBorder", {
             /**
              * Property that defines the border object used to draw the background of the Canvas.
              * @returns If the background is not set, null will be returned, otherwise a valid border object is returned.
@@ -150,7 +216,32 @@ var BABYLON;
                     return;
                 }
                 this._background.border = value;
-                this._background.isVisible = true;
+                this._background.levelVisible = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "backgroundRoundRadius", {
+            get: function () {
+                if (!this._background || !this._background.isVisible) {
+                    return null;
+                }
+                return this._background.roundRadius;
+            },
+            set: function (value) {
+                this.checkBackgroundAvailability();
+                if (value === this._background.roundRadius) {
+                    return;
+                }
+                this._background.roundRadius = value;
+                this._background.levelVisible = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "engineData", {
+            get: function () {
+                return this._engineData;
             },
             enumerable: true,
             configurable: true
@@ -173,20 +264,24 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Canvas2D.prototype, "hierarchyLevelZFactor", {
+            get: function () {
+                return this._hierarchyLevelZFactor;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Method that renders the Canvas
          * @param camera the current camera.
          */
-        Canvas2D.prototype.render = function (camera) {
+        Canvas2D.prototype.render = function () {
             this._renderingSize.width = this.engine.getRenderWidth();
             this._renderingSize.height = this.engine.getRenderHeight();
             var context = new BABYLON.Render2DContext();
-            context.camera = camera;
-            context.parentVisibleState = this.levelVisible;
-            context.parentTransform = BABYLON.Matrix.Identity();
-            context.parentTransformStep = 1;
             context.forceRefreshPrimitive = false;
-            this.updateGlobalTransVis(context, false);
+            ++this._globalTransformProcessStep;
+            this.updateGlobalTransVis(false);
             this._prepareGroupRender(context);
             this._groupRender(context);
         };
@@ -206,10 +301,10 @@ var BABYLON;
             // Try to find a spot in one of the cached texture
             var res = null;
             for (var _i = 0, _a = this._groupCacheMaps; _i < _a.length; _i++) {
-                var g = _a[_i];
-                var node = g.texture.allocateRect(size);
+                var map = _a[_i];
+                var node = map.allocateRect(size);
                 if (node) {
-                    res = { node: node, texture: g.texture };
+                    res = { node: node, texture: map };
                     break;
                 }
             }
@@ -221,50 +316,43 @@ var BABYLON;
                     mapSize.width = Math.pow(2, Math.ceil(Math.log(size.width) / Math.log(2)));
                     mapSize.height = Math.pow(2, Math.ceil(Math.log(size.height) / Math.log(2)));
                 }
-                g = new GroupsCacheMap();
                 var id = "groupsMapChache" + this._mapCounter + "forCanvas" + this.id;
-                g.texture = new BABYLON.MapTexture(id, this._scene, mapSize);
-                this._groupCacheMaps.push(g);
-                var node = g.texture.allocateRect(size);
-                res = { node: node, texture: g.texture };
+                map = new BABYLON.MapTexture(id, this._scene, mapSize);
+                this._groupCacheMaps.push(map);
+                var node = map.allocateRect(size);
+                res = { node: node, texture: map };
             }
             // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
-            var sprite = BABYLON.Sprite2D.Create(this, "__cachedSpriteOfGroup__" + group.id, 10, 10, g.texture, res.node.contentSize, res.node.pos, true);
-            sprite.origin = BABYLON.Vector2.Zero();
-            g.groupSprites.push({ group: group, sprite: sprite });
+            // Don't do it in case of the group being a worldspace canvas (because its texture is bound to a WorldSpaceCanvas node)
+            if (group !== this || this._isScreeSpace) {
+                var node = res.node;
+                var sprite = BABYLON.Sprite2D.Create(this, "__cachedSpriteOfGroup__" + group.id, group.position.x, group.position.y, map, node.contentSize, node.pos, false);
+                sprite.origin = BABYLON.Vector2.Zero();
+                res.sprite = sprite;
+            }
             return res;
         };
         /**
-         * Get a Solid Color Fill instance matching the given color.
+         * Get a Solid Color Brush instance matching the given color.
          * @param color The color to retrieve
-         * @return A shared instance of the SolidColorFill2D class that use the given color
+         * @return A shared instance of the SolidColorBrush2D class that use the given color
          */
-        Canvas2D.GetSolidColorFill = function (color) {
-            return Canvas2D._solidColorFills.getOrAddWithFactory(color.toHexString(), function () { return new BABYLON.SolidColorFill2D(color.clone(), true); });
+        Canvas2D.GetSolidColorBrush = function (color) {
+            return Canvas2D._solidColorBrushes.getOrAddWithFactory(color.toHexString(), function () { return new BABYLON.SolidColorBrush2D(color.clone(), true); });
         };
         /**
-         * Get a Solid Color Border instance matching the given color.
+         * Get a Solid Color Brush instance matching the given color expressed as a CSS formatted hexadecimal value.
          * @param color The color to retrieve
-         * @return A shared instance of the SolidColorBorder2D class that use the given color
+         * @return A shared instance of the SolidColorBrush2D class that uses the given color
          */
-        Canvas2D.GetSolidColorBorder = function (color) {
-            return Canvas2D._solidColorBorders.getOrAddWithFactory(color.toHexString(), function () { return new BABYLON.SolidColorBorder2D(color.clone(), true); });
+        Canvas2D.GetSolidColorBrushFromHex = function (hexValue) {
+            return Canvas2D._solidColorBrushes.getOrAddWithFactory(hexValue, function () { return new BABYLON.SolidColorBrush2D(BABYLON.Color4.FromHexString(hexValue), true); });
         };
-        /**
-         * Get a Solid Color Fill instance matching the given color expressed as a CSS formatted hexadecimal value.
-         * @param color The color to retrieve
-         * @return A shared instance of the SolidColorFill2D class that use the given color
-         */
-        Canvas2D.GetSolidColorFillFromHex = function (hexValue) {
-            return Canvas2D._solidColorFills.getOrAddWithFactory(hexValue, function () { return new BABYLON.SolidColorFill2D(BABYLON.Color4.FromHexString(hexValue), true); });
-        };
-        /**
-         * Get a Solid Color Border instance matching the given color expressed as a CSS formatted hexadecimal value.
-         * @param color The color to retrieve
-         * @return A shared instance of the SolidColorBorder2D class that use the given color
-         */
-        Canvas2D.GetSolidColorBorderFromHex = function (hexValue) {
-            return Canvas2D._solidColorBorders.getOrAddWithFactory(hexValue, function () { return new BABYLON.SolidColorBorder2D(BABYLON.Color4.FromHexString(hexValue), true); });
+        Canvas2D.GetGradientColorBrush = function (color1, color2, translation, rotation, scale) {
+            if (translation === void 0) { translation = BABYLON.Vector2.Zero(); }
+            if (rotation === void 0) { rotation = 0; }
+            if (scale === void 0) { scale = 1; }
+            return Canvas2D._gradientColorBrushes.getOrAddWithFactory(BABYLON.GradientColorBrush2D.BuildKey(color1, color2, translation, rotation, scale), function () { return new BABYLON.GradientColorBrush2D(color1, color2, translation, rotation, scale, true); });
         };
         /**
          * In this strategy only the direct children groups of the Canvas will be cached, their whole content (whatever the sub groups they have) into a single bitmap.
@@ -293,13 +381,12 @@ var BABYLON;
          * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
          */
         Canvas2D._groupTextureCacheSize = 1024;
-        Canvas2D._solidColorFills = new BABYLON.StringDictionary();
-        Canvas2D._solidColorBorders = new BABYLON.StringDictionary();
+        Canvas2D._solidColorBrushes = new BABYLON.StringDictionary();
+        Canvas2D._gradientColorBrushes = new BABYLON.StringDictionary();
         Canvas2D = __decorate([
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.canvas2d.js.map

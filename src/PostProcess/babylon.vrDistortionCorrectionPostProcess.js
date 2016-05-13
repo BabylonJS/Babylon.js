@@ -20,20 +20,20 @@ var BABYLON;
             this._distortionFactors = vrMetrics.distortionK;
             this._postProcessScaleFactor = vrMetrics.postProcessScaleFactor;
             this._lensCenterOffset = vrMetrics.lensCenterOffset;
-            this.onSizeChanged = function () {
+            this.onSizeChangedObservable.add(function () {
                 _this.aspectRatio = _this.width * .5 / _this.height;
                 _this._scaleIn = new BABYLON.Vector2(2, 2 / _this.aspectRatio);
                 _this._scaleFactor = new BABYLON.Vector2(.5 * (1 / _this._postProcessScaleFactor), .5 * (1 / _this._postProcessScaleFactor) * _this.aspectRatio);
                 _this._lensCenter = new BABYLON.Vector2(_this._isRightEye ? 0.5 - _this._lensCenterOffset * 0.5 : 0.5 + _this._lensCenterOffset * 0.5, 0.5);
-            };
-            this.onApply = function (effect) {
+            });
+            this.onApplyObservable.add(function (effect) {
                 effect.setFloat2("LensCenter", _this._lensCenter.x, _this._lensCenter.y);
                 effect.setFloat2("Scale", _this._scaleFactor.x, _this._scaleFactor.y);
                 effect.setFloat2("ScaleIn", _this._scaleIn.x, _this._scaleIn.y);
                 effect.setFloat4("HmdWarpParam", _this._distortionFactors[0], _this._distortionFactors[1], _this._distortionFactors[2], _this._distortionFactors[3]);
-            };
+            });
         }
         return VRDistortionCorrectionPostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.VRDistortionCorrectionPostProcess = VRDistortionCorrectionPostProcess;
 })(BABYLON || (BABYLON = {}));

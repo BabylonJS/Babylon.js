@@ -2559,7 +2559,7 @@
             var result = Matrix.Zero();
 
             for (var index = 0; index < 16; index++) {
-                result.m[index] = startValue.m[index] * gradient + endValue.m[index] * (1.0 - gradient);
+                result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
             }
 
             return result;

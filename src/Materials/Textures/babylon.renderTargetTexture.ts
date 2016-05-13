@@ -20,12 +20,66 @@
         public renderParticles = true;
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
-        public onBeforeRender: (faceIndex: number) => void;
-        public onAfterRender: (faceIndex: number) => void;
-        public onAfterUnbind: () => void;
-        public onClear: (engine: Engine) => void;
         public activeCamera: Camera;
         public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
+
+        // Events
+
+        /**
+        * An event triggered when the texture is unbind.
+        * @type {BABYLON.Observable}
+        */
+        public onAfterUnbindObservable = new Observable<RenderTargetTexture>();
+
+        private _onAfterUnbindObserver: Observer<RenderTargetTexture>;
+        public set onAfterUnbind(callback: () => void) {
+            if (this._onAfterUnbindObserver) {
+                this.onAfterUnbindObservable.remove(this._onAfterUnbindObserver);
+            }
+            this._onAfterUnbindObserver = this.onAfterUnbindObservable.add(callback);
+        }
+
+        /**
+        * An event triggered before rendering the texture
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeRenderObservable = new Observable<number>();
+
+        private _onBeforeRenderObserver: Observer<number>;
+        public set onBeforeRender(callback: (faceIndex: number) => void) {
+            if (this._onBeforeRenderObserver) {
+                this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            }
+            this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after rendering the texture
+        * @type {BABYLON.Observable}
+        */
+        public onAfterRenderObservable = new Observable<number>();
+
+        private _onAfterRenderObserver: Observer<number>;
+        public set onAfterRender(callback: (faceIndex: number) => void) {
+            if (this._onAfterRenderObserver) {
+                this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+            }
+            this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after the texture clear
+        * @type {BABYLON.Observable}
+        */
+        public onClearObservable = new Observable<Engine>();
+
+        private _onClearObserver: Observer<Engine>;
+        public set onClear(callback: (Engine: Engine) => void) {
+            if (this._onClearObserver) {
+                this.onClearObservable.remove(this._onClearObserver);
+            }
+            this._onClearObserver = this.onClearObservable.add(callback);
+        }
 
         private _size: number;
         public _generateMipMaps: boolean;
@@ -184,9 +238,7 @@
                 this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
             }
 
-            if (this.onAfterUnbind) {
-                this.onAfterUnbind();
-            }
+            this.onAfterUnbindObservable.notifyObservers(this);
 
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
@@ -208,13 +260,11 @@
                 }
             }
 
-            if (this.onBeforeRender) {
-                this.onBeforeRender(faceIndex);
-            }
+            this.onBeforeRenderObservable.notifyObservers(faceIndex);
 
             // Clear
-            if (this.onClear) {
-                this.onClear(engine);
+            if (this.onClearObservable.hasObservers()) {
+                this.onClearObservable.notifyObservers(engine);
             } else {
                 engine.clear(scene.clearColor, true, true);
             }
@@ -234,9 +284,7 @@
                 scene.updateTransformMatrix(true);
             }
 
-            if (this.onAfterRender) {
-                this.onAfterRender(faceIndex);
-            }
+            this.onAfterRenderObservable.notifyObservers(faceIndex);
 
             // Dump ?
             if (dumpForDebug) {

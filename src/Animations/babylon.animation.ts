@@ -472,7 +472,7 @@
                     }
 
                 } else if (this._originalBlendValue.m) { // Matrix
-                    destination[path] = Matrix.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                    destination[path] = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
                 } else { // Direct value
                     destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }

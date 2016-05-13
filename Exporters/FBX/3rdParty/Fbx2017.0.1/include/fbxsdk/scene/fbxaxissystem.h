@@ -253,7 +253,12 @@ public:
       */
     ECoordSystem GetCoorSystem() const;
 
-    /** Converts the children of the given node to this axis system.
+	/** Represents the axis system as a 4x4 matrix
+	  * \return The equivalent matrix of this axis system
+	  */
+	void GetMatrix(FbxAMatrix& pMatrix);
+
+	/** Converts the children of the given node to this axis system.
       *             Unlike the ConvertScene() method, this method does not set the axis system 
       *             of the scene that the pRoot node belongs, nor does it adjust FbxPose
       *             as they are not stored under the scene, and not under a particular node.

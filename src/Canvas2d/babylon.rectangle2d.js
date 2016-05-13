@@ -13,33 +13,111 @@ var BABYLON;
 (function (BABYLON) {
     var Rectangle2DRenderCache = (function (_super) {
         __extends(Rectangle2DRenderCache, _super);
-        function Rectangle2DRenderCache() {
-            _super.apply(this, arguments);
+        function Rectangle2DRenderCache(engine, modelKey, isTransparent) {
+            _super.call(this, engine, modelKey, isTransparent);
         }
         Rectangle2DRenderCache.prototype.render = function (instanceInfo, context) {
             // Do nothing if the shader is still loading/preparing
-            if (!this.effect.isReady()) {
+            if ((this.effectFill && !this.effectFill.isReady()) || (this.effectBorder && !this.effectBorder.isReady())) {
                 return false;
             }
-            // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
-            if (!this.instancingAttributes) {
-                this.instancingAttributes = instanceInfo._classTreeInfo.classContent.getInstancingAttributeInfos(this.effect);
-            }
             var engine = instanceInfo._owner.owner.engine;
-            engine.enableEffect(this.effect);
-            engine.bindBuffers(this.fillVB, this.fillIB, [1], 4, this.effect);
-            engine.updateAndBindInstancesBuffer(instanceInfo._instancesBuffer, null, this.instancingAttributes);
-            engine.draw(true, 0, Rectangle2D.roundSubdivisions * 4 * 3, instanceInfo._instancesData.usedElementCount);
-            engine.unBindInstancesBuffer(instanceInfo._instancesBuffer, this.instancingAttributes);
+            var depthFunction = 0;
+            if (this.effectFill && this.effectBorder) {
+                depthFunction = engine.getDepthFunction();
+                engine.setDepthFunctionToLessOrEqual();
+            }
+            var cur;
+            if (this.isTransparent) {
+                cur = engine.getAlphaMode();
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            }
+            if (this.effectFill) {
+                var partIndex = instanceInfo._partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_FILLPARTID.toString());
+                engine.enableEffect(this.effectFill);
+                engine.bindBuffers(this.fillVB, this.fillIB, [1], 4, this.effectFill);
+                var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
+                if (instanceInfo._owner.owner.supportInstancedArray) {
+                    if (!this.instancingFillAttributes) {
+                        // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+                        this.instancingFillAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
+                    }
+                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, count);
+                    engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingFillAttributes);
+                }
+                else {
+                    for (var i = 0; i < count; i++) {
+                        this.setupUniforms(this.effectFill, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                        engine.draw(true, 0, this.fillIndicesCount);
+                    }
+                }
+            }
+            if (this.effectBorder) {
+                var partIndex = instanceInfo._partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_BORDERPARTID.toString());
+                engine.enableEffect(this.effectBorder);
+                engine.bindBuffers(this.borderVB, this.borderIB, [1], 4, this.effectBorder);
+                var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
+                if (instanceInfo._owner.owner.supportInstancedArray) {
+                    if (!this.instancingBorderAttributes) {
+                        this.instancingBorderAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, this.effectBorder);
+                    }
+                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, count);
+                    engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingBorderAttributes);
+                }
+                else {
+                    for (var i = 0; i < count; i++) {
+                        this.setupUniforms(this.effectBorder, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                        engine.draw(true, 0, this.borderIndicesCount);
+                    }
+                }
+            }
+            if (this.isTransparent) {
+                engine.setAlphaMode(cur);
+            }
+            if (this.effectFill && this.effectBorder) {
+                engine.setDepthFunction(depthFunction);
+            }
+            return true;
+        };
+        Rectangle2DRenderCache.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this.fillVB) {
+                this._engine._releaseBuffer(this.fillVB);
+                this.fillVB = null;
+            }
+            if (this.fillIB) {
+                this._engine._releaseBuffer(this.fillIB);
+                this.fillIB = null;
+            }
+            if (this.effectFill) {
+                this._engine._releaseEffect(this.effectFill);
+                this.effectFill = null;
+            }
+            if (this.borderVB) {
+                this._engine._releaseBuffer(this.borderVB);
+                this.borderVB = null;
+            }
+            if (this.borderIB) {
+                this._engine._releaseBuffer(this.borderIB);
+                this.borderIB = null;
+            }
+            if (this.effectBorder) {
+                this._engine._releaseEffect(this.effectBorder);
+                this.effectBorder = null;
+            }
             return true;
         };
         return Rectangle2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Rectangle2DRenderCache = Rectangle2DRenderCache;
     var Rectangle2DInstanceData = (function (_super) {
         __extends(Rectangle2DInstanceData, _super);
-        function Rectangle2DInstanceData() {
-            _super.apply(this, arguments);
+        function Rectangle2DInstanceData(partId) {
+            _super.call(this, partId, 1);
         }
         Object.defineProperty(Rectangle2DInstanceData.prototype, "properties", {
             get: function () {
@@ -52,7 +130,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Rectangle2DInstanceData.prototype, "properties", null);
         return Rectangle2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Rectangle2DInstanceData = Rectangle2DInstanceData;
     var Rectangle2D = (function (_super) {
         __extends(Rectangle2D, _super);
@@ -91,12 +169,12 @@ var BABYLON;
             configurable: true
         });
         Rectangle2D.prototype.updateLevelBoundingInfo = function () {
-            this._levelBoundingInfo.radius = Math.sqrt(this.size.width * this.size.width + this.size.height * this.size.height);
-            this._levelBoundingInfo.extent = this.size.clone();
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         };
-        Rectangle2D.prototype.setupRectangle2D = function (owner, parent, id, position, size, roundRadius, fill, border) {
+        Rectangle2D.prototype.setupRectangle2D = function (owner, parent, id, position, size, roundRadius, fill, border, borderThickness) {
             if (roundRadius === void 0) { roundRadius = 0; }
-            this.setupRenderablePrim2D(owner, parent, id, position, true, fill, border);
+            if (borderThickness === void 0) { borderThickness = 1; }
+            this.setupShape2D(owner, parent, id, position, true, fill, border, borderThickness);
             this.size = size;
             this.notRounded = !roundRadius;
             this.roundRadius = roundRadius;
@@ -105,7 +183,7 @@ var BABYLON;
             BABYLON.Prim2DBase.CheckParent(parent);
             var rect = new Rectangle2D();
             rect.setupRectangle2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), new BABYLON.Size(width, height), null);
-            rect.fill = fill || BABYLON.Canvas2D.GetSolidColorFillFromHex("#FFFFFFFF");
+            rect.fill = fill;
             rect.border = border;
             return rect;
         };
@@ -114,14 +192,18 @@ var BABYLON;
             BABYLON.Prim2DBase.CheckParent(parent);
             var rect = new Rectangle2D();
             rect.setupRectangle2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), new BABYLON.Size(width, height), roundRadius);
-            rect.fill = fill || BABYLON.Canvas2D.GetSolidColorFillFromHex("#FFFFFFFF");
+            rect.fill = fill || BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
             rect.border = border;
             return rect;
         };
-        Rectangle2D.prototype.createModelRenderCache = function () {
-            var renderCache = new Rectangle2DRenderCache();
+        Rectangle2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
+            var renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey, isTransparent);
+            return renderCache;
+        };
+        Rectangle2D.prototype.setupModelRenderCache = function (modelRenderCache) {
+            var renderCache = modelRenderCache;
             var engine = this.owner.engine;
-            // Need to create vb/ib for the fill part?
+            // Need to create webgl resources for fill part?
             if (this.fill) {
                 var vbSize = ((this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4) + 1;
                 var vb = new Float32Array(vbSize);
@@ -133,42 +215,87 @@ var BABYLON;
                 var ib = new Float32Array(triCount * 3);
                 for (var i = 0; i < triCount; i++) {
                     ib[i * 3 + 0] = 0;
-                    ib[i * 3 + 1] = i + 1;
-                    ib[i * 3 + 2] = i + 2;
+                    ib[i * 3 + 2] = i + 1;
+                    ib[i * 3 + 1] = i + 2;
                 }
-                ib[triCount * 3 - 1] = 1;
+                ib[triCount * 3 - 2] = 1;
                 renderCache.fillIB = engine.createIndexBuffer(ib);
-                renderCache.effect = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ["index", "zBias", "transformX", "transformY", "origin", "properties"], [], [], "");
+                renderCache.fillIndicesCount = triCount * 3;
+                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["index"]);
+                renderCache.effectFill = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, ei.uniforms, [], ei.defines, null, function (e) {
+                    //                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_FILLPARTID);
+                });
+            }
+            // Need to create webgl resource for border part?
+            if (this.border) {
+                var vbSize = (this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4 * 2;
+                var vb = new Float32Array(vbSize);
+                for (var i = 0; i < vbSize; i++) {
+                    vb[i] = i;
+                }
+                renderCache.borderVB = engine.createVertexBuffer(vb);
+                var triCount = vbSize;
+                var rs = triCount / 2;
+                var ib = new Float32Array(triCount * 3);
+                for (var i = 0; i < rs; i++) {
+                    var r0 = i;
+                    var r1 = (i + 1) % rs;
+                    ib[i * 6 + 0] = rs + r1;
+                    ib[i * 6 + 1] = rs + r0;
+                    ib[i * 6 + 2] = r0;
+                    ib[i * 6 + 3] = r1;
+                    ib[i * 6 + 4] = rs + r1;
+                    ib[i * 6 + 5] = r0;
+                }
+                renderCache.borderIB = engine.createIndexBuffer(ib);
+                renderCache.borderIndicesCount = triCount * 3;
+                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["index"]);
+                renderCache.effectBorder = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, ei.uniforms, [], ei.defines, null, function (e) {
+                    //                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_BORDERPARTID);
+                });
             }
             return renderCache;
         };
-        Rectangle2D.prototype.createInstanceData = function () {
-            return new Rectangle2DInstanceData();
+        Rectangle2D.prototype.createInstanceDataParts = function () {
+            var res = new Array();
+            if (this.border) {
+                res.push(new Rectangle2DInstanceData(BABYLON.Shape2D.SHAPE2D_BORDERPARTID));
+            }
+            if (this.fill) {
+                res.push(new Rectangle2DInstanceData(BABYLON.Shape2D.SHAPE2D_FILLPARTID));
+            }
+            return res;
         };
-        Rectangle2D.prototype.refreshInstanceData = function () {
-            if (!_super.prototype.refreshInstanceData.call(this)) {
+        Rectangle2D.prototype.refreshInstanceDataPart = function (part) {
+            if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
             }
-            var d = this._instanceData;
-            var size = this.size;
-            d.properties = new BABYLON.Vector3(size.width, size.height, this.roundRadius || 0);
+            if (part.id === BABYLON.Shape2D.SHAPE2D_BORDERPARTID) {
+                var d = part;
+                var size = this.size;
+                d.properties = new BABYLON.Vector3(size.width, size.height, this.roundRadius || 0);
+            }
+            else if (part.id === BABYLON.Shape2D.SHAPE2D_FILLPARTID) {
+                var d = part;
+                var size = this.size;
+                d.properties = new BABYLON.Vector3(size.width, size.height, this.roundRadius || 0);
+            }
             return true;
         };
         Rectangle2D.roundSubdivisions = 16;
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Rectangle2D.sizeProperty = pi; }, false, true)
+            BABYLON.instanceLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 1, function (pi) { return Rectangle2D.sizeProperty = pi; }, false, true)
         ], Rectangle2D.prototype, "size", null);
         __decorate([
-            BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Rectangle2D.notRoundedProperty = pi; })
+            BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 2, function (pi) { return Rectangle2D.notRoundedProperty = pi; })
         ], Rectangle2D.prototype, "notRounded", null);
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Rectangle2D.roundRadiusProperty = pi; })
+            BABYLON.instanceLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 3, function (pi) { return Rectangle2D.roundRadiusProperty = pi; })
         ], Rectangle2D.prototype, "roundRadius", null);
         Rectangle2D = __decorate([
             BABYLON.className("Rectangle2D")
         ], Rectangle2D);
         return Rectangle2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.Shape2D);
     BABYLON.Rectangle2D = Rectangle2D;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.rectangle2d.js.map

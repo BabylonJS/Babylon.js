@@ -99,11 +99,17 @@ var BABYLON;
             partialLoad(files[index], index, loadedImages, scene, onfinish);
         }
     };
+    var InstancingAttributeInfo = (function () {
+        function InstancingAttributeInfo() {
+        }
+        return InstancingAttributeInfo;
+    })();
+    BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    }());
+    })();
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -147,6 +153,7 @@ var BABYLON;
             this._compiledEffects = {};
             this._uintIndicesCurrentlySet = false;
             this._renderingCanvas = canvas;
+            this._externalData = new BABYLON.StringDictionary();
             options = options || {};
             options.antialias = antialias;
             if (options.preserveDrawingBuffer === undefined) {
@@ -399,7 +406,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.4.0-alpha";
+                return "2.4.0-beta";
             },
             enumerable: true,
             configurable: true
@@ -478,6 +485,12 @@ var BABYLON;
         // Methods
         Engine.prototype.resetDrawCalls = function () {
             this._drawCalls = 0;
+        };
+        Engine.prototype.getDepthFunction = function () {
+            return this._depthCullingState.depthFunc;
+        };
+        Engine.prototype.setDepthFunction = function (depthFunc) {
+            this._depthCullingState.depthFunc = depthFunc;
         };
         Engine.prototype.setDepthFunctionToGreater = function () {
             this._depthCullingState.depthFunc = this._gl.GREATER;
@@ -591,9 +604,16 @@ var BABYLON;
             this._cachedViewport = viewport;
             this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
         };
+        /**
+         * Directly set the WebGL Viewport
+         * The x, y, width & height are directly passed to the WebGL call
+         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state.
+         */
         Engine.prototype.setDirectViewport = function (x, y, width, height) {
+            var currentViewport = this._cachedViewport;
             this._cachedViewport = null;
             this._gl.viewport(x, y, width, height);
+            return currentViewport;
         };
         Engine.prototype.beginFrame = function () {
             this._measureFps();
@@ -807,20 +827,46 @@ var BABYLON;
         };
         Engine.prototype.updateAndBindInstancesBuffer = function (instancesBuffer, data, offsetLocations) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
-            for (var index = 0; index < 4; index++) {
-                var offsetLocation = offsetLocations[index];
-                this._gl.enableVertexAttribArray(offsetLocation);
-                this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
+            if (data) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+            }
+            if (offsetLocations[0].index !== undefined) {
+                var stride = 0;
+                for (var i = 0; i < offsetLocations.length; i++) {
+                    var ai = offsetLocations[i];
+                    stride += ai.attributeSize * 4;
+                }
+                for (var i = 0; i < offsetLocations.length; i++) {
+                    var ai = offsetLocations[i];
+                    this._gl.enableVertexAttribArray(ai.index);
+                    this._gl.vertexAttribPointer(ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
+                }
+            }
+            else {
+                for (var index = 0; index < 4; index++) {
+                    var offsetLocation = offsetLocations[index];
+                    this._gl.enableVertexAttribArray(offsetLocation);
+                    this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
+                }
             }
         };
         Engine.prototype.unBindInstancesBuffer = function (instancesBuffer, offsetLocations) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            for (var index = 0; index < 4; index++) {
-                var offsetLocation = offsetLocations[index];
-                this._gl.disableVertexAttribArray(offsetLocation);
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+            if (offsetLocations[0].index !== undefined) {
+                for (var i = 0; i < offsetLocations.length; i++) {
+                    var ai = offsetLocations[i];
+                    this._gl.disableVertexAttribArray(ai.index);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 0);
+                }
+            }
+            else {
+                for (var index = 0; index < 4; index++) {
+                    var offsetLocation = offsetLocations[index];
+                    this._gl.disableVertexAttribArray(offsetLocation);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+                }
             }
         };
         Engine.prototype.applyStates = function () {
@@ -1341,9 +1387,13 @@ var BABYLON;
                 this._gl.bindTexture(this._gl.TEXTURE_2D, null);
             }
         };
-        Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY) {
+        Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY, premulAlpha) {
+            if (premulAlpha === void 0) { premulAlpha = false; }
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+            }
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, canvas);
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -1807,6 +1857,42 @@ var BABYLON;
             this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
         };
+        /**
+         * Add an externaly attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        Engine.prototype.addExternalData = function (key, data) {
+            return this._externalData.add(key, data);
+        };
+        /**
+         * Get an externaly attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        Engine.prototype.getExternalData = function (key) {
+            return this._externalData.get(key);
+        };
+        /**
+         * Get an externaly attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        Engine.prototype.getOrAddExternalDataWithFactory = function (key, factory) {
+            return this._externalData.getOrAddWithFactory(key, factory);
+        };
+        /**
+         * Remove an externaly attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        Engine.prototype.removeExternalData = function (key) {
+            return this._externalData.remove(key);
+        };
         Engine.prototype.releaseInternalTexture = function (texture) {
             if (!texture) {
                 return;
@@ -1953,6 +2039,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    }());
+    })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));

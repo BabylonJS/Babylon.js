@@ -12,13 +12,13 @@
         constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean) {
             super(name, size, scene, generateMipMaps, true);
 
-            this.onBeforeRender = () => {
+            this.onBeforeRenderObservable.add(() => {
                 scene.clipPlane = this.refractionPlane;
-            }
+            });
 
-            this.onAfterRender = () => {
+            this.onAfterRenderObservable.add(() => {
                 delete scene.clipPlane;
-            }
+            });
         }
 
         public clone(): RefractionTexture {

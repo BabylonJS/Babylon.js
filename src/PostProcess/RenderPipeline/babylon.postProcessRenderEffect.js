@@ -133,9 +133,9 @@ var BABYLON;
                 if (this.applyParameters) {
                     this.applyParameters(this._postProcesses[index]);
                 }
-                this._postProcesses[index].onBeforeRender = function (effect) {
+                this._postProcesses[index].onBeforeRenderObservable.add(function (effect) {
                     _this._linkTextures(effect);
-                };
+                });
             }
         };
         PostProcessRenderEffect.prototype._linkTextures = function (effect) {
@@ -147,6 +147,6 @@ var BABYLON;
             }
         };
         return PostProcessRenderEffect;
-    }());
+    })();
     BABYLON.PostProcessRenderEffect = PostProcessRenderEffect;
 })(BABYLON || (BABYLON = {}));
