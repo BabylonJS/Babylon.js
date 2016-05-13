@@ -128,7 +128,11 @@ namespace Unity3D2Babylon
                 var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
                 if (skinnedMesh != null)
                 {
-                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
+                    var babylonMesh = ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
+                    var skeleton = ConvertUnitySkeletonToBabylon(skinnedMesh.bones, skinnedMesh.sharedMesh.bindposes, skinnedMesh.transform, gameObject, progress);
+                    babylonMesh.skeletonId = skeleton.id;
+
+                    ExportSkeletonAnimation(skinnedMesh, babylonMesh, skeleton);
                     continue;
                 }
 
@@ -169,6 +173,30 @@ namespace Unity3D2Babylon
             {
                 babylonScene.gravity = exportationOptions.Gravity.ToFloat();
             }
-        }     
+        }
+
+        private static void ExportSkeletonAnimation(SkinnedMeshRenderer skinnedMesh, BabylonMesh babylonMesh, BabylonSkeleton skeleton)
+        {
+            var animator = skinnedMesh.rootBone.gameObject.GetComponent<Animator>();
+            if (animator != null)
+            {
+                ExportSkeletonAnimationClips(animator, true, skeleton, skinnedMesh.bones, babylonMesh);
+            }
+            else
+            {
+                var parent = skinnedMesh.rootBone.parent;
+                while (parent != null)
+                {
+                    animator = parent.gameObject.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        ExportSkeletonAnimationClips(animator, true, skeleton, skinnedMesh.bones, babylonMesh);
+                        break;
+                    }
+
+                    parent = parent.parent;
+                }
+            }
+        }
     }
 }

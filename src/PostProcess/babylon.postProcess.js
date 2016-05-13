@@ -16,6 +16,32 @@ var BABYLON;
             this._textures = new BABYLON.SmartArray(2);
             this._currentRenderTextureInd = 0;
             this._scaleRatio = new BABYLON.Vector2(1, 1);
+            // Events
+            /**
+            * An event triggered when the postprocess is activated.
+            * @type {BABYLON.Observable}
+            */
+            this.onActivateObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the postprocess changes its size.
+            * @type {BABYLON.Observable}
+            */
+            this.onSizeChangedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the postprocess applies its effect.
+            * @type {BABYLON.Observable}
+            */
+            this.onApplyObservable = new BABYLON.Observable();
+            /**
+            * An event triggered before rendering the postprocess
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after rendering the postprocess
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterRenderObservable = new BABYLON.Observable();
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -36,6 +62,56 @@ var BABYLON;
             this._parameters.push("scale");
             this.updateEffect(defines);
         }
+        Object.defineProperty(PostProcess.prototype, "onActivate", {
+            set: function (callback) {
+                if (this._onActivateObserver) {
+                    this.onActivateObservable.remove(this._onActivateObserver);
+                }
+                this._onActivateObserver = this.onActivateObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PostProcess.prototype, "onSizeChanged", {
+            set: function (callback) {
+                if (this._onSizeChangedObserver) {
+                    this.onSizeChangedObservable.remove(this._onSizeChangedObserver);
+                }
+                this._onSizeChangedObserver = this.onSizeChangedObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PostProcess.prototype, "onApply", {
+            set: function (callback) {
+                if (this._onApplyObserver) {
+                    this.onApplyObservable.remove(this._onApplyObserver);
+                }
+                this._onApplyObserver = this.onApplyObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PostProcess.prototype, "onBeforeRender", {
+            set: function (callback) {
+                if (this._onBeforeRenderObserver) {
+                    this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+                }
+                this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PostProcess.prototype, "onAfterRender", {
+            set: function (callback) {
+                if (this._onAfterRenderObserver) {
+                    this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+                }
+                this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         PostProcess.prototype.updateEffect = function (defines) {
             this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl }, ["position"], this._parameters, this._samplers, defines !== undefined ? defines : "");
         };
@@ -75,9 +151,7 @@ var BABYLON;
                 if (this._reusable) {
                     this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
                 }
-                if (this.onSizeChanged) {
-                    this.onSizeChanged();
-                }
+                this.onSizeChangedObservable.notifyObservers(this);
             }
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
@@ -87,9 +161,7 @@ var BABYLON;
                 this._scaleRatio.copyFromFloats(1, 1);
                 this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd]);
             }
-            if (this.onActivate) {
-                this.onActivate(camera);
-            }
+            this.onActivateObservable.notifyObservers(camera);
             // Clear
             if (this.clearColor) {
                 this._engine.clear(this.clearColor, true, true);
@@ -122,9 +194,7 @@ var BABYLON;
             this._effect._bindTexture("textureSampler", this._textures.data[this._currentRenderTextureInd]);
             // Parameters
             this._effect.setVector2("scale", this._scaleRatio);
-            if (this.onApply) {
-                this.onApply(this._effect);
-            }
+            this.onApplyObservable.notifyObservers(this._effect);
             return this._effect;
         };
         PostProcess.prototype.dispose = function (camera) {
@@ -143,8 +213,13 @@ var BABYLON;
             if (index === 0 && camera._postProcesses.length > 0) {
                 this._camera._postProcesses[0].markTextureDirty();
             }
+            this.onActivateObservable.clear();
+            this.onAfterRenderObservable.clear();
+            this.onApplyObservable.clear();
+            this.onBeforeRenderObservable.clear();
+            this.onSizeChangedObservable.clear();
         };
         return PostProcess;
-    }());
+    })();
     BABYLON.PostProcess = PostProcess;
 })(BABYLON || (BABYLON = {}));

@@ -275,7 +275,7 @@
         }
 
         public static get Version(): string {
-            return "2.4.0-alpha";
+            return "2.4.0-beta";
         }
 
         // Updatable statics so stick with vars here
@@ -1610,10 +1610,10 @@
             var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
-            
+
             if (texture._width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
-            } 
+            }
 
             if (compression) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);

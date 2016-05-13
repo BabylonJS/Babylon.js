@@ -22,25 +22,59 @@ var BABYLON;
                 return false;
             }
             // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
-            if (!this.instancingAttributes) {
-                this.instancingAttributes = instanceInfo._classTreeInfo.classContent.getInstancingAttributeInfos(this.effect);
-            }
             var engine = instanceInfo._owner.owner.engine;
             engine.enableEffect(this.effect);
             this.effect.setTexture("diffuseSampler", this.texture);
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
-            engine.updateAndBindInstancesBuffer(instanceInfo._instancesBuffer, null, this.instancingAttributes);
-            engine.draw(true, 0, 6, instanceInfo._instancesData.usedElementCount);
-            engine.unBindInstancesBuffer(instanceInfo._instancesBuffer, this.instancingAttributes);
+            var cur = engine.getAlphaMode();
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            var count = instanceInfo._instancesPartsData[0].usedElementCount;
+            if (instanceInfo._owner.owner.supportInstancedArray) {
+                if (!this.instancingAttributes) {
+                    this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, this.effect);
+                }
+                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
+                engine.draw(true, 0, 6, count);
+                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
+            }
+            else {
+                for (var i = 0; i < count; i++) {
+                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                    engine.draw(true, 0, 6);
+                }
+            }
+            engine.setAlphaMode(cur);
+            return true;
+        };
+        Sprite2DRenderCache.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this.vb) {
+                this._engine._releaseBuffer(this.vb);
+                this.vb = null;
+            }
+            if (this.ib) {
+                this._engine._releaseBuffer(this.ib);
+                this.ib = null;
+            }
+            if (this.texture) {
+                this.texture.dispose();
+                this.texture = null;
+            }
+            if (this.effect) {
+                this._engine._releaseEffect(this.effect);
+                this.effect = null;
+            }
             return true;
         };
         return Sprite2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
-        function Sprite2DInstanceData() {
-            _super.apply(this, arguments);
+        function Sprite2DInstanceData(partId) {
+            _super.call(this, partId, 1);
         }
         Object.defineProperty(Sprite2DInstanceData.prototype, "topLeftUV", {
             get: function () {
@@ -93,7 +127,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "invertY", null);
         return Sprite2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -151,16 +185,18 @@ var BABYLON;
             configurable: true
         });
         Sprite2D.prototype.updateLevelBoundingInfo = function () {
-            this._levelBoundingInfo.radius = Math.sqrt(this.spriteSize.width * this.spriteSize.width + this.spriteSize.height * this.spriteSize.height);
-            this._levelBoundingInfo.extent = this.spriteSize.clone();
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo);
         };
         Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, texture, spriteSize, spriteLocation, invertY) {
-            this.setupRenderablePrim2D(owner, parent, id, position, true, null, null);
+            this.setupRenderablePrim2D(owner, parent, id, position, true);
             this.texture = texture;
+            this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this.spriteSize = spriteSize;
             this.spriteLocation = spriteLocation;
             this.spriteFrame = 0;
             this.invertY = invertY;
+            this._isTransparent = true;
         };
         Sprite2D.Create = function (parent, id, x, y, texture, spriteSize, spriteLocation, invertY) {
             if (invertY === void 0) { invertY = false; }
@@ -169,8 +205,12 @@ var BABYLON;
             sprite.setupSprite2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), texture, spriteSize, spriteLocation, invertY);
             return sprite;
         };
-        Sprite2D.prototype.createModelRenderCache = function () {
-            var renderCache = new Sprite2DRenderCache();
+        Sprite2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
+            var renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey, isTransparent);
+            return renderCache;
+        };
+        Sprite2D.prototype.setupModelRenderCache = function (modelRenderCache) {
+            var renderCache = modelRenderCache;
             var engine = this.owner.engine;
             var vb = new Float32Array(4);
             for (var i = 0; i < 4; i++) {
@@ -179,35 +219,41 @@ var BABYLON;
             renderCache.vb = engine.createVertexBuffer(vb);
             var ib = new Float32Array(6);
             ib[0] = 0;
-            ib[1] = 1;
-            ib[2] = 2;
+            ib[1] = 2;
+            ib[2] = 1;
             ib[3] = 0;
-            ib[4] = 2;
-            ib[5] = 3;
+            ib[4] = 3;
+            ib[5] = 2;
             renderCache.ib = engine.createIndexBuffer(ib);
             renderCache.texture = this.texture;
-            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ["index", "zBias", "transformX", "transformY", "topLeftUV", "sizeUV", "origin", "textureSize", "frame", "invertY"], [], ["diffuseSampler"], "");
+            var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"]);
+            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, function (e) {
+                //                renderCache.setupUniformsLocation(e, ei.uniforms, Sprite2D.SPRITE2D_MAINPARTID);
+            });
             return renderCache;
         };
-        Sprite2D.prototype.createInstanceData = function () {
-            return new Sprite2DInstanceData();
+        Sprite2D.prototype.createInstanceDataParts = function () {
+            return [new Sprite2DInstanceData(Sprite2D.SPRITE2D_MAINPARTID)];
         };
-        Sprite2D.prototype.refreshInstanceData = function () {
-            if (!_super.prototype.refreshInstanceData.call(this)) {
+        Sprite2D.prototype.refreshInstanceDataPart = function (part) {
+            if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
             }
-            var d = this._instanceData;
-            var ts = this.texture.getSize();
-            var sl = this.spriteLocation;
-            var ss = this.spriteSize;
-            d.topLeftUV = new BABYLON.Vector2(sl.x / ts.width, sl.y / ts.height);
-            var suv = new BABYLON.Vector2(ss.width / ts.width, ss.height / ts.height);
-            d.sizeUV = suv;
-            d.frame = this.spriteFrame;
-            d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
-            d.invertY = this.invertY ? 1 : 0;
+            if (part.id === Sprite2D.SPRITE2D_MAINPARTID) {
+                var d = this._instanceDataParts[0];
+                var ts = this.texture.getSize();
+                var sl = this.spriteLocation;
+                var ss = this.spriteSize;
+                d.topLeftUV = new BABYLON.Vector2(sl.x / ts.width, sl.y / ts.height);
+                var suv = new BABYLON.Vector2(ss.width / ts.width, ss.height / ts.height);
+                d.sizeUV = suv;
+                d.frame = this.spriteFrame;
+                d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
+                d.invertY = this.invertY ? 1 : 0;
+            }
             return true;
         };
+        Sprite2D.SPRITE2D_MAINPARTID = 1;
         __decorate([
             BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Sprite2D.textureProperty = pi; })
         ], Sprite2D.prototype, "texture", null);
@@ -227,7 +273,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sprite2d.js.map

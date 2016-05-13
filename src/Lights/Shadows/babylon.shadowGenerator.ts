@@ -54,9 +54,9 @@
             }
 
             this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value);
-            this._boxBlurPostprocess.onApply = effect => {
+            this._boxBlurPostprocess.onApplyObservable.add(effect => {
                 effect.setFloat2("screenSize", this._mapSize / this.blurScale, this._mapSize / this.blurScale);
-            };
+            });
         }
 
         public get filter(): number {
@@ -142,11 +142,11 @@
             this._shadowMap.renderParticles = false;
 
 
-            this._shadowMap.onBeforeRender = (faceIndex: number) => {
+            this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
                 this._currentFaceIndex = faceIndex;
-            }
+            });
 
-            this._shadowMap.onAfterUnbind = () => {
+            this._shadowMap.onAfterUnbindObservable.add(() => {
                 if (!this.useBlurVarianceShadowMap) {
                     return;
                 }
@@ -158,15 +158,15 @@
                     this._shadowMap2.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
 
                     this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-                    this._downSamplePostprocess.onApply = effect => {
+                    this._downSamplePostprocess.onApplyObservable.add(effect => {
                         effect.setTexture("textureSampler", this._shadowMap);
-                    };
+                    });
 
                     this.blurBoxOffset = 1;
                 }
 
                 this._scene.postProcessManager.directRender([this._downSamplePostprocess, this._boxBlurPostprocess], this._shadowMap2.getInternalTexture());
-            }
+            });
 
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
@@ -245,13 +245,13 @@
                 }
             };
 
-            this._shadowMap.onClear = (engine: Engine) => {
+            this._shadowMap.onClearObservable.add((engine: Engine) => {
                 if (this.useBlurVarianceShadowMap || this.useVarianceShadowMap) {
                     engine.clear(new Color4(0, 0, 0, 0), true, true);
                 } else {
                     engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true);
                 }
-            }
+            });
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {

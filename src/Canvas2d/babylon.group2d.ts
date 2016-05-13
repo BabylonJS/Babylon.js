@@ -83,7 +83,7 @@
                 this._cacheNode = null;
             }
 
-            if(this._primDirtyList) {
+            if (this._primDirtyList) {
                 this._primDirtyList.splice(0);
                 this._primDirtyList = null;
             }

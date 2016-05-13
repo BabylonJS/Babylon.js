@@ -636,9 +636,9 @@
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false);
             texture.renderList = scene.meshes;
 
-            texture.onAfterRender = () => {
+            texture.onAfterRenderObservable.add(() => {
                 Tools.DumpFramebuffer(width, height, engine, successCallback);
-            };
+            });
 
             scene.incrementRenderId();
             texture.render(true);

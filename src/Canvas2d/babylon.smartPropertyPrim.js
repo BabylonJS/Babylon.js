@@ -10,7 +10,7 @@ var BABYLON;
         function Prim2DClassInfo() {
         }
         return Prim2DClassInfo;
-    }());
+    })();
     BABYLON.Prim2DClassInfo = Prim2DClassInfo;
     var Prim2DPropInfo = (function () {
         function Prim2DPropInfo() {
@@ -19,13 +19,13 @@ var BABYLON;
         Prim2DPropInfo.PROPKIND_INSTANCE = 2;
         Prim2DPropInfo.PROPKIND_DYNAMIC = 3;
         return Prim2DPropInfo;
-    }());
+    })();
     BABYLON.Prim2DPropInfo = Prim2DPropInfo;
     var PropertyChangedInfo = (function () {
         function PropertyChangedInfo() {
         }
         return PropertyChangedInfo;
-    }());
+    })();
     BABYLON.PropertyChangedInfo = PropertyChangedInfo;
     var ClassTreeInfo = (function () {
         function ClassTreeInfo(baseClass, type, classContentFactory) {
@@ -62,13 +62,13 @@ var BABYLON;
         Object.defineProperty(ClassTreeInfo.prototype, "fullContent", {
             get: function () {
                 if (!this._fullContent) {
-                    var dic_1 = new BABYLON.StringDictionary();
+                    var dic = new BABYLON.StringDictionary();
                     var curLevel = this;
                     while (curLevel) {
-                        curLevel.levelContent.forEach(function (k, v) { return dic_1.add(k, v); });
+                        curLevel.levelContent.forEach(function (k, v) { return dic.add(k, v); });
                         curLevel = curLevel._baseClass;
                     }
-                    this._fullContent = dic_1;
+                    this._fullContent = dic;
                 }
                 return this._fullContent;
             },
@@ -81,14 +81,11 @@ var BABYLON;
                 return this;
             }
             var baseProto = Object.getPrototypeOf(type);
+            var curProtoContent = this.getOrAddType(Object.getPrototypeOf(baseProto), baseProto);
+            if (!curProtoContent) {
+                this.getLevelOf(baseProto);
+            }
             return this.getOrAddType(baseProto, type);
-            //// If type is a class, this will get the base class proto, if type is an instance of a class, this will get the proto of the class
-            //let baseTypeName = Tools.getClassName(baseProto);
-            //// If both name are equal we only switch from instance to class, we need to get the next proto in the hierarchy to get the base class
-            //if (baseTypeName === typeName) {
-            //    baseTypeName = Tools.getClassName(Object.getPrototypeOf(baseProto));
-            //}
-            //return this.getOrAddType(baseTypeName, typeName);
         };
         ClassTreeInfo.prototype.getOrAddType = function (baseType, type) {
             // Are we at the level corresponding to the baseType?
@@ -131,7 +128,7 @@ var BABYLON;
             return dic;
         };
         return ClassTreeInfo;
-    }());
+    })();
     BABYLON.ClassTreeInfo = ClassTreeInfo;
     var SmartPropertyPrim = (function () {
         function SmartPropertyPrim() {
@@ -141,9 +138,22 @@ var BABYLON;
             this._modelDirty = false;
             this._levelBoundingInfoDirty = false;
             this._instanceDirtyFlags = 0;
+            this._isDisposed = false;
             this._levelBoundingInfo = new BABYLON.BoundingInfo2D();
         };
+        Object.defineProperty(SmartPropertyPrim.prototype, "isDisposed", {
+            get: function () {
+                return this._isDisposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
         SmartPropertyPrim.prototype.dispose = function () {
+            if (this.isDisposed) {
+                return false;
+            }
+            this._isDisposed = true;
+            return true;
         };
         Object.defineProperty(SmartPropertyPrim.prototype, "modelKey", {
             get: function () {
@@ -167,9 +177,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        SmartPropertyPrim.GetOrAddModelCache = function (key, factory) {
-            return SmartPropertyPrim.ModelCache.getOrAddWithFactory(key, factory);
-        };
+        Object.defineProperty(SmartPropertyPrim.prototype, "isDirty", {
+            get: function () {
+                return (this._instanceDirtyFlags !== 0) || this._modelDirty;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(SmartPropertyPrim.prototype, "propDic", {
             get: function () {
                 if (!this._propInfo) {
@@ -230,6 +244,10 @@ var BABYLON;
             info.propertyName = propName;
             var propMask = propInfo.flagId;
             this.propertyChanged.notifyObservers(info, propMask);
+            // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
+            if (this instanceof BABYLON.Group2D) {
+                this.handleGroupChanged(propInfo);
+            }
             // Check if we need to dirty only if the type change and make the test
             var skipDirty = false;
             if (typeLevelCompare && curValue != null && newValue != null) {
@@ -240,18 +258,20 @@ var BABYLON;
             // Set the dirty flags
             if (!skipDirty) {
                 if (propInfo.kind === Prim2DPropInfo.PROPKIND_MODEL) {
-                    if ((this._instanceDirtyFlags === 0) && (!this._modelDirty)) {
+                    if (!this.isDirty) {
                         this.onPrimBecomesDirty();
                     }
                     this._modelDirty = true;
                 }
                 else if (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) {
-                    if ((this._instanceDirtyFlags === 0) && (!this._modelDirty)) {
+                    if (!this.isDirty) {
                         this.onPrimBecomesDirty();
                     }
                     this._instanceDirtyFlags |= propMask;
                 }
             }
+        };
+        SmartPropertyPrim.prototype.handleGroupChanged = function (prop) {
         };
         SmartPropertyPrim.prototype.checkPropertiesDirty = function (flags) {
             return (this._instanceDirtyFlags & flags) !== 0;
@@ -284,6 +304,10 @@ var BABYLON;
                 var getter = descriptor.get, setter = descriptor.set;
                 // Overload the property setter implementation to add our own logic
                 descriptor.set = function (val) {
+                    // check for disposed first, do nothing
+                    if (this.isDisposed) {
+                        return;
+                    }
                     var curVal = getter.call(this);
                     if (SmartPropertyPrim._checkUnchanged(curVal, val)) {
                         return;
@@ -314,13 +338,12 @@ var BABYLON;
                 };
             };
         };
-        SmartPropertyPrim.ModelCache = new BABYLON.StringDictionary();
         SmartPropertyPrim.propChangedInfo = new PropertyChangedInfo();
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);
         return SmartPropertyPrim;
-    }());
+    })();
     BABYLON.SmartPropertyPrim = SmartPropertyPrim;
     function modelLevelProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo) {
         if (typeLevelCompare === void 0) { typeLevelCompare = false; }
@@ -341,4 +364,3 @@ var BABYLON;
     }
     BABYLON.dynamicLevelProperty = dynamicLevelProperty;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.smartPropertyPrim.js.map

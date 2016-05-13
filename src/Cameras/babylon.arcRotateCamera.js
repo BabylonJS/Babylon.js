@@ -313,7 +313,9 @@ var BABYLON;
                 if (!this.panningAxis.y) {
                     this._transformedDirection.y = 0;
                 }
-                this.target.addInPlace(this._transformedDirection);
+                if (!this.target.getAbsolutePosition) {
+                    this.target.addInPlace(this._transformedDirection);
+                }
             }
             // Limits
             this._checkLimits();
@@ -539,6 +541,6 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "allowUpsideDown", void 0);
         return ArcRotateCamera;
-    }(BABYLON.TargetCamera));
+    })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));

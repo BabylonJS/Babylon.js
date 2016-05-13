@@ -30,6 +30,20 @@
         // Events
 
         /**
+        * An event triggered when the mesh is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<AbstractMesh>();
+
+        private _onDisposeObserver: Observer<AbstractMesh>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        /**
         * An event triggered when this mesh collides with another one
         * @type {BABYLON.Observable}
         */
@@ -77,7 +91,6 @@
         public isPickable = true;
         public showBoundingBox = false;
         public showSubMeshesBoundingBox = false;
-        public onDispose = null;
         public isBlocker = false;
         public renderingGroupId = 0;
         public material: Material;
@@ -1189,13 +1202,14 @@
             super.dispose();
 
             this.onAfterWorldMatrixUpdateObservable.clear();
-
+            this.onCollideObservable.clear();
+            this.onCollisionPositionChangeObservable.clear();
+            
             this._isDisposed = true;
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
     }
 }

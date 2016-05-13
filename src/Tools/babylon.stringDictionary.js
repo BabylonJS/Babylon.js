@@ -48,9 +48,9 @@ var BABYLON;
          * @return the value corresponding to the key
          */
         StringDictionary.prototype.getOrAdd = function (key, val) {
-            var val = this.get(key);
-            if (val !== undefined) {
-                return val;
+            var curVal = this.get(key);
+            if (curVal !== undefined) {
+                return curVal;
             }
             this.add(key, val);
             return val;
@@ -75,6 +75,13 @@ var BABYLON;
             }
             this._data[key] = value;
             ++this._count;
+            return true;
+        };
+        StringDictionary.prototype.set = function (key, value) {
+            if (this._data[key] === undefined) {
+                return false;
+            }
+            this._data[key] = value;
             return true;
         };
         /**
@@ -132,6 +139,6 @@ var BABYLON;
             return null;
         };
         return StringDictionary;
-    }());
+    })();
     BABYLON.StringDictionary = StringDictionary;
 })(BABYLON || (BABYLON = {}));

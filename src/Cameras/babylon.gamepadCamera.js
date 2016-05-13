@@ -46,6 +46,6 @@ var BABYLON;
             return "GamepadCamera";
         };
         return GamepadCamera;
-    }(BABYLON.UniversalCamera));
+    })(BABYLON.UniversalCamera);
     BABYLON.GamepadCamera = GamepadCamera;
 })(BABYLON || (BABYLON = {}));
