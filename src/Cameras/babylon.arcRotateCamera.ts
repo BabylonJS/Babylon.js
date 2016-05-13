@@ -321,7 +321,10 @@
                 if (!this.panningAxis.y) {
                     this._transformedDirection.y = 0;
                 }
-                this.target.addInPlace(this._transformedDirection);
+
+                if (!(<any>this.target).getAbsolutePosition) {
+                    this.target.addInPlace(this._transformedDirection);
+                }                
             }
 
             // Limits

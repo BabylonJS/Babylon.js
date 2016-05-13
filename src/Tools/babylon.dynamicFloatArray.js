@@ -4,7 +4,7 @@ var BABYLON;
         function DynamicFloatArrayElementInfo() {
         }
         return DynamicFloatArrayElementInfo;
-    }());
+    })();
     BABYLON.DynamicFloatArrayElementInfo = DynamicFloatArrayElementInfo;
     /**
     * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
@@ -87,9 +87,13 @@ var BABYLON;
             var sortedAll = this._allEntries.sort(function (a, b) { return a.offset - b.offset; });
             var firstFreeSlotOffset = sortedFree[0].offset;
             var freeZoneSize = 1;
-            // The sortedFree array is sorted in reverse, first free at the end, last free at the beginning, so we loop from the end to beginning
+            var occupiedZoneSize = this.usedElementCount * s;
             var prevOffset = sortedFree[0].offset;
             for (var i = 1; i < sortedFree.length; i++) {
+                // If the first free (which means everything before is occupied) is greater or equal the occupied zone size, it means everything is defragmented, we can quit
+                if (firstFreeSlotOffset >= occupiedZoneSize) {
+                    break;
+                }
                 var curFree = sortedFree[i];
                 var curOffset = curFree.offset;
                 // Compute the distance between this offset and the previous
@@ -114,7 +118,7 @@ var BABYLON;
                     var moveEl = sortedAll[curI];
                     this._moveElement(moveEl, firstFreeSlotOffset);
                     var replacedEl = sortedAll[freeI];
-                    // set the offset of the element element we replace with a value that will make it discard at the end of the method
+                    // set the offset of the element we replaced with a value that will make it discard at the end of the method
                     replacedEl.offset = curMoveOffset;
                     // Swap the element we moved and the one it replaced in the sorted array to reflect the action we've made
                     sortedAll[freeI] = moveEl;
@@ -124,7 +128,7 @@ var BABYLON;
                 }
                 // Free Zone is smaller or equal so it's no longer a free zone, set the new one to the current location
                 if (freeZoneSize <= usedRange) {
-                    firstFreeSlotOffset = curOffset;
+                    firstFreeSlotOffset = curMoveOffset + s;
                     freeZoneSize = 1;
                 }
                 else {
@@ -149,18 +153,18 @@ var BABYLON;
         };
         DynamicFloatArray.prototype._growBuffer = function () {
             // Allocate the new buffer with 50% more entries, copy the content of the current one
-            var newElCount = this.totalElementCount * 1.5;
+            var newElCount = Math.floor(this.totalElementCount * 1.5);
             var newBuffer = new Float32Array(newElCount * this._stride);
             newBuffer.set(this.buffer);
+            var curCount = this.totalElementCount;
             var addedCount = newElCount - this.totalElementCount;
-            this._allEntries.length += addedCount;
-            this._freeEntries.length += addedCount;
-            for (var i = this.totalElementCount; i < newElCount; i++) {
-                var el = new DynamicFloatArrayElementInfo();
-                el.offset = i * this._stride;
-                this._allEntries[i] = el;
-                this._freeEntries[i] = el;
+            for (var i = 0; i < addedCount; i++) {
+                var element = new DynamicFloatArrayElementInfo();
+                element.offset = (curCount + i) * this.stride;
+                this._allEntries.push(element);
+                this._freeEntries[addedCount - i - 1] = element;
             }
+            this._firstFree = curCount * this.stride;
             this.buffer = newBuffer;
         };
         Object.defineProperty(DynamicFloatArray.prototype, "totalElementCount", {
@@ -208,6 +212,6 @@ var BABYLON;
             configurable: true
         });
         return DynamicFloatArray;
-    }());
+    })();
     BABYLON.DynamicFloatArray = DynamicFloatArray;
 })(BABYLON || (BABYLON = {}));

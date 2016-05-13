@@ -53,17 +53,13 @@ var BABYLON;
                 var pp = postProcesses[index];
                 var effect = pp.apply();
                 if (effect) {
-                    if (pp.onBeforeRender) {
-                        pp.onBeforeRender(effect);
-                    }
+                    pp.onBeforeRenderObservable.notifyObservers(effect);
                     // VBOs
                     this._prepareBuffers();
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
                     // Draw order
                     engine.draw(true, 0, 6);
-                    if (pp.onAfterRender) {
-                        pp.onAfterRender(effect);
-                    }
+                    pp.onAfterRenderObservable.notifyObservers(effect);
                 }
             }
             // Restore depth buffer
@@ -94,17 +90,13 @@ var BABYLON;
                 var pp = postProcesses[index];
                 var effect = pp.apply();
                 if (effect) {
-                    if (pp.onBeforeRender) {
-                        pp.onBeforeRender(effect);
-                    }
+                    pp.onBeforeRenderObservable.notifyObservers(effect);
                     // VBOs
                     this._prepareBuffers();
                     engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
                     // Draw order
                     engine.draw(true, 0, 6);
-                    if (pp.onAfterRender) {
-                        pp.onAfterRender(effect);
-                    }
+                    pp.onAfterRenderObservable.notifyObservers(effect);
                 }
             }
             // Restore depth buffer
@@ -122,6 +114,6 @@ var BABYLON;
             }
         };
         return PostProcessManager;
-    }());
+    })();
     BABYLON.PostProcessManager = PostProcessManager;
 })(BABYLON || (BABYLON = {}));

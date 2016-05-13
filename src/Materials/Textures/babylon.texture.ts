@@ -44,6 +44,10 @@
         @serialize()
         public wAng = 0;
 
+        get noMipmap(): boolean {
+            return this._noMipmap;
+        }
+
         private _noMipmap: boolean;
         public _invertY: boolean;
         private _rowGenerationMatrix: Matrix;
@@ -126,6 +130,7 @@
                 return;
             }
 
+            this._samplingMode = samplingMode;
             this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         }
 

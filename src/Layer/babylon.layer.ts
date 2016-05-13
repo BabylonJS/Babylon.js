@@ -5,9 +5,6 @@
         public color: Color4;
         public scale = new Vector2(1, 1);
         public offset = new Vector2(0, 0);
-        public onDispose: () => void;
-        public onBeforeRender: () => void;
-        public onAfterRender: () => void;
         public alphaBlendingMode = Engine.ALPHA_COMBINE;
         public alphaTest: boolean;
 
@@ -18,6 +15,51 @@
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
         private _alphaTestEffect: Effect;
+
+
+        // Events
+
+        /**
+        * An event triggered when the layer is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Layer>();
+
+        private _onDisposeObserver: Observer<Layer>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        /**
+        * An event triggered before rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeRenderObservable = new Observable<Layer>();
+
+        private _onBeforeRenderObserver: Observer<Layer>;
+        public set onBeforeRender(callback: () => void) {
+            if (this._onBeforeRenderObserver) {
+                this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            }
+            this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        public onAfterRenderObservable = new Observable<Layer>();
+
+        private _onAfterRenderObserver: Observer<Layer>;
+        public set onAfterRender(callback: () => void) {
+            if (this._onAfterRenderObserver) {
+                this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+            }
+            this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+        }
 
         constructor(public name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4) {
             this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
@@ -69,9 +111,7 @@
 
             var engine = this._scene.getEngine();
 
-            if (this.onBeforeRender) {
-                this.onBeforeRender();
-            }
+            this.onBeforeRenderObservable.notifyObservers(this);
 
             // Render
             engine.enableEffect(currentEffect);
@@ -102,9 +142,7 @@
                 engine.draw(true, 0, 6);
             }
 
-            if (this.onAfterRender) {
-                this.onAfterRender();
-            }
+            this.onAfterRenderObservable.notifyObservers(this);
         }
 
         public dispose(): void {
@@ -128,9 +166,11 @@
             this._scene.layers.splice(index, 1);
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+
+            this.onDisposeObservable.clear();
+            this.onAfterRenderObservable.clear();
+            this.onBeforeRenderObservable.clear();
         }
     }
 } 

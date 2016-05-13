@@ -18,7 +18,7 @@
 
             this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, Engine.TEXTURETYPE_UNSIGNED_INT, true);
 
-            this._renderTargetTexture.onBeforeRender = (faceIndex: number) => {
+            this._renderTargetTexture.onBeforeRenderObservable.add((faceIndex: number) => {
                 switch (faceIndex) {
                     case 0:
                         this._add.copyFromFloats(1, 0, 0);
@@ -50,11 +50,11 @@
                 Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
                 scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
-            }
+            });
 
-            this._renderTargetTexture.onAfterUnbind = () => {
+            this._renderTargetTexture.onAfterUnbindObservable.add(() => {
                 scene.updateTransformMatrix(true);
-            }
+            });
 
             this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
         }

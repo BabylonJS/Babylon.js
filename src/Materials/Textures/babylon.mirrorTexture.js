@@ -13,7 +13,7 @@ var BABYLON;
             this.mirrorPlane = new BABYLON.Plane(0, 1, 0, 1);
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._mirrorMatrix = BABYLON.Matrix.Zero();
-            this.onBeforeRender = function () {
+            this.onBeforeRenderObservable.add(function () {
                 BABYLON.Matrix.ReflectionToRef(_this.mirrorPlane, _this._mirrorMatrix);
                 _this._savedViewMatrix = scene.getViewMatrix();
                 _this._mirrorMatrix.multiplyToRef(_this._savedViewMatrix, _this._transformMatrix);
@@ -21,13 +21,13 @@ var BABYLON;
                 scene.clipPlane = _this.mirrorPlane;
                 scene.getEngine().cullBackFaces = false;
                 scene._mirroredCameraPosition = BABYLON.Vector3.TransformCoordinates(scene.activeCamera.position, _this._mirrorMatrix);
-            };
-            this.onAfterRender = function () {
+            });
+            this.onAfterRenderObservable.add(function () {
                 scene.setTransformMatrix(_this._savedViewMatrix, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = true;
                 scene._mirroredCameraPosition = null;
                 delete scene.clipPlane;
-            };
+            });
         }
         MirrorTexture.prototype.clone = function () {
             var textureSize = this.getSize();
@@ -49,6 +49,6 @@ var BABYLON;
             return serializationObject;
         };
         return MirrorTexture;
-    }(BABYLON.RenderTargetTexture));
+    })(BABYLON.RenderTargetTexture);
     BABYLON.MirrorTexture = MirrorTexture;
 })(BABYLON || (BABYLON = {}));

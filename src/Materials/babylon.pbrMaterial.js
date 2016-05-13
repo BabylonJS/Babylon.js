@@ -77,7 +77,7 @@ var BABYLON;
             this.rebuild();
         }
         return PBRMaterialDefines;
-    }(BABYLON.MaterialDefines));
+    })(BABYLON.MaterialDefines);
     /**
      * The Physically based material of BJS.
      *
@@ -1236,6 +1236,6 @@ var BABYLON;
             BABYLON.serialize()
         ], PBRMaterial.prototype, "useLogarithmicDepth", null);
         return PBRMaterial;
-    }(BABYLON.Material));
+    })(BABYLON.Material);
     BABYLON.PBRMaterial = PBRMaterial;
 })(BABYLON || (BABYLON = {}));

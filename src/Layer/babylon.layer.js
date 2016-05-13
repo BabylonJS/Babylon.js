@@ -8,6 +8,22 @@ var BABYLON;
             this.alphaBlendingMode = BABYLON.Engine.ALPHA_COMBINE;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
+            // Events
+            /**
+            * An event triggered when the layer is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
+            /**
+            * An event triggered before rendering the scene
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after rendering the scene
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterRenderObservable = new BABYLON.Observable();
             this.texture = imgUrl ? new BABYLON.Texture(imgUrl, scene, true) : null;
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new BABYLON.Color4(1, 1, 1, 1) : color;
@@ -33,15 +49,43 @@ var BABYLON;
             this._effect = this._scene.getEngine().createEffect("layer", ["position"], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], "");
             this._alphaTestEffect = this._scene.getEngine().createEffect("layer", ["position"], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], "#define ALPHATEST");
         }
+        Object.defineProperty(Layer.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Layer.prototype, "onBeforeRender", {
+            set: function (callback) {
+                if (this._onBeforeRenderObserver) {
+                    this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+                }
+                this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Layer.prototype, "onAfterRender", {
+            set: function (callback) {
+                if (this._onAfterRenderObserver) {
+                    this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+                }
+                this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Layer.prototype.render = function () {
             var currentEffect = this.alphaTest ? this._alphaTestEffect : this._effect;
             // Check
             if (!currentEffect.isReady() || !this.texture || !this.texture.isReady())
                 return;
             var engine = this._scene.getEngine();
-            if (this.onBeforeRender) {
-                this.onBeforeRender();
-            }
+            this.onBeforeRenderObservable.notifyObservers(this);
             // Render
             engine.enableEffect(currentEffect);
             engine.setState(false);
@@ -64,9 +108,7 @@ var BABYLON;
             else {
                 engine.draw(true, 0, 6);
             }
-            if (this.onAfterRender) {
-                this.onAfterRender();
-            }
+            this.onAfterRenderObservable.notifyObservers(this);
         };
         Layer.prototype.dispose = function () {
             if (this._vertexBuffer) {
@@ -85,11 +127,12 @@ var BABYLON;
             var index = this._scene.layers.indexOf(this);
             this._scene.layers.splice(index, 1);
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
+            this.onAfterRenderObservable.clear();
+            this.onBeforeRenderObservable.clear();
         };
         return Layer;
-    }());
+    })();
     BABYLON.Layer = Layer;
 })(BABYLON || (BABYLON = {}));

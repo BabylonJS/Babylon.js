@@ -84,7 +84,7 @@ var BABYLON;
                 }
                 _this.onActivate = null;
             };
-            this.onApply = function (effect) {
+            this.onApplyObservable.add(function (effect) {
                 _this._updateMeshScreenCoordinates(scene);
                 effect.setTexture("lightScatteringSampler", _this._volumetricLightScatteringRTT);
                 effect.setFloat("exposure", _this.exposure);
@@ -92,7 +92,7 @@ var BABYLON;
                 effect.setFloat("weight", _this.weight);
                 effect.setFloat("density", _this.density);
                 effect.setVector2("meshPositionOnScreen", _this._screenCoordinates);
-            };
+            });
         }
         Object.defineProperty(VolumetricLightScatteringPostProcess.prototype, "useDiffuseColor", {
             get: function () {
@@ -252,13 +252,13 @@ var BABYLON;
             // Render target texture callbacks
             var savedSceneClearColor;
             var sceneClearColor = new BABYLON.Color4(0.0, 0.0, 0.0, 1.0);
-            this._volumetricLightScatteringRTT.onBeforeRender = function () {
+            this._volumetricLightScatteringRTT.onBeforeRenderObservable.add(function () {
                 savedSceneClearColor = scene.clearColor;
                 scene.clearColor = sceneClearColor;
-            };
-            this._volumetricLightScatteringRTT.onAfterRender = function () {
+            });
+            this._volumetricLightScatteringRTT.onAfterRenderObservable.add(function () {
                 scene.clearColor = savedSceneClearColor;
-            };
+            });
             this._volumetricLightScatteringRTT.customRenderFunction = function (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes) {
                 var engine = scene.getEngine();
                 var index;
@@ -365,6 +365,6 @@ var BABYLON;
             BABYLON.serialize()
         ], VolumetricLightScatteringPostProcess.prototype, "density", void 0);
         return VolumetricLightScatteringPostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.VolumetricLightScatteringPostProcess = VolumetricLightScatteringPostProcess;
 })(BABYLON || (BABYLON = {}));
