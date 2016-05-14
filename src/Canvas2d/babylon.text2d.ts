@@ -287,10 +287,11 @@
                 let d = <Text2DInstanceData>part;
                 let texture = this.fontTexture;
                 let ts = texture.getSize();
-
+                let textSize = texture.measureText(this.text, this._tabulationSize);
                 let offset = Vector2.Zero();
                 let charxpos = 0;
                 d.curElement = 0;
+                let customOrigin = Vector2.Zero();
                 for (let char of this.text) {
 
                     // Line feed
@@ -313,7 +314,7 @@
                         continue;
                     }
 
-                    this.updateInstanceDataPart(d, offset);
+                    this.updateInstanceDataPart(d, offset, textSize);
 
                     let ci = texture.getChar(char);
                     offset.x += ci.charWidth;
