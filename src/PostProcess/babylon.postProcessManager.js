@@ -114,6 +114,6 @@ var BABYLON;
             }
         };
         return PostProcessManager;
-    })();
+    }());
     BABYLON.PostProcessManager = PostProcessManager;
 })(BABYLON || (BABYLON = {}));
