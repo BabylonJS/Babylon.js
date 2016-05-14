@@ -25,7 +25,7 @@
      */
     export interface IBrush2D extends ILockable {
         /**
-         * Define if the brush will use transparency/alphablending
+         * Define if the brush will use transparency / alpha blending
          * @returns true if the brush use transparency
          */
         isTransparent(): boolean;
@@ -38,7 +38,7 @@
     }
 
     /**
-     * Base class implemting the ILocable interface.
+     * Base class implementing the ILocable interface.
      * The particularity of this class is to call the protected onLock() method when the instance is about to be locked for good.
      */
     export class LockableBase implements ILockable {
@@ -67,7 +67,7 @@
     }
 
     /**
-     * This classs implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
+     * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
      */
     @className("SolidColorBrush2D")
     export class SolidColorBrush2D extends LockableBase implements IBrush2D {
