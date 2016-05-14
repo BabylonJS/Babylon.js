@@ -20,6 +20,6 @@ var BABYLON;
             });
         }
         return BlurPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.BlurPostProcess = BlurPostProcess;
 })(BABYLON || (BABYLON = {}));

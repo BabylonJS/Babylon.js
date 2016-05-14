@@ -15,7 +15,7 @@ var BABYLON;
         function Render2DContext() {
         }
         return Render2DContext;
-    })();
+    }());
     BABYLON.Render2DContext = Render2DContext;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -123,7 +123,7 @@ var BABYLON;
              * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
              * For instance:
              * 0,0 means the center is top/left
-             * 0.5,0.5 means the center is at the center of the primtive
+             * 0.5,0.5 means the center is at the center of the primitive
              * 0,1 means the center is bottom/left
              * @returns The normalized center.
              */
@@ -306,8 +306,8 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype.updateGlobalTransVisOf = function (list, recurse) {
-            for (var _i = 0; _i < list.length; _i++) {
-                var cur = list[_i];
+            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+                var cur = list_1[_i];
                 cur.updateGlobalTransVis(recurse);
             }
         };
@@ -372,6 +372,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    })(BABYLON.SmartPropertyPrim);
+    }(BABYLON.SmartPropertyPrim));
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

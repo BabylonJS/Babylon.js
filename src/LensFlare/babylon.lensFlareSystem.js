@@ -208,6 +208,6 @@ var BABYLON;
             return serializationObject;
         };
         return LensFlareSystem;
-    })();
+    }());
     BABYLON.LensFlareSystem = LensFlareSystem;
 })(BABYLON || (BABYLON = {}));
