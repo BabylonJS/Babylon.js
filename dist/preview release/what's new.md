@@ -1,5 +1,5 @@
 - 2.4.0:
-  - **Major updates**
+  - **Major updates**    
     - New refraction channel for Standard material (including fresnel support). Refraction texture can be provided by a reflection probe or a refraction texture. [See demo here](http://www.babylonjs.com/Demos/refraction/) ([deltakosh](https://github.com/deltakosh))
     - Added support for HDR cubemaps ([sebavan](https://github.com/sebavan))
     - Support for shaders includes ([deltakosh](https://github.com/deltakosh))
@@ -15,7 +15,7 @@
     - Unity3D exporter: Added support for export and run (local webserver) ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
     - Moved PBR Material to core ([deltakosh](https://github.com/deltakosh))
     - StandardMaterial.maxSimultaneousLights can define how many dynamic lights the material can handle ([deltakosh](https://github.com/deltakosh))
-	- Introduced Canvas2D feature: a 2D engine to render primitives, sprites in 2D, text. Canvas2D can be displayed in Screen Space (above the 3D scene) or in World Space to be a part of the Scene. [overview](http://doc.babylonjs.com/overviews/Using_The_Canvas2D), [tutorial](http://doc.babylonjs.com/tutorials/Using_the_Canvas2D) ([nockawa](https://github.com/nockawa))	
+	  - Introduced Canvas2D feature: a 2D engine to render primitives, sprites in 2D, text. Canvas2D can be displayed in Screen Space (above the 3D scene) or in World Space to be a part of the Scene. [overview](http://doc.babylonjs.com/overviews/Using_The_Canvas2D), [tutorial](http://doc.babylonjs.com/tutorials/Using_the_Canvas2D) ([nockawa](https://github.com/nockawa))	
   - **Updates**
     - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
     - Enabled other post processes to be used when also using a 3D Rig ([jcpalmer](https://github.com/Palmer-JC))
@@ -39,6 +39,7 @@
 	  - Added DynamicFloatArray class to store float32 based elements of a given size (stride) into one big Float32Array, with allocation/free/pack operations to then access an optimal buffer that can be used to update a WebGLBuffer dynamically. ([nockawa](https://github.com/nockawa))
 	  - Scene.onPointerObservable property added to enable a unique Observable event for user input (see ArcRotateCamera inputs for examples) ([nockawa](https://github.com/nockawa))
   - **Exporters**
+    - Unity exporter now support skeletons ([sebavan](https://github.com/sebavan))
     - Support for 3dsmax 2017 ([deltakosh](https://github.com/deltakosh))
     - Added support for up to 8 bones influences per vertex for 3dsmax exporter ([deltakosh](https://github.com/deltakosh))
     - Added console logging for .babylon file loading ([jcpalmer](https://github.com/Palmer-JC))

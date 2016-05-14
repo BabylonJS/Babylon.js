@@ -39,7 +39,7 @@ var BABYLON;
                 var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
                 if (instanceInfo._owner.owner.supportInstancedArray) {
                     if (!this.instancingFillAttributes) {
-                        // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+                        // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
                         this.instancingFillAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
                     }
                     engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
@@ -112,7 +112,7 @@ var BABYLON;
             return true;
         };
         return Rectangle2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Rectangle2DRenderCache = Rectangle2DRenderCache;
     var Rectangle2DInstanceData = (function (_super) {
         __extends(Rectangle2DInstanceData, _super);
@@ -130,7 +130,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Rectangle2DInstanceData.prototype, "properties", null);
         return Rectangle2DInstanceData;
-    })(BABYLON.Shape2DInstanceData);
+    }(BABYLON.Shape2DInstanceData));
     BABYLON.Rectangle2DInstanceData = Rectangle2DInstanceData;
     var Rectangle2D = (function (_super) {
         __extends(Rectangle2D, _super);
@@ -203,7 +203,7 @@ var BABYLON;
         Rectangle2D.prototype.setupModelRenderCache = function (modelRenderCache) {
             var renderCache = modelRenderCache;
             var engine = this.owner.engine;
-            // Need to create webgl resources for fill part?
+            // Need to create WebGL resources for fill part?
             if (this.fill) {
                 var vbSize = ((this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4) + 1;
                 var vb = new Float32Array(vbSize);
@@ -226,7 +226,7 @@ var BABYLON;
                     //                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_FILLPARTID);
                 });
             }
-            // Need to create webgl resource for border part?
+            // Need to create WebGL resource for border part?
             if (this.border) {
                 var vbSize = (this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4 * 2;
                 var vb = new Float32Array(vbSize);
@@ -296,6 +296,6 @@ var BABYLON;
             BABYLON.className("Rectangle2D")
         ], Rectangle2D);
         return Rectangle2D;
-    })(BABYLON.Shape2D);
+    }(BABYLON.Shape2D));
     BABYLON.Rectangle2D = Rectangle2D;
 })(BABYLON || (BABYLON = {}));

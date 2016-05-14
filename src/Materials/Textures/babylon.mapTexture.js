@@ -38,7 +38,7 @@ var BABYLON;
         };
         Object.defineProperty(MapTexture.prototype, "freeSpace", {
             /**
-             * Return the avaible space in the range of [O;1]. 0 being not space left at all, 1 being an empty texture map.
+             * Return the available space in the range of [O;1]. 0 being not space left at all, 1 being an empty texture map.
              * This is the cumulated space, not the biggest available surface. Due to fragmentation you may not allocate a rect corresponding to this surface.
              * @returns {}
              */
@@ -53,13 +53,42 @@ var BABYLON;
          * Use this method when you want to render into the texture map with a clipspace set to the location and size of the given rect.
          * Don't forget to call unbindTexture when you're done rendering
          * @param rect the zone to render to
+         * @param clear true to clear the portion's color/depth data
          */
         MapTexture.prototype.bindTextureForRect = function (rect, clear) {
+            return this.bindTextureForPosSize(rect.pos, rect.contentSize, clear);
+        };
+        /**
+         * Bind the texture to the rendering engine to render in the zone of the given size at the given position.
+         * Use this method when you want to render into the texture map with a clipspace set to the location and size of the given rect.
+         * Don't forget to call unbindTexture when you're done rendering
+         * @param pos the position into the texture
+         * @param size the portion to fit the clip space to
+         * @param clear true to clear the portion's color/depth data
+         */
+        MapTexture.prototype.bindTextureForPosSize = function (pos, size, clear) {
             var engine = this.getScene().getEngine();
             engine.bindFramebuffer(this._texture);
-            this._replacedViewport = engine.setDirectViewport(rect.pos.x, rect.pos.y, rect.contentSize.width, rect.contentSize.height);
+            this._replacedViewport = engine.setDirectViewport(pos.x, pos.y, size.width, size.height);
             if (clear) {
+                var gl = engine._gl;
+                // We only want to clear the part of the texture we're binding to, only the scissor can help us to achieve that
+                // Save state
+                var curScissor = gl.getParameter(gl.SCISSOR_TEST);
+                var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
+                // Change state
+                gl.enable(gl.SCISSOR_TEST);
+                gl.scissor(pos.x, pos.y, size.width, size.height);
+                // Clear
                 engine.clear(new BABYLON.Color4(0, 0, 0, 0), true, true);
+                // Restore state
+                gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
+                if (curScissor === true) {
+                    gl.enable(gl.SCISSOR_TEST);
+                }
+                else {
+                    gl.disable(gl.SCISSOR_TEST);
+                }
             }
         };
         /**
@@ -86,12 +115,12 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        // Note, I don't know what behevior this method should have: clone the underlying texture/rectPackingMap or just reference them?
+        // Note, I don't know what behavior this method should have: clone the underlying texture/rectPackingMap or just reference them?
         // Anyway, there's not much point to use this method for this kind of texture I guess
         MapTexture.prototype.clone = function () {
             return null;
         };
         return MapTexture;
-    })(BABYLON.Texture);
+    }(BABYLON.Texture));
     BABYLON.MapTexture = MapTexture;
 })(BABYLON || (BABYLON = {}));

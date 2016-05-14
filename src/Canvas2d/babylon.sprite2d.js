@@ -21,7 +21,7 @@ var BABYLON;
             if (!this.effect.isReady() || !this.texture.isReady()) {
                 return false;
             }
-            // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+            // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
             var engine = instanceInfo._owner.owner.engine;
             engine.enableEffect(this.effect);
             this.effect.setTexture("diffuseSampler", this.texture);
@@ -69,7 +69,7 @@ var BABYLON;
             return true;
         };
         return Sprite2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -127,7 +127,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "invertY", null);
         return Sprite2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -205,6 +205,11 @@ var BABYLON;
             sprite.setupSprite2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), texture, spriteSize, spriteLocation, invertY);
             return sprite;
         };
+        Sprite2D._createCachedCanvasSprite = function (owner, texture, size, pos) {
+            var sprite = new Sprite2D();
+            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new BABYLON.Vector2(0, 0), texture, size, pos, false);
+            return sprite;
+        };
         Sprite2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
             var renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
@@ -273,6 +278,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));
