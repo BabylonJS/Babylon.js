@@ -10,7 +10,7 @@ var BABYLON;
         function Prim2DClassInfo() {
         }
         return Prim2DClassInfo;
-    })();
+    }());
     BABYLON.Prim2DClassInfo = Prim2DClassInfo;
     var Prim2DPropInfo = (function () {
         function Prim2DPropInfo() {
@@ -19,13 +19,13 @@ var BABYLON;
         Prim2DPropInfo.PROPKIND_INSTANCE = 2;
         Prim2DPropInfo.PROPKIND_DYNAMIC = 3;
         return Prim2DPropInfo;
-    })();
+    }());
     BABYLON.Prim2DPropInfo = Prim2DPropInfo;
     var PropertyChangedInfo = (function () {
         function PropertyChangedInfo() {
         }
         return PropertyChangedInfo;
-    })();
+    }());
     BABYLON.PropertyChangedInfo = PropertyChangedInfo;
     var ClassTreeInfo = (function () {
         function ClassTreeInfo(baseClass, type, classContentFactory) {
@@ -62,13 +62,13 @@ var BABYLON;
         Object.defineProperty(ClassTreeInfo.prototype, "fullContent", {
             get: function () {
                 if (!this._fullContent) {
-                    var dic = new BABYLON.StringDictionary();
+                    var dic_1 = new BABYLON.StringDictionary();
                     var curLevel = this;
                     while (curLevel) {
-                        curLevel.levelContent.forEach(function (k, v) { return dic.add(k, v); });
+                        curLevel.levelContent.forEach(function (k, v) { return dic_1.add(k, v); });
                         curLevel = curLevel._baseClass;
                     }
-                    this._fullContent = dic;
+                    this._fullContent = dic_1;
                 }
                 return this._fullContent;
             },
@@ -128,7 +128,7 @@ var BABYLON;
             return dic;
         };
         return ClassTreeInfo;
-    })();
+    }());
     BABYLON.ClassTreeInfo = ClassTreeInfo;
     var SmartPropertyPrim = (function () {
         function SmartPropertyPrim() {
@@ -217,7 +217,7 @@ var BABYLON;
             return propInfo;
         };
         SmartPropertyPrim._checkUnchanged = function (curValue, newValue) {
-            // Nothing to nothing: nothign to do!
+            // Nothing to nothing: nothing to do!
             if ((curValue === null && newValue === null) || (curValue === undefined && newValue === undefined)) {
                 return true;
             }
@@ -237,7 +237,7 @@ var BABYLON;
             return false;
         };
         SmartPropertyPrim.prototype._handlePropChanged = function (curValue, newValue, propName, propInfo, typeLevelCompare) {
-            // Trigger propery changed
+            // Trigger property changed
             var info = SmartPropertyPrim.propChangedInfo;
             info.oldValue = curValue;
             info.newValue = newValue;
@@ -319,7 +319,7 @@ var BABYLON;
                     // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
                     if (propInfo.dirtyBoundingInfo) {
                         prim._levelBoundingInfoDirty = true;
-                        // Escalade the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
+                        // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
                         if (prim instanceof BABYLON.Prim2DBase) {
                             var curprim = prim.parent;
                             while (curprim) {
@@ -343,7 +343,7 @@ var BABYLON;
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);
         return SmartPropertyPrim;
-    })();
+    }());
     BABYLON.SmartPropertyPrim = SmartPropertyPrim;
     function modelLevelProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo) {
         if (typeLevelCompare === void 0) { typeLevelCompare = false; }
