@@ -30,7 +30,8 @@
         /**
          * In this strategy each group will have its own cache bitmap (except if a given group explicitly defines the DONTCACHEOVERRIDE or CACHEINPARENTGROUP behaviors).
          * This strategy is typically used if the canvas has some groups that are frequently animated. Unchanged ones will have a steady cache and the others will be refreshed when they change, reducing the redraw operation count to their content only.
-         * When using this strategy, group instances can rely on the DONTCACHEOVERRIDE or CACHEINPARENTGROUP behaviors to minize the amount of cached bitmaps.
+         * When using this strategy, group instances can rely on the DONTCACHEOVERRIDE or CACHEINPARENTGROUP behaviors to minimize the amount of cached bitmaps.
+         * Note that in this mode the Canvas itself is not cached, it only contains the sprites of its direct children group to render, there's no point to cache the whole canvas, sprites will be rendered pretty efficiently, the memory cost would be too great for the value of it.
          */
         public static CACHESTRATEGY_ALLGROUPS = 2;
 
@@ -40,7 +41,7 @@
         public static CACHESTRATEGY_CANVAS = 3;
 
         /**
-         * This strategy is used to recompose/redraw the canvas entierely at each viewport render.
+         * This strategy is used to recompose/redraw the canvas entirely at each viewport render.
          * Use this strategy if memory is a concern above rendering performances and/or if the canvas is frequently animated (hence reducing the benefits of caching).
          * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
          */
@@ -50,11 +51,11 @@
          * Create a new 2D ScreenSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a position relative to the top/left corner of the screen.
          * ScreenSpace Canvas will be drawn in the Viewport as a 2D Layer lying to the top of the 3D Scene. Typically used for traditional UI.
          * All caching strategies will be available.
-         * @param engine
-         * @param name
-         * @param pos
-         * @param size
-         * @param cachingStrategy
+         * @param scene the Scene that owns the Canvas
+         * @param name the name of the Canvas, for information purpose only
+         * @param pos the position of the canvas, relative from the bottom/left of the scene's viewport
+         * @param size the Size of the canvas. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
+         * @param cachingStrategy either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information.
          */
         static CreateScreenSpace(scene: Scene, name: string, pos: Vector2, size: Size, cachingStrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS): Canvas2D {
             let c = new Canvas2D();
@@ -64,9 +65,20 @@
             return c;
         }
 
+
         /**
-         * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation matrix to place it in the world space.
-         * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. All remaining strategies are supported.
+         * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation information to place it in the world space.
+         * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. For now only CACHESTRATEGY_CANVAS is supported, but the remaining strategies will be soon.
+         * @param scene the Scene that owns the Canvas
+         * @param name the name of the Canvas, for information purpose only
+         * @param position the position of the Canvas in World Space
+         * @param rotation the rotation of the Canvas in World Space
+         * @param size the dimension of the Canvas in World Space
+         * @param renderScaleFactor A scale factor applied to create the rendering texture that will be mapped in the Scene Rectangle. If you set 2 for instance the texture will be twice large in width and height. A greater value will allow to achieve a better rendering quality.
+         * BE AWARE that the Canvas true dimension will be size*renderScaleFactor, then all coordinates and size will have to be express regarding this size.
+         * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
+         * @param sideOrientation Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one.
+         * @param cachingStrategy Must be CACHESTRATEGY_CANVAS for now
          */
         static CreateWorldSpace(scene: Scene, name: string, position: Vector3, rotation: Quaternion, size: Size, renderScaleFactor: number=1, sideOrientation?: number, cachingStrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS): Canvas2D {
             if (cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
@@ -76,6 +88,10 @@
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
+
+            if (!sideOrientation) {
+                sideOrientation = Mesh.DEFAULTSIDE;
+            }
 
             let c = new Canvas2D();
             c.setupCanvas(scene, name, new Size(size.width*renderScaleFactor, size.height*renderScaleFactor), false, cachingStrategy);
@@ -93,12 +109,18 @@
             plane.position = position;
             plane.rotationQuaternion = rotation;
             plane.material = mtl;
+            c._worldSpaceNode = plane;
 
             return c;
         }
 
         protected setupCanvas(scene: Scene, name: string, size: Size, isScreenSpace: boolean = true, cachingstrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
-            this._engineData = scene.getEngine().getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
+            let engine = scene.getEngine();
+            this._fitRenderingDevice = !size;
+            if (!size) {
+                size = new Size(engine.getRenderWidth(), engine.getRenderHeight());
+            }
+            this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
             this._cachingStrategy = cachingstrategy;
             this._depthLevel = 0;
             this._hierarchyMaxDepth = 100;
@@ -106,10 +128,10 @@
             this._hierarchyLevelMaxSiblingCount = 1000;
             this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
 
-            this.setupGroup2D(this, null, name, Vector2.Zero(), size);
+            this.setupGroup2D(this, null, name, Vector2.Zero(), size, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
 
             this._scene = scene;
-            this._engine = scene.getEngine();
+            this._engine = engine;
             this._renderingSize = new Size(0, 0);
 
             // Register scene dispose to also dispose the canvas when it'll happens
@@ -127,11 +149,11 @@
             if (this._isScreeSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
                     this._engine.clear(null, false, true);
-                    this.render();
+                    this._render();
                 });
             } else {
                 this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add((d, s) => {
-                    this.render();
+                    this._render();
                 });
             }
 
@@ -139,6 +161,10 @@
 //            this._supprtInstancedArray = false; // TODO REMOVE!!!
         }
 
+        /**
+         * Don't forget to call the dispose method when you're done with the Canvas instance.
+         * But don't worry, if you dispose its scene, the canvas will be automatically disposed too.
+         */
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
@@ -185,6 +211,17 @@
             return this._cachingStrategy;
         }
 
+        /**
+         * Only valid for World Space Canvas, returns the scene node that display the canvas
+         */
+        public get worldSpaceCanvasNode(): WorldSpaceCanvas2d {
+            return this._worldSpaceNode;
+        }
+
+        /**
+         * Check if the WebGL Instanced Array extension is supported or not
+         * @returns {} 
+         */
         public get supportInstancedArray() {
             return this._supprtInstancedArray;
         }
@@ -234,6 +271,10 @@
             this._background.levelVisible = true;
         }
 
+        /**
+         * You can set the roundRadius of the background
+         * @returns The current roundRadius
+         */
         public get backgroundRoundRadius(): number {
             if (!this._background || !this._background.isVisible) {
                 return null;
@@ -252,8 +293,8 @@
             this._background.levelVisible = true;
         }
 
-        public get engineData(): Canvas2DEngineBoundData {
-            return this._engineData;
+        public get _engineData(): Canvas2DEngineBoundData {
+            return this.__engineData;
         }
 
         private checkBackgroundAvailability() {
@@ -272,16 +313,23 @@
             return this._hierarchySiblingZDelta;
         }
 
+        /**
+         * Return the Z Factor that will be applied for each new hierarchy level.
+         * @returns The Z Factor
+         */
         public get hierarchyLevelZFactor(): number {
             return this._hierarchyLevelZFactor;
         }
 
-        private _engineData: Canvas2DEngineBoundData;
+        private __engineData: Canvas2DEngineBoundData;
+        private _worldSpaceNode: WorldSpaceCanvas2d;
         private _mapCounter = 0;
         private _background: Rectangle2D;
         private _scene: Scene;
         private _engine: Engine;
+        private _fitRenderingDevice: boolean;
         private _isScreeSpace: boolean;
+        private _cachedCanvasGroup: Group2D;
         private _cachingStrategy: number;
         private _hierarchyMaxDepth: number;
         private _hierarchyLevelZFactor: number;
@@ -295,12 +343,18 @@
         public _renderingSize: Size;
 
         /**
-         * Method that renders the Canvas
-         * @param camera the current camera.
+         * Method that renders the Canvas, you should not invoke
          */
-        public render() {
+        private _render() {
             this._renderingSize.width = this.engine.getRenderWidth();
             this._renderingSize.height = this.engine.getRenderHeight();
+
+            if (this._fitRenderingDevice) {
+                this.size = this._renderingSize;
+                if (this._background) {
+                    this._background.size = this.size;
+                }
+            }
 
             var context = new Render2DContext();
             context.forceRefreshPrimitive = false;
@@ -310,18 +364,28 @@
 
             this._prepareGroupRender(context);
             this._groupRender(context);
+
+            // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
+            if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
+                this._cachedCanvasGroup._renderCachedCanvas(context);
+            }
         }
 
         /**
-         * Internal method that alloc a cache for the given group.
-         * Caching is made using a collection of MapTexture where many groups have their bitmapt cache stored inside.
+         * Internal method that allocate a cache for the given group.
+         * Caching is made using a collection of MapTexture where many groups have their bitmap cache stored inside.
          * @param group The group to allocate the cache of.
          * @return custom type with the PackedRect instance giving information about the cache location into the texture and also the MapTexture instance that stores the cache.
          */
-        public _allocateGroupCache(group: Group2D): { node: PackedRect, texture: MapTexture, sprite: Sprite2D } {
+        public _allocateGroupCache(group: Group2D, parent: Group2D, minSize?: Size): { node: PackedRect, texture: MapTexture, sprite: Sprite2D } {
             // Determine size
             let size = group.actualSize;
             size = new Size(Math.ceil(size.width), Math.ceil(size.height));
+            if (minSize) {
+                size.width  = Math.max(minSize.width, size.width);
+                size.height = Math.max(minSize.height, size.height);
+            }
+
             if (!this._groupCacheMaps) {
                 this._groupCacheMaps = new Array<MapTexture>();
             }
@@ -354,13 +418,25 @@
                 res = { node: node, texture: map }
             }
 
-            // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
+            // Check if we have to create a Sprite that will display the content of the Canvas which is cached.
             // Don't do it in case of the group being a worldspace canvas (because its texture is bound to a WorldSpaceCanvas node)
             if (group !== <any>this || this._isScreeSpace) {
                 let node: PackedRect = res.node;
-                let sprite = Sprite2D.Create(this, `__cachedSpriteOfGroup__${group.id}`, group.position.x, group.position.y, map, node.contentSize, node.pos, false);
-                sprite.origin = Vector2.Zero();
-                res.sprite = sprite;
+
+                // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
+                if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
+                    this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
+                    let sprite = Sprite2D.Create(this._cachedCanvasGroup, "__cachedCanvasSprite__", 0, 0, map, node.contentSize, node.pos);
+                    sprite.zOrder = 1;
+                    sprite.origin = Vector2.Zero();
+                }
+
+                // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
+                else {
+                    let sprite = Sprite2D.Create(parent, `__cachedSpriteOfGroup__${group.id}`, group.position.x, group.position.y, map, node.contentSize, node.pos, false);
+                    sprite.origin = Vector2.Zero();
+                    res.sprite = sprite;
+                }
             }
             return res;
         }

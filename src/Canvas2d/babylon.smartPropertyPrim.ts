@@ -220,7 +220,7 @@
         }
 
         private static _checkUnchanged(curValue, newValue): boolean {
-            // Nothing to nothing: nothign to do!
+            // Nothing to nothing: nothing to do!
             if ((curValue === null && newValue === null) || (curValue === undefined && newValue === undefined)) {
                 return true;
             }
@@ -244,7 +244,7 @@
         private static propChangedInfo = new PropertyChangedInfo();
 
         private _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean) {
-            // Trigger propery changed
+            // Trigger property changed
             let info = SmartPropertyPrim.propChangedInfo;
             info.oldValue = curValue;
             info.newValue = newValue;
@@ -343,7 +343,7 @@
                     if (propInfo.dirtyBoundingInfo) {
                         prim._levelBoundingInfoDirty = true;
 
-                        // Escalade the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
+                        // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
                         if (prim instanceof Prim2DBase) {
                             let curprim = prim.parent;
                             while (curprim) {
