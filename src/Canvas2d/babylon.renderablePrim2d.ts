@@ -539,7 +539,7 @@
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
          * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text). You MUST also set customSize.
-         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin prroperty.
+         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin property.
          */
         protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null, customSize: Size = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);

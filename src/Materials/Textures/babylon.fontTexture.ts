@@ -161,7 +161,7 @@
             let width = measure.width;
             if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeight + yMargin;      // +2 for safety marging
+                this._currentFreePosition.y += this._lineHeight + yMargin;      // +2 for safety margin
 
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
