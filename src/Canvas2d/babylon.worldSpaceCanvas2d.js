@@ -5,6 +5,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * This is the class that is used to display a World Space Canvas into a scene
+     */
     var WorldSpaceCanvas2d = (function (_super) {
         __extends(WorldSpaceCanvas2d, _super);
         function WorldSpaceCanvas2d(name, scene, canvas) {
@@ -19,6 +22,6 @@ var BABYLON;
             }
         };
         return WorldSpaceCanvas2d;
-    })(BABYLON.Mesh);
+    }(BABYLON.Mesh));
     BABYLON.WorldSpaceCanvas2d = WorldSpaceCanvas2d;
 })(BABYLON || (BABYLON = {}));
