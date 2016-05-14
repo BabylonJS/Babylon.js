@@ -73,7 +73,7 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    })();
+    }());
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
         //uniformLocation: WebGLUniformLocation;
@@ -176,7 +176,7 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    })();
+    }());
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -279,7 +279,7 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "origin", null);
         return InstanceDataBase;
-    })();
+    }());
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
@@ -334,7 +334,7 @@ var BABYLON;
                 if (this._modelRenderCache) {
                     this._modelRenderCache.dispose();
                 }
-                this._modelRenderCache = this.owner.engineData.GetOrAddModelCache(this.modelKey, function (key) {
+                this._modelRenderCache = this.owner._engineData.GetOrAddModelCache(this.modelKey, function (key) {
                     var mrc = _this.createModelRenderCache(key, _this.isTransparent);
                     setupModelRenderCache = true;
                     return mrc;
@@ -361,8 +361,8 @@ var BABYLON;
                     var usedCatList = new Array();
                     var partIdList = new Array();
                     var joinedUsedCatList = new Array();
-                    for (var _i = 0; _i < parts.length; _i++) {
-                        var dataPart = parts[_i];
+                    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
+                        var dataPart = parts_1[_i];
                         var cat = this.getUsedShaderCategories(dataPart);
                         var cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
@@ -400,7 +400,7 @@ var BABYLON;
                 // The Rendering resources (Effect, VB, IB, Textures) are stored in the ModelRenderCache
                 // But it's the RenderGroup that will store all the Instanced related data to render all the primitive it owns.
                 // So for a given ModelKey we getOrAdd a GroupInstanceInfo that will store all these data
-                gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, function (k) { return new BABYLON.GroupInstanceInfo(_this.renderGroup, _this._modelRenderCache); });
+                gii = this.renderGroup._renderGroupInstancesInfo.getOrAddWithFactory(this.modelKey, function (k) { return new BABYLON.GroupInstanceInfo(_this.renderGroup, _this._modelRenderCache); });
                 // First time init of the GroupInstanceInfo
                 if (gii._instancesPartsData.length === 0) {
                     for (var j = 0; j < this._modelRenderCache._partsDataStride.length; j++) {
@@ -431,7 +431,7 @@ var BABYLON;
             if (this._visibilityChanged || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
                 // Fetch the GroupInstanceInfo if we don't already have it
                 if (!gii) {
-                    gii = this.renderGroup.groupRenderInfo.get(this.modelKey);
+                    gii = this.renderGroup._renderGroupInstancesInfo.get(this.modelKey);
                 }
                 // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
                 for (var _c = 0, _d = this._instanceDataParts; _c < _d.length; _c++) {
@@ -536,6 +536,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    })(BABYLON.Prim2DBase);
+    }(BABYLON.Prim2DBase));
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));
