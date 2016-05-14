@@ -346,7 +346,7 @@
                 if (this._modelRenderCache) {
                     this._modelRenderCache.dispose();
                 }
-                this._modelRenderCache = this.owner.engineData.GetOrAddModelCache(this.modelKey, (key: string) => {
+                this._modelRenderCache = this.owner._engineData.GetOrAddModelCache(this.modelKey, (key: string) => {
                     let mrc = this.createModelRenderCache(key, this.isTransparent);
                     setupModelRenderCache = true;
                     return mrc;
@@ -418,7 +418,7 @@
                 // The Rendering resources (Effect, VB, IB, Textures) are stored in the ModelRenderCache
                 // But it's the RenderGroup that will store all the Instanced related data to render all the primitive it owns.
                 // So for a given ModelKey we getOrAdd a GroupInstanceInfo that will store all these data
-                gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, k => new GroupInstanceInfo(this.renderGroup, this._modelRenderCache));
+                gii = this.renderGroup._renderGroupInstancesInfo.getOrAddWithFactory(this.modelKey, k => new GroupInstanceInfo(this.renderGroup, this._modelRenderCache));
 
                 // First time init of the GroupInstanceInfo
                 if (gii._instancesPartsData.length === 0) {
@@ -456,7 +456,7 @@
 
                 // Fetch the GroupInstanceInfo if we don't already have it
                 if (!gii) {
-                    gii = this.renderGroup.groupRenderInfo.get(this.modelKey);
+                    gii = this.renderGroup._renderGroupInstancesInfo.get(this.modelKey);
                 }
 
                 // For each Instance Data part, refresh it to update the data in the DynamicFloatArray

@@ -44,7 +44,7 @@
                 let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
                 if (instanceInfo._owner.owner.supportInstancedArray) {
                     if (!this.instancingFillAttributes) {
-                        // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+                        // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
                         this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
                     }
 
@@ -218,7 +218,7 @@
             let renderCache = <Rectangle2DRenderCache>modelRenderCache;
             let engine = this.owner.engine;
 
-            // Need to create webgl resources for fill part?
+            // Need to create WebGL resources for fill part?
             if (this.fill) {
                 let vbSize = ((this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4) + 1;
                 let vb = new Float32Array(vbSize);
@@ -245,7 +245,7 @@
                 });
             }
 
-            // Need to create webgl resource for border part?
+            // Need to create WebGL resource for border part?
             if (this.border) {
                 let vbSize = (this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4 * 2;
                 let vb = new Float32Array(vbSize);
