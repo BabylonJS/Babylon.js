@@ -5,7 +5,7 @@
     - Support for shaders includes ([deltakosh](https://github.com/deltakosh))
     - New mesh type : `LineSystem` ([jerome](https://github.com/jbousquie))
     - SerializationHelper for complex classes using TypeScript decorators ([deltakosh](https://github.com/deltakosh))
-    - StandardMaterial now supports Parallax and Parallax Occlusion Mapping ([nockawa](https://github.com/nockawa))
+    - StandardMaterial now supports Parallax and Parallax Occlusion Mapping ([tutorial](http://doc.babylonjs.com/tutorials/Using_parallax_mapping)) ([nockawa](https://github.com/nockawa))
     - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#3). More [info here](http://doc.babylonjs.com/tutorials/Animations#animation-blending) ([deltakosh](https://github.com/deltakosh))
     - New debuger tool: SkeletonViewer. See [demo here](http://www.babylonjs-playground.com/#1BZJVJ#8) (Adam & [deltakosh](https://github.com/deltakosh))
     - Added Camera Inputs Manager to manage camera inputs (mouse, touch, keyboard, gamepad, ...) in a composable way, without relying on class inheritance ([gleborgne](https://github.com/gleborgne))
@@ -15,7 +15,9 @@
     - Unity3D exporter: Added support for export and run (local webserver) ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
     - Moved PBR Material to core ([deltakosh](https://github.com/deltakosh))
     - StandardMaterial.maxSimultaneousLights can define how many dynamic lights the material can handle ([deltakosh](https://github.com/deltakosh))
-	- Introduced Canvas2D feature: a 2D engine to render primitives, sprites in 2D, text. Canvas2D can be displayed in Screen Space (above the 3D scene) or in World Space to be a part of the Scene. [overview](http://doc.babylonjs.com/overviews/Using_The_Canvas2D), [tutorial](http://doc.babylonjs.com/tutorials/Using_the_Canvas2D) ([nockawa](https://github.com/nockawa))	
+	- Introduced Canvas2D feature: a 2D engine to render primitives, sprites in 2D, text. Canvas2D can be displayed in Screen Space (above the 3D scene) or in World Space to be a part of the Scene. [overview](http://doc.babylonjs.com/overviews/Using_The_Canvas2D), [tutorial](http://doc.babylonjs.com/tutorials/Using_the_Canvas2D) ([nockawa](https://github.com/nockawa))
+	- Added two new types of Texture: FontTexture and MapTexture ([quick doc](http://www.html5gamedevs.com/topic/22565-two-new-texture-types-fonttexture-and-maptexture/)) ([nockawa](https://github.com/nockawa))
+	- Added a dynamic [2D Bin Packing Algorithm](http://stackoverflow.com/questions/8762569/how-is-2d-bin-packing-achieved-programmatically), ([more info here](http://www.html5gamedevs.com/topic/22565-two-new-texture-types-fonttexture-and-maptexture/)) ([nockawa](https://github.com/nockawa))
   - **Updates**
     - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
     - Enabled other post processes to be used when also using a 3D Rig ([jcpalmer](https://github.com/Palmer-JC))
@@ -34,9 +36,9 @@
     - LinesMesh class now supports Intersection. Added the intersectionThreshold property to set a tolerance margin during intersection with wire lines. ([nockawa](https://github.com/nockawa))
     - Geometry.boundingBias property to enlarge the boundingInfo objects ([nockawa](https://github.com/nockawa))
     - Tools.ExtractMinAndMax & ExtractMinAndMaxIndexed now supports an optional Bias for Extent computation.
-	  - Added StringDictionary<T> class to implement an efficient generic typed string dictionary based on Javascript associative array. ([nockawa](https://github.com/nockawa))
-	  - Added RectanglePackingMap class to fix several rectangles in a big map in the most optimal way. ([nockawa](https://github.com/nockawa))
-	  - Added DynamicFloatArray class to store float32 based elements of a given size (stride) into one big Float32Array, with allocation/free/pack operations to then access an optimal buffer that can be used to update a WebGLBuffer dynamically. ([nockawa](https://github.com/nockawa))
+	  - Added StringDictionary<T> class to implement an efficient generic typed string dictionary based on Javascript associative array. ([quick dock](http://www.html5gamedevs.com/topic/22566-be-efficient-my-friend-use-stringdictionary/)) ([nockawa](https://github.com/nockawa))
+	  - Added RectanglePackingMap class to fit several rectangles in a big map in the most optimal way, dynamically. ([nockawa](https://github.com/nockawa))
+	  - Added DynamicFloatArray class to store float32 based elements of a given size (stride) into one big Float32Array, with allocation/free/pack operations to then access an optimal buffer that can be used to update a WebGLBuffer dynamically.([quick doc](http://www.html5gamedevs.com/topic/22567-dynamicfloatarray-to-the-rescue-for-efficient-instanced-array/)) ([nockawa](https://github.com/nockawa))
 	  - Scene.onPointerObservable property added to enable a unique Observable event for user input (see ArcRotateCamera inputs for examples) ([nockawa](https://github.com/nockawa))
   - **Exporters**
     - Support for 3dsmax 2017 ([deltakosh](https://github.com/deltakosh))
