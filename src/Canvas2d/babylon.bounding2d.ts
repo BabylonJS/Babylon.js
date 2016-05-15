@@ -28,38 +28,46 @@
             this.extent = Vector2.Zero();
         }
 
-        public static CreateFromSize(size: Size): BoundingInfo2D {
+        public static CreateFromSize(size: Size, origin?: Vector2): BoundingInfo2D {
             let r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromSizeToRef(size, r);
+            BoundingInfo2D.CreateFromSizeToRef(size, r, origin);
             return r;
         }
 
-        public static CreateFromRadius(radius: number): BoundingInfo2D {
+        public static CreateFromRadius(radius: number, origin?: Vector2): BoundingInfo2D {
             let r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromRadiusToRef(radius, r);
+            BoundingInfo2D.CreateFromRadiusToRef(radius, r, origin);
             return r;
         }
 
-        public static CreateFromPoints(points: Vector2[]): BoundingInfo2D {
+        public static CreateFromPoints(points: Vector2[], origin?: Vector2): BoundingInfo2D {
             let r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromPointsToRef(points, r);
+            BoundingInfo2D.CreateFromPointsToRef(points, r, origin);
 
             return r;
         }
 
-        public static CreateFromSizeToRef(size: Size, b: BoundingInfo2D) {
+        public static CreateFromSizeToRef(size: Size, b: BoundingInfo2D, origin?: Vector2) {
             b.center = new Vector2(size.width / 2, size.height / 2);
             b.extent = b.center.clone();
+            if (origin) {
+                b.center.x -= size.width * origin.x;
+                b.center.y -= size.height * origin.y;
+            }
             b.radius = b.extent.length();
         }
 
-        public static CreateFromRadiusToRef(radius: number, b: BoundingInfo2D) {
+        public static CreateFromRadiusToRef(radius: number, b: BoundingInfo2D, origin?: Vector2) {
             b.center = Vector2.Zero();
+            if (origin) {
+                b.center.x -= radius * origin.x;
+                b.center.y -= radius * origin.y;
+            }
             b.extent = new Vector2(radius, radius);
             b.radius = radius;
         }
 
-        public static CreateFromPointsToRef(points: Vector2[], b: BoundingInfo2D) {
+        public static CreateFromPointsToRef(points: Vector2[], b: BoundingInfo2D, origin?: Vector2) {
             let xmin = Number.MAX_VALUE, ymin = Number.MAX_VALUE, xmax = Number.MIN_VALUE, ymax = Number.MIN_VALUE;
             for (let p of points) {
                 xmin = Math.min(p.x, xmin);
@@ -67,12 +75,17 @@
                 ymin = Math.min(p.y, ymin);
                 ymax = Math.max(p.y, ymax);
             }
-            BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, b);
+            BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, b, origin);
         }
 
-
-        public static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D) {
-            b.center = new Vector2(xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2);
+        public static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D, origin?: Vector2) {
+            let w = xmax - xmin;
+            let h = ymax - ymin;
+            b.center = new Vector2(xmin + w / 2, ymin + h / 2);
+            if (origin) {
+                b.center.x -= w * origin.x;
+                b.center.y -= h * origin.y;
+            }
             b.extent = new Vector2(xmax - b.center.x, ymax - b.center.y);
             b.radius = b.extent.length();
         }
@@ -105,9 +118,9 @@
          * @param matrix the transformation matrix to apply
          * @return the new instance containing the result of the transformation applied on this BoundingInfo2D
          */
-        public transform(matrix: Matrix, origin: Vector2=null): BoundingInfo2D {
+        public transform(matrix: Matrix): BoundingInfo2D {
             var r = new BoundingInfo2D();
-            this.transformToRef(matrix, origin, r);
+            this.transformToRef(matrix, r);
             return r;
         }
 
@@ -125,24 +138,16 @@
         /**
          * Transform this BoundingInfo2D with a given matrix and store the result in an existing BoundingInfo2D instance.
          * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
-         * @param origin An optional normalized origin to apply before the transformation. 0;0 is top/left, 0.5;0.5 is center, etc.
          * @param matrix The matrix to use to compute the transformation
          * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
          */
-        public transformToRef(matrix: Matrix, origin: Vector2, result: BoundingInfo2D) {
+        public transformToRef(matrix: Matrix, result: BoundingInfo2D) {
             // Construct a bounding box based on the extent values
             let p = new Array<Vector2>(4);
             p[0] = new Vector2(this.center.x + this.extent.x, this.center.y + this.extent.y);
             p[1] = new Vector2(this.center.x + this.extent.x, this.center.y - this.extent.y);
             p[2] = new Vector2(this.center.x - this.extent.x, this.center.y - this.extent.y);
             p[3] = new Vector2(this.center.x - this.extent.x, this.center.y + this.extent.y);
-
-            //if (origin) {
-            //    let off = new Vector2((p[0].x - p[2].x) * origin.x, (p[0].y - p[2].y) * origin.y);
-            //    for (let j = 0; j < 4; j++) {
-            //        p[j].subtractInPlace(off);
-            //    }
-            //}
 
             // Transform the four points of the bounding box with the matrix
             for (let i = 0; i < 4; i++) {
@@ -165,5 +170,14 @@
             BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, result);
         }
 
+        doesIntersect(pickPosition: Vector2): boolean {
+            // is it inside the radius?
+            let pickLocal = pickPosition.subtract(this.center);
+            if (pickLocal.lengthSquared() <= (this.radius * this.radius)) {
+                // is it inside the rectangle?
+                return ((Math.abs(pickLocal.x) <= this.extent.x) && (Math.abs(pickLocal.y) <= this.extent.y));
+            }
+            return false;
+        }
     }
 }
