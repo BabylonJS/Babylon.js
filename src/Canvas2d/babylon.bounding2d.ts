@@ -124,7 +124,7 @@
 
         /**
          * Transform this BoundingInfo2D with a given matrix and store the result in an existing BoundingInfo2D instance.
-         * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it everytime.
+         * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
          * @param origin An optional normalized origin to apply before the transformation. 0;0 is top/left, 0.5;0.5 is center, etc.
          * @param matrix The matrix to use to compute the transformation
          * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
@@ -153,7 +153,7 @@
 
         /**
          * Compute the union of this BoundingInfo2D with another one and store the result in a third valid BoundingInfo2D object
-         * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it everytime.
+         * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
          * @param other the second object used to compute the union
          * @param result a VALID BoundingInfo2D instance (i.e. allocated) where the result will be stored
          */
