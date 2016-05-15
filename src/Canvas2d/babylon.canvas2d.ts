@@ -141,6 +141,7 @@
 
             if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 this._background = Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
+                this._background.isPickable = false;
                 this._background.origin = Vector2.Zero();
                 this._background.levelVisible = false;
             }
@@ -434,7 +435,7 @@
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
                     let sprite = Sprite2D.Create(parent, `__cachedSpriteOfGroup__${group.id}`, group.position.x, group.position.y, map, node.contentSize, node.pos, false);
-                    sprite.origin = Vector2.Zero();
+                    sprite.origin = group.origin.clone();
                     res.sprite = sprite;
                 }
             }

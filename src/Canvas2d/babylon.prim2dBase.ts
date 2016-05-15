@@ -4,6 +4,35 @@
         forceRefreshPrimitive: boolean;
     }
 
+    export class IntersectInfo2D {
+        constructor() {
+            this.findFirstOnly = false;
+            this.intersectHidden = false;
+        }
+
+        // Input settings, to setup before calling an intersection related method
+        public pickPosition: Vector2;
+        public findFirstOnly: boolean;
+        public intersectHidden: boolean;
+
+        // Intermediate data, don't use!
+        public _globalPickPosition: Vector2;
+        public _localPickPosition: Vector2;
+
+        // Output settings, up to date in return of a call to an intersection related method
+        public intersectedPrimitives: Array<{ prim: Prim2DBase, intersectionLocation: Vector2 }>;
+        public get isIntersected(): boolean {
+            return this.intersectedPrimitives && this.intersectedPrimitives.length > 0;
+        }
+
+        // Internals, don't use
+        public _exit(firstLevel: boolean) {
+            if (firstLevel) {
+                this._globalPickPosition = null;
+            }
+        }
+    }
+
     @className("Prim2DBase")
     export class Prim2DBase extends SmartPropertyPrim {
         static PRIM2DBASE_PROPCOUNT: number = 10;
@@ -14,6 +43,7 @@
             }
 
             this.setupSmartPropertyPrim();
+            this._isPickable = true;
             this._boundingInfoDirty = true;
             this._boundingInfo = new BoundingInfo2D();
             this._owner = owner;
@@ -109,6 +139,14 @@
         }
 
         /**
+         * this method must be implemented by the primitive type to return its size
+         * @returns The size of the primitive
+         */
+        public get actualSize(): Size {
+            return undefined;
+        }
+
+        /**
          * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
          * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
          * For instance:
@@ -148,6 +186,14 @@
             this._zOrder = value;
         }
 
+        public get isPickable(): boolean {
+            return this._isPickable;
+        }
+
+        public set isPickable(value: boolean) {
+            this._isPickable = value;
+        }
+
         public get hierarchyDepth(): number {
             return this._hierarchyDepth;
         }
@@ -164,6 +210,11 @@
             return this._invGlobalTransform;
         }
 
+        public get localTransform(): Matrix {
+            this._updateLocalTransform();
+            return this._localTransform;
+        }
+
         public get boundingInfo(): BoundingInfo2D {
             if (this._boundingInfoDirty) {
                 this._boundingInfo = this.levelBoundingInfo.clone();
@@ -171,14 +222,79 @@
 
                 var tps = new BoundingInfo2D();
                 for (let curChild of this._children) {
-                    let t = curChild.globalTransform.multiply(this.invGlobalTransform);
-                    curChild.boundingInfo.transformToRef(t, curChild.origin, tps);
+                    curChild.boundingInfo.transformToRef(this.localTransform, tps);
                     bi.unionToRef(tps, bi);
                 }
 
                 this._boundingInfoDirty = false;
             }
             return this._boundingInfo;
+        }
+
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+
+            return false;
+        }
+
+        public intersect(intersectInfo: IntersectInfo2D): boolean {
+            if (!intersectInfo) {
+                return false;
+            }
+
+            // If this is null it means this method is call for the first level, initialize stuffs
+            let firstLevel = !intersectInfo._globalPickPosition;
+            if (firstLevel) {
+                // Compute the pickPosition in global space and use it to find the local position for each level down, always relative from the world to get the maximum accuracy (and speed). The other way would have been to compute in local every level down relative to its parent's local, which wouldn't be as accurate (even if javascript number is 80bits accurate).
+                intersectInfo._globalPickPosition = Vector2.Zero();
+                Vector2.TransformToRef(intersectInfo.pickPosition, this.globalTransform, intersectInfo._globalPickPosition);
+                intersectInfo._localPickPosition = intersectInfo.pickPosition.clone();
+                intersectInfo.intersectedPrimitives = new Array<{ prim: Prim2DBase, intersectionLocation: Vector2 }>();
+            }
+
+            if (!intersectInfo.intersectHidden && !this.isVisible) {
+                return false;
+            }
+
+            // Fast rejection test with boundingInfo
+            if (!this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
+                return false;
+            }
+
+            // We hit the boundingInfo that bounds this primitive and its children, now we have to test on the primitive of this level
+            let levelIntersectRes = this.levelIntersect(intersectInfo);
+            if (levelIntersectRes) {
+                intersectInfo.intersectedPrimitives.push({ prim: this, intersectionLocation: intersectInfo._localPickPosition});
+
+                // If we must stop at the first intersection, we're done, quit!
+                if (intersectInfo.findFirstOnly) {
+                    intersectInfo._exit(firstLevel);
+                    return true;
+                }
+            }
+
+            // Recurse to children if needed
+            if (!levelIntersectRes || !intersectInfo.findFirstOnly) {
+                for (let curChild of this._children) {
+                    // Don't test primitive not pick able or if it's hidden and we don't test hidden ones
+                    if (!curChild.isPickable || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
+                        continue;
+                    }
+
+                    // Must compute the localPickLocation for the children level
+                    Vector2.TransformToRef(intersectInfo._globalPickPosition, curChild.invGlobalTransform, intersectInfo._localPickPosition);
+
+                    // If we got an intersection with the child and we only need to find the first one, quit!
+                    if (curChild.intersect(intersectInfo) && intersectInfo.findFirstOnly) {
+                        intersectInfo._exit(firstLevel);
+                        return true;
+                    }
+                }
+            }
+
+            intersectInfo._exit(firstLevel);
+            return intersectInfo.isIntersected;
         }
 
         public moveChild(child: Prim2DBase, previous: Prim2DBase): boolean {
@@ -299,6 +415,28 @@
             }
         }
 
+        private _updateLocalTransform(): boolean {
+            let tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
+            if (this.checkPropertiesDirty(tflags)) {
+                var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
+                var local = Matrix.Compose(new Vector3(this._scale, this._scale, this._scale), rot, new Vector3(this._position.x, this._position.y, 0));
+
+                this._localTransform = local;
+                this.clearPropertiesDirty(tflags);
+
+                // this is important to access actualSize AFTER fetching a first version of the local transform and reset the dirty flag, because accessing actualSize on a Group2D which actualSize is built from its content will trigger a call to this very method on this very object. We won't mind about the origin offset not being computed, as long as we return a local transform based on the position/rotation/scale
+                var actualSize = this.actualSize;
+                if (!actualSize) {
+                    throw new Error(`The primitive type: ${Tools.getClassName(this)} must implement the actualSize get property!`);
+                }
+
+                local.m[12] -= (actualSize.width * this.origin.x) * local.m[0] + (actualSize.height * this.origin.y) * local.m[4];
+                local.m[13] -= (actualSize.width * this.origin.x) * local.m[1] + (actualSize.height * this.origin.y) * local.m[5];
+                return true;
+            }
+            return false;
+        }
+
         protected updateGlobalTransVis(recurse: boolean) {
             if (this.isDisposed) {
                 return;
@@ -317,19 +455,16 @@
                 // Detect a change of visibility
                 this._visibilityChanged = (curVisibleState !== undefined) && curVisibleState !== this.isVisible;
 
-                // Detect if either the parent or this node changed
-                let tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
-                if (this.isVisible && (this._parent && this._parent._globalTransformStep !== this._parentTransformStep) || this.checkPropertiesDirty(tflags)) {
-                    var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
-                    var local = Matrix.Compose(new Vector3(this._scale, this._scale, this._scale), rot, new Vector3(this._position.x, this._position.y, 0));
+                // Get/compute the localTransform
+                let localDirty = this._updateLocalTransform();
 
-                    this._globalTransform = this._parent ? local.multiply(this._parent._globalTransform) : local;
+                // Check if we have to update the globalTransform
+                if (!this._globalTransform || localDirty || (this._parent && this._parent._globalTransformStep !== this._parentTransformStep)) {
+                    this._globalTransform = this._parent ? this._localTransform.multiply(this._parent._globalTransform) : this._localTransform;
                     this._invGlobalTransform = Matrix.Invert(this._globalTransform);
 
                     this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
                     this._parentTransformStep = this._parent ? this._parent._globalTransformStep : 0;
-
-                    this.clearPropertiesDirty(tflags);
                 }
                 this._globalTransformProcessStep = this.owner._globalTransformProcessStep;
             }
@@ -353,6 +488,7 @@
         private _levelVisible: boolean;
         public _boundingInfoDirty: boolean;
         protected _visibilityChanged;
+        private _isPickable;
         private _isVisible: boolean;
         private _id: string;
         private _position: Vector2;
@@ -370,6 +506,7 @@
 
         // Stores the previous 
         protected _globalTransformProcessStep: number;
+        protected _localTransform: Matrix;
         protected _globalTransform: Matrix;
         protected _invGlobalTransform: Matrix;
     }

@@ -43,7 +43,7 @@
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
             var g = new Group2D();
             g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero());
-
+            g.origin = Vector2.Zero();
             return g;
             
         }
@@ -412,6 +412,8 @@
                 this._cacheRenderSprite.rotation = this.rotation;
             } else if (prop.id === Prim2DBase.scaleProperty.id) {
                 this._cacheRenderSprite.scale = this.scale;
+            } else if (prop.id === Prim2DBase.originProperty.id) {
+                this._cacheRenderSprite.origin = this.origin.clone();
             } else if (prop.id === Group2D.actualSizeProperty.id) {
                 this._cacheRenderSprite.spriteSize = this.actualSize.clone();
                 //console.log(`[${this._globalTransformProcessStep}] Sync Sprite ${this.id}, width: ${this.actualSize.width}, height: ${this.actualSize.height}`);
