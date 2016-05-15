@@ -7,10 +7,10 @@
     /**
     * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
     * The intent is to maintain through time data that will be bound to a WebGlBuffer with the ability to change add/remove elements.
-    * It was first built to effiently maintain the WebGlBuffer that contain instancing based data.
+    * It was first built to efficiently maintain the WebGlBuffer that contain instancing based data.
     * Allocating an Element will return a instance of DynamicFloatArrayElement which contains the offset into the Float32Array of where the element starts, you are then responsible to copy your data using this offset.
-    * Beware, calling pack() may change the offset of some Entries because this method will defrag the Float32Array to replace empty elements by moving allocated ones at their location.
-     * This method will return an ArrayBufferView on the existing Float32Array that describes the used elements. Use this View to update the WebGLBuffer and NOT the "buffer" field of the class. The pack() method won't shrink/reallocate the buffer to keep it GC friendly, all the empty space will be put at the end of the buffer, the method just ensure there're no "free holes". 
+    * Beware, calling pack() may change the offset of some Entries because this method will defragment the Float32Array to replace empty elements by moving allocated ones at their location.
+     * This method will return an ArrayBufferView on the existing Float32Array that describes the used elements. Use this View to update the WebGLBuffer and NOT the "buffer" field of the class. The pack() method won't shrink/reallocate the buffer to keep it GC friendly, all the empty space will be put at the end of the buffer, the method just ensure there are no "free holes". 
     */
     export class DynamicFloatArray {
         /**
@@ -70,7 +70,7 @@
         /**
          * This method will pack all the used elements into a linear sequence and put all the free space at the end.
          * Instances of DynamicFloatArrayElement may have their 'offset' member changed as data could be copied from one location to another, so be sure to read/write your data based on the value inside this member after you called pack().
-         * @return the subarray that is the view of the used elements area, you can use it as a source to update a WebGLBuffer
+         * @return the subArray that is the view of the used elements area, you can use it as a source to update a WebGLBuffer
          */
         pack(): Float32Array {
 
@@ -112,12 +112,12 @@
                 // Compute the distance between this offset and the previous
                 let distance = curOffset - prevOffset;
 
-                // If the distance is the stride size, they are adjacents, it good, move to the next
+                // If the distance is the stride size, they are adjacent, it good, move to the next
                 if (distance === s) {
                     // Free zone is one element bigger
                     ++freeZoneSize;
 
-                    // as we're about to iterate to the next, the cur becomes the prev...
+                    // as we're about to iterate to the next, the cur becomes the previous...
                     prevOffset = curOffset;
 
                     continue;
@@ -161,7 +161,7 @@
                     freeZoneSize = ((curOffset - firstFreeSlotOffset) / s) + 1;
                 }
 
-                // as we're about to iterate to the next, the cur becomes the prev...
+                // as we're about to iterate to the next, the cur becomes the previous...
                 prevOffset = curOffset;
             }
 
@@ -205,7 +205,7 @@
         }
 
         /**
-         * This is the main buffer, all elements are stored inside, you use the DynamicFloatArrayElement instance of a given element to know its location into this buffer, then you have the responsability to perform write operations in this buffer at the right location!
+         * This is the main buffer, all elements are stored inside, you use the DynamicFloatArrayElement instance of a given element to know its location into this buffer, then you have the responsibility to perform write operations in this buffer at the right location!
          * Don't use this buffer for a WebGL bufferSubData() operation, but use the one returned by the pack() method.
          */
         buffer: Float32Array;
