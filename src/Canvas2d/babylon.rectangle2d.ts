@@ -148,6 +148,10 @@
         public static notRoundedProperty: Prim2DPropInfo;
         public static roundRadiusProperty: Prim2DPropInfo;
 
+        public get actualSize(): Size {
+            return this.size;
+        }
+
         @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.sizeProperty = pi, false, true)
         public get size(): Size {
             return this._size;
@@ -176,8 +180,19 @@
             this.notRounded = value === 0;
         }
 
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+            // If we got there it mean the boundingInfo intersection succeed, if the rectangle has not roundRadius, it means it succeed!
+            if (this.notRounded) {
+                return true;
+            }
+
+            // Well, for now we neglect the area where the pickPosition could be outside due to the roundRadius...
+            // TODO make REAL intersection test here!
+            return true;
+        }
+
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
         protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size: Size, roundRadius = 0, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
