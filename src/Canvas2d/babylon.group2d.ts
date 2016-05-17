@@ -184,6 +184,11 @@
             this._groupRender(context);
         }
 
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Group2D is shaped the same, so we always return true
+            return true;
+        }
+
         protected updateLevelBoundingInfo() {
             let size: Size;
 
