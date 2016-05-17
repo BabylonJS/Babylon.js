@@ -112,7 +112,7 @@ var BABYLON;
             return true;
         };
         return Rectangle2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Rectangle2DRenderCache = Rectangle2DRenderCache;
     var Rectangle2DInstanceData = (function (_super) {
         __extends(Rectangle2DInstanceData, _super);
@@ -130,13 +130,20 @@ var BABYLON;
             BABYLON.instanceData()
         ], Rectangle2DInstanceData.prototype, "properties", null);
         return Rectangle2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Rectangle2DInstanceData = Rectangle2DInstanceData;
     var Rectangle2D = (function (_super) {
         __extends(Rectangle2D, _super);
         function Rectangle2D() {
             _super.apply(this, arguments);
         }
+        Object.defineProperty(Rectangle2D.prototype, "actualSize", {
+            get: function () {
+                return this.size;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Rectangle2D.prototype, "size", {
             get: function () {
                 return this._size;
@@ -168,8 +175,17 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Rectangle2D.prototype.levelIntersect = function (intersectInfo) {
+            // If we got there it mean the boundingInfo intersection succeed, if the rectangle has not roundRadius, it means it succeed!
+            if (this.notRounded) {
+                return true;
+            }
+            // Well, for now we neglect the area where the pickPosition could be outside due to the roundRadius...
+            // TODO make REAL intersection test here!
+            return true;
+        };
         Rectangle2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         };
         Rectangle2D.prototype.setupRectangle2D = function (owner, parent, id, position, size, roundRadius, fill, border, borderThickness) {
             if (roundRadius === void 0) { roundRadius = 0; }
@@ -296,6 +312,6 @@ var BABYLON;
             BABYLON.className("Rectangle2D")
         ], Rectangle2D);
         return Rectangle2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Rectangle2D = Rectangle2D;
 })(BABYLON || (BABYLON = {}));

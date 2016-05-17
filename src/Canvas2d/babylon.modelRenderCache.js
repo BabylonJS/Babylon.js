@@ -31,7 +31,7 @@ var BABYLON;
             return true;
         };
         return GroupInstanceInfo;
-    }());
+    })();
     BABYLON.GroupInstanceInfo = GroupInstanceInfo;
     var ModelRenderCache = (function () {
         function ModelRenderCache(engine, modelKey, isTransparent) {
@@ -178,6 +178,6 @@ var BABYLON;
         ModelRenderCache.v3 = BABYLON.Vector3.Zero();
         ModelRenderCache.v4 = BABYLON.Vector4.Zero();
         return ModelRenderCache;
-    }());
+    })();
     BABYLON.ModelRenderCache = ModelRenderCache;
 })(BABYLON || (BABYLON = {}));

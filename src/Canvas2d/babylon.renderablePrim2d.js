@@ -73,7 +73,7 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    }());
+    })();
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
         //uniformLocation: WebGLUniformLocation;
@@ -176,7 +176,7 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    }());
+    })();
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -279,7 +279,7 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "origin", null);
         return InstanceDataBase;
-    }());
+    })();
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
@@ -361,8 +361,8 @@ var BABYLON;
                     var usedCatList = new Array();
                     var partIdList = new Array();
                     var joinedUsedCatList = new Array();
-                    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
-                        var dataPart = parts_1[_i];
+                    for (var _i = 0; _i < parts.length; _i++) {
+                        var dataPart = parts[_i];
                         var cat = this.getUsedShaderCategories(dataPart);
                         var cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
@@ -493,23 +493,30 @@ var BABYLON;
                 return false;
             }
             part.isVisible = this.isVisible;
-            // Which means, if there's only one data element, we're update it from this method, otherwise it is the responsability of the derived class to call updateInstanceDataPart as many times as needed, properly (look at Text2D's implementation for more information)
+            // Which means, if there's only one data element, we're update it from this method, otherwise it is the responsibility of the derived class to call updateInstanceDataPart as many times as needed, properly (look at Text2D's implementation for more information)
             if (part.dataElementCount === 1) {
                 this.updateInstanceDataPart(part);
             }
             return true;
         };
-        RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
+        /**
+         * Update the instanceDataBase level properties of a part
+         * @param part the part to update
+         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text). You MUST also set customSize.
+         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin property.
+         */
+        RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset, customSize) {
             if (positionOffset === void 0) { positionOffset = null; }
+            if (customSize === void 0) { customSize = null; }
             var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
             var size = this.renderGroup.viewportSize;
             var zBias = this.getActualZOffset();
             var offX = 0;
             var offY = 0;
             // If there's an offset, apply the global transformation matrix on it to get a global offset
-            if (positionOffset) {
-                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
-                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[5];
+            if (positionOffset && customSize) {
+                offX = (positionOffset.x - (customSize.width * this.origin.x)) * t.m[0] + (positionOffset.y - (customSize.height * this.origin.y)) * t.m[4];
+                offY = (positionOffset.x - (customSize.width * this.origin.x)) * t.m[1] + (positionOffset.y - (customSize.height * this.origin.y)) * t.m[5];
             }
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
             // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
@@ -536,6 +543,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));
