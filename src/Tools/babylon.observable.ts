@@ -8,7 +8,7 @@
         /**
         * If the callback of a given Observer set skipNextObservers to true the following observers will be ignored
         */
-        constructor(public skipNextObservers = false) {
+        constructor(public mask: number, public skipNextObservers = false) {
         }
     }
 
@@ -81,7 +81,7 @@
          * @param mask
          */
         public notifyObservers(eventData: T, mask: number = -1): void {
-            var state = new EventState();
+            var state = new EventState(mask);
 
             for (var obs of this._observers) {
                 if (obs.mask & mask) {

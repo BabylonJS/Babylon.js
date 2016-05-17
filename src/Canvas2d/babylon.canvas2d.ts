@@ -51,20 +51,21 @@
          * Create a new 2D ScreenSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a position relative to the top/left corner of the screen.
          * ScreenSpace Canvas will be drawn in the Viewport as a 2D Layer lying to the top of the 3D Scene. Typically used for traditional UI.
          * All caching strategies will be available.
+         * PLEASE NOTE: the origin of a Screen Space Canvas is set to [0;0] (bottom/left) which is different than the default origin of a Primitive which is centered [0.5;0.5]
          * @param scene the Scene that owns the Canvas
          * @param name the name of the Canvas, for information purpose only
          * @param pos the position of the canvas, relative from the bottom/left of the scene's viewport
          * @param size the Size of the canvas. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
          * @param cachingStrategy either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information.
          */
-        static CreateScreenSpace(scene: Scene, name: string, pos: Vector2, size: Size, cachingStrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS): Canvas2D {
+        static CreateScreenSpace(scene: Scene, name: string, pos: Vector2, size: Size, cachingStrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS, enableInteraction: boolean = true): Canvas2D {
             let c = new Canvas2D();
-            c.setupCanvas(scene, name, size, true, cachingStrategy);
+            c.setupCanvas(scene, name, size, true, cachingStrategy, enableInteraction);
             c.position = pos;
+            c.origin = Vector2.Zero();
 
             return c;
         }
-
 
         /**
          * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation information to place it in the world space.
@@ -80,7 +81,7 @@
          * @param sideOrientation Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one.
          * @param cachingStrategy Must be CACHESTRATEGY_CANVAS for now
          */
-        static CreateWorldSpace(scene: Scene, name: string, position: Vector3, rotation: Quaternion, size: Size, renderScaleFactor: number=1, sideOrientation?: number, cachingStrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS): Canvas2D {
+        static CreateWorldSpace(scene: Scene, name: string, position: Vector3, rotation: Quaternion, size: Size, renderScaleFactor: number = 1, sideOrientation?: number, cachingStrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS, enableInteraction: boolean = true): Canvas2D {
             if (cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
                 throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
             }
@@ -94,7 +95,7 @@
             }
 
             let c = new Canvas2D();
-            c.setupCanvas(scene, name, new Size(size.width*renderScaleFactor, size.height*renderScaleFactor), false, cachingStrategy);
+            c.setupCanvas(scene, name, new Size(size.width*renderScaleFactor, size.height*renderScaleFactor), false, cachingStrategy, enableInteraction);
 
             let plane = new WorldSpaceCanvas2d(name, scene, c);
             let vertexData = VertexData.CreatePlane({ width: size.width/2, height: size.height/2, sideOrientation: sideOrientation });
@@ -114,7 +115,7 @@
             return c;
         }
 
-        protected setupCanvas(scene: Scene, name: string, size: Size, isScreenSpace: boolean = true, cachingstrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
+        protected setupCanvas(scene: Scene, name: string, size: Size, isScreenSpace: boolean, cachingstrategy: number, enableInteraction: boolean) {
             let engine = scene.getEngine();
             this._fitRenderingDevice = !size;
             if (!size) {
@@ -127,6 +128,8 @@
             this._hierarchyLevelZFactor = 1 / this._hierarchyMaxDepth;
             this._hierarchyLevelMaxSiblingCount = 1000;
             this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
+            this._primPointerInfo = new PrimitivePointerInfo();
+            this._capturedPointers = new StringDictionary<Prim2DBase>();
 
             this.setupGroup2D(this, null, name, Vector2.Zero(), size, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
 
@@ -160,6 +163,321 @@
 
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
 //            this._supprtInstancedArray = false; // TODO REMOVE!!!
+
+            this._setupInteraction(enableInteraction);
+        }
+
+        private _setupInteraction(enable: boolean) {
+            // No change detection
+            if (enable === this._interactionEnabled) {
+                return;
+            }
+
+            // Set the new state
+            this._interactionEnabled = enable;
+
+            // Disable interaction
+            if (!enable) {
+                if (this._scenePrePointerObserver) {
+                    this.scene.onPrePointerObservable.remove(this._scenePrePointerObserver);
+                    this._scenePrePointerObserver = null;
+                }
+
+                return;
+            }
+
+            // Enable Interaction
+
+            // Register the observable
+            this.scene.onPrePointerObservable.add((e, s) => this._handlePointerEventForInteraction(e, s));
+        }
+
+        public setPointerCapture(pointerId: number, primitive: Prim2DBase): boolean {
+            if (this.isPointerCaptured(pointerId)) {
+                return false;
+            }
+
+            // Try to capture the pointer on the HTML side
+            try {
+                this.engine.getRenderingCanvas().setPointerCapture(pointerId);
+            } catch (e) {
+                //Nothing to do with the error. Execution will continue.
+            }
+
+            this._primPointerInfo.updateRelatedTarget(primitive, Vector2.Zero());
+            this._bubbleNotifyPrimPointerObserver(primitive, PrimitivePointerInfo.PointerGotCapture);
+
+            this._capturedPointers.add(pointerId.toString(), primitive);
+            return true;
+        }
+
+        public releasePointerCapture(pointerId: number, primitive: Prim2DBase): boolean {
+            if (this._capturedPointers.get(pointerId.toString()) !== primitive) {
+                return false;
+            }
+
+            // Try to release the pointer on the HTML side
+            try {
+                this.engine.getRenderingCanvas().releasePointerCapture(pointerId);
+            } catch (e) {
+                //Nothing to do with the error. Execution will continue.
+            }
+
+            this._primPointerInfo.updateRelatedTarget(primitive, Vector2.Zero());
+            this._bubbleNotifyPrimPointerObserver(primitive, PrimitivePointerInfo.PointerLostCapture);
+            this._capturedPointers.remove(pointerId.toString());
+            return true;
+        }
+
+        public isPointerCaptured(pointerId: number) {
+            return this._capturedPointers.contains(pointerId.toString());
+        }
+
+        private getCapturedPrimitive(pointerId: number): Prim2DBase {
+            // Avoid unnecessary lookup
+            if (this._capturedPointers.count === 0) {
+                return null;
+            }
+            return this._capturedPointers.get(pointerId.toString());
+        }
+           
+        private static _interInfo = new IntersectInfo2D();
+        private _handlePointerEventForInteraction(eventData: PointerInfoPre, eventState: EventState) {
+            // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
+            this._updatePointerInfo(eventData);
+
+            let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
+
+            // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
+            // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
+            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim!==null);
+
+            // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
+            this._updateOverStatus();
+
+            // Check if we have nothing to raise
+            if (!this._actualOverPrimitive && !capturedPrim) {
+                return;
+            }
+
+            // Update the relatedTarget info with the over primitive or the captured one (if any)
+            let targetPrim = capturedPrim || this._actualOverPrimitive.prim;
+
+            let targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new Vector2(targetPrim.globalTransform.m[12], targetPrim.globalTransform.m[13])) : this._actualOverPrimitive.intersectionLocation;
+
+            this._primPointerInfo.updateRelatedTarget(targetPrim, targetPointerPos);
+
+            // Analyze the pointer event type and fire proper events on the primitive
+
+            if (eventData.type === PointerEventTypes.POINTERWHEEL) {
+                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMouseWheel);
+            } else if (eventData.type === PointerEventTypes.POINTERMOVE) {
+                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMove);
+            } else if (eventData.type === PointerEventTypes.POINTERDOWN) {
+                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerDown);
+            } else if (eventData.type === PointerEventTypes.POINTERUP) {
+                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerUp);
+            }
+        }
+
+        private _updatePointerInfo(eventData: PointerInfoPre) {
+            let pii = this._primPointerInfo;
+            if (!pii.canvasPointerPos) {
+                pii.canvasPointerPos = Vector2.Zero();
+            }
+            pii.canvasPointerPos.x = eventData.localPosition.x - this.position.x;
+            pii.canvasPointerPos.y = (this.engine.getRenderHeight() - eventData.localPosition.y) - this.position.y;
+            pii.mouseWheelDelta = 0;
+
+            if (eventData.type === PointerEventTypes.POINTERWHEEL) {
+                var event = <MouseWheelEvent>eventData.event;
+                if (event.wheelDelta) {
+                    pii.mouseWheelDelta = event.wheelDelta / (PrimitivePointerInfo.MouseWheelPrecision * 40);
+                } else if (event.detail) {
+                    pii.mouseWheelDelta = -event.detail / PrimitivePointerInfo.MouseWheelPrecision;
+                }
+            } else {
+                var pe         = <PointerEvent>eventData.event;
+                pii.ctrlKey    = pe.ctrlKey;
+                pii.altKey     = pe.altKey;
+                pii.shiftKey   = pe.shiftKey;
+                pii.metaKey    = pe.metaKey;
+                pii.button     = pe.button;
+                pii.buttons    = pe.buttons;
+                pii.pointerId  = pe.pointerId;
+                pii.width      = pe.width;
+                pii.height     = pe.height;
+                pii.presssure  = pe.pressure;
+                pii.tilt.x     = pe.tiltX;
+                pii.tilt.y     = pe.tiltY;
+                pii.isCaptured = this.getCapturedPrimitive(pe.pointerId)!==null;
+            }
+        }
+
+        private _updateIntersectionList(mouseLocalPos: Vector2, isCapture: boolean) {
+            if (this.scene.getRenderId() === this._intersectionRenderId) {
+                return;
+            }
+
+            let ii = Canvas2D._interInfo;
+            ii.pickPosition.x = mouseLocalPos.x;
+            ii.pickPosition.y = mouseLocalPos.y;
+            ii.findFirstOnly = false;
+
+            // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
+            if (!isCapture && !this.boundingInfo.doesIntersect(ii.pickPosition)) {
+                this._previousIntersectionList = this._actualIntersectionList;
+                this._actualIntersectionList   = null;
+                this._previousOverPrimitive    = this._actualOverPrimitive;
+                this._actualOverPrimitive      = null;
+                return;
+            }
+
+            this._updateCanvasState();
+
+            this.intersect(ii);
+
+            this._previousIntersectionList = this._actualIntersectionList;
+            this._actualIntersectionList   = ii.intersectedPrimitives;
+            this._previousOverPrimitive    = this._actualOverPrimitive;
+            this._actualOverPrimitive      = ii.topMostIntersectedPrimitive;
+
+            this._intersectionRenderId = this.scene.getRenderId();
+        }
+
+        // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
+        private _updateOverStatus() {
+            if ((this.scene.getRenderId() === this._hoverStatusRenderId) || !this._previousIntersectionList || !this._actualIntersectionList) {
+                return;
+            }
+
+            // Detect a change of over
+            let prevPrim = this._previousOverPrimitive ? this._previousOverPrimitive.prim : null;
+            let actualPrim = this._actualOverPrimitive ? this._actualOverPrimitive.prim   : null;
+
+            if (prevPrim !== actualPrim) {
+                // Detect if the current pointer is captured, only fire event if they belong to the capture primitive
+                let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
+
+                // Notify the previous "over" prim that the pointer is no longer over it
+                if ((capturedPrim && capturedPrim===prevPrim) || (!capturedPrim && prevPrim)) {
+                    this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
+                    this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut);
+                }
+
+                // Notify the new "over" prim that the pointer is over it
+                if ((capturedPrim && capturedPrim === actualPrim) || (!capturedPrim && actualPrim)) {
+                    this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
+                    this._bubbleNotifyPrimPointerObserver(actualPrim, PrimitivePointerInfo.PointerOver);
+                }
+            }
+
+            this._hoverStatusRenderId = this.scene.getRenderId();
+        }
+
+        private _updatePrimPointerPos(prim: Prim2DBase) {
+            if (this._primPointerInfo.isCaptured) {
+                this._primPointerInfo.primitivePointerPos = this._primPointerInfo.relatedTargetPointerPos;
+            } else {
+                for (let pii of this._actualIntersectionList) {
+                    if (pii.prim === prim) {
+                        this._primPointerInfo.primitivePointerPos = pii.intersectionLocation;
+                        return;
+                    }
+                }
+            }
+        }
+
+        private _notifDebugMode = true;
+        private _debugExecObserver(prim: Prim2DBase, mask: number) {
+            if (!this._notifDebugMode) {
+                return;
+            }
+
+            let debug = "";
+            for (let i = 0; i < prim.hierarchyDepth; i++) {
+                debug += "  ";
+            }
+
+            let pii = this._primPointerInfo;
+            debug += `[RID:${this.scene.getRenderId()}] [${prim.hierarchyDepth}] event:${PrimitivePointerInfo.getEventTypeName(mask)}, id: ${prim.id} (${Tools.getClassName(prim)}), primPos: ${pii.primitivePointerPos.toString()}, canvasPos: ${pii.canvasPointerPos.toString()}`;
+            console.log(debug);
+        }
+
+        private _bubbleNotifyPrimPointerObserver(prim: Prim2DBase, mask: number) {
+            let pii = this._primPointerInfo;
+
+            // In case of PointerOver/Out we will first notify the children (but the deepest to the closest) with PointerEnter/Leave
+            if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) !== 0) {
+                this._notifChildren(prim, mask);
+            }
+
+            let bubbleCancelled = false;
+            let cur = prim;
+            while (cur) {
+                // Only trigger the observers if the primitive is intersected (except for out)
+                if (!bubbleCancelled) {
+                    this._updatePrimPointerPos(cur);
+
+                    // Exec the observers
+                    this._debugExecObserver(cur, mask);
+                    cur._pointerEventObservable.notifyObservers(pii, mask);
+
+                    // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
+                    // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
+                    if (pii.cancelBubble) {
+                        if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) === 0) {
+                            return;
+                        }
+
+                        // We're dealing with PointerOver/Out, let's keep looping to fire PointerEnter/Leave, but not Over/Out anymore
+                        bubbleCancelled = true;
+                    }
+                }
+
+                // If bubble is cancel we didn't update the Primitive Pointer Pos yet, let's do it
+                if (bubbleCancelled) {
+                    this._updatePrimPointerPos(cur);
+                }
+
+                // Trigger a PointerEnter corresponding to the PointerOver
+                if (mask === PrimitivePointerInfo.PointerOver) {
+                    this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
+                    cur._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerEnter);
+                }
+
+                // Trigger a PointerLeave corresponding to the PointerOut
+                else if (mask === PrimitivePointerInfo.PointerOut) {
+                    this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
+                    cur._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerLeave);
+                }
+
+                // Loop to the parent
+                cur = cur.parent;
+            }
+        }
+
+        _notifChildren(prim: Prim2DBase, mask: number) {
+            let pii = this._primPointerInfo;
+
+            prim.children.forEach(curChild => {
+                // Recurse first, we want the deepest to be notified first
+                this._notifChildren(curChild, mask);
+
+                this._updatePrimPointerPos(curChild);
+
+                // Fire the proper notification
+                if (mask === PrimitivePointerInfo.PointerOver) {
+                    this._debugExecObserver(curChild, PrimitivePointerInfo.PointerEnter);
+                    curChild._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerEnter);
+                }
+
+                // Trigger a PointerLeave corresponding to the PointerOut
+                else if (mask === PrimitivePointerInfo.PointerOut) {
+                    this._debugExecObserver(curChild, PrimitivePointerInfo.PointerLeave);
+                    curChild._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerLeave);
+                }
+            });
         }
 
         /**
@@ -169,6 +487,10 @@
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
+            }
+
+            if (this.interactionEnabled) {
+                this._setupInteraction(false);
             }
 
             if (this._beforeRenderObserver) {
@@ -294,6 +616,14 @@
             this._background.levelVisible = true;
         }
 
+        public get interactionEnabled(): boolean {
+            return this._interactionEnabled;
+        }
+
+        public set interactionEnabled(enable: boolean) {
+            this._setupInteraction(enable);
+        }
+
         public get _engineData(): Canvas2DEngineBoundData {
             return this.__engineData;
         }
@@ -323,6 +653,17 @@
         }
 
         private __engineData: Canvas2DEngineBoundData;
+        private _interactionEnabled: boolean;
+        private _primPointerInfo: PrimitivePointerInfo;
+        private _updateRenderId: number;
+        private _intersectionRenderId: number;
+        private _hoverStatusRenderId: number;
+        private _previousIntersectionList: Array<PrimitiveIntersectedInfo>;
+        private _actualIntersectionList: Array<PrimitiveIntersectedInfo>;
+        private _previousOverPrimitive: PrimitiveIntersectedInfo;
+        private _actualOverPrimitive: PrimitiveIntersectedInfo;
+        private _capturedPointers: StringDictionary<Prim2DBase>;
+        private _scenePrePointerObserver: Observer<PointerInfoPre>;
         private _worldSpaceNode: WorldSpaceCanvas2d;
         private _mapCounter = 0;
         private _background: Rectangle2D;
@@ -343,10 +684,12 @@
 
         public _renderingSize: Size;
 
-        /**
-         * Method that renders the Canvas, you should not invoke
-         */
-        private _render() {
+        private _updateCanvasState() {
+            // Check if the update has already been made for this render Frame
+            if (this.scene.getRenderId() === this._updateRenderId) {
+                return;
+            }
+
             this._renderingSize.width = this.engine.getRenderWidth();
             this._renderingSize.height = this.engine.getRenderHeight();
 
@@ -364,6 +707,23 @@
             this.updateGlobalTransVis(false);
 
             this._prepareGroupRender(context);
+
+            this._updateRenderId = this.scene.getRenderId();
+        }
+
+        /**
+         * Method that renders the Canvas, you should not invoke
+         */
+        private _render() {
+
+            this._updateCanvasState();
+
+            if (this._primPointerInfo.canvasPointerPos) {
+                this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
+                this._updateOverStatus();   // TODO this._primPointerInfo may not be up to date!
+            }
+
+            var context = new Render2DContext();
             this._groupRender(context);
 
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
