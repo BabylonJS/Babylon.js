@@ -192,7 +192,10 @@
             this.scene.onPrePointerObservable.add((e, s) => this._handlePointerEventForInteraction(e, s));
         }
 
-        public setPointerCapture(pointerId: number, primitive: Prim2DBase): boolean {
+        /**
+         * Internal method, you should use the Prim2DBase version instead
+         */
+        public _setPointerCapture(pointerId: number, primitive: Prim2DBase): boolean {
             if (this.isPointerCaptured(pointerId)) {
                 return false;
             }
@@ -211,7 +214,10 @@
             return true;
         }
 
-        public releasePointerCapture(pointerId: number, primitive: Prim2DBase): boolean {
+        /**
+         * Internal method, you should use the Prim2DBase version instead
+         */
+        public _releasePointerCapture(pointerId: number, primitive: Prim2DBase): boolean {
             if (this._capturedPointers.get(pointerId.toString()) !== primitive) {
                 return false;
             }
@@ -229,7 +235,12 @@
             return true;
         }
 
-        public isPointerCaptured(pointerId: number) {
+        /**
+         * Determine if the given pointer is captured or not
+         * @param pointerId the Id of the pointer
+         * @return true if it's captured, false otherwise
+         */
+        public isPointerCaptured(pointerId: number): boolean {
             return this._capturedPointers.contains(pointerId.toString());
         }
 
@@ -388,7 +399,7 @@
             }
         }
 
-        private _notifDebugMode = true;
+        private _notifDebugMode = false;
         private _debugExecObserver(prim: Prim2DBase, mask: number) {
             if (!this._notifDebugMode) {
                 return;
@@ -616,6 +627,10 @@
             this._background.levelVisible = true;
         }
 
+        /**
+         * Enable/Disable interaction for this Canvas
+         * When enabled the Prim2DBase.pointerEventObservable property will notified when appropriate events occur
+         */
         public get interactionEnabled(): boolean {
             return this._interactionEnabled;
         }
