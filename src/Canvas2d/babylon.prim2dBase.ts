@@ -4,10 +4,188 @@
         forceRefreshPrimitive: boolean;
     }
 
+    export class PrimitivePointerInfo {
+        private static _pointerOver        = 0x0001;
+        private static _pointerEnter       = 0x0002;
+        private static _pointerDown        = 0x0004;
+        private static _pointerMouseWheel  = 0x0008;
+        private static _pointerMove        = 0x0010;
+        private static _pointerUp          = 0x0020;
+        private static _pointerOut         = 0x0040;
+        private static _pointerLeave       = 0x0080;
+        private static _pointerGotCapture  = 0x0100;
+        private static _pointerLostCapture = 0x0200;
+
+        private static _mouseWheelPrecision = 3.0;
+
+        // The behavior is based on the HTML specifications of the Pointer Events (https://www.w3.org/TR/pointerevents/#list-of-pointer-events). This is not 100% compliant and not meant to be, but still, it's based on these specs for most use cases to be programmed the same way (as closest as possible) as it would have been in HTML.
+
+        /**
+         * This event type is raised when a pointing device is moved into the hit test boundaries of a primitive.
+         * Bubbles: yes
+         */
+        public static get PointerOver(): number {
+            return PrimitivePointerInfo._pointerOver;
+        }
+
+        /**
+         * This event type is raised when a pointing device is moved into the hit test boundaries of a primitive or one of its descendants.
+         * Bubbles: no
+         */
+        public static get PointerEnter(): number {
+            return PrimitivePointerInfo._pointerEnter;
+        }
+
+        /**
+         * This event type is raised when a pointer enters the active button state (non-zero value in the buttons property). For mouse it's when the device transitions from no buttons depressed to at least one button depressed. For touch/pen this is when a physical contact is made.
+         * Bubbles: yes
+         */
+        public static get PointerDown(): number {
+            return PrimitivePointerInfo._pointerDown;
+        }
+
+        /**
+         * This event type is raised when the pointer is a mouse and it's wheel is rolling
+         * Bubbles: yes
+         */
+        public static get PointerMouseWheel(): number {
+            return PrimitivePointerInfo._pointerMouseWheel;
+        }
+
+        /**
+         * This event type is raised when a pointer change coordinates or when a pointer changes button state, pressure, tilt, or contact geometry and the circumstances produce no other pointers events.
+         * Bubbles: yes
+         */
+        public static get PointerMove(): number {
+            return PrimitivePointerInfo._pointerMove;
+        }
+
+        /**
+         * This event type is raised when the pointer leaves the active buttons states (zero value in the buttons property). For mouse, this is when the device transitions from at least one button depressed to no buttons depressed. For touch/pen, this is when physical contact is removed.
+         * Bubbles: yes
+         */
+        public static get PointerUp(): number {
+            return PrimitivePointerInfo._pointerUp;
+        }
+
+        /**
+         * This event type is raised when a pointing device is moved out of the hit test the boundaries of a primitive.
+         * Bubbles: yes
+         */
+        public static get PointerOut(): number {
+            return PrimitivePointerInfo._pointerOut;
+        }
+
+        /**
+         * This event type is raised when a pointing device is moved out of the hit test boundaries of a primitive and all its descendants.
+         * Bubbles: no
+         */
+        public static get PointerLeave(): number {
+            return PrimitivePointerInfo._pointerLeave;
+        }
+
+        /**
+         * This event type is raised when a primitive receives the pointer capture. This event is fired at the element that is receiving pointer capture. Subsequent events for that pointer will be fired at this element.
+         * Bubbles: yes
+         */
+        public static get PointerGotCapture(): number {
+            return PrimitivePointerInfo._pointerGotCapture;
+        }
+
+        /**
+         * This event type is raised after pointer capture is released for a pointer.
+         * Bubbles: yes
+         */
+        public static get PointerLostCapture(): number {
+            return PrimitivePointerInfo._pointerLostCapture;
+        }
+
+        public static get MouseWheelPrecision(): number {
+            return PrimitivePointerInfo._mouseWheelPrecision;
+        }
+
+        /**
+         * Event Type, one of the static PointerXXXX property defined above (PrimitivePointerInfo.PointerOver to PrimitivePointerInfo.PointerLostCapture)
+         */
+        eventType: number;
+
+        /**
+         * Position of the pointer relative to the bottom/left of the Canvas
+         */
+        canvasPointerPos: Vector2;
+
+        /**
+         * Position of the pointer relative to the bottom/left of the primitive that registered the Observer
+         */
+        primitivePointerPos: Vector2;
+
+        /**
+         * The primitive where the event was initiated first (in case of bubbling)
+         */
+        relatedTarget: Prim2DBase;
+
+        /**
+         * Position of the pointer relative to the bottom/left of the relatedTarget
+         */
+        relatedTargetPointerPos: Vector2;
+
+        /**
+         * An observable can set this property to true to stop bubbling on the upper levels
+         */
+        cancelBubble: boolean;
+
+        ctrlKey: boolean;
+        shiftKey: boolean;
+        altKey: boolean;
+        metaKey: boolean;
+        button: number;
+        buttons: number;
+        mouseWheelDelta: number;
+        pointerId: number;
+        width: number;
+        height: number;
+        presssure: number;
+        tilt: Vector2;
+
+        constructor() {
+            this.canvasPointerPos = Vector2.Zero();
+            this.primitivePointerPos = Vector2.Zero();
+            this.tilt = Vector2.Zero();
+            this.cancelBubble = false;
+        }
+
+        updateRelatedTarget(prim: Prim2DBase, primPointerPos: Vector2) {
+            this.relatedTarget = prim;
+            this.relatedTargetPointerPos = primPointerPos;
+        }
+
+        public static getEventTypeName(mask: number): string {
+            switch (mask) {
+                case PrimitivePointerInfo.PointerOver:        return "PointerOver";
+                case PrimitivePointerInfo.PointerEnter:       return "PointerEnter";
+                case PrimitivePointerInfo.PointerDown:        return "PointerDown";
+                case PrimitivePointerInfo.PointerMouseWheel:  return "PointerMouseWheel";
+                case PrimitivePointerInfo.PointerMove:        return "PointerMove";
+                case PrimitivePointerInfo.PointerUp:          return "PointerUp";
+                case PrimitivePointerInfo.PointerOut:         return "PointerOut";
+                case PrimitivePointerInfo.PointerLeave:       return "PointerLeave";
+                case PrimitivePointerInfo.PointerGotCapture:  return "PointerGotCapture";
+                case PrimitivePointerInfo.PointerLostCapture: return "PointerLostCapture";
+            }
+        }
+    }
+
+    export class PrimitiveIntersectedInfo {
+        constructor(public prim: Prim2DBase, public intersectionLocation: Vector2) {
+            
+        }
+    }
+
     export class IntersectInfo2D {
         constructor() {
             this.findFirstOnly = false;
             this.intersectHidden = false;
+            this.pickPosition = Vector2.Zero();
         }
 
         // Input settings, to setup before calling an intersection related method
@@ -20,7 +198,8 @@
         public _localPickPosition: Vector2;
 
         // Output settings, up to date in return of a call to an intersection related method
-        public intersectedPrimitives: Array<{ prim: Prim2DBase, intersectionLocation: Vector2 }>;
+        public topMostIntersectedPrimitive: PrimitiveIntersectedInfo;
+        public intersectedPrimitives: Array<PrimitiveIntersectedInfo>;
         public get isIntersected(): boolean {
             return this.intersectedPrimitives && this.intersectedPrimitives.length > 0;
         }
@@ -43,6 +222,7 @@
             }
 
             this.setupSmartPropertyPrim();
+            this._pointerEventObservable = new Observable<PrimitivePointerInfo>();
             this._isPickable = true;
             this._boundingInfoDirty = true;
             this._boundingInfo = new BoundingInfo2D();
@@ -92,6 +272,10 @@
 
         public get parent(): Prim2DBase {
             return this._parent;
+        }
+
+        public get children(): Prim2DBase[] {
+            return this._children;
         }
 
         public get id(): string {
@@ -248,7 +432,8 @@
                 intersectInfo._globalPickPosition = Vector2.Zero();
                 Vector2.TransformToRef(intersectInfo.pickPosition, this.globalTransform, intersectInfo._globalPickPosition);
                 intersectInfo._localPickPosition = intersectInfo.pickPosition.clone();
-                intersectInfo.intersectedPrimitives = new Array<{ prim: Prim2DBase, intersectionLocation: Vector2 }>();
+                intersectInfo.intersectedPrimitives = new Array<PrimitiveIntersectedInfo>();
+                intersectInfo.topMostIntersectedPrimitive = null;
             }
 
             if (!intersectInfo.intersectHidden && !this.isVisible) {
@@ -265,7 +450,11 @@
             // We hit the boundingInfo that bounds this primitive and its children, now we have to test on the primitive of this level
             let levelIntersectRes = this.levelIntersect(intersectInfo);
             if (levelIntersectRes) {
-                intersectInfo.intersectedPrimitives.push({ prim: this, intersectionLocation: intersectInfo._localPickPosition});
+                let pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
+                intersectInfo.intersectedPrimitives.push(pii);
+                if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
+                    intersectInfo.topMostIntersectedPrimitive = pii;
+                }
 
                 // If we must stop at the first intersection, we're done, quit!
                 if (intersectInfo.findFirstOnly) {
@@ -486,6 +675,7 @@
         private _siblingDepthOffset: number;
         private _zOrder: number;
         private _levelVisible: boolean;
+        public _pointerEventObservable: Observable<PrimitivePointerInfo>;
         public _boundingInfoDirty: boolean;
         protected _visibilityChanged;
         private _isPickable;
