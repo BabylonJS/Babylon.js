@@ -145,7 +145,7 @@
 
         public set text(value: string) {
             this._text = value;
-            this._actualAreaSize = null;    // A change of text will reset the Actual Area Size which will be recomputed next time it's used
+            this._actualSize = null;    // A change of text will reset the Actual Area Size which will be recomputed next time it's used
             this._updateCharCount();
         }
 
@@ -176,18 +176,18 @@
             this._hAlign = value;
         }
 
-        public get actualAreaSize(): Size {
+        public get actualSize(): Size {
             if (this.areaSize) {
                 return this.areaSize;
             }
 
-            if (this._actualAreaSize) {
-                return this._actualAreaSize;
+            if (this._actualSize) {
+                return this._actualSize;
             }
 
-            this._actualAreaSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+            this._actualSize = this.fontTexture.measureText(this._text, this._tabulationSize);
 
-            return this._actualAreaSize;
+            return this._actualSize;
         }
 
         protected get fontTexture(): FontTexture {
@@ -213,7 +213,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.actualAreaSize, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         }
 
         protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, vAlign, hAlign, tabulationSize: number) {
@@ -349,7 +349,7 @@
         private _defaultFontColor: Color4;
         private _text: string;
         private _areaSize: Size;
-        private _actualAreaSize: Size;
+        private _actualSize: Size;
         private _vAlign: number;
         private _hAlign: number;
     }

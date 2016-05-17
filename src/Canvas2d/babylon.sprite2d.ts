@@ -121,6 +121,10 @@
             this._texture = value;
         }
 
+        public get actualSize(): Size {
+            return this.spriteSize;
+        }
+
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.spriteSizeProperty = pi, false, true)
         public get spriteSize(): Size {
             return this._size;
@@ -158,7 +162,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo, this.origin);
         }
 
         protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean) {
