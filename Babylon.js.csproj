@@ -1,0 +1,444 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props" Condition="Exists('packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{FF5C7EB0-3C10-48A7-93AA-3EE78FDB5CA4}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Babylon.js</RootNamespace>
+    <AssemblyName>Babylon.js</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="assets\BrickWall.png" />
+    <Content Include="assets\brickwall_nh.png" />
+    <Content Include="assets\rock.png" />
+    <Content Include="assets\rock2.png" />
+    <Content Include="assets\rock_nh.png" />
+    <Content Include="index.html" />
+    <Content Include="packages.config" />
+    <Content Include="src\Shaders\legacypbr.fragment.fx" />
+    <Content Include="src\Shaders\legacypbr.vertex.fx" />
+    <Content Include="src\Shaders\pbr.fragment.fx" />
+    <Content Include="src\Shaders\pbr.vertex.fx" />
+    <Content Include="src\Shaders\rect2d.fragment.fx" />
+    <Content Include="src\Shaders\rect2d.vertex.fx" />
+    <Content Include="src\Shaders\ShadersInclude\bonesDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\bonesVertex.fx" />
+    <Content Include="src\Shaders\ShadersInclude\bumpFragment.fx" />
+    <Content Include="src\Shaders\ShadersInclude\bumpFragmentFunctions.fx" />
+    <Content Include="src\Shaders\ShadersInclude\clipPlaneFragment.fx" />
+    <Content Include="src\Shaders\ShadersInclude\clipPlaneFragmentDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\clipPlaneVertex.fx" />
+    <Content Include="src\Shaders\ShadersInclude\clipPlaneVertexDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\fogFragment.fx" />
+    <Content Include="src\Shaders\ShadersInclude\fogFragmentDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\fogVertex.fx" />
+    <Content Include="src\Shaders\ShadersInclude\fogVertexDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\fresnelFunction.fx" />
+    <Content Include="src\Shaders\ShadersInclude\helperFunctions.fx" />
+    <Content Include="src\Shaders\ShadersInclude\instancesDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\instancesVertex.fx" />
+    <Content Include="src\Shaders\ShadersInclude\light0Fragment.fx" />
+    <Content Include="src\Shaders\ShadersInclude\light0FragmentDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\light1Fragment.fx" />
+    <Content Include="src\Shaders\ShadersInclude\light1FragmentDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\light2Fragment.fx" />
+    <Content Include="src\Shaders\ShadersInclude\light2FragmentDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\light3Fragment.fx" />
+    <Content Include="src\Shaders\ShadersInclude\light3FragmentDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\lightsFragmentFunctions.fx" />
+    <Content Include="src\Shaders\ShadersInclude\logDepthDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\logDepthFragment.fx" />
+    <Content Include="src\Shaders\ShadersInclude\logDepthVertex.fx" />
+    <Content Include="src\Shaders\ShadersInclude\pointCloudVertex.fx" />
+    <Content Include="src\Shaders\ShadersInclude\pointCloudVertexDeclaration.fx" />
+    <Content Include="src\Shaders\ShadersInclude\reflectionFunction.fx" />
+    <Content Include="src\Shaders\ShadersInclude\shadowsFragmentFunctions.fx" />
+    <Content Include="src\Shaders\ShadersInclude\shadowsVertex.fx" />
+    <Content Include="src\Shaders\ShadersInclude\shadowsVertexDeclaration.fx" />
+    <Content Include="src\Shaders\sprite2d.fragment.fx" />
+    <Content Include="src\Shaders\sprite2d.vertex.fx" />
+    <Content Include="src\Shaders\text2d.vertex.fx" />
+    <Content Include="src\Shaders\text2d.fragment.fx" />
+    <Content Include="Tools\Gulp\config.json" />
+    <Content Include="dist\preview release\what%27s new.md" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\.gitignore" />
+    <Content Include="src\Shaders\anaglyph.fragment.fx" />
+    <Content Include="src\Shaders\blackAndWhite.fragment.fx" />
+    <Content Include="src\Shaders\blur.fragment.fx" />
+    <Content Include="src\Shaders\chromaticAberration.fragment.fx" />
+    <Content Include="src\Shaders\color.fragment.fx" />
+    <Content Include="src\Shaders\color.vertex.fx" />
+    <Content Include="src\Shaders\colorCorrection.fragment.fx" />
+    <Content Include="src\Shaders\convolution.fragment.fx" />
+    <Content Include="src\Shaders\default.fragment.fx" />
+    <Content Include="src\Shaders\default.vertex.fx" />
+    <Content Include="src\Shaders\depth.fragment.fx" />
+    <Content Include="src\Shaders\depth.vertex.fx" />
+    <Content Include="src\Shaders\depthBoxBlur.fragment.fx" />
+    <Content Include="src\Shaders\depthOfField.fragment.fx" />
+    <Content Include="src\Shaders\displayPass.fragment.fx" />
+    <Content Include="src\Shaders\filter.fragment.fx" />
+    <Content Include="src\Shaders\fxaa.fragment.fx" />
+    <Content Include="src\Shaders\hdr.fragment.fx" />
+    <Content Include="src\Shaders\layer.fragment.fx" />
+    <Content Include="src\Shaders\layer.vertex.fx" />
+    <Content Include="src\Shaders\legacydefault.fragment.fx" />
+    <Content Include="src\Shaders\legacydefault.vertex.fx" />
+    <Content Include="src\Shaders\lensFlare.fragment.fx" />
+    <Content Include="src\Shaders\lensFlare.vertex.fx" />
+    <Content Include="src\Shaders\lensHighlights.fragment.fx" />
+    <Content Include="src\Shaders\line.fragment.fx" />
+    <Content Include="src\Shaders\line.vertex.fx" />
+    <Content Include="src\Shaders\outline.fragment.fx" />
+    <Content Include="src\Shaders\outline.vertex.fx" />
+    <Content Include="src\Shaders\particles.fragment.fx" />
+    <Content Include="src\Shaders\particles.vertex.fx" />
+    <Content Include="src\Shaders\pass.fragment.fx" />
+    <Content Include="src\Shaders\postprocess.vertex.fx" />
+    <Content Include="src\Shaders\procedural.vertex.fx" />
+    <Content Include="src\Shaders\refraction.fragment.fx" />
+    <Content Include="src\Shaders\shadowMap.fragment.fx" />
+    <Content Include="src\Shaders\shadowMap.vertex.fx" />
+    <Content Include="src\Shaders\sprites.fragment.fx" />
+    <Content Include="src\Shaders\sprites.vertex.fx" />
+    <Content Include="src\Shaders\ssao.fragment.fx" />
+    <Content Include="src\Shaders\ssaoCombine.fragment.fx" />
+    <Content Include="src\Shaders\stereoscopicInterlace.fragment.fx" />
+    <Content Include="src\Shaders\tonemap.fragment.fx" />
+    <Content Include="src\Shaders\volumetricLightScattering.fragment.fx" />
+    <Content Include="src\Shaders\volumetricLightScatteringPass.fragment.fx" />
+    <Content Include="src\Shaders\vrDistortionCorrection.fragment.fx" />
+    <Content Include="tsconfig.json" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="external references\poly2tri.d.ts" />
+    <TypeScriptCompile Include="src\Actions\babylon.action.ts" />
+    <TypeScriptCompile Include="src\Actions\babylon.actionManager.ts" />
+    <TypeScriptCompile Include="src\Actions\babylon.condition.ts" />
+    <TypeScriptCompile Include="src\Actions\babylon.directActions.ts" />
+    <TypeScriptCompile Include="src\Actions\babylon.interpolateValueAction.ts" />
+    <TypeScriptCompile Include="src\Animations\babylon.animatable.ts" />
+    <TypeScriptCompile Include="src\Animations\babylon.animation.ts" />
+    <TypeScriptCompile Include="src\Animations\babylon.easing.ts" />
+    <TypeScriptCompile Include="src\Audio\babylon.analyser.ts" />
+    <TypeScriptCompile Include="src\Audio\babylon.audioEngine.ts" />
+    <TypeScriptCompile Include="src\Audio\babylon.sound.ts" />
+    <TypeScriptCompile Include="src\Audio\babylon.soundtrack.ts" />
+    <TypeScriptCompile Include="src\babylon.engine.ts" />
+    <TypeScriptCompile Include="src\babylon.mixins.ts" />
+    <TypeScriptCompile Include="src\babylon.node.ts" />
+    <TypeScriptCompile Include="src\babylon.scene.ts" />
+    <TypeScriptCompile Include="src\Bones\babylon.bone.ts" />
+    <TypeScriptCompile Include="src\Bones\babylon.skeleton.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.arcRotateCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.arcRotateCameraInputsManager.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.camera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.cameraInputsManager.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.deviceOrientationCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.followCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.freeCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.freeCameraInputsManager.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.gamepadCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.stereoscopicCameras.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.targetCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.touchCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.universalCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\babylon.virtualJoysticksCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.arcrotatecamera.input.gamepad.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.arcrotatecamera.input.keyboard.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.arcrotatecamera.input.mousewheel.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.arcrotatecamera.input.pointers.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.arcrotatecamera.input.vrdeviceorientation.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.freecamera.input.deviceorientation.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.freecamera.input.gamepad.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.freecamera.input.keyboard.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.freecamera.input.mouse.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.freecamera.input.touch.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.freecamera.input.virtualjoystick.ts" />
+    <TypeScriptCompile Include="src\Cameras\Inputs\babylon.freecamera.input.vrdeviceorientation.ts" />
+    <TypeScriptCompile Include="src\Cameras\VR\babylon.vrCameraMetrics.ts" />
+    <TypeScriptCompile Include="src\Cameras\VR\babylon.vrDeviceOrientationCamera.ts" />
+    <TypeScriptCompile Include="src\Cameras\VR\babylon.webVRCamera.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.worldSpaceCanvas2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.shape2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.bounding2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.brushes2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.text2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.sprite2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.rectangle2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.renderablePrim2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.group2d.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.prim2dBase.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.modelRenderCache.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.smartPropertyPrim.ts" />
+    <TypeScriptCompile Include="src\Canvas2d\babylon.canvas2d.ts" />
+    <TypeScriptCompile Include="src\Collisions\babylon.collider.ts" />
+    <TypeScriptCompile Include="src\Collisions\babylon.collisionCoordinator.ts" />
+    <TypeScriptCompile Include="src\Collisions\babylon.collisionWorker.ts" />
+    <TypeScriptCompile Include="src\Collisions\babylon.pickingInfo.ts" />
+    <TypeScriptCompile Include="src\Culling\babylon.boundingBox.ts" />
+    <TypeScriptCompile Include="src\Culling\babylon.boundingInfo.ts" />
+    <TypeScriptCompile Include="src\Culling\babylon.boundingSphere.ts" />
+    <TypeScriptCompile Include="src\Culling\babylon.ray.ts" />
+    <TypeScriptCompile Include="src\Culling\Octrees\babylon.octree.ts" />
+    <TypeScriptCompile Include="src\Culling\Octrees\babylon.octreeBlock.ts" />
+    <TypeScriptCompile Include="src\Debug\babylon.debugLayer.ts" />
+    <TypeScriptCompile Include="src\Debug\babylon.skeletonViewer.ts" />
+    <TypeScriptCompile Include="src\Layer\babylon.layer.ts" />
+    <TypeScriptCompile Include="src\LensFlare\babylon.lensFlare.ts" />
+    <TypeScriptCompile Include="src\LensFlare\babylon.lensFlareSystem.ts" />
+    <TypeScriptCompile Include="src\Lights\babylon.directionalLight.ts" />
+    <TypeScriptCompile Include="src\Lights\babylon.hemisphericLight.ts" />
+    <TypeScriptCompile Include="src\Lights\babylon.light.ts" />
+    <TypeScriptCompile Include="src\Lights\babylon.pointLight.ts" />
+    <TypeScriptCompile Include="src\Lights\babylon.spotLight.ts" />
+    <TypeScriptCompile Include="src\Lights\Shadows\babylon.shadowGenerator.ts" />
+    <TypeScriptCompile Include="src\Loading\babylon.sceneLoader.ts" />
+    <TypeScriptCompile Include="src\Loading\Plugins\babylon.babylonFileLoader.ts" />
+    <TypeScriptCompile Include="src\Materials\babylon.effect.ts" />
+    <TypeScriptCompile Include="src\Materials\babylon.fresnelParameters.ts" />
+    <TypeScriptCompile Include="src\Materials\babylon.material.ts" />
+    <TypeScriptCompile Include="src\Materials\babylon.materialHelper.ts" />
+    <TypeScriptCompile Include="src\Materials\babylon.multiMaterial.ts" />
+    <TypeScriptCompile Include="src\Materials\babylon.pbrMaterial.ts" />
+    <TypeScriptCompile Include="src\Materials\babylon.shaderMaterial.ts" />
+    <TypeScriptCompile Include="src\Materials\babylon.standardMaterial.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.baseTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.cubeTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.fontTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.dynamicTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.hdrcubetexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.mapTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.mirrorTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.rawTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.refractionTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.renderTargetTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.texture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\babylon.videoTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\Procedurals\babylon.customProceduralTexture.ts" />
+    <TypeScriptCompile Include="src\Materials\Textures\Procedurals\babylon.proceduralTexture.ts" />
+    <TypeScriptCompile Include="src\Math\babylon.math.SIMD.ts" />
+    <TypeScriptCompile Include="src\Math\babylon.math.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.abstractMesh.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.csg.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.geometry.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.groundMesh.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.instancedMesh.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.linesMesh.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.mesh.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.mesh.vertexData.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.meshBuilder.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.meshLODLevel.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.meshSimplification.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.polygonMesh.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.subMesh.ts" />
+    <TypeScriptCompile Include="src\Mesh\babylon.vertexBuffer.ts" />
+    <TypeScriptCompile Include="src\Particles\babylon.particle.ts" />
+    <TypeScriptCompile Include="src\Particles\babylon.particleSystem.ts" />
+    <TypeScriptCompile Include="src\Particles\babylon.solidParticle.ts" />
+    <TypeScriptCompile Include="src\Particles\babylon.solidParticleSystem.ts" />
+    <TypeScriptCompile Include="src\Physics\babylon.physicsEngine.ts" />
+    <TypeScriptCompile Include="src\Physics\babylon.physicsImpostor.ts" />
+    <TypeScriptCompile Include="src\Physics\babylon.physicsJoint.ts" />
+    <TypeScriptCompile Include="src\Physics\Plugins\babylon.cannonJSPlugin.ts" />
+    <TypeScriptCompile Include="src\Physics\Plugins\babylon.oimoJSPlugin.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.anaglyphPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.blackAndWhitePostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.blurPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.colorCorrectionPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.convolutionPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.displayPassPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.filterPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.fxaaPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.hdrRenderingPipeline.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.lensRenderingPipeline.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.passPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.postProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.postProcessManager.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.refractionPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.ssaoRenderingPipeline.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.stereoscopicInterlacePostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.tonemapPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.volumetricLightScatteringPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\babylon.vrDistortionCorrectionPostProcess.ts" />
+    <TypeScriptCompile Include="src\PostProcess\RenderPipeline\babylon.postProcessRenderEffect.ts" />
+    <TypeScriptCompile Include="src\PostProcess\RenderPipeline\babylon.postProcessRenderPass.ts" />
+    <TypeScriptCompile Include="src\PostProcess\RenderPipeline\babylon.postProcessRenderPipeline.ts" />
+    <TypeScriptCompile Include="src\PostProcess\RenderPipeline\babylon.postProcessRenderPipelineManager.ts" />
+    <TypeScriptCompile Include="src\Probes\babylon.reflectionProbe.ts" />
+    <TypeScriptCompile Include="src\Rendering\babylon.boundingBoxRenderer.ts" />
+    <TypeScriptCompile Include="src\Rendering\babylon.depthRenderer.ts" />
+    <TypeScriptCompile Include="src\Rendering\babylon.edgesRenderer.ts" />
+    <TypeScriptCompile Include="src\Rendering\babylon.outlineRenderer.ts" />
+    <TypeScriptCompile Include="src\Rendering\babylon.renderingGroup.ts" />
+    <TypeScriptCompile Include="src\Rendering\babylon.renderingManager.ts" />
+    <TypeScriptCompile Include="src\Sprites\babylon.sprite.ts" />
+    <TypeScriptCompile Include="src\Sprites\babylon.spriteManager.ts" />
+    <TypeScriptCompile Include="src\States\babylon.alphaCullingState.ts" />
+    <TypeScriptCompile Include="src\States\babylon.depthCullingState.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.andOrNotEvaluator.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.assetsManager.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.database.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.decorators.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.filesInput.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.gamepads.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.loadingScreen.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.observable.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.dynamicFloatArray.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.sceneOptimizer.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.sceneSerializer.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.rectPackingMap.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.stringDictionary.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.smartArray.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.tags.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.tools.dds.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.tools.tga.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.tools.ts" />
+    <TypeScriptCompile Include="src\Tools\babylon.virtualJoystick.ts" />
+    <TypeScriptCompile Include="src\Tools\HDR\babylon.tools.cubemaptosphericalpolynomial.ts" />
+    <TypeScriptCompile Include="src\Tools\HDR\babylon.tools.hdr.ts" />
+    <TypeScriptCompile Include="src\Tools\HDR\babylon.tools.panoramaToCubemap.ts" />
+    <TypeScriptCompile Include="src\Tools\HDR\babylon.tools.pmremgenerator.ts" />
+    <TypeScriptCompile Include="typescript\MainClass.ts" />
+    <TypeScriptCompile Include="typescript\ManipulatorInteractionHelper.ts" />
+    <TypeScriptCompile Include="typescript\Radix.ts" />
+    <TypeScriptCompile Include="typescript\SimpleInteractionHelper.ts" />
+    <TypeScriptCompile Include="typescript\SymbolicVisualHelper.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptModuleKind>
+    </TypeScriptModuleKind>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>58598</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:58598/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('.\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '.\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('.\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '.\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
