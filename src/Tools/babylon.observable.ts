@@ -8,22 +8,44 @@
         /**
         * If the callback of a given Observer set skipNextObservers to true the following observers will be ignored
         */
-        constructor(public mask: number, public skipNextObservers = false) {
+        constructor(mask: number, skipNextObservers = false) {
+            this.mask = mask;
+            this.skipNextObservers = skipNextObservers;
         }
+
+        /**
+         * An Observer can set this property to true to prevent subsequent observers of being notified
+         */
+        public skipNextObservers: boolean;
+
+        /**
+         * Get the mask value that were used to trigger the event corresponding to this EventState object
+         */
+        public mask: number;
     }
 
+    /**
+     * Represent an Observer registered to a given Observable object.
+     */
     export class Observer<T> {
         constructor(public callback: (eventData: T, eventState: EventState) => void, public mask: number) {
         }
     }
 
+    /**
+     * The Observable class is a simple implementation of the Observable pattern.
+     * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
+     * This enable a more fine grained execution without having to rely on multiple different Observable objects.
+     * For instance you may have a given Observable that have four different types of notifications: Move (mask = 0x01), Stop (mask = 0x02), Turn Right (mask = 0X04), Turn Left (mask = 0X08).
+     * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
+     */
     export class Observable<T> {
         _observers = new Array<Observer<T>>();
 
         /**
          * Create a new Observer with the specified callback
          * @param callback the callback that will be executed for that Observer
-         * @param mash the mask used to filter observers
+         * @param mask the mask used to filter observers
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
          */
         public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false): Observer<T> {

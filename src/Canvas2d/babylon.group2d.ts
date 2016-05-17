@@ -272,7 +272,7 @@
 
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
                         // For instance: a Rect's position change, the position of its children primitives will also change so a prepare will be call on them. If a child was in the dirtyList we will avoid a second prepare by making this check.
-                        if (!p.isDisposed && p.needPrepare()) {
+                        if (!p.isDisposed && p._needPrepare()) {
                             p._prepareRender(context);
                         }
                     });
