@@ -38,6 +38,14 @@ namespace Unity3D2Babylon
 
             babylonScene = new BabylonScene(OutputPath);
 
+            babylonScene.producer = new BabylonProducer
+            {
+                file = Path.GetFileName(outputPath),
+                version = "Unity3D",
+                name = SceneName,
+                exporter_version = "0.8"
+            };
+
             this.exportationOptions = exportationOptions;
         }
 
@@ -47,7 +55,10 @@ namespace Unity3D2Babylon
 
             var outputFile = Path.Combine(OutputPath, SceneName + ".babylon");
 
-            var jsWriter = new JsonWriter(new DataWriterSettings(new DataContractResolverStrategy()));
+            var settings = new DataWriterSettings(new DataContractResolverStrategy()) {PrettyPrint = true};
+
+            var jsWriter = new JsonWriter(settings);
+
             string babylonJSformat = jsWriter.Write(babylonScene);
             using (var sw = new StreamWriter(outputFile))
             {
