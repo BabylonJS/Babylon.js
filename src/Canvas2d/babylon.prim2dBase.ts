@@ -4,6 +4,10 @@
         forceRefreshPrimitive: boolean;
     }
 
+    /**
+     * This class store information for the pointerEventObservable Observable.
+     * The Observable is divided into many sub events (using the Mask feature of the Observable pattern): PointerOver, PointerEnter, PointerDown, PointerMouseWheel, PointerMove, PointerUp, PointerDown, PointerLeave, PointerGotCapture and PointerLostCapture.
+     */
     export class PrimitivePointerInfo {
         private static _pointerOver        = 0x0001;
         private static _pointerEnter       = 0x0002;
@@ -134,18 +138,52 @@
          */
         cancelBubble: boolean;
 
+        /**
+         * True if the Control keyboard key is down
+         */
         ctrlKey: boolean;
+
+        /**
+         * true if the Shift keyboard key is down
+         */
         shiftKey: boolean;
+
+        /**
+         * true if the Alt keyboard key is down
+         */
         altKey: boolean;
+
+        /**
+         * true if the Meta keyboard key is down
+         */
         metaKey: boolean;
+
+        /**
+         * For button, buttons, refer to https://www.w3.org/TR/pointerevents/#button-states
+         */
         button: number;
+        /**
+         * For button, buttons, refer to https://www.w3.org/TR/pointerevents/#button-states
+         */
         buttons: number;
+
+        /**
+         * The amount of mouse wheel rolled
+         */
         mouseWheelDelta: number;
+
+        /**
+         * Id of the Pointer involved in the event
+         */
         pointerId: number;
         width: number;
         height: number;
         presssure: number;
         tilt: Vector2;
+
+        /**
+         * true if the involved pointer is captured for a particular primitive, false otherwise.
+         */
         isCaptured: boolean;
 
         constructor() {
@@ -175,12 +213,18 @@
         }
     }
 
+    /**
+     * Stores information about a Primitive that was intersected
+     */
     export class PrimitiveIntersectedInfo {
         constructor(public prim: Prim2DBase, public intersectionLocation: Vector2) {
             
         }
     }
 
+    /**
+     * Main class used for the Primitive Intersection API
+     */
     export class IntersectInfo2D {
         constructor() {
             this.findFirstOnly = false;
@@ -189,8 +233,20 @@
         }
 
         // Input settings, to setup before calling an intersection related method
+
+        /**
+         * Set the pick position, relative to the primitive where the intersection test is made
+         */
         public pickPosition: Vector2;
+
+        /**
+         * If true the intersection will stop at the first hit, if false all primitives will be tested and the intersectedPrimitives array will be filled accordingly (false default)
+         */
         public findFirstOnly: boolean;
+
+        /**
+         * If true the intersection test will also be made on hidden primitive (false default)
+         */
         public intersectHidden: boolean;
 
         // Intermediate data, don't use!
@@ -198,8 +254,20 @@
         public _localPickPosition: Vector2;
 
         // Output settings, up to date in return of a call to an intersection related method
+
+        /**
+         * The topmost intersected primitive
+         */
         public topMostIntersectedPrimitive: PrimitiveIntersectedInfo;
+
+        /**
+         * The array containing all intersected primitive, in no particular order.
+         */
         public intersectedPrimitives: Array<PrimitiveIntersectedInfo>;
+
+        /**
+         * true if at least one primitive intersected during the test
+         */
         public get isIntersected(): boolean {
             return this.intersectedPrimitives && this.intersectedPrimitives.length > 0;
         }
@@ -213,6 +281,9 @@
     }
 
     @className("Prim2DBase")
+    /**
+     * Base class for a Primitive of the Canvas2D feature
+     */
     export class Prim2DBase extends SmartPropertyPrim {
         static PRIM2DBASE_PROPCOUNT: number = 10;
 
@@ -256,6 +327,11 @@
             this.origin = new Vector2(0.5, 0.5);
         }
 
+        /**
+         * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
+         * @param predicate the predicate to test on each parent
+         * @return the first primitive where the predicate was successful
+         */
         public traverseUp(predicate: (p: Prim2DBase) => boolean): Prim2DBase {
             let p: Prim2DBase = this;
             while (p != null) {
@@ -267,18 +343,30 @@
             return null;
         }
 
+        /**
+         * Retrieve the owner Canvas2D
+         */
         public get owner(): Canvas2D {
             return this._owner;
         }
 
+        /**
+         * Get the parent primitive (can be the Canvas, only the Canvas has no parent)
+         */
         public get parent(): Prim2DBase {
             return this._parent;
         }
 
+        /**
+         * The array of direct children primitives
+         */
         public get children(): Prim2DBase[] {
             return this._children;
         }
 
+        /**
+         * The identifier of this primitive, may not be unique, it's for information purpose only
+         */
         public get id(): string {
             return this._id;
         }
@@ -292,6 +380,9 @@
         public static zOrderProperty: Prim2DPropInfo;
 
         @instanceLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, true)
+        /**
+         * Position of the primitive, relative to its parent.
+         */
         public get position(): Vector2 {
             return this._position;
         }
@@ -301,6 +392,10 @@
         }
 
         @instanceLevelProperty(2, pi => Prim2DBase.rotationProperty = pi, false, true)
+        /**
+         * Rotation of the primitive, in radian, along the Z axis
+         * @returns {} 
+         */
         public get rotation(): number {
             return this._rotation;
         }
@@ -310,17 +405,15 @@
         }
 
         @instanceLevelProperty(3, pi => Prim2DBase.scaleProperty = pi, false, true)
+        /**
+         * Uniform scale applied on the primitive
+         */
         public set scale(value: number) {
             this._scale = value;
         }
 
         public get scale(): number {
             return this._scale;
-        }
-
-        @instanceLevelProperty(4, pi => Prim2DBase.originProperty = pi, false, true)
-        public set origin(value: Vector2) {
-            this._origin = value;
         }
 
         /**
@@ -331,13 +424,18 @@
             return undefined;
         }
 
+        @instanceLevelProperty(4, pi => Prim2DBase.originProperty = pi, false, true)
+        public set origin(value: Vector2) {
+            this._origin = value;
+        }
+
         /**
          * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
          * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
          * For instance:
-         * 0,0 means the center is top/left
-         * 0.5,0.5 means the center is at the center of the primitive
-         * 0,1 means the center is bottom/left
+         * 0,0 means the center is bottom/left. Which is the default for Canvas2D instances
+         * 0.5,0.5 means the center is at the center of the primitive, which is default of all types of Primitives
+         * 0,1 means the center is top/left
          * @returns The normalized center.
          */
         public get origin(): Vector2 {
@@ -345,6 +443,10 @@
         }
 
         @dynamicLevelProperty(5, pi => Prim2DBase.levelVisibleProperty = pi)
+        /**
+         * Let the user defines if the Primitive is hidden or not at its level. As Primitives inherit the hidden status from their parent, only the isVisible property give properly the real visible state.
+         * Default is true, setting to false will hide this primitive and its children.
+         */
         public get levelVisible(): boolean {
             return this._levelVisible;
         }
@@ -354,6 +456,10 @@
         }
 
         @instanceLevelProperty(6, pi => Prim2DBase.isVisibleProperty = pi)
+        /**
+         * Use ONLY THE GETTER to determine if the primitive is visible or not.
+         * The Setter is for internal purpose only!
+         */
         public get isVisible(): boolean {
             return this._isVisible;
         }
@@ -363,6 +469,10 @@
         }
 
         @instanceLevelProperty(7, pi => Prim2DBase.zOrderProperty = pi)
+        /**
+         * You can override the default Z Order through this property, but most of the time the default behavior is acceptable
+         * @returns {} 
+         */
         public get zOrder(): number {
             return this._zOrder;
         }
@@ -371,6 +481,9 @@
             this._zOrder = value;
         }
 
+        /**
+         * Define if the Primitive can be subject to intersection test or not (default is true)
+         */
         public get isPickable(): boolean {
             return this._isPickable;
         }
@@ -379,27 +492,49 @@
             this._isPickable = value;
         }
 
+        /**
+         * Return the depth level of the Primitive into the Canvas' Graph. A Canvas will be 0, its direct children 1, and so on.
+         * @returns {} 
+         */
         public get hierarchyDepth(): number {
             return this._hierarchyDepth;
         }
 
+        /**
+         * Retrieve the Group that is responsible to render this primitive
+         * @returns {} 
+         */
         public get renderGroup(): Group2D {
             return this._renderGroup;
         }
 
+        /**
+         * Get the global transformation matrix of the primitive
+         */
         public get globalTransform(): Matrix {
             return this._globalTransform;
         }
 
+        /**
+         * Get invert of the global transformation matrix of the primitive
+         * @returns {} 
+         */
         public get invGlobalTransform(): Matrix {
             return this._invGlobalTransform;
         }
 
+        /**
+         * Get the local transformation of the primitive
+         */
         public get localTransform(): Matrix {
             this._updateLocalTransform();
             return this._localTransform;
         }
 
+        /**
+         * Get the boundingInfo associated to the primitive.
+         * The value is supposed to be always up to date
+         */
         public get boundingInfo(): BoundingInfo2D {
             if (this._boundingInfoDirty) {
                 this._boundingInfo = this.levelBoundingInfo.clone();
@@ -416,6 +551,9 @@
             return this._boundingInfo;
         }
 
+        /**
+         * Interaction with the primitive can be create using this Observable. See the PrimitivePointerInfo class for more information
+         */
         public get pointerEventObservable(): Observable<PrimitivePointerInfo> {
             return this._pointerEventObservable;
         }
@@ -425,6 +563,27 @@
             return false;
         }
 
+        /**
+         * Capture all the Events of the given PointerId for this primitive.
+         * Don't forget to call releasePointerEventsCapture when done.
+         * @param pointerId the Id of the pointer to capture the events from.
+         */
+        public setPointerEventCapture(pointerId: number): boolean {
+            return this.owner._setPointerCapture(pointerId, this);
+        }
+
+        /**
+         * Release a captured pointer made with setPointerEventCapture.
+         * @param pointerId the Id of the pointer to release the capture from.
+         */
+        public releasePointerEventsCapture(pointerId: number): boolean {
+            return this.owner._releasePointerCapture(pointerId, this);
+        }
+
+        /**
+         * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
+         * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
+         */
         public intersect(intersectInfo: IntersectInfo2D): boolean {
             if (!intersectInfo) {
                 return false;
@@ -556,7 +715,7 @@
             }
         }
 
-        public needPrepare(): boolean {
+        public _needPrepare(): boolean {
             return (this.isVisible || this._visibilityChanged) && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
         }
 
