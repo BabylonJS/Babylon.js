@@ -2,7 +2,7 @@ var BABYLON;
 (function (BABYLON) {
     /**
      * This class implement a typical dictionary using a string as key and the generic type T as value.
-     * The underlying implemetation relies on an associative array to ensure the best performances.
+     * The underlying implementation relies on an associative array to ensure the best performances.
      * The value can be anything including 'null' but except 'undefined'
      */
     var StringDictionary = (function () {
@@ -25,7 +25,7 @@ var BABYLON;
         /**
          * Get a value from its key or add it if it doesn't exist.
          * This method will ensure you that a given key/data will be present in the dictionary.
-         * @param key the given key to get the matchin value from
+         * @param key the given key to get the matching value from
          * @param factory the factory that will create the value if the key is not present in the dictionary.
          * The factory will only be invoked if there's no data for the given key.
          * @return the value corresponding to the key.
@@ -139,6 +139,6 @@ var BABYLON;
             return null;
         };
         return StringDictionary;
-    }());
+    })();
     BABYLON.StringDictionary = StringDictionary;
 })(BABYLON || (BABYLON = {}));

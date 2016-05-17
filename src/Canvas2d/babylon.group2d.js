@@ -32,6 +32,7 @@ var BABYLON;
         Group2D._createCachedCanvasGroup = function (owner) {
             var g = new Group2D();
             g.setupGroup2D(owner, null, "__cachedCanvasGroup__", BABYLON.Vector2.Zero());
+            g.origin = BABYLON.Vector2.Zero();
             return g;
         };
         Group2D.prototype.applyCachedTexture = function (vertexData, material) {
@@ -165,6 +166,10 @@ var BABYLON;
             this._prepareGroupRender(context);
             this._groupRender(context);
         };
+        Group2D.prototype.levelIntersect = function (intersectInfo) {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Group2D is shaped the same, so we always return true
+            return true;
+        };
         Group2D.prototype.updateLevelBoundingInfo = function () {
             var size;
             // If the size is set by the user, the boundingInfo is computed from this value
@@ -237,7 +242,7 @@ var BABYLON;
                     sortedDirtyList.forEach(function (p) {
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
                         // For instance: a Rect's position change, the position of its children primitives will also change so a prepare will be call on them. If a child was in the dirtyList we will avoid a second prepare by making this check.
-                        if (!p.isDisposed && p.needPrepare()) {
+                        if (!p.isDisposed && p._needPrepare()) {
                             p._prepareRender(context);
                         }
                     });
@@ -268,7 +273,7 @@ var BABYLON;
                     var curVP = engine.setDirectViewport(this._viewportPosition.x, this._viewportPosition.y, this._viewportSize.width, this._viewportSize.height);
                 }
                 // For each different model of primitive to render
-                var totalRenderCount_1 = 0;
+                var totalRenderCount = 0;
                 this._renderGroupInstancesInfo.forEach(function (k, v) {
                     // This part will pack the dynamicfloatarray and update the instanced array WebGLBufffer
                     // Skip it if instanced arrays are not supported
@@ -277,7 +282,7 @@ var BABYLON;
                             // If the instances of the model was changed, pack the data
                             var array = v._instancesPartsData[i];
                             var instanceData_1 = array.pack();
-                            totalRenderCount_1 += array.usedElementCount;
+                            totalRenderCount += array.usedElementCount;
                             // Compute the size the instance buffer should have
                             var neededSize = array.usedElementCount * array.stride * 4;
                             // Check if we have to (re)create the instancesBuffer because there's none or the size is too small
@@ -300,7 +305,7 @@ var BABYLON;
                         }
                     }
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
-                    if (!_this.owner.supportInstancedArray || totalRenderCount_1 > 0) {
+                    if (!_this.owner.supportInstancedArray || totalRenderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
                         var renderFailed = !v._modelCache.render(v, context);
                         // Update dirty flag/related
@@ -366,6 +371,9 @@ var BABYLON;
             }
             else if (prop.id === BABYLON.Prim2DBase.scaleProperty.id) {
                 this._cacheRenderSprite.scale = this.scale;
+            }
+            else if (prop.id === BABYLON.Prim2DBase.originProperty.id) {
+                this._cacheRenderSprite.origin = this.origin.clone();
             }
             else if (prop.id === Group2D.actualSizeProperty.id) {
                 this._cacheRenderSprite.spriteSize = this.actualSize.clone();
@@ -452,6 +460,6 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.Group2D = Group2D;
 })(BABYLON || (BABYLON = {}));

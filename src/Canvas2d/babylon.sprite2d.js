@@ -69,7 +69,7 @@ var BABYLON;
             return true;
         };
         return Sprite2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -127,7 +127,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "invertY", null);
         return Sprite2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -140,6 +140,13 @@ var BABYLON;
             },
             set: function (value) {
                 this._texture = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "actualSize", {
+            get: function () {
+                return this.spriteSize;
             },
             enumerable: true,
             configurable: true
@@ -185,7 +192,7 @@ var BABYLON;
             configurable: true
         });
         Sprite2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo);
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo, this.origin);
         };
         Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, texture, spriteSize, spriteLocation, invertY) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
@@ -278,6 +285,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));

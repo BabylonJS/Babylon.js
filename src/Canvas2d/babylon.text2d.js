@@ -70,7 +70,7 @@ var BABYLON;
             return true;
         };
         return Text2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -118,7 +118,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
         return Text2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -154,7 +154,7 @@ var BABYLON;
             },
             set: function (value) {
                 this._text = value;
-                this._actualAreaSize = null; // A change of text will reset the Actual Area Size which will be recomputed next time it's used
+                this._actualSize = null; // A change of text will reset the Actual Area Size which will be recomputed next time it's used
                 this._updateCharCount();
             },
             enumerable: true,
@@ -190,16 +190,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Text2D.prototype, "actualAreaSize", {
+        Object.defineProperty(Text2D.prototype, "actualSize", {
             get: function () {
                 if (this.areaSize) {
                     return this.areaSize;
                 }
-                if (this._actualAreaSize) {
-                    return this._actualAreaSize;
+                if (this._actualSize) {
+                    return this._actualSize;
                 }
-                this._actualAreaSize = this.fontTexture.measureText(this._text, this._tabulationSize);
-                return this._actualAreaSize;
+                this._actualSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                return this._actualSize;
             },
             enumerable: true,
             configurable: true
@@ -226,7 +226,7 @@ var BABYLON;
             return true;
         };
         Text2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualAreaSize, this._levelBoundingInfo);
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         };
         Text2D.prototype.setupText2D = function (owner, parent, id, position, fontName, text, areaSize, defaultFontColor, vAlign, hAlign, tabulationSize) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
@@ -288,9 +288,11 @@ var BABYLON;
                 var d = part;
                 var texture = this.fontTexture;
                 var ts = texture.getSize();
+                var textSize = texture.measureText(this.text, this._tabulationSize);
                 var offset = BABYLON.Vector2.Zero();
                 var charxpos = 0;
                 d.curElement = 0;
+                var customOrigin = BABYLON.Vector2.Zero();
                 for (var _i = 0, _a = this.text; _i < _a.length; _i++) {
                     var char = _a[_i];
                     // Line feed
@@ -309,7 +311,7 @@ var BABYLON;
                     if (char < " ") {
                         continue;
                     }
-                    this.updateInstanceDataPart(d, offset);
+                    this.updateInstanceDataPart(d, offset, textSize);
                     var ci = texture.getChar(char);
                     offset.x += ci.charWidth;
                     d.topLeftUV = ci.topLeftUV;
@@ -362,6 +364,6 @@ var BABYLON;
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));

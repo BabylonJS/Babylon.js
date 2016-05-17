@@ -26,29 +26,33 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    }());
+    })();
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
         function Canvas2D() {
             _super.apply(this, arguments);
+            this._notifDebugMode = false;
             this._mapCounter = 0;
         }
         /**
          * Create a new 2D ScreenSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a position relative to the top/left corner of the screen.
          * ScreenSpace Canvas will be drawn in the Viewport as a 2D Layer lying to the top of the 3D Scene. Typically used for traditional UI.
          * All caching strategies will be available.
+         * PLEASE NOTE: the origin of a Screen Space Canvas is set to [0;0] (bottom/left) which is different than the default origin of a Primitive which is centered [0.5;0.5]
          * @param scene the Scene that owns the Canvas
          * @param name the name of the Canvas, for information purpose only
          * @param pos the position of the canvas, relative from the bottom/left of the scene's viewport
          * @param size the Size of the canvas. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
          * @param cachingStrategy either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information.
          */
-        Canvas2D.CreateScreenSpace = function (scene, name, pos, size, cachingStrategy) {
+        Canvas2D.CreateScreenSpace = function (scene, name, pos, size, cachingStrategy, enableInteraction) {
             if (cachingStrategy === void 0) { cachingStrategy = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS; }
+            if (enableInteraction === void 0) { enableInteraction = true; }
             var c = new Canvas2D();
-            c.setupCanvas(scene, name, size, true, cachingStrategy);
+            c.setupCanvas(scene, name, size, true, cachingStrategy, enableInteraction);
             c.position = pos;
+            c.origin = BABYLON.Vector2.Zero();
             return c;
         };
         /**
@@ -65,9 +69,10 @@ var BABYLON;
          * @param sideOrientation Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one.
          * @param cachingStrategy Must be CACHESTRATEGY_CANVAS for now
          */
-        Canvas2D.CreateWorldSpace = function (scene, name, position, rotation, size, renderScaleFactor, sideOrientation, cachingStrategy) {
+        Canvas2D.CreateWorldSpace = function (scene, name, position, rotation, size, renderScaleFactor, sideOrientation, cachingStrategy, enableInteraction) {
             if (renderScaleFactor === void 0) { renderScaleFactor = 1; }
             if (cachingStrategy === void 0) { cachingStrategy = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS; }
+            if (enableInteraction === void 0) { enableInteraction = true; }
             if (cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
                 throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
             }
@@ -78,7 +83,7 @@ var BABYLON;
                 sideOrientation = BABYLON.Mesh.DEFAULTSIDE;
             }
             var c = new Canvas2D();
-            c.setupCanvas(scene, name, new BABYLON.Size(size.width * renderScaleFactor, size.height * renderScaleFactor), false, cachingStrategy);
+            c.setupCanvas(scene, name, new BABYLON.Size(size.width * renderScaleFactor, size.height * renderScaleFactor), false, cachingStrategy, enableInteraction);
             var plane = new BABYLON.WorldSpaceCanvas2d(name, scene, c);
             var vertexData = BABYLON.VertexData.CreatePlane({ width: size.width / 2, height: size.height / 2, sideOrientation: sideOrientation });
             var mtl = new BABYLON.StandardMaterial(name + "_Material", scene);
@@ -93,10 +98,8 @@ var BABYLON;
             c._worldSpaceNode = plane;
             return c;
         };
-        Canvas2D.prototype.setupCanvas = function (scene, name, size, isScreenSpace, cachingstrategy) {
+        Canvas2D.prototype.setupCanvas = function (scene, name, size, isScreenSpace, cachingstrategy, enableInteraction) {
             var _this = this;
-            if (isScreenSpace === void 0) { isScreenSpace = true; }
-            if (cachingstrategy === void 0) { cachingstrategy = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS; }
             var engine = scene.getEngine();
             this._fitRenderingDevice = !size;
             if (!size) {
@@ -109,6 +112,8 @@ var BABYLON;
             this._hierarchyLevelZFactor = 1 / this._hierarchyMaxDepth;
             this._hierarchyLevelMaxSiblingCount = 1000;
             this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
+            this._primPointerInfo = new BABYLON.PrimitivePointerInfo();
+            this._capturedPointers = new BABYLON.StringDictionary();
             this.setupGroup2D(this, null, name, BABYLON.Vector2.Zero(), size, this._cachingStrategy === Canvas2D.CACHESTRATEGY_ALLGROUPS ? BABYLON.Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : BABYLON.Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
             this._scene = scene;
             this._engine = engine;
@@ -119,6 +124,7 @@ var BABYLON;
             });
             if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 this._background = BABYLON.Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
+                this._background.isPickable = false;
                 this._background.origin = BABYLON.Vector2.Zero();
                 this._background.levelVisible = false;
             }
@@ -136,6 +142,277 @@ var BABYLON;
             }
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
             //            this._supprtInstancedArray = false; // TODO REMOVE!!!
+            this._setupInteraction(enableInteraction);
+        };
+        Canvas2D.prototype._setupInteraction = function (enable) {
+            var _this = this;
+            // No change detection
+            if (enable === this._interactionEnabled) {
+                return;
+            }
+            // Set the new state
+            this._interactionEnabled = enable;
+            // Disable interaction
+            if (!enable) {
+                if (this._scenePrePointerObserver) {
+                    this.scene.onPrePointerObservable.remove(this._scenePrePointerObserver);
+                    this._scenePrePointerObserver = null;
+                }
+                return;
+            }
+            // Enable Interaction
+            // Register the observable
+            this.scene.onPrePointerObservable.add(function (e, s) { return _this._handlePointerEventForInteraction(e, s); });
+        };
+        /**
+         * Internal method, you should use the Prim2DBase version instead
+         */
+        Canvas2D.prototype._setPointerCapture = function (pointerId, primitive) {
+            if (this.isPointerCaptured(pointerId)) {
+                return false;
+            }
+            // Try to capture the pointer on the HTML side
+            try {
+                this.engine.getRenderingCanvas().setPointerCapture(pointerId);
+            }
+            catch (e) {
+            }
+            this._primPointerInfo.updateRelatedTarget(primitive, BABYLON.Vector2.Zero());
+            this._bubbleNotifyPrimPointerObserver(primitive, BABYLON.PrimitivePointerInfo.PointerGotCapture);
+            this._capturedPointers.add(pointerId.toString(), primitive);
+            return true;
+        };
+        /**
+         * Internal method, you should use the Prim2DBase version instead
+         */
+        Canvas2D.prototype._releasePointerCapture = function (pointerId, primitive) {
+            if (this._capturedPointers.get(pointerId.toString()) !== primitive) {
+                return false;
+            }
+            // Try to release the pointer on the HTML side
+            try {
+                this.engine.getRenderingCanvas().releasePointerCapture(pointerId);
+            }
+            catch (e) {
+            }
+            this._primPointerInfo.updateRelatedTarget(primitive, BABYLON.Vector2.Zero());
+            this._bubbleNotifyPrimPointerObserver(primitive, BABYLON.PrimitivePointerInfo.PointerLostCapture);
+            this._capturedPointers.remove(pointerId.toString());
+            return true;
+        };
+        /**
+         * Determine if the given pointer is captured or not
+         * @param pointerId the Id of the pointer
+         * @return true if it's captured, false otherwise
+         */
+        Canvas2D.prototype.isPointerCaptured = function (pointerId) {
+            return this._capturedPointers.contains(pointerId.toString());
+        };
+        Canvas2D.prototype.getCapturedPrimitive = function (pointerId) {
+            // Avoid unnecessary lookup
+            if (this._capturedPointers.count === 0) {
+                return null;
+            }
+            return this._capturedPointers.get(pointerId.toString());
+        };
+        Canvas2D.prototype._handlePointerEventForInteraction = function (eventData, eventState) {
+            // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
+            this._updatePointerInfo(eventData);
+            var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
+            // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
+            // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
+            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null);
+            // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
+            this._updateOverStatus();
+            // Check if we have nothing to raise
+            if (!this._actualOverPrimitive && !capturedPrim) {
+                return;
+            }
+            // Update the relatedTarget info with the over primitive or the captured one (if any)
+            var targetPrim = capturedPrim || this._actualOverPrimitive.prim;
+            var targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new BABYLON.Vector2(targetPrim.globalTransform.m[12], targetPrim.globalTransform.m[13])) : this._actualOverPrimitive.intersectionLocation;
+            this._primPointerInfo.updateRelatedTarget(targetPrim, targetPointerPos);
+            // Analyze the pointer event type and fire proper events on the primitive
+            if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
+                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMouseWheel);
+            }
+            else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMove);
+            }
+            else if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerDown);
+            }
+            else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
+                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerUp);
+            }
+        };
+        Canvas2D.prototype._updatePointerInfo = function (eventData) {
+            var pii = this._primPointerInfo;
+            if (!pii.canvasPointerPos) {
+                pii.canvasPointerPos = BABYLON.Vector2.Zero();
+            }
+            pii.canvasPointerPos.x = eventData.localPosition.x - this.position.x;
+            pii.canvasPointerPos.y = (this.engine.getRenderHeight() - eventData.localPosition.y) - this.position.y;
+            pii.mouseWheelDelta = 0;
+            if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
+                var event = eventData.event;
+                if (event.wheelDelta) {
+                    pii.mouseWheelDelta = event.wheelDelta / (BABYLON.PrimitivePointerInfo.MouseWheelPrecision * 40);
+                }
+                else if (event.detail) {
+                    pii.mouseWheelDelta = -event.detail / BABYLON.PrimitivePointerInfo.MouseWheelPrecision;
+                }
+            }
+            else {
+                var pe = eventData.event;
+                pii.ctrlKey = pe.ctrlKey;
+                pii.altKey = pe.altKey;
+                pii.shiftKey = pe.shiftKey;
+                pii.metaKey = pe.metaKey;
+                pii.button = pe.button;
+                pii.buttons = pe.buttons;
+                pii.pointerId = pe.pointerId;
+                pii.width = pe.width;
+                pii.height = pe.height;
+                pii.presssure = pe.pressure;
+                pii.tilt.x = pe.tiltX;
+                pii.tilt.y = pe.tiltY;
+                pii.isCaptured = this.getCapturedPrimitive(pe.pointerId) !== null;
+            }
+        };
+        Canvas2D.prototype._updateIntersectionList = function (mouseLocalPos, isCapture) {
+            if (this.scene.getRenderId() === this._intersectionRenderId) {
+                return;
+            }
+            var ii = Canvas2D._interInfo;
+            ii.pickPosition.x = mouseLocalPos.x;
+            ii.pickPosition.y = mouseLocalPos.y;
+            ii.findFirstOnly = false;
+            // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
+            if (!isCapture && !this.boundingInfo.doesIntersect(ii.pickPosition)) {
+                this._previousIntersectionList = this._actualIntersectionList;
+                this._actualIntersectionList = null;
+                this._previousOverPrimitive = this._actualOverPrimitive;
+                this._actualOverPrimitive = null;
+                return;
+            }
+            this._updateCanvasState();
+            this.intersect(ii);
+            this._previousIntersectionList = this._actualIntersectionList;
+            this._actualIntersectionList = ii.intersectedPrimitives;
+            this._previousOverPrimitive = this._actualOverPrimitive;
+            this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+            this._intersectionRenderId = this.scene.getRenderId();
+        };
+        // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
+        Canvas2D.prototype._updateOverStatus = function () {
+            if ((this.scene.getRenderId() === this._hoverStatusRenderId) || !this._previousIntersectionList || !this._actualIntersectionList) {
+                return;
+            }
+            // Detect a change of over
+            var prevPrim = this._previousOverPrimitive ? this._previousOverPrimitive.prim : null;
+            var actualPrim = this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
+            if (prevPrim !== actualPrim) {
+                // Detect if the current pointer is captured, only fire event if they belong to the capture primitive
+                var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
+                // Notify the previous "over" prim that the pointer is no longer over it
+                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim)) {
+                    this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
+                    this._bubbleNotifyPrimPointerObserver(prevPrim, BABYLON.PrimitivePointerInfo.PointerOut);
+                }
+                // Notify the new "over" prim that the pointer is over it
+                if ((capturedPrim && capturedPrim === actualPrim) || (!capturedPrim && actualPrim)) {
+                    this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
+                    this._bubbleNotifyPrimPointerObserver(actualPrim, BABYLON.PrimitivePointerInfo.PointerOver);
+                }
+            }
+            this._hoverStatusRenderId = this.scene.getRenderId();
+        };
+        Canvas2D.prototype._updatePrimPointerPos = function (prim) {
+            if (this._primPointerInfo.isCaptured) {
+                this._primPointerInfo.primitivePointerPos = this._primPointerInfo.relatedTargetPointerPos;
+            }
+            else {
+                for (var _i = 0, _a = this._actualIntersectionList; _i < _a.length; _i++) {
+                    var pii = _a[_i];
+                    if (pii.prim === prim) {
+                        this._primPointerInfo.primitivePointerPos = pii.intersectionLocation;
+                        return;
+                    }
+                }
+            }
+        };
+        Canvas2D.prototype._debugExecObserver = function (prim, mask) {
+            if (!this._notifDebugMode) {
+                return;
+            }
+            var debug = "";
+            for (var i = 0; i < prim.hierarchyDepth; i++) {
+                debug += "  ";
+            }
+            var pii = this._primPointerInfo;
+            debug += "[RID:" + this.scene.getRenderId() + "] [" + prim.hierarchyDepth + "] event:" + BABYLON.PrimitivePointerInfo.getEventTypeName(mask) + ", id: " + prim.id + " (" + BABYLON.Tools.getClassName(prim) + "), primPos: " + pii.primitivePointerPos.toString() + ", canvasPos: " + pii.canvasPointerPos.toString();
+            console.log(debug);
+        };
+        Canvas2D.prototype._bubbleNotifyPrimPointerObserver = function (prim, mask) {
+            var pii = this._primPointerInfo;
+            // In case of PointerOver/Out we will first notify the children (but the deepest to the closest) with PointerEnter/Leave
+            if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) !== 0) {
+                this._notifChildren(prim, mask);
+            }
+            var bubbleCancelled = false;
+            var cur = prim;
+            while (cur) {
+                // Only trigger the observers if the primitive is intersected (except for out)
+                if (!bubbleCancelled) {
+                    this._updatePrimPointerPos(cur);
+                    // Exec the observers
+                    this._debugExecObserver(cur, mask);
+                    cur._pointerEventObservable.notifyObservers(pii, mask);
+                    // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
+                    // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
+                    if (pii.cancelBubble) {
+                        if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) === 0) {
+                            return;
+                        }
+                        // We're dealing with PointerOver/Out, let's keep looping to fire PointerEnter/Leave, but not Over/Out anymore
+                        bubbleCancelled = true;
+                    }
+                }
+                // If bubble is cancel we didn't update the Primitive Pointer Pos yet, let's do it
+                if (bubbleCancelled) {
+                    this._updatePrimPointerPos(cur);
+                }
+                // Trigger a PointerEnter corresponding to the PointerOver
+                if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
+                    this._debugExecObserver(cur, BABYLON.PrimitivePointerInfo.PointerEnter);
+                    cur._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerEnter);
+                }
+                else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
+                    this._debugExecObserver(cur, BABYLON.PrimitivePointerInfo.PointerLeave);
+                    cur._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerLeave);
+                }
+                // Loop to the parent
+                cur = cur.parent;
+            }
+        };
+        Canvas2D.prototype._notifChildren = function (prim, mask) {
+            var _this = this;
+            var pii = this._primPointerInfo;
+            prim.children.forEach(function (curChild) {
+                // Recurse first, we want the deepest to be notified first
+                _this._notifChildren(curChild, mask);
+                _this._updatePrimPointerPos(curChild);
+                // Fire the proper notification
+                if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
+                    _this._debugExecObserver(curChild, BABYLON.PrimitivePointerInfo.PointerEnter);
+                    curChild._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerEnter);
+                }
+                else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
+                    _this._debugExecObserver(curChild, BABYLON.PrimitivePointerInfo.PointerLeave);
+                    curChild._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerLeave);
+                }
+            });
         };
         /**
          * Don't forget to call the dispose method when you're done with the Canvas instance.
@@ -144,6 +421,9 @@ var BABYLON;
         Canvas2D.prototype.dispose = function () {
             if (!_super.prototype.dispose.call(this)) {
                 return false;
+            }
+            if (this.interactionEnabled) {
+                this._setupInteraction(false);
             }
             if (this._beforeRenderObserver) {
                 this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
@@ -280,6 +560,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Canvas2D.prototype, "interactionEnabled", {
+            /**
+             * Enable/Disable interaction for this Canvas
+             * When enabled the Prim2DBase.pointerEventObservable property will notified when appropriate events occur
+             */
+            get: function () {
+                return this._interactionEnabled;
+            },
+            set: function (enable) {
+                this._setupInteraction(enable);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Canvas2D.prototype, "_engineData", {
             get: function () {
                 return this.__engineData;
@@ -316,10 +610,11 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        /**
-         * Method that renders the Canvas, you should not invoke
-         */
-        Canvas2D.prototype._render = function () {
+        Canvas2D.prototype._updateCanvasState = function () {
+            // Check if the update has already been made for this render Frame
+            if (this.scene.getRenderId() === this._updateRenderId) {
+                return;
+            }
             this._renderingSize.width = this.engine.getRenderWidth();
             this._renderingSize.height = this.engine.getRenderHeight();
             if (this._fitRenderingDevice) {
@@ -333,6 +628,18 @@ var BABYLON;
             ++this._globalTransformProcessStep;
             this.updateGlobalTransVis(false);
             this._prepareGroupRender(context);
+            this._updateRenderId = this.scene.getRenderId();
+        };
+        /**
+         * Method that renders the Canvas, you should not invoke
+         */
+        Canvas2D.prototype._render = function () {
+            this._updateCanvasState();
+            if (this._primPointerInfo.canvasPointerPos) {
+                this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
+                this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
+            }
+            var context = new BABYLON.Render2DContext();
             this._groupRender(context);
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
@@ -393,7 +700,7 @@ var BABYLON;
                 }
                 else {
                     var sprite = BABYLON.Sprite2D.Create(parent, "__cachedSpriteOfGroup__" + group.id, group.position.x, group.position.y, map, node.contentSize, node.pos, false);
-                    sprite.origin = BABYLON.Vector2.Zero();
+                    sprite.origin = group.origin.clone();
                     res.sprite = sprite;
                 }
             }
@@ -444,6 +751,7 @@ var BABYLON;
          * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
          */
         Canvas2D.CACHESTRATEGY_DONTCACHE = 4;
+        Canvas2D._interInfo = new BABYLON.IntersectInfo2D();
         /**
          * Define the default size used for both the width and height of a MapTexture to allocate.
          * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
@@ -455,6 +763,6 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
 })(BABYLON || (BABYLON = {}));
