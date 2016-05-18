@@ -778,13 +778,13 @@
                 this.clearPropertiesDirty(tflags);
 
                 // this is important to access actualSize AFTER fetching a first version of the local transform and reset the dirty flag, because accessing actualSize on a Group2D which actualSize is built from its content will trigger a call to this very method on this very object. We won't mind about the origin offset not being computed, as long as we return a local transform based on the position/rotation/scale
-                var actualSize = this.actualSize;
-                if (!actualSize) {
-                    throw new Error(`The primitive type: ${Tools.getClassName(this)} must implement the actualSize get property!`);
-                }
+                //var actualSize = this.actualSize;
+                //if (!actualSize) {
+                //    throw new Error(`The primitive type: ${Tools.getClassName(this)} must implement the actualSize get property!`);
+                //}
 
-                local.m[12] -= (actualSize.width * this.origin.x) * local.m[0] + (actualSize.height * this.origin.y) * local.m[4];
-                local.m[13] -= (actualSize.width * this.origin.x) * local.m[1] + (actualSize.height * this.origin.y) * local.m[5];
+                //local.m[12] -= (actualSize.width * this.origin.x) * local.m[0] + (actualSize.height * this.origin.y) * local.m[4];
+                //local.m[13] -= (actualSize.width * this.origin.x) * local.m[1] + (actualSize.height * this.origin.y) * local.m[5];
                 return true;
             }
             return false;
