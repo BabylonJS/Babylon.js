@@ -31,40 +31,7 @@ var BABYLON;
             this.ALPHAFROMDIFFUSE = false;
             this.POINTSIZE = false;
             this.FOG = false;
-            this.LIGHT0 = false;
-            this.LIGHT1 = false;
-            this.LIGHT2 = false;
-            this.LIGHT3 = false;
-            this.SPOTLIGHT0 = false;
-            this.SPOTLIGHT1 = false;
-            this.SPOTLIGHT2 = false;
-            this.SPOTLIGHT3 = false;
-            this.HEMILIGHT0 = false;
-            this.HEMILIGHT1 = false;
-            this.HEMILIGHT2 = false;
-            this.HEMILIGHT3 = false;
-            this.POINTLIGHT0 = false;
-            this.POINTLIGHT1 = false;
-            this.POINTLIGHT2 = false;
-            this.POINTLIGHT3 = false;
-            this.DIRLIGHT0 = false;
-            this.DIRLIGHT1 = false;
-            this.DIRLIGHT2 = false;
-            this.DIRLIGHT3 = false;
             this.SPECULARTERM = false;
-            this.SHADOW0 = false;
-            this.SHADOW1 = false;
-            this.SHADOW2 = false;
-            this.SHADOW3 = false;
-            this.SHADOWS = false;
-            this.SHADOWVSM0 = false;
-            this.SHADOWVSM1 = false;
-            this.SHADOWVSM2 = false;
-            this.SHADOWVSM3 = false;
-            this.SHADOWPCF0 = false;
-            this.SHADOWPCF1 = false;
-            this.SHADOWPCF2 = false;
-            this.SHADOWPCF3 = false;
             this.DIFFUSEFRESNEL = false;
             this.OPACITYFRESNEL = false;
             this.REFLECTIONFRESNEL = false;
@@ -100,7 +67,7 @@ var BABYLON;
             this.REFRACTION = false;
             this.REFRACTIONMAP_3D = false;
             this.REFLECTIONOVERALPHA = false;
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
         return StandardMaterialDefines;
     })(BABYLON.MaterialDefines);
@@ -129,6 +96,7 @@ var BABYLON;
             this.invertRefractionY = true;
             this.useLightmapAsShadowmap = false;
             this.useGlossinessFromSpecularMapAlpha = false;
+            this.maxSimultaneousLights = 4;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -360,7 +328,7 @@ var BABYLON;
                 this._defines.FOG = true;
             }
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
             if (StandardMaterial.FresnelEnabled) {
                 // Fresnel
@@ -455,7 +423,7 @@ var BABYLON;
                 if (this._defines.LOGARITHMICDEPTH) {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
-                BABYLON.MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
+                BABYLON.MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
                 }
@@ -496,21 +464,18 @@ var BABYLON;
                     shaderName = "legacydefault";
                 }
                 var join = this._defines.toString();
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
-                    "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                    "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                    "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                    "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                    "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
+                    "depthValues",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "logarithmicDepthConstant"
-                ], ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
-                    "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                ], join, fallbacks, this.onCompiled, this.onError);
+                ];
+                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
+                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -649,7 +614,7 @@ var BABYLON;
                 this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 // Lights
                 if (scene.lightsEnabled && !this.disableLighting) {
-                    BABYLON.MaterialHelper.BindLights(scene, mesh, this._effect, this._defines);
+                    BABYLON.MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
                 }
                 // View
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture || this.refractionTexture) {
@@ -849,6 +814,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], StandardMaterial.prototype, "useGlossinessFromSpecularMapAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "maxSimultaneousLights", void 0);
         __decorate([
             BABYLON.serialize()
         ], StandardMaterial.prototype, "useLogarithmicDepth", null);

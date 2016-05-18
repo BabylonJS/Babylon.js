@@ -483,9 +483,15 @@ var BABYLON;
             return new Vector2(x, y);
         };
         Vector2.Transform = function (vector, transformation) {
-            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]);
-            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]);
-            return new Vector2(x, y);
+            var r = Vector2.Zero();
+            Vector2.TransformToRef(vector, transformation, r);
+            return r;
+        };
+        Vector2.TransformToRef = function (vector, transformation, result) {
+            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + transformation.m[12];
+            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + transformation.m[13];
+            result.x = x;
+            result.y = y;
         };
         Vector2.Distance = function (value1, value2) {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
@@ -1257,6 +1263,33 @@ var BABYLON;
         return Vector4;
     })();
     BABYLON.Vector4 = Vector4;
+    var Size = (function () {
+        function Size(width, height) {
+            this.width = width;
+            this.height = height;
+        }
+        Size.prototype.clone = function () {
+            return new Size(this.width, this.height);
+        };
+        Size.prototype.equals = function (other) {
+            if (!other) {
+                return false;
+            }
+            return (this.width === other.width) && (this.height === other.height);
+        };
+        Object.defineProperty(Size.prototype, "surface", {
+            get: function () {
+                return this.width * this.height;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Size.Zero = function () {
+            return new Size(0, 0);
+        };
+        return Size;
+    })();
+    BABYLON.Size = Size;
     var Quaternion = (function () {
         function Quaternion(x, y, z, w) {
             if (x === void 0) { x = 0; }
@@ -2011,6 +2044,13 @@ var BABYLON;
             Matrix.FromValuesToRef(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, x, y, z, 1.0, result);
         };
         Matrix.Lerp = function (startValue, endValue, gradient) {
+            var result = Matrix.Zero();
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
+            }
+            return result;
+        };
+        Matrix.DecomposeLerp = function (startValue, endValue, gradient) {
             var startScale = new Vector3(0, 0, 0);
             var startRotation = new Quaternion();
             var startTranslation = new Vector3(0, 0, 0);

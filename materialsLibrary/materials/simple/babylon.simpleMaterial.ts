@@ -9,39 +9,6 @@ module BABYLON {
         public ALPHATEST = false;
         public POINTSIZE = false;
         public FOG = false;
-        public LIGHT0 = false;
-        public LIGHT1 = false;
-        public LIGHT2 = false;
-        public LIGHT3 = false;
-        public SPOTLIGHT0 = false;
-        public SPOTLIGHT1 = false;
-        public SPOTLIGHT2 = false;
-        public SPOTLIGHT3 = false;
-        public HEMILIGHT0 = false;
-        public HEMILIGHT1 = false;
-        public HEMILIGHT2 = false;
-        public HEMILIGHT3 = false;
-        public DIRLIGHT0 = false;
-        public DIRLIGHT1 = false;
-        public DIRLIGHT2 = false;
-        public DIRLIGHT3 = false;
-        public POINTLIGHT0 = false;
-        public POINTLIGHT1 = false;
-        public POINTLIGHT2 = false;
-        public POINTLIGHT3 = false;        
-        public SHADOW0 = false;
-        public SHADOW1 = false;
-        public SHADOW2 = false;
-        public SHADOW3 = false;
-        public SHADOWS = false;
-        public SHADOWVSM0 = false;
-        public SHADOWVSM1 = false;
-        public SHADOWVSM2 = false;
-        public SHADOWVSM3 = false;
-        public SHADOWPCF0 = false;
-        public SHADOWPCF1 = false;
-        public SHADOWPCF2 = false;
-        public SHADOWPCF3 = false;
         public NORMAL = false;
         public UV1 = false;
         public UV2 = false;
@@ -53,7 +20,7 @@ module BABYLON {
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
 
@@ -65,7 +32,10 @@ module BABYLON {
         public diffuseColor = new Color3(1, 1, 1);
         
         @serialize()
-        public disableLighting = false;
+        public disableLighting = false;        
+        
+        @serialize()
+        public maxSimultaneousLights = 4;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3();
@@ -163,9 +133,8 @@ module BABYLON {
                 this._defines.FOG = true;
             }
 
-            var lightIndex = 0;
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
 
             // Attribs
@@ -211,7 +180,7 @@ module BABYLON {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
                 
                 if (this._defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
@@ -241,23 +210,19 @@ module BABYLON {
 
                 var shaderName = "simple";
                 var join = this._defines.toString();
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                                "vFogInfos", "vFogColor", "pointSize",
+                                "vDiffuseInfos", 
+                                "mBones",
+                                "vClipPlane", "diffuseMatrix", "depthValues"
+                ];
+                var samplers = ["diffuseSampler"];
+                    
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                
                 this._effect = scene.getEngine().createEffect(shaderName,
-                    attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                        "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                        "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                        "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                        "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", 
-                        "mBones",
-                        "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues"
-                    ],
-                    ["diffuseSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                    ],
-                    join, fallbacks, this.onCompiled, this.onError);
+                    attribs, uniforms, samplers,
+                    join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights});
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -315,7 +280,7 @@ module BABYLON {
 
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines);          
+                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);          
             }
 
             // View

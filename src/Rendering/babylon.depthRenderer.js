@@ -18,9 +18,9 @@ var BABYLON;
             this._depthMap.renderParticles = false;
             this._depthMap.renderList = null;
             // set default depth value to 1.0 (far away)
-            this._depthMap.onClear = function (engine) {
+            this._depthMap.onClearObservable.add(function (engine) {
                 engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true);
-            };
+            });
             // Custom render function
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();

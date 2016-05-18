@@ -12,6 +12,8 @@ namespace Max2Babylon
         public IPoint2 UV2 { get; set; }
         public int BonesIndices { get; set; }
         public IPoint4 Weights { get; set; }
+        public int BonesIndicesExtra { get; set; }
+        public IPoint4 WeightsExtra { get; set; }
         public float[] Color { get; set; }
 
         public override int GetHashCode()
@@ -54,6 +56,11 @@ namespace Max2Babylon
             }
 
             if (Weights != null && !other.Weights.IsAlmostEqualTo(Weights, Tools.Epsilon))
+            {
+                return false;
+            }
+
+            if (WeightsExtra != null && !other.WeightsExtra.IsAlmostEqualTo(WeightsExtra, Tools.Epsilon))
             {
                 return false;
             }

@@ -48,7 +48,7 @@ namespace Max2Babylon
                 return;
             }
 
-            var babylonMaterial = new BabylonMaterial
+            var babylonMaterial = new BabylonStandardMaterial
             {
                 name = name,
                 id = id,

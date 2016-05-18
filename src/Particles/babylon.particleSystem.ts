@@ -41,7 +41,20 @@
 
         public layerMask: number = 0x0FFFFFFF;
 
-        public onDispose: () => void;
+        /**
+        * An event triggered when the system is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<ParticleSystem>();
+
+        private _onDisposeObserver: Observer<ParticleSystem>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
         public updateFunction: (particles: Particle[]) => void;
 
         public blendMode = ParticleSystem.BLENDMODE_ONEONE;
@@ -422,9 +435,8 @@
             this._scene.particleSystems.splice(index, 1);
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
 
         // Clone

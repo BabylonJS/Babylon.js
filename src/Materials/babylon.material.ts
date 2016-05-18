@@ -2,7 +2,18 @@
     export class MaterialDefines {
         _keys: string[];
 
+        public rebuild() {
+            if (this._keys) {
+                delete this._keys;
+            }
+            this._keys = Object.keys(this);
+        } 
+
         public isEqual(other: MaterialDefines): boolean {
+            if (this._keys.length !== other._keys.length) {
+                return false;
+            }
+
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
@@ -15,6 +26,10 @@
         }
 
         public cloneTo(other: MaterialDefines): void {
+            if (this._keys.length !== other._keys.length) {
+                other._keys = this._keys.slice(0);
+            }
+
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
@@ -103,9 +118,37 @@
 
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
-        public onDispose: () => void;
-        public onBind: (material: Material, mesh: Mesh) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+
+        /**
+        * An event triggered when the material is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Material>();
+
+        private _onDisposeObserver: Observer<Material>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when the material is compiled.
+        * @type {BABYLON.Observable}
+        */
+        public onBindObservable = new Observable<AbstractMesh>();
+
+        private _onBindObserver: Observer<AbstractMesh>;
+        public set onBind(callback: (Mesh: AbstractMesh) => void) {
+            if (this._onBindObserver) {
+                this.onBindObservable.remove(this._onBindObserver);
+            }
+            this._onBindObserver = this.onBindObservable.add(callback);
+        }
+
+
 
         @serialize()
         public alphaMode = Engine.ALPHA_COMBINE;
@@ -212,10 +255,7 @@
         public getAlphaTestTexture(): BaseTexture {
             return null;
         }
-
-        public trackCreation(onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void) {
-        }
-
+        
         public markDirty(): void {
             this._wasPreviouslyReady = false;
         }
@@ -230,9 +270,7 @@
         public bind(world: Matrix, mesh?: Mesh): void {
             this._scene._cachedMaterial = this;
 
-            if (this.onBind) {
-                this.onBind(this, mesh);
-            }
+            this.onBindObservable.notifyObservers(mesh);
 
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
@@ -295,9 +333,10 @@
             }
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+
+            this.onDisposeObservable.clear();
+            this.onBindObservable.clear();
         }
 
         public serialize(): any {

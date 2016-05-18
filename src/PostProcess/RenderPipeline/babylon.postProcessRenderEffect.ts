@@ -200,9 +200,9 @@ module BABYLON {
                     this.applyParameters(this._postProcesses[index]);
                 }
 
-                this._postProcesses[index].onBeforeRender = (effect: Effect) => {
+                this._postProcesses[index].onBeforeRenderObservable.add((effect: Effect) => {
                     this._linkTextures(effect);
-                };
+                });
             }
         }
 

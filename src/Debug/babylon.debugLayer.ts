@@ -826,7 +826,7 @@
                 + glInfo.renderer + "<br>";
 
             if (this.customStatsFunction) {
-                this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;
+                this._statsSubsetDiv.innerHTML += this.customStatsFunction();
             }
         }
     }

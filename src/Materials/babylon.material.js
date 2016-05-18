@@ -9,7 +9,16 @@ var BABYLON;
     var MaterialDefines = (function () {
         function MaterialDefines() {
         }
+        MaterialDefines.prototype.rebuild = function () {
+            if (this._keys) {
+                delete this._keys;
+            }
+            this._keys = Object.keys(this);
+        };
         MaterialDefines.prototype.isEqual = function (other) {
+            if (this._keys.length !== other._keys.length) {
+                return false;
+            }
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
                 if (this[prop] !== other[prop]) {
@@ -19,6 +28,9 @@ var BABYLON;
             return true;
         };
         MaterialDefines.prototype.cloneTo = function (other) {
+            if (this._keys.length !== other._keys.length) {
+                other._keys = this._keys.slice(0);
+            }
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
                 other[prop] = this[prop];
@@ -60,6 +72,16 @@ var BABYLON;
             this.alpha = 1.0;
             this.backFaceCulling = true;
             this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            /**
+            * An event triggered when the material is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the material is compiled.
+            * @type {BABYLON.Observable}
+            */
+            this.onBindObservable = new BABYLON.Observable();
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this.disableDepthWrite = false;
             this.fogEnabled = true;
@@ -104,6 +126,26 @@ var BABYLON;
         Object.defineProperty(Material, "CounterClockWiseSideOrientation", {
             get: function () {
                 return Material._CounterClockWiseSideOrientation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material.prototype, "onBind", {
+            set: function (callback) {
+                if (this._onBindObserver) {
+                    this.onBindObservable.remove(this._onBindObserver);
+                }
+                this._onBindObserver = this.onBindObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -179,8 +221,6 @@ var BABYLON;
         Material.prototype.getAlphaTestTexture = function () {
             return null;
         };
-        Material.prototype.trackCreation = function (onCompiled, onError) {
-        };
         Material.prototype.markDirty = function () {
             this._wasPreviouslyReady = false;
         };
@@ -191,9 +231,7 @@ var BABYLON;
         };
         Material.prototype.bind = function (world, mesh) {
             this._scene._cachedMaterial = this;
-            if (this.onBind) {
-                this.onBind(this, mesh);
-            }
+            this.onBindObservable.notifyObservers(mesh);
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
                 this._cachedDepthWriteState = engine.getDepthWrite();
@@ -242,9 +280,9 @@ var BABYLON;
                 }
             }
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
+            this.onBindObservable.clear();
         };
         Material.prototype.serialize = function () {
             return BABYLON.SerializationHelper.Serialize(this);

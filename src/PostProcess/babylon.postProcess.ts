@@ -1,10 +1,5 @@
 ﻿module BABYLON {
     export class PostProcess {
-        public onApply: (effect: Effect) => void;
-        public onBeforeRender: (effect: Effect) => void;
-        public onAfterRender: (effect: Effect) => void;
-        public onSizeChanged: () => void;
-        public onActivate: (camera: Camera) => void;
         public width = -1;
         public height = -1;
         public renderTargetSamplingMode: number;
@@ -29,6 +24,78 @@
         private _fragmentUrl: string;
         private _parameters: string[];
         private _scaleRatio = new Vector2(1, 1);
+
+        // Events
+
+        /**
+        * An event triggered when the postprocess is activated.
+        * @type {BABYLON.Observable}
+        */
+        public onActivateObservable = new Observable<Camera>();
+
+        private _onActivateObserver: Observer<Camera>;
+        public set onActivate(callback: (camera: Camera) => void) {
+            if (this._onActivateObserver) {
+                this.onActivateObservable.remove(this._onActivateObserver);
+            }
+            this._onActivateObserver = this.onActivateObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when the postprocess changes its size.
+        * @type {BABYLON.Observable}
+        */
+        public onSizeChangedObservable = new Observable<PostProcess>();
+
+        private _onSizeChangedObserver: Observer<PostProcess>;
+        public set onSizeChanged(callback: (postProcess: PostProcess) => void) {
+            if (this._onSizeChangedObserver) {
+                this.onSizeChangedObservable.remove(this._onSizeChangedObserver);
+            }
+            this._onSizeChangedObserver = this.onSizeChangedObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when the postprocess applies its effect.
+        * @type {BABYLON.Observable}
+        */
+        public onApplyObservable = new Observable<Effect>();
+
+        private _onApplyObserver: Observer<Effect>;
+        public set onApply(callback: (effect: Effect) => void) {
+            if (this._onApplyObserver) {
+                this.onApplyObservable.remove(this._onApplyObserver);
+            }
+            this._onApplyObserver = this.onApplyObservable.add(callback);
+        }
+
+        /**
+        * An event triggered before rendering the postprocess
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeRenderObservable = new Observable<Effect>();
+
+        private _onBeforeRenderObserver: Observer<Effect>;
+        public set onBeforeRender(callback: (effect: Effect) => void) {
+            if (this._onBeforeRenderObserver) {
+                this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            }
+            this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after rendering the postprocess
+        * @type {BABYLON.Observable}
+        */
+        public onAfterRenderObservable = new Observable<Effect>();
+
+        private _onAfterRenderObserver: Observer<Effect>;
+        public set onAfterRender(callback: (efect: Effect) => void) {
+            if (this._onAfterRenderObserver) {
+                this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+            }
+            this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+        }
 
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number|any, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             if (camera != null) {
@@ -56,7 +123,7 @@
 
             this.updateEffect(defines);
         }
-
+        
         public updateEffect(defines?: string) {
             this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl },
                 ["position"],
@@ -66,6 +133,11 @@
 
         public isReusable(): boolean {
             return this._reusable;
+        }
+        
+        /** invalidate frameBuffer to hint the postprocess to create a depth buffer */
+        public markTextureDirty() : void{
+            this.width = -1;
         }
 
         public activate(camera: Camera, sourceTexture?: WebGLTexture): void {
@@ -96,18 +168,16 @@
                         this._engine._releaseTexture(this._textures.data[i]);
                     }
                     this._textures.reset();
-                }
+                }         
                 this.width = desiredWidth;
                 this.height = desiredHeight;
-                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
+                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
 
                 if (this._reusable) {
-                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
+                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
                 }
 
-                if (this.onSizeChanged) {
-                    this.onSizeChanged();
-                }
+                this.onSizeChangedObservable.notifyObservers(this);
             }
 
             if (this.enablePixelPerfectMode) {
@@ -119,9 +189,7 @@
                 this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd]);
             }
 
-            if (this.onActivate) {
-                this.onActivate(camera);
-            }
+            this.onActivateObservable.notifyObservers(camera);
 
             // Clear
             if (this.clearColor) {
@@ -156,9 +224,7 @@
 
             // Parameters
             this._effect.setVector2("scale", this._scaleRatio);
-            if (this.onApply) {
-                this.onApply(this._effect);
-            }
+            this.onApplyObservable.notifyObservers(this._effect);
 
             return this._effect;
         }
@@ -179,9 +245,15 @@
             camera.detachPostProcess(this);
 
             var index = camera._postProcesses.indexOf(this);
-            if (index === camera._postProcessesTakenIndices[0] && camera._postProcessesTakenIndices.length > 0) {
-                this._camera._postProcesses[camera._postProcessesTakenIndices[0]].width = -1; // invalidate frameBuffer to hint the postprocess to create a depth buffer
+            if (index === 0 && camera._postProcesses.length > 0) {
+                this._camera._postProcesses[0].markTextureDirty(); 
             }
+
+            this.onActivateObservable.clear();
+            this.onAfterRenderObservable.clear();
+            this.onApplyObservable.clear();
+            this.onBeforeRenderObservable.clear();
+            this.onSizeChangedObservable.clear();
         }
     }
 }

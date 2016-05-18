@@ -59,6 +59,13 @@ var BABYLON;
                 });
             }
         }
+        Object.defineProperty(Texture.prototype, "noMipmap", {
+            get: function () {
+                return this._noMipmap;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Texture.prototype.delayLoad = function () {
             if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
@@ -76,6 +83,7 @@ var BABYLON;
             if (!this._texture) {
                 return;
             }
+            this._samplingMode = samplingMode;
             this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         };
         Texture.prototype._prepareRowForTextureGeneration = function (x, y, z, t) {

@@ -33,8 +33,8 @@ module BABYLON {
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             var engine = this.camera.getEngine();
-            var cacheSoloPointer; // cache pointer object for better perf on camera rotation
-            var pointers = new SmartCollection();
+            var cacheSoloPointer: { x: number, y: number, pointerId: number, type: any }; // cache pointer object for better perf on camera rotation
+            var pointA: { x: number, y: number, pointerId: number, type: any }, pointB: { x: number, y: number, pointerId: number, type: any };
             var previousPinchDistance = 0;
 
             this._pointerInput = (p, s) => {
@@ -51,8 +51,13 @@ module BABYLON {
                     this._isRightClick = evt.button === 2;
 
                     // manage pointers
-                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
-                    cacheSoloPointer = pointers.item(evt.pointerId);
+                    cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
+                    if (pointA === undefined) {
+                        pointA = cacheSoloPointer;
+                    }
+                    else if (pointB === undefined) {
+                        pointB = cacheSoloPointer;
+                    }
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -62,7 +67,7 @@ module BABYLON {
                     } catch (e) {
                         //Nothing to do with the error.
                     }
-                    
+
                     cacheSoloPointer = null;
                     previousPinchDistance = 0;
 
@@ -70,7 +75,7 @@ module BABYLON {
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    pointers.empty();
+                    pointA = pointB = undefined;
 
                     if (!noPreventDefault) {
                         evt.preventDefault();
@@ -80,45 +85,48 @@ module BABYLON {
                         evt.preventDefault();
                     }
 
-                    switch (pointers.count) {
-                        case 1: //normal camera rotation
-                            if (this.panningSensibility !== 0 && ((this._isCtrlPushed && this.camera._useCtrlForPanning) || (!this.camera._useCtrlForPanning && this._isRightClick))) {
-                                this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
-                                this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
-                            } else {
-                                var offsetX = evt.clientX - cacheSoloPointer.x;
-                                var offsetY = evt.clientY - cacheSoloPointer.y;
-                                this.camera.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
-                                this.camera.inertialBetaOffset -= offsetY / this.angularSensibilityY;
-                            }
-                            cacheSoloPointer.x = evt.clientX;
-                            cacheSoloPointer.y = evt.clientY;
-                            break;
+                    // One button down
+                    if (pointA && pointB === undefined) {
+                        if (this.panningSensibility !== 0 &&
+                            ((this._isCtrlPushed && this.camera._useCtrlForPanning) ||
+                                (!this.camera._useCtrlForPanning && this._isRightClick))) {
+                            this.camera
+                                .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
+                            this.camera
+                                .inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
+                        } else {
+                            var offsetX = evt.clientX - cacheSoloPointer.x;
+                            var offsetY = evt.clientY - cacheSoloPointer.y;
+                            this.camera.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
+                            this.camera.inertialBetaOffset -= offsetY / this.angularSensibilityY;
+                        }
+                        cacheSoloPointer.x = evt.clientX;
+                        cacheSoloPointer.y = evt.clientY;
+                    }
 
-                        case 2: //pinch
-                            //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
-                            pointers.item(evt.pointerId).x = evt.clientX;
-                            pointers.item(evt.pointerId).y = evt.clientY;
-                            var direction = this.pinchInwards ? 1 : -1;
-                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
-                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
-                            var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                            if (previousPinchDistance === 0) {
-                                previousPinchDistance = pinchSquaredDistance;
-                                return;
-                            }
+                    // Two buttons down: pinch
+                    else if (pointA && pointB) {
+                        //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be useful to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                        var ed = (pointA.pointerId === evt.pointerId) ? pointA : pointB;
+                        ed.x = evt.clientX;
+                        ed.y = evt.clientY;
+                        var direction = this.pinchInwards ? 1 : -1;
+                        var distX = pointA.x - pointB.x;
+                        var distY = pointA.y - pointB.y;
+                        var pinchSquaredDistance = (distX * distX) + (distY * distY);
+                        if (previousPinchDistance === 0) {
+                            previousPinchDistance = pinchSquaredDistance;
+                            return;
+                        }
 
-                            if (pinchSquaredDistance !== previousPinchDistance) {
-                                this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * ((this.angularSensibilityX + this.angularSensibilityY) / 2) * direction);
-                                previousPinchDistance = pinchSquaredDistance;
-                            }
-                            break;
-
-                        default:
-                            if (pointers.item(evt.pointerId)) {
-                                pointers.item(evt.pointerId).x = evt.clientX;
-                                pointers.item(evt.pointerId).y = evt.clientY;
-                            }
+                        if (pinchSquaredDistance !== previousPinchDistance) {
+                            this.camera
+                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) /
+                                (this.pinchPrecision *
+                                    ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
+                                    direction);
+                            previousPinchDistance = pinchSquaredDistance;
+                        }
                     }
                 }
             }
@@ -135,7 +143,7 @@ module BABYLON {
 
             this._onLostFocus = () => {
                 //this._keys = [];
-                pointers.empty();
+                pointA = pointB = undefined;
                 previousPinchDistance = 0;
                 cacheSoloPointer = null;
             };

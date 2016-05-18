@@ -208,7 +208,7 @@ var BABYLON;
                     // Scene
                     scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
                     scene.autoClear = parsedData.autoClear;
-                    scene.clearColor = BABYLON.Color3.FromArray(parsedData.clearColor);
+                    scene.clearColor = BABYLON.Color4.FromArray(parsedData.clearColor);
                     scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
                     if (parsedData.gravity) {
                         scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
@@ -271,6 +271,9 @@ var BABYLON;
                             log += (index === 0 ? "\n\tAnimations:" : "");
                             log += "\n\t\t" + animation.toString(fullDetails);
                         }
+                    }
+                    if (parsedData.autoAnimate) {
+                        scene.beginAnimation(scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
                     }
                     // Materials
                     if (parsedData.materials) {

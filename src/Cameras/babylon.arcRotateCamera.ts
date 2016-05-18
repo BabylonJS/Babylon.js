@@ -321,7 +321,10 @@
                 if (!this.panningAxis.y) {
                     this._transformedDirection.y = 0;
                 }
-                this.target.addInPlace(this._transformedDirection);
+
+                if (!(<any>this.target).getAbsolutePosition) {
+                    this.target.addInPlace(this._transformedDirection);
+                }                
             }
 
             // Limits
@@ -514,18 +517,21 @@
          * Override Camera.createRigCamera
          */
         public createRigCamera(name: string, cameraIndex: number): Camera {
+            var alphaShift : number;
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
-                    var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
-                    rigCam._cameraRigParams = {};
-                    return rigCam;
-            }
-            return null;
+                    alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
+                    break;
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                    alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
+                    break;
+           }
+            var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+            rigCam._cameraRigParams = {};
+            return rigCam;
         }
         
         /**
@@ -533,18 +539,23 @@
          * Override Camera._updateRigCameras
          */
         public _updateRigCameras() {
+            var camLeft  = <ArcRotateCamera>this._rigCameras[0];
+            var camRight = <ArcRotateCamera>this._rigCameras[1];
+            
+            camLeft.beta = camRight.beta = this.beta;
+            camLeft.radius = camRight.radius = this.radius;
+
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    var camLeft = <ArcRotateCamera>this._rigCameras[0];
-                    var camRight = <ArcRotateCamera>this._rigCameras[1];
-                    camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
+                    camLeft.alpha  = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
-                    camLeft.beta = camRight.beta = this.beta;
-                    camLeft.radius = camRight.radius = this.radius;
+                    break;
+                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                    camLeft.alpha  = this.alpha + this._cameraRigParams.stereoHalfAngle;
+                    camRight.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     break;
             }
             super._updateRigCameras();

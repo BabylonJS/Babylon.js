@@ -38,6 +38,14 @@ namespace Unity3D2Babylon
 
             babylonScene = new BabylonScene(OutputPath);
 
+            babylonScene.producer = new BabylonProducer
+            {
+                file = Path.GetFileName(outputPath),
+                version = "Unity3D",
+                name = SceneName,
+                exporter_version = "0.8"
+            };
+
             this.exportationOptions = exportationOptions;
         }
 
@@ -47,7 +55,10 @@ namespace Unity3D2Babylon
 
             var outputFile = Path.Combine(OutputPath, SceneName + ".babylon");
 
-            var jsWriter = new JsonWriter(new DataWriterSettings(new DataContractResolverStrategy()));
+            var settings = new DataWriterSettings(new DataContractResolverStrategy()) {PrettyPrint = true};
+
+            var jsWriter = new JsonWriter(settings);
+
             string babylonJSformat = jsWriter.Write(babylonScene);
             using (var sw = new StreamWriter(outputFile))
             {
@@ -128,7 +139,11 @@ namespace Unity3D2Babylon
                 var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
                 if (skinnedMesh != null)
                 {
-                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
+                    var babylonMesh = ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
+                    var skeleton = ConvertUnitySkeletonToBabylon(skinnedMesh.bones, skinnedMesh.sharedMesh.bindposes, skinnedMesh.transform, gameObject, progress);
+                    babylonMesh.skeletonId = skeleton.id;
+
+                    ExportSkeletonAnimation(skinnedMesh, babylonMesh, skeleton);
                     continue;
                 }
 
@@ -169,6 +184,30 @@ namespace Unity3D2Babylon
             {
                 babylonScene.gravity = exportationOptions.Gravity.ToFloat();
             }
-        }     
+        }
+
+        private static void ExportSkeletonAnimation(SkinnedMeshRenderer skinnedMesh, BabylonMesh babylonMesh, BabylonSkeleton skeleton)
+        {
+            var animator = skinnedMesh.rootBone.gameObject.GetComponent<Animator>();
+            if (animator != null)
+            {
+                ExportSkeletonAnimationClips(animator, true, skeleton, skinnedMesh.bones, babylonMesh);
+            }
+            else
+            {
+                var parent = skinnedMesh.rootBone.parent;
+                while (parent != null)
+                {
+                    animator = parent.gameObject.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        ExportSkeletonAnimationClips(animator, true, skeleton, skinnedMesh.bones, babylonMesh);
+                        break;
+                    }
+
+                    parent = parent.parent;
+                }
+            }
+        }
     }
 }

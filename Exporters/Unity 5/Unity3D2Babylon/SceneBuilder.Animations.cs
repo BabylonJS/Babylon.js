@@ -57,10 +57,92 @@ namespace Unity3D2Babylon
             return animatable.animations.Any(animation => animation.property.Contains("rotationQuaternion"));
         }
 
+        private static void ExportSkeletonAnimationClips(Animator animator, bool autoPlay, BabylonSkeleton skeleton, Transform[] bones, BabylonMesh babylonMesh)
+        {
+            AnimationClip clip = null;
+            AnimatorController ac = animator.runtimeAnimatorController as AnimatorController;
+            if (ac == null)
+            {
+                return;
+            }
+            var layer = ac.layers[0];
+            if (layer == null)
+            {
+                return;
+            }
+            AnimatorStateMachine sm = layer.stateMachine;
+            if (sm.states.Length > 0)
+            {
+                // Only the first state is supported so far.
+                var state = sm.states[0].state;
+                clip = state.motion as AnimationClip;
+            }
+
+            if (clip == null)
+            {
+                return;
+            }
+
+            ExportSkeletonAnimationClipData(animator, autoPlay, skeleton, bones, babylonMesh, clip);
+        }
+
+        private static void ExportSkeletonAnimationClipData(Animator animator, bool autoPlay, BabylonSkeleton skeleton, Transform[] bones, BabylonMesh babylonMesh, AnimationClip clip)
+        {
+            var frameTime = 1.0f / clip.frameRate;
+            int animationFrameCount = (int)(clip.length * clip.frameRate);
+
+            if (autoPlay)
+            {
+                babylonMesh.autoAnimate = true;
+                babylonMesh.autoAnimateFrom = 0;
+                babylonMesh.autoAnimateTo = animationFrameCount;
+                babylonMesh.autoAnimateLoop = true;
+            }
+
+            foreach (var bone in skeleton.bones)
+            {
+                var keys = new List<BabylonAnimationKey>();
+                var transform = bones.Single(b => b.name == bone.name);
+
+                AnimationMode.BeginSampling();
+                for (var i = 0; i < animationFrameCount; i++)
+                {
+                    clip.SampleAnimation(animator.gameObject, i * frameTime);
+
+                    var local = (transform.parent.localToWorldMatrix.inverse * transform.localToWorldMatrix);
+                    float[] matrix = new[] {
+                        local[0, 0], local[1, 0], local[2, 0], local[3, 0],
+                        local[0, 1], local[1, 1], local[2, 1], local[3, 1],
+                        local[0, 2], local[1, 2], local[2, 2], local[3, 2],
+                        local[0, 3], local[1, 3], local[2, 3], local[3, 3]
+                    };
+
+                    var key = new BabylonAnimationKey
+                    {
+                        frame = i,
+                        values = matrix,
+                    };
+                    keys.Add(key);
+                }
+                AnimationMode.EndSampling();
+
+                var babylonAnimation = new BabylonAnimation
+                {
+                    name = bone.name + "Animation",
+                    property = "_matrix",
+                    dataType = (int)BabylonAnimation.DataType.Matrix,
+                    loopBehavior = (int)BabylonAnimation.LoopBehavior.Cycle,
+                    framePerSecond = (int)clip.frameRate,
+                    keys = keys.ToArray()
+                };
+
+                bone.animation = babylonAnimation;
+            }
+        }
+
         private static void ExportAnimationClip(AnimationClip clip, bool autoPlay, BabylonIAnimatable animatable)
         {
             var curveBindings = AnimationUtility.GetCurveBindings(clip);
-
             var animations = new List<BabylonAnimation>();
 
             var maxFrame = 0;

@@ -56,7 +56,11 @@ namespace Max2Babylon
             object[] names = new object[list.Count];
             for (int i = 0; i < list.Count; i++)
             {
+#if MAX2017
+                var indexer = i;
+#else
                 var indexer = new IntPtr(i);
+#endif
                 var node = list[indexer];
                 names[i] = node.MaxNode.Name;
             }
@@ -68,7 +72,11 @@ namespace Max2Babylon
             object[] names = new object[list.Count];
             for (int i = 0; i < list.Count; i++)
             {
+#if MAX2017
+                var indexer = i;
+#else
                 var indexer = new IntPtr(i);
+#endif
                 var node = list[indexer].MaxNode;
                 string soundFile = "";
 

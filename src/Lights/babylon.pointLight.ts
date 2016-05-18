@@ -22,7 +22,7 @@
                     this.transformedPosition = Vector3.Zero();
                 }
 
-                Vector3.TransformCoordinatesToRef(this.getAbsolutePosition(), this.parent.getWorldMatrix(), this.transformedPosition);
+                Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this.transformedPosition);
 
                 return true;
             }

@@ -16,28 +16,28 @@ var BABYLON;
         Object.defineProperty(DeviceOrientationCamera.prototype, "angularSensibility", {
             //-- Begin properties for backward compatibility for inputs
             get: function () {
-                var gamepad = this.inputs.attached["deviceOrientation"];
-                if (gamepad)
-                    return gamepad.angularSensibility;
+                var deviceOrientation = this.inputs.attached["deviceOrientation"];
+                if (deviceOrientation)
+                    return deviceOrientation.angularSensibility;
             },
             set: function (value) {
-                var gamepad = this.inputs.attached["deviceOrientation"];
-                if (gamepad)
-                    gamepad.angularSensibility = value;
+                var deviceOrientation = this.inputs.attached["deviceOrientation"];
+                if (deviceOrientation)
+                    deviceOrientation.angularSensibility = value;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DeviceOrientationCamera.prototype, "moveSensibility", {
             get: function () {
-                var gamepad = this.inputs.attached["deviceOrientation"];
-                if (gamepad)
-                    return gamepad.moveSensibility;
+                var deviceOrientation = this.inputs.attached["deviceOrientation"];
+                if (deviceOrientation)
+                    return deviceOrientation.moveSensibility;
             },
             set: function (value) {
-                var gamepad = this.inputs.attached["deviceOrientation"];
-                if (gamepad)
-                    gamepad.moveSensibility = value;
+                var deviceOrientation = this.inputs.attached["deviceOrientation"];
+                if (deviceOrientation)
+                    deviceOrientation.moveSensibility = value;
             },
             enumerable: true,
             configurable: true

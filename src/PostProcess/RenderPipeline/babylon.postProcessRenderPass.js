@@ -7,8 +7,8 @@ var BABYLON;
             this._name = name;
             this._renderTexture = new BABYLON.RenderTargetTexture(name, size, scene);
             this.setRenderList(renderList);
-            this._renderTexture.onBeforeRender = beforeRender;
-            this._renderTexture.onAfterRender = afterRender;
+            this._renderTexture.onBeforeRenderObservable.add(beforeRender);
+            this._renderTexture.onAfterRenderObservable.add(afterRender);
             this._scene = scene;
             this._renderList = renderList;
         }

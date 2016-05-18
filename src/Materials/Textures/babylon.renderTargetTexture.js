@@ -17,6 +17,27 @@ var BABYLON;
             this.renderParticles = true;
             this.renderSprites = false;
             this.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
+            // Events
+            /**
+            * An event triggered when the texture is unbind.
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterUnbindObservable = new BABYLON.Observable();
+            /**
+            * An event triggered before rendering the texture
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after rendering the texture
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after the texture clear
+            * @type {BABYLON.Observable}
+            */
+            this.onClearObservable = new BABYLON.Observable();
             this._currentRefreshId = -1;
             this._refreshRate = 1;
             this.name = name;
@@ -52,6 +73,46 @@ var BABYLON;
         Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDER_ONEVERYTWOFRAMES", {
             get: function () {
                 return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "onAfterUnbind", {
+            set: function (callback) {
+                if (this._onAfterUnbindObserver) {
+                    this.onAfterUnbindObservable.remove(this._onAfterUnbindObserver);
+                }
+                this._onAfterUnbindObserver = this.onAfterUnbindObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "onBeforeRender", {
+            set: function (callback) {
+                if (this._onBeforeRenderObserver) {
+                    this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+                }
+                this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "onAfterRender", {
+            set: function (callback) {
+                if (this._onAfterRenderObserver) {
+                    this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+                }
+                this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "onClear", {
+            set: function (callback) {
+                if (this._onClearObserver) {
+                    this.onClearObservable.remove(this._onClearObserver);
+                }
+                this._onClearObserver = this.onClearObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -167,9 +228,7 @@ var BABYLON;
             else {
                 this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
             }
-            if (this.onAfterUnbind) {
-                this.onAfterUnbind();
-            }
+            this.onAfterUnbindObservable.notifyObservers(this);
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
@@ -187,12 +246,10 @@ var BABYLON;
                     engine.bindFramebuffer(this._texture);
                 }
             }
-            if (this.onBeforeRender) {
-                this.onBeforeRender(faceIndex);
-            }
+            this.onBeforeRenderObservable.notifyObservers(faceIndex);
             // Clear
-            if (this.onClear) {
-                this.onClear(engine);
+            if (this.onClearObservable.hasObservers()) {
+                this.onClearObservable.notifyObservers(engine);
             }
             else {
                 engine.clear(scene.clearColor, true, true);
@@ -208,9 +265,7 @@ var BABYLON;
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
-            if (this.onAfterRender) {
-                this.onAfterRender(faceIndex);
-            }
+            this.onAfterRenderObservable.notifyObservers(faceIndex);
             // Dump ?
             if (dumpForDebug) {
                 BABYLON.Tools.DumpFramebuffer(this._size, this._size, engine);
