@@ -13,6 +13,7 @@ module BABYLON {
 
         constructor() {
             this._constantTranform = new Quaternion(- Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+            this._orientationChanged();
         }
 
         public get camera(): FreeCamera {
@@ -29,10 +30,9 @@ module BABYLON {
             window.addEventListener("deviceorientation", this._deviceOrientation);
         }
 
-        private _orientationChanged = (event) => {
+        private _orientationChanged = () => {
             this._screenOrientationAngle = (window.orientation !== undefined ? +window.orientation : (window.screen.orientation && window.screen.orientation['angle'] ? (<any>window.screen.orientation).angle : 0));
             this._screenOrientationAngle = -Tools.ToRadians(this._screenOrientationAngle / 2);
-            //this._screenOrientationAngle = -BABYLON.Tools.ToRadians((+window.orientation || window.screen.orientation['angle'])/2);
             this._screenQuaternion.copyFromFloats(0, Math.sin(this._screenOrientationAngle), 0, Math.cos(this._screenOrientationAngle));
         }
 
