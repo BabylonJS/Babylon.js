@@ -10,10 +10,11 @@ var BABYLON;
         function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
             _super.call(this, name, position, scene);
+            this.rotationQuaternion = new BABYLON.Quaternion();
             var metrics = BABYLON.VRCameraMetrics.GetDefault();
             metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
-            this.inputs.addVRDeviceOrientation();
+            this.inputs.addDeviceOrientation();
         }
         VRDeviceOrientationFreeCamera.prototype.getTypeName = function () {
             return "VRDeviceOrientationFreeCamera";
