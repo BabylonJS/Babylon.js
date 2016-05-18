@@ -74,6 +74,7 @@ var BABYLON;
             this.RADIANCEOVERALPHA = false;
             this.USEPMREMREFLECTION = false;
             this.USEPMREMREFRACTION = false;
+            this.OPENGLNORMALMAP = false;
             this.rebuild();
         }
         return PBRMaterialDefines;
@@ -301,6 +302,10 @@ var BABYLON;
              * Number of Simultaneous lights allowed on the material.
              */
             this.maxSimultaneousLights = 4;
+            /**
+             * If sets to true, normal map will be considered following OpenGL convention.
+             */
+            this.useOpenGLNormalMap = false;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -545,6 +550,9 @@ var BABYLON;
                             if (this.useParallaxOcclusion) {
                                 this._defines.PARALLAXOCCLUSION = true;
                             }
+                        }
+                        if (this.useOpenGLNormalMap) {
+                            this._defines.OPENGLNORMALMAP = true;
                         }
                     }
                 }
@@ -1232,6 +1240,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "maxSimultaneousLights", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useOpenGLNormalMap", void 0);
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "useLogarithmicDepth", null);
