@@ -13049,12 +13049,6 @@ var BABYLON;
             }
             else {
                 BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
-                if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
-                    BABYLON.Matrix.LookAtLHToRef(BABYLON.Vector3.Zero(), this._referencePoint, this.upVector, this._lookAtTemp);
-                    this._lookAtTemp.multiplyToRef(this._cameraRotationMatrix, this._tempMatrix);
-                    this._lookAtTemp.invert();
-                    this._tempMatrix.multiplyToRef(this._lookAtTemp, this._cameraRotationMatrix);
-                }
             }
         };
         TargetCamera.prototype._getViewMatrix = function () {
