@@ -119,7 +119,7 @@
                 this.onActivate = null;
             };
 
-            this.onApply = (effect: Effect) => {
+            this.onApplyObservable.add((effect: Effect) => {
                 this._updateMeshScreenCoordinates(scene);
 
                 effect.setTexture("lightScatteringSampler", this._volumetricLightScatteringRTT);
@@ -128,7 +128,7 @@
                 effect.setFloat("weight", this.weight);
                 effect.setFloat("density", this.density);
                 effect.setVector2("meshPositionOnScreen", this._screenCoordinates);
-            };
+            });
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
@@ -316,14 +316,14 @@
             var savedSceneClearColor: Color4;
             var sceneClearColor = new Color4(0.0, 0.0, 0.0, 1.0);
 
-            this._volumetricLightScatteringRTT.onBeforeRender = (): void => {
+            this._volumetricLightScatteringRTT.onBeforeRenderObservable.add((): void => {
                 savedSceneClearColor = scene.clearColor;
                 scene.clearColor = sceneClearColor;
-            };
+            });
 
-            this._volumetricLightScatteringRTT.onAfterRender = (): void => {
+            this._volumetricLightScatteringRTT.onAfterRenderObservable.add((): void => {
                 scene.clearColor = savedSceneClearColor;
-            };
+            });
             
             this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
                 var engine = scene.getEngine();

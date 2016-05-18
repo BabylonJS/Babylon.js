@@ -16,40 +16,7 @@
         public ALPHAFROMDIFFUSE = false;
         public POINTSIZE = false;
         public FOG = false;
-        public LIGHT0 = false;
-        public LIGHT1 = false;
-        public LIGHT2 = false;
-        public LIGHT3 = false;
-        public SPOTLIGHT0 = false;
-        public SPOTLIGHT1 = false;
-        public SPOTLIGHT2 = false;
-        public SPOTLIGHT3 = false;
-        public HEMILIGHT0 = false;
-        public HEMILIGHT1 = false;
-        public HEMILIGHT2 = false;
-        public HEMILIGHT3 = false;
-        public POINTLIGHT0 = false;
-        public POINTLIGHT1 = false;
-        public POINTLIGHT2 = false;
-        public POINTLIGHT3 = false;
-        public DIRLIGHT0 = false;
-        public DIRLIGHT1 = false;
-        public DIRLIGHT2 = false;
-        public DIRLIGHT3 = false;
         public SPECULARTERM = false;
-        public SHADOW0 = false;
-        public SHADOW1 = false;
-        public SHADOW2 = false;
-        public SHADOW3 = false;
-        public SHADOWS = false;
-        public SHADOWVSM0 = false;
-        public SHADOWVSM1 = false;
-        public SHADOWVSM2 = false;
-        public SHADOWVSM3 = false;
-        public SHADOWPCF0 = false;
-        public SHADOWPCF1 = false;
-        public SHADOWPCF2 = false;
-        public SHADOWPCF3 = false;
         public DIFFUSEFRESNEL = false;
         public OPACITYFRESNEL = false;
         public REFLECTIONFRESNEL = false;
@@ -88,7 +55,7 @@
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
 
@@ -194,6 +161,9 @@
 
         @serialize()
         public useGlossinessFromSpecularMapAlpha = false;
+
+        @serialize()
+        public maxSimultaneousLights = 4;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -467,7 +437,7 @@
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
 
             if (StandardMaterial.FresnelEnabled) {
@@ -586,7 +556,7 @@
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
 
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
@@ -640,25 +610,23 @@
                     shaderName = "legacydefault";
                 }
                 var join = this._defines.toString();
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+                    "mBones",
+                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                    "depthValues",
+                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
+                    "logarithmicDepthConstant"
+                ];
+
+                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
+
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+
                 this._effect = scene.getEngine().createEffect(shaderName,
-                    attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
-                        "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                        "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                        "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                        "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
-                        "mBones",
-                        "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
-                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                        "logarithmicDepthConstant"
-                    ],
-                    ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                    ],
-                    join, fallbacks, this.onCompiled, this.onError);
+                    attribs, uniforms, samplers,
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -838,7 +806,7 @@
 
                 // Lights
                 if (scene.lightsEnabled && !this.disableLighting) {
-                    MaterialHelper.BindLights(scene, mesh, this._effect, this._defines);
+                    MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
                 }
 
                 // View

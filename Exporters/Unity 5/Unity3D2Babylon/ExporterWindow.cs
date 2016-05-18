@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using JsonFx;
 using UnityEditor;
 using UnityEngine;
 using JsonFx.Json;
-using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 
 namespace Unity3D2Babylon
 {
@@ -78,6 +77,9 @@ namespace Unity3D2Babylon
             EditorGUILayout.Space();
             GUILayout.Label("Physics options", EditorStyles.boldLabel);
             exportationOptions.ExportPhysics = EditorGUILayout.Toggle("Physics", exportationOptions.ExportPhysics);
+            EditorGUILayout.Space();
+            GUILayout.Label("Shadows options", EditorStyles.boldLabel);
+            exportationOptions.ExportShadows = EditorGUILayout.Toggle("Shadows", exportationOptions.ExportShadows);
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
@@ -114,7 +116,7 @@ namespace Unity3D2Babylon
         {
             try
             {
-                string sceneName = EditorSceneManager.GetActiveScene().name;
+                string sceneName = SceneManager.GetActiveScene().name;
 
                 exportationOptions.DefaultFolder = EditorUtility.SaveFolderPanel("Please select a folder", exportationOptions.DefaultFolder, "");
 
@@ -141,7 +143,7 @@ namespace Unity3D2Babylon
                 var outputFile = sceneBuilder.WriteToBabylonFile();
 
                 watch.Stop();
-                ReportProgress(1, string.Format("Exportation done in {0:0.00}s", watch.Elapsed.TotalSeconds));
+                ReportProgress(1, $"Exportation done in {watch.Elapsed.TotalSeconds:0.00}s");
                 EditorUtility.ClearProgressBar();
 
                 sceneBuilder.GenerateStatus(logs);

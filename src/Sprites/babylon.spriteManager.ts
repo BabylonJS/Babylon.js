@@ -3,9 +3,22 @@
         public sprites = new Array<Sprite>();
         public renderingGroupId = 0;
         public layerMask: number = 0x0FFFFFFF;
-        public onDispose: () => void;
         public fogEnabled = true;
         public isPickable = false;
+
+        /**
+        * An event triggered when the manager is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<SpriteManager>();
+
+        private _onDisposeObserver: Observer<SpriteManager>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
 
         private _capacity: number;
         private _spriteTexture: Texture;
@@ -246,9 +259,8 @@
             this._scene.spriteManagers.splice(index, 1);
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
     }
 } 

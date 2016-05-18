@@ -13,11 +13,11 @@ var BABYLON;
             _super.call(this, name, "blur", ["screenSize", "direction", "blurWidth"], null, ratio, camera, samplingMode, engine, reusable);
             this.direction = direction;
             this.blurWidth = blurWidth;
-            this.onApply = function (effect) {
+            this.onApplyObservable.add(function (effect) {
                 effect.setFloat2("screenSize", _this.width, _this.height);
                 effect.setVector2("direction", _this.direction);
                 effect.setFloat("blurWidth", _this.blurWidth);
-            };
+            });
         }
         return BlurPostProcess;
     })(BABYLON.PostProcess);

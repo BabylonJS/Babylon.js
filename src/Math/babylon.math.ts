@@ -605,10 +605,17 @@
         }
 
         public static Transform(vector: Vector2, transformation: Matrix): Vector2 {
-            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]);
-            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]);
+            let r = Vector2.Zero();
+            Vector2.TransformToRef(vector, transformation, r);
+            return r;
+        }
 
-            return new Vector2(x, y);
+        public static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2) {
+            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + transformation.m[12];
+            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + transformation.m[13];
+
+            result.x = x;
+            result.y = y;
         }
 
         public static Distance(value1: Vector2, value2: Vector2): number {
@@ -1557,6 +1564,42 @@
             return center;
         }
     }
+
+    export interface ISize {
+        width: number;
+        height: number;
+    }
+
+    export class Size implements ISize {
+        width: number;
+        height: number;
+
+        public constructor(width: number, height: number) {
+            this.width = width;
+            this.height = height;
+        }
+
+        public clone(): Size {
+            return new Size(this.width, this.height);
+        }
+
+        public equals(other: Size): boolean {
+            if (!other) {
+                return false;
+            }
+
+            return (this.width === other.width) && (this.height === other.height);
+        }
+
+        public get surface(): number {
+            return this.width * this.height;
+        }
+
+        public static Zero(): Size {
+            return new Size(0, 0);
+        }
+    }
+
 
     export class Quaternion {
         constructor(public x: number = 0, public y: number = 0, public z: number = 0, public w: number = 1) {
@@ -2513,6 +2556,16 @@
         }
 
         public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            var result = Matrix.Zero();
+
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
+            }
+
+            return result;
+        }
+
+        public static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
             var startScale = new Vector3(0, 0, 0);
             var startRotation = new Quaternion();
             var startTranslation = new Vector3(0, 0, 0);

@@ -18,12 +18,12 @@ var BABYLON;
             _super.call(this, name, size, scene, generateMipMaps, true);
             this.refractionPlane = new BABYLON.Plane(0, 1, 0, 1);
             this.depth = 2.0;
-            this.onBeforeRender = function () {
+            this.onBeforeRenderObservable.add(function () {
                 scene.clipPlane = _this.refractionPlane;
-            };
-            this.onAfterRender = function () {
+            });
+            this.onAfterRenderObservable.add(function () {
                 delete scene.clipPlane;
-            };
+            });
         }
         RefractionTexture.prototype.clone = function () {
             var textureSize = this.getSize();

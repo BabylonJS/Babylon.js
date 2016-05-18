@@ -47,8 +47,22 @@ var BABYLON;
     })();
     BABYLON.PointerEventTypes = PointerEventTypes;
     /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    var PointerInfoPre = (function () {
+        function PointerInfoPre(type, event, localX, localY) {
+            this.type = type;
+            this.event = event;
+            this.skipOnPointerObservable = false;
+            this.localPosition = new BABYLON.Vector2(localX, localY);
+        }
+        return PointerInfoPre;
+    })();
+    BABYLON.PointerInfoPre = PointerInfoPre;
+    /**
      * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The differents event types can be found in the PointerEventTypes class.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
      */
     var PointerInfo = (function () {
         function PointerInfo(type, event, pickInfo) {
@@ -151,6 +165,11 @@ var BABYLON;
             this.onMeshRemovedObservable = new BABYLON.Observable();
             // Animations
             this.animations = [];
+            /**
+             * This observable event is triggered when any mouse event registered during Scene.attach() is called BEFORE the 3D engine to process anything (mesh/sprite picking for instance).
+             * You have the possibility to skip the 3D Engine process and the call to onPointerObservable by setting PointerInfoBase.skipOnPointerObservable to true
+             */
+            this.onPrePointerObservable = new BABYLON.Observable();
             /**
              * Observable event triggered each time an input event is received from the rendering canvas
              */
@@ -281,7 +300,6 @@ var BABYLON;
                 this._outlineRenderer = new BABYLON.OutlineRenderer(this);
             }
             this.attachControl();
-            this._debugLayer = new BABYLON.DebugLayer(this);
             if (BABYLON.SoundTrack) {
                 this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
             }
@@ -370,9 +388,19 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Scene.prototype, "unTranslatedPointer", {
+            get: function () {
+                return new BABYLON.Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "debugLayer", {
             // Properties
             get: function () {
+                if (!this._debugLayer) {
+                    this._debugLayer = new BABYLON.DebugLayer(this);
+                }
                 return this._debugLayer;
             },
             enumerable: true,
@@ -516,11 +544,20 @@ var BABYLON;
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
             this._onPointerMove = function (evt) {
+                _this._updatePointerPosition(evt);
+                // PreObservable support
+                if (_this.onPrePointerObservable.hasObservers()) {
+                    var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                    var pi = new PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
+                    _this.onPrePointerObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
                 if (!_this.cameraToUseForPointers && !_this.activeCamera) {
                     return;
                 }
                 var canvas = _this._engine.getRenderingCanvas();
-                _this._updatePointerPosition(evt);
                 if (!_this.pointerMovePredicate) {
                     _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); };
                 }
@@ -560,10 +597,19 @@ var BABYLON;
                 }
             };
             this._onPointerDown = function (evt) {
+                _this._updatePointerPosition(evt);
+                // PreObservable support
+                if (_this.onPrePointerObservable.hasObservers()) {
+                    var type = PointerEventTypes.POINTERDOWN;
+                    var pi = new PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
+                    _this.onPrePointerObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
                 if (!_this.cameraToUseForPointers && !_this.activeCamera) {
                     return;
                 }
-                _this._updatePointerPosition(evt);
                 _this._startingPointerPosition.x = _this._pointerX;
                 _this._startingPointerPosition.y = _this._pointerY;
                 _this._startingPointerTime = new Date().getTime();
@@ -640,10 +686,19 @@ var BABYLON;
                 }
             };
             this._onPointerUp = function (evt) {
+                _this._updatePointerPosition(evt);
+                // PreObservable support
+                if (_this.onPrePointerObservable.hasObservers()) {
+                    var type = PointerEventTypes.POINTERUP;
+                    var pi = new PointerInfoPre(type, evt, _this._unTranslatedPointerX, _this._unTranslatedPointerY);
+                    _this.onPrePointerObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
                 if (!_this.cameraToUseForPointers && !_this.activeCamera) {
                     return;
                 }
-                _this._updatePointerPosition(evt);
                 if (!_this.pointerUpPredicate) {
                     _this.pointerUpPredicate = function (mesh) {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)));
@@ -1243,6 +1298,11 @@ var BABYLON;
                 }
             }
             return null;
+        };
+        Scene.prototype.getMeshesByID = function (id) {
+            return this.meshes.filter(function (m) {
+                return m.id === id;
+            });
         };
         /**
          * Get a mesh with its auto-generated unique id
@@ -1939,9 +1999,12 @@ var BABYLON;
                 this._depthRenderer.dispose();
             }
             // Debug layer
-            this.debugLayer.hide();
+            if (this._debugLayer) {
+                this._debugLayer.hide();
+            }
             // Events
             this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
             this.onBeforeRenderObservable.clear();
             this.onAfterRenderObservable.clear();
             this.detachControl();

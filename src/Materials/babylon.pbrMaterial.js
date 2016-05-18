@@ -11,7 +11,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var maxSimultaneousLights = 4;
     var PBRMaterialDefines = (function (_super) {
         __extends(PBRMaterialDefines, _super);
         function PBRMaterialDefines() {
@@ -32,40 +31,7 @@ var BABYLON;
             this.ALPHAFROMALBEDO = false;
             this.POINTSIZE = false;
             this.FOG = false;
-            this.LIGHT0 = false;
-            this.LIGHT1 = false;
-            this.LIGHT2 = false;
-            this.LIGHT3 = false;
-            this.SPOTLIGHT0 = false;
-            this.SPOTLIGHT1 = false;
-            this.SPOTLIGHT2 = false;
-            this.SPOTLIGHT3 = false;
-            this.HEMILIGHT0 = false;
-            this.HEMILIGHT1 = false;
-            this.HEMILIGHT2 = false;
-            this.HEMILIGHT3 = false;
-            this.POINTLIGHT0 = false;
-            this.POINTLIGHT1 = false;
-            this.POINTLIGHT2 = false;
-            this.POINTLIGHT3 = false;
-            this.DIRLIGHT0 = false;
-            this.DIRLIGHT1 = false;
-            this.DIRLIGHT2 = false;
-            this.DIRLIGHT3 = false;
             this.SPECULARTERM = false;
-            this.SHADOW0 = false;
-            this.SHADOW1 = false;
-            this.SHADOW2 = false;
-            this.SHADOW3 = false;
-            this.SHADOWS = false;
-            this.SHADOWVSM0 = false;
-            this.SHADOWVSM1 = false;
-            this.SHADOWVSM2 = false;
-            this.SHADOWVSM3 = false;
-            this.SHADOWPCF0 = false;
-            this.SHADOWPCF1 = false;
-            this.SHADOWPCF2 = false;
-            this.SHADOWPCF3 = false;
             this.OPACITYFRESNEL = false;
             this.EMISSIVEFRESNEL = false;
             this.FRESNEL = false;
@@ -95,6 +61,7 @@ var BABYLON;
             this.LOGARITHMICDEPTH = false;
             this.CAMERATONEMAP = false;
             this.CAMERACONTRAST = false;
+            this.CAMERACOLORGRADING = false;
             this.OVERLOADEDVALUES = false;
             this.OVERLOADEDSHADOWVALUES = false;
             this.USESPHERICALFROMREFLECTIONMAP = false;
@@ -107,7 +74,7 @@ var BABYLON;
             this.RADIANCEOVERALPHA = false;
             this.USEPMREMREFLECTION = false;
             this.USEPMREMREFRACTION = false;
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
         return PBRMaterialDefines;
     })(BABYLON.MaterialDefines);
@@ -176,6 +143,13 @@ var BABYLON;
              * This property is here and not in the camera to allow controlling contrast without full screen post process.
              */
             this.cameraContrast = 1.0;
+            /**
+             * Color Grading 2D Lookup Texture.
+             * This allows special effects like sepia, black and white to sixties rendering style.
+             */
+            this.cameraColorGradingTexture = null;
+            this._cameraColorGradingScaleOffset = new BABYLON.Vector4(1.0, 1.0, 0.0, 0.0);
+            this._cameraColorGradingInfos = new BABYLON.Vector4(1.0, 1.0, 0.0, 0.0);
             this._cameraInfos = new BABYLON.Vector4(1.0, 1.0, 0.0, 0.0);
             this._microsurfaceTextureLods = new BABYLON.Vector2(0.0, 0.0);
             /**
@@ -319,7 +293,14 @@ var BABYLON;
              * Controls the scale bias of the parallax mode.
              */
             this.parallaxScaleBias = 0.05;
+            /**
+             * If sets to true, disables all the lights affecting the material.
+             */
             this.disableLighting = false;
+            /**
+             * Number of Simultaneous lights allowed on the material.
+             */
+            this.maxSimultaneousLights = 4;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -393,7 +374,7 @@ var BABYLON;
                 ref.b = color.b;
             }
         };
-        PBRMaterial.BindLights = function (scene, mesh, effect, defines, useScalarInLinearSpace) {
+        PBRMaterial.BindLights = function (scene, mesh, effect, defines, useScalarInLinearSpace, maxSimultaneousLights, usePhysicalLightFalloff) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {
@@ -404,12 +385,11 @@ var BABYLON;
                 if (!light.canAffectMesh(mesh)) {
                     continue;
                 }
-                this._lightRadiuses[lightIndex] = light.radius;
                 BABYLON.MaterialHelper.BindLightProperties(light, effect, lightIndex);
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
                 PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
-                effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, light.range);
+                effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, usePhysicalLightFalloff ? light.radius : light.range);
                 if (defines["SPECULARTERM"]) {
                     this.convertColorToLinearSpaceToRef(light.specular, PBRMaterial._scaledReflectivity, useScalarInLinearSpace);
                     PBRMaterial._scaledReflectivity.scaleToRef(light.intensity, PBRMaterial._scaledReflectivity);
@@ -423,7 +403,6 @@ var BABYLON;
                 if (lightIndex === maxSimultaneousLights)
                     break;
             }
-            effect.setFloat4("vLightRadiuses", this._lightRadiuses[0], this._lightRadiuses[1], this._lightRadiuses[2], this._lightRadiuses[3]);
         };
         PBRMaterial.prototype.isReady = function (mesh, useInstances) {
             if (this.checkReadyOnlyOnce) {
@@ -588,6 +567,14 @@ var BABYLON;
                         }
                     }
                 }
+                if (this.cameraColorGradingTexture) {
+                    if (!this.cameraColorGradingTexture.isReady()) {
+                        return false;
+                    }
+                    else {
+                        this._defines.CAMERACOLORGRADING = true;
+                    }
+                }
             }
             // Effect
             if (scene.clipPlane) {
@@ -635,7 +622,7 @@ var BABYLON;
                 this._defines.FOG = true;
             }
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
             }
             if (BABYLON.StandardMaterial.FresnelEnabled) {
                 // Fresnel
@@ -724,7 +711,7 @@ var BABYLON;
                 if (this._defines.LOGARITHMICDEPTH) {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
-                BABYLON.MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
+                BABYLON.MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
                 }
@@ -762,26 +749,25 @@ var BABYLON;
                     shaderName = "legacypbr";
                 }
                 var join = this._defines.toString();
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
-                    "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                    "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                    "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                    "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
                     "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                    "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
+                    "depthValues",
                     "opacityParts", "emissiveLeftColor", "emissiveRightColor",
-                    "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vCameraInfos", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
+                    "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
                     "logarithmicDepthConstant",
                     "vSphericalX", "vSphericalY", "vSphericalZ",
                     "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                     "vSphericalXY", "vSphericalYZ", "vSphericalZX",
-                    "vMicrosurfaceTextureLods", "vLightRadiuses"
-                ], ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
-                    "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                ], join, fallbacks, this.onCompiled, this.onError);
+                    "vMicrosurfaceTextureLods",
+                    "vCameraInfos", "vCameraColorGradingInfos", "vCameraColorGradingScaleOffset"
+                ];
+                var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
+                    "cameraColorGrading2DSampler"];
+                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -902,6 +888,22 @@ var BABYLON;
                     if ((this.reflectionTexture || this.refractionTexture)) {
                         this._effect.setFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                     }
+                    if (this.cameraColorGradingTexture) {
+                        this._effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
+                        this._cameraColorGradingInfos.x = this.cameraColorGradingTexture.level; // Texture Level
+                        this._cameraColorGradingInfos.y = this.cameraColorGradingTexture.getSize().height; // Texture Size example with 8
+                        this._cameraColorGradingInfos.z = this._cameraColorGradingInfos.y - 1.0; // SizeMinusOne 8 - 1
+                        this._cameraColorGradingInfos.w = 1 / this._cameraColorGradingInfos.y; // Space of 1 slice 1 / 8
+                        this._effect.setFloat4("vCameraColorGradingInfos", this._cameraColorGradingInfos.x, this._cameraColorGradingInfos.y, this._cameraColorGradingInfos.z, this._cameraColorGradingInfos.w);
+                        var slicePixelSizeU = this._cameraColorGradingInfos.w / this._cameraColorGradingInfos.y; // Space of 1 pixel in U direction, e.g. 1/64
+                        var slicePixelSizeV = 1.0 / this._cameraColorGradingInfos.y; // Space of 1 pixel in V direction, e.g. 1/8
+                        this._cameraColorGradingScaleOffset.x = this._cameraColorGradingInfos.z * slicePixelSizeU; // Extent of lookup range in U for a single slice so that range corresponds to (size-1) texels, for example 7/64
+                        this._cameraColorGradingScaleOffset.y = this._cameraColorGradingInfos.z /
+                            this._cameraColorGradingInfos.y; // Extent of lookup range in V for a single slice so that range corresponds to (size-1) texels, for example 7/8
+                        this._cameraColorGradingScaleOffset.z = 0.5 * slicePixelSizeU; // Offset of lookup range in U to align sample position with texel centre, for example 0.5/64 
+                        this._cameraColorGradingScaleOffset.w = 0.5 * slicePixelSizeV; // Offset of lookup range in V to align sample position with texel centre, for example 0.5/8
+                        this._effect.setFloat4("vCameraColorGradingScaleOffset", this._cameraColorGradingScaleOffset.x, this._cameraColorGradingScaleOffset.y, this._cameraColorGradingScaleOffset.z, this._cameraColorGradingScaleOffset.w);
+                    }
                 }
                 // Clip plane
                 BABYLON.MaterialHelper.BindClipPlane(this._effect, this._myScene);
@@ -929,7 +931,7 @@ var BABYLON;
                 this._effect.setColor4("vAlbedoColor", PBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
-                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace);
+                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
                 }
                 // View
                 if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
@@ -1002,6 +1004,9 @@ var BABYLON;
             if (this.refractionTexture && this.refractionTexture.animations && this.refractionTexture.animations.length > 0) {
                 results.push(this.refractionTexture);
             }
+            if (this.cameraColorGradingTexture && this.cameraColorGradingTexture.animations && this.cameraColorGradingTexture.animations.length > 0) {
+                results.push(this.cameraColorGradingTexture);
+            }
             return results;
         };
         PBRMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
@@ -1033,6 +1038,9 @@ var BABYLON;
                 if (this.refractionTexture) {
                     this.refractionTexture.dispose();
                 }
+                if (this.cameraColorGradingTexture) {
+                    this.cameraColorGradingTexture.dispose();
+                }
             }
             _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
@@ -1053,7 +1061,6 @@ var BABYLON;
         PBRMaterial._scaledReflectivity = new BABYLON.Color3();
         PBRMaterial._scaledEmissive = new BABYLON.Color3();
         PBRMaterial._scaledReflection = new BABYLON.Color3();
-        PBRMaterial._lightRadiuses = [1, 1, 1, 1];
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "directIntensity", void 0);
@@ -1081,6 +1088,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "cameraContrast", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "cameraColorGradingTexture", void 0);
         __decorate([
             BABYLON.serializeAsColor3()
         ], PBRMaterial.prototype, "overloadedAmbient", void 0);
@@ -1219,6 +1229,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "disableLighting", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "maxSimultaneousLights", void 0);
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "useLogarithmicDepth", null);

@@ -16,10 +16,7 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<lightFragmentDeclaration>[0]
-#include<lightFragmentDeclaration>[1]
-#include<lightFragmentDeclaration>[2]
-#include<lightFragmentDeclaration>[3]
+#include<lightFragmentDeclaration>[0..maxSimultaneousLights]
 
 
 #include<lightsFragmentFunctions>
@@ -77,10 +74,7 @@ void main(void) {
 	float shadow = 1.;
     float glossiness = 0.;
     
-#include<lightFragment>[0]
-#include<lightFragment>[1]
-#include<lightFragment>[2]
-#include<lightFragment>[3]
+#include<lightFragment>[0..maxSimultaneousLights]
 
 
 #ifdef VERTEXALPHA

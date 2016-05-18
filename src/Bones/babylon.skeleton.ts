@@ -42,14 +42,14 @@
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
         public toString(fullDetails? : boolean) : string {
-            var ret = "Name: " + this.name + ", nBones: " + this.bones.length;
-            ret += ", nAnimationRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
-            if (fullDetails){
-                ret += ", Ranges: {" 
-                var first = true;
-                for (var name in this._ranges) {
-                    if (!first){
-                        ret + ", ";
+            var ret = `Name: ${this.name}, nBones: ${this.bones.length}`;
+            ret += `, nAnimationRanges: ${this._ranges ? Object.keys(this._ranges).length : "none"}`;
+            if (fullDetails) {
+                ret += ", Ranges: {"; 
+                let first = true;
+                for (let name in this._ranges) {
+                    if (first) {
+                        ret += ", ";
                         first = false; 
                     }
                     ret += name; 
@@ -125,22 +125,24 @@
             // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
             var boneDict = {};
             var sourceBones = source.bones;
-            for (var i = 0, nBones = sourceBones.length; i < nBones; i++) {
+            var nBones: number;
+            var i: number;
+            for (i = 0, nBones = sourceBones.length; i < nBones; i++) {
                 boneDict[sourceBones[i].name] = sourceBones[i];
             }
 
             if (this.bones.length !== sourceBones.length){
-                BABYLON.Tools.Warn("copyAnimationRange: this rig has " + this.bones.length + " bones, while source as " + sourceBones.length);
+                Tools.Warn(`copyAnimationRange: this rig has ${this.bones.length} bones, while source as ${sourceBones.length}`);
                 ret = false;
             }
             
-            for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
+            for (i = 0, nBones = this.bones.length; i < nBones; i++) {
                 var boneName = this.bones[i].name;
                 var sourceBone = boneDict[boneName];
                 if (sourceBone) {
                     ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired);
                 } else {
-                    BABYLON.Tools.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);
+                    Tools.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);
                     ret = false;
                 }
             }
@@ -169,14 +171,14 @@
             return ret;
         }
 
-        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable {
             var range = this.getAnimationRange(name);
 
             if (!range) {
                 return null;
             }
 
-            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+            return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
         }
 
         public _markAsDirty(): void {
@@ -299,6 +301,15 @@
             return result;
         }
 
+        public enableBlending(blendingSpeed = 0.01) {
+            this.bones.forEach((bone) => {
+                bone.animations.forEach((animation: Animation) => {
+                    animation.enableBlending = true;
+                    animation.blendingSpeed = blendingSpeed;
+                });
+            });
+        }
+
         public dispose() {
             this._meshesWithPoseMatrix = [];
 
@@ -356,7 +367,8 @@
 
             skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
 
-            for (var index = 0; index < parsedSkeleton.bones.length; index++) {
+            let index: number;
+            for (index = 0; index < parsedSkeleton.bones.length; index++) {
                 var parsedBone = parsedSkeleton.bones[index];
 
                 var parentBone = null;
@@ -377,7 +389,7 @@
             
             // placed after bones, so createAnimationRange can cascade down
             if (parsedSkeleton.ranges) {
-                for (var index = 0; index < parsedSkeleton.ranges.length; index++) {
+                for (index = 0; index < parsedSkeleton.ranges.length; index++) {
                     var data = parsedSkeleton.ranges[index];
                     skeleton.createAnimationRange(data.name, data.from, data.to);
                 }

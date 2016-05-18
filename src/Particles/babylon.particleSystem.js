@@ -29,6 +29,11 @@ var BABYLON;
             this.minAngularSpeed = 0;
             this.maxAngularSpeed = 0;
             this.layerMask = 0x0FFFFFFF;
+            /**
+            * An event triggered when the system is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
             this.blendMode = ParticleSystem.BLENDMODE_ONEONE;
             this.forceDepthWrite = false;
             this.gravity = BABYLON.Vector3.Zero();
@@ -109,6 +114,16 @@ var BABYLON;
                 }
             };
         }
+        Object.defineProperty(ParticleSystem.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         ParticleSystem.prototype.recycleParticle = function (particle) {
             var lastParticle = this.particles.pop();
             if (lastParticle !== particle) {
@@ -313,9 +328,8 @@ var BABYLON;
             var index = this._scene.particleSystems.indexOf(this);
             this._scene.particleSystems.splice(index, 1);
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         };
         // Clone
         ParticleSystem.prototype.clone = function (name, newEmitter) {

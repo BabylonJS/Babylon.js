@@ -32,8 +32,22 @@
     }
 
     /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    export class PointerInfoPre {
+        constructor(public type: number, public event: PointerEvent | MouseWheelEvent, localX, localY) {
+            this.skipOnPointerObservable = false;
+            this.localPosition = new Vector2(localX, localY);
+        }
+
+        public localPosition: Vector2;
+        public skipOnPointerObservable: boolean;
+    }
+
+    /**
      * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The differents event types can be found in the PointerEventTypes class.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
      */
     export class PointerInfo {
         constructor(public type: number, public event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
@@ -238,9 +252,19 @@
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
         /**
+         * This observable event is triggered when any mouse event registered during Scene.attach() is called BEFORE the 3D engine to process anything (mesh/sprite picking for instance).
+         * You have the possibility to skip the 3D Engine process and the call to onPointerObservable by setting PointerInfoBase.skipOnPointerObservable to true
+         */
+        public onPrePointerObservable = new Observable<PointerInfoPre>();
+
+        /**
          * Observable event triggered each time an input event is received from the rendering canvas
          */
         public onPointerObservable = new Observable<PointerInfo>();
+
+        public get unTranslatedPointer(): Vector2 {
+            return new Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
+        }
 
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
@@ -468,8 +492,6 @@
 
             this.attachControl();
 
-            this._debugLayer = new DebugLayer(this);
-
             if (SoundTrack) {
                 this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
             }
@@ -485,6 +507,9 @@
 
         // Properties
         public get debugLayer(): DebugLayer {
+            if (!this._debugLayer) {
+                this._debugLayer = new DebugLayer(this);
+            }
             return this._debugLayer;
         }
 
@@ -636,13 +661,24 @@
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
+
+                this._updatePointerPosition(evt);
+
+                // PreObservable support
+                if (this.onPrePointerObservable.hasObservers()) {
+                    let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                    this.onPrePointerObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
+
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
 
                 var canvas = this._engine.getRenderingCanvas();
-
-                this._updatePointerPosition(evt);
 
                 if (!this.pointerMovePredicate) {
                     this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined);
@@ -688,11 +724,22 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
+                this._updatePointerPosition(evt);
+
+                // PreObservable support
+                if (this.onPrePointerObservable.hasObservers()) {
+                    let type = PointerEventTypes.POINTERDOWN;
+                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                    this.onPrePointerObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
+
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
 
-                this._updatePointerPosition(evt);
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = new Date().getTime();
@@ -781,11 +828,21 @@
             };
 
             this._onPointerUp = (evt: PointerEvent) => {
+                this._updatePointerPosition(evt);
+
+                // PreObservable support
+                if (this.onPrePointerObservable.hasObservers()) {
+                    let type = PointerEventTypes.POINTERUP;
+                    let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+                    this.onPrePointerObservable.notifyObservers(pi, type);
+                    if (pi.skipOnPointerObservable) {
+                        return;
+                    }
+                }
+
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
-
-                this._updatePointerPosition(evt);
 
                 if (!this.pointerUpPredicate) {
                     this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
@@ -2358,11 +2415,14 @@
             }
 
             // Debug layer
-            this.debugLayer.hide();
+            if (this._debugLayer) {
+                this._debugLayer.hide();
+            }
 
             // Events
             this.onDisposeObservable.notifyObservers(this);
 
+            this.onDisposeObservable.clear();
             this.onBeforeRenderObservable.clear();
             this.onAfterRenderObservable.clear();
 
@@ -2802,4 +2862,3 @@
         }
     }
 }
-

@@ -13,6 +13,11 @@ var BABYLON;
             _super.call(this, name, scene);
             // Events
             /**
+            * An event triggered when the mesh is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
+            /**
             * An event triggered when this mesh collides with another one
             * @type {BABYLON.Observable}
             */
@@ -40,7 +45,6 @@ var BABYLON;
             this.isPickable = true;
             this.showBoundingBox = false;
             this.showSubMeshesBoundingBox = false;
-            this.onDispose = null;
             this.isBlocker = false;
             this.renderingGroupId = 0;
             this.receiveShadows = false;
@@ -133,6 +137,16 @@ var BABYLON;
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_ALL", {
             get: function () {
                 return AbstractMesh._BILLBOARDMODE_ALL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -580,7 +594,7 @@ var BABYLON;
                     else {
                         parentMatrix = this.parent.getWorldMatrix();
                     }
-                    BABYLON.Vector3.TransformCoordinatesToRef(localPosition, parentMatrix, BABYLON.Tmp.Vector3[1]);
+                    BABYLON.Vector3.TransformNormalToRef(localPosition, parentMatrix, BABYLON.Tmp.Vector3[1]);
                     localPosition = BABYLON.Tmp.Vector3[1];
                 }
                 var zero = this.getScene().activeCamera.globalPosition.clone();
@@ -1018,11 +1032,12 @@ var BABYLON;
             }
             _super.prototype.dispose.call(this);
             this.onAfterWorldMatrixUpdateObservable.clear();
+            this.onCollideObservable.clear();
+            this.onCollisionPositionChangeObservable.clear();
             this._isDisposed = true;
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         };
         // Statics
         AbstractMesh._BILLBOARDMODE_NONE = 0;
