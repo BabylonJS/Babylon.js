@@ -26,6 +26,11 @@
 	vec3 perturbNormal(vec3 viewDir, mat3 cotangentFrame, vec2 uv)
 	{
 		vec3 map = texture2D(bumpSampler, uv).xyz;
+
+	#ifdef OPENGLNORMALMAP
+		map.y = 1.0 - map.y;
+	#endif
+
 		map = map * 255. / 127. - 128. / 127.;
 		return normalize(cotangentFrame * map);
 	}

@@ -52,6 +52,7 @@
         public REFRACTION = false;
         public REFRACTIONMAP_3D = false;
         public REFLECTIONOVERALPHA = false;
+        public OPENGLNORMALMAP = false;
 
         constructor() {
             super();
@@ -164,6 +165,12 @@
 
         @serialize()
         public maxSimultaneousLights = 4;
+
+        /**
+         * If sets to true, normal map will be considered following OpenGL convention.
+         */
+        @serialize()
+        public useOpenGLNormalMap = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -385,6 +392,10 @@
                             if (this.useParallaxOcclusion) {
                                 this._defines.PARALLAXOCCLUSION = true;
                             }
+                        }
+
+                        if (this.useOpenGLNormalMap) {
+                            this._defines.OPENGLNORMALMAP = true;
                         }
                     }
                 }

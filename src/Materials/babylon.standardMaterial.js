@@ -67,6 +67,7 @@ var BABYLON;
             this.REFRACTION = false;
             this.REFRACTIONMAP_3D = false;
             this.REFLECTIONOVERALPHA = false;
+            this.OPENGLNORMALMAP = false;
             this.rebuild();
         }
         return StandardMaterialDefines;
@@ -97,6 +98,10 @@ var BABYLON;
             this.useLightmapAsShadowmap = false;
             this.useGlossinessFromSpecularMapAlpha = false;
             this.maxSimultaneousLights = 4;
+            /**
+             * If sets to true, normal map will be considered following OpenGL convention.
+             */
+            this.useOpenGLNormalMap = false;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -286,6 +291,9 @@ var BABYLON;
                             if (this.useParallaxOcclusion) {
                                 this._defines.PARALLAXOCCLUSION = true;
                             }
+                        }
+                        if (this.useOpenGLNormalMap) {
+                            this._defines.OPENGLNORMALMAP = true;
                         }
                     }
                 }
@@ -817,6 +825,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], StandardMaterial.prototype, "maxSimultaneousLights", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useOpenGLNormalMap", void 0);
         __decorate([
             BABYLON.serialize()
         ], StandardMaterial.prototype, "useLogarithmicDepth", null);
