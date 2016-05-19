@@ -21167,6 +21167,9 @@ var BABYLON;
             if (isCube === void 0) { isCube = false; }
             _super.call(this, null, scene, !generateMipMaps);
             this.isCube = isCube;
+            /**
+            * Use this list to define the list of mesh you want to render.
+            */
             this.renderList = new Array();
             this.renderParticles = true;
             this.renderSprites = false;
@@ -21345,6 +21348,17 @@ var BABYLON;
                     this.renderList.push(scene.getMeshByID(id));
                 }
                 delete this._waitingRenderList;
+            }
+            // Is predicate defined?
+            if (this.renderListPredicate) {
+                this.renderList.splice(0); // Clear previous renderList
+                var sceneMeshes = this.getScene().meshes;
+                for (var index = 0; index < sceneMeshes.length; index++) {
+                    var mesh = sceneMeshes[index];
+                    if (this.renderListPredicate(mesh)) {
+                        this.renderList.push(mesh);
+                    }
+                }
             }
             if (this.renderList && this.renderList.length === 0) {
                 return;
@@ -36473,6 +36487,15 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        IntersectInfo2D.prototype.isPrimIntersected = function (prim) {
+            for (var _i = 0, _a = this.intersectedPrimitives; _i < _a.length; _i++) {
+                var cur = _a[_i];
+                if (cur.prim === prim) {
+                    return cur.intersectionLocation;
+                }
+            }
+            return null;
+        };
         // Internals, don't use
         IntersectInfo2D.prototype._exit = function (firstLevel) {
             if (firstLevel) {
@@ -36877,9 +36900,8 @@ var BABYLON;
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
         };
         Prim2DBase.prototype.addChild = function (child) {
-            child._siblingDepthOffset = (this._children.length + 1) * this.owner.hierarchySiblingZDelta;
-            child._depthLevel = this._depthLevel + 1;
-            child._hierarchyDepthOffset = child._depthLevel * this.owner.hierarchyLevelZFactor;
+            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
+            child._siblingDepthOffset = this._siblingDepthOffset / this.owner.hierarchyLevelMaxSiblingCount;
             this._children.push(child);
         };
         Prim2DBase.prototype.dispose = function () {
@@ -36907,7 +36929,7 @@ var BABYLON;
             return true;
         };
         Prim2DBase.prototype.getActualZOffset = function () {
-            return this._zOrder || 1 - (this._siblingDepthOffset + this._hierarchyDepthOffset);
+            return this._zOrder || (1 - this._hierarchyDepthOffset);
         };
         Prim2DBase.prototype.onPrimBecomesDirty = function () {
             if (this._renderGroup) {
@@ -36915,7 +36937,7 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype._needPrepare = function () {
-            return this._visibilityChanged && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
+            return this._visibilityChanged || this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         };
         Prim2DBase.prototype._prepareRender = function (context) {
             this._prepareRenderPre(context);
@@ -39013,6 +39035,10 @@ var BABYLON;
             }
             return res;
         };
+        Sprite2D.prototype.levelIntersect = function (intersectInfo) {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
+            return true;
+        };
         Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, texture, spriteSize, spriteLocation, invertY) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
             this.texture = texture;
@@ -39353,6 +39379,10 @@ var BABYLON;
             text2d.setupText2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), fontName, text, areaSize, defaultFontColor || new BABYLON.Color4(0, 0, 0, 1), vAlign, hAlign, tabulationSize);
             return text2d;
         };
+        Text2D.prototype.levelIntersect = function (intersectInfo) {
+            // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
+            return true;
+        };
         Text2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
             var renderCache = new Text2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
@@ -39590,15 +39620,13 @@ var BABYLON;
             }
             this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", function (k) { return new Canvas2DEngineBoundData(); });
             this._cachingStrategy = cachingstrategy;
-            this._depthLevel = 0;
-            this._hierarchyMaxDepth = 100;
-            this._hierarchyLevelZFactor = 1 / this._hierarchyMaxDepth;
-            this._hierarchyLevelMaxSiblingCount = 1000;
-            this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
             this._primPointerInfo = new BABYLON.PrimitivePointerInfo();
             this._capturedPointers = new BABYLON.StringDictionary();
             this._pickStartingPosition = BABYLON.Vector2.Zero();
             this.setupGroup2D(this, null, name, BABYLON.Vector2.Zero(), size, this._cachingStrategy === Canvas2D.CACHESTRATEGY_ALLGROUPS ? BABYLON.Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : BABYLON.Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
+            this._hierarchyLevelMaxSiblingCount = 100;
+            this._hierarchyDepthOffset = 0;
+            this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new BABYLON.Size(0, 0);
@@ -39628,6 +39656,13 @@ var BABYLON;
             //            this._supprtInstancedArray = false; // TODO REMOVE!!!
             this._setupInteraction(enableInteraction);
         };
+        Object.defineProperty(Canvas2D.prototype, "hierarchyLevelMaxSiblingCount", {
+            get: function () {
+                return this._hierarchyLevelMaxSiblingCount;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Canvas2D.prototype._setupInteraction = function (enable) {
             var _this = this;
             // No change detection
@@ -39915,12 +39950,11 @@ var BABYLON;
                             ii.pickPosition = ppi.canvasPointerPos.clone();
                             ii.findFirstOnly = false;
                             _this.intersect(ii);
-                            if (ii.isIntersected) {
-                                var iprim = ii.topMostIntersectedPrimitive.prim;
-                                if (iprim.actionManager) {
+                            if (ii.isPrimIntersected(prim) !== null) {
+                                if (prim.actionManager) {
                                     if (_this._pickStartingTime !== 0 && ((new Date().getTime() - _this._pickStartingTime) > BABYLON.ActionManager.LongPressDelay) && (Math.abs(_this._pickStartingPosition.x - ii.pickPosition.x) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._pickStartingPosition.y - ii.pickPosition.y) < BABYLON.ActionManager.DragMovementThreshold)) {
                                         _this._pickStartingTime = 0;
-                                        iprim.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
+                                        prim.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
                                     }
                                 }
                             }
@@ -40147,30 +40181,6 @@ var BABYLON;
                 throw Error("Can't use Canvas Background with the caching strategy TOPLEVELGROUPS");
             }
         };
-        Object.defineProperty(Canvas2D.prototype, "hierarchySiblingZDelta", {
-            /**
-             * Read-only property that return the Z delta to apply for each sibling primitives inside of a given one.
-             * Sibling Primitives are defined in a specific order, the first ones will be draw below the next ones.
-             * This property define the Z value to apply between each sibling Primitive. Current implementation allows 1000 Siblings Primitives per level.
-             * @returns The Z Delta
-             */
-            get: function () {
-                return this._hierarchySiblingZDelta;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Canvas2D.prototype, "hierarchyLevelZFactor", {
-            /**
-             * Return the Z Factor that will be applied for each new hierarchy level.
-             * @returns The Z Factor
-             */
-            get: function () {
-                return this._hierarchyLevelZFactor;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Canvas2D.prototype._updateCanvasState = function () {
             // Check if the update has already been made for this render Frame
             if (this.scene.getRenderId() === this._updateRenderId) {

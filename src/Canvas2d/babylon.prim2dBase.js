@@ -207,6 +207,15 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        IntersectInfo2D.prototype.isPrimIntersected = function (prim) {
+            for (var _i = 0, _a = this.intersectedPrimitives; _i < _a.length; _i++) {
+                var cur = _a[_i];
+                if (cur.prim === prim) {
+                    return cur.intersectionLocation;
+                }
+            }
+            return null;
+        };
         // Internals, don't use
         IntersectInfo2D.prototype._exit = function (firstLevel) {
             if (firstLevel) {
@@ -611,9 +620,8 @@ var BABYLON;
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
         };
         Prim2DBase.prototype.addChild = function (child) {
-            child._siblingDepthOffset = (this._children.length + 1) * this.owner.hierarchySiblingZDelta;
-            child._depthLevel = this._depthLevel + 1;
-            child._hierarchyDepthOffset = child._depthLevel * this.owner.hierarchyLevelZFactor;
+            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
+            child._siblingDepthOffset = this._siblingDepthOffset / this.owner.hierarchyLevelMaxSiblingCount;
             this._children.push(child);
         };
         Prim2DBase.prototype.dispose = function () {
@@ -641,7 +649,7 @@ var BABYLON;
             return true;
         };
         Prim2DBase.prototype.getActualZOffset = function () {
-            return this._zOrder || 1 - (this._siblingDepthOffset + this._hierarchyDepthOffset);
+            return this._zOrder || (1 - this._hierarchyDepthOffset);
         };
         Prim2DBase.prototype.onPrimBecomesDirty = function () {
             if (this._renderGroup) {
@@ -649,7 +657,7 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype._needPrepare = function () {
-            return this._visibilityChanged && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
+            return this._visibilityChanged || this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         };
         Prim2DBase.prototype._prepareRender = function (context) {
             this._prepareRenderPre(context);
