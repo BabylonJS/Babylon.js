@@ -272,6 +272,15 @@
             return this.intersectedPrimitives && this.intersectedPrimitives.length > 0;
         }
 
+        public isPrimIntersected(prim: Prim2DBase): Vector2 {
+            for (let cur of this.intersectedPrimitives) {
+                if (cur.prim === prim) {
+                    return cur.intersectionLocation;
+                }
+            }
+            return null;
+        }
+
         // Internals, don't use
         public _exit(firstLevel: boolean) {
             if (firstLevel) {
