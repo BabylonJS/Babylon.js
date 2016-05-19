@@ -27,7 +27,10 @@
 	{
 		vec3 map = texture2D(bumpSampler, uv).xyz;
 
-	#ifdef OPENGLNORMALMAP
+	#ifdef INVERTNORMALMAPX
+		map.x = 1.0 - map.x;
+	#endif
+	#ifdef INVERTNORMALMAPY
 		map.y = 1.0 - map.y;
 	#endif
 
