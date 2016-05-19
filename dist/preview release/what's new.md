@@ -20,7 +20,7 @@
 	  - Added a dynamic [2D Bin Packing Algorithm](http://stackoverflow.com/questions/8762569/how-is-2d-bin-packing-achieved-programmatically), ([more info here](http://www.html5gamedevs.com/topic/22565-two-new-texture-types-fonttexture-and-maptexture/)) ([nockawa](https://github.com/nockawa))
 	  - Introduced Canvas2D feature: a 2D engine to render primitives, sprites in 2D, text. Canvas2D can be displayed in Screen Space (above the 3D scene) or in World Space to be a part of the Scene. [overview](http://doc.babylonjs.com/overviews/Using_The_Canvas2D), [tutorial](http://doc.babylonjs.com/tutorials/Using_the_Canvas2D) ([nockawa](https://github.com/nockawa))	
   - **Updates**
-    - Added support for OpenGL normal maps ([deltakosh](https://github.com/deltakosh))
+    - Added support for various normal maps conventions ([deltakosh](https://github.com/deltakosh))
     - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
     - Enabled other post processes to be used when also using a 3D Rig ([jcpalmer](https://github.com/Palmer-JC))
     - Added skeleton.getBoneIndexByName(boneName: string) ([dad72](https://github.com/dad72))
