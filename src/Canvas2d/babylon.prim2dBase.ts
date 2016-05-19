@@ -327,6 +327,14 @@
             this.origin = new Vector2(0.5, 0.5);
         }
 
+
+        public get actionManager(): ActionManager {
+            if (!this._actionManager) {
+                this._actionManager = new ActionManager(this.owner.scene);
+            }
+            return this._actionManager;
+        }
+
         /**
          * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
          * @param predicate the predicate to test on each parent
@@ -371,12 +379,39 @@
             return this._id;
         }
 
+        /**
+         * Metadata of the position property
+         */
         public static positionProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the rotation property
+         */
         public static rotationProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the scale property
+         */
         public static scaleProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the origin property
+         */
         public static originProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the levelVisible property
+         */
         public static levelVisibleProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the isVisible property
+         */
         public static isVisibleProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the zOrder property
+         */
         public static zOrderProperty: Prim2DPropInfo;
 
         @instanceLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, true)
@@ -686,6 +721,11 @@
                 return false;
             }
 
+            if (!this._actionManager) {
+                this._actionManager.dispose();
+                this._actionManager = null;
+            }
+
             // If there's a parent, remove this object from its parent list
             if (this._parent) {
                 let i = this._parent._children.indexOf(this);
@@ -716,7 +756,7 @@
         }
 
         public _needPrepare(): boolean {
-            return (this.isVisible || this._visibilityChanged) && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
+            return this._visibilityChanged && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
         }
 
         public _prepareRender(context: Render2DContext) {
@@ -806,7 +846,7 @@
                 this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
 
                 // Detect a change of visibility
-                this._visibilityChanged = (curVisibleState !== undefined) && curVisibleState !== this.isVisible;
+                this._visibilityChanged = curVisibleState !== this.isVisible;
 
                 // Get/compute the localTransform
                 let localDirty = this._updateLocalTransform();
@@ -831,6 +871,7 @@
 
         private _owner: Canvas2D;
         private _parent: Prim2DBase;
+        private _actionManager: ActionManager;
         protected _children: Array<Prim2DBase>;
         private _renderGroup: Group2D;
         private _hierarchyDepth: number;
