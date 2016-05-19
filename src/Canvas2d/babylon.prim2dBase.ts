@@ -272,6 +272,15 @@
             return this.intersectedPrimitives && this.intersectedPrimitives.length > 0;
         }
 
+        public isPrimIntersected(prim: Prim2DBase): Vector2 {
+            for (let cur of this.intersectedPrimitives) {
+                if (cur.prim === prim) {
+                    return cur.intersectionLocation;
+                }
+            }
+            return null;
+        }
+
         // Internals, don't use
         public _exit(firstLevel: boolean) {
             if (firstLevel) {
@@ -709,11 +718,9 @@
         }
 
         private addChild(child: Prim2DBase) {
-            child._siblingDepthOffset = (this._children.length + 1) * this.owner.hierarchySiblingZDelta;
-            child._depthLevel = this._depthLevel + 1;
-            child._hierarchyDepthOffset = child._depthLevel * this.owner.hierarchyLevelZFactor;
+            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
+            child._siblingDepthOffset = this._siblingDepthOffset / this.owner.hierarchyLevelMaxSiblingCount;
             this._children.push(child);
-
         }
 
         public dispose(): boolean {
@@ -746,7 +753,7 @@
         }
 
         public getActualZOffset(): number {
-            return this._zOrder || 1 - (this._siblingDepthOffset + this._hierarchyDepthOffset);
+            return this._zOrder || (1 - this._hierarchyDepthOffset);
         }
 
         protected onPrimBecomesDirty() {
@@ -756,7 +763,7 @@
         }
 
         public _needPrepare(): boolean {
-            return this._visibilityChanged && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
+            return this._visibilityChanged || this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         }
 
         public _prepareRender(context: Render2DContext) {
@@ -875,9 +882,8 @@
         protected _children: Array<Prim2DBase>;
         private _renderGroup: Group2D;
         private _hierarchyDepth: number;
-        protected _depthLevel: number;
-        private _hierarchyDepthOffset: number;
-        private _siblingDepthOffset: number;
+        protected _hierarchyDepthOffset: number;
+        protected _siblingDepthOffset: number;
         private _zOrder: number;
         private _levelVisible: boolean;
         public _pointerEventObservable: Observable<PrimitivePointerInfo>;
