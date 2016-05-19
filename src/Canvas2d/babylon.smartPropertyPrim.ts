@@ -285,7 +285,7 @@
 
         private static propChangedInfo = new PropertyChangedInfo();
 
-        public markAsDirty(propertyName: string, oldValue: any) {
+        public markAsDirty(propertyName: string) {
             let i = propertyName.indexOf(".");
             if (i !== -1) {
                 propertyName = propertyName.substr(0, i);
@@ -297,7 +297,7 @@
             }
 
             var newValue = this[propertyName];
-            this._handlePropChanged(oldValue, newValue, propertyName, propInfo, propInfo.typeLevelCompare);
+            this._handlePropChanged(undefined, newValue, propertyName, propInfo, propInfo.typeLevelCompare);
         }
 
         private _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean) {
