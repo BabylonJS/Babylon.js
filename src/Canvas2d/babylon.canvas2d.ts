@@ -123,17 +123,15 @@
             }
             this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
             this._cachingStrategy = cachingstrategy;
-            this._depthLevel = 0;
-            this._hierarchyMaxDepth = 100;
-            this._hierarchyLevelZFactor = 1 / this._hierarchyMaxDepth;
-            this._hierarchyLevelMaxSiblingCount = 1000;
-            this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
             this._primPointerInfo = new PrimitivePointerInfo();
             this._capturedPointers = new StringDictionary<Prim2DBase>();
             this._pickStartingPosition = Vector2.Zero();
 
             this.setupGroup2D(this, null, name, Vector2.Zero(), size, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
 
+            this._hierarchyLevelMaxSiblingCount = 100;
+            this._hierarchyDepthOffset = 0;
+            this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
@@ -166,6 +164,10 @@
 //            this._supprtInstancedArray = false; // TODO REMOVE!!!
 
             this._setupInteraction(enableInteraction);
+        }
+
+        public get hierarchyLevelMaxSiblingCount(): number {
+            return this._hierarchyLevelMaxSiblingCount;
         }
 
         private _setupInteraction(enable: boolean) {
@@ -740,23 +742,6 @@
             }
         }
 
-        /**
-         * Read-only property that return the Z delta to apply for each sibling primitives inside of a given one.
-         * Sibling Primitives are defined in a specific order, the first ones will be draw below the next ones.
-         * This property define the Z value to apply between each sibling Primitive. Current implementation allows 1000 Siblings Primitives per level.
-         * @returns The Z Delta
-         */
-        public get hierarchySiblingZDelta(): number {
-            return this._hierarchySiblingZDelta;
-        }
-
-        /**
-         * Return the Z Factor that will be applied for each new hierarchy level.
-         * @returns The Z Factor
-         */
-        public get hierarchyLevelZFactor(): number {
-            return this._hierarchyLevelZFactor;
-        }
 
         private __engineData: Canvas2DEngineBoundData;
         private _interactionEnabled: boolean;
@@ -782,10 +767,7 @@
         private _isScreeSpace: boolean;
         private _cachedCanvasGroup: Group2D;
         private _cachingStrategy: number;
-        private _hierarchyMaxDepth: number;
-        private _hierarchyLevelZFactor: number;
         private _hierarchyLevelMaxSiblingCount: number;
-        private _hierarchySiblingZDelta: number;
         private _groupCacheMaps: MapTexture[];
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
