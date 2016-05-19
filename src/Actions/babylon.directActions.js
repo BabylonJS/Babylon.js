@@ -67,6 +67,9 @@ var BABYLON;
         };
         SetValueAction.prototype.execute = function () {
             this._effectiveTarget[this._property] = this.value;
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this._property);
+            }
         };
         SetValueAction.prototype.serialize = function (parent) {
             return _super.prototype._serialize.call(this, {
@@ -98,6 +101,9 @@ var BABYLON;
         };
         IncrementValueAction.prototype.execute = function () {
             this._effectiveTarget[this._property] += this.value;
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this._property);
+            }
         };
         IncrementValueAction.prototype.serialize = function (parent) {
             return _super.prototype._serialize.call(this, {

@@ -114,6 +114,7 @@ var BABYLON;
             this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
             this._primPointerInfo = new BABYLON.PrimitivePointerInfo();
             this._capturedPointers = new BABYLON.StringDictionary();
+            this._pickStartingPosition = BABYLON.Vector2.Zero();
             this.setupGroup2D(this, null, name, BABYLON.Vector2.Zero(), size, this._cachingStrategy === Canvas2D.CACHESTRATEGY_ALLGROUPS ? BABYLON.Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : BABYLON.Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
             this._scene = scene;
             this._engine = engine;
@@ -178,7 +179,7 @@ var BABYLON;
             catch (e) {
             }
             this._primPointerInfo.updateRelatedTarget(primitive, BABYLON.Vector2.Zero());
-            this._bubbleNotifyPrimPointerObserver(primitive, BABYLON.PrimitivePointerInfo.PointerGotCapture);
+            this._bubbleNotifyPrimPointerObserver(primitive, BABYLON.PrimitivePointerInfo.PointerGotCapture, null);
             this._capturedPointers.add(pointerId.toString(), primitive);
             return true;
         };
@@ -196,7 +197,7 @@ var BABYLON;
             catch (e) {
             }
             this._primPointerInfo.updateRelatedTarget(primitive, BABYLON.Vector2.Zero());
-            this._bubbleNotifyPrimPointerObserver(primitive, BABYLON.PrimitivePointerInfo.PointerLostCapture);
+            this._bubbleNotifyPrimPointerObserver(primitive, BABYLON.PrimitivePointerInfo.PointerLostCapture, null);
             this._capturedPointers.remove(pointerId.toString());
             return true;
         };
@@ -234,16 +235,16 @@ var BABYLON;
             this._primPointerInfo.updateRelatedTarget(targetPrim, targetPointerPos);
             // Analyze the pointer event type and fire proper events on the primitive
             if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMouseWheel);
+                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMouseWheel, eventData.event);
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMove);
+                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMove, eventData.event);
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerDown);
+                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerDown, eventData.event);
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerUp);
+                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerUp, eventData.event);
             }
         };
         Canvas2D.prototype._updatePointerInfo = function (eventData) {
@@ -318,12 +319,12 @@ var BABYLON;
                 // Notify the previous "over" prim that the pointer is no longer over it
                 if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim)) {
                     this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(prevPrim, BABYLON.PrimitivePointerInfo.PointerOut);
+                    this._bubbleNotifyPrimPointerObserver(prevPrim, BABYLON.PrimitivePointerInfo.PointerOut, null);
                 }
                 // Notify the new "over" prim that the pointer is over it
                 if ((capturedPrim && capturedPrim === actualPrim) || (!capturedPrim && actualPrim)) {
                     this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(actualPrim, BABYLON.PrimitivePointerInfo.PointerOver);
+                    this._bubbleNotifyPrimPointerObserver(actualPrim, BABYLON.PrimitivePointerInfo.PointerOver, null);
                 }
             }
             this._hoverStatusRenderId = this.scene.getRenderId();
@@ -354,8 +355,8 @@ var BABYLON;
             debug += "[RID:" + this.scene.getRenderId() + "] [" + prim.hierarchyDepth + "] event:" + BABYLON.PrimitivePointerInfo.getEventTypeName(mask) + ", id: " + prim.id + " (" + BABYLON.Tools.getClassName(prim) + "), primPos: " + pii.primitivePointerPos.toString() + ", canvasPos: " + pii.canvasPointerPos.toString();
             console.log(debug);
         };
-        Canvas2D.prototype._bubbleNotifyPrimPointerObserver = function (prim, mask) {
-            var pii = this._primPointerInfo;
+        Canvas2D.prototype._bubbleNotifyPrimPointerObserver = function (prim, mask, eventData) {
+            var ppi = this._primPointerInfo;
             // In case of PointerOver/Out we will first notify the children (but the deepest to the closest) with PointerEnter/Leave
             if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) !== 0) {
                 this._notifChildren(prim, mask);
@@ -368,10 +369,11 @@ var BABYLON;
                     this._updatePrimPointerPos(cur);
                     // Exec the observers
                     this._debugExecObserver(cur, mask);
-                    cur._pointerEventObservable.notifyObservers(pii, mask);
+                    cur._pointerEventObservable.notifyObservers(ppi, mask);
+                    this._triggerActionManager(cur, ppi, mask, eventData);
                     // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
                     // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
-                    if (pii.cancelBubble) {
+                    if (ppi.cancelBubble) {
                         if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) === 0) {
                             return;
                         }
@@ -386,14 +388,90 @@ var BABYLON;
                 // Trigger a PointerEnter corresponding to the PointerOver
                 if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
                     this._debugExecObserver(cur, BABYLON.PrimitivePointerInfo.PointerEnter);
-                    cur._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerEnter);
+                    cur._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerEnter);
                 }
                 else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
                     this._debugExecObserver(cur, BABYLON.PrimitivePointerInfo.PointerLeave);
-                    cur._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerLeave);
+                    cur._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerLeave);
                 }
                 // Loop to the parent
                 cur = cur.parent;
+            }
+        };
+        Canvas2D.prototype._triggerActionManager = function (prim, ppi, mask, eventData) {
+            var _this = this;
+            // Process Trigger related to PointerDown
+            if ((mask & BABYLON.PrimitivePointerInfo.PointerDown) !== 0) {
+                // On pointer down, record the current position and time to be able to trick PickTrigger and LongPressTrigger
+                this._pickStartingPosition = ppi.primitivePointerPos.clone();
+                this._pickStartingTime = new Date().getTime();
+                this._pickedDownPrim = null;
+                if (prim.actionManager) {
+                    this._pickedDownPrim = prim;
+                    if (prim.actionManager.hasPickTriggers) {
+                        var actionEvent = BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
+                        switch (eventData.button) {
+                            case 0:
+                                prim.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, actionEvent);
+                                break;
+                            case 1:
+                                prim.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, actionEvent);
+                                break;
+                            case 2:
+                                prim.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, actionEvent);
+                                break;
+                        }
+                        prim.actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, actionEvent);
+                    }
+                    if (prim.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)) {
+                        window.setTimeout(function () {
+                            var ppi = _this._primPointerInfo;
+                            var capturedPrim = _this.getCapturedPrimitive(ppi.pointerId);
+                            _this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null);
+                            var ii = new BABYLON.IntersectInfo2D();
+                            ii.pickPosition = ppi.canvasPointerPos.clone();
+                            ii.findFirstOnly = false;
+                            _this.intersect(ii);
+                            if (ii.isIntersected) {
+                                var iprim = ii.topMostIntersectedPrimitive.prim;
+                                if (iprim.actionManager) {
+                                    if (_this._pickStartingTime !== 0 && ((new Date().getTime() - _this._pickStartingTime) > BABYLON.ActionManager.LongPressDelay) && (Math.abs(_this._pickStartingPosition.x - ii.pickPosition.x) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._pickStartingPosition.y - ii.pickPosition.y) < BABYLON.ActionManager.DragMovementThreshold)) {
+                                        _this._pickStartingTime = 0;
+                                        iprim.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
+                                    }
+                                }
+                            }
+                        }, BABYLON.ActionManager.LongPressDelay);
+                    }
+                }
+            }
+            else if ((mask & BABYLON.PrimitivePointerInfo.PointerUp) !== 0) {
+                this._pickStartingTime = 0;
+                var actionEvent = BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
+                if (prim.actionManager) {
+                    // OnPickUpTrigger
+                    prim.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, actionEvent);
+                    // OnPickTrigger
+                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < BABYLON.ActionManager.DragMovementThreshold) {
+                        prim.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, actionEvent);
+                    }
+                }
+                // OnPickOutTrigger
+                if (this._pickedDownPrim && this._pickedDownPrim.actionManager && (this._pickedDownPrim !== prim)) {
+                    this._pickedDownPrim.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, actionEvent);
+                }
+            }
+            else if ((mask & BABYLON.PrimitivePointerInfo.PointerOver) !== 0) {
+                if (prim.actionManager) {
+                    var actionEvent = BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
+                    prim.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger, actionEvent);
+                }
+            }
+            else if ((mask & BABYLON.PrimitivePointerInfo.PointerOut) !== 0) {
+                if (prim.actionManager) {
+                    var actionEvent = BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
+                    prim.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, actionEvent);
+                }
             }
         };
         Canvas2D.prototype._notifChildren = function (prim, mask) {

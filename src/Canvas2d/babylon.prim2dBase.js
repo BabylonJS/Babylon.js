@@ -258,6 +258,16 @@ var BABYLON;
             this.levelVisible = isVisible;
             this.origin = new BABYLON.Vector2(0.5, 0.5);
         };
+        Object.defineProperty(Prim2DBase.prototype, "actionManager", {
+            get: function () {
+                if (!this._actionManager) {
+                    this._actionManager = new BABYLON.ActionManager(this.owner.scene);
+                }
+                return this._actionManager;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
          * @param predicate the predicate to test on each parent
@@ -610,6 +620,10 @@ var BABYLON;
             if (!_super.prototype.dispose.call(this)) {
                 return false;
             }
+            if (!this._actionManager) {
+                this._actionManager.dispose();
+                this._actionManager = null;
+            }
             // If there's a parent, remove this object from its parent list
             if (this._parent) {
                 var i = this._parent._children.indexOf(this);
@@ -635,7 +649,7 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype._needPrepare = function () {
-            return (this.isVisible || this._visibilityChanged) && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
+            return this._visibilityChanged && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
         };
         Prim2DBase.prototype._prepareRender = function (context) {
             this._prepareRenderPre(context);
@@ -710,7 +724,7 @@ var BABYLON;
                 var curVisibleState = this.isVisible;
                 this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
                 // Detect a change of visibility
-                this._visibilityChanged = (curVisibleState !== undefined) && curVisibleState !== this.isVisible;
+                this._visibilityChanged = curVisibleState !== this.isVisible;
                 // Get/compute the localTransform
                 var localDirty = this._updateLocalTransform();
                 // Check if we have to update the globalTransform
