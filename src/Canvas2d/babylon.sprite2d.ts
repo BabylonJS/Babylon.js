@@ -174,6 +174,11 @@
             return res;
         }
 
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
+            return true;
+        }
+
         protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
             this.texture = texture;
