@@ -511,12 +511,11 @@
                             ii.findFirstOnly = false;
                             this.intersect(ii);
 
-                            if (ii.isIntersected) {
-                                let iprim = ii.topMostIntersectedPrimitive.prim;
-                                if (iprim.actionManager) {
+                            if (ii.isPrimIntersected(prim) !== null) {
+                                if (prim.actionManager) {
                                     if (this._pickStartingTime !== 0 && ((new Date().getTime() - this._pickStartingTime) > ActionManager.LongPressDelay) && (Math.abs(this._pickStartingPosition.x - ii.pickPosition.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ii.pickPosition.y) < ActionManager.DragMovementThreshold)) {
                                         this._pickStartingTime = 0;
-                                        iprim.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
+                                        prim.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
                                     }
                                 }
                             }
