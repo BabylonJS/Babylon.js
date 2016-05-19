@@ -165,6 +165,15 @@
             BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo, this.origin);
         }
 
+        public getAnimatables(): IAnimatable[] {
+            let res = new Array<IAnimatable>();
+
+            if (this.texture && this.texture.animations && this.texture.animations.length > 0) {
+                res.push(this.texture);
+            }
+            return res;
+        }
+
         protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
             this.texture = texture;

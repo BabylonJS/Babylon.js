@@ -142,6 +142,7 @@
             this._instanceDirtyFlags = 0;
             this._isDisposed = false;
             this._levelBoundingInfo = new BoundingInfo2D();
+            this.animations = new Array<Animation>();
         }
 
         public propertyChanged: Observable<PropertyChangedInfo>;
@@ -157,6 +158,15 @@
 
             this._isDisposed = true;
             return true;
+        }
+
+        public animations;
+
+        /**
+         * Returns as a new array populated with the Animatable used by the primitive. Must be overridden.
+         */
+        public getAnimatables(): IAnimatable[] {
+            return new Array<IAnimatable>();
         }
 
         public get modelKey(): string {
@@ -214,7 +224,7 @@
             propInfo.name = propName;
             propInfo.dirtyBoundingInfo = dirtyBoundingInfo;
             propInfo.typeLevelCompare = typeLevelCompare;
-            node.levelContent.add(propId.toString(), propInfo);
+            node.levelContent.add(propName, propInfo);
 
             return propInfo;
         }
@@ -243,7 +253,43 @@
 
         private static propChangedInfo = new PropertyChangedInfo();
 
+        public markAsDirty(propertyName: string, oldValue: any) {
+            let i = propertyName.indexOf(".");
+            if (i !== -1) {
+                propertyName = propertyName.substr(0, i);
+            }
+
+            var propInfo = this.propDic.get(propertyName);
+            if (!propInfo) {
+                return;
+            }
+
+            var newValue = this[propertyName];
+            this._handlePropChanged(oldValue, newValue, propertyName, propInfo, propInfo.typeLevelCompare);
+        }
+
         private _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean) {
+            // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
+            if (propInfo.dirtyBoundingInfo) {
+                this._levelBoundingInfoDirty = true;
+
+                // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
+                if (this instanceof Prim2DBase) {
+                    let curprim = (<any>this).parent;
+                    while (curprim) {
+                        curprim._boundingInfoDirty = true;
+
+                        if (curprim instanceof Group2D) {
+                            if (curprim.isRenderableGroup) {
+                                break;
+                            }
+                        }
+
+                        curprim = curprim.parent;
+                    }
+                }
+            }
+
             // Trigger property changed
             let info = SmartPropertyPrim.propChangedInfo;
             info.oldValue = curValue;
@@ -338,27 +384,6 @@
 
                     // Change the value
                     setter.call(this, val);
-
-                    // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
-                    if (propInfo.dirtyBoundingInfo) {
-                        prim._levelBoundingInfoDirty = true;
-
-                        // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
-                        if (prim instanceof Prim2DBase) {
-                            let curprim = prim.parent;
-                            while (curprim) {
-                                curprim._boundingInfoDirty = true;
-
-                                if (curprim instanceof Group2D) {
-                                    if (curprim.isRenderableGroup) {
-                                        break;
-                                    }
-                                }
-
-                                curprim = curprim.parent;
-                            }
-                        }
-                    }
 
                     // Notify change, dirty flags update
                     prim._handlePropChanged(curVal, val, <string>propName, propInfo, typeLevelCompare);
