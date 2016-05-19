@@ -107,15 +107,13 @@ var BABYLON;
             }
             this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", function (k) { return new Canvas2DEngineBoundData(); });
             this._cachingStrategy = cachingstrategy;
-            this._depthLevel = 0;
-            this._hierarchyMaxDepth = 100;
-            this._hierarchyLevelZFactor = 1 / this._hierarchyMaxDepth;
-            this._hierarchyLevelMaxSiblingCount = 1000;
-            this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
             this._primPointerInfo = new BABYLON.PrimitivePointerInfo();
             this._capturedPointers = new BABYLON.StringDictionary();
             this._pickStartingPosition = BABYLON.Vector2.Zero();
             this.setupGroup2D(this, null, name, BABYLON.Vector2.Zero(), size, this._cachingStrategy === Canvas2D.CACHESTRATEGY_ALLGROUPS ? BABYLON.Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : BABYLON.Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
+            this._hierarchyLevelMaxSiblingCount = 100;
+            this._hierarchyDepthOffset = 0;
+            this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new BABYLON.Size(0, 0);
@@ -145,6 +143,13 @@ var BABYLON;
             //            this._supprtInstancedArray = false; // TODO REMOVE!!!
             this._setupInteraction(enableInteraction);
         };
+        Object.defineProperty(Canvas2D.prototype, "hierarchyLevelMaxSiblingCount", {
+            get: function () {
+                return this._hierarchyLevelMaxSiblingCount;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Canvas2D.prototype._setupInteraction = function (enable) {
             var _this = this;
             // No change detection
@@ -432,12 +437,11 @@ var BABYLON;
                             ii.pickPosition = ppi.canvasPointerPos.clone();
                             ii.findFirstOnly = false;
                             _this.intersect(ii);
-                            if (ii.isIntersected) {
-                                var iprim = ii.topMostIntersectedPrimitive.prim;
-                                if (iprim.actionManager) {
+                            if (ii.isPrimIntersected(prim) !== null) {
+                                if (prim.actionManager) {
                                     if (_this._pickStartingTime !== 0 && ((new Date().getTime() - _this._pickStartingTime) > BABYLON.ActionManager.LongPressDelay) && (Math.abs(_this._pickStartingPosition.x - ii.pickPosition.x) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._pickStartingPosition.y - ii.pickPosition.y) < BABYLON.ActionManager.DragMovementThreshold)) {
                                         _this._pickStartingTime = 0;
-                                        iprim.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
+                                        prim.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
                                     }
                                 }
                             }
@@ -664,30 +668,6 @@ var BABYLON;
                 throw Error("Can't use Canvas Background with the caching strategy TOPLEVELGROUPS");
             }
         };
-        Object.defineProperty(Canvas2D.prototype, "hierarchySiblingZDelta", {
-            /**
-             * Read-only property that return the Z delta to apply for each sibling primitives inside of a given one.
-             * Sibling Primitives are defined in a specific order, the first ones will be draw below the next ones.
-             * This property define the Z value to apply between each sibling Primitive. Current implementation allows 1000 Siblings Primitives per level.
-             * @returns The Z Delta
-             */
-            get: function () {
-                return this._hierarchySiblingZDelta;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Canvas2D.prototype, "hierarchyLevelZFactor", {
-            /**
-             * Return the Z Factor that will be applied for each new hierarchy level.
-             * @returns The Z Factor
-             */
-            get: function () {
-                return this._hierarchyLevelZFactor;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Canvas2D.prototype._updateCanvasState = function () {
             // Check if the update has already been made for this render Frame
             if (this.scene.getRenderId() === this._updateRenderId) {

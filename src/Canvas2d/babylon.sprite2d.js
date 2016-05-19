@@ -201,6 +201,10 @@ var BABYLON;
             }
             return res;
         };
+        Sprite2D.prototype.levelIntersect = function (intersectInfo) {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
+            return true;
+        };
         Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, texture, spriteSize, spriteLocation, invertY) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
             this.texture = texture;

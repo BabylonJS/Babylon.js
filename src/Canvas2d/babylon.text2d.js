@@ -248,6 +248,10 @@ var BABYLON;
             text2d.setupText2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), fontName, text, areaSize, defaultFontColor || new BABYLON.Color4(0, 0, 0, 1), vAlign, hAlign, tabulationSize);
             return text2d;
         };
+        Text2D.prototype.levelIntersect = function (intersectInfo) {
+            // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
+            return true;
+        };
         Text2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
             var renderCache = new Text2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
