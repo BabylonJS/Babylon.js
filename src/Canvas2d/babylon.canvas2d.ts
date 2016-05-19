@@ -130,6 +130,7 @@
             this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
             this._primPointerInfo = new PrimitivePointerInfo();
             this._capturedPointers = new StringDictionary<Prim2DBase>();
+            this._pickStartingPosition = Vector2.Zero();
 
             this.setupGroup2D(this, null, name, Vector2.Zero(), size, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
 
@@ -208,7 +209,7 @@
             }
 
             this._primPointerInfo.updateRelatedTarget(primitive, Vector2.Zero());
-            this._bubbleNotifyPrimPointerObserver(primitive, PrimitivePointerInfo.PointerGotCapture);
+            this._bubbleNotifyPrimPointerObserver(primitive, PrimitivePointerInfo.PointerGotCapture, null);
 
             this._capturedPointers.add(pointerId.toString(), primitive);
             return true;
@@ -230,7 +231,7 @@
             }
 
             this._primPointerInfo.updateRelatedTarget(primitive, Vector2.Zero());
-            this._bubbleNotifyPrimPointerObserver(primitive, PrimitivePointerInfo.PointerLostCapture);
+            this._bubbleNotifyPrimPointerObserver(primitive, PrimitivePointerInfo.PointerLostCapture, null);
             this._capturedPointers.remove(pointerId.toString());
             return true;
         }
@@ -281,13 +282,13 @@
             // Analyze the pointer event type and fire proper events on the primitive
 
             if (eventData.type === PointerEventTypes.POINTERWHEEL) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMouseWheel);
+                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMouseWheel, <MouseWheelEvent>eventData.event);
             } else if (eventData.type === PointerEventTypes.POINTERMOVE) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMove);
+                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMove, <PointerEvent>eventData.event);
             } else if (eventData.type === PointerEventTypes.POINTERDOWN) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerDown);
+                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerDown, <PointerEvent>eventData.event);
             } else if (eventData.type === PointerEventTypes.POINTERUP) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerUp);
+                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerUp, <PointerEvent>eventData.event);
             }
         }
 
@@ -373,13 +374,13 @@
                 // Notify the previous "over" prim that the pointer is no longer over it
                 if ((capturedPrim && capturedPrim===prevPrim) || (!capturedPrim && prevPrim)) {
                     this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut);
+                    this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut, null);
                 }
 
                 // Notify the new "over" prim that the pointer is over it
                 if ((capturedPrim && capturedPrim === actualPrim) || (!capturedPrim && actualPrim)) {
                     this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(actualPrim, PrimitivePointerInfo.PointerOver);
+                    this._bubbleNotifyPrimPointerObserver(actualPrim, PrimitivePointerInfo.PointerOver, null);
                 }
             }
 
@@ -415,8 +416,8 @@
             console.log(debug);
         }
 
-        private _bubbleNotifyPrimPointerObserver(prim: Prim2DBase, mask: number) {
-            let pii = this._primPointerInfo;
+        private _bubbleNotifyPrimPointerObserver(prim: Prim2DBase, mask: number, eventData: any) {
+            let ppi = this._primPointerInfo;
 
             // In case of PointerOver/Out we will first notify the children (but the deepest to the closest) with PointerEnter/Leave
             if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) !== 0) {
@@ -432,11 +433,12 @@
 
                     // Exec the observers
                     this._debugExecObserver(cur, mask);
-                    cur._pointerEventObservable.notifyObservers(pii, mask);
+                    cur._pointerEventObservable.notifyObservers(ppi, mask);
+                    this._triggerActionManager(cur, ppi, mask, eventData);
 
                     // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
                     // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
-                    if (pii.cancelBubble) {
+                    if (ppi.cancelBubble) {
                         if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) === 0) {
                             return;
                         }
@@ -454,17 +456,106 @@
                 // Trigger a PointerEnter corresponding to the PointerOver
                 if (mask === PrimitivePointerInfo.PointerOver) {
                     this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
-                    cur._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerEnter);
+                    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
                 }
 
                 // Trigger a PointerLeave corresponding to the PointerOut
                 else if (mask === PrimitivePointerInfo.PointerOut) {
                     this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
-                    cur._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerLeave);
+                    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
                 }
 
                 // Loop to the parent
                 cur = cur.parent;
+            }
+        }
+
+        private _triggerActionManager(prim: Prim2DBase, ppi: PrimitivePointerInfo, mask: number, eventData) {
+
+            // Process Trigger related to PointerDown
+            if ((mask & PrimitivePointerInfo.PointerDown) !== 0) {
+                // On pointer down, record the current position and time to be able to trick PickTrigger and LongPressTrigger
+                this._pickStartingPosition = ppi.primitivePointerPos.clone();
+                this._pickStartingTime = new Date().getTime();
+                this._pickedDownPrim = null;
+
+                if (prim.actionManager) {
+                    this._pickedDownPrim = prim;
+                    if (prim.actionManager.hasPickTriggers) {
+                        let actionEvent = ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
+
+                        switch (eventData.button) {
+                        case 0:
+                            prim.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, actionEvent);
+                            break;
+                        case 1:
+                            prim.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, actionEvent);
+                            break;
+                        case 2:
+                            prim.actionManager.processTrigger(ActionManager.OnRightPickTrigger, actionEvent);
+                            break;
+                        }
+                        prim.actionManager.processTrigger(ActionManager.OnPickDownTrigger, actionEvent);
+                    }
+
+                    if (prim.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
+                        window.setTimeout(() => {
+                            let ppi = this._primPointerInfo;
+                            let capturedPrim = this.getCapturedPrimitive(ppi.pointerId);
+                            this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null);
+
+                            let ii = new IntersectInfo2D();
+                            ii.pickPosition = ppi.canvasPointerPos.clone();
+                            ii.findFirstOnly = false;
+                            this.intersect(ii);
+
+                            if (ii.isIntersected) {
+                                let iprim = ii.topMostIntersectedPrimitive.prim;
+                                if (iprim.actionManager) {
+                                    if (this._pickStartingTime !== 0 && ((new Date().getTime() - this._pickStartingTime) > ActionManager.LongPressDelay) && (Math.abs(this._pickStartingPosition.x - ii.pickPosition.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ii.pickPosition.y) < ActionManager.DragMovementThreshold)) {
+                                        this._pickStartingTime = 0;
+                                        iprim.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData));
+                                    }
+                                }
+                            }
+                        }, ActionManager.LongPressDelay);
+                    }
+                }
+            }
+
+            // Process Triggers related to Pointer Up
+            else if ((mask & PrimitivePointerInfo.PointerUp) !== 0) {
+                this._pickStartingTime = 0;
+
+                let actionEvent = ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
+                if (prim.actionManager) {
+                    // OnPickUpTrigger
+                    prim.actionManager.processTrigger(ActionManager.OnPickUpTrigger, actionEvent);
+
+                    // OnPickTrigger
+                    if (Math.abs(this._pickStartingPosition.x - ppi.canvasPointerPos.x) < ActionManager.DragMovementThreshold && Math.abs(this._pickStartingPosition.y - ppi.canvasPointerPos.y) < ActionManager.DragMovementThreshold) {
+                        prim.actionManager.processTrigger(ActionManager.OnPickTrigger, actionEvent);
+                    }
+                }
+
+                // OnPickOutTrigger
+                if (this._pickedDownPrim && this._pickedDownPrim.actionManager && (this._pickedDownPrim !== prim)) {
+                    this._pickedDownPrim.actionManager.processTrigger(ActionManager.OnPickOutTrigger, actionEvent);
+                }
+            }
+
+            else if ((mask & PrimitivePointerInfo.PointerOver) !== 0) {
+                if (prim.actionManager) {
+                    let actionEvent = ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
+                    prim.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, actionEvent);
+                }
+            }
+
+            else if ((mask & PrimitivePointerInfo.PointerOut) !== 0) {
+                if (prim.actionManager) {
+                    let actionEvent = ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
+                    prim.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, actionEvent);
+                }
             }
         }
 
@@ -673,6 +764,9 @@
         private _updateRenderId: number;
         private _intersectionRenderId: number;
         private _hoverStatusRenderId: number;
+        private _pickStartingPosition: Vector2;
+        private _pickedDownPrim: Prim2DBase;
+        private _pickStartingTime: number;
         private _previousIntersectionList: Array<PrimitiveIntersectedInfo>;
         private _actualIntersectionList: Array<PrimitiveIntersectedInfo>;
         private _previousOverPrimitive: PrimitiveIntersectedInfo;

@@ -25,7 +25,7 @@
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
 
             var cur = engine.getAlphaMode();
-            engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(Engine.ALPHA_ADD);
             let count = instanceInfo._instancesPartsData[0].usedElementCount;
             if (instanceInfo._owner.owner.supportInstancedArray) {
                 engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
@@ -227,7 +227,6 @@
             this.hAlign = hAlign;
             this._tabulationSize = tabulationSize;
             this._isTransparent = true;
-            this.origin = Vector2.Zero();
         }
 
         public static Create(parent: Prim2DBase, id: string, x: number, y: number, fontName: string, text: string, defaultFontColor?: Color4, areaSize?: Size, vAlign = Text2D.TEXT2D_VALIGN_TOP, hAlign = Text2D.TEXT2D_HALIGN_LEFT, tabulationSize: number = 4): Text2D {
@@ -267,9 +266,7 @@
 
             // Effects
             let ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, e => {
-//                renderCache.setupUniformsLocation(e, ei.uniforms, Text2D.TEXT2D_MAINPARTID);
-            });
+            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
 
             return renderCache;
         }
@@ -310,7 +307,6 @@
                 let charxpos = 0;
                 d.dataElementCount = this._charCount;
                 d.curElement = 0;
-                let customOrigin = Vector2.Zero();
                 for (let char of this.text) {
 
                     // Line feed
