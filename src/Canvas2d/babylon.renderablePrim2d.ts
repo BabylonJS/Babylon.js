@@ -264,6 +264,9 @@
         }
 
         allocElements() {
+            if (!this.dataBuffer) {
+                return;
+            }
             let res = new Array<DynamicFloatArrayElementInfo>(this.dataElementCount);
             for (let i = 0; i < this.dataElementCount; i++) {
                 res[i] = this.dataBuffer.allocElement();
@@ -272,17 +275,35 @@
         }
 
         freeElements() {
+            if (!this.dataElements) {
+                return;
+            }
             for (let ei of this.dataElements) {
                 this.dataBuffer.freeElement(ei);
             }
             this.dataElements = null;
         }
 
+        get dataElementCount(): number {
+            return this._dataElementCount;
+        }
+
+        set dataElementCount(value: number) {
+            if (value === this._dataElementCount) {
+                return;
+            }
+
+            this.freeElements();
+            this._dataElementCount = value;
+            this.allocElements();
+        }
+
         curElement: number;
-        dataElementCount: number;
         dataElements: DynamicFloatArrayElementInfo[];
         dataBuffer: DynamicFloatArray;
         typeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
+
+        private _dataElementCount: number;
 
     }
 
@@ -390,7 +411,9 @@
                         let joinCat = cat.join(";");
                         joinedUsedCatList.push(joinCat);
                         InstanceClassInfo._CurCategories = joinCat;
+                        let obj = this.beforeRefreshForLayoutConstruction(dataPart);
                         this.refreshInstanceDataPart(dataPart);
+                        this.afterRefreshForLayoutConstruction(dataPart, obj);
                         this.isVisible = curVisible;
 
                         var size = 0;
@@ -522,6 +545,14 @@
             return [];
         }
 
+        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any {
+
+        }
+
+        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any) {
+
+        }
+
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
             if (!this.isVisible) {
                 return false;
@@ -530,6 +561,7 @@
 
             // Which means, if there's only one data element, we're update it from this method, otherwise it is the responsibility of the derived class to call updateInstanceDataPart as many times as needed, properly (look at Text2D's implementation for more information)
             if (part.dataElementCount === 1) {
+                part.curElement = 0;
                 this.updateInstanceDataPart(part);
             }
             return true;

@@ -278,6 +278,24 @@
             return [new Text2DInstanceData(Text2D.TEXT2D_MAINPARTID, this._charCount)];
         }
 
+        // Looks like a hack!? Yes! Because that's what it is!
+        // For the InstanceData layer to compute correctly we need to set all the properties involved, which won't be the case if there's no text
+        // This method is called before the layout construction for us to detect this case, set some text and return the initial one to restore it after (there can be some text without char to display, say "\t\n" for instance)
+        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any {
+            if (!this._charCount) {
+                let curText = this._text;
+                this.text = "A";
+                return curText;
+            }
+        }
+
+        // if obj contains something, we restore the _text property
+        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any) {
+            if (obj !== undefined) {
+                this.text = obj;
+            }
+        }
+
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
             if (!super.refreshInstanceDataPart(part)) {
                 return false;
@@ -290,6 +308,7 @@
                 let textSize = texture.measureText(this.text, this._tabulationSize);
                 let offset = Vector2.Zero();
                 let charxpos = 0;
+                d.dataElementCount = this._charCount;
                 d.curElement = 0;
                 let customOrigin = Vector2.Zero();
                 for (let char of this.text) {
@@ -297,7 +316,7 @@
                     // Line feed
                     if (char === "\n") {
                         offset.x = 0;
-                        offset.y += texture.lineHeight;
+                        offset.y -= texture.lineHeight;
                     }
 
                     // Tabulation ?
