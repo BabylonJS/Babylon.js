@@ -237,6 +237,11 @@
             return text2d;
         }
 
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+            // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
+            return true;
+        }
+
         protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
             let renderCache = new Text2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
