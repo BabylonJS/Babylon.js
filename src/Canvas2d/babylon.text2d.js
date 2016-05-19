@@ -280,6 +280,22 @@ var BABYLON;
         Text2D.prototype.createInstanceDataParts = function () {
             return [new Text2DInstanceData(Text2D.TEXT2D_MAINPARTID, this._charCount)];
         };
+        // Looks like a hack!? Yes! Because that's what it is!
+        // For the InstanceData layer to compute correctly we need to set all the properties involved, which won't be the case if there's no text
+        // This method is called before the layout construction for us to detect this case, set some text and return the initial one to restore it after (there can be some text without char to display, say "\t\n" for instance)
+        Text2D.prototype.beforeRefreshForLayoutConstruction = function (part) {
+            if (!this._charCount) {
+                var curText = this._text;
+                this.text = "A";
+                return curText;
+            }
+        };
+        // if obj contains something, we restore the _text property
+        Text2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
+            if (obj !== undefined) {
+                this.text = obj;
+            }
+        };
         Text2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
@@ -291,6 +307,7 @@ var BABYLON;
                 var textSize = texture.measureText(this.text, this._tabulationSize);
                 var offset = BABYLON.Vector2.Zero();
                 var charxpos = 0;
+                d.dataElementCount = this._charCount;
                 d.curElement = 0;
                 var customOrigin = BABYLON.Vector2.Zero();
                 for (var _i = 0, _a = this.text; _i < _a.length; _i++) {
@@ -298,7 +315,7 @@ var BABYLON;
                     // Line feed
                     if (char === "\n") {
                         offset.x = 0;
-                        offset.y += texture.lineHeight;
+                        offset.y -= texture.lineHeight;
                     }
                     // Tabulation ?
                     if (char === "\t") {

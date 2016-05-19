@@ -253,6 +253,9 @@ var BABYLON;
             return this.typeInfo;
         };
         InstanceDataBase.prototype.allocElements = function () {
+            if (!this.dataBuffer) {
+                return;
+            }
             var res = new Array(this.dataElementCount);
             for (var i = 0; i < this.dataElementCount; i++) {
                 res[i] = this.dataBuffer.allocElement();
@@ -260,12 +263,30 @@ var BABYLON;
             this.dataElements = res;
         };
         InstanceDataBase.prototype.freeElements = function () {
+            if (!this.dataElements) {
+                return;
+            }
             for (var _i = 0, _a = this.dataElements; _i < _a.length; _i++) {
                 var ei = _a[_i];
                 this.dataBuffer.freeElement(ei);
             }
             this.dataElements = null;
         };
+        Object.defineProperty(InstanceDataBase.prototype, "dataElementCount", {
+            get: function () {
+                return this._dataElementCount;
+            },
+            set: function (value) {
+                if (value === this._dataElementCount) {
+                    return;
+                }
+                this.freeElements();
+                this._dataElementCount = value;
+                this.allocElements();
+            },
+            enumerable: true,
+            configurable: true
+        });
         __decorate([
             instanceData()
         ], InstanceDataBase.prototype, "zBias", null);
@@ -373,7 +394,9 @@ var BABYLON;
                         var joinCat = cat.join(";");
                         joinedUsedCatList.push(joinCat);
                         InstanceClassInfo._CurCategories = joinCat;
+                        var obj = this.beforeRefreshForLayoutConstruction(dataPart);
                         this.refreshInstanceDataPart(dataPart);
+                        this.afterRefreshForLayoutConstruction(dataPart, obj);
                         this.isVisible = curVisible;
                         var size = 0;
                         cti.fullContent.forEach(function (k, v) {
@@ -488,6 +511,10 @@ var BABYLON;
         RenderablePrim2D.prototype.getUsedShaderCategories = function (dataPart) {
             return [];
         };
+        RenderablePrim2D.prototype.beforeRefreshForLayoutConstruction = function (part) {
+        };
+        RenderablePrim2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
+        };
         RenderablePrim2D.prototype.refreshInstanceDataPart = function (part) {
             if (!this.isVisible) {
                 return false;
@@ -495,6 +522,7 @@ var BABYLON;
             part.isVisible = this.isVisible;
             // Which means, if there's only one data element, we're update it from this method, otherwise it is the responsibility of the derived class to call updateInstanceDataPart as many times as needed, properly (look at Text2D's implementation for more information)
             if (part.dataElementCount === 1) {
+                part.curElement = 0;
                 this.updateInstanceDataPart(part);
             }
             return true;

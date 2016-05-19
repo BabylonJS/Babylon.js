@@ -12965,7 +12965,7 @@ var BABYLON;
         // Target
         TargetCamera.prototype.setTarget = function (target) {
             this.upVector.normalize();
-            BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
+            BABYLON.Matrix.LookAtLHToRef(this.position, target, this._defaultUpVector, this._camMatrix);
             this._camMatrix.invert();
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
             var vDir = target.subtract(this.position);
@@ -12975,7 +12975,7 @@ var BABYLON;
             else {
                 this.rotation.y = (-Math.atan(vDir.z / vDir.x) - Math.PI / 2.0);
             }
-            this.rotation.z = -Math.acos(BABYLON.Vector3.Dot(new BABYLON.Vector3(0, 1.0, 0), this.upVector));
+            this.rotation.z = 0;
             if (isNaN(this.rotation.x)) {
                 this.rotation.x = 0;
             }
@@ -36041,7 +36041,7 @@ var BABYLON;
                     }
                     this._modelDirty = true;
                 }
-                else if (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) {
+                else if ((propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
                     if (!this.isDirty) {
                         this.onPrimBecomesDirty();
                     }
@@ -36827,12 +36827,12 @@ var BABYLON;
                 this._localTransform = local;
                 this.clearPropertiesDirty(tflags);
                 // this is important to access actualSize AFTER fetching a first version of the local transform and reset the dirty flag, because accessing actualSize on a Group2D which actualSize is built from its content will trigger a call to this very method on this very object. We won't mind about the origin offset not being computed, as long as we return a local transform based on the position/rotation/scale
-                var actualSize = this.actualSize;
-                if (!actualSize) {
-                    throw new Error("The primitive type: " + BABYLON.Tools.getClassName(this) + " must implement the actualSize get property!");
-                }
-                local.m[12] -= (actualSize.width * this.origin.x) * local.m[0] + (actualSize.height * this.origin.y) * local.m[4];
-                local.m[13] -= (actualSize.width * this.origin.x) * local.m[1] + (actualSize.height * this.origin.y) * local.m[5];
+                //var actualSize = this.actualSize;
+                //if (!actualSize) {
+                //    throw new Error(`The primitive type: ${Tools.getClassName(this)} must implement the actualSize get property!`);
+                //}
+                //local.m[12] -= (actualSize.width * this.origin.x) * local.m[0] + (actualSize.height * this.origin.y) * local.m[4];
+                //local.m[13] -= (actualSize.width * this.origin.x) * local.m[1] + (actualSize.height * this.origin.y) * local.m[5];
                 return true;
             }
             return false;
@@ -37334,6 +37334,9 @@ var BABYLON;
             return this.typeInfo;
         };
         InstanceDataBase.prototype.allocElements = function () {
+            if (!this.dataBuffer) {
+                return;
+            }
             var res = new Array(this.dataElementCount);
             for (var i = 0; i < this.dataElementCount; i++) {
                 res[i] = this.dataBuffer.allocElement();
@@ -37341,12 +37344,30 @@ var BABYLON;
             this.dataElements = res;
         };
         InstanceDataBase.prototype.freeElements = function () {
+            if (!this.dataElements) {
+                return;
+            }
             for (var _i = 0, _a = this.dataElements; _i < _a.length; _i++) {
                 var ei = _a[_i];
                 this.dataBuffer.freeElement(ei);
             }
             this.dataElements = null;
         };
+        Object.defineProperty(InstanceDataBase.prototype, "dataElementCount", {
+            get: function () {
+                return this._dataElementCount;
+            },
+            set: function (value) {
+                if (value === this._dataElementCount) {
+                    return;
+                }
+                this.freeElements();
+                this._dataElementCount = value;
+                this.allocElements();
+            },
+            enumerable: true,
+            configurable: true
+        });
         __decorate([
             instanceData()
         ], InstanceDataBase.prototype, "zBias", null);
@@ -37454,7 +37475,9 @@ var BABYLON;
                         var joinCat = cat.join(";");
                         joinedUsedCatList.push(joinCat);
                         InstanceClassInfo._CurCategories = joinCat;
+                        var obj = this.beforeRefreshForLayoutConstruction(dataPart);
                         this.refreshInstanceDataPart(dataPart);
+                        this.afterRefreshForLayoutConstruction(dataPart, obj);
                         this.isVisible = curVisible;
                         var size = 0;
                         cti.fullContent.forEach(function (k, v) {
@@ -37569,6 +37592,10 @@ var BABYLON;
         RenderablePrim2D.prototype.getUsedShaderCategories = function (dataPart) {
             return [];
         };
+        RenderablePrim2D.prototype.beforeRefreshForLayoutConstruction = function (part) {
+        };
+        RenderablePrim2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
+        };
         RenderablePrim2D.prototype.refreshInstanceDataPart = function (part) {
             if (!this.isVisible) {
                 return false;
@@ -37576,6 +37603,7 @@ var BABYLON;
             part.isVisible = this.isVisible;
             // Which means, if there's only one data element, we're update it from this method, otherwise it is the responsibility of the derived class to call updateInstanceDataPart as many times as needed, properly (look at Text2D's implementation for more information)
             if (part.dataElementCount === 1) {
+                part.curElement = 0;
                 this.updateInstanceDataPart(part);
             }
             return true;
@@ -39210,6 +39238,22 @@ var BABYLON;
         Text2D.prototype.createInstanceDataParts = function () {
             return [new Text2DInstanceData(Text2D.TEXT2D_MAINPARTID, this._charCount)];
         };
+        // Looks like a hack!? Yes! Because that's what it is!
+        // For the InstanceData layer to compute correctly we need to set all the properties involved, which won't be the case if there's no text
+        // This method is called before the layout construction for us to detect this case, set some text and return the initial one to restore it after (there can be some text without char to display, say "\t\n" for instance)
+        Text2D.prototype.beforeRefreshForLayoutConstruction = function (part) {
+            if (!this._charCount) {
+                var curText = this._text;
+                this.text = "A";
+                return curText;
+            }
+        };
+        // if obj contains something, we restore the _text property
+        Text2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
+            if (obj !== undefined) {
+                this.text = obj;
+            }
+        };
         Text2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
@@ -39221,6 +39265,7 @@ var BABYLON;
                 var textSize = texture.measureText(this.text, this._tabulationSize);
                 var offset = BABYLON.Vector2.Zero();
                 var charxpos = 0;
+                d.dataElementCount = this._charCount;
                 d.curElement = 0;
                 var customOrigin = BABYLON.Vector2.Zero();
                 for (var _i = 0, _a = this.text; _i < _a.length; _i++) {
@@ -39228,7 +39273,7 @@ var BABYLON;
                     // Line feed
                     if (char === "\n") {
                         offset.x = 0;
-                        offset.y += texture.lineHeight;
+                        offset.y -= texture.lineHeight;
                     }
                     // Tabulation ?
                     if (char === "\t") {
