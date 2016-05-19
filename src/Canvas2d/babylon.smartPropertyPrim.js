@@ -263,7 +263,7 @@ var BABYLON;
                     }
                     this._modelDirty = true;
                 }
-                else if (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) {
+                else if ((propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
                     if (!this.isDirty) {
                         this.onPrimBecomesDirty();
                     }

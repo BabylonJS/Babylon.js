@@ -104,7 +104,7 @@
         public setTarget(target: Vector3): void {
             this.upVector.normalize();
 
-            Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
+            Matrix.LookAtLHToRef(this.position, target, this._defaultUpVector, this._camMatrix);
             this._camMatrix.invert();
 
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
@@ -117,7 +117,7 @@
                 this.rotation.y = (-Math.atan(vDir.z / vDir.x) - Math.PI / 2.0);
             }
 
-            this.rotation.z = -Math.acos(Vector3.Dot(new Vector3(0, 1.0, 0), this.upVector));
+            this.rotation.z = 0;
 
             if (isNaN(this.rotation.x)) {
                 this.rotation.x = 0;
