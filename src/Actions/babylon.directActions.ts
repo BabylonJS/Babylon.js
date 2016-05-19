@@ -69,6 +69,10 @@
 
         public execute(): void {
             this._effectiveTarget[this._property] = this.value;
+
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this._property);
+            }
         }
         
         public serialize(parent: any): any {
@@ -104,6 +108,10 @@
 
         public execute(): void {
             this._effectiveTarget[this._property] += this.value;
+
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this._property);
+            }
         }
         
         public serialize(parent: any): any {

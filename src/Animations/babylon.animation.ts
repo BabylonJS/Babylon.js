@@ -468,16 +468,15 @@
                 destination = this._target;
             }
 
-            if (!this._originalBlendValue) {
-                if (destination[path].clone) {
-                    this._originalBlendValue = destination[path].clone();
-                } else {
-                    this._originalBlendValue = destination[path];
-                }
-            }
-
             // Blending
             if (this.enableBlending && this._blendingFactor <= 1.0) {
+                if (!this._originalBlendValue) {
+                    if (destination[path].clone) {
+                        this._originalBlendValue = destination[path].clone();
+                    } else {
+                        this._originalBlendValue = destination[path];
+                    }
+                }
 
                 if (this._originalBlendValue.prototype) { // Complex value
                     
@@ -498,7 +497,7 @@
             }
 
             if (this._target.markAsDirty) {
-                this._target.markAsDirty(this.targetProperty, this._originalBlendValue);
+                this._target.markAsDirty(this.targetProperty);
             }
         }
 
