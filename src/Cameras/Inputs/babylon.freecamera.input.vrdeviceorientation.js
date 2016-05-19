@@ -32,9 +32,14 @@ var BABYLON;
                     // Incline it in the correct angle.
                     rotationX = 270 - rotationX;
                 }
+                var rotationZ = this._beta;
+                if (this._gamma < 0) {
+                    // Correct Z rotation when looking down towards ground.
+                    rotationZ = -rotationZ;
+                }
                 this.camera.rotation.x = this.gammaCorrection * rotationX / 180.0 * Math.PI;
                 this.camera.rotation.y = this.alphaCorrection * -this._alpha / 180.0 * Math.PI;
-                this.camera.rotation.z = this.betaCorrection * this._beta / 180.0 * Math.PI;
+                this.camera.rotation.z = this.betaCorrection * rotationZ / 180.0 * Math.PI;
             }
         };
         FreeCameraVRDeviceOrientationInput.prototype.detachControl = function (element) {
