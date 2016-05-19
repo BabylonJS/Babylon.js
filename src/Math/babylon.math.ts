@@ -1598,6 +1598,24 @@
         public static Zero(): Size {
             return new Size(0, 0);
         }
+
+        public add(otherSize: Size): Size {
+            let r = new Size(this.width + otherSize.width, this.height + otherSize.height);
+            return r;
+        }
+
+        public substract(otherSize: Size): Size {
+            let r = new Size(this.width - otherSize.width, this.height - otherSize.height);
+            return r;
+        }
+
+        public static Lerp(start: Size, end: Size, amount: number): Size {
+            var w = start.width + ((end.width - start.width) * amount);
+            var h = start.height + ((end.height - start.height) * amount);
+
+            return new Size(w, h);
+        }
+
     }
 
 
