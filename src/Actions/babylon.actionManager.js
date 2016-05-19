@@ -46,6 +46,9 @@ var BABYLON;
         ActionEvent.CreateNewFromScene = function (scene, evt) {
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
+        ActionEvent.CreateNewFromPrimitive = function (prim, pointerPos, evt, additionalData) {
+            return new ActionEvent(prim, pointerPos.x, pointerPos.y, null, evt, additionalData);
+        };
         return ActionEvent;
     })();
     BABYLON.ActionEvent = ActionEvent;
