@@ -10,6 +10,7 @@ module BABYLON {
         public uvs = new Vector4(0, 0, 1, 1);   // uvs
         public velocity = Vector3.Zero();       // velocity
         public alive = true;                    // alive
+        public isVisible = true;                // visibility
         public _pos: number;                    // index of this particle in the global "positions" array
         public _model: ModelShape;              // model shape reference
         public shapeId: number;                 // model shape id
