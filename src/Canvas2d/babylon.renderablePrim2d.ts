@@ -264,6 +264,9 @@
         }
 
         allocElements() {
+            if (!this.dataBuffer) {
+                return;
+            }
             let res = new Array<DynamicFloatArrayElementInfo>(this.dataElementCount);
             for (let i = 0; i < this.dataElementCount; i++) {
                 res[i] = this.dataBuffer.allocElement();
@@ -272,17 +275,35 @@
         }
 
         freeElements() {
+            if (!this.dataElements) {
+                return;
+            }
             for (let ei of this.dataElements) {
                 this.dataBuffer.freeElement(ei);
             }
             this.dataElements = null;
         }
 
+        get dataElementCount(): number {
+            return this._dataElementCount;
+        }
+
+        set dataElementCount(value: number) {
+            if (value === this._dataElementCount) {
+                return;
+            }
+
+            this.freeElements();
+            this._dataElementCount = value;
+            this.allocElements();
+        }
+
         curElement: number;
-        dataElementCount: number;
         dataElements: DynamicFloatArrayElementInfo[];
         dataBuffer: DynamicFloatArray;
         typeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
+
+        private _dataElementCount: number;
 
     }
 
@@ -390,7 +411,9 @@
                         let joinCat = cat.join(";");
                         joinedUsedCatList.push(joinCat);
                         InstanceClassInfo._CurCategories = joinCat;
+                        let obj = this.beforeRefreshForLayoutConstruction(dataPart);
                         this.refreshInstanceDataPart(dataPart);
+                        this.afterRefreshForLayoutConstruction(dataPart, obj);
                         this.isVisible = curVisible;
 
                         var size = 0;
@@ -522,20 +545,35 @@
             return [];
         }
 
+        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any {
+
+        }
+
+        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any) {
+
+        }
+
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
             if (!this.isVisible) {
                 return false;
             }
             part.isVisible = this.isVisible;
 
-            // Which means, if there's only one data element, we're update it from this method, otherwise it is the responsability of the derived class to call updateInstanceDataPart as many times as needed, properly (look at Text2D's implementation for more information)
+            // Which means, if there's only one data element, we're update it from this method, otherwise it is the responsibility of the derived class to call updateInstanceDataPart as many times as needed, properly (look at Text2D's implementation for more information)
             if (part.dataElementCount === 1) {
+                part.curElement = 0;
                 this.updateInstanceDataPart(part);
             }
             return true;
         }
 
-        protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null) {
+        /**
+         * Update the instanceDataBase level properties of a part
+         * @param part the part to update
+         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text). You MUST also set customSize.
+         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin property.
+         */
+        protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null, customSize: Size = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
             let size = (<Size>this.renderGroup.viewportSize);
             let zBias = this.getActualZOffset();
@@ -543,9 +581,9 @@
             let offX = 0;
             let offY = 0;
             // If there's an offset, apply the global transformation matrix on it to get a global offset
-            if (positionOffset) {
-                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
-                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[5];
+            if (positionOffset && customSize) {
+                offX = (positionOffset.x-(customSize.width*this.origin.x)) * t.m[0] + (positionOffset.y-(customSize.height*this.origin.y)) * t.m[4];
+                offY = (positionOffset.x-(customSize.width*this.origin.x)) * t.m[1] + (positionOffset.y-(customSize.height*this.origin.y)) * t.m[5];
             }
 
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner

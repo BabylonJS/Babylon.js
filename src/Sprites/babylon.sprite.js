@@ -76,6 +76,6 @@ var BABYLON;
             }
         };
         return Sprite;
-    }());
+    })();
     BABYLON.Sprite = Sprite;
 })(BABYLON || (BABYLON = {}));

@@ -56,7 +56,7 @@
                 return ft;
             }
 
-            ft = new FontTexture(null, lfn, scene);
+            ft = new FontTexture(null, lfn, scene, 200, Texture.NEAREST_SAMPLINGMODE);
             dic.add(lfn, ft);
 
             return ft;
@@ -161,7 +161,7 @@
             let width = measure.width;
             if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeight + yMargin;      // +2 for safety marging
+                this._currentFreePosition.y += this._lineHeight + yMargin;      // +2 for safety margin
 
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
@@ -174,7 +174,7 @@
 
             // Fill the CharInfo object
             info.topLeftUV = new Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 1) / textureSize.height));
+            info.bottomRightUV = new Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 2) / textureSize.height));
             info.charWidth = width;
 
             // Add the info structure

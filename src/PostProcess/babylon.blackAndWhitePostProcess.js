@@ -11,6 +11,6 @@ var BABYLON;
             _super.call(this, name, "blackAndWhite", null, null, ratio, camera, samplingMode, engine, reusable);
         }
         return BlackAndWhitePostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.BlackAndWhitePostProcess = BlackAndWhitePostProcess;
 })(BABYLON || (BABYLON = {}));

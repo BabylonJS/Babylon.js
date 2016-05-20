@@ -44,6 +44,10 @@
         public static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent {
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
+
+        public static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent {
+            return new ActionEvent(prim, pointerPos.x, pointerPos.y, null, evt, additionalData);
+        }
     }
 
     /**

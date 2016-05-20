@@ -31,7 +31,7 @@ var BABYLON;
             this.effect.setTexture("diffuseSampler", this.fontTexture);
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
             var cur = engine.getAlphaMode();
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
             var count = instanceInfo._instancesPartsData[0].usedElementCount;
             if (instanceInfo._owner.owner.supportInstancedArray) {
                 engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
@@ -70,7 +70,7 @@ var BABYLON;
             return true;
         };
         return Text2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -118,7 +118,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
         return Text2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -154,7 +154,7 @@ var BABYLON;
             },
             set: function (value) {
                 this._text = value;
-                this._actualAreaSize = null; // A change of text will reset the Actual Area Size which will be recomputed next time it's used
+                this._actualSize = null; // A change of text will reset the Actual Area Size which will be recomputed next time it's used
                 this._updateCharCount();
             },
             enumerable: true,
@@ -190,16 +190,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Text2D.prototype, "actualAreaSize", {
+        Object.defineProperty(Text2D.prototype, "actualSize", {
             get: function () {
                 if (this.areaSize) {
                     return this.areaSize;
                 }
-                if (this._actualAreaSize) {
-                    return this._actualAreaSize;
+                if (this._actualSize) {
+                    return this._actualSize;
                 }
-                this._actualAreaSize = this.fontTexture.measureText(this._text, this._tabulationSize);
-                return this._actualAreaSize;
+                this._actualSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                return this._actualSize;
             },
             enumerable: true,
             configurable: true
@@ -226,7 +226,7 @@ var BABYLON;
             return true;
         };
         Text2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualAreaSize, this._levelBoundingInfo);
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         };
         Text2D.prototype.setupText2D = function (owner, parent, id, position, fontName, text, areaSize, defaultFontColor, vAlign, hAlign, tabulationSize) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
@@ -238,7 +238,6 @@ var BABYLON;
             this.hAlign = hAlign;
             this._tabulationSize = tabulationSize;
             this._isTransparent = true;
-            this.origin = BABYLON.Vector2.Zero();
         };
         Text2D.Create = function (parent, id, x, y, fontName, text, defaultFontColor, areaSize, vAlign, hAlign, tabulationSize) {
             if (vAlign === void 0) { vAlign = Text2D.TEXT2D_VALIGN_TOP; }
@@ -248,6 +247,10 @@ var BABYLON;
             var text2d = new Text2D();
             text2d.setupText2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), fontName, text, areaSize, defaultFontColor || new BABYLON.Color4(0, 0, 0, 1), vAlign, hAlign, tabulationSize);
             return text2d;
+        };
+        Text2D.prototype.levelIntersect = function (intersectInfo) {
+            // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
+            return true;
         };
         Text2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
             var renderCache = new Text2DRenderCache(this.owner.engine, modelKey, isTransparent);
@@ -272,13 +275,27 @@ var BABYLON;
             renderCache.ib = engine.createIndexBuffer(ib);
             // Effects
             var ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, function (e) {
-                //                renderCache.setupUniformsLocation(e, ei.uniforms, Text2D.TEXT2D_MAINPARTID);
-            });
+            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             return renderCache;
         };
         Text2D.prototype.createInstanceDataParts = function () {
             return [new Text2DInstanceData(Text2D.TEXT2D_MAINPARTID, this._charCount)];
+        };
+        // Looks like a hack!? Yes! Because that's what it is!
+        // For the InstanceData layer to compute correctly we need to set all the properties involved, which won't be the case if there's no text
+        // This method is called before the layout construction for us to detect this case, set some text and return the initial one to restore it after (there can be some text without char to display, say "\t\n" for instance)
+        Text2D.prototype.beforeRefreshForLayoutConstruction = function (part) {
+            if (!this._charCount) {
+                var curText = this._text;
+                this.text = "A";
+                return curText;
+            }
+        };
+        // if obj contains something, we restore the _text property
+        Text2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
+            if (obj !== undefined) {
+                this.text = obj;
+            }
         };
         Text2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
@@ -288,15 +305,17 @@ var BABYLON;
                 var d = part;
                 var texture = this.fontTexture;
                 var ts = texture.getSize();
+                var textSize = texture.measureText(this.text, this._tabulationSize);
                 var offset = BABYLON.Vector2.Zero();
                 var charxpos = 0;
+                d.dataElementCount = this._charCount;
                 d.curElement = 0;
                 for (var _i = 0, _a = this.text; _i < _a.length; _i++) {
                     var char = _a[_i];
                     // Line feed
                     if (char === "\n") {
                         offset.x = 0;
-                        offset.y += texture.lineHeight;
+                        offset.y -= texture.lineHeight;
                     }
                     // Tabulation ?
                     if (char === "\t") {
@@ -309,7 +328,7 @@ var BABYLON;
                     if (char < " ") {
                         continue;
                     }
-                    this.updateInstanceDataPart(d, offset);
+                    this.updateInstanceDataPart(d, offset, textSize);
                     var ci = texture.getChar(char);
                     offset.x += ci.charWidth;
                     d.topLeftUV = ci.topLeftUV;
@@ -362,6 +381,6 @@ var BABYLON;
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));

@@ -120,6 +120,9 @@ var BABYLON;
             else if (from instanceof BABYLON.Color3) {
                 dataType = Animation.ANIMATIONTYPE_COLOR3;
             }
+            else if (from instanceof BABYLON.Size) {
+                dataType = Animation.ANIMATIONTYPE_SIZE;
+            }
             if (dataType == undefined) {
                 return null;
             }
@@ -248,6 +251,9 @@ var BABYLON;
         Animation.prototype.vector2InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Vector2.Lerp(startValue, endValue, gradient);
         };
+        Animation.prototype.sizeInterpolateFunction = function (startValue, endValue, gradient) {
+            return BABYLON.Size.Lerp(startValue, endValue, gradient);
+        };
         Animation.prototype.color3InterpolateFunction = function (startValue, endValue, gradient) {
             return BABYLON.Color3.Lerp(startValue, endValue, gradient);
         };
@@ -341,6 +347,15 @@ var BABYLON;
                                     return this.vector2InterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return this.vector2InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                            }
+                        // Size
+                        case Animation.ANIMATIONTYPE_SIZE:
+                            switch (loopMode) {
+                                case Animation.ANIMATIONLOOPMODE_CYCLE:
+                                case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    return this.sizeInterpolateFunction(startValue, endValue, gradient);
+                                case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                    return this.sizeInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
                             }
                         // Color3
                         case Animation.ANIMATIONTYPE_COLOR3:
@@ -481,6 +496,9 @@ var BABYLON;
                             // Vector2
                             case Animation.ANIMATIONTYPE_VECTOR2:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            // Size
+                            case Animation.ANIMATIONTYPE_SIZE:
+                                this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                             // Color3
                             case Animation.ANIMATIONTYPE_COLOR3:
                                 this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
@@ -510,6 +528,10 @@ var BABYLON;
                     // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
                         offsetValue = BABYLON.Vector2.Zero();
+                        break;
+                    // Size
+                    case Animation.ANIMATIONTYPE_SIZE:
+                        offsetValue = BABYLON.Size.Zero();
                         break;
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
@@ -600,6 +622,13 @@ var BABYLON;
         Object.defineProperty(Animation, "ANIMATIONTYPE_VECTOR2", {
             get: function () {
                 return Animation._ANIMATIONTYPE_VECTOR2;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Animation, "ANIMATIONTYPE_SIZE", {
+            get: function () {
+                return Animation._ANIMATIONTYPE_SIZE;
             },
             enumerable: true,
             configurable: true
@@ -702,6 +731,7 @@ var BABYLON;
         Animation._ANIMATIONTYPE_MATRIX = 3;
         Animation._ANIMATIONTYPE_COLOR3 = 4;
         Animation._ANIMATIONTYPE_VECTOR2 = 5;
+        Animation._ANIMATIONTYPE_SIZE = 6;
         Animation._ANIMATIONLOOPMODE_RELATIVE = 0;
         Animation._ANIMATIONLOOPMODE_CYCLE = 1;
         Animation._ANIMATIONLOOPMODE_CONSTANT = 2;

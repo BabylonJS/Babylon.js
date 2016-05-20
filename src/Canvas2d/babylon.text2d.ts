@@ -25,7 +25,7 @@
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
 
             var cur = engine.getAlphaMode();
-            engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(Engine.ALPHA_ADD);
             let count = instanceInfo._instancesPartsData[0].usedElementCount;
             if (instanceInfo._owner.owner.supportInstancedArray) {
                 engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
@@ -145,7 +145,7 @@
 
         public set text(value: string) {
             this._text = value;
-            this._actualAreaSize = null;    // A change of text will reset the Actual Area Size which will be recomputed next time it's used
+            this._actualSize = null;    // A change of text will reset the Actual Area Size which will be recomputed next time it's used
             this._updateCharCount();
         }
 
@@ -176,18 +176,18 @@
             this._hAlign = value;
         }
 
-        public get actualAreaSize(): Size {
+        public get actualSize(): Size {
             if (this.areaSize) {
                 return this.areaSize;
             }
 
-            if (this._actualAreaSize) {
-                return this._actualAreaSize;
+            if (this._actualSize) {
+                return this._actualSize;
             }
 
-            this._actualAreaSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+            this._actualSize = this.fontTexture.measureText(this._text, this._tabulationSize);
 
-            return this._actualAreaSize;
+            return this._actualSize;
         }
 
         protected get fontTexture(): FontTexture {
@@ -213,7 +213,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.actualAreaSize, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         }
 
         protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, vAlign, hAlign, tabulationSize: number) {
@@ -227,7 +227,6 @@
             this.hAlign = hAlign;
             this._tabulationSize = tabulationSize;
             this._isTransparent = true;
-            this.origin = Vector2.Zero();
         }
 
         public static Create(parent: Prim2DBase, id: string, x: number, y: number, fontName: string, text: string, defaultFontColor?: Color4, areaSize?: Size, vAlign = Text2D.TEXT2D_VALIGN_TOP, hAlign = Text2D.TEXT2D_HALIGN_LEFT, tabulationSize: number = 4): Text2D {
@@ -236,6 +235,11 @@
             let text2d = new Text2D();
             text2d.setupText2D(parent.owner, parent, id, new Vector2(x, y), fontName, text, areaSize, defaultFontColor || new Color4(0,0,0,1), vAlign, hAlign, tabulationSize);
             return text2d;
+        }
+
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+            // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
+            return true;
         }
 
         protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
@@ -267,15 +271,31 @@
 
             // Effects
             let ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, e => {
-//                renderCache.setupUniformsLocation(e, ei.uniforms, Text2D.TEXT2D_MAINPARTID);
-            });
+            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
 
             return renderCache;
         }
 
         protected createInstanceDataParts(): InstanceDataBase[] {
             return [new Text2DInstanceData(Text2D.TEXT2D_MAINPARTID, this._charCount)];
+        }
+
+        // Looks like a hack!? Yes! Because that's what it is!
+        // For the InstanceData layer to compute correctly we need to set all the properties involved, which won't be the case if there's no text
+        // This method is called before the layout construction for us to detect this case, set some text and return the initial one to restore it after (there can be some text without char to display, say "\t\n" for instance)
+        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any {
+            if (!this._charCount) {
+                let curText = this._text;
+                this.text = "A";
+                return curText;
+            }
+        }
+
+        // if obj contains something, we restore the _text property
+        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any) {
+            if (obj !== undefined) {
+                this.text = obj;
+            }
         }
 
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
@@ -287,16 +307,17 @@
                 let d = <Text2DInstanceData>part;
                 let texture = this.fontTexture;
                 let ts = texture.getSize();
-
+                let textSize = texture.measureText(this.text, this._tabulationSize);
                 let offset = Vector2.Zero();
                 let charxpos = 0;
+                d.dataElementCount = this._charCount;
                 d.curElement = 0;
                 for (let char of this.text) {
 
                     // Line feed
                     if (char === "\n") {
                         offset.x = 0;
-                        offset.y += texture.lineHeight;
+                        offset.y -= texture.lineHeight;
                     }
 
                     // Tabulation ?
@@ -313,7 +334,7 @@
                         continue;
                     }
 
-                    this.updateInstanceDataPart(d, offset);
+                    this.updateInstanceDataPart(d, offset, textSize);
 
                     let ci = texture.getChar(char);
                     offset.x += ci.charWidth;
@@ -348,7 +369,7 @@
         private _defaultFontColor: Color4;
         private _text: string;
         private _areaSize: Size;
-        private _actualAreaSize: Size;
+        private _actualSize: Size;
         private _vAlign: number;
         private _hAlign: number;
     }

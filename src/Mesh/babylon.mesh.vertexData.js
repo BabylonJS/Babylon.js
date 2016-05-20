@@ -1817,6 +1817,6 @@ var BABYLON;
             geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
         };
         return VertexData;
-    }());
+    })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));

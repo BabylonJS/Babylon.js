@@ -16,6 +16,15 @@
             return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
         }
 
+        /**
+        * Use this predicate to dynamically define the list of mesh you want to render.
+        * If set, the renderList property will be overwritten.
+        */
+        public renderListPredicate: (AbstractMesh) => boolean;
+
+        /**
+        * Use this list to define the list of mesh you want to render.
+        */
         public renderList = new Array<AbstractMesh>();
         public renderParticles = true;
         public renderSprites = false;
@@ -193,6 +202,20 @@
                 }
 
                 delete this._waitingRenderList;
+            }
+
+            // Is predicate defined?
+            if (this.renderListPredicate) {
+                this.renderList.splice(0); // Clear previous renderList
+
+                var sceneMeshes = this.getScene().meshes;
+
+                for (var index = 0; index < sceneMeshes.length; index++) {
+                    var mesh = sceneMeshes[index];
+                    if (this.renderListPredicate(mesh)) {
+                        this.renderList.push(mesh);
+                    }
+                }
             }
 
             if (this.renderList && this.renderList.length === 0) {

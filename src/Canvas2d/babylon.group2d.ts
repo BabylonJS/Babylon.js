@@ -43,7 +43,7 @@
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
             var g = new Group2D();
             g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero());
-
+            g.origin = Vector2.Zero();
             return g;
             
         }
@@ -184,6 +184,11 @@
             this._groupRender(context);
         }
 
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Group2D is shaped the same, so we always return true
+            return true;
+        }
+
         protected updateLevelBoundingInfo() {
             let size: Size;
 
@@ -267,7 +272,7 @@
 
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
                         // For instance: a Rect's position change, the position of its children primitives will also change so a prepare will be call on them. If a child was in the dirtyList we will avoid a second prepare by making this check.
-                        if (!p.isDisposed && p.needPrepare()) {
+                        if (!p.isDisposed && p._needPrepare()) {
                             p._prepareRender(context);
                         }
                     });
@@ -412,6 +417,8 @@
                 this._cacheRenderSprite.rotation = this.rotation;
             } else if (prop.id === Prim2DBase.scaleProperty.id) {
                 this._cacheRenderSprite.scale = this.scale;
+            } else if (prop.id === Prim2DBase.originProperty.id) {
+                this._cacheRenderSprite.origin = this.origin.clone();
             } else if (prop.id === Group2D.actualSizeProperty.id) {
                 this._cacheRenderSprite.spriteSize = this.actualSize.clone();
                 //console.log(`[${this._globalTransformProcessStep}] Sync Sprite ${this.id}, width: ${this.actualSize.width}, height: ${this.actualSize.height}`);

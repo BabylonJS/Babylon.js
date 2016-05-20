@@ -74,10 +74,13 @@ var BABYLON;
             this.RADIANCEOVERALPHA = false;
             this.USEPMREMREFLECTION = false;
             this.USEPMREMREFRACTION = false;
+            this.OPENGLNORMALMAP = false;
+            this.INVERTNORMALMAPX = false;
+            this.INVERTNORMALMAPY = false;
             this.rebuild();
         }
         return PBRMaterialDefines;
-    }(BABYLON.MaterialDefines));
+    })(BABYLON.MaterialDefines);
     /**
      * The Physically based material of BJS.
      *
@@ -301,6 +304,14 @@ var BABYLON;
              * Number of Simultaneous lights allowed on the material.
              */
             this.maxSimultaneousLights = 4;
+            /**
+             * If sets to true, x component of normal map value will invert (x = 1.0 - x).
+             */
+            this.invertNormalMapX = false;
+            /**
+             * If sets to true, y component of normal map value will invert (y = 1.0 - y).
+             */
+            this.invertNormalMapY = false;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -545,6 +556,12 @@ var BABYLON;
                             if (this.useParallaxOcclusion) {
                                 this._defines.PARALLAXOCCLUSION = true;
                             }
+                        }
+                        if (this.invertNormalMapX) {
+                            this._defines.INVERTNORMALMAPX = true;
+                        }
+                        if (this.invertNormalMapY) {
+                            this._defines.INVERTNORMALMAPY = true;
                         }
                     }
                 }
@@ -1234,8 +1251,14 @@ var BABYLON;
         ], PBRMaterial.prototype, "maxSimultaneousLights", void 0);
         __decorate([
             BABYLON.serialize()
+        ], PBRMaterial.prototype, "invertNormalMapX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "invertNormalMapY", void 0);
+        __decorate([
+            BABYLON.serialize()
         ], PBRMaterial.prototype, "useLogarithmicDepth", null);
         return PBRMaterial;
-    }(BABYLON.Material));
+    })(BABYLON.Material);
     BABYLON.PBRMaterial = PBRMaterial;
 })(BABYLON || (BABYLON = {}));

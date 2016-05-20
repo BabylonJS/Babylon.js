@@ -121,6 +121,10 @@
             this._texture = value;
         }
 
+        public get actualSize(): Size {
+            return this.spriteSize;
+        }
+
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.spriteSizeProperty = pi, false, true)
         public get spriteSize(): Size {
             return this._size;
@@ -158,7 +162,21 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo, this.origin);
+        }
+
+        public getAnimatables(): IAnimatable[] {
+            let res = new Array<IAnimatable>();
+
+            if (this.texture && this.texture.animations && this.texture.animations.length > 0) {
+                res.push(this.texture);
+            }
+            return res;
+        }
+
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
+            return true;
         }
 
         protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean) {

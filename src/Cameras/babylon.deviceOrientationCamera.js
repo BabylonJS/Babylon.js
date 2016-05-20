@@ -16,28 +16,18 @@ var BABYLON;
         Object.defineProperty(DeviceOrientationCamera.prototype, "angularSensibility", {
             //-- Begin properties for backward compatibility for inputs
             get: function () {
-                var deviceOrientation = this.inputs.attached["deviceOrientation"];
-                if (deviceOrientation)
-                    return deviceOrientation.angularSensibility;
+                return 0;
             },
             set: function (value) {
-                var deviceOrientation = this.inputs.attached["deviceOrientation"];
-                if (deviceOrientation)
-                    deviceOrientation.angularSensibility = value;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(DeviceOrientationCamera.prototype, "moveSensibility", {
             get: function () {
-                var deviceOrientation = this.inputs.attached["deviceOrientation"];
-                if (deviceOrientation)
-                    return deviceOrientation.moveSensibility;
+                return 0;
             },
             set: function (value) {
-                var deviceOrientation = this.inputs.attached["deviceOrientation"];
-                if (deviceOrientation)
-                    deviceOrientation.moveSensibility = value;
             },
             enumerable: true,
             configurable: true
@@ -46,6 +36,6 @@ var BABYLON;
             return "DeviceOrientationCamera";
         };
         return DeviceOrientationCamera;
-    }(BABYLON.FreeCamera));
+    })(BABYLON.FreeCamera);
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));
