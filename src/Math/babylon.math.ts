@@ -48,6 +48,17 @@
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         }
 
+        public getClassName(): string {
+            return "Color3";
+        }
+
+        public getHashCode(): number {
+            let hash = this.r || 0;
+            hash = (hash * 397) ^ (this.g || 0);
+            hash = (hash * 397) ^ (this.b || 0);
+            return hash;
+        }
+
         // Operators
         public toArray(array: number[], index?: number): Color3 {
             if (index === undefined) {
@@ -298,6 +309,18 @@
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
 
+        public getClassName(): string {
+            return "Color4";
+        }
+
+        public getHashCode(): number {
+            let hash = this.r || 0;
+            hash = (hash * 397) ^ (this.g || 0);
+            hash = (hash * 397) ^ (this.b || 0);
+            hash = (hash * 397) ^ (this.a || 0);
+            return hash;
+        }
+
         public clone(): Color4 {
             return new Color4(this.r, this.g, this.b, this.a);
         }
@@ -383,6 +406,16 @@
 
         public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + "}";
+        }
+
+        public getClassName(): string {
+            return "Vector2";
+        }
+
+        public getHashCode(): number {
+            let hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            return hash;
         }
 
         // Operators
@@ -638,6 +671,17 @@
 
         public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
+        }
+
+        public getClassName(): string {
+            return "Vector3";
+        }
+
+        public getHashCode(): number {
+            let hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            return hash;
         }
 
         // Operators
@@ -1261,6 +1305,18 @@
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}";
         }
 
+        public getClassName(): string {
+            return "Vector4";
+        }
+
+        public getHashCode(): number {
+            let hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            hash = (hash * 397) ^ (this.w || 0);
+            return hash;
+        }
+
         // Operators
         public asArray(): number[] {
             var result = [];
@@ -1579,6 +1635,20 @@
             this.height = height;
         }
 
+        public toString(): string {
+            return `{W: ${this.width}, H: ${this.height}}`;
+        }
+
+        public getClassName(): string {
+            return "Size";
+        }
+
+        public getHashCode(): number {
+            let hash = this.width || 0;
+            hash = (hash * 397) ^ (this.height || 0);
+            return hash;
+        }
+
         public clone(): Size {
             return new Size(this.width, this.height);
         }
@@ -1625,6 +1695,18 @@
 
         public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
+        }
+
+        public getClassName(): string {
+            return "Quaternion";
+        }
+
+        public getHashCode(): number {
+            let hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            hash = (hash * 397) ^ (this.w || 0);
+            return hash;
         }
 
         public asArray(): number[] {
@@ -2214,6 +2296,18 @@
                 this.m[4], this.m[5], this.m[6], this.m[7],
                 this.m[8], this.m[9], this.m[10], this.m[11],
                 this.m[12], this.m[13], this.m[14], this.m[15]);
+        }
+
+        public getClassName(): string {
+            return "Matrix";
+        }
+
+        public getHashCode(): number {
+            let hash = this.m[0] || 0;
+            for (let i = 1; i < 16; i++) {
+                hash = (hash * 397) ^ (this.m[i] || 0);
+            }
+            return hash;
         }
 
         public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean {
@@ -2836,6 +2930,16 @@
         // Methods
         public clone(): Plane {
             return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
+        }
+
+        public getClassName(): string {
+            return "Plane";
+        }
+
+        public getHashCode(): number {
+            let hash = this.normal.getHashCode();
+            hash = (hash * 397) ^ (this.d || 0);
+            return hash;
         }
 
         public normalize(): Plane {
