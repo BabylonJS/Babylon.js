@@ -728,7 +728,7 @@
                 return false;
             }
 
-            if (!this._actionManager) {
+            if (this._actionManager) {
                 this._actionManager.dispose();
                 this._actionManager = null;
             }
