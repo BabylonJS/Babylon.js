@@ -653,13 +653,22 @@
                         idx = index + pt * 3;
                         colidx = colorIndex + pt * 4;
                         uvidx = uvIndex + pt * 2;
-                        this._positions32[idx] = this._camera.x;
-                        this._positions32[idx + 1] = this._camera.y;
-                        this._positions32[idx + 2] = this._camera.z;
+                        this._positions32[idx] = this._camera.position.x;
+                        this._positions32[idx + 1] = this._camera.position.y;
+                        this._positions32[idx + 2] = this._camera.position.z;
                         this._normals32[idx] = 0.0;
                         this._normals32[idx + 1] = 0.0;
                         this._normals32[idx + 2] = 0.0;
-                        // colors and uvs keep unchanged in case they were already set and told not to be recomputed
+                        if (this._computeParticleColor) {
+                            this._colors32[colidx] = this._particle.color.r;
+                            this._colors32[colidx + 1] = this._particle.color.g;
+                            this._colors32[colidx + 2] = this._particle.color.b;
+                            this._colors32[colidx + 3] = this._particle.color.a;
+                        }
+                        if (this._computeParticleTexture) {
+                            this._uvs32[uvidx] = this._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
+                            this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
+                        }
                     }
                 }
                 
