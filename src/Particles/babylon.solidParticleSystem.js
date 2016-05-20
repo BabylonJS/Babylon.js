@@ -460,6 +460,7 @@ var BABYLON;
             var colorIndex = 0;
             var uvidx = 0;
             var uvIndex = 0;
+            var pt = 0;
             if (this._computeBoundingBox) {
                 BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
                 BABYLON.Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
@@ -472,92 +473,120 @@ var BABYLON;
                 this._shapeUV = this._particle._model._shapeUV;
                 // call to custom user function to update the particle properties
                 this.updateParticle(this._particle);
-                // particle rotation matrix
-                if (this.billboard) {
-                    this._particle.rotation.x = 0.0;
-                    this._particle.rotation.y = 0.0;
+                if (this._particle.isVisible) {
+                    // particle rotation matrix
+                    if (this.billboard) {
+                        this._particle.rotation.x = 0.0;
+                        this._particle.rotation.y = 0.0;
+                    }
+                    if (this._computeParticleRotation) {
+                        if (this._particle.rotationQuaternion) {
+                            this._quaternion.copyFrom(this._particle.rotationQuaternion);
+                        }
+                        else {
+                            this._yaw = this._particle.rotation.y;
+                            this._pitch = this._particle.rotation.x;
+                            this._roll = this._particle.rotation.z;
+                            this._quaternionRotationYPR();
+                        }
+                        this._quaternionToRotationMatrix();
+                    }
+                    // particle vertex loop
+                    for (pt = 0; pt < this._shape.length; pt++) {
+                        idx = index + pt * 3;
+                        colidx = colorIndex + pt * 4;
+                        uvidx = uvIndex + pt * 2;
+                        this._vertex.x = this._shape[pt].x;
+                        this._vertex.y = this._shape[pt].y;
+                        this._vertex.z = this._shape[pt].z;
+                        if (this._computeParticleVertex) {
+                            this.updateParticleVertex(this._particle, this._vertex, pt);
+                        }
+                        // positions
+                        this._vertex.x *= this._particle.scaling.x;
+                        this._vertex.y *= this._particle.scaling.y;
+                        this._vertex.z *= this._particle.scaling.z;
+                        this._w = (this._vertex.x * this._rotMatrix.m[3]) + (this._vertex.y * this._rotMatrix.m[7]) + (this._vertex.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
+                        this._rotated.x = ((this._vertex.x * this._rotMatrix.m[0]) + (this._vertex.y * this._rotMatrix.m[4]) + (this._vertex.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
+                        this._rotated.y = ((this._vertex.x * this._rotMatrix.m[1]) + (this._vertex.y * this._rotMatrix.m[5]) + (this._vertex.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
+                        this._rotated.z = ((this._vertex.x * this._rotMatrix.m[2]) + (this._vertex.y * this._rotMatrix.m[6]) + (this._vertex.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
+                        this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                        this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                        this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                        if (this._computeBoundingBox) {
+                            if (this._positions32[idx] < this._minimum.x) {
+                                this._minimum.x = this._positions32[idx];
+                            }
+                            if (this._positions32[idx] > this._maximum.x) {
+                                this._maximum.x = this._positions32[idx];
+                            }
+                            if (this._positions32[idx + 1] < this._minimum.y) {
+                                this._minimum.y = this._positions32[idx + 1];
+                            }
+                            if (this._positions32[idx + 1] > this._maximum.y) {
+                                this._maximum.y = this._positions32[idx + 1];
+                            }
+                            if (this._positions32[idx + 2] < this._minimum.z) {
+                                this._minimum.z = this._positions32[idx + 2];
+                            }
+                            if (this._positions32[idx + 2] > this._maximum.z) {
+                                this._maximum.z = this._positions32[idx + 2];
+                            }
+                        }
+                        // normals : if the particles can't be morphed then just rotate the normals, what if much more faster than ComputeNormals()
+                        if (!this._computeParticleVertex && !this.billboard) {
+                            this._normal.x = this._fixedNormal32[idx];
+                            this._normal.y = this._fixedNormal32[idx + 1];
+                            this._normal.z = this._fixedNormal32[idx + 2];
+                            this._w = (this._normal.x * this._rotMatrix.m[3]) + (this._normal.y * this._rotMatrix.m[7]) + (this._normal.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
+                            this._rotated.x = ((this._normal.x * this._rotMatrix.m[0]) + (this._normal.y * this._rotMatrix.m[4]) + (this._normal.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
+                            this._rotated.y = ((this._normal.x * this._rotMatrix.m[1]) + (this._normal.y * this._rotMatrix.m[5]) + (this._normal.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
+                            this._rotated.z = ((this._normal.x * this._rotMatrix.m[2]) + (this._normal.y * this._rotMatrix.m[6]) + (this._normal.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
+                            this._normals32[idx] = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                            this._normals32[idx + 1] = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                            this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                        }
+                        if (this._computeParticleColor) {
+                            this._colors32[colidx] = this._particle.color.r;
+                            this._colors32[colidx + 1] = this._particle.color.g;
+                            this._colors32[colidx + 2] = this._particle.color.b;
+                            this._colors32[colidx + 3] = this._particle.color.a;
+                        }
+                        if (this._computeParticleTexture) {
+                            this._uvs32[uvidx] = this._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
+                            this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
+                        }
+                    }
                 }
-                if (this._computeParticleRotation) {
-                    if (this._particle.rotationQuaternion) {
-                        this._quaternion.copyFrom(this._particle.rotationQuaternion);
-                    }
-                    else {
-                        this._yaw = this._particle.rotation.y;
-                        this._pitch = this._particle.rotation.x;
-                        this._roll = this._particle.rotation.z;
-                        this._quaternionRotationYPR();
-                    }
-                    this._quaternionToRotationMatrix();
-                }
-                for (var pt = 0; pt < this._shape.length; pt++) {
-                    idx = index + pt * 3;
-                    colidx = colorIndex + pt * 4;
-                    uvidx = uvIndex + pt * 2;
-                    this._vertex.x = this._shape[pt].x;
-                    this._vertex.y = this._shape[pt].y;
-                    this._vertex.z = this._shape[pt].z;
-                    if (this._computeParticleVertex) {
-                        this.updateParticleVertex(this._particle, this._vertex, pt);
-                    }
-                    // positions
-                    this._vertex.x *= this._particle.scaling.x;
-                    this._vertex.y *= this._particle.scaling.y;
-                    this._vertex.z *= this._particle.scaling.z;
-                    this._w = (this._vertex.x * this._rotMatrix.m[3]) + (this._vertex.y * this._rotMatrix.m[7]) + (this._vertex.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
-                    this._rotated.x = ((this._vertex.x * this._rotMatrix.m[0]) + (this._vertex.y * this._rotMatrix.m[4]) + (this._vertex.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
-                    this._rotated.y = ((this._vertex.x * this._rotMatrix.m[1]) + (this._vertex.y * this._rotMatrix.m[5]) + (this._vertex.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
-                    this._rotated.z = ((this._vertex.x * this._rotMatrix.m[2]) + (this._vertex.y * this._rotMatrix.m[6]) + (this._vertex.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
-                    this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                    this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                    this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
-                    if (this._computeBoundingBox) {
-                        if (this._positions32[idx] < this._minimum.x) {
-                            this._minimum.x = this._positions32[idx];
+                else {
+                    for (pt = 0; pt < this._shape.length; pt++) {
+                        idx = index + pt * 3;
+                        colidx = colorIndex + pt * 4;
+                        uvidx = uvIndex + pt * 2;
+                        this._positions32[idx] = this._camera.position.x;
+                        this._positions32[idx + 1] = this._camera.position.y;
+                        this._positions32[idx + 2] = this._camera.position.z;
+                        this._normals32[idx] = 0.0;
+                        this._normals32[idx + 1] = 0.0;
+                        this._normals32[idx + 2] = 0.0;
+                        if (this._computeParticleColor) {
+                            this._colors32[colidx] = this._particle.color.r;
+                            this._colors32[colidx + 1] = this._particle.color.g;
+                            this._colors32[colidx + 2] = this._particle.color.b;
+                            this._colors32[colidx + 3] = this._particle.color.a;
                         }
-                        if (this._positions32[idx] > this._maximum.x) {
-                            this._maximum.x = this._positions32[idx];
+                        if (this._computeParticleTexture) {
+                            this._uvs32[uvidx] = this._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
+                            this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                         }
-                        if (this._positions32[idx + 1] < this._minimum.y) {
-                            this._minimum.y = this._positions32[idx + 1];
-                        }
-                        if (this._positions32[idx + 1] > this._maximum.y) {
-                            this._maximum.y = this._positions32[idx + 1];
-                        }
-                        if (this._positions32[idx + 2] < this._minimum.z) {
-                            this._minimum.z = this._positions32[idx + 2];
-                        }
-                        if (this._positions32[idx + 2] > this._maximum.z) {
-                            this._maximum.z = this._positions32[idx + 2];
-                        }
-                    }
-                    // normals : if the particles can't be morphed then just rotate the normals
-                    if (!this._computeParticleVertex && !this.billboard) {
-                        this._normal.x = this._fixedNormal32[idx];
-                        this._normal.y = this._fixedNormal32[idx + 1];
-                        this._normal.z = this._fixedNormal32[idx + 2];
-                        this._w = (this._normal.x * this._rotMatrix.m[3]) + (this._normal.y * this._rotMatrix.m[7]) + (this._normal.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
-                        this._rotated.x = ((this._normal.x * this._rotMatrix.m[0]) + (this._normal.y * this._rotMatrix.m[4]) + (this._normal.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
-                        this._rotated.y = ((this._normal.x * this._rotMatrix.m[1]) + (this._normal.y * this._rotMatrix.m[5]) + (this._normal.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
-                        this._rotated.z = ((this._normal.x * this._rotMatrix.m[2]) + (this._normal.y * this._rotMatrix.m[6]) + (this._normal.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
-                        this._normals32[idx] = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                        this._normals32[idx + 1] = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                        this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
-                    }
-                    if (this._computeParticleColor) {
-                        this._colors32[colidx] = this._particle.color.r;
-                        this._colors32[colidx + 1] = this._particle.color.g;
-                        this._colors32[colidx + 2] = this._particle.color.b;
-                        this._colors32[colidx + 3] = this._particle.color.a;
-                    }
-                    if (this._computeParticleTexture) {
-                        this._uvs32[uvidx] = this._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
-                        this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                     }
                 }
+                // increment indexes for the next particle
                 index = idx + 3;
                 colorIndex = colidx + 4;
                 uvIndex = uvidx + 2;
             }
+            // if the VBO must be updated
             if (update) {
                 if (this._computeParticleColor) {
                     this.mesh.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this._colors32, false, false);
@@ -568,7 +597,7 @@ var BABYLON;
                 this.mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this._positions32, false, false);
                 if (!this.mesh.areNormalsFrozen) {
                     if (this._computeParticleVertex || this.billboard) {
-                        // recompute the normals only if the particles can be morphed, update then the normal reference array
+                        // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
                         BABYLON.VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
                         for (var i = 0; i < this._normals32.length; i++) {
                             this._fixedNormal32[i] = this._normals32[i];
@@ -819,6 +848,6 @@ var BABYLON;
         SolidParticleSystem.prototype.afterUpdateParticles = function (start, stop, update) {
         };
         return SolidParticleSystem;
-    }());
+    })();
     BABYLON.SolidParticleSystem = SolidParticleSystem;
 })(BABYLON || (BABYLON = {}));

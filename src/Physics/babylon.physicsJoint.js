@@ -60,7 +60,7 @@ var BABYLON;
         //Cannon only at the moment
         PhysicsJoint.SpringJoint = 9;
         return PhysicsJoint;
-    }());
+    })();
     BABYLON.PhysicsJoint = PhysicsJoint;
     /**
      * A class representing a physics distance joint.
@@ -77,7 +77,7 @@ var BABYLON;
             this._physicsPlugin.updateDistanceJoint(this, maxDistance, minDistance);
         };
         return DistanceJoint;
-    }(PhysicsJoint));
+    })(PhysicsJoint);
     BABYLON.DistanceJoint = DistanceJoint;
     var MotorEnabledJoint = (function (_super) {
         __extends(MotorEnabledJoint, _super);
@@ -101,7 +101,7 @@ var BABYLON;
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
         };
         return MotorEnabledJoint;
-    }(PhysicsJoint));
+    })(PhysicsJoint);
     BABYLON.MotorEnabledJoint = MotorEnabledJoint;
     /**
      * This class represents a single hinge physics joint
@@ -128,7 +128,7 @@ var BABYLON;
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
         };
         return HingeJoint;
-    }(MotorEnabledJoint));
+    })(MotorEnabledJoint);
     BABYLON.HingeJoint = HingeJoint;
     /**
      * This class represents a dual hinge physics joint (same as wheel joint)
@@ -161,6 +161,6 @@ var BABYLON;
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit, motorIndex);
         };
         return Hinge2Joint;
-    }(MotorEnabledJoint));
+    })(MotorEnabledJoint);
     BABYLON.Hinge2Joint = Hinge2Joint;
 })(BABYLON || (BABYLON = {}));

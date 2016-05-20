@@ -12,7 +12,7 @@ var BABYLON;
         function CharInfo() {
         }
         return CharInfo;
-    }());
+    })();
     BABYLON.CharInfo = CharInfo;
     var FontTexture = (function (_super) {
         __extends(FontTexture, _super);
@@ -95,7 +95,7 @@ var BABYLON;
                 ++ft._usedCounter;
                 return ft;
             }
-            ft = new FontTexture(null, lfn, scene);
+            ft = new FontTexture(null, lfn, scene, 200, BABYLON.Texture.NEAREST_SAMPLINGMODE);
             dic.add(lfn, ft);
             return ft;
         };
@@ -134,7 +134,7 @@ var BABYLON;
             var width = measure.width;
             if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeight + yMargin; // +2 for safety marging
+                this._currentFreePosition.y += this._lineHeight + yMargin; // +2 for safety margin
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
                     return this.getChar("!");
@@ -144,7 +144,7 @@ var BABYLON;
             this._context.fillText(char, this._currentFreePosition.x - 0.5, this._currentFreePosition.y - this._offset - 0.5);
             // Fill the CharInfo object
             info.topLeftUV = new BABYLON.Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new BABYLON.Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 1) / textureSize.height));
+            info.bottomRightUV = new BABYLON.Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 2) / textureSize.height));
             info.charWidth = width;
             // Add the info structure
             this._charInfos[char] = info;
@@ -160,8 +160,8 @@ var BABYLON;
             var lineCount = 1;
             var charxpos = 0;
             // Parse each char of the string
-            for (var _i = 0, text_1 = text; _i < text_1.length; _i++) {
-                var char = text_1[_i];
+            for (var _i = 0; _i < text.length; _i++) {
+                var char = text[_i];
                 // Next line feed?
                 if (char === "\n") {
                     maxWidth = Math.max(maxWidth, curWidth);
@@ -246,6 +246,6 @@ var BABYLON;
             return null;
         };
         return FontTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.FontTexture = FontTexture;
 })(BABYLON || (BABYLON = {}));

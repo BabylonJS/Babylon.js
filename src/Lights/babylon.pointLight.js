@@ -25,7 +25,7 @@ var BABYLON;
                 if (!this.transformedPosition) {
                     this.transformedPosition = BABYLON.Vector3.Zero();
                 }
-                BABYLON.Vector3.TransformCoordinatesToRef(this.getAbsolutePosition(), this.parent.getWorldMatrix(), this.transformedPosition);
+                BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this.transformedPosition);
                 return true;
             }
             return false;
@@ -82,6 +82,6 @@ var BABYLON;
             BABYLON.serializeAsVector3()
         ], PointLight.prototype, "position", void 0);
         return PointLight;
-    }(BABYLON.Light));
+    })(BABYLON.Light);
     BABYLON.PointLight = PointLight;
 })(BABYLON || (BABYLON = {}));

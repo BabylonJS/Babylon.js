@@ -67,10 +67,12 @@ var BABYLON;
             this.REFRACTION = false;
             this.REFRACTIONMAP_3D = false;
             this.REFLECTIONOVERALPHA = false;
+            this.INVERTNORMALMAPX = false;
+            this.INVERTNORMALMAPY = false;
             this.rebuild();
         }
         return StandardMaterialDefines;
-    }(BABYLON.MaterialDefines));
+    })(BABYLON.MaterialDefines);
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         function StandardMaterial(name, scene) {
@@ -97,6 +99,14 @@ var BABYLON;
             this.useLightmapAsShadowmap = false;
             this.useGlossinessFromSpecularMapAlpha = false;
             this.maxSimultaneousLights = 4;
+            /**
+             * If sets to true, x component of normal map value will invert (x = 1.0 - x).
+             */
+            this.invertNormalMapX = false;
+            /**
+             * If sets to true, y component of normal map value will invert (y = 1.0 - y).
+             */
+            this.invertNormalMapY = false;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -286,6 +296,12 @@ var BABYLON;
                             if (this.useParallaxOcclusion) {
                                 this._defines.PARALLAXOCCLUSION = true;
                             }
+                        }
+                        if (this.invertNormalMapX) {
+                            this._defines.INVERTNORMALMAPX = true;
+                        }
+                        if (this.invertNormalMapY) {
+                            this._defines.INVERTNORMALMAPY = true;
                         }
                     }
                 }
@@ -819,8 +835,14 @@ var BABYLON;
         ], StandardMaterial.prototype, "maxSimultaneousLights", void 0);
         __decorate([
             BABYLON.serialize()
+        ], StandardMaterial.prototype, "invertNormalMapX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "invertNormalMapY", void 0);
+        __decorate([
+            BABYLON.serialize()
         ], StandardMaterial.prototype, "useLogarithmicDepth", null);
         return StandardMaterial;
-    }(BABYLON.Material));
+    })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));

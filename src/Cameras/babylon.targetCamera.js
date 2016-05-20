@@ -27,6 +27,7 @@ var BABYLON;
             this._cameraTransformMatrix = BABYLON.Matrix.Zero();
             this._cameraRotationMatrix = BABYLON.Matrix.Zero();
             this._referencePoint = new BABYLON.Vector3(0, 0, 1);
+            this._defaultUpVector = new BABYLON.Vector3(0, 1, 0);
             this._transformedReferencePoint = BABYLON.Vector3.Zero();
             this._lookAtTemp = BABYLON.Matrix.Zero();
             this._tempMatrix = BABYLON.Matrix.Zero();
@@ -48,6 +49,7 @@ var BABYLON;
             _super.prototype._initCache.call(this);
             this._cache.lockedTarget = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             this._cache.rotation = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            this._cache.rotationQuaternion = new BABYLON.Quaternion(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         };
         TargetCamera.prototype._updateCache = function (ignoreParentClass) {
             if (!ignoreParentClass) {
@@ -66,6 +68,8 @@ var BABYLON;
                 }
             }
             this._cache.rotation.copyFrom(this.rotation);
+            if (this.rotationQuaternion)
+                this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
         };
         // Synchronized
         TargetCamera.prototype._isSynchronizedViewMatrix = function () {
@@ -74,7 +78,7 @@ var BABYLON;
             }
             var lockedTargetPosition = this._getLockedTargetPosition();
             return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition)
-                && this._cache.rotation.equals(this.rotation);
+                && (this.rotationQuaternion ? this.rotationQuaternion.equals(this._cache.rotationQuaternion) : this._cache.rotation.equals(this.rotation));
         };
         // Methods
         TargetCamera.prototype._computeLocalCameraSpeed = function () {
@@ -84,7 +88,7 @@ var BABYLON;
         // Target
         TargetCamera.prototype.setTarget = function (target) {
             this.upVector.normalize();
-            BABYLON.Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
+            BABYLON.Matrix.LookAtLHToRef(this.position, target, this._defaultUpVector, this._camMatrix);
             this._camMatrix.invert();
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
             var vDir = target.subtract(this.position);
@@ -94,7 +98,7 @@ var BABYLON;
             else {
                 this.rotation.y = (-Math.atan(vDir.z / vDir.x) - Math.PI / 2.0);
             }
-            this.rotation.z = -Math.acos(BABYLON.Vector3.Dot(new BABYLON.Vector3(0, 1.0, 0), this.upVector));
+            this.rotation.z = 0;
             if (isNaN(this.rotation.x)) {
                 this.rotation.x = 0;
             }
@@ -103,6 +107,9 @@ var BABYLON;
             }
             if (isNaN(this.rotation.z)) {
                 this.rotation.z = 0;
+            }
+            if (this.rotationQuaternion) {
+                BABYLON.Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
             }
         };
         TargetCamera.prototype.getTarget = function () {
@@ -157,19 +164,20 @@ var BABYLON;
             }
             _super.prototype._checkInputs.call(this);
         };
+        TargetCamera.prototype._updateCameraRotationMatrix = function () {
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
+                //update the up vector!
+                BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
+            }
+            else {
+                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+            }
+        };
         TargetCamera.prototype._getViewMatrix = function () {
             if (!this.lockedTarget) {
                 // Compute
-                if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
-                    BABYLON.Matrix.LookAtLHToRef(BABYLON.Vector3.Zero(), this._referencePoint, this.upVector, this._lookAtTemp);
-                    BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
-                    this._lookAtTemp.multiplyToRef(this._cameraRotationMatrix, this._tempMatrix);
-                    this._lookAtTemp.invert();
-                    this._tempMatrix.multiplyToRef(this._lookAtTemp, this._cameraRotationMatrix);
-                }
-                else {
-                    BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
-                }
+                this._updateCameraRotationMatrix();
                 BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
                 // Computing target and final matrix
                 this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
@@ -181,9 +189,9 @@ var BABYLON;
             return this._viewMatrix;
         };
         TargetCamera.prototype._getVRViewMatrix = function () {
-            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+            this._updateCameraRotationMatrix();
             BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._cameraRigParams.vrActualUp);
+            BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this._cameraRigParams.vrActualUp);
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
             BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._cameraRigParams.vrActualUp, this._cameraRigParams.vrWorkMatrix);
@@ -198,9 +206,13 @@ var BABYLON;
             if (this.cameraRigMode !== BABYLON.Camera.RIG_MODE_NONE) {
                 var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
                 if (this.cameraRigMode === BABYLON.Camera.RIG_MODE_VR) {
+                    if (!this.rotationQuaternion) {
+                        this.rotationQuaternion = new BABYLON.Quaternion();
+                    }
                     rigCamera._cameraRigParams = {};
                     rigCamera._cameraRigParams.vrActualUp = new BABYLON.Vector3(0, 0, 0);
                     rigCamera._getViewMatrix = rigCamera._getVRViewMatrix;
+                    rigCamera.rotationQuaternion = new BABYLON.Quaternion();
                 }
                 return rigCamera;
             }
@@ -227,9 +239,8 @@ var BABYLON;
                     camRight.setTarget(this.getTarget());
                     break;
                 case BABYLON.Camera.RIG_MODE_VR:
-                    camLeft.rotation.x = camRight.rotation.x = this.rotation.x;
-                    camLeft.rotation.y = camRight.rotation.y = this.rotation.y;
-                    camLeft.rotation.z = camRight.rotation.z = this.rotation.z;
+                    camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                    camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
                     camLeft.position.copyFrom(this.position);
                     camRight.position.copyFrom(this.position);
                     break;
@@ -258,6 +269,6 @@ var BABYLON;
             BABYLON.serializeAsMeshReference("lockedTargetId")
         ], TargetCamera.prototype, "lockedTarget", void 0);
         return TargetCamera;
-    }(BABYLON.Camera));
+    })(BABYLON.Camera);
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));

@@ -91,7 +91,7 @@
                     }
                 }
                 let node = new ClassTreeInfo<TClass, TProp>(this, type, this._classContentFactory);
-                let info = { type: type, node: node};
+                let info = { type: type, node: node };
                 this._subClasses.push(info);
                 return info.node;
             }
@@ -126,7 +126,7 @@
         private _type: Object;
         private _classContent: TClass;
         private _baseClass: ClassTreeInfo<TClass, TProp>;
-        private _subClasses: Array<{type: Object, node: ClassTreeInfo<TClass, TProp>}>;
+        private _subClasses: Array<{ type: Object, node: ClassTreeInfo<TClass, TProp> }>;
         private _levelContent: StringDictionary<TProp>;
         private _fullContent: StringDictionary<TProp>;
         private _classContentFactory: (base: TClass) => TClass;
@@ -142,23 +142,57 @@
             this._instanceDirtyFlags = 0;
             this._isDisposed = false;
             this._levelBoundingInfo = new BoundingInfo2D();
+            this.animations = new Array<Animation>();
         }
 
+        /**
+         * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
+         * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
+         */
         public propertyChanged: Observable<PropertyChangedInfo>;
 
+        /**
+         * Check if the object is disposed or not.
+         * @returns true if the object is dispose, false otherwise.
+         */
         public get isDisposed(): boolean {
             return this._isDisposed;
         }
 
+        /**
+         * Disposable pattern, this method must be overloaded by derived types in order to clean up hardware related resources.
+         * @returns false if the object is already dispose, true otherwise. Your implementation must call super.dispose() and check for a false return and return immediately if it's the case.
+         */
         public dispose(): boolean {
             if (this.isDisposed) {
                 return false;
             }
 
+            // Don't set to null, it may upset somebody...
+            this.animations.splice(0);
+
             this._isDisposed = true;
             return true;
         }
 
+        /**
+         * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
+         */
+        public animations: Animation[];
+
+        /**
+         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
+         * Look at Sprite2D for more information
+         */
+        public getAnimatables(): IAnimatable[] {
+            return new Array<IAnimatable>();
+        }
+
+        /**
+         * Property giving the Model Key associated to the property.
+         * This value is constructed from the type of the primitive and all the name/value of its properties declared with the modelLevelProperty decorator
+         * @returns the model key string.
+         */
         public get modelKey(): string {
 
             // No need to compute it?
@@ -181,10 +215,18 @@
             return modelKey;
         }
 
+        /**
+         * States if the Primitive is dirty and should be rendered again next time.
+         * @returns true is dirty, false otherwise
+         */
         public get isDirty(): boolean {
             return (this._instanceDirtyFlags !== 0) || this._modelDirty;
         }
 
+        /**
+         * Access the dictionary of properties metadata. Only properties decorated with XXXXLevelProperty are concerned
+         * @returns the dictionary, the key is the property name as declared in Javascript, the value is the metadata object
+         */
         private get propDic(): StringDictionary<Prim2DPropInfo> {
             if (!this._propInfo) {
                 let cti = ClassTreeInfo.get<Prim2DClassInfo, Prim2DPropInfo>(Object.getPrototypeOf(this));
@@ -214,7 +256,7 @@
             propInfo.name = propName;
             propInfo.dirtyBoundingInfo = dirtyBoundingInfo;
             propInfo.typeLevelCompare = typeLevelCompare;
-            node.levelContent.add(propId.toString(), propInfo);
+            node.levelContent.add(propName, propInfo);
 
             return propInfo;
         }
@@ -243,7 +285,43 @@
 
         private static propChangedInfo = new PropertyChangedInfo();
 
+        public markAsDirty(propertyName: string) {
+            let i = propertyName.indexOf(".");
+            if (i !== -1) {
+                propertyName = propertyName.substr(0, i);
+            }
+
+            var propInfo = this.propDic.get(propertyName);
+            if (!propInfo) {
+                return;
+            }
+
+            var newValue = this[propertyName];
+            this._handlePropChanged(undefined, newValue, propertyName, propInfo, propInfo.typeLevelCompare);
+        }
+
         private _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean) {
+            // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
+            if (propInfo.dirtyBoundingInfo) {
+                this._levelBoundingInfoDirty = true;
+
+                // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
+                if (this instanceof Prim2DBase) {
+                    let curprim = (<any>this).parent;
+                    while (curprim) {
+                        curprim._boundingInfoDirty = true;
+
+                        if (curprim instanceof Group2D) {
+                            if (curprim.isRenderableGroup) {
+                                break;
+                            }
+                        }
+
+                        curprim = curprim.parent;
+                    }
+                }
+            }
+
             // Trigger property changed
             let info = SmartPropertyPrim.propChangedInfo;
             info.oldValue = curValue;
@@ -273,7 +351,7 @@
                         this.onPrimBecomesDirty();
                     }
                     this._modelDirty = true;
-                } else if (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) {
+                } else if ((propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
                     if (!this.isDirty) {
                         this.onPrimBecomesDirty();
                     }
@@ -286,15 +364,29 @@
 
         }
 
+        /**
+         * Check if a given set of properties are dirty or not.
+         * @param flags a ORed combination of Prim2DPropInfo.flagId values
+         * @return true if at least one property is dirty, false if none of them are.
+         */
         public checkPropertiesDirty(flags: number): boolean {
             return (this._instanceDirtyFlags & flags) !== 0;
         }
 
+        /**
+         * Clear a given set of properties.
+         * @param flags a ORed combination of Prim2DPropInfo.flagId values
+         * @return the new set of property still marked as dirty
+         */
         protected clearPropertiesDirty(flags: number): number {
             this._instanceDirtyFlags &= ~flags;
             return this._instanceDirtyFlags;
         }
 
+        /**
+         * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
+         * @returns {} 
+         */
         public get levelBoundingInfo(): BoundingInfo2D {
             if (this._levelBoundingInfoDirty) {
                 this.updateLevelBoundingInfo();
@@ -303,10 +395,16 @@
             return this._levelBoundingInfo;
         }
 
+        /**
+         * This method must be overridden by a given Primitive implementation to compute its boundingInfo
+         */
         protected updateLevelBoundingInfo() {
 
         }
 
+        /**
+         * Property method called when the Primitive becomes dirty
+         */
         protected onPrimBecomesDirty() {
 
         }
@@ -338,27 +436,6 @@
 
                     // Change the value
                     setter.call(this, val);
-
-                    // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
-                    if (propInfo.dirtyBoundingInfo) {
-                        prim._levelBoundingInfoDirty = true;
-
-                        // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
-                        if (prim instanceof Prim2DBase) {
-                            let curprim = prim.parent;
-                            while (curprim) {
-                                curprim._boundingInfoDirty = true;
-
-                                if (curprim instanceof Group2D) {
-                                    if (curprim.isRenderableGroup) {
-                                        break;
-                                    }
-                                }
-
-                                curprim = curprim.parent;
-                            }
-                        }
-                    }
 
                     // Notify change, dirty flags update
                     prim._handlePropChanged(curVal, val, <string>propName, propInfo, typeLevelCompare);

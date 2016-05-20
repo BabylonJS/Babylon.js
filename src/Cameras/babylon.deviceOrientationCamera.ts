@@ -3,27 +3,17 @@ module BABYLON {
     export class DeviceOrientationCamera extends FreeCamera {
         //-- Begin properties for backward compatibility for inputs
         public get angularSensibility() {
-            var deviceOrientation = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (deviceOrientation)
-                return deviceOrientation.angularSensibility;
+            return 0;
         }
         
         public set angularSensibility(value) {
-            var deviceOrientation = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (deviceOrientation)
-                deviceOrientation.angularSensibility = value;
         }
         
         public get moveSensibility() {
-            var deviceOrientation = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (deviceOrientation)
-                return deviceOrientation.moveSensibility;
+                return 0;
         }
         
         public set moveSensibility(value) {
-            var deviceOrientation = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (deviceOrientation)
-                deviceOrientation.moveSensibility = value;
         }
         //-- end properties for backward compatibility for inputs
         

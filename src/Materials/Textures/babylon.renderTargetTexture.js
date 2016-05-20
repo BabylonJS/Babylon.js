@@ -13,6 +13,9 @@ var BABYLON;
             if (isCube === void 0) { isCube = false; }
             _super.call(this, null, scene, !generateMipMaps);
             this.isCube = isCube;
+            /**
+            * Use this list to define the list of mesh you want to render.
+            */
             this.renderList = new Array();
             this.renderParticles = true;
             this.renderSprites = false;
@@ -192,6 +195,17 @@ var BABYLON;
                 }
                 delete this._waitingRenderList;
             }
+            // Is predicate defined?
+            if (this.renderListPredicate) {
+                this.renderList.splice(0); // Clear previous renderList
+                var sceneMeshes = this.getScene().meshes;
+                for (var index = 0; index < sceneMeshes.length; index++) {
+                    var mesh = sceneMeshes[index];
+                    if (this.renderListPredicate(mesh)) {
+                        this.renderList.push(mesh);
+                    }
+                }
+            }
             if (this.renderList && this.renderList.length === 0) {
                 return;
             }
@@ -307,6 +321,6 @@ var BABYLON;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES = 2;
         return RenderTargetTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.RenderTargetTexture = RenderTargetTexture;
 })(BABYLON || (BABYLON = {}));

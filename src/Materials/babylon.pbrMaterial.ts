@@ -59,6 +59,9 @@
         public RADIANCEOVERALPHA = false;
         public USEPMREMREFLECTION = false;
         public USEPMREMREFRACTION = false;
+        public OPENGLNORMALMAP = false;
+        public INVERTNORMALMAPX = false;
+        public INVERTNORMALMAPY = false;
 
         constructor() {
             super();
@@ -421,6 +424,18 @@
         @serialize()
         public maxSimultaneousLights = 4;  
 
+        /**
+         * If sets to true, x component of normal map value will invert (x = 1.0 - x).
+         */
+        @serialize()
+        public invertNormalMapX = false;
+
+        /**
+         * If sets to true, y component of normal map value will invert (y = 1.0 - y).
+         */
+        @serialize()
+        public invertNormalMapY = false;
+
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
@@ -719,6 +734,14 @@
                             if (this.useParallaxOcclusion) {
                                 this._defines.PARALLAXOCCLUSION = true;
                             }
+                        }
+
+                        if (this.invertNormalMapX) {
+                            this._defines.INVERTNORMALMAPX = true;
+                        }
+
+                        if (this.invertNormalMapY) {
+                            this._defines.INVERTNORMALMAPY = true;
                         }
                     }
                 }
