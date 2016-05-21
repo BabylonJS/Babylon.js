@@ -419,7 +419,7 @@
         }
 
         // Operators
-        public toArray(array: number[], index: number = 0): Vector2 {
+        public toArray(array: number[] | Float32Array, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
 
@@ -456,8 +456,22 @@
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
+        public addToRef(otherVector: Vector2, result: Vector2): Vector2 {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+
+            return this;
+        }
+
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        }
+
+        public subtractToRef(otherVector: Vector2, result: Vector2): Vector2 {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+
+            return this;
         }
 
         public subtractInPlace(otherVector: Vector2): Vector2 {
