@@ -10,10 +10,8 @@ att vec2 zBias;
 att vec4 transformX;
 att vec4 transformY;
 att vec2 origin;
-
-#ifdef Border
-att float borderThickness;
-#endif
+att vec2 boundingMin;
+att vec2 boundingMax;
 
 #ifdef FillSolid
 att vec4 fillSolidColor;
@@ -52,17 +50,17 @@ void main(void) {
 #endif
 
 #ifdef FillGradient
-	float v = dot(vec4(pos2.xy, 1, 1), fillGradientTY);
+	float v = dot(vec4((position.xy - boundingMin) / (boundingMax - boundingMin), 1, 1), fillGradientTY);
 	vColor = mix(fillGradientColor2, fillGradientColor1, v);	// As Y is inverted, Color2 first, then Color1
 #endif
 
 #ifdef BorderGradient
-	float v = dot(vec4(pos2.xy, 1, 1), borderGradientTY);
+	float v = dot(vec4((position.xy - boundingMin) / (boundingMax - boundingMin), 1, 1), borderGradientTY);
 	vColor = mix(borderGradientColor2, borderGradientColor1, v);	// As Y is inverted, Color2 first, then Color1
 #endif
 
 	vec4 pos;
-	pos.xy = position.xy - origin.xy;
+	pos.xy = position.xy - ((origin.xy-vec2(0.5,0.5)) * (boundingMax - boundingMin));
 	pos.z = 1.0;
 	pos.w = 1.0;
 	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, zBias.y);

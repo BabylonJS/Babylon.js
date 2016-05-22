@@ -278,6 +278,7 @@
                     });
 
                     // Everything is updated, clear the dirty list
+                    this._primDirtyList.forEach(p => p._resetPropertiesDirty());
                     this._primDirtyList.splice(0);
                 }
             }
@@ -337,9 +338,9 @@
                                 engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesPartsBuffer[i]);
                                 engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
 
-                                v._dirtyInstancesData = false;
                             }
                         }
+                        v._dirtyInstancesData = false;
                     }
 
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)

@@ -394,6 +394,10 @@
             return this._instanceDirtyFlags;
         }
 
+        public _resetPropertiesDirty() {
+            this._instanceDirtyFlags = 0;
+        }
+
         /**
          * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
          * @returns {} 
