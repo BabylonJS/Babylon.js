@@ -123,6 +123,6 @@ var BABYLON;
             configurable: true
         });
         return DefaultLoadingScreen;
-    })();
+    }());
     BABYLON.DefaultLoadingScreen = DefaultLoadingScreen;
 })(BABYLON || (BABYLON = {}));
