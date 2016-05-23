@@ -181,17 +181,39 @@
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size: Size, subdivisions: number=64, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
-            this.setupShape2D(owner, parent, id, position, true, fill, border, borderThickness);
+        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number=64, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
+            this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
             this.size = size;
             this.subdivisions = subdivisions;
         }
 
-        public static Create(parent: Prim2DBase, id: string, x: number, y: number, width: number, height: number, subdivisions: number = 64, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number): Ellipse2D {
+        /**
+         * Create an Ellipse 2D Shape primitive
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id: a text identifier, for information purpose
+         *  - x: the X position relative to its parent, default is 0
+         *  - y: the Y position relative to its parent, default is 0
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - width: the width of the ellipse, default is 10
+         *  - height: the height of the ellipse, default is 10
+         *  - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
+         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
+         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - borderThickness: the thickness of the drawn border, default is 1.
+         */
+        public static Create(parent: Prim2DBase, options: { id?: string, x?: number, y?: number, origin?: Vector2, width?: number, height?: number, subdivisions?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number }): Ellipse2D {
             Prim2DBase.CheckParent(parent);
 
+            let fill: IBrush2D;
+            if (options && options.fill !== undefined) {
+                fill = options.fill;
+            } else {
+                fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+            }
+
             let ellipse = new Ellipse2D();
-            ellipse.setupEllipse2D(parent.owner, parent, id, new Vector2(x, y), new Size(width, height), subdivisions, fill, border, borderThickness);
+            ellipse.setupEllipse2D(parent.owner, parent, options && options.id || null, new Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, new Size(options && options.width || 10, options && options.height || 10), options && options.subdivisions || 64, fill, options && options.border || null, options && options.borderThickness || 1);
             return ellipse;
         }
 
