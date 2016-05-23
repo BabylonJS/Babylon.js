@@ -1031,9 +1031,9 @@
         }
     }
 
-     /**
-     * An implementation of a loop for asynchronous functions.
-     */
+    /**
+    * An implementation of a loop for asynchronous functions.
+    */
     export class AsyncLoop {
         public index: number;
         private _done: boolean;

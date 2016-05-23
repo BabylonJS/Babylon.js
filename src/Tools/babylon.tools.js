@@ -794,12 +794,17 @@ var BABYLON;
         Tools.getClassName = function (object, isType) {
             if (isType === void 0) { isType = false; }
             var name = null;
-            if (object instanceof Object) {
-                var classObj = isType ? object : Object.getPrototypeOf(object);
-                name = classObj.constructor["__bjsclassName__"];
+            if (!isType && object.getClassName) {
+                name = object.getClassName();
             }
-            if (!name) {
-                name = typeof object;
+            else {
+                if (object instanceof Object) {
+                    var classObj = isType ? object : Object.getPrototypeOf(object);
+                    name = classObj.constructor["__bjsclassName__"];
+                }
+                if (!name) {
+                    name = typeof object;
+                }
             }
             return name;
         };
@@ -810,6 +815,43 @@ var BABYLON;
                     return el;
                 }
             }
+        };
+        /**
+         * This method can be used with hashCodeFromStream when your input is an array of values that are either: number, string, boolean or custom type implementing the getHashCode():number method.
+         * @param array
+         */
+        Tools.arrayOrStringFeeder = function (array) {
+            return function (index) {
+                if (index >= array.length) {
+                    return null;
+                }
+                var val = array.charCodeAt ? array.charCodeAt(index) : array[index];
+                if (val && val.getHashCode) {
+                    val = val.getHashCode();
+                }
+                if (typeof val === "string") {
+                    return Tools.hashCodeFromStream(Tools.arrayOrStringFeeder(val));
+                }
+                return val;
+            };
+        };
+        /**
+         * Compute the hashCode of a stream of number
+         * To compute the HashCode on a string or an Array of data types implementing the getHashCode() method, use the arrayOrStringFeeder method.
+         * @param feeder a callback that will be called until it returns null, each valid returned values will be used to compute the hash code.
+         * @return the hash code computed
+         */
+        Tools.hashCodeFromStream = function (feeder) {
+            // Based from here: http://stackoverflow.com/a/7616484/802124
+            var hash = 0;
+            var index = 0;
+            var chr = feeder(index++);
+            while (chr != null) {
+                hash = ((hash << 5) - hash) + chr;
+                hash |= 0; // Convert to 32bit integer
+                chr = feeder(index++);
+            }
+            return hash;
         };
         Tools.BaseUrl = "";
         Tools.CorsBehavior = "anonymous";
@@ -847,8 +889,8 @@ var BABYLON;
     }
     BABYLON.className = className;
     /**
-     * An implementation of a loop for asynchronous functions.
-     */
+    * An implementation of a loop for asynchronous functions.
+    */
     var AsyncLoop = (function () {
         /**
          * Constroctor.
