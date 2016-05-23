@@ -774,6 +774,10 @@
 
         public _renderingSize: Size;
 
+        protected onPrimBecomesDirty() {
+            this._addPrimToDirtyList(this);
+        }
+
         private _updateCanvasState() {
             // Check if the update has already been made for this render Frame
             if (this.scene.getRenderId() === this._updateRenderId) {

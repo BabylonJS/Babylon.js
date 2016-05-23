@@ -72,13 +72,13 @@ void main(void) {
 
 		if (segi == 0.0) {
 			pos2 = vec2(1.0, 1.0);
-		}
+		} 
 		else if (segi == 1.0) {
 			pos2 = vec2(1.0, 0.0);
 		}
 		else if (segi == 2.0) {
 			pos2 = vec2(0.0, 0.0);
-		}
+		} 
 		else {
 			pos2 = vec2(0.0, 1.0);
 		}
