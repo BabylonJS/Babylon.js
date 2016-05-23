@@ -247,6 +247,7 @@ var BABYLON;
                         }
                     });
                     // Everything is updated, clear the dirty list
+                    this._primDirtyList.forEach(function (p) { return p._resetPropertiesDirty(); });
                     this._primDirtyList.splice(0);
                 }
             }
@@ -300,9 +301,9 @@ var BABYLON;
                                 // Update the WebGL buffer to match the new content of the instances data
                                 engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesPartsBuffer[i]);
                                 engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData_1);
-                                v._dirtyInstancesData = false;
                             }
                         }
+                        v._dirtyInstancesData = false;
                     }
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || totalRenderCount_1 > 0) {
