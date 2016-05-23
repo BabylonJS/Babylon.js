@@ -288,7 +288,7 @@
             // Matrix      
             for (name in this._matrices) {
                 this._effect.setMatrix(name, this._matrices[name]);
-            }
+            }            
 
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
