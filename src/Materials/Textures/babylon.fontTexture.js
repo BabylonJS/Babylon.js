@@ -95,7 +95,7 @@ var BABYLON;
                 ++ft._usedCounter;
                 return ft;
             }
-            ft = new FontTexture(null, lfn, scene);
+            ft = new FontTexture(null, lfn, scene, 200, BABYLON.Texture.NEAREST_SAMPLINGMODE);
             dic.add(lfn, ft);
             return ft;
         };
@@ -144,7 +144,7 @@ var BABYLON;
             this._context.fillText(char, this._currentFreePosition.x - 0.5, this._currentFreePosition.y - this._offset - 0.5);
             // Fill the CharInfo object
             info.topLeftUV = new BABYLON.Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new BABYLON.Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 1) / textureSize.height));
+            info.bottomRightUV = new BABYLON.Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 2) / textureSize.height));
             info.charWidth = width;
             // Add the info structure
             this._charInfos[char] = info;

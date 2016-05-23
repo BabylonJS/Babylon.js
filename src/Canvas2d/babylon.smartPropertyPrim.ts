@@ -91,7 +91,7 @@
                     }
                 }
                 let node = new ClassTreeInfo<TClass, TProp>(this, type, this._classContentFactory);
-                let info = { type: type, node: node};
+                let info = { type: type, node: node };
                 this._subClasses.push(info);
                 return info.node;
             }
@@ -126,7 +126,7 @@
         private _type: Object;
         private _classContent: TClass;
         private _baseClass: ClassTreeInfo<TClass, TProp>;
-        private _subClasses: Array<{type: Object, node: ClassTreeInfo<TClass, TProp>}>;
+        private _subClasses: Array<{ type: Object, node: ClassTreeInfo<TClass, TProp> }>;
         private _levelContent: StringDictionary<TProp>;
         private _fullContent: StringDictionary<TProp>;
         private _classContentFactory: (base: TClass) => TClass;

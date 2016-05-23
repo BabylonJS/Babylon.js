@@ -1287,6 +1287,19 @@ var BABYLON;
         Size.Zero = function () {
             return new Size(0, 0);
         };
+        Size.prototype.add = function (otherSize) {
+            var r = new Size(this.width + otherSize.width, this.height + otherSize.height);
+            return r;
+        };
+        Size.prototype.substract = function (otherSize) {
+            var r = new Size(this.width - otherSize.width, this.height - otherSize.height);
+            return r;
+        };
+        Size.Lerp = function (start, end, amount) {
+            var w = start.width + ((end.width - start.width) * amount);
+            var h = start.height + ((end.height - start.height) * amount);
+            return new Size(w, h);
+        };
         return Size;
     })();
     BABYLON.Size = Size;
