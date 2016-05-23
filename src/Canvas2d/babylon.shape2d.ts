@@ -44,8 +44,8 @@
             this._borderThickness = value;
         }
 
-        setupShape2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D, borderThickness: number = 1.0) {
-            this.setupRenderablePrim2D(owner, parent, id, position, isVisible);
+        setupShape2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D, borderThickness: number = 1.0) {
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible);
             this.border = border;
             this.fill = fill;
             this.borderThickness = borderThickness;
