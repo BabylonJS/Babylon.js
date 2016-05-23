@@ -174,7 +174,6 @@
         public set points(value: Vector2[]) {
             this._points = value;
             this._levelBoundingInfoDirty = true;
-            this._sizeDirty = true;
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Lines2D.fillThicknessProperty = pi)
@@ -214,29 +213,40 @@
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
+            let pl = this.points.length;
+            let l = this.closed ? pl + 1 : pl;
 
-            // TODO
+            let originOffset = new Vector2(-0.5, -0.5);
+            let p = intersectInfo._localPickPosition;
+
+            let prevA = this.transformPointWithOrigin(this._contour[0], originOffset);
+            let prevB = this.transformPointWithOrigin(this._contour[1], originOffset);
+            for (let i = 1; i < l; i++) {
+                let curA = this.transformPointWithOrigin(this._contour[(i % pl) * 2 + 0], originOffset);
+                let curB = this.transformPointWithOrigin(this._contour[(i % pl) * 2 + 1], originOffset);
+
+                if (Vector2.PointInTriangle(p, prevA, prevB, curA)) {
+                    return true;
+                }
+                if (Vector2.PointInTriangle(p, curA, prevB, curB)) {
+                    return true;
+                }
+
+                prevA = curA;
+                prevB = curB;
+            }
             return false;
         }
 
         protected get size(): Size {
-            if (this._sizeDirty) {
-                this._updateSize();
-            }
             return this._size;
         }
 
         protected get boundingMin(): Vector2 {
-            if (this._sizeDirty) {
-                this._updateSize();
-            }
             return this._boundingMin;
         }
 
         protected get boundingMax(): Vector2 {
-            if (this._sizeDirty) {
-                this._updateSize();
-            }
             return this._boundingMax;
         }
 
@@ -263,6 +273,8 @@
             this.points = points;
             this.closed = false;
             this._size = Size.Zero();
+            this._boundingMin = Vector2.Zero();
+            this._boundingMax = Vector2.Zero();
         }
 
         public static Create(parent: Prim2DBase, id: string, x: number, y: number, points: Vector2[], fillThickness: number, startCap: number = Lines2D.NoCap, endCap: number = Lines2D.NoCap, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number): Lines2D {
@@ -281,6 +293,10 @@
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache) {
             let renderCache = <Lines2DRenderCache>modelRenderCache;
             let engine = this.owner.engine;
+
+            // Init min/max because their being computed here
+            this.boundingMin = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            this.boundingMax = new Vector2(Number.MIN_VALUE, Number.MIN_VALUE);
 
             let perp = (v: Vector2, res: Vector2) => {
                 res.x = v.y;
@@ -318,30 +334,46 @@
                 return true;
             }
 
-            let startN: Vector2;
-            let endN: Vector2;
+            let startDir: Vector2 = Vector2.Zero();
+            let endDir: Vector2 = Vector2.Zero();
 
-            let store = (array: Float32Array, index: number, max: number, p: Vector2, n: Vector2, halfThickness: number, borderThickness: number, detectFlip?: number) => {
+            let updateMinMax = (array: Float32Array, offset: number) => {
+                if (offset >= array.length) {
+                    return;
+                }
+                this._boundingMin.x = Math.min(this._boundingMin.x, array[offset]);
+                this._boundingMax.x = Math.max(this._boundingMax.x, array[offset]);
+                this._boundingMin.y = Math.min(this._boundingMin.y, array[offset+1]);
+                this._boundingMax.y = Math.max(this._boundingMax.y, array[offset+1]);
+            }
+
+            let store = (array: Float32Array, contour: Vector2[], index: number, max: number, p: Vector2, n: Vector2, halfThickness: number, borderThickness: number, detectFlip?: number) => {
+                let borderMode = borderThickness != null && !isNaN(borderThickness);
+                let off = index * (borderMode ? 8 : 4);
+
                 // Mandatory because we'll be out of bound in case of closed line, for the very last point (which is a duplicate of the first that we don't store in the vb)
-                if (index >= max) {
+                if (off >= array.length) {
                     return;
                 }
 
                 // Store start/end normal, we need it for the cap construction
                 if (index === 0) {
-                    startN = n.clone();
+                    perp(n, startDir);
                 } else if (index === max - 1) {
-                    endN = n.clone();
+                    perp(n, endDir);
+                    endDir.x *= -1;
+                    endDir.y *= -1;
                 }
 
-                let borderMode = borderThickness != null && !isNaN(borderThickness);
-                let off = index * (borderMode ? 8 : 4);
                 let swap = false;
 
                 array[off + 0] = p.x + n.x * halfThickness;
                 array[off + 1] = p.y + n.y * halfThickness;
                 array[off + 2] = p.x + n.x * -halfThickness;
                 array[off + 3] = p.y + n.y * -halfThickness;
+
+                updateMinMax(array, off);
+                updateMinMax(array, off + 2);
 
                 // If an index is given we check if the two segments formed between [index+0;detectFlip+0] and [index+2;detectFlip+2] intersect themselves.
                 // It should not be the case, they should be parallel, so if they cross, we switch the order of storage to ensure we'll have parallel lines
@@ -350,13 +382,13 @@
                     let flipOff = detectFlip * (borderMode ? 8 : 4);
                     if (intersect(array[off + 0], array[off + 1], array[flipOff + 0], array[flipOff + 1], array[off + 2], array[off + 3], array[flipOff + 2], array[flipOff + 3])) {
                         swap = true;
-                        let n = array[off + 0];
+                        let tps = array[off + 0];
                         array[off + 0] = array[off + 2];
-                        array[off + 2] = n;
+                        array[off + 2] = tps;
 
-                        n = array[off + 1];
+                        tps = array[off + 1];
                         array[off + 1] = array[off + 3];
-                        array[off + 3] = n;
+                        array[off + 3] = tps;
                     }
                 }
 
@@ -366,8 +398,18 @@
                     array[off + 5] = p.y + n.y * (swap ? -t : t);
                     array[off + 6] = p.x + n.x * (swap ? t : -t);
                     array[off + 7] = p.y + n.y * (swap ? t : -t);
+
+                    updateMinMax(array, off + 4);
+                    updateMinMax(array, off + 6);
+                }
+
+                if (contour) {
+                    off += borderMode ? 4 : 0;
+                    contour.push(new Vector2(array[off + 0], array[off + 1]));
+                    contour.push(new Vector2(array[off + 2], array[off + 3]));
                 }
             }
+
             let sd = Lines2D._roundCapSubDiv;
             let getCapSize = (type: number, border: boolean = false): { vbsize: number; ibsize: number } => {
                 // If no array given, we call this to get the size
@@ -448,9 +490,11 @@
 
                 v.x = (c * vertex.x) + (-s * vertex.y) + basePos.x;
                 v.y = (s * vertex.x) + ( c * vertex.y) + basePos.y;
-                vb[baseOffset + (index*2) + 0] = v.x;
-                vb[baseOffset + (index*2) + 1] = v.y;
+                let offset = baseOffset + (index*2);
+                vb[offset + 0] = v.x;
+                vb[offset + 1] = v.y;
 
+                updateMinMax(vb, offset);
                 return (baseOffset + index*2) / 2;
             }
 
@@ -458,10 +502,12 @@
                 ib[baseOffset + index] = vertexIndex;
             }
 
-            let buildCap = (vb: Float32Array, vbi: number, ib: Float32Array, ibi: number, pos: Vector2, thickness: number, borderThickness: number, type: number, normal: Vector2): { vbsize: number; ibsize: number } => {
-                // Default orientation is toward right, horizontal (1,0), its normal being (0,1). 
-                // Compute the angle from the two vectors to get the rotation amount
-                let angle = Math.acos(Vector2.Dot(normal, new Vector2(0, 1)));
+            let buildCap = (vb: Float32Array, vbi: number, ib: Float32Array, ibi: number, pos: Vector2, thickness: number, borderThickness: number, type: number, capDir: Vector2): { vbsize: number; ibsize: number } => {
+
+                // Compute the transformation from the direction of the cap to build relative to our default orientation [1;0] (our cap are by default pointing toward right, horizontal
+                let dir = new Vector2(1, 0);
+                let angle = Math.atan2(capDir.y, capDir.x) - Math.atan2(dir.y, dir.x);
+
                 let ht = thickness / 2;
                 let t = thickness;
                 let borderMode = borderThickness != null;
@@ -692,7 +738,7 @@
                 return null;
             }
 
-            let buildLine = (vb: Float32Array, ht: number, bt?: number) => {
+            let buildLine = (vb: Float32Array, contour: Vector2[], ht: number, bt?: number) => {
                 let lineA = Vector2.Zero();
                 let lineB = Vector2.Zero();
                 let tangent = Vector2.Zero();
@@ -716,17 +762,17 @@
                     }
 
                     if (i === 1) {
-                        store(vb, 0, total, this.points[0], curNormal, ht, bt);
+                        store(vb, contour, 0, total, this.points[0], curNormal, ht, bt);
                     }
 
                     if (!next) {
                         perp(lineA, curNormal);
-                        store(vb, i, total, this.points[i], curNormal, ht, bt, i - 1);
+                        store(vb, contour, i, total, this.points[i], curNormal, ht, bt, i - 1);
                     } else {
                         direction(next, cur, lineB);
 
                         var miterLen = computeMiter(tangent, miter, lineA, lineB);
-                        store(vb, i, total, this.points[i], miter, miterLen*ht, miterLen*bt, i - 1);
+                        store(vb, contour, i, total, this.points[i], miter, miterLen*ht, miterLen*bt, i - 1);
                     }
                 }
 
@@ -740,7 +786,16 @@
                     perp(lineA, curNormal);
 
                     var miterLen2 = computeMiter(tangent, miter, lineA, lineB);
-                    store(vb, 0, total, this.points[0], miter, miterLen2 * ht, miterLen2 *bt, 1);
+                    store(vb, null, 0, total, this.points[0], miter, miterLen2 * ht, miterLen2 * bt, 1);
+
+                    // Patch contour
+                    if (contour) {
+                        let off = (bt == null) ? 0 : 4;
+                        contour[0].x = vb[off + 0];
+                        contour[0].y = vb[off + 1];
+                        contour[1].x = vb[off + 2];
+                        contour[1].y = vb[off + 3];
+                    }
                 }
 
                 // Remove the point we added at the beginning
@@ -748,6 +803,8 @@
                     this.points.splice(total - 1);
                 }
             }
+
+            let contour = new Array<Vector2>();
 
             // Need to create WebGL resources for fill part?
             if (this.fill) {
@@ -759,9 +816,9 @@
                 let ht = this.fillThickness / 2;
                 let total = this.points.length;
 
-                buildLine(vb, ht);
+                buildLine(vb, this.border ? null : contour, ht);
 
-                let max = (total - (this.closed ? 1 : 0)) * 2;
+                let max = total * 2;
                 let triCount = (count - (this.closed ? 0 : 1)) * 2;
                 let ib = new Float32Array(triCount * 3 + startCapInfo.ibsize + endCapInfo.ibsize);
                 for (let i = 0; i < triCount; i+=2) {
@@ -774,8 +831,8 @@
                     ib[i * 3 + 5] = (i + 2) % max;
                 }
 
-                buildCap(vb, count * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, null, this.startCap, startN);
-                buildCap(vb, (count * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, null, this.endCap, endN);
+                buildCap(vb, count * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, null, this.startCap, startDir);
+                buildCap(vb, (count * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, null, this.endCap, endDir);
 
                 renderCache.fillVB = engine.createVertexBuffer(vb);
                 renderCache.fillIB = engine.createIndexBuffer(ib);
@@ -796,9 +853,9 @@
                 let bt = this.borderThickness;
                 let total = this.points.length;
 
-                buildLine(vb, ht, bt);
+                buildLine(vb, contour, ht, bt);
 
-                let max = (total - (this.closed ? 1 : 0)) * 2 * 2;
+                let max = total * 2 * 2;
                 let triCount = (count - (this.closed ? 0 : 1)) * 2 * 2;
                 let ib = new Float32Array(triCount * 3 + startCapInfo.ibsize + endCapInfo.ibsize);
                 for (let i = 0; i < triCount; i += 4) {
@@ -819,8 +876,8 @@
                     ib[i * 3 + 11] = (i + 7) % max;
                 }
 
-                buildCap(vb, count * 2 * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, this.borderThickness, this.startCap, startN);
-                buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, endN);
+                buildCap(vb, count * 2 * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, this.borderThickness, this.startCap, startDir);
+                buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, endDir);
 
                 renderCache.borderVB = engine.createVertexBuffer(vb);
                 renderCache.borderIB = engine.createIndexBuffer(ib);
@@ -829,7 +886,11 @@
                 let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"]);
                 renderCache.effectBorder = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
             }
- 
+
+            this._contour = contour;
+            let bs = this._boundingMax.subtract(this._boundingMin);
+            this._size.width = bs.x;
+            this._size.height = bs.y;
             return renderCache;
         }
 
@@ -862,15 +923,6 @@
             return true;
         }
 
-        private _updateSize() {
-            let res = Tools.ExtractMinAndMaxVector2(Tools.Vector2ArrayFeeder(this.points));
-            this._boundingMin = res.minimum;
-            this._boundingMax = res.maximum;
-            this._size.width = res.maximum.x - res.minimum.x;
-            this._size.height = res.maximum.y - res.minimum.y;
-            this._sizeDirty = false;
-        }
-
         private static _noCap            = 0;
         private static _roundCap         = 1;
         private static _triangleCap      = 2;
@@ -884,7 +936,7 @@
         private _boundingMin: Vector2;
         private _boundingMax: Vector2;
         private _size: Size;
-        private _sizeDirty: boolean;
+        private _contour: Vector2[];
 
         private _closed: boolean;
         private _startCap: number;
