@@ -31,7 +31,7 @@ var BABYLON;
             this.effect.setTexture("diffuseSampler", this.fontTexture);
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
             var cur = engine.getAlphaMode();
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
             var count = instanceInfo._instancesPartsData[0].usedElementCount;
             if (instanceInfo._owner.owner.supportInstancedArray) {
                 engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
@@ -238,7 +238,6 @@ var BABYLON;
             this.hAlign = hAlign;
             this._tabulationSize = tabulationSize;
             this._isTransparent = true;
-            this.origin = BABYLON.Vector2.Zero();
         };
         Text2D.Create = function (parent, id, x, y, fontName, text, defaultFontColor, areaSize, vAlign, hAlign, tabulationSize) {
             if (vAlign === void 0) { vAlign = Text2D.TEXT2D_VALIGN_TOP; }
@@ -248,6 +247,10 @@ var BABYLON;
             var text2d = new Text2D();
             text2d.setupText2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), fontName, text, areaSize, defaultFontColor || new BABYLON.Color4(0, 0, 0, 1), vAlign, hAlign, tabulationSize);
             return text2d;
+        };
+        Text2D.prototype.levelIntersect = function (intersectInfo) {
+            // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
+            return true;
         };
         Text2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
             var renderCache = new Text2DRenderCache(this.owner.engine, modelKey, isTransparent);
@@ -272,9 +275,7 @@ var BABYLON;
             renderCache.ib = engine.createIndexBuffer(ib);
             // Effects
             var ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, function (e) {
-                //                renderCache.setupUniformsLocation(e, ei.uniforms, Text2D.TEXT2D_MAINPARTID);
-            });
+            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             return renderCache;
         };
         Text2D.prototype.createInstanceDataParts = function () {
@@ -309,7 +310,6 @@ var BABYLON;
                 var charxpos = 0;
                 d.dataElementCount = this._charCount;
                 d.curElement = 0;
-                var customOrigin = BABYLON.Vector2.Zero();
                 for (var _i = 0, _a = this.text; _i < _a.length; _i++) {
                     var char = _a[_i];
                     // Line feed

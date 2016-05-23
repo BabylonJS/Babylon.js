@@ -9,6 +9,7 @@ var BABYLON;
             this.uvs = new BABYLON.Vector4(0, 0, 1, 1); // uvs
             this.velocity = BABYLON.Vector3.Zero(); // velocity
             this.alive = true; // alive
+            this.isVisible = true; // visibility
             this.idx = particleIndex;
             this._pos = positionIndex;
             this._model = model;

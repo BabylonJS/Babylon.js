@@ -60,6 +60,8 @@
         public USEPMREMREFLECTION = false;
         public USEPMREMREFRACTION = false;
         public OPENGLNORMALMAP = false;
+        public INVERTNORMALMAPX = false;
+        public INVERTNORMALMAPY = false;
 
         constructor() {
             super();
@@ -423,10 +425,16 @@
         public maxSimultaneousLights = 4;  
 
         /**
-         * If sets to true, normal map will be considered following OpenGL convention.
+         * If sets to true, x component of normal map value will invert (x = 1.0 - x).
          */
         @serialize()
-        public useOpenGLNormalMap = false;
+        public invertNormalMapX = false;
+
+        /**
+         * If sets to true, y component of normal map value will invert (y = 1.0 - y).
+         */
+        @serialize()
+        public invertNormalMapY = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -728,8 +736,12 @@
                             }
                         }
 
-                        if (this.useOpenGLNormalMap) {
-                            this._defines.OPENGLNORMALMAP = true;
+                        if (this.invertNormalMapX) {
+                            this._defines.INVERTNORMALMAPX = true;
+                        }
+
+                        if (this.invertNormalMapY) {
+                            this._defines.INVERTNORMALMAPY = true;
                         }
                     }
                 }

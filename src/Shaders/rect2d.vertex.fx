@@ -102,7 +102,7 @@ void main(void) {
 		}
 #endif
 	}
-	else 
+	else
 	{
 #ifdef Border
 		float w = properties.x;
@@ -114,7 +114,7 @@ void main(void) {
 
 		float segi = index;
 		if (index < rsub) {
-			borderOffset = vec2(1.0-(borderThickness*2.0 / w), 1.0-(borderThickness*2.0 / h));
+			borderOffset = vec2(1.0 - (borderThickness*2.0 / w), 1.0 - (borderThickness*2.0 / h));
 		}
 		else {
 			segi -= rsub;

@@ -194,6 +194,17 @@ var BABYLON;
         Sprite2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo, this.origin);
         };
+        Sprite2D.prototype.getAnimatables = function () {
+            var res = new Array();
+            if (this.texture && this.texture.animations && this.texture.animations.length > 0) {
+                res.push(this.texture);
+            }
+            return res;
+        };
+        Sprite2D.prototype.levelIntersect = function (intersectInfo) {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
+            return true;
+        };
         Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, texture, spriteSize, spriteLocation, invertY) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
             this.texture = texture;
