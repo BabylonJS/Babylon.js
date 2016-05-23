@@ -123,8 +123,6 @@
                         d.borderGradientTY = ty;
                     }
                 }
-
-
             }
 
             return true;

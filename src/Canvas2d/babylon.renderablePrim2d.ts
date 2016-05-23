@@ -19,7 +19,7 @@
         }
 
         getInstancingAttributeInfos(effect: Effect, categories: string[]): InstancingAttributeInfo[] {
-            let catInline = categories.join(";");
+            let catInline = ";" + categories.join(";") + ";";
             let res = new Array<InstancingAttributeInfo>();
             let curInfo: InstanceClassInfo = this;
             while (curInfo) {
@@ -82,6 +82,8 @@
         dataType: ShaderDataType;
         //uniformLocation: WebGLUniformLocation;
 
+        delimitedCategory: string;
+
         constructor() {
             this.instanceOffset = new StringDictionary<number>();
         }
@@ -120,7 +122,11 @@
                 this.dataType = ShaderDataType.Color4;
                 return;
             }
-            return;
+            if (val instanceof Size) {
+                this.size = 8;
+                this.dataType = ShaderDataType.Size;
+                return;
+            }            return;
         }
 
         writeData(array: Float32Array, offset: number, val) {
@@ -180,6 +186,13 @@
                         }
                         break;
                     }
+                case ShaderDataType.Size:
+                    {
+                        let s = <Size>val;
+                        array[offset + 0] = s.width;
+                        array[offset + 1] = s.height;
+                        break;
+                    }
             }
         }
     }
@@ -201,6 +214,9 @@
             info = new InstancePropInfo();
             info.attributeName = shaderAttributeName;
             info.category = category || null;
+            if (info.category) {
+                info.delimitedCategory = ";" + info.category + ";";
+            }
 
             node.levelContent.add(instanceDataName, info);
 
@@ -209,6 +225,11 @@
             }
 
             descriptor.set = function (val) {
+                // Check that we're not trying to set a property that belongs to a category that is not allowed (current)
+                // Quit if it's the case, otherwise we could overwrite data somewhere...
+                if (info.category && InstanceClassInfo._CurCategories.indexOf(info.delimitedCategory) === -1) {
+                    return;
+                }
                 if (!info.size) {
                     info.setSize(val);
                     node.classContent.mapProperty(info, true);
@@ -408,7 +429,7 @@
                         this.isVisible = true;
                         // We manually trigger refreshInstanceData for the only sake of evaluating each instance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
                         //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
-                        let joinCat = cat.join(";");
+                        let joinCat = ";" + cat.join(";") + ";";
                         joinedUsedCatList.push(joinCat);
                         InstanceClassInfo._CurCategories = joinCat;
                         let obj = this.beforeRefreshForLayoutConstruction(dataPart);
@@ -451,7 +472,7 @@
                         gii._partIndexFromId.add(this._modelRenderCache._partIdList[j].toString(), j);
 
                         for (let part of this._instanceDataParts) {
-                            gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())] = this.getUsedShaderCategories(part).join(";");
+                            gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())] = ";" + this.getUsedShaderCategories(part).join(";") + ";";
                         }
                     }
                 }
@@ -504,6 +525,25 @@
                 gii._dirtyInstancesData = true;
                 this._visibilityChanged = false;    // Reset the flag as we've handled the case
             }
+        }
+
+        /**
+         * Transform a given point using the Primitive's origin setting.
+         * This method requires the Primitive's actualSize to be accurate
+         * @param p the point to transform
+         * @param originOffset an offset applied on the current origin before performing the transformation. Depending on which frame of reference your data is expressed you may have to apply a offset. (if you data is expressed from the bottom/left, no offset is required. If it's expressed from the center the a [-0.5;-0.5] offset has to be applied.
+         * @param res an allocated Vector2 that will receive the transformed content
+         */
+        protected transformPointWithOriginByRef(p: Vector2, originOffset:Vector2, res: Vector2) {
+            let actualSize = this.actualSize;
+            res.x = p.x - ((this.origin.x + (originOffset ? originOffset.x : 0)) * actualSize.width);
+            res.y = p.y - ((this.origin.y + (originOffset ? originOffset.y : 0)) * actualSize.height);
+        }
+
+        protected transformPointWithOrigin(p: Vector2, originOffset: Vector2): Vector2 {
+            let res = new Vector2(0, 0);
+            this.transformPointWithOriginByRef(p, originOffset, res);
+            return res;
         }
 
         protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): { attributes: string[], uniforms: string[], defines: string } {
