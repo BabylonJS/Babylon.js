@@ -527,6 +527,25 @@
             }
         }
 
+        /**
+         * Transform a given point using the Primitive's origin setting.
+         * This method requires the Primitive's actualSize to be accurate
+         * @param p the point to transform
+         * @param originOffset an offset applied on the current origin before performing the transformation. Depending on which frame of reference your data is expressed you may have to apply a offset. (if you data is expressed from the bottom/left, no offset is required. If it's expressed from the center the a [-0.5;-0.5] offset has to be applied.
+         * @param res an allocated Vector2 that will receive the transformed content
+         */
+        protected transformPointWithOriginByRef(p: Vector2, originOffset:Vector2, res: Vector2) {
+            let actualSize = this.actualSize;
+            res.x = p.x - ((this.origin.x + (originOffset ? originOffset.x : 0)) * actualSize.width);
+            res.y = p.y - ((this.origin.y + (originOffset ? originOffset.y : 0)) * actualSize.height);
+        }
+
+        protected transformPointWithOrigin(p: Vector2, originOffset: Vector2): Vector2 {
+            let res = new Vector2(0, 0);
+            this.transformPointWithOriginByRef(p, originOffset, res);
+            return res;
+        }
+
         protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): { attributes: string[], uniforms: string[], defines: string } {
             let dataPart = Tools.first(this._instanceDataParts, i => i.id === dataPartId);
             if (!dataPart) {
