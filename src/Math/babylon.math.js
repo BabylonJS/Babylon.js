@@ -370,11 +370,21 @@ var BABYLON;
         Vector2.prototype.add = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
+        Vector2.prototype.addToRef = function (otherVector, result) {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+            return this;
+        };
         Vector2.prototype.addVector3 = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
         Vector2.prototype.subtract = function (otherVector) {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        };
+        Vector2.prototype.subtractToRef = function (otherVector, result) {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+            return this;
         };
         Vector2.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
@@ -520,6 +530,13 @@ var BABYLON;
             result.x = x;
             result.y = y;
         };
+        Vector2.PointInTriangle = function (p, p0, p1, p2) {
+            var a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+            var sign = a < 0 ? -1 : 1;
+            var s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
+            var t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
+            return s > 0 && t > 0 && (s + t) < 2 * a * sign;
+        };
         Vector2.Distance = function (value1, value2) {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
         };
@@ -527,6 +544,16 @@ var BABYLON;
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             return (x * x) + (y * y);
+        };
+        Vector2.DistanceOfPointFromSegment = function (p, segA, segB) {
+            var l2 = Vector2.DistanceSquared(segA, segB);
+            if (l2 === 0.0) {
+                return Vector2.Distance(p, segA);
+            }
+            var v = segB.subtract(segA);
+            var t = Math.max(0, Math.min(1, Vector2.Dot(p.subtract(segA), v) / l2));
+            var proj = segA.add(v.multiplyByFloats(t, t));
+            return Vector2.Distance(p, proj);
         };
         return Vector2;
     }());

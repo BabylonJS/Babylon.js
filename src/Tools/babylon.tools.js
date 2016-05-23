@@ -146,6 +146,43 @@ var BABYLON;
                 maximum: maximum
             };
         };
+        Tools.Vector2ArrayFeeder = function (array) {
+            return function (index) {
+                var isFloatArray = (array.BYTES_PER_ELEMENT !== undefined);
+                var length = isFloatArray ? array.length / 2 : array.length;
+                if (index >= length) {
+                    return null;
+                }
+                if (isFloatArray) {
+                    var fa = array;
+                    return new BABYLON.Vector2(fa[index * 2 + 0], fa[index * 2 + 1]);
+                }
+                var a = array;
+                return a[index];
+            };
+        };
+        Tools.ExtractMinAndMaxVector2 = function (feeder, bias) {
+            if (bias === void 0) { bias = null; }
+            var minimum = new BABYLON.Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new BABYLON.Vector2(-Number.MAX_VALUE, -Number.MAX_VALUE);
+            var i = 0;
+            var cur = feeder(i++);
+            while (cur) {
+                minimum = BABYLON.Vector2.Minimize(cur, minimum);
+                maximum = BABYLON.Vector2.Maximize(cur, maximum);
+                cur = feeder(i++);
+            }
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+            }
+            return {
+                minimum: minimum,
+                maximum: maximum
+            };
+        };
         Tools.MakeArray = function (obj, allowsNullUndefined) {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
                 return undefined;

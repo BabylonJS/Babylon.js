@@ -668,6 +668,9 @@ var BABYLON;
                 throw Error("Can't use Canvas Background with the caching strategy TOPLEVELGROUPS");
             }
         };
+        Canvas2D.prototype.onPrimBecomesDirty = function () {
+            this._addPrimToDirtyList(this);
+        };
         Canvas2D.prototype._updateCanvasState = function () {
             // Check if the update has already been made for this render Frame
             if (this.scene.getRenderId() === this._updateRenderId) {
