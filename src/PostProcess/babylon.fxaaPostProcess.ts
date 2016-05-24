@@ -3,7 +3,7 @@
         public texelWidth: number;
         public texelHeight: number;
 
-        constructor(name: string, ratio: number, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+        constructor(name: string, ratio: PostProcessRatio, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, "fxaa", ["texelSize"], null, ratio, camera, samplingMode, engine, reusable);
 
             this.onSizeChangedObservable.add(() => {
