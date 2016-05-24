@@ -17,7 +17,7 @@
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
-        private _renderRatio: number | PostProcessOptions;
+        private _options: number | PostProcessOptions;
         private _reusable = false;
         private _textureType: number;
         public _textures = new SmartArray<WebGLTexture>(2);
@@ -100,7 +100,7 @@
             this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
         }
 
-        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], options: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -111,7 +111,7 @@
                 this._engine = engine;
             }
 
-            this._renderRatio = ratio;
+            this._options = options;
             this.renderTargetSamplingMode = samplingMode ? samplingMode : Texture.NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
             this._textureType = textureType;
@@ -149,18 +149,18 @@
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
 
-            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * <number>this._renderRatio) | 0;
-            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * <number>this._renderRatio) | 0;
+            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * <number>this._options) | 0;
+            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * <number>this._options) | 0;
 
-            var desiredWidth = (<PostProcessOptions>this._renderRatio).width || requiredWidth;
-            var desiredHeight = (<PostProcessOptions>this._renderRatio).height || requiredHeight;
+            var desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
+            var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
             if (this.renderTargetSamplingMode !== Texture.NEAREST_SAMPLINGMODE) {
-                if (!(<PostProcessOptions>this._renderRatio).width) {
+                if (!(<PostProcessOptions>this._options).width) {
                     desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
                 }
 
-                if (!(<PostProcessOptions>this._renderRatio).height) {
+                if (!(<PostProcessOptions>this._options).height) {
                     desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize);
                 }
             }

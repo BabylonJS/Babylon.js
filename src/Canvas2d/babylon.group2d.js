@@ -22,16 +22,25 @@ var BABYLON;
             this._childrenRenderableGroups = new Array();
             this._renderGroupInstancesInfo = new BABYLON.StringDictionary();
         }
-        Group2D.CreateGroup2D = function (parent, id, position, size, cacheBehabior) {
-            if (cacheBehabior === void 0) { cacheBehabior = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY; }
+        /**
+         * Create an Logical or Renderable Group.
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent, default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - size: the size of the group, if null the size will be computed from its content, default is null.
+         *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
+         */
+        Group2D.CreateGroup2D = function (parent, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
             var g = new Group2D();
-            g.setupGroup2D(parent.owner, parent, id, position, size, cacheBehabior);
+            g.setupGroup2D(parent.owner, parent, options && options.id || null, options && options.position || BABYLON.Vector2.Zero(), options && options.origin || null, options && options.size || null, options && options.cacheBehavior || Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
             return g;
         };
         Group2D._createCachedCanvasGroup = function (owner) {
             var g = new Group2D();
-            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", BABYLON.Vector2.Zero());
+            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", BABYLON.Vector2.Zero(), null);
             g.origin = BABYLON.Vector2.Zero();
             return g;
         };
@@ -76,10 +85,10 @@ var BABYLON;
             }
             return true;
         };
-        Group2D.prototype.setupGroup2D = function (owner, parent, id, position, size, cacheBehavior) {
+        Group2D.prototype.setupGroup2D = function (owner, parent, id, position, origin, size, cacheBehavior) {
             if (cacheBehavior === void 0) { cacheBehavior = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY; }
             this._cacheBehavior = cacheBehavior;
-            this.setupPrim2DBase(owner, parent, id, position);
+            this.setupPrim2DBase(owner, parent, id, position, origin);
             this.size = size;
             this._viewportPosition = BABYLON.Vector2.Zero();
         };
@@ -274,7 +283,7 @@ var BABYLON;
                     var curVP = engine.setDirectViewport(this._viewportPosition.x, this._viewportPosition.y, this._viewportSize.width, this._viewportSize.height);
                 }
                 // For each different model of primitive to render
-                var totalRenderCount_1 = 0;
+                var totalRenderCount = 0;
                 this._renderGroupInstancesInfo.forEach(function (k, v) {
                     // This part will pack the dynamicfloatarray and update the instanced array WebGLBufffer
                     // Skip it if instanced arrays are not supported
@@ -283,7 +292,7 @@ var BABYLON;
                             // If the instances of the model was changed, pack the data
                             var array = v._instancesPartsData[i];
                             var instanceData_1 = array.pack();
-                            totalRenderCount_1 += array.usedElementCount;
+                            totalRenderCount += array.usedElementCount;
                             // Compute the size the instance buffer should have
                             var neededSize = array.usedElementCount * array.stride * 4;
                             // Check if we have to (re)create the instancesBuffer because there's none or the size is too small
@@ -306,7 +315,7 @@ var BABYLON;
                         v._dirtyInstancesData = false;
                     }
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
-                    if (!_this.owner.supportInstancedArray || totalRenderCount_1 > 0) {
+                    if (!_this.owner.supportInstancedArray || totalRenderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
                         var renderFailed = !v._modelCache.render(v, context);
                         // Update dirty flag/related
@@ -461,6 +470,6 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.Group2D = Group2D;
 })(BABYLON || (BABYLON = {}));

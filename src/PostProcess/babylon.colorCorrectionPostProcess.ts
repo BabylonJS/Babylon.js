@@ -17,8 +17,8 @@ module BABYLON {
 
         private _colorTableTexture: Texture;
 
-        constructor(name: string, colorTableUrl: string, ratio: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
-            super(name, 'colorCorrection', null, ['colorTable'], ratio, camera, samplingMode, engine, reusable);
+        constructor(name: string, colorTableUrl: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+            super(name, 'colorCorrection', null, ['colorTable'], options, camera, samplingMode, engine, reusable);
 
             this._colorTableTexture = new Texture(colorTableUrl, camera.getScene(), true, false, Texture.TRILINEAR_SAMPLINGMODE);
             this._colorTableTexture.anisotropicFilteringLevel = 1;

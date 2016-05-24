@@ -112,7 +112,7 @@ var BABYLON;
             return true;
         };
         return Lines2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Lines2DRenderCache = Lines2DRenderCache;
     var Lines2DInstanceData = (function (_super) {
         __extends(Lines2DInstanceData, _super);
@@ -140,7 +140,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Lines2DInstanceData.prototype, "boundingMax", null);
         return Lines2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Lines2DInstanceData = Lines2DInstanceData;
     var Lines2D = (function (_super) {
         __extends(Lines2D, _super);
@@ -294,24 +294,45 @@ var BABYLON;
         Lines2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         };
-        Lines2D.prototype.setupLines2D = function (owner, parent, id, position, points, fillThickness, startCap, endCap, fill, border, borderThickness) {
-            if (borderThickness === void 0) { borderThickness = 1; }
-            this.setupShape2D(owner, parent, id, position, true, fill, border, borderThickness);
+        Lines2D.prototype.setupLines2D = function (owner, parent, id, position, origin, points, fillThickness, startCap, endCap, fill, border, borderThickness, closed) {
+            this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
             this.fillThickness = fillThickness;
             this.startCap = startCap;
             this.endCap = endCap;
             this.points = points;
-            this.closed = false;
+            this.closed = closed;
             this._size = BABYLON.Size.Zero();
             this._boundingMin = BABYLON.Vector2.Zero();
             this._boundingMax = BABYLON.Vector2.Zero();
         };
-        Lines2D.Create = function (parent, id, x, y, points, fillThickness, startCap, endCap, fill, border, borderThickness) {
-            if (startCap === void 0) { startCap = Lines2D.NoCap; }
-            if (endCap === void 0) { endCap = Lines2D.NoCap; }
+        /**
+         * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * @param points an array that describe the points to use to draw the line, must contain at least two entries.
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - x: the X position relative to its parent, default is 0
+         *  - y: the Y position relative to its parent, default is 0
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
+         *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
+         *  - Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
+         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - borderThickness: the thickness of the drawn border, default is 1.
+         */
+        Lines2D.Create = function (parent, points, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
+            var fill;
+            if (options && options.fill !== undefined) {
+                fill = options.fill;
+            }
+            else {
+                fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+            }
             var lines = new Lines2D();
-            lines.setupLines2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), points, fillThickness, startCap, endCap, fill, border, borderThickness);
+            lines.setupLines2D(parent.owner, parent, options && options.id || null, new BABYLON.Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, points, options && options.fillThickness || 1, options && options.startCap || 0, options && options.endCap || 0, fill, options && options.border || null, options && options.borderThickness || 0, options && options.closed || false);
             return lines;
         };
         Lines2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
@@ -965,6 +986,6 @@ var BABYLON;
             BABYLON.className("Lines2D")
         ], Lines2D);
         return Lines2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Lines2D = Lines2D;
 })(BABYLON || (BABYLON = {}));

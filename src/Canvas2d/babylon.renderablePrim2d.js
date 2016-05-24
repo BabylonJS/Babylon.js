@@ -73,7 +73,7 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    }());
+    })();
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
         function InstancePropInfo() {
@@ -187,7 +187,7 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    }());
+    })();
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -319,7 +319,7 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "origin", null);
         return InstanceDataBase;
-    }());
+    })();
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
@@ -336,8 +336,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        RenderablePrim2D.prototype.setupRenderablePrim2D = function (owner, parent, id, position, isVisible) {
-            this.setupPrim2DBase(owner, parent, id, position);
+        RenderablePrim2D.prototype.setupRenderablePrim2D = function (owner, parent, id, position, origin, isVisible) {
+            this.setupPrim2DBase(owner, parent, id, position, origin);
             this._isTransparent = false;
         };
         RenderablePrim2D.prototype.dispose = function () {
@@ -401,8 +401,8 @@ var BABYLON;
                     var usedCatList = new Array();
                     var partIdList = new Array();
                     var joinedUsedCatList = new Array();
-                    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
-                        var dataPart = parts_1[_i];
+                    for (var _i = 0; _i < parts.length; _i++) {
+                        var dataPart = parts[_i];
                         var cat = this.getUsedShaderCategories(dataPart);
                         var cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
@@ -607,6 +607,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));
