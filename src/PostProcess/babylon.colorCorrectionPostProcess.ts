@@ -17,7 +17,7 @@ module BABYLON {
 
         private _colorTableTexture: Texture;
 
-        constructor(name: string, colorTableUrl: string, ratio: PostProcessRatio, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+        constructor(name: string, colorTableUrl: string, ratio: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, 'colorCorrection', null, ['colorTable'], ratio, camera, samplingMode, engine, reusable);
 
             this._colorTableTexture = new Texture(colorTableUrl, camera.getScene(), true, false, Texture.TRILINEAR_SAMPLINGMODE);

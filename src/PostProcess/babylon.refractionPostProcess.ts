@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class RefractionPostProcess extends PostProcess {
         private _refRexture: Texture;
-        constructor(name: string, refractionTextureUrl: string, public color: Color3, public depth: number, public colorLevel: number, ratio: PostProcessRatio, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+        constructor(name: string, refractionTextureUrl: string, public color: Color3, public depth: number, public colorLevel: number, ratio: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], ratio, camera, samplingMode, engine, reusable);
 
             this.onActivateObservable.add((cam: Camera) => {
