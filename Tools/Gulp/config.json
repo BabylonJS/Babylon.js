@@ -43,7 +43,7 @@
       "../../src/Collisions/babylon.collider.js",
       "../../src/Collisions/babylon.collisionCoordinator.js",
       "../../src/Cameras/babylon.camera.js",
-      "../../src/Cameras/babylon.camerainputsManager.js",
+      "../../src/Cameras/babylon.cameraInputsManager.js",
       "../../src/Cameras/Inputs/babylon.freecamera.input.mouse.js",
       "../../src/Cameras/Inputs/babylon.freecamera.input.keyboard.js",
       "../../src/Cameras/Inputs/babylon.freecamera.input.touch.js",
