@@ -169,7 +169,7 @@
       "../../src/Canvas2d/babylon.ellipse2d.js",
       "../../src/Canvas2d/babylon.sprite2d.js",
       "../../src/Canvas2d/babylon.text2d.js",
-      "../../src/Canvas2d/babylon.linesd.js",
+      "../../src/Canvas2d/babylon.lines2d.js",
       "../../src/Canvas2d/babylon.canvas2d.js",
       "../../src/Canvas2d/babylon.worldspacecanvas2d.js",
       "../../src/Materials/babylon.shaderMaterial.js",
