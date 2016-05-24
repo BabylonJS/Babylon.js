@@ -265,23 +265,47 @@
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
-            this.setupShape2D(owner, parent, id, position, true, fill, border, borderThickness);
+        protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean) {
+            this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
             this.fillThickness = fillThickness;
             this.startCap = startCap;
             this.endCap = endCap;
             this.points = points;
-            this.closed = false;
+            this.closed = closed;
             this._size = Size.Zero();
             this._boundingMin = Vector2.Zero();
             this._boundingMax = Vector2.Zero();
         }
 
-        public static Create(parent: Prim2DBase, id: string, x: number, y: number, points: Vector2[], fillThickness: number, startCap: number = Lines2D.NoCap, endCap: number = Lines2D.NoCap, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number): Lines2D {
+        /**
+         * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * @param points an array that describe the points to use to draw the line, must contain at least two entries.
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - x: the X position relative to its parent, default is 0
+         *  - y: the Y position relative to its parent, default is 0
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
+         *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
+         *  - Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
+         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - borderThickness: the thickness of the drawn border, default is 1.
+         */
+        public static Create(parent: Prim2DBase, points: Vector2[], options: { id?: string, x?: number, y?: number, origin?: Vector2, fillThickness?: number, closed?: boolean, startCap?: number, endCap?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number }): Lines2D {
             Prim2DBase.CheckParent(parent);
 
+            let fill: IBrush2D;
+            if (options && options.fill !== undefined) {
+                fill = options.fill;
+            } else {
+                fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+            }
+
             let lines = new Lines2D();
-            lines.setupLines2D(parent.owner, parent, id, new Vector2(x, y), points, fillThickness, startCap, endCap, fill, border, borderThickness);
+            lines.setupLines2D(parent.owner, parent, options && options.id || null, new Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, points, options && options.fillThickness || 1, options && options.startCap || 0, options && options.endCap || 0, fill, options && options.border || null, options && options.borderThickness || 0, options && options.closed || false);
             return lines;
         }
 

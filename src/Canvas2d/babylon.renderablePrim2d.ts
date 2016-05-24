@@ -343,8 +343,8 @@
             this._isTransparent = value;
         }
 
-        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean) {
-            this.setupPrim2DBase(owner, parent, id, position);
+        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean) {
+            this.setupPrim2DBase(owner, parent, id, position, origin);
             this._isTransparent = false;
         }
 
