@@ -51,12 +51,10 @@ module BABYLON {
         public _checkInputs(): void {
             if (this._vrEnabled) {
                 this._cacheState = this._sensorDevice.getState();
-                this._cacheQuaternion.copyFromFloats(this._cacheState.orientation.x, this._cacheState.orientation.y, this._cacheState.orientation.z, this._cacheState.orientation.w);
-                this._cacheQuaternion.toEulerAnglesToRef(this._cacheRotation);
-
-                this.rotation.x = -this._cacheRotation.x;
-                this.rotation.y = -this._cacheRotation.y;
-                this.rotation.z = this._cacheRotation.z;
+                this.rotationQuaternion.copyFrom(this._cacheState.orientation);
+                //Flip in XY plane
+                this.rotationQuaternion.z *= -1;
+                this.rotationQuaternion.w *= -1;
             }
 
             super._checkInputs();
@@ -78,6 +76,11 @@ module BABYLON {
         public detachControl(element: HTMLElement): void {
             super.detachControl(element);
             this._vrEnabled = false;
+        }
+
+        public requestVRFullscreen(requestPointerlock: boolean) {
+            if (!this._hmdDevice) return;
+            this.getEngine().switchFullscreen(requestPointerlock, { vrDisplay: this._hmdDevice })
         }
 
         public getTypeName(): string {

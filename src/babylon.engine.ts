@@ -689,13 +689,14 @@
         /**
          * Toggle full screen mode.
          * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
+         * @param {any} options - an options object to be sent to the requestFullscreen function
          */
-        public switchFullscreen(requestPointerLock: boolean): void {
+        public switchFullscreen(requestPointerLock: boolean, options?: any): void {
             if (this.isFullscreen) {
                 Tools.ExitFullscreen();
             } else {
                 this._pointerLockRequested = requestPointerLock;
-                Tools.RequestFullscreen(this._renderingCanvas);
+                Tools.RequestFullscreen(this._renderingCanvas, options);
             }
         }
 
