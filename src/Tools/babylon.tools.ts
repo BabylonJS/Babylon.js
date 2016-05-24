@@ -219,15 +219,10 @@
             }
         }
 
-        public static RequestFullscreen(element): void {
-            if (element.requestFullscreen)
-                element.requestFullscreen();
-            else if (element.msRequestFullscreen)
-                element.msRequestFullscreen();
-            else if (element.webkitRequestFullscreen)
-                element.webkitRequestFullscreen();
-            else if (element.mozRequestFullScreen)
-                element.mozRequestFullScreen();
+        public static RequestFullscreen(element, options?: any): void {
+            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+            if (!requestFunction) return;
+            requestFunction(options);
         }
 
         public static ExitFullscreen(): void {
@@ -911,7 +906,7 @@
         public static getClassName(object, isType: boolean = false): string {
             let name = null;
             if (object instanceof Object) {
-                let classObj = isType ? object :  Object.getPrototypeOf(object);
+                let classObj = isType ? object : Object.getPrototypeOf(object);
                 name = classObj.constructor["__bjsclassName__"];
             }
             if (!name) {
