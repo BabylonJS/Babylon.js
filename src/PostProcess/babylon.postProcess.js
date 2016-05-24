@@ -1,7 +1,7 @@
 var BABYLON;
 (function (BABYLON) {
     var PostProcess = (function () {
-        function PostProcess(name, fragmentUrl, parameters, samplers, ratio, camera, samplingMode, engine, reusable, defines, textureType) {
+        function PostProcess(name, fragmentUrl, parameters, samplers, options, camera, samplingMode, engine, reusable, defines, textureType) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE; }
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             this.name = name;
@@ -51,7 +51,7 @@ var BABYLON;
             else {
                 this._engine = engine;
             }
-            this._renderRatio = ratio;
+            this._options = options;
             this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
             this._textureType = textureType;
@@ -126,15 +126,15 @@ var BABYLON;
             camera = camera || this._camera;
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
-            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
-            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
-            var desiredWidth = this._renderRatio.width || requiredWidth;
-            var desiredHeight = this._renderRatio.height || requiredHeight;
+            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._options) | 0;
+            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._options) | 0;
+            var desiredWidth = this._options.width || requiredWidth;
+            var desiredHeight = this._options.height || requiredHeight;
             if (this.renderTargetSamplingMode !== BABYLON.Texture.NEAREST_SAMPLINGMODE) {
-                if (!this._renderRatio.width) {
+                if (!this._options.width) {
                     desiredWidth = BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
                 }
-                if (!this._renderRatio.height) {
+                if (!this._options.height) {
                     desiredHeight = BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
                 }
             }
@@ -220,6 +220,6 @@ var BABYLON;
             this.onSizeChangedObservable.clear();
         };
         return PostProcess;
-    }());
+    })();
     BABYLON.PostProcess = PostProcess;
 })(BABYLON || (BABYLON = {}));

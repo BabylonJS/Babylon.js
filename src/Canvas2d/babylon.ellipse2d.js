@@ -112,7 +112,7 @@ var BABYLON;
             return true;
         };
         return Ellipse2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Ellipse2DRenderCache = Ellipse2DRenderCache;
     var Ellipse2DInstanceData = (function (_super) {
         __extends(Ellipse2DInstanceData, _super);
@@ -130,7 +130,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Ellipse2DInstanceData.prototype, "properties", null);
         return Ellipse2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Ellipse2DInstanceData = Ellipse2DInstanceData;
     var Ellipse2D = (function (_super) {
         __extends(Ellipse2D, _super);
@@ -174,18 +174,39 @@ var BABYLON;
         Ellipse2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         };
-        Ellipse2D.prototype.setupEllipse2D = function (owner, parent, id, position, size, subdivisions, fill, border, borderThickness) {
+        Ellipse2D.prototype.setupEllipse2D = function (owner, parent, id, position, origin, size, subdivisions, fill, border, borderThickness) {
             if (subdivisions === void 0) { subdivisions = 64; }
             if (borderThickness === void 0) { borderThickness = 1; }
-            this.setupShape2D(owner, parent, id, position, true, fill, border, borderThickness);
+            this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
             this.size = size;
             this.subdivisions = subdivisions;
         };
-        Ellipse2D.Create = function (parent, id, x, y, width, height, subdivisions, fill, border, borderThickness) {
-            if (subdivisions === void 0) { subdivisions = 64; }
+        /**
+         * Create an Ellipse 2D Shape primitive
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id: a text identifier, for information purpose
+         *  - x: the X position relative to its parent, default is 0
+         *  - y: the Y position relative to its parent, default is 0
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - width: the width of the ellipse, default is 10
+         *  - height: the height of the ellipse, default is 10
+         *  - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
+         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
+         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - borderThickness: the thickness of the drawn border, default is 1.
+         */
+        Ellipse2D.Create = function (parent, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
+            var fill;
+            if (options && options.fill !== undefined) {
+                fill = options.fill;
+            }
+            else {
+                fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+            }
             var ellipse = new Ellipse2D();
-            ellipse.setupEllipse2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), new BABYLON.Size(width, height), subdivisions, fill, border, borderThickness);
+            ellipse.setupEllipse2D(parent.owner, parent, options && options.id || null, new BABYLON.Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, new BABYLON.Size(options && options.width || 10, options && options.height || 10), options && options.subdivisions || 64, fill, options && options.border || null, options && options.borderThickness || 1);
             return ellipse;
         };
         Ellipse2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
@@ -280,6 +301,6 @@ var BABYLON;
             BABYLON.className("Ellipse2D")
         ], Ellipse2D);
         return Ellipse2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Ellipse2D = Ellipse2D;
 })(BABYLON || (BABYLON = {}));

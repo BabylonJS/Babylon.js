@@ -7,9 +7,9 @@ var BABYLON;
 (function (BABYLON) {
     var FxaaPostProcess = (function (_super) {
         __extends(FxaaPostProcess, _super);
-        function FxaaPostProcess(name, ratio, camera, samplingMode, engine, reusable) {
+        function FxaaPostProcess(name, options, camera, samplingMode, engine, reusable) {
             var _this = this;
-            _super.call(this, name, "fxaa", ["texelSize"], null, ratio, camera, samplingMode, engine, reusable);
+            _super.call(this, name, "fxaa", ["texelSize"], null, options, camera, samplingMode, engine, reusable);
             this.onSizeChangedObservable.add(function () {
                 _this.texelWidth = 1.0 / _this.width;
                 _this.texelHeight = 1.0 / _this.height;
@@ -19,6 +19,6 @@ var BABYLON;
             });
         }
         return FxaaPostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.FxaaPostProcess = FxaaPostProcess;
 })(BABYLON || (BABYLON = {}));

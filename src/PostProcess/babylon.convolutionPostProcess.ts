@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class ConvolutionPostProcess extends PostProcess{
-        constructor(name: string, public kernel: number[], ratio: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
-            super(name, "convolution", ["kernel", "screenSize"], null, ratio, camera, samplingMode, engine, reusable);
+        constructor(name: string, public kernel: number[], options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+            super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable);
 
             this.onApply = (effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
