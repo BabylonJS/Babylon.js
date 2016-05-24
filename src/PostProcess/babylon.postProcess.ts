@@ -1,5 +1,8 @@
 ﻿module BABYLON {
-    export class PostProcess {
+    export type PostProcessOptions = { width: number, height: number };
+
+    export class PostProcess
+    {
         public width = -1;
         public height = -1;
         public renderTargetSamplingMode: number;
@@ -14,7 +17,7 @@
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
-        private _renderRatio: number|any;
+        private _renderRatio: number | PostProcessOptions;
         private _reusable = false;
         private _textureType: number;
         public _textures = new SmartArray<WebGLTexture>(2);
@@ -97,7 +100,7 @@
             this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
         }
 
-        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number|any, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number | PostProcessOptions, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -146,18 +149,18 @@
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
 
-            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
-            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
+            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * <number>this._renderRatio) | 0;
+            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * <number>this._renderRatio) | 0;
 
-            var desiredWidth = this._renderRatio.width || requiredWidth;
-            var desiredHeight = this._renderRatio.height || requiredHeight;
+            var desiredWidth = (<PostProcessOptions>this._renderRatio).width || requiredWidth;
+            var desiredHeight = (<PostProcessOptions>this._renderRatio).height || requiredHeight;
 
             if (this.renderTargetSamplingMode !== Texture.NEAREST_SAMPLINGMODE) {
-                if (!this._renderRatio.width) {
+                if (!(<PostProcessOptions>this._renderRatio).width) {
                     desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
                 }
 
-                if (!this._renderRatio.height) {
+                if (!(<PostProcessOptions>this._renderRatio).height) {
                     desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize);
                 }
             }

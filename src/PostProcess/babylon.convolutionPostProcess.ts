@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class ConvolutionPostProcess extends PostProcess{
-        constructor(name: string, public kernel: number[], ratio: number, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+        constructor(name: string, public kernel: number[], ratio: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, "convolution", ["kernel", "screenSize"], null, ratio, camera, samplingMode, engine, reusable);
 
             this.onApply = (effect: Effect) => {
