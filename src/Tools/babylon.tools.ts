@@ -263,15 +263,10 @@
             }
         }
 
-        public static RequestFullscreen(element): void {
-            if (element.requestFullscreen)
-                element.requestFullscreen();
-            else if (element.msRequestFullscreen)
-                element.msRequestFullscreen();
-            else if (element.webkitRequestFullscreen)
-                element.webkitRequestFullscreen();
-            else if (element.mozRequestFullScreen)
-                element.mozRequestFullScreen();
+        public static RequestFullscreen(element, options?: any): void {
+            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+            if (!requestFunction) return;
+            requestFunction.call(element, options);
         }
 
         public static ExitFullscreen(): void {
