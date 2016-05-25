@@ -36,6 +36,10 @@
     export function serializeAsMeshReference(sourceName?: string) {
         return generateSerializableMember(6, sourceName); // mesh reference member
     }
+    
+    export function serializeAsColorCurves(sourceName?: string) {
+        return generateSerializableMember(7, sourceName); // color curves
+    }
 
     export class SerializationHelper {
 
@@ -76,6 +80,9 @@
                             break;
                         case 6:     // Mesh reference
                             serializationObject[targetPropertyName] = sourceProperty.id;
+                            break;
+                        case 7:     // Color Curves
+                            serializationObject[targetPropertyName] = sourceProperty.serialize();
                             break;
                     }
                 }
@@ -119,6 +126,9 @@
                         case 6:     // Mesh reference
                             destination[property] = scene.getLastMeshByID(sourceProperty);
                             break;
+                        case 7:     // Color Curves
+                            destination[property] = ColorCurves.Parse(sourceProperty);
+                            break;
                     }
                 }
             }
@@ -149,6 +159,7 @@
                         case 3:     // FresnelParameters
                         case 4:     // Vector2
                         case 5:     // Vector3
+                        case 7:     // Color Curves
                             destination[property] = sourceProperty.clone();
                             break;
                     }
