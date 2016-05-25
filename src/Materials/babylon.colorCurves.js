@@ -53,6 +53,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._globalHue = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -73,6 +74,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._globalDensity = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -91,6 +93,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._globalSaturation = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -109,6 +112,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._highlightsHue = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -129,6 +133,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._highlightsDensity = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -147,6 +152,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._highlightsSaturation = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -165,6 +171,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._highlightsExposure = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -183,6 +190,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._midtonesHue = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -203,6 +211,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._midtonesDensity = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -221,6 +230,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._midtonesSaturation = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -239,6 +249,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._midtonesExposure = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -257,6 +268,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._shadowsHue = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -277,6 +289,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._shadowsDensity = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -295,6 +308,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._shadowsSaturation = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -313,6 +327,7 @@ var BABYLON;
              */
             set: function (value) {
                 this._shadowsExposure = value;
+                this._dirty = true;
             },
             enumerable: true,
             configurable: true
@@ -324,6 +339,7 @@ var BABYLON;
          */
         ColorCurves.Bind = function (colorCurves, effect) {
             if (colorCurves._dirty) {
+                colorCurves._dirty = false;
                 // Fill in global info.
                 colorCurves.getColorGradingDataToRef(colorCurves._globalHue, colorCurves._globalDensity, colorCurves._globalSaturation, colorCurves._globalExposure, colorCurves._globalCurve);
                 // Compute highlights info.
@@ -360,7 +376,7 @@ var BABYLON;
          */
         ColorCurves.prototype.getColorGradingDataToRef = function (hue, density, saturation, exposure, result) {
             if (hue == null) {
-                return null;
+                return;
             }
             hue = ColorCurves.clamp(hue, 0, 360);
             density = ColorCurves.clamp(density, -100, 100);
@@ -524,6 +540,6 @@ var BABYLON;
             BABYLON.serialize()
         ], ColorCurves.prototype, "_midtonesExposure", void 0);
         return ColorCurves;
-    }());
+    })();
     BABYLON.ColorCurves = ColorCurves;
 })(BABYLON || (BABYLON = {}));

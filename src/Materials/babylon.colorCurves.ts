@@ -10,15 +10,15 @@
         
         private _dirty = true;
         
-        private _tempColor = new BABYLON.Color4(0, 0, 0, 0);
+        private _tempColor = new Color4(0, 0, 0, 0);
         
-        private _globalCurve = new BABYLON.Color4(0, 0, 0, 0);
-        private _highlightsCurve = new BABYLON.Color4(0, 0, 0, 0);
-        private _midtonesCurve = new BABYLON.Color4(0, 0, 0, 0);
-        private _shadowsCurve = new BABYLON.Color4(0, 0, 0, 0);
+        private _globalCurve = new Color4(0, 0, 0, 0);
+        private _highlightsCurve = new Color4(0, 0, 0, 0);
+        private _midtonesCurve = new Color4(0, 0, 0, 0);
+        private _shadowsCurve = new Color4(0, 0, 0, 0);
         
-        private _positiveCurve = new BABYLON.Color4(0, 0, 0, 0);
-        private _negativeCurve = new BABYLON.Color4(0, 0, 0, 0);
+        private _positiveCurve = new Color4(0, 0, 0, 0);
+        private _negativeCurve = new Color4(0, 0, 0, 0);
         
         @serialize()
         private _globalHue = 30;
@@ -386,7 +386,7 @@
          */
         private getColorGradingDataToRef(hue: number, density: number, saturation: number, exposure: number, result: Color4) : void {
             if (hue == null) {
-                return null;
+                return;
             }
 
             hue = ColorCurves.clamp(hue, 0, 360);
@@ -439,7 +439,7 @@
          * @param brightness The brightness (B) input.
          * @result An RGBA color represented as Vector4.
          */
-        private static fromHSBToRef(hue: number, saturation: number, brightness: number, result: BABYLON.Color4): void {
+        private static fromHSBToRef(hue: number, saturation: number, brightness: number, result: Color4): void {
             var h: number = ColorCurves.clamp(hue, 0, 360);
             var s: number = ColorCurves.clamp(saturation / 100, 0, 1);
             var v: number = ColorCurves.clamp(brightness / 100, 0, 1);
