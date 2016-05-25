@@ -37,22 +37,36 @@
          * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * options:
          *  - id a text identifier, for information purpose
-         *  - position: the X & Y positions relative to its parent, default is [0;0]
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - size: the size of the group, if null the size will be computed from its content, default is null.
+         *  - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
          *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
+         *  - isVisible: true if the group must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        static CreateGroup2D(parent: Prim2DBase, options: { id?: string, position?: Vector2; origin?: Vector2, size?: Size, cacheBehavior?: number}): Group2D {
+        static CreateGroup2D(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, cacheBehavior?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Group2D {
             Prim2DBase.CheckParent(parent);
-            var g = new Group2D();
-            g.setupGroup2D(parent.owner, parent, options && options.id || null, options && options.position || Vector2.Zero(), options && options.origin || null, options && options.size || null, options && options.cacheBehavior || Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
 
+
+            var g = new Group2D();
+
+            if (!options) {
+                g.setupGroup2D(parent.owner, parent, null, Vector2.Zero(), null, null, true, Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, null, null, null, null, null, null);
+            } else {
+                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
+                let size = (!options.size && !options.width && !options.height) ? null : (options.size || (new Size(options.width || 0, options.height || 0)));
+                
+                g.setupGroup2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, options.isVisible || true, options.cacheBehavior || Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, options.marginTop, options.marginLeft, options.marginRight, options.marginBottom, options.hAlignment || Prim2DBase.HAlignLeft, options.vAlignment || Prim2DBase.VAlignTop);
+            }
+       
             return g;
         }
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
             var g = new Group2D();
-            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero(), null);
+            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero(), Vector2.Zero(), null, true, Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, null, null, null, null, null, null);
             g.origin = Vector2.Zero();
             return g;
             
@@ -108,9 +122,9 @@
             return true;
         }
 
-        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size?: Size, cacheBehavior: number = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
+        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, isVisible: boolean, cacheBehavior: number, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
             this._cacheBehavior = cacheBehavior;
-            this.setupPrim2DBase(owner, parent, id, position, origin);
+            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom , hAlign, vAlign);
             this.size = size;
             this._viewportPosition = Vector2.Zero();
         }
