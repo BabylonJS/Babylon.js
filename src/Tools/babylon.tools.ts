@@ -222,7 +222,7 @@
         public static RequestFullscreen(element, options?: any): void {
             var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
             if (!requestFunction) return;
-            requestFunction(options);
+            requestFunction.call(element, options);
         }
 
         public static ExitFullscreen(): void {
