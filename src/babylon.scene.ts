@@ -388,11 +388,27 @@
         public database; //ANY
 
         // Actions
+
+        private _sceneActionManager: ActionManager;
         /**
          * This scene's action manager
          * @type {BABYLON.ActionManager}
-         */
-        public actionManager: ActionManager;
+        */
+        public get actionManager(): ActionManager {
+            if (!this._sceneActionManager) {
+                this.actionManager = new ActionManager(this);
+            }
+
+            return this._sceneActionManager;
+        }
+        /**
+         * This scene's action manager
+         * @type {BABYLON.ActionManager}
+        */
+        public set actionManager(value: ActionManager) {
+            this._sceneActionManager = value;
+        }
+
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
 

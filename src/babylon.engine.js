@@ -563,14 +563,15 @@ var BABYLON;
         /**
          * Toggle full screen mode.
          * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
+         * @param {any} options - an options object to be sent to the requestFullscreen function
          */
-        Engine.prototype.switchFullscreen = function (requestPointerLock) {
+        Engine.prototype.switchFullscreen = function (requestPointerLock, options) {
             if (this.isFullscreen) {
                 BABYLON.Tools.ExitFullscreen();
             }
             else {
                 this._pointerLockRequested = requestPointerLock;
-                BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
+                BABYLON.Tools.RequestFullscreen(this._renderingCanvas, options);
             }
         };
         Engine.prototype.clear = function (color, backBuffer, depthStencil) {

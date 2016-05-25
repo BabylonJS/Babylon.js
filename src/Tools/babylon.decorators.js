@@ -36,6 +36,10 @@ var BABYLON;
         return generateSerializableMember(6, sourceName); // mesh reference member
     }
     BABYLON.serializeAsMeshReference = serializeAsMeshReference;
+    function serializeAsColorCurves(sourceName) {
+        return generateSerializableMember(7, sourceName); // color curves
+    }
+    BABYLON.serializeAsColorCurves = serializeAsColorCurves;
     var SerializationHelper = (function () {
         function SerializationHelper() {
         }
@@ -74,6 +78,9 @@ var BABYLON;
                         case 6:
                             serializationObject[targetPropertyName] = sourceProperty.id;
                             break;
+                        case 7:
+                            serializationObject[targetPropertyName] = sourceProperty.serialize();
+                            break;
                     }
                 }
             }
@@ -111,6 +118,9 @@ var BABYLON;
                         case 6:
                             destination[property] = scene.getLastMeshByID(sourceProperty);
                             break;
+                        case 7:
+                            destination[property] = BABYLON.ColorCurves.Parse(sourceProperty);
+                            break;
                     }
                 }
             }
@@ -135,7 +145,8 @@ var BABYLON;
                         case 2: // Color3
                         case 3: // FresnelParameters
                         case 4: // Vector2
-                        case 5:
+                        case 5: // Vector3
+                        case 7:
                             destination[property] = sourceProperty.clone();
                             break;
                     }

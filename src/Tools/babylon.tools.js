@@ -212,15 +212,11 @@ var BABYLON;
                 window.setTimeout(func, 16);
             }
         };
-        Tools.RequestFullscreen = function (element) {
-            if (element.requestFullscreen)
-                element.requestFullscreen();
-            else if (element.msRequestFullscreen)
-                element.msRequestFullscreen();
-            else if (element.webkitRequestFullscreen)
-                element.webkitRequestFullscreen();
-            else if (element.mozRequestFullScreen)
-                element.mozRequestFullScreen();
+        Tools.RequestFullscreen = function (element, options) {
+            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+            if (!requestFunction)
+                return;
+            requestFunction.call(element, options);
         };
         Tools.ExitFullscreen = function () {
             if (document.exitFullscreen) {

@@ -13,8 +13,6 @@ var BABYLON;
             this._hmdDevice = null;
             this._sensorDevice = null;
             this._cacheState = null;
-            this._cacheQuaternion = new BABYLON.Quaternion();
-            this._cacheRotation = BABYLON.Vector3.Zero();
             this._vrEnabled = false;
             var metrics = BABYLON.VRCameraMetrics.GetDefault();
             metrics.compensateDistortion = compensateDistortion;
@@ -46,11 +44,10 @@ var BABYLON;
         WebVRFreeCamera.prototype._checkInputs = function () {
             if (this._vrEnabled) {
                 this._cacheState = this._sensorDevice.getState();
-                this._cacheQuaternion.copyFromFloats(this._cacheState.orientation.x, this._cacheState.orientation.y, this._cacheState.orientation.z, this._cacheState.orientation.w);
-                this._cacheQuaternion.toEulerAnglesToRef(this._cacheRotation);
-                this.rotation.x = -this._cacheRotation.x;
-                this.rotation.y = -this._cacheRotation.y;
-                this.rotation.z = this._cacheRotation.z;
+                this.rotationQuaternion.copyFrom(this._cacheState.orientation);
+                //Flip in XY plane
+                this.rotationQuaternion.z *= -1;
+                this.rotationQuaternion.w *= -1;
             }
             _super.prototype._checkInputs.call(this);
         };
@@ -67,6 +64,11 @@ var BABYLON;
         WebVRFreeCamera.prototype.detachControl = function (element) {
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
+        };
+        WebVRFreeCamera.prototype.requestVRFullscreen = function (requestPointerlock) {
+            if (!this._hmdDevice)
+                return;
+            this.getEngine().switchFullscreen(requestPointerlock, { vrDisplay: this._hmdDevice });
         };
         WebVRFreeCamera.prototype.getTypeName = function () {
             return "WebVRFreeCamera";
