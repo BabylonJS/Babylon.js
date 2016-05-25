@@ -5,9 +5,7 @@ module BABYLON {
     export class WebVRFreeCamera extends FreeCamera {
         public _hmdDevice = null;
         public _sensorDevice = null;
-        public _cacheState = null;
-        public _cacheQuaternion = new Quaternion();
-        public _cacheRotation = Vector3.Zero();
+        private _cacheState = null;
         public _vrEnabled = false;
 
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true) {
