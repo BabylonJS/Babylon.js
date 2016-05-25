@@ -22,16 +22,25 @@ var BABYLON;
             this._childrenRenderableGroups = new Array();
             this._renderGroupInstancesInfo = new BABYLON.StringDictionary();
         }
-        Group2D.CreateGroup2D = function (parent, id, position, size, cacheBehabior) {
-            if (cacheBehabior === void 0) { cacheBehabior = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY; }
+        /**
+         * Create an Logical or Renderable Group.
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent, default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - size: the size of the group, if null the size will be computed from its content, default is null.
+         *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
+         */
+        Group2D.CreateGroup2D = function (parent, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
             var g = new Group2D();
-            g.setupGroup2D(parent.owner, parent, id, position, size, cacheBehabior);
+            g.setupGroup2D(parent.owner, parent, options && options.id || null, options && options.position || BABYLON.Vector2.Zero(), options && options.origin || null, options && options.size || null, options && options.cacheBehavior || Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
             return g;
         };
         Group2D._createCachedCanvasGroup = function (owner) {
             var g = new Group2D();
-            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", BABYLON.Vector2.Zero());
+            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", BABYLON.Vector2.Zero(), null);
             g.origin = BABYLON.Vector2.Zero();
             return g;
         };
@@ -76,10 +85,10 @@ var BABYLON;
             }
             return true;
         };
-        Group2D.prototype.setupGroup2D = function (owner, parent, id, position, size, cacheBehavior) {
+        Group2D.prototype.setupGroup2D = function (owner, parent, id, position, origin, size, cacheBehavior) {
             if (cacheBehavior === void 0) { cacheBehavior = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY; }
             this._cacheBehavior = cacheBehavior;
-            this.setupPrim2DBase(owner, parent, id, position);
+            this.setupPrim2DBase(owner, parent, id, position, origin);
             this.size = size;
             this._viewportPosition = BABYLON.Vector2.Zero();
         };
@@ -247,6 +256,7 @@ var BABYLON;
                         }
                     });
                     // Everything is updated, clear the dirty list
+                    this._primDirtyList.forEach(function (p) { return p._resetPropertiesDirty(); });
                     this._primDirtyList.splice(0);
                 }
             }
@@ -300,9 +310,9 @@ var BABYLON;
                                 // Update the WebGL buffer to match the new content of the instances data
                                 engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesPartsBuffer[i]);
                                 engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData_1);
-                                v._dirtyInstancesData = false;
                             }
                         }
+                        v._dirtyInstancesData = false;
                     }
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || totalRenderCount > 0) {

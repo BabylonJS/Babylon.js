@@ -143,7 +143,7 @@ namespace Unity3D2Babylon
                 var outputFile = sceneBuilder.WriteToBabylonFile();
 
                 watch.Stop();
-                ReportProgress(1, $"Exportation done in {watch.Elapsed.TotalSeconds:0.00}s");
+                ReportProgress(1, string.Format("Exportation done in {0:0.00}s", watch.Elapsed.TotalSeconds));
                 EditorUtility.ClearProgressBar();
 
                 sceneBuilder.GenerateStatus(logs);

@@ -12,6 +12,7 @@ var changed = require('gulp-changed');
 var runSequence = require('run-sequence');
 var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
+var expect = require('gulp-expect-file');
 
 var config = require("./config.json");
 
@@ -36,6 +37,7 @@ function includeShadersName(filename) {
 gulp.task("includeShaders", function (cb) {
     includeShadersStream = config.includeShadersDirectories.map(function (shadersDef) {
         return gulp.src(shadersDef.files).
+            pipe(expect.real({ errorOnFailure: true }, shadersDef.files)).
             pipe(uncommentShader()).
             pipe(srcToVariable({
             variableName: shadersDef.variable, asMap: true, namingCallback: includeShadersName
@@ -47,6 +49,7 @@ gulp.task("includeShaders", function (cb) {
 gulp.task("shaders", ["includeShaders"], function (cb) {
     shadersStream = config.shadersDirectories.map(function (shadersDef) {
         return gulp.src(shadersDef.files).
+            pipe(expect.real({ errorOnFailure: true }, shadersDef.files)).
             pipe(uncommentShader()).
             pipe(srcToVariable({
             variableName: shadersDef.variable, asMap: true, namingCallback: shadersName
@@ -57,9 +60,12 @@ gulp.task("shaders", ["includeShaders"], function (cb) {
 
 gulp.task("workers", function (cb) {
     workersStream = config.workers.map(function (workerDef) {
-        return gulp.src(workerDef.files).pipe(uglify()).pipe(srcToVariable({
-            variableName: workerDef.variable
-        }));
+        return gulp.src(workerDef.files).
+            pipe(expect.real({ errorOnFailure: true }, workerDef.files)).
+            pipe(uglify()).
+            pipe(srcToVariable({
+                variableName: workerDef.variable
+            }));
     });
     cb();
 });
@@ -68,8 +74,8 @@ gulp.task("workers", function (cb) {
 Compiles all typescript files and creating a declaration file.
 */
 gulp.task('typescript-compile', function () {
-    var tsResult = gulp.src(config.core.typescript)
-        .pipe(typescript({
+    var tsResult = gulp.src(config.core.typescript).
+        pipe(typescript({
             noExternalResolve: true,
             target: 'ES5',
             declarationFiles: true,
@@ -114,7 +120,8 @@ gulp.task('typescript-sourcemaps', function () {
 
 gulp.task("buildCore", ["shaders"], function () {
     return merge2(
-        gulp.src(config.core.files),
+        gulp.src(config.core.files).        
+            pipe(expect.real({ errorOnFailure: true }, config.core.files)),
         shadersStream,
         includeShadersStream
         )
@@ -129,8 +136,10 @@ gulp.task("buildCore", ["shaders"], function () {
 
 gulp.task("buildNoWorker", ["shaders"], function () {
     return merge2(
-        gulp.src(config.core.files),
-        gulp.src(config.extras.files),
+        gulp.src(config.core.files).        
+            pipe(expect.real({ errorOnFailure: true }, config.core.files)),
+        gulp.src(config.extras.files).        
+            pipe(expect.real({ errorOnFailure: true }, config.extras.files)),
         shadersStream,
         includeShadersStream
         )
@@ -145,8 +154,10 @@ gulp.task("buildNoWorker", ["shaders"], function () {
 
 gulp.task("build", ["workers", "shaders"], function () {
     return merge2(
-        gulp.src(config.core.files),
-        gulp.src(config.extras.files),
+        gulp.src(config.core.files).        
+            pipe(expect.real({ errorOnFailure: true }, config.core.files)),
+        gulp.src(config.extras.files).        
+            pipe(expect.real({ errorOnFailure: true }, config.extras.files)),   
         shadersStream,
         includeShadersStream,
         workersStream

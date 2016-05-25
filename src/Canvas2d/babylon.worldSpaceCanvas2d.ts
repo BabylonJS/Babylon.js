@@ -2,7 +2,7 @@
     /**
      * This is the class that is used to display a World Space Canvas into a scene
      */
-    export class WorldSpaceCanvas2d extends Mesh {
+    export class WorldSpaceCanvas2D extends Mesh {
         constructor(name: string, scene: Scene, canvas: Canvas2D) {
             super(name, scene);
 

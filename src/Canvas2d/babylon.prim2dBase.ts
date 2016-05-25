@@ -296,7 +296,7 @@
     export class Prim2DBase extends SmartPropertyPrim {
         static PRIM2DBASE_PROPCOUNT: number = 10;
 
-        protected setupPrim2DBase(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean = true) {
+        protected setupPrim2DBase(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean = true) {
             if (!(this instanceof Group2D) && !(this instanceof Sprite2D && id !== null && id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
                 throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
             }
@@ -333,7 +333,7 @@
             this.rotation = 0;
             this.scale = 1;
             this.levelVisible = isVisible;
-            this.origin = new Vector2(0.5, 0.5);
+            this.origin = origin || new Vector2(0.5, 0.5);
         }
 
 
@@ -728,7 +728,7 @@
                 return false;
             }
 
-            if (!this._actionManager) {
+            if (this._actionManager) {
                 this._actionManager.dispose();
                 this._actionManager = null;
             }

@@ -46,6 +46,15 @@ var BABYLON;
         Color3.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         };
+        Color3.prototype.getClassName = function () {
+            return "Color3";
+        };
+        Color3.prototype.getHashCode = function () {
+            var hash = this.r || 0;
+            hash = (hash * 397) ^ (this.g || 0);
+            hash = (hash * 397) ^ (this.b || 0);
+            return hash;
+        };
         // Operators
         Color3.prototype.toArray = function (array, index) {
             if (index === undefined) {
@@ -245,6 +254,16 @@ var BABYLON;
         Color4.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         };
+        Color4.prototype.getClassName = function () {
+            return "Color4";
+        };
+        Color4.prototype.getHashCode = function () {
+            var hash = this.r || 0;
+            hash = (hash * 397) ^ (this.g || 0);
+            hash = (hash * 397) ^ (this.b || 0);
+            hash = (hash * 397) ^ (this.a || 0);
+            return hash;
+        };
         Color4.prototype.clone = function () {
             return new Color4(this.r, this.g, this.b, this.a);
         };
@@ -318,6 +337,14 @@ var BABYLON;
         Vector2.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + "}";
         };
+        Vector2.prototype.getClassName = function () {
+            return "Vector2";
+        };
+        Vector2.prototype.getHashCode = function () {
+            var hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            return hash;
+        };
         // Operators
         Vector2.prototype.toArray = function (array, index) {
             if (index === void 0) { index = 0; }
@@ -343,11 +370,21 @@ var BABYLON;
         Vector2.prototype.add = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
+        Vector2.prototype.addToRef = function (otherVector, result) {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+            return this;
+        };
         Vector2.prototype.addVector3 = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
         Vector2.prototype.subtract = function (otherVector) {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        };
+        Vector2.prototype.subtractToRef = function (otherVector, result) {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+            return this;
         };
         Vector2.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
@@ -493,6 +530,13 @@ var BABYLON;
             result.x = x;
             result.y = y;
         };
+        Vector2.PointInTriangle = function (p, p0, p1, p2) {
+            var a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+            var sign = a < 0 ? -1 : 1;
+            var s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
+            var t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
+            return s > 0 && t > 0 && (s + t) < 2 * a * sign;
+        };
         Vector2.Distance = function (value1, value2) {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
         };
@@ -500,6 +544,16 @@ var BABYLON;
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             return (x * x) + (y * y);
+        };
+        Vector2.DistanceOfPointFromSegment = function (p, segA, segB) {
+            var l2 = Vector2.DistanceSquared(segA, segB);
+            if (l2 === 0.0) {
+                return Vector2.Distance(p, segA);
+            }
+            var v = segB.subtract(segA);
+            var t = Math.max(0, Math.min(1, Vector2.Dot(p.subtract(segA), v) / l2));
+            var proj = segA.add(v.multiplyByFloats(t, t));
+            return Vector2.Distance(p, proj);
         };
         return Vector2;
     })();
@@ -512,6 +566,15 @@ var BABYLON;
         }
         Vector3.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
+        };
+        Vector3.prototype.getClassName = function () {
+            return "Vector3";
+        };
+        Vector3.prototype.getHashCode = function () {
+            var hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            return hash;
         };
         // Operators
         Vector3.prototype.asArray = function () {
@@ -1014,6 +1077,16 @@ var BABYLON;
         Vector4.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}";
         };
+        Vector4.prototype.getClassName = function () {
+            return "Vector4";
+        };
+        Vector4.prototype.getHashCode = function () {
+            var hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            hash = (hash * 397) ^ (this.w || 0);
+            return hash;
+        };
         // Operators
         Vector4.prototype.asArray = function () {
             var result = [];
@@ -1268,6 +1341,17 @@ var BABYLON;
             this.width = width;
             this.height = height;
         }
+        Size.prototype.toString = function () {
+            return "{W: " + this.width + ", H: " + this.height + "}";
+        };
+        Size.prototype.getClassName = function () {
+            return "Size";
+        };
+        Size.prototype.getHashCode = function () {
+            var hash = this.width || 0;
+            hash = (hash * 397) ^ (this.height || 0);
+            return hash;
+        };
         Size.prototype.clone = function () {
             return new Size(this.width, this.height);
         };
@@ -1316,6 +1400,16 @@ var BABYLON;
         }
         Quaternion.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
+        };
+        Quaternion.prototype.getClassName = function () {
+            return "Quaternion";
+        };
+        Quaternion.prototype.getHashCode = function () {
+            var hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            hash = (hash * 397) ^ (this.w || 0);
+            return hash;
         };
         Quaternion.prototype.asArray = function () {
             return [this.x, this.y, this.z, this.w];
@@ -1799,6 +1893,16 @@ var BABYLON;
         Matrix.prototype.clone = function () {
             return Matrix.FromValues(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5], this.m[6], this.m[7], this.m[8], this.m[9], this.m[10], this.m[11], this.m[12], this.m[13], this.m[14], this.m[15]);
         };
+        Matrix.prototype.getClassName = function () {
+            return "Matrix";
+        };
+        Matrix.prototype.getHashCode = function () {
+            var hash = this.m[0] || 0;
+            for (var i = 1; i < 16; i++) {
+                hash = (hash * 397) ^ (this.m[i] || 0);
+            }
+            return hash;
+        };
         Matrix.prototype.decompose = function (scale, rotation, translation) {
             translation.x = this.m[12];
             translation.y = this.m[13];
@@ -2262,6 +2366,14 @@ var BABYLON;
         // Methods
         Plane.prototype.clone = function () {
             return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
+        };
+        Plane.prototype.getClassName = function () {
+            return "Plane";
+        };
+        Plane.prototype.getHashCode = function () {
+            var hash = this.normal.getHashCode();
+            hash = (hash * 397) ^ (this.d || 0);
+            return hash;
         };
         Plane.prototype.normalize = function () {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
