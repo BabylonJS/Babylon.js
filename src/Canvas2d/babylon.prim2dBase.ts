@@ -222,6 +222,75 @@
         }
     }
 
+    export class PrimitiveMargin {
+        constructor(owner: Prim2DBase) {
+            this._owner = owner;
+            this._left = this._top = this._bottom = this.right = 0;
+        }
+
+        public get top(): number {
+            return this._top;
+        }
+
+        public set top(value: number) {
+            if (value === this._top) {
+                return;
+            }
+
+            this._top = value;
+            this._owner._marginChanged();
+        }
+
+        public get left(): number {
+            return this._left;
+        }
+
+        public set left(value: number) {
+            if (value === this._left) {
+                return;
+            }
+
+            this._left = value;
+            this._owner._marginChanged();
+        }
+
+        public get right(): number {
+            return this._right;
+        }
+
+        public set right(value: number) {
+            if (value === this._right) {
+                return;
+            }
+
+            this._right = value;
+            this._owner._marginChanged();
+        }
+
+        public get bottom(): number {
+            return this._bottom;
+        }
+
+        public set bottom(value: number) {
+            if (value === this._bottom) {
+                return;
+            }
+
+            this._bottom = value;
+            this._owner._marginChanged();
+        }
+
+        private _owner: Prim2DBase;
+        private _top: number;
+        private _left: number;
+        private _right: number;
+        private _bottom: number;
+
+        static Zero(owner: Prim2DBase): PrimitiveMargin {
+            return new PrimitiveMargin(owner);
+        }
+    }
+
     /**
      * Main class used for the Primitive Intersection API
      */
@@ -294,11 +363,29 @@
      * Base class for a Primitive of the Canvas2D feature
      */
     export class Prim2DBase extends SmartPropertyPrim {
-        static PRIM2DBASE_PROPCOUNT: number = 10;
+        static PRIM2DBASE_PROPCOUNT: number = 12;
 
-        protected setupPrim2DBase(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean = true) {
+        public static get HAlignLeft():    number { return Prim2DBase._hAlignLeft;   }
+        public static get HAlignCenter():  number { return Prim2DBase._hAlignCenter; }
+        public static get HAlignRight():   number { return Prim2DBase._hAlignRight;  }
+        public static get HAlignStretch(): number { return Prim2DBase._hAlignStretch;}
+        public static get VAlignTop():     number { return Prim2DBase._vAlignTop;    }
+        public static get VAlignCenter():  number { return Prim2DBase._vAlignCenter; }
+        public static get VAlignBottom():  number { return Prim2DBase._vAlignBottom; }
+        public static get VAlignStretch(): number { return Prim2DBase._vAlignStretch;}
+
+        protected setupPrim2DBase(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number) {
             if (!(this instanceof Group2D) && !(this instanceof Sprite2D && id !== null && id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
                 throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
+            }
+
+            let m: PrimitiveMargin = null;
+            if (marginTop || marginLeft || marginRight || marginBottom) {
+                m = new PrimitiveMargin(this);
+                m.top    = marginTop    || 0;
+                m.left   = marginLeft   || 0;
+                m.right  = marginRight  || 0;
+                m.bottom = marginBottom || 0;
             }
 
             this.setupSmartPropertyPrim();
@@ -334,8 +421,10 @@
             this.scale = 1;
             this.levelVisible = isVisible;
             this.origin = origin || new Vector2(0.5, 0.5);
+            this.margin = m;
+            this.hAlignment = hAlignment;
+            this.vAlignment = vAlignment;
         }
-
 
         public get actionManager(): ActionManager {
             if (!this._actionManager) {
@@ -422,6 +511,21 @@
          * Metadata of the zOrder property
          */
         public static zOrderProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the margin property
+         */
+        public static marginProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the vAlignment property
+         */
+        public static vAlignmentProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the hAlignment property
+         */
+        public static hAlignmentProperty: Prim2DPropInfo;
 
         @instanceLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, true)
         /**
@@ -523,6 +627,46 @@
 
         public set zOrder(value: number) {
             this._zOrder = value;
+        }
+
+        @dynamicLevelProperty(8, pi => Prim2DBase.marginProperty = pi)
+        /**
+         * You can get/set a margin on the primitive through this property
+         * @returns the margin object, if there was none, a default one is created and returned
+         */
+        public get margin(): PrimitiveMargin {
+            if (!this._margin) {
+                this._margin = new PrimitiveMargin(this);
+            }
+            return this._margin;
+        }
+
+        public set margin(value: PrimitiveMargin) {
+            this._margin = value;
+        }
+
+        @dynamicLevelProperty(9, pi => Prim2DBase.hAlignmentProperty = pi)
+        /**
+         * You can get/set the horizontal alignment through this property
+         */
+        public get hAlignment(): number {
+            return this._hAlignment;
+        }
+
+        public set hAlignment(value: number) {
+            this._hAlignment = value;
+        }
+
+        @dynamicLevelProperty(10, pi => Prim2DBase.vAlignmentProperty = pi)
+        /**
+         * You can get/set the vertical alignment through this property
+         */
+        public get vAlignment(): number {
+            return this._vAlignment;
+        }
+
+        public set vAlignment(value: number) {
+            this._vAlignment = value;
         }
 
         /**
@@ -762,6 +906,10 @@
             }
         }
 
+        public _marginChanged() {
+            
+        }
+
         public _needPrepare(): boolean {
             return this._visibilityChanged || this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         }
@@ -876,6 +1024,15 @@
             }
         }
 
+        private static _hAlignLeft    = 1;
+        private static _hAlignCenter  = 2;
+        private static _hAlignRight   = 3;
+        private static _hAlignStretch = 4;
+        private static _vAlignTop     = 1;
+        private static _vAlignCenter  = 2;
+        private static _vAlignBottom  = 3;
+        private static _vAlignStretch = 4;
+
         private _owner: Canvas2D;
         private _parent: Prim2DBase;
         private _actionManager: ActionManager;
@@ -885,6 +1042,9 @@
         protected _hierarchyDepthOffset: number;
         protected _siblingDepthOffset: number;
         private _zOrder: number;
+        private _margin: PrimitiveMargin;
+        private _hAlignment: number;
+        private _vAlignment: number;
         private _levelVisible: boolean;
         public _pointerEventObservable: Observable<PrimitivePointerInfo>;
         public _boundingInfoDirty: boolean;

@@ -181,8 +181,8 @@
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number=64, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
-            this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
+        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.size = size;
             this.subdivisions = subdivisions;
         }
@@ -192,28 +192,38 @@
          * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * options:
          *  - id: a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - width: the width of the ellipse, default is 10
-         *  - height: the height of the ellipse, default is 10
+         *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
          *  - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
          *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
          *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
          *  - borderThickness: the thickness of the drawn border, default is 1.
+         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, options: { id?: string, x?: number, y?: number, origin?: Vector2, width?: number, height?: number, subdivisions?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number }): Ellipse2D {
+        public static Create(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, subdivisions?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Ellipse2D {
             Prim2DBase.CheckParent(parent);
 
-            let fill: IBrush2D;
-            if (options && options.fill !== undefined) {
-                fill = options.fill;
+            let ellipse = new Ellipse2D();
+
+            if (!options) {
+                ellipse.setupEllipse2D(parent.owner, parent, null, Vector2.Zero(), null, new Size(10, 10), 64, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
             } else {
-                fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+                let fill: IBrush2D;
+                if (!options.fill) {
+                    fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+                } else {
+                    fill = options.fill;
+                }
+                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
+                let size = options.size || (new Size(options.width || 10, options.height || 10));
+
+                ellipse.setupEllipse2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, options.subdivisions || 64, fill, options.border || null, options.borderThickness || 1, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
             }
 
-            let ellipse = new Ellipse2D();
-            ellipse.setupEllipse2D(parent.owner, parent, options && options.id || null, new Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, new Size(options && options.width || 10, options && options.height || 10), options && options.subdivisions || 64, fill, options && options.border || null, options && options.borderThickness || 1);
             return ellipse;
         }
 
