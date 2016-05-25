@@ -16,6 +16,8 @@ module BABYLON {
             this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
 
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
+            
+            this.rotationQuaternion = new Quaternion();
         }
 
         private _getWebVRDevices(devices: Array<any>): void {
