@@ -18,6 +18,7 @@ var BABYLON;
             metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
+            this.rotationQuaternion = new BABYLON.Quaternion();
         }
         WebVRFreeCamera.prototype._getWebVRDevices = function (devices) {
             var size = devices.length;
