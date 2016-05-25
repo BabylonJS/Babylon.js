@@ -230,7 +230,7 @@ var BABYLON;
         function Prim2DBase() {
             _super.apply(this, arguments);
         }
-        Prim2DBase.prototype.setupPrim2DBase = function (owner, parent, id, position, isVisible) {
+        Prim2DBase.prototype.setupPrim2DBase = function (owner, parent, id, position, origin, isVisible) {
             if (isVisible === void 0) { isVisible = true; }
             if (!(this instanceof BABYLON.Group2D) && !(this instanceof BABYLON.Sprite2D && id !== null && id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
                 throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
@@ -265,7 +265,7 @@ var BABYLON;
             this.rotation = 0;
             this.scale = 1;
             this.levelVisible = isVisible;
-            this.origin = new BABYLON.Vector2(0.5, 0.5);
+            this.origin = origin || new BABYLON.Vector2(0.5, 0.5);
         };
         Object.defineProperty(Prim2DBase.prototype, "actionManager", {
             get: function () {
@@ -628,7 +628,7 @@ var BABYLON;
             if (!_super.prototype.dispose.call(this)) {
                 return false;
             }
-            if (!this._actionManager) {
+            if (this._actionManager) {
                 this._actionManager.dispose();
                 this._actionManager = null;
             }

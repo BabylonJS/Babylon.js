@@ -32,17 +32,27 @@
             this._renderGroupInstancesInfo = new StringDictionary<GroupInstanceInfo>();
         }
 
-        static CreateGroup2D(parent: Prim2DBase, id: string, position: Vector2, size?: Size, cacheBehabior: number = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY): Group2D {
+        /**
+         * Create an Logical or Renderable Group.
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent, default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - size: the size of the group, if null the size will be computed from its content, default is null.
+         *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
+         */
+        static CreateGroup2D(parent: Prim2DBase, options: { id?: string, position?: Vector2; origin?: Vector2, size?: Size, cacheBehavior?: number}): Group2D {
             Prim2DBase.CheckParent(parent);
             var g = new Group2D();
-            g.setupGroup2D(parent.owner, parent, id, position, size, cacheBehabior);
+            g.setupGroup2D(parent.owner, parent, options && options.id || null, options && options.position || Vector2.Zero(), options && options.origin || null, options && options.size || null, options && options.cacheBehavior || Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
 
             return g;
         }
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
             var g = new Group2D();
-            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero());
+            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero(), null);
             g.origin = Vector2.Zero();
             return g;
             
@@ -98,9 +108,9 @@
             return true;
         }
 
-        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size?: Size, cacheBehavior: number = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
+        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size?: Size, cacheBehavior: number = Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
             this._cacheBehavior = cacheBehavior;
-            this.setupPrim2DBase(owner, parent, id, position);
+            this.setupPrim2DBase(owner, parent, id, position, origin);
             this.size = size;
             this._viewportPosition = Vector2.Zero();
         }
@@ -278,6 +288,7 @@
                     });
 
                     // Everything is updated, clear the dirty list
+                    this._primDirtyList.forEach(p => p._resetPropertiesDirty());
                     this._primDirtyList.splice(0);
                 }
             }
@@ -337,9 +348,9 @@
                                 engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesPartsBuffer[i]);
                                 engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
 
-                                v._dirtyInstancesData = false;
                             }
                         }
+                        v._dirtyInstancesData = false;
                     }
 
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)

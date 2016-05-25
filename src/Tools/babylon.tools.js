@@ -146,6 +146,43 @@ var BABYLON;
                 maximum: maximum
             };
         };
+        Tools.Vector2ArrayFeeder = function (array) {
+            return function (index) {
+                var isFloatArray = (array.BYTES_PER_ELEMENT !== undefined);
+                var length = isFloatArray ? array.length / 2 : array.length;
+                if (index >= length) {
+                    return null;
+                }
+                if (isFloatArray) {
+                    var fa = array;
+                    return new BABYLON.Vector2(fa[index * 2 + 0], fa[index * 2 + 1]);
+                }
+                var a = array;
+                return a[index];
+            };
+        };
+        Tools.ExtractMinAndMaxVector2 = function (feeder, bias) {
+            if (bias === void 0) { bias = null; }
+            var minimum = new BABYLON.Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new BABYLON.Vector2(-Number.MAX_VALUE, -Number.MAX_VALUE);
+            var i = 0;
+            var cur = feeder(i++);
+            while (cur) {
+                minimum = BABYLON.Vector2.Minimize(cur, minimum);
+                maximum = BABYLON.Vector2.Maximize(cur, maximum);
+                cur = feeder(i++);
+            }
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+            }
+            return {
+                minimum: minimum,
+                maximum: maximum
+            };
+        };
         Tools.MakeArray = function (obj, allowsNullUndefined) {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
                 return undefined;
@@ -794,12 +831,17 @@ var BABYLON;
         Tools.getClassName = function (object, isType) {
             if (isType === void 0) { isType = false; }
             var name = null;
-            if (object instanceof Object) {
-                var classObj = isType ? object : Object.getPrototypeOf(object);
-                name = classObj.constructor["__bjsclassName__"];
+            if (!isType && object.getClassName) {
+                name = object.getClassName();
             }
-            if (!name) {
-                name = typeof object;
+            else {
+                if (object instanceof Object) {
+                    var classObj = isType ? object : Object.getPrototypeOf(object);
+                    name = classObj.constructor["__bjsclassName__"];
+                }
+                if (!name) {
+                    name = typeof object;
+                }
             }
             return name;
         };
@@ -810,6 +852,43 @@ var BABYLON;
                     return el;
                 }
             }
+        };
+        /**
+         * This method can be used with hashCodeFromStream when your input is an array of values that are either: number, string, boolean or custom type implementing the getHashCode():number method.
+         * @param array
+         */
+        Tools.arrayOrStringFeeder = function (array) {
+            return function (index) {
+                if (index >= array.length) {
+                    return null;
+                }
+                var val = array.charCodeAt ? array.charCodeAt(index) : array[index];
+                if (val && val.getHashCode) {
+                    val = val.getHashCode();
+                }
+                if (typeof val === "string") {
+                    return Tools.hashCodeFromStream(Tools.arrayOrStringFeeder(val));
+                }
+                return val;
+            };
+        };
+        /**
+         * Compute the hashCode of a stream of number
+         * To compute the HashCode on a string or an Array of data types implementing the getHashCode() method, use the arrayOrStringFeeder method.
+         * @param feeder a callback that will be called until it returns null, each valid returned values will be used to compute the hash code.
+         * @return the hash code computed
+         */
+        Tools.hashCodeFromStream = function (feeder) {
+            // Based from here: http://stackoverflow.com/a/7616484/802124
+            var hash = 0;
+            var index = 0;
+            var chr = feeder(index++);
+            while (chr != null) {
+                hash = ((hash << 5) - hash) + chr;
+                hash |= 0; // Convert to 32bit integer
+                chr = feeder(index++);
+            }
+            return hash;
         };
         Tools.BaseUrl = "";
         Tools.CorsBehavior = "anonymous";
@@ -847,8 +926,8 @@ var BABYLON;
     }
     BABYLON.className = className;
     /**
-     * An implementation of a loop for asynchronous functions.
-     */
+    * An implementation of a loop for asynchronous functions.
+    */
     var AsyncLoop = (function () {
         /**
          * Constroctor.

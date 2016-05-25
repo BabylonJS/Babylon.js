@@ -1169,6 +1169,7 @@ var BABYLON;
             this.resetTextureCache();
             this._currentEffect = null;
             this._depthCullingState.reset();
+            this.setDepthFunctionToLessOrEqual();
             this._alphaState.reset();
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;

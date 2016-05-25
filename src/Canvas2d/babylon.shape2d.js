@@ -48,9 +48,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Shape2D.prototype.setupShape2D = function (owner, parent, id, position, isVisible, fill, border, borderThickness) {
+        Shape2D.prototype.setupShape2D = function (owner, parent, id, position, origin, isVisible, fill, border, borderThickness) {
             if (borderThickness === void 0) { borderThickness = 1.0; }
-            this.setupRenderablePrim2D(owner, parent, id, position, isVisible);
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible);
             this.border = border;
             this.fill = fill;
             this.borderThickness = borderThickness;

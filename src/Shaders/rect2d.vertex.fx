@@ -57,23 +57,52 @@ void main(void) {
 
 	// notRound case, only five vertices, 0 is center, then the 4 other for perimeter
 	if (properties.z == 0.0) {
-		if (index == 0.0) {
-			pos2 = vec2(0.5, 0.5);
-		} 
-		else if (index == 1.0) {
+#ifdef Border
+		float w = properties.x;
+		float h = properties.y;
+		vec2 borderOffset = vec2(1.0, 1.0);
+
+		float segi = index;
+		if (index < 4.0) {
+			borderOffset = vec2(1.0 - (borderThickness*2.0 / w), 1.0 - (borderThickness*2.0 / h));
+		}
+		else {
+			segi -= 4.0;
+		}
+
+		if (segi == 0.0) {
 			pos2 = vec2(1.0, 1.0);
 		} 
-		else if (index == 2.0) {
+		else if (segi == 1.0) {
 			pos2 = vec2(1.0, 0.0);
 		}
-		else if (index == 3.0) {
+		else if (segi == 2.0) {
 			pos2 = vec2(0.0, 0.0);
 		} 
 		else {
 			pos2 = vec2(0.0, 1.0);
 		}
+		pos2.x = ((pos2.x - 0.5) * borderOffset.x) + 0.5;
+		pos2.y = ((pos2.y - 0.5) * borderOffset.y) + 0.5;
+#else
+		if (index == 0.0) {
+			pos2 = vec2(0.5, 0.5);
+		}
+		else if (index == 1.0) {
+			pos2 = vec2(1.0, 1.0);
+		}
+		else if (index == 2.0) {
+			pos2 = vec2(1.0, 0.0);
+		}
+		else if (index == 3.0) {
+			pos2 = vec2(0.0, 0.0);
+		}
+		else {
+			pos2 = vec2(0.0, 1.0);
+		}
+#endif
 	}
-	else 
+	else
 	{
 #ifdef Border
 		float w = properties.x;
@@ -85,7 +114,7 @@ void main(void) {
 
 		float segi = index;
 		if (index < rsub) {
-			borderOffset = vec2(1.0-(borderThickness*2.0 / w), 1.0-(borderThickness*2.0 / h));
+			borderOffset = vec2(1.0 - (borderThickness*2.0 / w), 1.0 - (borderThickness*2.0 / h));
 		}
 		else {
 			segi -= rsub;

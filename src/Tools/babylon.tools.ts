@@ -184,6 +184,50 @@
             };
         }
 
+        public static Vector2ArrayFeeder(array: Array<Vector2>|Float32Array): (i) => Vector2 {
+            return (index: number) => {
+                let isFloatArray = ((<Float32Array>array).BYTES_PER_ELEMENT !== undefined);
+                let length = isFloatArray ? array.length / 2 : array.length; 
+
+                if (index >= length) {
+                    return null;
+                }
+
+                if (isFloatArray) {
+                    let fa = <Float32Array>array;
+                    return new Vector2(fa[index * 2 + 0], fa[index * 2 + 1]);
+                } 
+                let a = <Array<Vector2>>array;
+                return a[index];
+            };
+        }
+
+        public static ExtractMinAndMaxVector2(feeder: (index: number) => Vector2, bias: Vector2 = null) : { minimum: Vector2; maximum: Vector2 } {
+            var minimum = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new Vector2(-Number.MAX_VALUE, -Number.MAX_VALUE);
+
+            let i = 0;
+            let cur = feeder(i++);
+            while (cur) {
+                minimum = Vector2.Minimize(cur, minimum);
+                maximum = Vector2.Maximize(cur, maximum);
+
+                cur = feeder(i++);
+            }
+
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+            }
+
+            return {
+                minimum: minimum,
+                maximum: maximum
+            };
+        }
+
         public static MakeArray(obj, allowsNullUndefined?: boolean): Array<any> {
             if (allowsNullUndefined !== true && (obj === undefined || obj == null))
                 return undefined;
@@ -905,14 +949,18 @@
          */
         public static getClassName(object, isType: boolean = false): string {
             let name = null;
-            if (object instanceof Object) {
-                let classObj = isType ? object : Object.getPrototypeOf(object);
-                name = classObj.constructor["__bjsclassName__"];
-            }
-            if (!name) {
-                name = typeof object;
-            }
 
+            if (!isType && object.getClassName) {
+                name = object.getClassName();
+            } else {
+                if (object instanceof Object) {
+                    let classObj = isType ? object : Object.getPrototypeOf(object);
+                    name = classObj.constructor["__bjsclassName__"];
+                }
+                if (!name) {
+                    name = typeof object;
+                }
+            }
             return name;
         }
 
@@ -924,6 +972,46 @@
             }
         }
 
+        /**
+         * This method can be used with hashCodeFromStream when your input is an array of values that are either: number, string, boolean or custom type implementing the getHashCode():number method.
+         * @param array
+         */
+        public static arrayOrStringFeeder(array: any): (i) => number {
+            return (index: number) =>
+            {
+                if (index >= array.length) {
+                    return null;
+                }
+
+                let val = array.charCodeAt ? array.charCodeAt(index) : array[index];
+                if (val && val.getHashCode) {
+                    val = val.getHashCode();
+                }
+                if (typeof val === "string") {
+                    return Tools.hashCodeFromStream(Tools.arrayOrStringFeeder(val));
+                }
+                return val;
+            };
+        }
+
+        /**
+         * Compute the hashCode of a stream of number
+         * To compute the HashCode on a string or an Array of data types implementing the getHashCode() method, use the arrayOrStringFeeder method.
+         * @param feeder a callback that will be called until it returns null, each valid returned values will be used to compute the hash code.
+         * @return the hash code computed
+         */
+        public static hashCodeFromStream(feeder: (index: number) => number): number {
+            // Based from here: http://stackoverflow.com/a/7616484/802124
+            let hash = 0;
+            let index = 0;
+            let chr = feeder(index++);
+            while (chr != null) {
+                hash = ((hash << 5) - hash) + chr;
+                hash |= 0;                          // Convert to 32bit integer
+                chr = feeder(index++);
+            }
+            return hash;
+        }
     }
 
     /**
@@ -939,8 +1027,8 @@
     }
 
     /**
-     * An implementation of a loop for asynchronous functions.
-     */
+    * An implementation of a loop for asynchronous functions.
+    */
     export class AsyncLoop {
         public index: number;
         private _done: boolean;

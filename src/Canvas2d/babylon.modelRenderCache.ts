@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export const enum ShaderDataType {
-        Vector2, Vector3, Vector4, Matrix, float, Color3, Color4
+        Vector2, Vector3, Vector4, Matrix, float, Color3, Color4, Size
     }
 
     export class GroupInstanceInfo {

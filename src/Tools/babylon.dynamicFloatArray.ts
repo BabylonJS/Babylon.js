@@ -97,7 +97,7 @@
 
             let firstFreeSlotOffset = sortedFree[0].offset;
             let freeZoneSize = 1;
-            let occupiedZoneSize = this.usedElementCount * s;
+            let occupiedZoneSize = (this.usedElementCount+1) * s;
 
             let prevOffset = sortedFree[0].offset;
             for (let i = 1; i < sortedFree.length; i++) {
@@ -153,7 +153,7 @@
                 // Free Zone is smaller or equal so it's no longer a free zone, set the new one to the current location
                 if (freeZoneSize <= usedRange) {
                     firstFreeSlotOffset = curMoveOffset + s;
-                    freeZoneSize = 1;
+                    freeZoneSize = 1+copyCount;
                 }
 
                 // Free Zone was bigger, the firstFreeSlotOffset is already up to date, but we need to update its size

@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class Rectangle2DRenderCache extends ModelRenderCache {
+    export class Ellipse2DRenderCache extends ModelRenderCache {
         fillVB: WebGLBuffer;
         fillIB: WebGLBuffer;
         fillIndicesCount: number;
@@ -17,7 +17,7 @@
         }
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
-            // Do nothing if the shader is still loading/preparing
+            // Do nothing if the shader is still loading/preparing 
             if ((this.effectFill && !this.effectFill.isReady()) || (this.effectBorder && !this.effectBorder.isReady())) {
                 return false;
             }
@@ -130,7 +130,7 @@
         }
     }
 
-    export class Rectangle2DInstanceData extends Shape2DInstanceData {
+    export class Ellipse2DInstanceData extends Shape2DInstanceData {
         constructor(partId: number) {
             super(partId, 1);
         }
@@ -141,18 +141,17 @@
         }
     }
 
-    @className("Rectangle2D")
-    export class Rectangle2D extends Shape2D {
+    @className("Ellipse2D")
+    export class Ellipse2D extends Shape2D {
 
         public static sizeProperty: Prim2DPropInfo;
-        public static notRoundedProperty: Prim2DPropInfo;
-        public static roundRadiusProperty: Prim2DPropInfo;
+        public static subdivisionsProperty: Prim2DPropInfo;
 
         public get actualSize(): Size {
             return this.size;
         }
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.sizeProperty = pi, false, true)
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Ellipse2D.sizeProperty = pi, false, true)
         public get size(): Size {
             return this._size;
         }
@@ -161,92 +160,75 @@
             this._size = value;
         }
 
-        @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)
-        public get notRounded(): boolean {
-            return this._notRounded;
+        @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Ellipse2D.subdivisionsProperty = pi)
+        public get subdivisions(): number {
+            return this._subdivisions;
         }
 
-        public set notRounded(value: boolean) {
-            this._notRounded = value;
-        }
-
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 3, pi => Rectangle2D.roundRadiusProperty = pi)
-        public get roundRadius(): number {
-            return this._roundRadius;
-        }
-
-        public set roundRadius(value: number) {
-            this._roundRadius = value;
-            this.notRounded = value === 0;
+        public set subdivisions(value: number) {
+            this._subdivisions = value;
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
-            // If we got there it mean the boundingInfo intersection succeed, if the rectangle has not roundRadius, it means it succeed!
-            if (this.notRounded) {
-                return true;
-            }
-
-            // Well, for now we neglect the area where the pickPosition could be outside due to the roundRadius...
-            // TODO make REAL intersection test here!
-            return true;
+            let x = intersectInfo._localPickPosition.x;
+            let y = intersectInfo._localPickPosition.y;
+            let w = this.size.width/2;
+            let h = this.size.height/2;
+            return ((x * x) / (w * w) + (y * y) / (h * h)) <= 1;
         }
 
         protected updateLevelBoundingInfo() {
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius = 0, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
+        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number=64, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
             this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
             this.size = size;
-            this.notRounded = !roundRadius;
-            this.roundRadius = roundRadius;
+            this.subdivisions = subdivisions;
         }
 
         /**
-         * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
+         * Create an Ellipse 2D Shape primitive
          * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * options:
-         *  - id a text identifier, for information purpose
+         *  - id: a text identifier, for information purpose
          *  - x: the X position relative to its parent, default is 0
          *  - y: the Y position relative to its parent, default is 0
          *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - width: the width of the rectangle, default is 10
-         *  - height: the height of the rectangle, default is 10
-         *  - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp rectangle).
+         *  - width: the width of the ellipse, default is 10
+         *  - height: the height of the ellipse, default is 10
+         *  - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
          *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
          *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
          *  - borderThickness: the thickness of the drawn border, default is 1.
          */
-        public static Create(parent: Prim2DBase, options: { id?: string, x?: number, y?: number, origin?: Vector2, width?: number, height?: number, roundRadius?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number}): Rectangle2D {
+        public static Create(parent: Prim2DBase, options: { id?: string, x?: number, y?: number, origin?: Vector2, width?: number, height?: number, subdivisions?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number }): Ellipse2D {
             Prim2DBase.CheckParent(parent);
 
-            let rect = new Rectangle2D();
-            rect.setupRectangle2D(parent.owner, parent, options && options.id || null, new Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, new Size(options && options.width || 10, options && options.height || 10), options && options.roundRadius || 0);
-
+            let fill: IBrush2D;
             if (options && options.fill !== undefined) {
-                rect.fill = options.fill;
+                fill = options.fill;
             } else {
-                rect.fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");                
+                fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
             }
-            rect.border = options && options.border || null;
-            rect.borderThickness = options && options.borderThickness || 1;
-            return rect;
+
+            let ellipse = new Ellipse2D();
+            ellipse.setupEllipse2D(parent.owner, parent, options && options.id || null, new Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, new Size(options && options.width || 10, options && options.height || 10), options && options.subdivisions || 64, fill, options && options.border || null, options && options.borderThickness || 1);
+            return ellipse;
         }
 
-        public static roundSubdivisions = 16;
-
         protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey, isTransparent);
+            let renderCache = new Ellipse2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
         }
 
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache) {
-            let renderCache = <Rectangle2DRenderCache>modelRenderCache;
+            let renderCache = <Ellipse2DRenderCache>modelRenderCache;
             let engine = this.owner.engine;
 
             // Need to create WebGL resources for fill part?
             if (this.fill) {
-                let vbSize = ((this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4) + 1;
+                let vbSize = this.subdivisions + 1;
                 let vb = new Float32Array(vbSize);
                 for (let i = 0; i < vbSize; i++) {
                     vb[i] = i;
@@ -266,14 +248,12 @@
                 renderCache.fillIndicesCount = triCount * 3;
 
                 let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["index"]);
-                renderCache.effectFill = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, ei.uniforms, [], ei.defines, null, e => {
-//                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_FILLPARTID);
-                });
+                renderCache.effectFill = engine.createEffect({ vertex: "ellipse2d", fragment: "ellipse2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
             }
 
             // Need to create WebGL resource for border part?
             if (this.border) {
-                let vbSize = (this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4 * 2;
+                let vbSize = this.subdivisions * 2;
                 let vb = new Float32Array(vbSize);
                 for (let i = 0; i < vbSize; i++) {
                     vb[i] = i;
@@ -297,12 +277,10 @@
                 }
 
                 renderCache.borderIB = engine.createIndexBuffer(ib);
-                renderCache.borderIndicesCount = triCount * 3;
+                renderCache.borderIndicesCount = (triCount* 3);
 
                 let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["index"]);
-                renderCache.effectBorder = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, ei.uniforms, [], ei.defines, null, e => {
-//                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_BORDERPARTID);
-                });
+                renderCache.effectBorder = engine.createEffect({ vertex: "ellipse2d", fragment: "ellipse2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
             }
 
             return renderCache;
@@ -312,10 +290,10 @@
         protected createInstanceDataParts(): InstanceDataBase[] {
             var res = new Array<InstanceDataBase>();
             if (this.border) {
-                res.push(new Rectangle2DInstanceData(Shape2D.SHAPE2D_BORDERPARTID));
+                res.push(new Ellipse2DInstanceData(Shape2D.SHAPE2D_BORDERPARTID));
             }
             if (this.fill) {
-                res.push(new Rectangle2DInstanceData(Shape2D.SHAPE2D_FILLPARTID));
+                res.push(new Ellipse2DInstanceData(Shape2D.SHAPE2D_FILLPARTID));
             }
             return res;
         }
@@ -325,20 +303,19 @@
                 return false;
             }
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
-                let d = <Rectangle2DInstanceData>part;
+                let d = <Ellipse2DInstanceData>part;
                 let size = this.size;
-                d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
+                d.properties = new Vector3(size.width, size.height, this.subdivisions);
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
-                let d = <Rectangle2DInstanceData>part;
+                let d = <Ellipse2DInstanceData>part;
                 let size = this.size;
-                d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
+                d.properties = new Vector3(size.width, size.height, this.subdivisions);
             }
             return true;
         }
 
         private _size: Size;
-        private _notRounded: boolean;
-        private _roundRadius: number;
+        private _subdivisions: number;
     }
 }

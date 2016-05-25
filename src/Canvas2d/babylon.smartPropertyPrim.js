@@ -190,6 +190,16 @@ var BABYLON;
                 propDic.forEach(function (k, v) {
                     if (v.kind === Prim2DPropInfo.PROPKIND_MODEL) {
                         var propVal = _this[v.name];
+                        // Special case, array, this WON'T WORK IN ALL CASES, all entries have to be of the same type and it must be a BJS well known one
+                        if (propVal && propVal.constructor === Array) {
+                            var firstVal = propVal[0];
+                            if (!firstVal) {
+                                propVal = 0;
+                            }
+                            else {
+                                propVal = BABYLON.Tools.hashCodeFromStream(BABYLON.Tools.arrayOrStringFeeder(propVal));
+                            }
+                        }
                         modelKey += v.name + ":" + ((propVal != null) ? ((v.typeLevelCompare) ? BABYLON.Tools.getClassName(propVal) : propVal.toString()) : "[null]") + ";";
                     }
                 });
@@ -349,6 +359,9 @@ var BABYLON;
         SmartPropertyPrim.prototype.clearPropertiesDirty = function (flags) {
             this._instanceDirtyFlags &= ~flags;
             return this._instanceDirtyFlags;
+        };
+        SmartPropertyPrim.prototype._resetPropertiesDirty = function () {
+            this._instanceDirtyFlags = 0;
         };
         Object.defineProperty(SmartPropertyPrim.prototype, "levelBoundingInfo", {
             /**
