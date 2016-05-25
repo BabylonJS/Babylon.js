@@ -229,6 +229,7 @@
       "../../src/Materials/Textures/babylon.hdrCubeTexture.js",
       "../../src/Debug/babylon.skeletonViewer.js",
       "../../src/Materials/Textures/babylon.colorGradingTexture.js",
+      "../../src/Materials/babylon.colorCurves.js",
       "../../src/Materials/babylon.pbrMaterial.js",      
       "../../src/Debug/babylon.debugLayer.js"
     ]

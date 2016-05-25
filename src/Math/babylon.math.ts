@@ -304,7 +304,31 @@
 
             return this;
         }
-
+        
+       /**
+         * Multipy an RGBA Color4 value by another and return a new Color4 object
+         * @param color The Color4 (RGBA) value to multiply by
+         * @returns A new Color4.
+         */
+        public multiply(color: Color4): Color4 {
+            return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
+        }
+        
+        /**
+         * Multipy an RGBA Color4 value by another and push the result in a reference value
+         * @param color The Color4 (RGBA) value to multiply by
+         * @param result The Color4 (RGBA) to fill the result in 
+         * @returns the result Color4.
+         */
+        public multiplyToRef(color: Color4, result: Color4): Color4 {
+            result.r = this.r * color.r;
+            result.g = this.g * color.g;
+            result.b = this.b * color.b;
+            result.a = this.a * color.a;
+            
+            return result;
+        }
+        
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
