@@ -759,6 +759,17 @@
             }
         }
 
+        /**
+         * Invert the geometry to move from a right handed system to a left handed one.
+         */
+        public toLeftHanded(): void {
+            if (!this._geometry) {
+                return;
+            }
+
+            this._geometry.toLeftHanded();
+        }
+
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void {
             var engine = this.getScene().getEngine();
 

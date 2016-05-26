@@ -427,6 +427,41 @@
             }, () => { }, scene.database);
         }
 
+        /**
+         * Invert the geometry to move from a right handed system to a left handed one.
+         */
+        public toLeftHanded(): void {
+
+            // Flip faces
+            let tIndices = this.getIndices(false);
+            if (tIndices != null && tIndices.length > 0) {
+                for (let i = 0; i < tIndices.length; i += 3) {
+                    let tTemp = tIndices[i + 0];
+                    tIndices[i + 0] = tIndices[i + 2];
+                    tIndices[i + 2] = tTemp;
+                }
+                this.setIndices(tIndices);
+            }
+
+            // Negate position.z
+            let tPositions = this.getVerticesData(VertexBuffer.PositionKind, false);
+            if (tPositions != null && tPositions.length > 0) {
+                for (let i = 0; i < tPositions.length; i += 3) {
+                    tPositions[i + 2] = -tPositions[i + 2];
+                }
+                this.setVerticesData(VertexBuffer.PositionKind, tPositions, false);
+            }
+
+            // Negate normal.z
+            let tNormals = this.getVerticesData(VertexBuffer.NormalKind, false);
+            if (tNormals != null && tNormals.length > 0) {
+                for (let i = 0; i < tNormals.length; i += 3) {
+                    tNormals[i + 2] = -tNormals[i + 2];
+                }
+                this.setVerticesData(VertexBuffer.NormalKind, tNormals, false);
+            }
+        }
+
         public isDisposed(): boolean {
             return this._isDisposed;
         }
