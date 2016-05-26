@@ -355,6 +355,7 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 
             # Lamp / shadow Generator pass; meshesAnNodes complete & forceParents included
             for object in [object for object in scene.objects]:
+                scene.frame_set(currentFrame)
                 if object.type == 'LAMP':
                     if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
                         bulb = Light(object)
