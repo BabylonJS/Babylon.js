@@ -345,6 +345,37 @@ var BABYLON;
                 }
             }, function () { }, scene.database);
         };
+        /**
+         * Invert the geometry to move from a right handed system to a left handed one.
+         */
+        Geometry.prototype.toLeftHanded = function () {
+            // Flip faces
+            var tIndices = this.getIndices(false);
+            if (tIndices != null && tIndices.length > 0) {
+                for (var i = 0; i < tIndices.length; i += 3) {
+                    var tTemp = tIndices[i + 0];
+                    tIndices[i + 0] = tIndices[i + 2];
+                    tIndices[i + 2] = tTemp;
+                }
+                this.setIndices(tIndices);
+            }
+            // Negate position.z
+            var tPositions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind, false);
+            if (tPositions != null && tPositions.length > 0) {
+                for (var i = 0; i < tPositions.length; i += 3) {
+                    tPositions[i + 2] = -tPositions[i + 2];
+                }
+                this.setVerticesData(BABYLON.VertexBuffer.PositionKind, tPositions, false);
+            }
+            // Negate normal.z
+            var tNormals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind, false);
+            if (tNormals != null && tNormals.length > 0) {
+                for (var i = 0; i < tNormals.length; i += 3) {
+                    tNormals[i + 2] = -tNormals[i + 2];
+                }
+                this.setVerticesData(BABYLON.VertexBuffer.NormalKind, tNormals, false);
+            }
+        };
         Geometry.prototype.isDisposed = function () {
             return this._isDisposed;
         };

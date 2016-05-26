@@ -715,6 +715,15 @@ var BABYLON;
                 this._geometry.setIndices(indices, totalVertices);
             }
         };
+        /**
+         * Invert the geometry to move from a right handed system to a left handed one.
+         */
+        Mesh.prototype.toLeftHanded = function () {
+            if (!this._geometry) {
+                return;
+            }
+            this._geometry.toLeftHanded();
+        };
         Mesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
             // Wireframe
