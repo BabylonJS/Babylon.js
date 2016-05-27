@@ -1834,6 +1834,8 @@
             if (generateDepthBuffer) {
                 texture._depthBuffer = depthBuffer;
             }
+            texture._baseWidth = width;
+            texture._baseHeight = height;
             texture._width = width;
             texture._height = height;
             texture.isReady = true;
