@@ -1,14 +1,28 @@
 ﻿module BABYLON {
-    export class VertexBuffer {
-        private _mesh: Mesh;
+    export interface IVertexBuffer extends IDisposable {
+        getKind(): string;
+        getStrideSize(): number;
+        getData(): number[] | Float32Array;
+        getBuffer(): WebGLBuffer;
+        getOffset(): number;
+        getSize(): number;
+        getIsInstanced(): boolean;
+        isUpdatable(): boolean;
+        create(data?: number[] | Float32Array): void;
+        update(data: number[] | Float32Array): void;
+        updateDirectly(data: Float32Array, offset: number): void;
+    }
+
+    export class VertexBuffer implements IVertexBuffer {
         private _engine: Engine;
         private _buffer: WebGLBuffer;
         private _data: number[] | Float32Array;
         private _updatable: boolean;
         private _kind: string;
         private _strideSize: number;
+        private _instanced: boolean;
 
-        constructor(engine: any, data: number[] | Float32Array, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number) {
+        constructor(engine: any, data: number[] | Float32Array, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
             }
@@ -19,6 +33,8 @@
             this._updatable = updatable;
 
             this._data = data;
+
+            this._instanced = instanced;
 
             if (!postponeInternalCreation) { // by default
                 this.create();
@@ -66,6 +82,10 @@
             return this._updatable;
         }
 
+        public getKind(): string {
+            return this._kind;
+        }
+
         public getData(): number[] | Float32Array {
             return this._data;
         }
@@ -78,6 +98,18 @@
             return this._strideSize;
         }
 
+        public getOffset(): number {
+            return 0;
+        }
+
+        public getSize(): number {
+            return this._strideSize;
+        }
+
+        public getIsInstanced(): boolean {
+            return this._instanced;
+        }
+
         // Methods
         public create(data?: number[] | Float32Array): void {
             if (!data && this._buffer) {
@@ -88,7 +120,7 @@
 
             if (!this._buffer) { // create buffer
                 if (this._updatable) {
-                    this._buffer = this._engine.createDynamicVertexBuffer(data.length * 4);
+                    this._buffer = this._engine.createDynamicVertexBuffer(data);
                 } else {
                     this._buffer = this._engine.createVertexBuffer(data);
                 }

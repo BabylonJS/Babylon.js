@@ -22,7 +22,7 @@
         private _vb0: VertexBuffer;
         private _vb1: VertexBuffer;
         private _ib: WebGLBuffer;
-        private _buffers = new Array<VertexBuffer>();
+        private _buffers: { [key: string]: IVertexBuffer; } = {};
         private _checkVerticesInsteadOfIndices = false;
 
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
@@ -282,7 +282,7 @@
             this._lineShader._preBind();
 
             // VBOs
-            engine.bindMultiBuffers(this._buffers, this._ib, this._lineShader.getEffect());
+            engine.bindBuffers(this._buffers, this._ib, this._lineShader.getEffect());
 
             scene.resetCachedMaterial();
             this._lineShader.setColor4("color", this._source.edgesColor);

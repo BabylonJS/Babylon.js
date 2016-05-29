@@ -9,12 +9,10 @@
 
         public onGenerated: () => void;
 
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexBuffer: VertexBuffer;
+        private _vertexBuffers: { [key: string]: IVertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
-
-        private _vertexDeclaration = [2];
-        private _vertexStrideSize = 2 * 4;
 
         private _uniforms = new Array<string>();
         private _samplers = new Array<string>();
@@ -47,12 +45,14 @@
 
             this._fallbackTexture = fallbackTexture;
 
+            var engine = scene.getEngine();
+
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
                 this.setFloat("face", 0);
             }
             else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+                this._texture = engine.createRenderTargetTexture(size, generateMipMaps);
             }
 
             // VBO
@@ -62,7 +62,8 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+            this._vertexBuffers[VertexBuffer.PositionKind] = this._vertexBuffer;
 
             // Indices
             var indices = [];
@@ -74,7 +75,7 @@
             indices.push(2);
             indices.push(3);
 
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
         }
 
         public reset(): void {
@@ -106,7 +107,7 @@
             }
 
             this._effect = engine.createEffect(shaders,
-                ["position"],
+                [VertexBuffer.PositionKind],
                 this._uniforms,
                 this._samplers,
                 "", null, null, () => {
@@ -291,7 +292,7 @@
             }            
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
