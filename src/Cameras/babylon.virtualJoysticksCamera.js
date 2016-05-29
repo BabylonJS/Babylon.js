@@ -13,6 +13,6 @@ var BABYLON;
             this.inputs.addVirtualJoystick();
         }
         return VirtualJoysticksCamera;
-    })(BABYLON.FreeCamera);
+    }(BABYLON.FreeCamera));
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
 })(BABYLON || (BABYLON = {}));
