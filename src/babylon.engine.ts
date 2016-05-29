@@ -340,7 +340,8 @@
         private _activeTexturesCache = new Array<BaseTexture>(this._maxTextureChannels);
         private _currentEffect: Effect;
         private _compiledEffects = {};
-        private _vertexAttribArrays: boolean[];
+        private _vertexAttribArraysEnabled: boolean[];
+        private _vertexAttribArraysToUse: boolean[];
         private _cachedViewport: Viewport;
         private _cachedVertexBuffers: any;
         private _cachedIndexBuffer: WebGLBuffer;
@@ -1234,29 +1235,40 @@
                 return;
             }
 
-            this._vertexAttribArrays = this._vertexAttribArrays || [];
+            this._vertexAttribArraysToUse = this._vertexAttribArraysToUse || [];
+            this._vertexAttribArraysEnabled = this._vertexAttribArraysEnabled || [];
 
             // Use program
             this._gl.useProgram(effect.getProgram());
 
-            for (var i in this._vertexAttribArrays) {
-                //make sure this is a number)
-                var iAsNumber = +i;
-                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
-                    continue;
-                }
-                this._vertexAttribArrays[iAsNumber] = false;
-                this._gl.disableVertexAttribArray(iAsNumber);
+            var i, ul;
+            for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
+                this._vertexAttribArraysToUse[i] = false;
             }
 
             var attributesCount = effect.getAttributesCount();
-            for (var index = 0; index < attributesCount; index++) {
+            for (i = 0; i < attributesCount; i++) {
                 // Attributes
-                var order = effect.getAttributeLocation(index);
+                var order = effect.getAttributeLocation(i);
 
                 if (order >= 0) {
-                    this._vertexAttribArrays[order] = true;
-                    this._gl.enableVertexAttribArray(order);
+                    this._vertexAttribArraysToUse[order] = true;
+                }
+            }
+
+            for (i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArraysEnabled[i] || this._vertexAttribArraysToUse[i]) {
+                    continue;
+                }
+                this._vertexAttribArraysEnabled[i] = false;
+                this._gl.disableVertexAttribArray(i);
+            }
+
+
+            for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
+                if (this._vertexAttribArraysToUse[i] && !this._vertexAttribArraysEnabled[i]) {
+                    this._vertexAttribArraysEnabled[i] = true;
+                    this._gl.enableVertexAttribArray(i);
                 }
             }
 
@@ -2390,13 +2402,13 @@
             }
 
             // Unbind
-            for (var i in this._vertexAttribArrays) {
-                //making sure this is a string
-                var iAsNumber = +i;
-                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
-                    continue;
+            if (this._vertexAttribArraysEnabled) {
+                for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+                    if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArraysEnabled[i]) {
+                        continue;
+                    }
+                    this._gl.disableVertexAttribArray(i);
                 }
-                this._gl.disableVertexAttribArray(iAsNumber);
             }
 
             this._gl = null;
