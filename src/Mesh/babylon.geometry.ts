@@ -12,12 +12,12 @@
         private _meshes: Mesh[];
         private _totalVertices = 0;
         private _indices: number[] | Int32Array;
-        private _vertexBuffers;
+        private _vertexBuffers: { [key: string]: IVertexBuffer; };
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
         public _delayInfo; //ANY
-        private _indexBuffer;
+        private _indexBuffer: WebGLBuffer;
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
@@ -92,18 +92,26 @@
         }
 
         public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): void {
+            var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
+
+            this.setVerticesBuffer(buffer);
+        }
+
+        public setVerticesBuffer(buffer: IVertexBuffer): void {
+            var kind = buffer.getKind();
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
             }
 
-            this._vertexBuffers[kind] = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
+            this._vertexBuffers[kind] = buffer;
 
             if (kind === VertexBuffer.PositionKind) {
-                stride = this._vertexBuffers[kind].getStrideSize();
+                var data = buffer.getData();
+                var stride = buffer.getStrideSize();
 
                 this._totalVertices = data.length / stride;
 
-                this.updateExtend(data);
+                this.updateExtend(data, stride);
 
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
@@ -116,6 +124,7 @@
                     mesh.computeWorldMatrix(true);
                 }
             }
+
             this.notifyUpdate(kind);
         }
 
@@ -198,14 +207,14 @@
             }
         }
 
-        public getVertexBuffer(kind: string): VertexBuffer {
+        public getVertexBuffer(kind: string): IVertexBuffer {
             if (!this.isReady()) {
                 return null;
             }
             return this._vertexBuffers[kind];
         }
 
-        public getVertexBuffers(): VertexBuffer[] {
+        public getVertexBuffers(): { [key: string]: IVertexBuffer; } {
             if (!this.isReady()) {
                 return null;
             }
@@ -285,7 +294,7 @@
             }
         }
 
-        public getIndexBuffer(): any {
+        public getIndexBuffer(): WebGLBuffer {
             if (!this.isReady()) {
                 return null;
             }
@@ -344,12 +353,12 @@
             }
         }
 
-        private updateExtend(data = null) {
+        private updateExtend(data = null, stride? : number) {
             if (!data) {
                 data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
 
-            this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias);
+            this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias, stride);
         }
 
         private _applyToMesh(mesh: Mesh): void {
@@ -360,7 +369,7 @@
                 if (numOfMeshes === 1) {
                     this._vertexBuffers[kind].create();
                 }
-                this._vertexBuffers[kind]._buffer.references = numOfMeshes;
+                this._vertexBuffers[kind].getBuffer().references = numOfMeshes;
 
                 if (kind === VertexBuffer.PositionKind) {
                     mesh._resetPointsArrayCache();
@@ -378,7 +387,7 @@
             }
 
             // indexBuffer
-            if (numOfMeshes === 1 && this._indices) {
+            if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
                 this._indexBuffer = this._engine.createIndexBuffer(this._indices);
             }
             if (this._indexBuffer) {
@@ -478,7 +487,7 @@
             for (var kind in this._vertexBuffers) {
                 this._vertexBuffers[kind].dispose();
             }
-            this._vertexBuffers = [];
+            this._vertexBuffers = {};
             this._totalVertices = 0;
 
             if (this._indexBuffer) {

@@ -40,7 +40,7 @@
                 let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
 
                 engine.enableEffect(this.effectFill);
-                engine.bindBuffers(this.fillVB, this.fillIB, [1], 4, this.effectFill);
+                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [1], 4, this.effectFill);
                 let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
                 if (instanceInfo._owner.owner.supportInstancedArray) {
                     if (!this.instancingFillAttributes) {
@@ -50,7 +50,7 @@
 
                     engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
                     engine.draw(true, 0, this.fillIndicesCount, count);
-                    engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingFillAttributes);
+                    engine.unbindInstanceAttributes();
                 } else {
                     for (let i = 0; i < count; i++) {
                         this.setupUniforms(this.effectFill, partIndex, instanceInfo._instancesPartsData[partIndex], i);
@@ -63,7 +63,7 @@
                 let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_BORDERPARTID.toString());
 
                 engine.enableEffect(this.effectBorder);
-                engine.bindBuffers(this.borderVB, this.borderIB, [1], 4, this.effectBorder);
+                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [1], 4, this.effectBorder);
                 let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
                 if (instanceInfo._owner.owner.supportInstancedArray) {
                     if (!this.instancingBorderAttributes) {
@@ -72,7 +72,7 @@
 
                     engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
                     engine.draw(true, 0, this.borderIndicesCount, count);
-                    engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingBorderAttributes);
+                    engine.unbindInstanceAttributes();
                 } else {
                     for (let i = 0; i < count; i++) {
                         this.setupUniforms(this.effectBorder, partIndex, instanceInfo._instancesPartsData[partIndex], i);

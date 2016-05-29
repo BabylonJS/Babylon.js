@@ -104,12 +104,15 @@
         public _geometry: Geometry;
         public _delayInfo; //ANY
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
+
         public _visibleInstances: any = {};
         private _renderIdForInstances = new Array<number>();
         private _batchCache = new _InstancesBatch();
-        private _worldMatricesInstancesBuffer: WebGLBuffer;
-        private _worldMatricesInstancesArray: Float32Array;
         private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
+        private _instancesBuffer: InterleavedBuffer;
+        private _instancesData: Float32Array;
+        private _overridenInstanceCount: number;
+
         public _shouldGenerateFlatShading: boolean;
         private _preActivateId: number;
         private _sideOrientation: number = Mesh._DEFAULTSIDE;
@@ -384,7 +387,7 @@
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
-        public getVertexBuffer(kind): VertexBuffer {
+        public getVertexBuffer(kind): IVertexBuffer {
             if (!this._geometry) {
                 return undefined;
             }
@@ -529,6 +532,13 @@
             this._areNormalsFrozen = false;
         }
 
+        /**
+         * Overrides instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshs
+         */
+        public set OverridenInstanceCount(count: number) {
+            this._overridenInstanceCount = count;
+        }
+
         // Methods
         public _preActivate(): void {
             var sceneRenderId = this.getScene().getRenderId();
@@ -657,6 +667,16 @@
             else {
                 this._geometry.setVerticesData(kind, data, updatable, stride);
             }
+        }
+
+        public setVerticesBuffer(buffer: IVertexBuffer): void {
+            if (!this._geometry) {
+                var scene = this.getScene();
+
+                new Geometry(Geometry.RandomId(), scene).applyToMesh(this);
+            }
+
+            this._geometry.setVerticesBuffer(buffer);
         }
 
         /**
@@ -794,7 +814,7 @@
             }
 
             // VBOs
-            engine.bindMultiBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
+            engine.bindBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
         }
 
         public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void {
@@ -900,17 +920,15 @@
             var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
+            var currentInstancesBufferSize = this._instancesBufferSize;
+            var instancesBuffer = this._instancesBuffer;
+
             while (this._instancesBufferSize < bufferSize) {
                 this._instancesBufferSize *= 2;
             }
 
-            if (!this._worldMatricesInstancesBuffer || this._worldMatricesInstancesBuffer.capacity < this._instancesBufferSize) {
-                if (this._worldMatricesInstancesBuffer) {
-                    engine.deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
-                }
-
-                this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(this._instancesBufferSize);
-                this._worldMatricesInstancesArray = new Float32Array(this._instancesBufferSize / 4);
+            if (!this._instancesData || currentInstancesBufferSize != this._instancesBufferSize) {
+                this._instancesData = new Float32Array(this._instancesBufferSize / 4);
             }
 
             var offset = 0;
@@ -918,33 +936,41 @@
 
             var world = this.getWorldMatrix();
             if (batch.renderSelf[subMesh._id]) {
-                world.copyToArray(this._worldMatricesInstancesArray, offset);
+                world.copyToArray(this._instancesData, offset);
                 offset += 16;
                 instancesCount++;
             }
 
-
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix().copyToArray(this._worldMatricesInstancesArray, offset);
+                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
             }
 
-            var offsetLocation0 = effect.getAttributeLocationByName("world0");
-            var offsetLocation1 = effect.getAttributeLocationByName("world1");
-            var offsetLocation2 = effect.getAttributeLocationByName("world2");
-            var offsetLocation3 = effect.getAttributeLocationByName("world3");
+            if (!instancesBuffer || currentInstancesBufferSize != this._instancesBufferSize) {
+                if (instancesBuffer) {
+                    instancesBuffer.dispose();
+                }
 
-            var offsetLocations = [offsetLocation0, offsetLocation1, offsetLocation2, offsetLocation3];
+                instancesBuffer = new BABYLON.InterleavedBuffer(engine, this._instancesData, true, 16, false, true);
+                this._instancesBuffer = instancesBuffer;
 
-            engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocations);
+                this.setVerticesBuffer(new BABYLON.InterleavedVertexBuffer(instancesBuffer, "world0", 4, 0));
+                this.setVerticesBuffer(new BABYLON.InterleavedVertexBuffer(instancesBuffer, "world1", 4, 4));
+                this.setVerticesBuffer(new BABYLON.InterleavedVertexBuffer(instancesBuffer, "world2", 4, 8));
+                this.setVerticesBuffer(new BABYLON.InterleavedVertexBuffer(instancesBuffer, "world3", 4, 12));
+
+                engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
+            } else {
+                instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
+            }
 
             this._draw(subMesh, fillMode, instancesCount);
 
-            engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
+            engine.unbindInstanceAttributes();
         }
 
         public _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
@@ -961,7 +987,7 @@
                         onBeforeDraw(false, this.getWorldMatrix());
                     }
 
-                    this._draw(subMesh, fillMode);
+                    this._draw(subMesh, fillMode, this._overridenInstanceCount);
                 }
 
                 if (batch.visibleInstances[subMesh._id]) {
@@ -1298,9 +1324,9 @@
             }
 
             // Instances
-            if (this._worldMatricesInstancesBuffer) {
-                this.getEngine().deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
-                this._worldMatricesInstancesBuffer = null;
+            if (this._instancesBuffer) {
+                this._instancesBuffer.dispose();
+                this._instancesBuffer = null;
             }
 
             while (this.instances.length) {
