@@ -2149,6 +2149,10 @@
 
 
         public _bindTexture(channel: number, texture: WebGLTexture): void {
+            if (channel < 0) {
+                return;
+            }
+
             this._gl.activeTexture(this._gl["TEXTURE" + channel]);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
