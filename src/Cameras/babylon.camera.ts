@@ -295,6 +295,9 @@
                     }               
                     cam._postProcesses = this._postProcesses.slice(0).concat(rigPostProcess);
                     rigPostProcess.markTextureDirty();
+                    
+                }else{
+                    cam._postProcesses = this._postProcesses.slice(0);
                 }
             }
         }
