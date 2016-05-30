@@ -27,8 +27,8 @@
         private _scene: Scene;
 
         private _vertexData: Float32Array;
-        private _vertexBuffer: InterleavedBuffer;
-        private _vertexBuffers: { [key: string]: IVertexBuffer } = {};
+        private _buffer: Buffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effectBase: Effect;
         private _effectFog: Effect;
@@ -69,12 +69,12 @@
             // VBO
             // 16 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color r, color g, color b, color a)
             this._vertexData = new Float32Array(capacity * 16);
-            this._vertexBuffer = new InterleavedBuffer(scene.getEngine(), this._vertexData, true, 16);
+            this._buffer = new Buffer(scene.getEngine(), this._vertexData, true, 16);
 
-            var positions = new InterleavedVertexBuffer(this._vertexBuffer, VertexBuffer.PositionKind, 4, 0);
-            var options = new InterleavedVertexBuffer(this._vertexBuffer, "options", 4, 4);
-            var cellInfo = new InterleavedVertexBuffer(this._vertexBuffer, "cellInfo", 4, 8);
-            var colors = new InterleavedVertexBuffer(this._vertexBuffer, VertexBuffer.ColorKind, 4, 12);
+            var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4);
+            var options = this._buffer.createVertexBuffer("options", 4, 4);
+            var cellInfo = this._buffer.createVertexBuffer("cellInfo", 8, 4);
+            var colors = this._buffer.createVertexBuffer(VertexBuffer.ColorKind, 12, 4);
 
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
             this._vertexBuffers["options"] = options;
@@ -208,7 +208,7 @@
                 this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
                 this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
             }
-            this._vertexBuffer.update(this._vertexData);
+            this._buffer.update(this._vertexData);
 
             // Render
             var effect = this._effectBase;
@@ -249,9 +249,9 @@
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._vertexBuffer.dispose();
-                this._vertexBuffer = null;
+            if (this._buffer) {
+                this._buffer.dispose();
+                this._buffer = null;
             }
 
             if (this._indexBuffer) {

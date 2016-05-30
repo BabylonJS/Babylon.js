@@ -983,7 +983,7 @@
             }
         }
 
-        public bindBuffers(vertexBuffers: { [key: string]: IVertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
+        public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;

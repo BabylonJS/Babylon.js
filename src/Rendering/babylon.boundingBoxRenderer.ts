@@ -7,8 +7,7 @@
 
         private _scene: Scene;
         private _colorShader: ShaderMaterial;
-        private _vertexBuffer: VertexBuffer;
-        private _vertexBuffers: { [key: string]: IVertexBuffer } = {};
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
 
         constructor(scene: Scene) {
@@ -29,8 +28,7 @@
 
             var engine = this._scene.getEngine();
             var boxdata = VertexData.CreateBox(1.0);
-            this._vertexBuffer = new VertexBuffer(engine, boxdata.positions, VertexBuffer.PositionKind, false);
-            this._vertexBuffers[VertexBuffer.PositionKind] = this._vertexBuffer;
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, boxdata.positions, VertexBuffer.PositionKind, false);
             this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
         }
 
@@ -97,7 +95,12 @@
             }
 
             this._colorShader.dispose();
-            this._vertexBuffer.dispose();
+
+            var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
+            }
             this._scene.getEngine()._releaseBuffer(this._indexBuffer);
         }
     }

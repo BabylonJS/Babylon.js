@@ -2,15 +2,14 @@
     export class PostProcessManager {
         private _scene: Scene;
         private _indexBuffer: WebGLBuffer;
-        private _vertexBuffer: VertexBuffer;
-        private _vertexBuffers: { [key: string]: IVertexBuffer } = {};
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
 
         constructor(scene: Scene) {
             this._scene = scene;
         }
 
         private _prepareBuffers(): void {
-            if (this._vertexBuffer) {
+            if (this._vertexBuffers[VertexBuffer.PositionKind]) {
                 return;
             }
 
@@ -21,8 +20,7 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = new VertexBuffer(this._scene.getEngine(), vertices, VertexBuffer.PositionKind, false, false, 2);
-            this._vertexBuffers[VertexBuffer.PositionKind] = this._vertexBuffer;
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._scene.getEngine(), vertices, VertexBuffer.PositionKind, false, false, 2);
 
             // Indices
             var indices = [];
@@ -130,9 +128,10 @@
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._vertexBuffer.dispose();
-                this._vertexBuffer = null;
+            var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
             }
 
             if (this._indexBuffer) {

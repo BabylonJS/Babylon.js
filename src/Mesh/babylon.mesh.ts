@@ -109,7 +109,7 @@
         private _renderIdForInstances = new Array<number>();
         private _batchCache = new _InstancesBatch();
         private _instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
-        private _instancesBuffer: InterleavedBuffer;
+        private _instancesBuffer: Buffer;
         private _instancesData: Float32Array;
         private _overridenInstanceCount: number;
 
@@ -387,7 +387,7 @@
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
-        public getVertexBuffer(kind): IVertexBuffer {
+        public getVertexBuffer(kind): VertexBuffer {
             if (!this._geometry) {
                 return undefined;
             }
@@ -535,7 +535,7 @@
         /**
          * Overrides instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshs
          */
-        public set OverridenInstanceCount(count: number) {
+        public set overridenInstanceCount(count: number) {
             this._overridenInstanceCount = count;
         }
 
@@ -669,7 +669,7 @@
             }
         }
 
-        public setVerticesBuffer(buffer: IVertexBuffer): void {
+        public setVerticesBuffer(buffer: VertexBuffer): void {
             if (!this._geometry) {
                 var scene = this.getScene();
 
@@ -955,13 +955,13 @@
                     instancesBuffer.dispose();
                 }
 
-                instancesBuffer = new BABYLON.InterleavedBuffer(engine, this._instancesData, true, 16, false, true);
+                instancesBuffer = new BABYLON.Buffer(engine, this._instancesData, true, 16, false, true);
                 this._instancesBuffer = instancesBuffer;
 
-                this.setVerticesBuffer(new BABYLON.InterleavedVertexBuffer(instancesBuffer, "world0", 4, 0));
-                this.setVerticesBuffer(new BABYLON.InterleavedVertexBuffer(instancesBuffer, "world1", 4, 4));
-                this.setVerticesBuffer(new BABYLON.InterleavedVertexBuffer(instancesBuffer, "world2", 4, 8));
-                this.setVerticesBuffer(new BABYLON.InterleavedVertexBuffer(instancesBuffer, "world3", 4, 12));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
 
                 engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
             } else {

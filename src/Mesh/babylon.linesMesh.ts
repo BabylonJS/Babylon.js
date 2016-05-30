@@ -3,7 +3,7 @@
         public color = new Color3(1, 1, 1);
         public alpha = 1;
 
-        private _positionBuffer: { [key: string]: IVertexBuffer } = {};
+        private _positionBuffer: { [key: string]: VertexBuffer } = {};
 
         /**
          * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.

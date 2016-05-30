@@ -19,10 +19,8 @@
         private _indicesCount: number;
 
         private _lineShader: ShaderMaterial;
-        private _vb0: VertexBuffer;
-        private _vb1: VertexBuffer;
         private _ib: WebGLBuffer;
-        private _buffers: { [key: string]: IVertexBuffer; } = {};
+        private _buffers: { [key: string]: VertexBuffer; } = {};
         private _checkVerticesInsteadOfIndices = false;
 
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
@@ -52,8 +50,18 @@
         }
 
         public dispose(): void {
-            this._vb0.dispose();
-            this._vb1.dispose();
+
+            var buffer = this._buffers[VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._buffers[VertexBuffer.PositionKind] = null;
+            }
+            buffer = this._buffers[VertexBuffer.NormalKind];
+            if (buffer) {
+                buffer.dispose();
+                this._buffers[VertexBuffer.NormalKind] = null;
+            }
+
             this._source.getScene().getEngine()._releaseBuffer(this._ib);
             this._lineShader.dispose();
         }
@@ -261,11 +269,9 @@
 
             // Merge into a single mesh
             var engine = this._source.getScene().getEngine();
-            this._vb0 = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
-            this._vb1 = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
 
-            this._buffers[VertexBuffer.PositionKind] = this._vb0;
-            this._buffers[VertexBuffer.NormalKind] = this._vb1;
+            this._buffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
+            this._buffers[VertexBuffer.NormalKind] = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
 
             this._ib = engine.createIndexBuffer(this._linesIndices);
 
