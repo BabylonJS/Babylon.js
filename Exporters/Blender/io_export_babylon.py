@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 5, 1),
+    'version': (4, 6, 0),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -1427,6 +1427,9 @@ class Skeleton:
         scene.objects.active = skeleton
         bpy.ops.object.mode_set(mode='EDIT')
 
+        # dimensions when in edit mode, are those at rest
+        self.dimensions = skeleton.dimensions
+
         # you need to access edit_bones from skeleton.data not skeleton.pose when in edit mode
         for editBone in skeleton.data.edit_bones:
             for myBoneObj in self.bones:
@@ -1449,6 +1452,7 @@ class Skeleton:
         file_handler.write('{')
         write_string(file_handler, 'name', self.name, True)
         write_int(file_handler, 'id', self.id)  # keep int for legacy of original exporter
+        write_vector(file_handler, 'dimensionsAtRest', self.dimensions)
 
         file_handler.write(',"bones":[')
         first = True
