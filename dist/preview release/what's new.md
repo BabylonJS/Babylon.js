@@ -47,6 +47,7 @@
     - Added PhysicsImpostor and PhysicsJoint classes  ([RaananW](https://github.com/RaananW))
     - LensFlareSystem now has both ID and name  ([RaananW](https://github.com/RaananW))
     - TargetCamera has now a rotationQuaternion variable to can be used to set the camera's rotation  ([RaananW](https://github.com/RaananW))
+    - SSAORenderingPipeline now uses bilateral blur post-processes instead of standard blur post-process, in order to remove more efficiently the "textile effect"
   - **Exporters**
     - Unity3D exporter: Added support for lightmaps ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
     - Unity3D exporter: Added support for export and run (local webserver) ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
@@ -68,3 +69,4 @@
     - `VertexData.CreateLines()` removed as `MeshBuilder.CreateLines()` now calls `MeshBuilder.CreateLineSystem()`
     - `scene.onNewXXXAdded` and `scene.onXXXRemoved` callbacks were removed and replaced by `scene.onNewXXXAddedObservable` and `scene.onXXXRemovedObservable`
     - `Material.dispose` does not dispose textures by default. You have to call `material.dispose(false, true)` to get the previous behavior.
+    - `SSAORenderingPipeline.getBlurHPostProcess` and `SSAORenderingPipeline.getBlurVPostProcess`. The SSAO rendering pipeline doesn't use standard blur post-process anymore. A bilateral blur post-process is used instead.
