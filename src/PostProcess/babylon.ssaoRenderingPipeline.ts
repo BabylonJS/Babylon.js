@@ -32,12 +32,14 @@
         * The output strength of the SSAO post-process. Default value is 1.0.
         * @type {number}
         */
+        @serialize()
         public totalStrength: number = 1.0;
 
         /**
         * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0006
         * @type {number}
         */
+        @serialize()
         public radius: number = 0.0001;
 
         /**
@@ -46,6 +48,7 @@
         * Default value is 0.975
         * @type {number}
         */
+        @serialize()
         public area: number = 0.0075;
 
         /**
@@ -54,6 +57,7 @@
         * Default value is 0.0
         * @type {number}
         */
+        @serialize()
         public fallOff: number = 0.000001;
 
         /**
@@ -61,6 +65,7 @@
         * The final result is "base + ssao" between [0, 1]
         * @type {number}
         */
+        @serialize()
         public base: number = 0.5;
 
         private _scene: Scene;
@@ -69,11 +74,14 @@
 
         private _originalColorPostProcess: PassPostProcess;
         private _ssaoPostProcess: PostProcess;
-        private _blurHPostProcess: BlurPostProcess;
-        private _blurVPostProcess: BlurPostProcess;
+        private _blurHPostProcess: PostProcess;
+        private _blurVPostProcess: PostProcess;
         private _ssaoCombinePostProcess: PostProcess;
 
         private _firstUpdate: boolean = true;
+
+        @serialize()
+        private _ratio: any;
 
         /**
          * @constructor
@@ -93,11 +101,14 @@
 
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var combineRatio = ratio.combineRatio || ratio;
+            this._ratio = {
+                ssaoRatio: ssaoRatio,
+                combineRatio: combineRatio
+            };
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(1.0, 0.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 1.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._createBlurPostProcess(ssaoRatio);
             this._createSSAOCombinePostProcess(combineRatio);
 
             // Set up pipeline
@@ -105,6 +116,7 @@
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAORenderEffect, () => { return this._ssaoPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurHRenderEffect, () => { return this._blurHPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOBlurVRenderEffect, () => { return this._blurVPostProcess; }, true));
+
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.SSAOCombineRenderEffect, () => { return this._ssaoCombinePostProcess; }, true));
 
             // Finish
@@ -119,7 +131,8 @@
          * @return {BABYLON.BlurPostProcess} The horizontal blur post-process
          */
         public getBlurHPostProcess(): BlurPostProcess {
-            return this._blurHPostProcess;
+            Tools.Error("SSAORenderinPipeline.getBlurHPostProcess() is deprecated, no more blur post-process exists");
+            return null;
         }
 
         /**
@@ -127,28 +140,83 @@
          * @return {BABYLON.BlurPostProcess} The vertical blur post-process
          */
         public getBlurVPostProcess(): BlurPostProcess {
-            return this._blurVPostProcess;
+            Tools.Error("SSAORenderinPipeline.getBlurVPostProcess() is deprecated, no more blur post-process exists");
+            return null;
         }
 
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
         public dispose(disableDepthRender: boolean = false): void {
-            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+            for (var i = 0; i < this._scene.cameras.length; i++) {
+                var camera = this._scene.cameras[i];
 
-            this._originalColorPostProcess = undefined;
-            this._ssaoPostProcess = undefined;
-            this._blurHPostProcess = undefined;
-            this._blurVPostProcess = undefined;
-            this._ssaoCombinePostProcess = undefined;
+                this._originalColorPostProcess.dispose(camera);
+                this._ssaoPostProcess.dispose(camera);
+                this._blurHPostProcess.dispose(camera);
+                this._blurVPostProcess.dispose(camera);
+                this._ssaoCombinePostProcess.dispose(camera);
+            }
 
             this._randomTexture.dispose();
 
             if (disableDepthRender)
                 this._scene.disableDepthRenderer();
+
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+        }
+
+        // Serialize rendering pipeline
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.SSAORenderingPipeline";
+
+            return serializationObject;
+        }
+
+        // Parse serialized pipeline
+        public static Parse(source: any, scene: Scene, rootUrl: string): SSAORenderingPipeline {
+            return SerializationHelper.Parse(() => new SSAORenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
         }
 
         // Private Methods
+        private _createBlurPostProcess(ratio: number): void {
+            /*
+            var samplerOffsets = [
+                -8.0, -6.0, -4.0, -2.0,
+                0.0,
+                2.0, 4.0, 6.0, 8.0
+            ];
+            */
+            var samples = 16;
+            var samplerOffsets = [];
+
+            for (var i = -8; i < 8; i++) {
+                samplerOffsets.push(i * 2);
+            }
+
+            this._blurHPostProcess = new PostProcess("BlurH", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 9");
+            this._blurHPostProcess.onApply = (effect: Effect) => {
+                effect.setFloat("outSize", this._ssaoCombinePostProcess.width);
+                effect.setTexture("depthSampler", this._depthTexture);
+
+                if (this._firstUpdate) {
+                    effect.setArray("samplerOffsets", samplerOffsets);
+                }
+            };
+
+            this._blurVPostProcess = new PostProcess("BlurV", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 9");
+            this._blurVPostProcess.onApply = (effect: Effect) => {
+                effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
+                effect.setTexture("depthSampler", this._depthTexture);
+
+                if (this._firstUpdate) {
+                    effect.setArray("samplerOffsets", samplerOffsets);
+                    this._firstUpdate = false;
+                }
+            };
+        }
+
         private _createSSAOPostProcess(ratio: number): void {
             var numSamples = 16;
             var sampleSphere = [
@@ -174,19 +242,20 @@
             this._ssaoPostProcess = new PostProcess("ssao", "ssao",
                                                     [
                                                         "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
-                                                        "area", "fallOff", "base"
+                                                        "area", "fallOff", "base", "range", "viewport"
                                                     ],
                                                     ["randomSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
                                                     this._scene.getEngine(), false,
-                                                    "#define SAMPLES " + numSamples);
+                                                    "#define SAMPLES " + numSamples + "\n#define SSAO");
+
+            var viewport = new Vector2(0, 0);
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
                     effect.setFloat("randTextureTiles", 4.0);
-                    this._firstUpdate = false;
                 }
 
                 effect.setFloat("totalStrength", this.totalStrength);
@@ -213,7 +282,7 @@
         private _createRandomTexture(): void {
             var size = 512;
 
-            this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.BILINEAR_SAMPLINGMODE);
+            this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.TRILINEAR_SAMPLINGMODE);
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
@@ -235,6 +304,7 @@
                     context.fillRect(x, y, 1, 1);
                 }
             }
+
             this._randomTexture.update(false);
         }
     }

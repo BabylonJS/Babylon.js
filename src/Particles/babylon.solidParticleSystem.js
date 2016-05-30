@@ -8,7 +8,7 @@ var BABYLON;
         * Creates a SPS (Solid Particle System) object.
         * `name` (String) is the SPS name, this will be the underlying mesh name.
         * `scene` (Scene) is the scene in which the SPS is added.
-        * `updatableè (default true) : if the SPS must be updatable or immutable.
+        * `updatable` (default true) : if the SPS must be updatable or immutable.
         * `isPickable` (default false) : if the solid particles must be pickable.
         */
         function SolidParticleSystem(name, scene, options) {
@@ -140,7 +140,7 @@ var BABYLON;
         * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
         * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
         * Thus the particles generated from `digest()` have their property `position` set yet.
-        * `mesh` (`Mesh`) is the mesh to be digested
+        * `mesh` ( Mesh ) is the mesh to be digested
         * `facetNb` (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
         * `delta` (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
         * `number` (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
@@ -328,7 +328,7 @@ var BABYLON;
         /**
         * Adds some particles to the SPS from the model shape. Returns the shape id.
         * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
-        * `mesh` is any `Mesh` object that will be used as a model for the solid particles.
+        * `mesh` is any Mesh object that will be used as a model for the solid particles.
         * `nb` (positive integer) the number of particles to be created from this model
         * `positionFunction` is an optional javascript function to called for each particle on SPS creation.
         * `vertexFunction` is an optional javascript function to called for each vertex of each particle on SPS creation
@@ -413,9 +413,9 @@ var BABYLON;
         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
         *  This method calls `updateParticle()` for each particle of the SPS.
         *  For an animated SPS, it is usually called within the render loop.
-        * @param start (default 0) the particle index in the particle array where to start to compute the particle property values
-        * @param end (default nbParticle - 1)  the particle index in the particle array where to stop to compute the particle property values
-        * @param update (default true) if the mesh must be finally updated on this call after all the particle computations.
+        * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
+        * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
+        * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
         */
         SolidParticleSystem.prototype.setParticles = function (start, end, update) {
             if (start === void 0) { start = 0; }
