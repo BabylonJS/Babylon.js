@@ -86,7 +86,7 @@
 
             if (this._updatable) { // update buffer
                 this._engine.updateDynamicVertexBuffer(this._buffer, data, offset, (vertexCount ? vertexCount * this.getStrideSize() : undefined));
-                this._data = data;
+                this._data = null;
             }
         }
 
