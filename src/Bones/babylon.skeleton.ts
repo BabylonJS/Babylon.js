@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class Skeleton {
         public bones = new Array<Bone>();
-
+        public dimensionsAtRest : Vector3;
         public needInitialSkinMatrix = false;
 
         private _scene: Scene;
@@ -325,6 +325,7 @@
 
             serializationObject.name = this.name;
             serializationObject.id = this.id;
+            serializationObject.dimensionsAtRest = this.dimensionsAtRest;
 
             serializationObject.bones = [];
 
@@ -364,6 +365,9 @@
 
         public static Parse(parsedSkeleton: any, scene: Scene): Skeleton {
             var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+            if (parsedSkeleton.dimensionsAtRest){
+                skeleton.dimensionsAtRest = Vector3.FromArray(parsedSkeleton.dimensionsAtRest);
+            }
 
             skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
 
