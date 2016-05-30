@@ -12,7 +12,7 @@
         private _meshes: Mesh[];
         private _totalVertices = 0;
         private _indices: number[] | Int32Array;
-        private _vertexBuffers: { [key: string]: IVertexBuffer; };
+        private _vertexBuffers: { [key: string]: VertexBuffer; };
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
@@ -97,7 +97,7 @@
             this.setVerticesBuffer(buffer);
         }
 
-        public setVerticesBuffer(buffer: IVertexBuffer): void {
+        public setVerticesBuffer(buffer: VertexBuffer): void {
             var kind = buffer.getKind();
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
@@ -207,14 +207,14 @@
             }
         }
 
-        public getVertexBuffer(kind: string): IVertexBuffer {
+        public getVertexBuffer(kind: string): VertexBuffer {
             if (!this.isReady()) {
                 return null;
             }
             return this._vertexBuffers[kind];
         }
 
-        public getVertexBuffers(): { [key: string]: IVertexBuffer; } {
+        public getVertexBuffers(): { [key: string]: VertexBuffer; } {
             if (!this.isReady()) {
                 return null;
             }

@@ -1,158 +1,116 @@
 ﻿module BABYLON {
-    export interface IVertexBuffer extends IDisposable {
-        getKind(): string;
-        getStrideSize(): number;
-        getData(): number[] | Float32Array;
-        getBuffer(): WebGLBuffer;
-        getOffset(): number;
-        getSize(): number;
-        getIsInstanced(): boolean;
-        isUpdatable(): boolean;
-        create(data?: number[] | Float32Array): void;
-        update(data: number[] | Float32Array): void;
-        updateDirectly(data: Float32Array, offset: number): void;
-    }
-
-    export class VertexBuffer implements IVertexBuffer {
-        private _engine: Engine;
-        private _buffer: WebGLBuffer;
-        private _data: number[] | Float32Array;
-        private _updatable: boolean;
+    export class VertexBuffer {
+        private _buffer: Buffer;
         private _kind: string;
-        private _strideSize: number;
-        private _instanced: boolean;
+        private _offset: number;
+        private _size: number;
+        private _stride: number;
+        private _ownsBuffer: boolean;
 
-        constructor(engine: any, data: number[] | Float32Array, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean) {
-            if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
-                this._engine = engine.getScene().getEngine();
+        constructor(engine: any, data: number[] | Float32Array | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number) {
+            if (!stride) {
+                // Deduce stride from kind
+                switch (kind) {
+                    case VertexBuffer.PositionKind:
+                        stride = 3;
+                        break;
+                    case VertexBuffer.NormalKind:
+                        stride = 3;
+                        break;
+                    case VertexBuffer.UVKind:
+                    case VertexBuffer.UV2Kind:
+                    case VertexBuffer.UV3Kind:
+                    case VertexBuffer.UV4Kind:
+                    case VertexBuffer.UV5Kind:
+                    case VertexBuffer.UV6Kind:
+                        stride = 2;
+                        break;
+                    case VertexBuffer.ColorKind:
+                        stride = 4;
+                        break;
+                    case VertexBuffer.MatricesIndicesKind:
+                    case VertexBuffer.MatricesIndicesExtraKind:
+                        stride = 4;
+                        break;
+                    case VertexBuffer.MatricesWeightsKind:
+                    case VertexBuffer.MatricesWeightsExtraKind:
+                        stride = 4;
+                        break;
+                }
             }
-            else {
-                this._engine = engine;
+
+            if (data instanceof Buffer) {
+                if (!stride) {
+                    stride = data.getStrideSize();
+                }
+                this._buffer = data;
+                this._ownsBuffer = false;
+            } else {
+                this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced);
+                this._ownsBuffer = true;
             }
 
-            this._updatable = updatable;
+            this._stride = stride;
 
-            this._data = data;
 
-            this._instanced = instanced;
-
-            if (!postponeInternalCreation) { // by default
-                this.create();
-            }
+            this._offset = offset ? offset : 0;
+            this._size = size ? size : stride;
 
             this._kind = kind;
-
-            if (stride) {
-                this._strideSize = stride;
-                return;
-            }
-
-            // Deduce stride from kind
-            switch (kind) {
-                case VertexBuffer.PositionKind:
-                    this._strideSize = 3;
-                    break;
-                case VertexBuffer.NormalKind:
-                    this._strideSize = 3;
-                    break;
-                case VertexBuffer.UVKind:
-                case VertexBuffer.UV2Kind:
-                case VertexBuffer.UV3Kind:
-                case VertexBuffer.UV4Kind:
-                case VertexBuffer.UV5Kind:
-                case VertexBuffer.UV6Kind:
-                    this._strideSize = 2;
-                    break;
-                case VertexBuffer.ColorKind:
-                    this._strideSize = 4;
-                    break;
-                case VertexBuffer.MatricesIndicesKind:
-                case VertexBuffer.MatricesIndicesExtraKind:
-                    this._strideSize = 4;
-                    break;
-                case VertexBuffer.MatricesWeightsKind:
-                case VertexBuffer.MatricesWeightsExtraKind:
-                    this._strideSize = 4;
-                    break;
-            }
         }
 
-        // Properties
-        public isUpdatable(): boolean {
-            return this._updatable;
-        }
 
         public getKind(): string {
             return this._kind;
         }
 
+        // Properties
+        public isUpdatable(): boolean {
+            return this._buffer.isUpdatable();
+        }
+
         public getData(): number[] | Float32Array {
-            return this._data;
+            return this._buffer.getData();
         }
 
         public getBuffer(): WebGLBuffer {
-            return this._buffer;
+            return this._buffer.getBuffer();
         }
 
         public getStrideSize(): number {
-            return this._strideSize;
+            return this._stride;
         }
 
         public getOffset(): number {
-            return 0;
+            return this._offset;
         }
 
         public getSize(): number {
-            return this._strideSize;
+            return this._size;
         }
 
         public getIsInstanced(): boolean {
-            return this._instanced;
+            return this._buffer.getIsInstanced();
         }
 
         // Methods
+
+
         public create(data?: number[] | Float32Array): void {
-            if (!data && this._buffer) {
-                return; // nothing to do
-            }
-
-            data = data || this._data;
-
-            if (!this._buffer) { // create buffer
-                if (this._updatable) {
-                    this._buffer = this._engine.createDynamicVertexBuffer(data);
-                } else {
-                    this._buffer = this._engine.createVertexBuffer(data);
-                }
-            }
-
-            if (this._updatable) { // update buffer
-                this._engine.updateDynamicVertexBuffer(this._buffer, data);
-                this._data = data;
-            }
+            return this._buffer.create(data);
         }
 
         public update(data: number[] | Float32Array): void {
-            this.create(data);
+            return this._buffer.update(data);
         }
 
         public updateDirectly(data: Float32Array, offset: number): void {
-            if (!this._buffer) {
-                return;
-            }
-
-            if (this._updatable) { // update buffer
-                this._engine.updateDynamicVertexBuffer(this._buffer, data, offset);
-                this._data = null;
-            }
+            return this._buffer.updateDirectly(data, offset);
         }
 
         public dispose(): void {
-            if (!this._buffer) {
-                return;
-            }
-            if (this._engine._releaseBuffer(this._buffer)) {
-                this._buffer = null;
+            if (this._ownsBuffer) {
+                this._buffer.dispose();
             }
         }
 

@@ -9,8 +9,7 @@
 
         public onGenerated: () => void;
 
-        private _vertexBuffer: VertexBuffer;
-        private _vertexBuffers: { [key: string]: IVertexBuffer } = {};
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
 
@@ -62,8 +61,7 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
-            this._vertexBuffers[VertexBuffer.PositionKind] = this._vertexBuffer;
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
             // Indices
             var indices = [];
@@ -349,6 +347,17 @@
             if (index >= 0) {
                 this.getScene()._proceduralTextures.splice(index, 1);
             }
+
+            var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
+            }
+
+            if (this._indexBuffer && this.getScene().getEngine()._releaseBuffer(this._indexBuffer)) {
+                this._indexBuffer = null;
+            }
+
             super.dispose();
         }
     }

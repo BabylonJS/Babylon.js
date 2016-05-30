@@ -80,8 +80,8 @@
         private _stockParticles = new Array<Particle>();
         private _newPartsExcess = 0;
         private _vertexData: Float32Array;
-        private _vertexBuffer: InterleavedBuffer;
-        private _vertexBuffers: { [key: string]: IVertexBuffer } = {};
+        private _vertexBuffer: Buffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
         private _customEffect: Effect;
@@ -125,11 +125,11 @@
 
             // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY)
             this._vertexData = new Float32Array(capacity * 11);
-            this._vertexBuffer = new InterleavedBuffer(scene.getEngine(), this._vertexData, true, 11);
+            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 11);
 
-            var positions = new InterleavedVertexBuffer(this._vertexBuffer, VertexBuffer.PositionKind, 3, 0);
-            var colors = new InterleavedVertexBuffer(this._vertexBuffer, VertexBuffer.ColorKind, 4, 3);
-            var options = new InterleavedVertexBuffer(this._vertexBuffer, "options", 4, 7);
+            var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
+            var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
+            var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
 
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;

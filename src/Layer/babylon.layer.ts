@@ -9,8 +9,7 @@
         public alphaTest: boolean;
 
         private _scene: Scene;
-        private _vertexBuffer: VertexBuffer;
-        private _vertexBuffers: { [key: string]: IVertexBuffer } = {};
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
         private _alphaTestEffect: Effect;
@@ -77,8 +76,8 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
-            this._vertexBuffers[VertexBuffer.PositionKind] = this._vertexBuffer;
+            var vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+            this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
 
             // Indices
             var indices = [];
@@ -148,9 +147,10 @@
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._vertexBuffer.dispose();
-                this._vertexBuffer = null;
+            var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
             }
 
             if (this._indexBuffer) {

@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class InterleavedBuffer {
+    export class Buffer {
         private _engine: Engine;
         private _buffer: WebGLBuffer;
         private _data: number[] | Float32Array;
@@ -26,6 +26,11 @@
             }
 
             this._instanced = instanced;
+        }
+
+        public createVertexBuffer(kind: string, offset: number, size: number, stride?: number): VertexBuffer {
+            // a lot of these parameters are ignored as they are overriden by the buffer
+            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride, this._instanced, offset, size);
         }
 
         // Properties
@@ -60,13 +65,11 @@
             if (!this._buffer) { // create buffer
                 if (this._updatable) {
                     this._buffer = this._engine.createDynamicVertexBuffer(data);
+                    this._data = data;
                 } else {
                     this._buffer = this._engine.createVertexBuffer(data);
-                    this._data = null;
                 }
-            }
-
-            if (this._updatable) { // update buffer
+            } else if (this._updatable) { // update buffer
                 this._engine.updateDynamicVertexBuffer(this._buffer, data);
                 this._data = data;
             }
