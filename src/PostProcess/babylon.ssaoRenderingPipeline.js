@@ -140,16 +140,6 @@ var BABYLON;
                 this._scene.disableDepthRenderer();
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
         };
-        // Serialize rendering pipeline
-        SSAORenderingPipeline.prototype.serialize = function () {
-            var serializationObject = BABYLON.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
-            serializationObject.customType = "BABYLON.SSAORenderingPipeline";
-            return serializationObject;
-        };
-        // Parse serialized pipeline
-        SSAORenderingPipeline.Parse = function (source, scene, rootUrl) {
-            return BABYLON.SerializationHelper.Parse(function () { return new SSAORenderingPipeline(source._name, scene, source._ratio); }, source, scene, rootUrl);
-        };
         // Private Methods
         SSAORenderingPipeline.prototype._createBlurPostProcess = function (ratio) {
             var _this = this;
@@ -165,7 +155,7 @@ var BABYLON;
             for (var i = -8; i < 8; i++) {
                 samplerOffsets.push(i * 2);
             }
-            this._blurHPostProcess = new BABYLON.PostProcess("BlurH", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 9");
+            this._blurHPostProcess = new BABYLON.PostProcess("BlurH", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16");
             this._blurHPostProcess.onApply = function (effect) {
                 effect.setFloat("outSize", _this._ssaoCombinePostProcess.width);
                 effect.setTexture("depthSampler", _this._depthTexture);
@@ -173,7 +163,7 @@ var BABYLON;
                     effect.setArray("samplerOffsets", samplerOffsets);
                 }
             };
-            this._blurVPostProcess = new BABYLON.PostProcess("BlurV", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 9");
+            this._blurVPostProcess = new BABYLON.PostProcess("BlurV", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16");
             this._blurVPostProcess.onApply = function (effect) {
                 effect.setFloat("outSize", _this._ssaoCombinePostProcess.height);
                 effect.setTexture("depthSampler", _this._depthTexture);
