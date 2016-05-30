@@ -166,19 +166,6 @@
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
         }
 
-        // Serialize rendering pipeline
-        public serialize(): any {
-            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
-            serializationObject.customType = "BABYLON.SSAORenderingPipeline";
-
-            return serializationObject;
-        }
-
-        // Parse serialized pipeline
-        public static Parse(source: any, scene: Scene, rootUrl: string): SSAORenderingPipeline {
-            return SerializationHelper.Parse(() => new SSAORenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
-        }
-
         // Private Methods
         private _createBlurPostProcess(ratio: number): void {
             /*
@@ -195,7 +182,7 @@
                 samplerOffsets.push(i * 2);
             }
 
-            this._blurHPostProcess = new PostProcess("BlurH", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 9");
+            this._blurHPostProcess = new PostProcess("BlurH", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16");
             this._blurHPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.width);
                 effect.setTexture("depthSampler", this._depthTexture);
@@ -205,7 +192,7 @@
                 }
             };
 
-            this._blurVPostProcess = new PostProcess("BlurV", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 9");
+            this._blurVPostProcess = new PostProcess("BlurV", "ssao", ["outSize", "samplerOffsets"], ["depthSampler"], ratio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define SAMPLES 16");
             this._blurVPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
                 effect.setTexture("depthSampler", this._depthTexture);
