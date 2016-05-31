@@ -58,7 +58,7 @@
 
                     engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
                     engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
-                    engine.unBindInstancesBuffer(pid._partBuffer, this.instancingFillAttributes);
+                    engine.unbindInstanceAttributes();
                 } else {
                     for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                         this.setupUniforms(effect, partIndex, pid._partData, i);
@@ -86,7 +86,7 @@
 
                     engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
                     engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
-                    engine.unBindInstancesBuffer(pid._partBuffer, this.instancingBorderAttributes);
+                    engine.unbindInstanceAttributes();
                 } else {
                     for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                         this.setupUniforms(this.effectBorder, partIndex, pid._partData, i);

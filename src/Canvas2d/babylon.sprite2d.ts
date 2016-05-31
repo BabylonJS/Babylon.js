@@ -39,7 +39,7 @@
                 }
                 engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
                 engine.draw(true, 0, 6, pid._partData.usedElementCount);
-                engine.unBindInstancesBuffer(pid._partBuffer, this.instancingAttributes);
+                engine.unbindInstanceAttributes();
             } else {
                 for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                     this.setupUniforms(effect, 0, pid._partData, i);
