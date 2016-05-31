@@ -7,9 +7,9 @@ var BABYLON;
 (function (BABYLON) {
     var ConvolutionPostProcess = (function (_super) {
         __extends(ConvolutionPostProcess, _super);
-        function ConvolutionPostProcess(name, kernel, ratio, camera, samplingMode, engine, reusable) {
+        function ConvolutionPostProcess(name, kernel, options, camera, samplingMode, engine, reusable) {
             var _this = this;
-            _super.call(this, name, "convolution", ["kernel", "screenSize"], null, ratio, camera, samplingMode, engine, reusable);
+            _super.call(this, name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable);
             this.kernel = kernel;
             this.onApply = function (effect) {
                 effect.setFloat2("screenSize", _this.width, _this.height);

@@ -87,7 +87,7 @@ var BABYLON;
             var sortedAll = this._allEntries.sort(function (a, b) { return a.offset - b.offset; });
             var firstFreeSlotOffset = sortedFree[0].offset;
             var freeZoneSize = 1;
-            var occupiedZoneSize = this.usedElementCount * s;
+            var occupiedZoneSize = (this.usedElementCount + 1) * s;
             var prevOffset = sortedFree[0].offset;
             for (var i = 1; i < sortedFree.length; i++) {
                 // If the first free (which means everything before is occupied) is greater or equal the occupied zone size, it means everything is defragmented, we can quit
@@ -129,7 +129,7 @@ var BABYLON;
                 // Free Zone is smaller or equal so it's no longer a free zone, set the new one to the current location
                 if (freeZoneSize <= usedRange) {
                     firstFreeSlotOffset = curMoveOffset + s;
-                    freeZoneSize = 1;
+                    freeZoneSize = 1 + copyCount;
                 }
                 else {
                     freeZoneSize = ((curOffset - firstFreeSlotOffset) / s) + 1;

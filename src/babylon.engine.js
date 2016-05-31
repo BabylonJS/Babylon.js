@@ -152,6 +152,9 @@ var BABYLON;
             this._activeTexturesCache = new Array(this._maxTextureChannels);
             this._compiledEffects = {};
             this._uintIndicesCurrentlySet = false;
+            this._currentBoundBuffer = new Array();
+            this._currentInstanceLocations = new Array();
+            this._currentInstanceBuffers = new Array();
             this._renderingCanvas = canvas;
             this._externalData = new BABYLON.StringDictionary();
             options = options || {};
@@ -563,14 +566,15 @@ var BABYLON;
         /**
          * Toggle full screen mode.
          * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
+         * @param {any} options - an options object to be sent to the requestFullscreen function
          */
-        Engine.prototype.switchFullscreen = function (requestPointerLock) {
+        Engine.prototype.switchFullscreen = function (requestPointerLock, options) {
             if (this.isFullscreen) {
                 BABYLON.Tools.ExitFullscreen();
             }
             else {
                 this._pointerLockRequested = requestPointerLock;
-                BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
+                BABYLON.Tools.RequestFullscreen(this._renderingCanvas, options);
             }
         };
         Engine.prototype.clear = function (color, backBuffer, depthStencil) {
@@ -698,12 +702,12 @@ var BABYLON;
         };
         // VBOs
         Engine.prototype._resetVertexBufferBinding = function () {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
+            this.bindBuffer(null, this._gl.ARRAY_BUFFER);
             this._cachedVertexBuffers = null;
         };
         Engine.prototype.createVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
+            this.bindBuffer(vbo, this._gl.ARRAY_BUFFER);
             if (vertices instanceof Float32Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.STATIC_DRAW);
             }
@@ -714,34 +718,49 @@ var BABYLON;
             vbo.references = 1;
             return vbo;
         };
-        Engine.prototype.createDynamicVertexBuffer = function (capacity) {
+        Engine.prototype.createDynamicVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
+            this.bindBuffer(vbo, this._gl.ARRAY_BUFFER);
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.DYNAMIC_DRAW);
+            }
+            else {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.DYNAMIC_DRAW);
+            }
             this._resetVertexBufferBinding();
             vbo.references = 1;
             return vbo;
         };
-        Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset) {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
+        Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset, count) {
+            this.bindBuffer(vertexBuffer, this._gl.ARRAY_BUFFER);
             if (offset === undefined) {
                 offset = 0;
             }
-            if (vertices instanceof Float32Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, vertices);
+            if (count === undefined) {
+                if (vertices instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, vertices);
+                }
+                else {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(vertices));
+                }
             }
             else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(vertices));
+                if (vertices instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, vertices.subarray(offset, offset + count));
+                }
+                else {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(vertices).subarray(offset, offset + count));
+                }
             }
             this._resetVertexBufferBinding();
         };
         Engine.prototype._resetIndexBufferBinding = function () {
-            this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, null);
+            this.bindBuffer(null, this._gl.ELEMENT_ARRAY_BUFFER);
             this._cachedIndexBuffer = null;
         };
         Engine.prototype.createIndexBuffer = function (indices) {
             var vbo = this._gl.createBuffer();
-            this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, vbo);
+            this.bindBuffer(vbo, this._gl.ELEMENT_ARRAY_BUFFER);
             // Check for 32 bits indices
             var arrayBuffer;
             var need32Bits = false;
@@ -763,11 +782,17 @@ var BABYLON;
             vbo.is32Bits = need32Bits;
             return vbo;
         };
-        Engine.prototype.bindBuffers = function (vertexBuffer, indexBuffer, vertexDeclaration, vertexStrideSize, effect) {
+        Engine.prototype.bindBuffer = function (buffer, target) {
+            if (this._currentBoundBuffer[target] !== buffer) {
+                this._gl.bindBuffer(target, buffer);
+                this._currentBoundBuffer[target] = buffer;
+            }
+        };
+        Engine.prototype.bindBuffersDirectly = function (vertexBuffer, indexBuffer, vertexDeclaration, vertexStrideSize, effect) {
             if (this._cachedVertexBuffers !== vertexBuffer || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffer;
                 this._cachedEffectForVertexBuffers = effect;
-                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
+                this.bindBuffer(vertexBuffer, this._gl.ARRAY_BUFFER);
                 var offset = 0;
                 for (var index = 0; index < vertexDeclaration.length; index++) {
                     var order = effect.getAttributeLocation(index);
@@ -779,11 +804,11 @@ var BABYLON;
             }
             if (this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
-                this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                this.bindBuffer(indexBuffer, this._gl.ELEMENT_ARRAY_BUFFER);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
             }
         };
-        Engine.prototype.bindMultiBuffers = function (vertexBuffers, indexBuffer, effect) {
+        Engine.prototype.bindBuffers = function (vertexBuffers, indexBuffer, effect) {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
@@ -795,17 +820,36 @@ var BABYLON;
                         if (!vertexBuffer) {
                             continue;
                         }
-                        var stride = vertexBuffer.getStrideSize();
-                        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer.getBuffer());
-                        this._gl.vertexAttribPointer(order, stride, this._gl.FLOAT, false, stride * 4, 0);
+                        var buffer = vertexBuffer.getBuffer();
+                        this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+                        this._gl.vertexAttribPointer(order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+                        if (vertexBuffer.getIsInstanced()) {
+                            this._caps.instancedArrays.vertexAttribDivisorANGLE(order, 1);
+                            this._currentInstanceLocations.push(order);
+                            this._currentInstanceBuffers.push(buffer);
+                        }
                     }
                 }
             }
             if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
-                this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                this.bindBuffer(indexBuffer, this._gl.ELEMENT_ARRAY_BUFFER);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
             }
+        };
+        Engine.prototype.unbindInstanceAttributes = function () {
+            var boundBuffer;
+            for (var i = 0, ul = this._currentInstanceLocations.length; i < ul; i++) {
+                var instancesBuffer = this._currentInstanceBuffers[i];
+                if (boundBuffer != instancesBuffer) {
+                    boundBuffer = instancesBuffer;
+                    this.bindBuffer(instancesBuffer, this._gl.ARRAY_BUFFER);
+                }
+                var offsetLocation = this._currentInstanceLocations[i];
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+            }
+            this._currentInstanceBuffers.length = 0;
+            this._currentInstanceLocations.length = 0;
         };
         Engine.prototype._releaseBuffer = function (buffer) {
             buffer.references--;
@@ -818,7 +862,7 @@ var BABYLON;
         Engine.prototype.createInstancesBuffer = function (capacity) {
             var buffer = this._gl.createBuffer();
             buffer.capacity = capacity;
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, buffer);
+            this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
             this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
             return buffer;
         };
@@ -826,7 +870,7 @@ var BABYLON;
             this._gl.deleteBuffer(buffer);
         };
         Engine.prototype.updateAndBindInstancesBuffer = function (instancesBuffer, data, offsetLocations) {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
+            this.bindBuffer(instancesBuffer, this._gl.ARRAY_BUFFER);
             if (data) {
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
             }
@@ -841,6 +885,8 @@ var BABYLON;
                     this._gl.enableVertexAttribArray(ai.index);
                     this._gl.vertexAttribPointer(ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
                     this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
+                    this._currentInstanceLocations.push(ai.index);
+                    this._currentInstanceBuffers.push(instancesBuffer);
                 }
             }
             else {
@@ -849,23 +895,8 @@ var BABYLON;
                     this._gl.enableVertexAttribArray(offsetLocation);
                     this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
                     this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
-                }
-            }
-        };
-        Engine.prototype.unBindInstancesBuffer = function (instancesBuffer, offsetLocations) {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            if (offsetLocations[0].index !== undefined) {
-                for (var i = 0; i < offsetLocations.length; i++) {
-                    var ai = offsetLocations[i];
-                    this._gl.disableVertexAttribArray(ai.index);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 0);
-                }
-            }
-            else {
-                for (var index = 0; index < 4; index++) {
-                    var offsetLocation = offsetLocations[index];
-                    this._gl.disableVertexAttribArray(offsetLocation);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+                    this._currentInstanceLocations.push(offsetLocation);
+                    this._currentInstanceBuffers.push(instancesBuffer);
                 }
             }
         };
@@ -980,25 +1011,33 @@ var BABYLON;
                 }
                 return;
             }
-            this._vertexAttribArrays = this._vertexAttribArrays || [];
+            this._vertexAttribArraysToUse = this._vertexAttribArraysToUse || [];
+            this._vertexAttribArraysEnabled = this._vertexAttribArraysEnabled || [];
             // Use program
             this._gl.useProgram(effect.getProgram());
-            for (var i in this._vertexAttribArrays) {
-                //make sure this is a number)
-                var iAsNumber = +i;
-                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
-                    continue;
-                }
-                this._vertexAttribArrays[iAsNumber] = false;
-                this._gl.disableVertexAttribArray(iAsNumber);
+            var i, ul;
+            for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
+                this._vertexAttribArraysToUse[i] = false;
             }
             var attributesCount = effect.getAttributesCount();
-            for (var index = 0; index < attributesCount; index++) {
+            for (i = 0; i < attributesCount; i++) {
                 // Attributes
-                var order = effect.getAttributeLocation(index);
+                var order = effect.getAttributeLocation(i);
                 if (order >= 0) {
-                    this._vertexAttribArrays[order] = true;
-                    this._gl.enableVertexAttribArray(order);
+                    this._vertexAttribArraysToUse[order] = true;
+                }
+            }
+            for (i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArraysEnabled[i] || this._vertexAttribArraysToUse[i]) {
+                    continue;
+                }
+                this._vertexAttribArraysEnabled[i] = false;
+                this._gl.disableVertexAttribArray(i);
+            }
+            for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
+                if (this._vertexAttribArraysToUse[i] && !this._vertexAttribArraysEnabled[i]) {
+                    this._vertexAttribArraysEnabled[i] = true;
+                    this._gl.enableVertexAttribArray(i);
                 }
             }
             this._currentEffect = effect;
@@ -1169,6 +1208,7 @@ var BABYLON;
             this.resetTextureCache();
             this._currentEffect = null;
             this._depthCullingState.reset();
+            this.setDepthFunctionToLessOrEqual();
             this._alphaState.reset();
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
@@ -1476,8 +1516,8 @@ var BABYLON;
                 type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); //filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
@@ -1505,6 +1545,8 @@ var BABYLON;
             if (generateDepthBuffer) {
                 texture._depthBuffer = depthBuffer;
             }
+            texture._baseWidth = width;
+            texture._baseHeight = height;
             texture._width = width;
             texture._height = height;
             texture.isReady = true;
@@ -1702,7 +1744,7 @@ var BABYLON;
                 else {
                     noMipmap = true;
                 }
-                if (textureType == gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
+                if (textureType === gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
@@ -1749,6 +1791,9 @@ var BABYLON;
             this._currentEffect = null;
         };
         Engine.prototype._bindTexture = function (channel, texture) {
+            if (channel < 0) {
+                return;
+            }
             this._gl.activeTexture(this._gl["TEXTURE" + channel]);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._activeTexturesCache[channel] = null;
@@ -1923,13 +1968,13 @@ var BABYLON;
                 this._gl.deleteProgram(this._compiledEffects[name]._program);
             }
             // Unbind
-            for (var i in this._vertexAttribArrays) {
-                //making sure this is a string
-                var iAsNumber = +i;
-                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
-                    continue;
+            if (this._vertexAttribArraysEnabled) {
+                for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+                    if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArraysEnabled[i]) {
+                        continue;
+                    }
+                    this._gl.disableVertexAttribArray(i);
                 }
-                this._gl.disableVertexAttribArray(iAsNumber);
             }
             this._gl = null;
             // Events

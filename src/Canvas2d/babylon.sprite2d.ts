@@ -24,7 +24,7 @@
 
             engine.enableEffect(effect);
             effect.setTexture("diffuseSampler", this.texture);
-            engine.bindBuffers(this.vb, this.ib, [1], 4, effect);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
 
             var cur = engine.getAlphaMode();
 
