@@ -348,7 +348,7 @@
         private _cachedEffectForVertexBuffers: Effect;
         private _currentRenderTarget: WebGLTexture;
         private _uintIndicesCurrentlySet = false;
-        private _currentBoundBuffer: WebGLBuffer;
+        private _currentBoundBuffer = new Array<WebGLBuffer>();
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
 
@@ -952,9 +952,9 @@
         }
 
         private bindBuffer(buffer: WebGLBuffer, target: number): void {
-            if (this._currentBoundBuffer != buffer) {
+            if (this._currentBoundBuffer[target] !== buffer) {
                 this._gl.bindBuffer(target, buffer);
-                this._currentBoundBuffer = buffer;
+                this._currentBoundBuffer[target] = buffer;
             }
         }
 

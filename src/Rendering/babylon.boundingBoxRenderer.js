@@ -6,6 +6,7 @@ var BABYLON;
             this.backColor = new BABYLON.Color3(0.1, 0.1, 0.1);
             this.showBackLines = true;
             this.renderList = new BABYLON.SmartArray(32);
+            this._vertexBuffers = {};
             this._scene = scene;
         }
         BoundingBoxRenderer.prototype._prepareRessources = function () {
@@ -13,13 +14,13 @@ var BABYLON;
                 return;
             }
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", this._scene, "color", {
-                attributes: ["position"],
+                attributes: [BABYLON.VertexBuffer.PositionKind],
                 uniforms: ["worldViewProjection", "color"]
             });
             var engine = this._scene.getEngine();
             var boxdata = BABYLON.VertexData.CreateBox(1.0);
-            this._vb = new BABYLON.VertexBuffer(engine, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false);
-            this._ib = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(engine, boxdata.positions, BABYLON.VertexBuffer.PositionKind, false);
+            this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
         };
         BoundingBoxRenderer.prototype.reset = function () {
             this.renderList.reset();
@@ -45,7 +46,7 @@ var BABYLON;
                     .multiply(BABYLON.Matrix.Translation(median.x, median.y, median.z))
                     .multiply(boundingBox.getWorldMatrix());
                 // VBOs
-                engine.bindBuffers(this._vb.getBuffer(), this._ib, [3], 3 * 4, this._colorShader.getEffect());
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
                 if (this.showBackLines) {
                     // Back
                     engine.setDepthFunctionToGreaterOrEqual();
@@ -72,8 +73,12 @@ var BABYLON;
                 return;
             }
             this._colorShader.dispose();
-            this._vb.dispose();
-            this._scene.getEngine()._releaseBuffer(this._ib);
+            var buffer = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = null;
+            }
+            this._scene.getEngine()._releaseBuffer(this._indexBuffer);
         };
         return BoundingBoxRenderer;
     }());

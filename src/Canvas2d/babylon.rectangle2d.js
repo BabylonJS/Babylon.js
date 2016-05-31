@@ -35,7 +35,7 @@ var BABYLON;
             if (this.effectFill) {
                 var partIndex = instanceInfo._partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_FILLPARTID.toString());
                 engine.enableEffect(this.effectFill);
-                engine.bindBuffers(this.fillVB, this.fillIB, [1], 4, this.effectFill);
+                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [1], 4, this.effectFill);
                 var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
                 if (instanceInfo._owner.owner.supportInstancedArray) {
                     if (!this.instancingFillAttributes) {
@@ -44,7 +44,7 @@ var BABYLON;
                     }
                     engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
                     engine.draw(true, 0, this.fillIndicesCount, count);
-                    engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingFillAttributes);
+                    engine.unbindInstanceAttributes();
                 }
                 else {
                     for (var i = 0; i < count; i++) {
@@ -56,7 +56,7 @@ var BABYLON;
             if (this.effectBorder) {
                 var partIndex = instanceInfo._partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_BORDERPARTID.toString());
                 engine.enableEffect(this.effectBorder);
-                engine.bindBuffers(this.borderVB, this.borderIB, [1], 4, this.effectBorder);
+                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [1], 4, this.effectBorder);
                 var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
                 if (instanceInfo._owner.owner.supportInstancedArray) {
                     if (!this.instancingBorderAttributes) {
@@ -64,7 +64,7 @@ var BABYLON;
                     }
                     engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
                     engine.draw(true, 0, this.borderIndicesCount, count);
-                    engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingBorderAttributes);
+                    engine.unbindInstanceAttributes();
                 }
                 else {
                     for (var i = 0; i < count; i++) {

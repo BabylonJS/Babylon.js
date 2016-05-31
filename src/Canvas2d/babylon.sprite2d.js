@@ -25,7 +25,7 @@ var BABYLON;
             var engine = instanceInfo._owner.owner.engine;
             engine.enableEffect(this.effect);
             this.effect.setTexture("diffuseSampler", this.texture);
-            engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, this.effect);
             var cur = engine.getAlphaMode();
             engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
             var count = instanceInfo._instancesPartsData[0].usedElementCount;
@@ -35,7 +35,7 @@ var BABYLON;
                 }
                 engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
                 engine.draw(true, 0, 6, count);
-                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
+                engine.unbindInstanceAttributes();
             }
             else {
                 for (var i = 0; i < count; i++) {

@@ -15,8 +15,7 @@ var BABYLON;
             this.isEnabled = true;
             this._currentRefreshId = -1;
             this._refreshRate = 1;
-            this._vertexDeclaration = [2];
-            this._vertexStrideSize = 2 * 4;
+            this._vertexBuffers = {};
             this._uniforms = new Array();
             this._samplers = new Array();
             this._textures = new Array();
@@ -35,12 +34,13 @@ var BABYLON;
             this._generateMipMaps = generateMipMaps;
             this.setFragment(fragment);
             this._fallbackTexture = fallbackTexture;
+            var engine = scene.getEngine();
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
                 this.setFloat("face", 0);
             }
             else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+                this._texture = engine.createRenderTargetTexture(size, generateMipMaps);
             }
             // VBO
             var vertices = [];
@@ -48,7 +48,7 @@ var BABYLON;
             vertices.push(-1, 1);
             vertices.push(-1, -1);
             vertices.push(1, -1);
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(engine, vertices, BABYLON.VertexBuffer.PositionKind, false, false, 2);
             // Indices
             var indices = [];
             indices.push(0);
@@ -57,7 +57,7 @@ var BABYLON;
             indices.push(0);
             indices.push(2);
             indices.push(3);
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
         }
         ProceduralTexture.prototype.reset = function () {
             if (this._effect === undefined) {
@@ -82,7 +82,7 @@ var BABYLON;
             else {
                 shaders = { vertex: "procedural", fragment: this._fragment };
             }
-            this._effect = engine.createEffect(shaders, ["position"], this._uniforms, this._samplers, "", null, null, function () {
+            this._effect = engine.createEffect(shaders, [BABYLON.VertexBuffer.PositionKind], this._uniforms, this._samplers, "", null, null, function () {
                 _this.releaseInternalTexture();
                 if (_this._fallbackTexture) {
                     _this._texture = _this._fallbackTexture._texture;
@@ -225,7 +225,7 @@ var BABYLON;
                 this._effect.setMatrix(name, this._matrices[name]);
             }
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
                     engine.bindFramebuffer(this._texture, face);
@@ -267,6 +267,14 @@ var BABYLON;
             var index = this.getScene()._proceduralTextures.indexOf(this);
             if (index >= 0) {
                 this.getScene()._proceduralTextures.splice(index, 1);
+            }
+            var vertexBuffer = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = null;
+            }
+            if (this._indexBuffer && this.getScene().getEngine()._releaseBuffer(this._indexBuffer)) {
+                this._indexBuffer = null;
             }
             _super.prototype.dispose.call(this);
         };
