@@ -8,9 +8,7 @@
 
         private _scene: Scene;
         private _emitter: any;
-        private _vertexDeclaration = [2];
-        private _vertexStrideSize = 2 * 4;
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
         private _positionX: number;
@@ -26,6 +24,8 @@
 
             this.meshesSelectionPredicate = m => m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0);
 
+            var engine = scene.getEngine();
+
             // VBO
             var vertices = [];
             vertices.push(1, 1);
@@ -33,7 +33,7 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
             // Indices
             var indices = [];
@@ -45,11 +45,11 @@
             indices.push(2);
             indices.push(3);
 
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
 
             // Effects
-            this._effect = this._scene.getEngine().createEffect("lensFlare",
-                ["position"],
+            this._effect = engine.createEffect("lensFlare",
+                [VertexBuffer.PositionKind],
                 ["color", "viewportMatrix"],
                 ["textureSampler"], "");
         }
@@ -179,7 +179,7 @@
             engine.setAlphaMode(Engine.ALPHA_ONEONE);
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
             // Flares
             for (var index = 0; index < this.lensFlares.length; index++) {
@@ -217,9 +217,10 @@
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
             }
 
             if (this._indexBuffer) {

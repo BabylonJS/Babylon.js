@@ -6,21 +6,21 @@ var BABYLON;
             this.lensFlares = new Array();
             this.borderLimit = 300;
             this.layerMask = 0x0FFFFFFF;
-            this._vertexDeclaration = [2];
-            this._vertexStrideSize = 2 * 4;
+            this._vertexBuffers = {};
             this._isEnabled = true;
             this._scene = scene;
             this._emitter = emitter;
             this.id = name;
             scene.lensFlareSystems.push(this);
             this.meshesSelectionPredicate = function (m) { return m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0); };
+            var engine = scene.getEngine();
             // VBO
             var vertices = [];
             vertices.push(1, 1);
             vertices.push(-1, 1);
             vertices.push(-1, -1);
             vertices.push(1, -1);
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(engine, vertices, BABYLON.VertexBuffer.PositionKind, false, false, 2);
             // Indices
             var indices = [];
             indices.push(0);
@@ -29,9 +29,9 @@ var BABYLON;
             indices.push(0);
             indices.push(2);
             indices.push(3);
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
             // Effects
-            this._effect = this._scene.getEngine().createEffect("lensFlare", ["position"], ["color", "viewportMatrix"], ["textureSampler"], "");
+            this._effect = engine.createEffect("lensFlare", [BABYLON.VertexBuffer.PositionKind], ["color", "viewportMatrix"], ["textureSampler"], "");
         }
         Object.defineProperty(LensFlareSystem.prototype, "isEnabled", {
             get: function () {
@@ -138,7 +138,7 @@ var BABYLON;
             engine.setDepthBuffer(false);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_ONEONE);
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
             // Flares
             for (var index = 0; index < this.lensFlares.length; index++) {
                 var flare = this.lensFlares[index];
@@ -162,9 +162,10 @@ var BABYLON;
             return true;
         };
         LensFlareSystem.prototype.dispose = function () {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            var vertexBuffer = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = null;
             }
             if (this._indexBuffer) {
                 this._scene.getEngine()._releaseBuffer(this._indexBuffer);
@@ -208,6 +209,6 @@ var BABYLON;
             return serializationObject;
         };
         return LensFlareSystem;
-    })();
+    }());
     BABYLON.LensFlareSystem = LensFlareSystem;
 })(BABYLON || (BABYLON = {}));

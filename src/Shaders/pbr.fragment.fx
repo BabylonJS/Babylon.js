@@ -149,14 +149,25 @@ uniform mat4 reflectionMatrix;
 #endif
 
 #ifdef CAMERACOLORGRADING
-uniform sampler2D cameraColorGrading2DSampler;
-uniform vec4 vCameraColorGradingInfos;
-uniform vec4 vCameraColorGradingScaleOffset;
+	#include<colorGradingDefinition>
+#endif
+
+#ifdef CAMERACOLORCURVES
+	#include<colorCurvesDefinition>
 #endif
 
 // PBR
 #include<pbrShadowFunctions>
 #include<pbrFunctions>
+
+#ifdef CAMERACOLORGRADING
+	#include<colorGrading>
+#endif
+
+#ifdef CAMERACOLORCURVES
+	#include<colorCurves>
+#endif
+
 #include<harmonicsFunctions>
 #include<pbrLightFunctions>
 
@@ -599,7 +610,11 @@ void main(void) {
 	finalColor.rgb = clamp(finalColor.rgb, 0., 1.);
 
 #ifdef CAMERACOLORGRADING
-	finalColor = colorGrades(finalColor, cameraColorGrading2DSampler, vCameraColorGradingInfos, vCameraColorGradingScaleOffset);
+	finalColor = colorGrades(finalColor);
+#endif
+
+#ifdef CAMERACOLORCURVES
+	finalColor.rgb = applyColorCurves(finalColor.rgb);
 #endif
 
 	// Normal Display.
