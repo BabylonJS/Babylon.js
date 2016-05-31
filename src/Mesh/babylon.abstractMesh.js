@@ -171,27 +171,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(AbstractMesh.prototype, "actionManager", {
-            /**
-             * This scene's action manager
-             * @type {BABYLON.ActionManager}
-            */
-            get: function () {
-                if (!this._actionManager) {
-                    this.actionManager = new BABYLON.ActionManager(this.getScene());
-                }
-                return this._actionManager;
-            },
-            /**
-             * This scene's action manager
-             * @type {BABYLON.ActionManager}
-            */
-            set: function (value) {
-                this._actionManager = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(AbstractMesh.prototype, "skeleton", {
             get: function () {
                 return this._skeleton;
