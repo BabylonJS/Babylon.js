@@ -7202,8 +7202,8 @@ var BABYLON;
                 type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); //filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
@@ -7430,7 +7430,7 @@ var BABYLON;
                 else {
                     noMipmap = true;
                 }
-                if (textureType == gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
+                if (textureType === gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
@@ -21554,10 +21554,11 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube, samplingMode) {
             if (doNotChangeAspectRatio === void 0) { doNotChangeAspectRatio = true; }
             if (type === void 0) { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             if (isCube === void 0) { isCube = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, null, scene, !generateMipMaps);
             this.isCube = isCube;
             /**
@@ -21595,13 +21596,17 @@ var BABYLON;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
+            if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            }
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, samplingMode: samplingMode });
                 this.coordinatesMode = BABYLON.Texture.INVCUBIC_MODE;
                 this._textureMatrix = BABYLON.Matrix.Identity();
             }
             else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
+                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type, samplingMode: samplingMode });
             }
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
@@ -21731,6 +21736,9 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
+            if (this.useCameraPostProcesses !== undefined) {
+                useCameraPostProcess = this.useCameraPostProcesses;
+            }
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
             }

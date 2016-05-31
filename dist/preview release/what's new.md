@@ -21,6 +21,7 @@
 	- Vertex buffers can be marked as instanced to allow custom instancing attributes ([benaadams](https://github.com/benaadams)) 
 	- Mesh can have `overridenInstanceCount` set to specify the number of meshes to draw when custom instancing is used ([benaadams](https://github.com/benaadams)) 
   - **Updates**
+    - Added `renderTargetTexture.useCameraPostProcesses` to control postprocesses for render targets ([deltakosh](https://github.com/deltakosh))
     - Added `mesh.toLefthanded()` to convert a mesh from right handed system ([kesshi](https://github.com/Kesshi))
     - Renderlists can now also be defined using predicates ([deltakosh](https://github.com/deltakosh))
     - Added support for various normal maps conventions ([deltakosh](https://github.com/deltakosh))
