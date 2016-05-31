@@ -30,7 +30,7 @@
 
         public createVertexBuffer(kind: string, offset: number, size: number, stride?: number): VertexBuffer {
             // a lot of these parameters are ignored as they are overriden by the buffer
-            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride, this._instanced, offset, size);
+            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, this._instanced, offset, size);
         }
 
         // Properties
