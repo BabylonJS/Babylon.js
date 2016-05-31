@@ -26,7 +26,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    }());
+    })();
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -259,8 +259,15 @@ var BABYLON;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = BABYLON.Vector2.Zero();
             }
-            pii.canvasPointerPos.x = eventData.localPosition.x - this.position.x;
-            pii.canvasPointerPos.y = (this.engine.getRenderHeight() - eventData.localPosition.y) - this.position.y;
+            var camera = this._scene.activeCamera;
+            var engine = this._scene.getEngine();
+            var cameraViewport = camera.viewport;
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            // Moving coordinates to local viewport world
+            var x = eventData.localPosition.x / engine.getHardwareScalingLevel() - viewport.x;
+            var y = eventData.localPosition.y / engine.getHardwareScalingLevel() - viewport.y;
+            pii.canvasPointerPos.x = x - this.position.x;
+            pii.canvasPointerPos.y = engine.getRenderHeight() - y - this.position.y;
             pii.mouseWheelDelta = 0;
             if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
                 var event = eventData.event;
@@ -826,6 +833,6 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
 })(BABYLON || (BABYLON = {}));
