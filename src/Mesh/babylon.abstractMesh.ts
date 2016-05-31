@@ -116,26 +116,11 @@
 
         public alwaysSelectAsActiveMesh = false;
 
-        // Actions
-        private _actionManager: ActionManager;
         /**
          * This scene's action manager
          * @type {BABYLON.ActionManager}
         */
-        public get actionManager(): ActionManager {
-            if (!this._actionManager) {
-                this.actionManager = new ActionManager(this.getScene());
-            }
-
-            return this._actionManager;
-        }
-        /**
-         * This scene's action manager
-         * @type {BABYLON.ActionManager}
-        */
-        public set actionManager(value: ActionManager) {
-            this._actionManager = value;
-        }
+        public actionManager: ActionManager;
 
         // Physics
         public physicsImpostor: BABYLON.PhysicsImpostor;

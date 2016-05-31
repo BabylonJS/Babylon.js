@@ -9043,27 +9043,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(AbstractMesh.prototype, "actionManager", {
-            /**
-             * This scene's action manager
-             * @type {BABYLON.ActionManager}
-            */
-            get: function () {
-                if (!this._actionManager) {
-                    this.actionManager = new BABYLON.ActionManager(this.getScene());
-                }
-                return this._actionManager;
-            },
-            /**
-             * This scene's action manager
-             * @type {BABYLON.ActionManager}
-            */
-            set: function (value) {
-                this._actionManager = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(AbstractMesh.prototype, "skeleton", {
             get: function () {
                 return this._skeleton;
@@ -15034,27 +15013,6 @@ var BABYLON;
         Object.defineProperty(Scene.prototype, "unTranslatedPointer", {
             get: function () {
                 return new BABYLON.Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Scene.prototype, "actionManager", {
-            /**
-             * This scene's action manager
-             * @type {BABYLON.ActionManager}
-            */
-            get: function () {
-                if (!this._sceneActionManager) {
-                    this.actionManager = new BABYLON.ActionManager(this);
-                }
-                return this._sceneActionManager;
-            },
-            /**
-             * This scene's action manager
-             * @type {BABYLON.ActionManager}
-            */
-            set: function (value) {
-                this._sceneActionManager = value;
             },
             enumerable: true,
             configurable: true

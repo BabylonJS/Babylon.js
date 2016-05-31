@@ -395,27 +395,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Scene.prototype, "actionManager", {
-            /**
-             * This scene's action manager
-             * @type {BABYLON.ActionManager}
-            */
-            get: function () {
-                if (!this._sceneActionManager) {
-                    this.actionManager = new BABYLON.ActionManager(this);
-                }
-                return this._sceneActionManager;
-            },
-            /**
-             * This scene's action manager
-             * @type {BABYLON.ActionManager}
-            */
-            set: function (value) {
-                this._sceneActionManager = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Scene.prototype, "debugLayer", {
             // Properties
             get: function () {
