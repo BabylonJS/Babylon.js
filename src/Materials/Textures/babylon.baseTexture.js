@@ -182,6 +182,6 @@ var BABYLON;
             BABYLON.serialize()
         ], BaseTexture.prototype, "isRenderTarget", void 0);
         return BaseTexture;
-    }());
+    })();
     BABYLON.BaseTexture = BaseTexture;
 })(BABYLON || (BABYLON = {}));
