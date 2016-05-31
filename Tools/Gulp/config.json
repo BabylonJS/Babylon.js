@@ -14,7 +14,7 @@
       "!../../src/**/*.d.ts",
       "../../external references/**/*.d.ts"
     ],
-   "files": [
+    "files": [
       "../../src/Math/babylon.math.js",
       "../../src/Tools/babylon.decorators.js",
       "../../src/Tools/babylon.observable.js",
@@ -65,6 +65,7 @@
       "../../src/Rendering/babylon.renderingManager.js",
       "../../src/Rendering/babylon.renderingGroup.js",
       "../../src/babylon.scene.js",
+      "../../src/Mesh/babylon.buffer.js",
       "../../src/Mesh/babylon.vertexBuffer.js",
       "../../src/Mesh/babylon.instancedMesh.js",
       "../../src/Mesh/babylon.mesh.js",

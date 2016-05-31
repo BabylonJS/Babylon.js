@@ -158,12 +158,16 @@
             };
         }
 
-        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number, bias: Vector2 = null): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number, bias: Vector2 = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
+            if (!stride) {
+                stride = 3;
+            }
+
             for (var index = start; index < start + count; index++) {
-                var current = new Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
+                var current = new Vector3(positions[index * stride], positions[index * stride + 1], positions[index * stride + 2]);
 
                 minimum = Vector3.Minimize(current, minimum);
                 maximum = Vector3.Maximize(current, maximum);
