@@ -123,9 +123,9 @@
 
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
-            // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY)
-            this._vertexData = new Float32Array(capacity * 11);
-            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 11);
+            // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
+            this._vertexData = new Float32Array(capacity * 12);
+            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 12);
 
             var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
             var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
@@ -213,7 +213,7 @@
         }
 
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
-            var offset = index * 11;
+            var offset = index * 12;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
             this._vertexData[offset + 2] = particle.position.z;
@@ -449,7 +449,6 @@
         public clone(name: string, newEmitter: any): ParticleSystem {
             var result = new ParticleSystem(name, this._capacity, this._scene);
 
-            // TODO
             Tools.DeepCopy(this, result, ["particles"]);
 
             if (newEmitter === undefined) {
