@@ -103,6 +103,6 @@ void main(void) {
 	pos.xy = (pos2.xy - origin) * properties.xy;
 	pos.z = 1.0;
 	pos.w = 1.0;
-	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, zBias.y);
+	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);
 
 }
