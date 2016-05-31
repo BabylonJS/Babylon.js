@@ -95,7 +95,6 @@
         public renderingGroupId = 0;
         public material: Material;
         public receiveShadows = false;
-        public actionManager: ActionManager;
         public renderOutline = false;
         public outlineColor = Color3.Red();
         public outlineWidth = 0.02;
@@ -116,6 +115,12 @@
         public layerMask: number = 0x0FFFFFFF;
 
         public alwaysSelectAsActiveMesh = false;
+
+        /**
+         * This scene's action manager
+         * @type {BABYLON.ActionManager}
+        */
+        public actionManager: ActionManager;
 
         // Physics
         public physicsImpostor: BABYLON.PhysicsImpostor;

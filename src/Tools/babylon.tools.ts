@@ -158,12 +158,16 @@
             };
         }
 
-        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number, bias: Vector2 = null): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number, bias: Vector2 = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
+            if (!stride) {
+                stride = 3;
+            }
+
             for (var index = start; index < start + count; index++) {
-                var current = new Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
+                var current = new Vector3(positions[index * stride], positions[index * stride + 1], positions[index * stride + 2]);
 
                 minimum = Vector3.Minimize(current, minimum);
                 maximum = Vector3.Maximize(current, maximum);
@@ -176,6 +180,50 @@
                 maximum.x += maximum.x * bias.x + bias.y;
                 maximum.y += maximum.y * bias.x + bias.y;
                 maximum.z += maximum.z * bias.x + bias.y;
+            }
+
+            return {
+                minimum: minimum,
+                maximum: maximum
+            };
+        }
+
+        public static Vector2ArrayFeeder(array: Array<Vector2>|Float32Array): (i) => Vector2 {
+            return (index: number) => {
+                let isFloatArray = ((<Float32Array>array).BYTES_PER_ELEMENT !== undefined);
+                let length = isFloatArray ? array.length / 2 : array.length; 
+
+                if (index >= length) {
+                    return null;
+                }
+
+                if (isFloatArray) {
+                    let fa = <Float32Array>array;
+                    return new Vector2(fa[index * 2 + 0], fa[index * 2 + 1]);
+                } 
+                let a = <Array<Vector2>>array;
+                return a[index];
+            };
+        }
+
+        public static ExtractMinAndMaxVector2(feeder: (index: number) => Vector2, bias: Vector2 = null) : { minimum: Vector2; maximum: Vector2 } {
+            var minimum = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new Vector2(-Number.MAX_VALUE, -Number.MAX_VALUE);
+
+            let i = 0;
+            let cur = feeder(i++);
+            while (cur) {
+                minimum = Vector2.Minimize(cur, minimum);
+                maximum = Vector2.Maximize(cur, maximum);
+
+                cur = feeder(i++);
+            }
+
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
             }
 
             return {
@@ -219,15 +267,10 @@
             }
         }
 
-        public static RequestFullscreen(element): void {
-            if (element.requestFullscreen)
-                element.requestFullscreen();
-            else if (element.msRequestFullscreen)
-                element.msRequestFullscreen();
-            else if (element.webkitRequestFullscreen)
-                element.webkitRequestFullscreen();
-            else if (element.mozRequestFullScreen)
-                element.mozRequestFullScreen();
+        public static RequestFullscreen(element, options?: any): void {
+            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+            if (!requestFunction) return;
+            requestFunction.call(element, options);
         }
 
         public static ExitFullscreen(): void {
@@ -938,7 +981,8 @@
          * @param array
          */
         public static arrayOrStringFeeder(array: any): (i) => number {
-            return (index: number) => {
+            return (index: number) =>
+            {
                 if (index >= array.length) {
                     return null;
                 }

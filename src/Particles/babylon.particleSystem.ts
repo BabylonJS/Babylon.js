@@ -77,13 +77,12 @@
 
         private _capacity: number;
         private _scene: Scene;
-        private _vertexDeclaration = [3, 4, 4];
-        private _vertexStrideSize = 11 * 4; // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY)
         private _stockParticles = new Array<Particle>();
         private _newPartsExcess = 0;
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexData: Float32Array;
+        private _vertexBuffer: Buffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
-        private _vertices: Float32Array;
         private _effect: Effect;
         private _customEffect: Effect;
         private _cachedDefines: string;
@@ -110,9 +109,6 @@
 
             scene.particleSystems.push(this);
 
-            // VBO
-            this._vertexBuffer = scene.getEngine().createDynamicVertexBuffer(capacity * this._vertexStrideSize * 4);
-
             var indices = [];
             var index = 0;
             for (var count = 0; count < capacity; count++) {
@@ -127,7 +123,17 @@
 
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
-            this._vertices = new Float32Array(capacity * this._vertexStrideSize);
+            // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
+            this._vertexData = new Float32Array(capacity * 11 * 4);
+            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 11);
+
+            var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
+            var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
+            var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
+
+            this._vertexBuffers[VertexBuffer.PositionKind] = positions;
+            this._vertexBuffers[VertexBuffer.ColorKind] = colors;
+            this._vertexBuffers["options"] = options;
 
             // Default behaviors
             this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
@@ -208,17 +214,17 @@
 
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
             var offset = index * 11;
-            this._vertices[offset] = particle.position.x;
-            this._vertices[offset + 1] = particle.position.y;
-            this._vertices[offset + 2] = particle.position.z;
-            this._vertices[offset + 3] = particle.color.r;
-            this._vertices[offset + 4] = particle.color.g;
-            this._vertices[offset + 5] = particle.color.b;
-            this._vertices[offset + 6] = particle.color.a;
-            this._vertices[offset + 7] = particle.angle;
-            this._vertices[offset + 8] = particle.size;
-            this._vertices[offset + 9] = offsetX;
-            this._vertices[offset + 10] = offsetY;
+            this._vertexData[offset] = particle.position.x;
+            this._vertexData[offset + 1] = particle.position.y;
+            this._vertexData[offset + 2] = particle.position.z;
+            this._vertexData[offset + 3] = particle.color.r;
+            this._vertexData[offset + 4] = particle.color.g;
+            this._vertexData[offset + 5] = particle.color.b;
+            this._vertexData[offset + 6] = particle.color.a;
+            this._vertexData[offset + 7] = particle.angle;
+            this._vertexData[offset + 8] = particle.size;
+            this._vertexData[offset + 9] = offsetX;
+            this._vertexData[offset + 10] = offsetY;
         }
 
         private _update(newParticles: number): void {
@@ -287,7 +293,7 @@
 
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
-                    ["position", "color", "options"],
+                    [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"],
                     ["invView", "view", "projection", "vClipPlane", "textureMask"],
                     ["diffuseSampler"], join);
             }
@@ -363,8 +369,8 @@
                 this._appendParticleVertex(offset++, particle, 1, 1);
                 this._appendParticleVertex(offset++, particle, 0, 1);
             }
-            var engine = this._scene.getEngine();
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
+
+            this._vertexBuffer.update(this._vertexData);
         }
 
         public render(): number {
@@ -395,7 +401,7 @@
             }
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
             // Draw order
             if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
@@ -416,7 +422,7 @@
 
         public dispose(): void {
             if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
+                this._vertexBuffer.dispose();
                 this._vertexBuffer = null;
             }
 
@@ -443,7 +449,7 @@
         public clone(name: string, newEmitter: any): ParticleSystem {
             var result = new ParticleSystem(name, this._capacity, this._scene);
 
-            Tools.DeepCopy(this, result, ["particles"], ["_vertexDeclaration", "_vertexStrideSize"]);
+            Tools.DeepCopy(this, result, ["particles"]);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;

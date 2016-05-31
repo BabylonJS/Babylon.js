@@ -12,17 +12,17 @@ var BABYLON;
             this.renderSelf = new Array();
         }
         return _InstancesBatch;
-    })();
+    }());
     BABYLON._InstancesBatch = _InstancesBatch;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
         /**
          * @constructor
-         * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
-         * @param {Scene} scene - The scene to add this mesh to.
-         * @param {Node} parent - The parent of this mesh, if it has one
-         * @param {Mesh} source - An optional Mesh from which geometry is shared, cloned.
-         * @param {boolean} doNotCloneChildren - When cloning, skip cloning child meshes of source, default False.
+         * @param {string} name The value used by scene.getMeshByName() to do a lookup.
+         * @param {Scene} scene The scene to add this mesh to.
+         * @param {Node} parent The parent of this mesh, if it has one
+         * @param {Mesh} source An optional Mesh from which geometry is shared, cloned.
+         * @param {boolean} doNotCloneChildren When cloning, skip cloning child meshes of source, default False.
          *                  When false, achieved by calling a clone(), also passing False.
          *                  This will make creation of children, recursive.
          */
@@ -230,9 +230,9 @@ var BABYLON;
         /**
          * Add a mesh as LOD level triggered at the given distance.
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD
-         * @param {number} distance - the distance from the center of the object to show this level
-         * @param {Mesh} mesh - the mesh to be added as LOD level
-         * @return {Mesh} this mesh (for chaining)
+         * @param {number} distance The distance from the center of the object to show this level
+         * @param {Mesh} mesh The mesh to be added as LOD level
+         * @return {Mesh} This mesh (for chaining)
          */
         Mesh.prototype.addLODLevel = function (distance, mesh) {
             if (mesh && mesh._masterMesh) {
@@ -264,8 +264,8 @@ var BABYLON;
         /**
          * Remove a mesh from the LOD array
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD
-         * @param {Mesh} mesh - the mesh to be removed.
-         * @return {Mesh} this mesh (for chaining)
+         * @param {Mesh} mesh The mesh to be removed.
+         * @return {Mesh} This mesh (for chaining)
          */
         Mesh.prototype.removeLODLevel = function (mesh) {
             for (var index = 0; index < this._LODLevels.length; index++) {
@@ -314,7 +314,7 @@ var BABYLON;
         };
         Object.defineProperty(Mesh.prototype, "geometry", {
             /**
-             * Returns the mesh internal `Geometry` object.
+             * Returns the mesh internal Geometry object.
              */
             get: function () {
                 return this._geometry;
@@ -356,7 +356,7 @@ var BABYLON;
             return this._geometry.getVerticesData(kind, copyWhenShared);
         };
         /**
-         * Returns the mesh `VertexBuffer` object from the requested `kind` : positions, indices, normals, etc.
+         * Returns the mesh VertexBuffer object from the requested `kind` : positions, indices, normals, etc.
          * Returns `undefined` if the mesh has no geometry.
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -515,6 +515,16 @@ var BABYLON;
         Mesh.prototype.unfreezeNormals = function () {
             this._areNormalsFrozen = false;
         };
+        Object.defineProperty(Mesh.prototype, "overridenInstanceCount", {
+            /**
+             * Overrides instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshs
+             */
+            set: function (count) {
+                this._overridenInstanceCount = count;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         Mesh.prototype._preActivate = function () {
             var sceneRenderId = this.getScene().getRenderId();
@@ -541,7 +551,7 @@ var BABYLON;
             this._visibleInstances[renderId].push(instance);
         };
         /**
-         * This method recomputes and sets a new `BoundingInfo` to the mesh unless it is locked.
+         * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
          */
         Mesh.prototype.refreshBoundingInfo = function () {
@@ -591,12 +601,12 @@ var BABYLON;
         };
         /**
          * Sets the vertex data of the mesh geometry for the requested `kind`.
-         * If the mesh has no geometry, a new `Geometry` object is set to the mesh and then passed this vertex data.
+         * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
          * The `data` are either a numeric array either a Float32Array.
-         * The parameter `updatable` is passed as is to the underlying `Geometry` object constructor (if initianilly none) or updater.
+         * The parameter `updatable` is passed as is to the underlying Geometry object constructor (if initianilly none) or updater.
          * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).
-         * Note that a new underlying `VertexBuffer` object is created each call.
-         * If the `kind` is the `PositionKind`, the mesh `BoundingInfo` is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
+         * Note that a new underlying VertexBuffer object is created each call.
+         * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
          *
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -623,12 +633,19 @@ var BABYLON;
                 this._geometry.setVerticesData(kind, data, updatable, stride);
             }
         };
+        Mesh.prototype.setVerticesBuffer = function (buffer) {
+            if (!this._geometry) {
+                var scene = this.getScene();
+                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene).applyToMesh(this);
+            }
+            this._geometry.setVerticesBuffer(buffer);
+        };
         /**
          * Updates the existing vertex data of the mesh geometry for the requested `kind`.
          * If the mesh has no geometry, it is simply returned as it is.
          * The `data` are either a numeric array either a Float32Array.
-         * No new underlying `VertexBuffer` object is created.
-         * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh `BoundingInfo` is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
+         * No new underlying VertexBuffer object is created.
+         * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
          * If the parameter `makeItUnique` is true, a new global geometry is created from this positions and is set to the mesh.
          *
          * Possible `kind` values :
@@ -715,6 +732,15 @@ var BABYLON;
                 this._geometry.setIndices(indices, totalVertices);
             }
         };
+        /**
+         * Invert the geometry to move from a right handed system to a left handed one.
+         */
+        Mesh.prototype.toLeftHanded = function () {
+            if (!this._geometry) {
+                return;
+            }
+            this._geometry.toLeftHanded();
+        };
         Mesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
             // Wireframe
@@ -737,7 +763,7 @@ var BABYLON;
                 }
             }
             // VBOs
-            engine.bindMultiBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
+            engine.bindBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
         };
         Mesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
@@ -827,40 +853,47 @@ var BABYLON;
             var visibleInstances = batch.visibleInstances[subMesh._id];
             var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
+            var currentInstancesBufferSize = this._instancesBufferSize;
+            var instancesBuffer = this._instancesBuffer;
             while (this._instancesBufferSize < bufferSize) {
                 this._instancesBufferSize *= 2;
             }
-            if (!this._worldMatricesInstancesBuffer || this._worldMatricesInstancesBuffer.capacity < this._instancesBufferSize) {
-                if (this._worldMatricesInstancesBuffer) {
-                    engine.deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
-                }
-                this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(this._instancesBufferSize);
-                this._worldMatricesInstancesArray = new Float32Array(this._instancesBufferSize / 4);
+            if (!this._instancesData || currentInstancesBufferSize != this._instancesBufferSize) {
+                this._instancesData = new Float32Array(this._instancesBufferSize / 4);
             }
             var offset = 0;
             var instancesCount = 0;
             var world = this.getWorldMatrix();
             if (batch.renderSelf[subMesh._id]) {
-                world.copyToArray(this._worldMatricesInstancesArray, offset);
+                world.copyToArray(this._instancesData, offset);
                 offset += 16;
                 instancesCount++;
             }
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix().copyToArray(this._worldMatricesInstancesArray, offset);
+                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
             }
-            var offsetLocation0 = effect.getAttributeLocationByName("world0");
-            var offsetLocation1 = effect.getAttributeLocationByName("world1");
-            var offsetLocation2 = effect.getAttributeLocationByName("world2");
-            var offsetLocation3 = effect.getAttributeLocationByName("world3");
-            var offsetLocations = [offsetLocation0, offsetLocation1, offsetLocation2, offsetLocation3];
-            engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocations);
+            if (!instancesBuffer || currentInstancesBufferSize != this._instancesBufferSize) {
+                if (instancesBuffer) {
+                    instancesBuffer.dispose();
+                }
+                instancesBuffer = new BABYLON.Buffer(engine, this._instancesData, true, 16, false, true);
+                this._instancesBuffer = instancesBuffer;
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
+                engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
+            }
+            else {
+                instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
+            }
             this._draw(subMesh, fillMode, instancesCount);
-            engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
+            engine.unbindInstanceAttributes();
         };
         Mesh.prototype._processRendering = function (subMesh, effect, fillMode, batch, hardwareInstancedRendering, onBeforeDraw) {
             var scene = this.getScene();
@@ -874,7 +907,7 @@ var BABYLON;
                     if (onBeforeDraw) {
                         onBeforeDraw(false, this.getWorldMatrix());
                     }
-                    this._draw(subMesh, fillMode);
+                    this._draw(subMesh, fillMode, this._overridenInstanceCount);
                 }
                 if (batch.visibleInstances[subMesh._id]) {
                     for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
@@ -957,7 +990,7 @@ var BABYLON;
             this.onAfterRenderObservable.notifyObservers(this);
         };
         /**
-         * Returns an array populated with `ParticleSystem` objects whose the mesh is the emitter.
+         * Returns an array populated with ParticleSystem objects whose the mesh is the emitter.
          */
         Mesh.prototype.getEmittedParticleSystems = function () {
             var results = new Array();
@@ -970,7 +1003,7 @@ var BABYLON;
             return results;
         };
         /**
-         * Returns an array populated with `ParticleSystem` objects whose the mesh or its children are the emitter.
+         * Returns an array populated with ParticleSystem objects whose the mesh or its children are the emitter.
          */
         Mesh.prototype.getHierarchyEmittedParticleSystems = function () {
             var results = new Array();
@@ -1008,7 +1041,7 @@ var BABYLON;
             }
         };
         /**
-         * Boolean, true is the mesh in the frustum defined by the `Plane` objects from the `frustumPlanes` array parameter.
+         * Boolean, true is the mesh in the frustum defined by the Plane objects from the `frustumPlanes` array parameter.
          */
         Mesh.prototype.isInFrustum = function (frustumPlanes) {
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
@@ -1131,7 +1164,7 @@ var BABYLON;
             return true;
         };
         /**
-         * Returns a new `Mesh` object generated from the current mesh properties.
+         * Returns a new Mesh object generated from the current mesh properties.
          * This method must not get confused with createInstance().
          * The parameter `name` is a string, the name given to the new mesh.
          * The optional parameter `newParent` can be any `Node` object (default `null`).
@@ -1151,9 +1184,9 @@ var BABYLON;
                 this._geometry.releaseForMesh(this, true);
             }
             // Instances
-            if (this._worldMatricesInstancesBuffer) {
-                this.getEngine().deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
-                this._worldMatricesInstancesBuffer = null;
+            if (this._instancesBuffer) {
+                this._instancesBuffer.dispose();
+                this._instancesBuffer = null;
             }
             while (this.instances.length) {
                 this.instances[0].dispose();
@@ -1401,7 +1434,7 @@ var BABYLON;
         };
         // Instances
         /**
-         * Creates a new `InstancedMesh` object from the mesh model.
+         * Creates a new InstancedMesh object from the mesh model.
          * An instance shares the same properties and the same material than its model.
          * Only these properties of each instance can then be set individually :
          * - position
@@ -1410,7 +1443,7 @@ var BABYLON;
          * - setPivotMatrix
          * - scaling
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_Instances
-         * Warning : this method is not supported for `Line` mesh and `LineSystem`
+         * Warning : this method is not supported for Line mesh and LineSystem
          */
         Mesh.prototype.createInstance = function (name) {
             return new BABYLON.InstancedMesh(name, this);
@@ -1485,7 +1518,7 @@ var BABYLON;
         };
         // Statics
         /**
-         * Returns a new `Mesh` object what is a deep copy of the passed mesh.
+         * Returns a new Mesh object what is a deep copy of the passed mesh.
          * The parameter `parsedMesh` is the mesh to be copied.
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
@@ -1653,7 +1686,7 @@ var BABYLON;
         };
         /**
          * Creates a ribbon mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The ribbon is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
          *
          * Please read this full tutorial to understand how to design a ribbon : http://doc.babylonjs.com/tutorials/Ribbon_Tutorial
@@ -1680,7 +1713,7 @@ var BABYLON;
         };
         /**
          * Creates a plane polygonal mesh.  By default, this is a disc.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `radius` sets the radius size (float) of the polygon (default 0.5).
          * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc.
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
@@ -1698,7 +1731,7 @@ var BABYLON;
         };
         /**
          * Creates a box mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `size` sets the size (float) of each box side (default 1).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
@@ -1714,7 +1747,7 @@ var BABYLON;
         };
         /**
          * Creates a sphere mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `diameter` sets the diameter size (float) of the sphere (default 1).
          * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
@@ -1734,7 +1767,7 @@ var BABYLON;
         };
         /**
          * Creates a cylinder or a cone mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `height` sets the height size (float) of the cylinder/cone (float, default 2).
          * The parameter `diameter` sets the diameter of the top and bottom cap at once (float, default 1).
          * The parameters `diameterTop` and `diameterBottom` overwrite the parameter `diameter` and set respectively the top cap and bottom cap diameter (floats, default 1). The parameter "diameterBottom" can't be zero.
@@ -1767,7 +1800,7 @@ var BABYLON;
         // Torus  (Code from SharpDX.org)
         /**
          * Creates a torus mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `diameter` sets the diameter size (float) of the torus (default 1).
          * The parameter `thickness` sets the diameter size of the tube of the torus (float, default 0.5).
          * The parameter `tessellation` sets the number of torus sides (postive integer, default 16).
@@ -1787,7 +1820,7 @@ var BABYLON;
         };
         /**
          * Creates a torus knot mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `radius` sets the global radius size (float) of the torus knot (default 2).
          * The parameter `radialSegments` sets the number of sides on each tube segments (positive integer, default 32).
          * The parameter `tubularSegments` sets the number of tubes to decompose the knot into (positive integer, default 32).
@@ -1811,7 +1844,7 @@ var BABYLON;
         };
         /**
          * Creates a line mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter.
          * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
          * The parameter `points` is an array successive Vector3.
@@ -1829,7 +1862,7 @@ var BABYLON;
         };
         /**
          * Creates a dashed line mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter.
          * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
          * The parameter `points` is an array successive Vector3.
@@ -1853,7 +1886,7 @@ var BABYLON;
         /**
          * Creates an extruded shape mesh.
          * The extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          *
          * Please read this full tutorial to understand how to design an extruded shape : http://doc.babylonjs.com/tutorials/Parametric_Shapes#extrusion
          * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be
@@ -1884,7 +1917,7 @@ var BABYLON;
         /**
          * Creates an custom extruded shape mesh.
          * The custom extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          *
          * Please read this full tutorial to understand how to design a custom extruded shape : http://doc.babylonjs.com/tutorials/Parametric_Shapes#extrusion
          * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be
@@ -1892,15 +1925,19 @@ var BABYLON;
          * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
          * The parameter `rotationFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path
          * and the distance of this point from the begining of the path :
-         * ```rotationFunction = function(i, distance) {
-         *  // do things
-         *  return rotationValue; }```
+         * ```javascript
+         * var rotationFunction = function(i, distance) {
+         *     // do things
+         *     return rotationValue; }
+         * ```
          * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
          * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path
          * and the distance of this point from the begining of the path :
-         * ````scaleFunction = function(i, distance) {
-         *   // do things
-         *  return scaleValue;}```
+         * ```javascript
+         * var scaleFunction = function(i, distance) {
+         *     // do things
+         *    return scaleValue;}
+         * ```
          * It must returns a float value that will be the scale value applied to the shape on each path point.
          * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray`.
          * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray`.
@@ -1929,7 +1966,7 @@ var BABYLON;
         /**
          * Creates lathe mesh.
          * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          *
          * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be
          * rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero.
@@ -1951,7 +1988,7 @@ var BABYLON;
         };
         /**
          * Creates a plane mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `size` sets the size (float) of both sides of the plane at once (default 1).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
@@ -1969,7 +2006,7 @@ var BABYLON;
         };
         /**
          * Creates a ground mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameters `width` and `height` (floats, default 1) set the width and height sizes of the ground.
          * The parameter `subdivisions` (positive integer) sets the number of subdivisions per side.
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
@@ -1985,7 +2022,7 @@ var BABYLON;
         };
         /**
          * Creates a tiled ground mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameters `xmin` and `xmax` (floats, default -1 and 1) set the ground minimum and maximum X coordinates.
          * The parameters `zmin` and `zmax` (floats, default -1 and 1) set the ground minimum and maximum Z coordinates.
          * The parameter `subdivisions` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the
@@ -2009,15 +2046,18 @@ var BABYLON;
         /**
          * Creates a ground mesh from a height map.
          * tuto : http://doc.babylonjs.com/tutorials/14._Height_Map
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `url` sets the URL of the height map image resource.
          * The parameters `width` and `height` (positive floats, default 10) set the ground width and height sizes.
          * The parameter `subdivisions` (positive integer, default 1) sets the number of subdivision per side.
          * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.
          * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.
          * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).
-         * This function is passed the newly built mesh : ```function(mesh) { // do things
-         * return; }```
+         * This function is passed the newly built mesh :
+         * ```javascript
+         * function(mesh) { // do things
+         *     return; }
+         * ```
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable, onReady) {
@@ -2036,16 +2076,18 @@ var BABYLON;
          * Creates a tube mesh.
          * The tube is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
          *
-         * Please consider using the same method from the `MeshBuilder` class instead.
-         * The parameter `path` is a required array of successive `Vector3`. It is the curve used as the axis of the tube.
+         * Please consider using the same method from the MeshBuilder class instead.
+         * The parameter `path` is a required array of successive Vector3. It is the curve used as the axis of the tube.
          * The parameter `radius` (positive float, default 1) sets the tube radius size.
          * The parameter `tessellation` (positive float, default 64) is the number of sides on the tubular surface.
          * The parameter `radiusFunction` (javascript function, default null) is a vanilla javascript function. If it is not null, it overwrittes the parameter `radius`.
          * This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path.
          * It must return a radius value (positive float) :
-         * ```var radiusFunction = function(i, distance) {
-         *   // do things
-         *   return radius; }```
+         * ```javascript
+         * var radiusFunction = function(i, distance) {
+         *     // do things
+         *     return radius; }
+         * ```
          * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
          * The optional parameter `instance` is an instance of an existing Tube object to be updated with the passed `pathArray` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#tube
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
@@ -2069,14 +2111,14 @@ var BABYLON;
         /**
          * Creates a polyhedron mesh.
          *
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial
          *  to choose the wanted type.
          * The parameter `size` (positive float, default 1) sets the polygon size.
          * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value).
          * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`.
          * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
-         * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (`Color4`, default `(1, 1, 1, 1)`) and faceUV (`Vector4`, default `(0, 0, 1, 1)`).
+         * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`).
          * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
          * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored.
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
@@ -2088,7 +2130,7 @@ var BABYLON;
         };
         /**
          * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `radius` sets the radius size (float) of the icosphere (default 1).
          * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`).
          * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size.
@@ -2102,11 +2144,11 @@ var BABYLON;
         };
         /**
          * Creates a decal mesh.
-         * Please consider using the same method from the `MeshBuilder` class instead.
+         * Please consider using the same method from the MeshBuilder class instead.
          * A decal is a mesh usually applied as a model onto the surface of another mesh. So don't forget the parameter `sourceMesh` depicting the decal.
-         * The parameter `position` (`Vector3`, default `(0, 0, 0)`) sets the position of the decal in World coordinates.
-         * The parameter `normal` (`Vector3`, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates.
-         * The parameter `size` (`Vector3`, default `(1, 1, 1)`) sets the decal scaling.
+         * The parameter `position` (Vector3, default `(0, 0, 0)`) sets the position of the decal in World coordinates.
+         * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates.
+         * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling.
          * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal.
          */
         Mesh.CreateDecal = function (name, sourceMesh, position, normal, size, angle) {
@@ -2233,7 +2275,7 @@ var BABYLON;
         // Tools
         /**
          * Returns an object `{min: Vector3, max: Vector3}`
-         * This min and max `Vector3` are the minimum and maximum vectors of each mesh bounding box from the passed array, in the World system
+         * This min and max Vector3 are the minimum and maximum vectors of each mesh bounding box from the passed array, in the World system
          */
         Mesh.MinMax = function (meshes) {
             var minVector = null;
@@ -2329,6 +2371,6 @@ var BABYLON;
         Mesh._CAP_END = 2;
         Mesh._CAP_ALL = 3;
         return Mesh;
-    })(BABYLON.AbstractMesh);
+    }(BABYLON.AbstractMesh));
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));

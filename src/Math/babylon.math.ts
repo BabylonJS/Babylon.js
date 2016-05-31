@@ -304,7 +304,31 @@
 
             return this;
         }
-
+        
+       /**
+         * Multipy an RGBA Color4 value by another and return a new Color4 object
+         * @param color The Color4 (RGBA) value to multiply by
+         * @returns A new Color4.
+         */
+        public multiply(color: Color4): Color4 {
+            return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
+        }
+        
+        /**
+         * Multipy an RGBA Color4 value by another and push the result in a reference value
+         * @param color The Color4 (RGBA) value to multiply by
+         * @param result The Color4 (RGBA) to fill the result in 
+         * @returns the result Color4.
+         */
+        public multiplyToRef(color: Color4, result: Color4): Color4 {
+            result.r = this.r * color.r;
+            result.g = this.g * color.g;
+            result.b = this.b * color.b;
+            result.a = this.a * color.a;
+            
+            return result;
+        }
+        
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
@@ -419,7 +443,7 @@
         }
 
         // Operators
-        public toArray(array: number[], index: number = 0): Vector2 {
+        public toArray(array: number[] | Float32Array, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
 
@@ -452,12 +476,26 @@
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
+        public addToRef(otherVector: Vector2, result: Vector2): Vector2 {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+
+            return this;
+        }
+
         public addVector3(otherVector: Vector3): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        }
+
+        public subtractToRef(otherVector: Vector2, result: Vector2): Vector2 {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+
+            return this;
         }
 
         public subtractInPlace(otherVector: Vector2): Vector2 {
@@ -651,6 +689,15 @@
             result.y = y;
         }
 
+        public static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2) {
+            let a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+            let sign = a < 0 ? -1 : 1;
+            let s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
+            let t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
+
+            return s > 0 && t > 0 && (s + t) < 2 * a * sign;            
+        }
+
         public static Distance(value1: Vector2, value2: Vector2): number {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
         }
@@ -660,6 +707,17 @@
             var y = value1.y - value2.y;
 
             return (x * x) + (y * y);
+        }
+
+        public static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number {
+            let l2 = Vector2.DistanceSquared(segA, segB);
+            if (l2 === 0.0) {
+                return Vector2.Distance(p, segA);
+            }
+            let v = segB.subtract(segA);
+            let t = Math.max(0, Math.min(1, Vector2.Dot(p.subtract(segA), v) / l2));
+            let proj = segA.add(v.multiplyByFloats(t, t));
+            return Vector2.Distance(p, proj);
         }
     }
 

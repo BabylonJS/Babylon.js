@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class Skeleton {
         public bones = new Array<Bone>();
-
+        public dimensionsAtRest: Vector3;
         public needInitialSkinMatrix = false;
 
         private _scene: Scene;
@@ -41,23 +41,23 @@
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
-        public toString(fullDetails? : boolean) : string {
+        public toString(fullDetails?: boolean): string {
             var ret = `Name: ${this.name}, nBones: ${this.bones.length}`;
             ret += `, nAnimationRanges: ${this._ranges ? Object.keys(this._ranges).length : "none"}`;
             if (fullDetails) {
-                ret += ", Ranges: {"; 
+                ret += ", Ranges: {";
                 let first = true;
                 for (let name in this._ranges) {
                     if (first) {
                         ret += ", ";
-                        first = false; 
+                        first = false;
                     }
-                    ret += name; 
+                    ret += name;
                 }
                 ret += "}";
             }
             return ret;
-        } 
+        }
 
         /**
         * Get bone's index searching by name
@@ -72,7 +72,7 @@
             }
             return -1;
         }
-        
+
         public createAnimationRange(name: string, from: number, to: number): void {
             // check name not already in use
             if (!this._ranges[name]) {
@@ -97,15 +97,15 @@
         public getAnimationRange(name: string): AnimationRange {
             return this._ranges[name];
         }
-        
+
         /**
          *  Returns as an Array, all AnimationRanges defined on this skeleton
          */
         public getAnimationRanges(): AnimationRange[] {
-            var animationRanges :  AnimationRange[] = [];
-            var name : string;
+            var animationRanges: AnimationRange[] = [];
+            var name: string;
             var i: number = 0;
-            for (name in this._ranges){
+            for (name in this._ranges) {
                 animationRanges[i] = this._ranges[name];
                 i++;
             }
@@ -121,7 +121,7 @@
             }
             var ret = true;
             var frameOffset = this._getHighestAnimationFrame() + 1;
-            
+
             // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
             var boneDict = {};
             var sourceBones = source.bones;
@@ -131,11 +131,11 @@
                 boneDict[sourceBones[i].name] = sourceBones[i];
             }
 
-            if (this.bones.length !== sourceBones.length){
+            if (this.bones.length !== sourceBones.length) {
                 Tools.Warn(`copyAnimationRange: this rig has ${this.bones.length} bones, while source as ${sourceBones.length}`);
                 ret = false;
             }
-            
+
             for (i = 0, nBones = this.bones.length; i < nBones; i++) {
                 var boneName = this.bones[i].name;
                 var sourceBone = boneDict[boneName];
@@ -325,6 +325,7 @@
 
             serializationObject.name = this.name;
             serializationObject.id = this.id;
+            serializationObject.dimensionsAtRest = this.dimensionsAtRest;
 
             serializationObject.bones = [];
 
@@ -364,6 +365,9 @@
 
         public static Parse(parsedSkeleton: any, scene: Scene): Skeleton {
             var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+            if (parsedSkeleton.dimensionsAtRest) {
+                skeleton.dimensionsAtRest = Vector3.FromArray(parsedSkeleton.dimensionsAtRest);
+            }
 
             skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
 
@@ -386,7 +390,7 @@
                     bone.animations.push(Animation.Parse(parsedBone.animation));
                 }
             }
-            
+
             // placed after bones, so createAnimationRange can cascade down
             if (parsedSkeleton.ranges) {
                 for (index = 0; index < parsedSkeleton.ranges.length; index++) {

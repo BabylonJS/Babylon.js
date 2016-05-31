@@ -22,7 +22,7 @@
 
             engine.enableEffect(this.effect);
             this.effect.setTexture("diffuseSampler", this.fontTexture);
-            engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, this.effect);
 
             var cur = engine.getAlphaMode();
             engine.setAlphaMode(Engine.ALPHA_ADD);
@@ -30,7 +30,7 @@
             if (instanceInfo._owner.owner.supportInstancedArray) {
                 engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
                 engine.draw(true, 0, 6, count);
-                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
+                engine.unbindInstanceAttributes();
             } else {
                 for (let i = 0; i < count; i++) {
                     this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
@@ -216,8 +216,8 @@
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, vAlign, hAlign, tabulationSize: number) {
-            this.setupRenderablePrim2D(owner, parent, id, position, true);
+        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, vAlign, hAlign, tabulationSize: number) {
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, true);
 
             this.fontName = fontName;
             this.defaultFontColor = defaultFontColor;
@@ -229,11 +229,27 @@
             this._isTransparent = true;
         }
 
-        public static Create(parent: Prim2DBase, id: string, x: number, y: number, fontName: string, text: string, defaultFontColor?: Color4, areaSize?: Size, vAlign = Text2D.TEXT2D_VALIGN_TOP, hAlign = Text2D.TEXT2D_HALIGN_LEFT, tabulationSize: number = 4): Text2D {
+        /**
+         * Create a Text primitive
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * @param text the text to display
+         * Options:
+         *  - id a text identifier, for information purpose
+         *  - x: the X position relative to its parent, default is 0
+         *  - y: the Y position relative to its parent, default is 0
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
+         *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
+         *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
+         *  - vAlign: vertical alignment (areaSize must be specified), default is Text2D.TEXT2D_VALIGN_CENTER
+         *  - hAlign: horizontal alignment (areaSize must be specified), default is Text2D.TEXT2D_HALIGN_CENTER
+         *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
+         */
+        public static Create(parent: Prim2DBase, text: string, options?: { id?: string, x?: number, y?: number, origin?:Vector2, fontName?: string, defaultFontColor?: Color4, areaSize?: Size, vAlign?: number, hAlign?: number, tabulationSize?: number}): Text2D {
             Prim2DBase.CheckParent(parent);
 
             let text2d = new Text2D();
-            text2d.setupText2D(parent.owner, parent, id, new Vector2(x, y), fontName, text, areaSize, defaultFontColor || new Color4(0,0,0,1), vAlign, hAlign, tabulationSize);
+            text2d.setupText2D(parent.owner, parent, options && options.id || null, new Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, options && options.fontName || "12pt Arial", text, options && options.areaSize, options && options.defaultFontColor || new Color4(1, 1, 1, 1), options && options.vAlign || Text2D.TEXT2D_VALIGN_CENTER, options && options.hAlign || Text2D.TEXT2D_HALIGN_CENTER, options && options.tabulationSize || 4);
             return text2d;
         }
 

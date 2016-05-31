@@ -387,12 +387,12 @@
         // Database
         public database; //ANY
 
-        // Actions
         /**
          * This scene's action manager
          * @type {BABYLON.ActionManager}
-         */
+        */
         public actionManager: ActionManager;
+     
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
 

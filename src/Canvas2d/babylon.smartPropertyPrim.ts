@@ -205,6 +205,17 @@
             propDic.forEach((k, v) => {
                 if (v.kind === Prim2DPropInfo.PROPKIND_MODEL) {
                     let propVal = this[v.name];
+
+                    // Special case, array, this WON'T WORK IN ALL CASES, all entries have to be of the same type and it must be a BJS well known one
+                    if (propVal && propVal.constructor === Array) {
+                        let firstVal = propVal[0];
+                        if (!firstVal) {
+                            propVal = 0;
+                        } else {
+                            propVal = Tools.hashCodeFromStream(Tools.arrayOrStringFeeder(propVal));
+                        }
+                    }
+
                     modelKey += v.name + ":" + ((propVal != null) ? ((v.typeLevelCompare) ? Tools.getClassName(propVal) : propVal.toString()) : "[null]") + ";";
                 }
             });
@@ -383,6 +394,10 @@
             return this._instanceDirtyFlags;
         }
 
+        public _resetPropertiesDirty() {
+            this._instanceDirtyFlags = 0;
+        }
+
         /**
          * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
          * @returns {} 
@@ -445,8 +460,8 @@
 
         private _modelKey; string;
         private _propInfo: StringDictionary<Prim2DPropInfo>;
-        private _levelBoundingInfoDirty: boolean;
         private _isDisposed: boolean;
+        protected _levelBoundingInfoDirty: boolean;
         protected _levelBoundingInfo: BoundingInfo2D;
         protected _boundingInfo: BoundingInfo2D;
         protected _modelDirty: boolean;

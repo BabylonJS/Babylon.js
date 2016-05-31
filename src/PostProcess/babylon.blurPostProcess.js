@@ -7,10 +7,10 @@ var BABYLON;
 (function (BABYLON) {
     var BlurPostProcess = (function (_super) {
         __extends(BlurPostProcess, _super);
-        function BlurPostProcess(name, direction, blurWidth, ratio, camera, samplingMode, engine, reusable) {
+        function BlurPostProcess(name, direction, blurWidth, options, camera, samplingMode, engine, reusable) {
             var _this = this;
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
-            _super.call(this, name, "blur", ["screenSize", "direction", "blurWidth"], null, ratio, camera, samplingMode, engine, reusable);
+            _super.call(this, name, "blur", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
             this.direction = direction;
             this.blurWidth = blurWidth;
             this.onApplyObservable.add(function (effect) {
@@ -20,6 +20,6 @@ var BABYLON;
             });
         }
         return BlurPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.BlurPostProcess = BlurPostProcess;
 })(BABYLON || (BABYLON = {}));

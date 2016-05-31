@@ -124,12 +124,15 @@ var BABYLON;
                 maximum: maximum
             };
         };
-        Tools.ExtractMinAndMax = function (positions, start, count, bias) {
+        Tools.ExtractMinAndMax = function (positions, start, count, bias, stride) {
             if (bias === void 0) { bias = null; }
             var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            if (!stride) {
+                stride = 3;
+            }
             for (var index = start; index < start + count; index++) {
-                var current = new BABYLON.Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
+                var current = new BABYLON.Vector3(positions[index * stride], positions[index * stride + 1], positions[index * stride + 2]);
                 minimum = BABYLON.Vector3.Minimize(current, minimum);
                 maximum = BABYLON.Vector3.Maximize(current, maximum);
             }
@@ -140,6 +143,43 @@ var BABYLON;
                 maximum.x += maximum.x * bias.x + bias.y;
                 maximum.y += maximum.y * bias.x + bias.y;
                 maximum.z += maximum.z * bias.x + bias.y;
+            }
+            return {
+                minimum: minimum,
+                maximum: maximum
+            };
+        };
+        Tools.Vector2ArrayFeeder = function (array) {
+            return function (index) {
+                var isFloatArray = (array.BYTES_PER_ELEMENT !== undefined);
+                var length = isFloatArray ? array.length / 2 : array.length;
+                if (index >= length) {
+                    return null;
+                }
+                if (isFloatArray) {
+                    var fa = array;
+                    return new BABYLON.Vector2(fa[index * 2 + 0], fa[index * 2 + 1]);
+                }
+                var a = array;
+                return a[index];
+            };
+        };
+        Tools.ExtractMinAndMaxVector2 = function (feeder, bias) {
+            if (bias === void 0) { bias = null; }
+            var minimum = new BABYLON.Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            var maximum = new BABYLON.Vector2(-Number.MAX_VALUE, -Number.MAX_VALUE);
+            var i = 0;
+            var cur = feeder(i++);
+            while (cur) {
+                minimum = BABYLON.Vector2.Minimize(cur, minimum);
+                maximum = BABYLON.Vector2.Maximize(cur, maximum);
+                cur = feeder(i++);
+            }
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
             }
             return {
                 minimum: minimum,
@@ -175,15 +215,11 @@ var BABYLON;
                 window.setTimeout(func, 16);
             }
         };
-        Tools.RequestFullscreen = function (element) {
-            if (element.requestFullscreen)
-                element.requestFullscreen();
-            else if (element.msRequestFullscreen)
-                element.msRequestFullscreen();
-            else if (element.webkitRequestFullscreen)
-                element.webkitRequestFullscreen();
-            else if (element.mozRequestFullScreen)
-                element.mozRequestFullScreen();
+        Tools.RequestFullscreen = function (element, options) {
+            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+            if (!requestFunction)
+                return;
+            requestFunction.call(element, options);
         };
         Tools.ExitFullscreen = function () {
             if (document.exitFullscreen) {
@@ -809,8 +845,8 @@ var BABYLON;
             return name;
         };
         Tools.first = function (array, predicate) {
-            for (var _i = 0; _i < array.length; _i++) {
-                var el = array[_i];
+            for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
+                var el = array_1[_i];
                 if (predicate(el)) {
                     return el;
                 }
@@ -874,7 +910,7 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    })();
+    }());
     BABYLON.Tools = Tools;
     /**
      * Use this className as a decorator on a given class definition to add it a name.
@@ -970,6 +1006,6 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    })();
+    }());
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));
