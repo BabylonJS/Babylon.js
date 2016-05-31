@@ -515,6 +515,16 @@ var BABYLON;
         Mesh.prototype.unfreezeNormals = function () {
             this._areNormalsFrozen = false;
         };
+        Object.defineProperty(Mesh.prototype, "overridenInstanceCount", {
+            /**
+             * Overrides instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshs
+             */
+            set: function (count) {
+                this._overridenInstanceCount = count;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         Mesh.prototype._preActivate = function () {
             var sceneRenderId = this.getScene().getRenderId();
@@ -622,6 +632,13 @@ var BABYLON;
             else {
                 this._geometry.setVerticesData(kind, data, updatable, stride);
             }
+        };
+        Mesh.prototype.setVerticesBuffer = function (buffer) {
+            if (!this._geometry) {
+                var scene = this.getScene();
+                new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene).applyToMesh(this);
+            }
+            this._geometry.setVerticesBuffer(buffer);
         };
         /**
          * Updates the existing vertex data of the mesh geometry for the requested `kind`.
@@ -746,7 +763,7 @@ var BABYLON;
                 }
             }
             // VBOs
-            engine.bindMultiBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
+            engine.bindBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
         };
         Mesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
@@ -836,40 +853,47 @@ var BABYLON;
             var visibleInstances = batch.visibleInstances[subMesh._id];
             var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
+            var currentInstancesBufferSize = this._instancesBufferSize;
+            var instancesBuffer = this._instancesBuffer;
             while (this._instancesBufferSize < bufferSize) {
                 this._instancesBufferSize *= 2;
             }
-            if (!this._worldMatricesInstancesBuffer || this._worldMatricesInstancesBuffer.capacity < this._instancesBufferSize) {
-                if (this._worldMatricesInstancesBuffer) {
-                    engine.deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
-                }
-                this._worldMatricesInstancesBuffer = engine.createInstancesBuffer(this._instancesBufferSize);
-                this._worldMatricesInstancesArray = new Float32Array(this._instancesBufferSize / 4);
+            if (!this._instancesData || currentInstancesBufferSize != this._instancesBufferSize) {
+                this._instancesData = new Float32Array(this._instancesBufferSize / 4);
             }
             var offset = 0;
             var instancesCount = 0;
             var world = this.getWorldMatrix();
             if (batch.renderSelf[subMesh._id]) {
-                world.copyToArray(this._worldMatricesInstancesArray, offset);
+                world.copyToArray(this._instancesData, offset);
                 offset += 16;
                 instancesCount++;
             }
             if (visibleInstances) {
                 for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
                     var instance = visibleInstances[instanceIndex];
-                    instance.getWorldMatrix().copyToArray(this._worldMatricesInstancesArray, offset);
+                    instance.getWorldMatrix().copyToArray(this._instancesData, offset);
                     offset += 16;
                     instancesCount++;
                 }
             }
-            var offsetLocation0 = effect.getAttributeLocationByName("world0");
-            var offsetLocation1 = effect.getAttributeLocationByName("world1");
-            var offsetLocation2 = effect.getAttributeLocationByName("world2");
-            var offsetLocation3 = effect.getAttributeLocationByName("world3");
-            var offsetLocations = [offsetLocation0, offsetLocation1, offsetLocation2, offsetLocation3];
-            engine.updateAndBindInstancesBuffer(this._worldMatricesInstancesBuffer, this._worldMatricesInstancesArray, offsetLocations);
+            if (!instancesBuffer || currentInstancesBufferSize != this._instancesBufferSize) {
+                if (instancesBuffer) {
+                    instancesBuffer.dispose();
+                }
+                instancesBuffer = new BABYLON.Buffer(engine, this._instancesData, true, 16, false, true);
+                this._instancesBuffer = instancesBuffer;
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
+                this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
+                engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
+            }
+            else {
+                instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
+            }
             this._draw(subMesh, fillMode, instancesCount);
-            engine.unBindInstancesBuffer(this._worldMatricesInstancesBuffer, offsetLocations);
+            engine.unbindInstanceAttributes();
         };
         Mesh.prototype._processRendering = function (subMesh, effect, fillMode, batch, hardwareInstancedRendering, onBeforeDraw) {
             var scene = this.getScene();
@@ -883,7 +907,7 @@ var BABYLON;
                     if (onBeforeDraw) {
                         onBeforeDraw(false, this.getWorldMatrix());
                     }
-                    this._draw(subMesh, fillMode);
+                    this._draw(subMesh, fillMode, this._overridenInstanceCount);
                 }
                 if (batch.visibleInstances[subMesh._id]) {
                     for (var instanceIndex = 0; instanceIndex < batch.visibleInstances[subMesh._id].length; instanceIndex++) {
@@ -1160,9 +1184,9 @@ var BABYLON;
                 this._geometry.releaseForMesh(this, true);
             }
             // Instances
-            if (this._worldMatricesInstancesBuffer) {
-                this.getEngine().deleteInstancesBuffer(this._worldMatricesInstancesBuffer);
-                this._worldMatricesInstancesBuffer = null;
+            if (this._instancesBuffer) {
+                this._instancesBuffer.dispose();
+                this._instancesBuffer = null;
             }
             while (this.instances.length) {
                 this.instances[0].dispose();

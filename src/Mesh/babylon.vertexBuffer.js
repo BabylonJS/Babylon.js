@@ -1,102 +1,91 @@
 var BABYLON;
 (function (BABYLON) {
     var VertexBuffer = (function () {
-        function VertexBuffer(engine, data, kind, updatable, postponeInternalCreation, stride) {
-            if (engine instanceof BABYLON.Mesh) {
-                this._engine = engine.getScene().getEngine();
+        function VertexBuffer(engine, data, kind, updatable, postponeInternalCreation, stride, instanced, offset, size) {
+            if (!stride) {
+                // Deduce stride from kind
+                switch (kind) {
+                    case VertexBuffer.PositionKind:
+                        stride = 3;
+                        break;
+                    case VertexBuffer.NormalKind:
+                        stride = 3;
+                        break;
+                    case VertexBuffer.UVKind:
+                    case VertexBuffer.UV2Kind:
+                    case VertexBuffer.UV3Kind:
+                    case VertexBuffer.UV4Kind:
+                    case VertexBuffer.UV5Kind:
+                    case VertexBuffer.UV6Kind:
+                        stride = 2;
+                        break;
+                    case VertexBuffer.ColorKind:
+                        stride = 4;
+                        break;
+                    case VertexBuffer.MatricesIndicesKind:
+                    case VertexBuffer.MatricesIndicesExtraKind:
+                        stride = 4;
+                        break;
+                    case VertexBuffer.MatricesWeightsKind:
+                    case VertexBuffer.MatricesWeightsExtraKind:
+                        stride = 4;
+                        break;
+                }
+            }
+            if (data instanceof BABYLON.Buffer) {
+                if (!stride) {
+                    stride = data.getStrideSize();
+                }
+                this._buffer = data;
+                this._ownsBuffer = false;
             }
             else {
-                this._engine = engine;
+                this._buffer = new BABYLON.Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced);
+                this._ownsBuffer = true;
             }
-            this._updatable = updatable;
-            this._data = data;
-            if (!postponeInternalCreation) {
-                this.create();
-            }
+            this._stride = stride;
+            this._offset = offset ? offset : 0;
+            this._size = size ? size : stride;
             this._kind = kind;
-            if (stride) {
-                this._strideSize = stride;
-                return;
-            }
-            // Deduce stride from kind
-            switch (kind) {
-                case VertexBuffer.PositionKind:
-                    this._strideSize = 3;
-                    break;
-                case VertexBuffer.NormalKind:
-                    this._strideSize = 3;
-                    break;
-                case VertexBuffer.UVKind:
-                case VertexBuffer.UV2Kind:
-                case VertexBuffer.UV3Kind:
-                case VertexBuffer.UV4Kind:
-                case VertexBuffer.UV5Kind:
-                case VertexBuffer.UV6Kind:
-                    this._strideSize = 2;
-                    break;
-                case VertexBuffer.ColorKind:
-                    this._strideSize = 4;
-                    break;
-                case VertexBuffer.MatricesIndicesKind:
-                case VertexBuffer.MatricesIndicesExtraKind:
-                    this._strideSize = 4;
-                    break;
-                case VertexBuffer.MatricesWeightsKind:
-                case VertexBuffer.MatricesWeightsExtraKind:
-                    this._strideSize = 4;
-                    break;
-            }
         }
+        VertexBuffer.prototype.getKind = function () {
+            return this._kind;
+        };
         // Properties
         VertexBuffer.prototype.isUpdatable = function () {
-            return this._updatable;
+            return this._buffer.isUpdatable();
         };
         VertexBuffer.prototype.getData = function () {
-            return this._data;
+            return this._buffer.getData();
         };
         VertexBuffer.prototype.getBuffer = function () {
-            return this._buffer;
+            return this._buffer.getBuffer();
         };
         VertexBuffer.prototype.getStrideSize = function () {
-            return this._strideSize;
+            return this._stride;
+        };
+        VertexBuffer.prototype.getOffset = function () {
+            return this._offset;
+        };
+        VertexBuffer.prototype.getSize = function () {
+            return this._size;
+        };
+        VertexBuffer.prototype.getIsInstanced = function () {
+            return this._buffer.getIsInstanced();
         };
         // Methods
         VertexBuffer.prototype.create = function (data) {
-            if (!data && this._buffer) {
-                return; // nothing to do
-            }
-            data = data || this._data;
-            if (!this._buffer) {
-                if (this._updatable) {
-                    this._buffer = this._engine.createDynamicVertexBuffer(data.length * 4);
-                }
-                else {
-                    this._buffer = this._engine.createVertexBuffer(data);
-                }
-            }
-            if (this._updatable) {
-                this._engine.updateDynamicVertexBuffer(this._buffer, data);
-                this._data = data;
-            }
+            return this._buffer.create(data);
         };
         VertexBuffer.prototype.update = function (data) {
-            this.create(data);
+            return this._buffer.update(data);
         };
         VertexBuffer.prototype.updateDirectly = function (data, offset) {
-            if (!this._buffer) {
-                return;
-            }
-            if (this._updatable) {
-                this._engine.updateDynamicVertexBuffer(this._buffer, data, offset);
-                this._data = null;
-            }
+            return this._buffer.updateDirectly(data, offset);
         };
         VertexBuffer.prototype.dispose = function () {
-            if (!this._buffer) {
-                return;
-            }
-            if (this._engine._releaseBuffer(this._buffer)) {
-                this._buffer = null;
+            if (this._ownsBuffer) {
+                this._buffer.dispose();
             }
         };
         Object.defineProperty(VertexBuffer, "PositionKind", {

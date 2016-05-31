@@ -12,16 +12,18 @@ var BABYLON;
             _super.call(this, name, scene, parent, source, doNotCloneChildren);
             this.color = new BABYLON.Color3(1, 1, 1);
             this.alpha = 1;
+            this._positionBuffer = {};
             if (source) {
                 this.color = source.color.clone();
                 this.alpha = source.alpha;
             }
             this._intersectionThreshold = 0.1;
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", scene, "color", {
-                attributes: ["position"],
+                attributes: [BABYLON.VertexBuffer.PositionKind],
                 uniforms: ["worldViewProjection", "color"],
                 needAlphaBlending: true
             });
+            this._positionBuffer[BABYLON.VertexBuffer.PositionKind] = null;
         }
         Object.defineProperty(LinesMesh.prototype, "intersectionThreshold", {
             /**
@@ -70,9 +72,9 @@ var BABYLON;
         };
         LinesMesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
-            var indexToBind = this._geometry.getIndexBuffer();
+            this._positionBuffer[BABYLON.VertexBuffer.PositionKind] = this._geometry.getVertexBuffer(BABYLON.VertexBuffer.PositionKind);
             // VBOs
-            engine.bindBuffers(this._geometry.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).getBuffer(), indexToBind, [3], 3 * 4, this._colorShader.getEffect());
+            engine.bindBuffers(this._positionBuffer, this._geometry.getIndexBuffer(), this._colorShader.getEffect());
             // Color
             this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
         };

@@ -17,7 +17,7 @@ var BABYLON;
             this._linesPositions = new Array();
             this._linesNormals = new Array();
             this._linesIndices = new Array();
-            this._buffers = new Array();
+            this._buffers = {};
             this._checkVerticesInsteadOfIndices = false;
             this._source = source;
             this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
@@ -37,8 +37,16 @@ var BABYLON;
             this._lineShader.backFaceCulling = false;
         };
         EdgesRenderer.prototype.dispose = function () {
-            this._vb0.dispose();
-            this._vb1.dispose();
+            var buffer = this._buffers[BABYLON.VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._buffers[BABYLON.VertexBuffer.PositionKind] = null;
+            }
+            buffer = this._buffers[BABYLON.VertexBuffer.NormalKind];
+            if (buffer) {
+                buffer.dispose();
+                this._buffers[BABYLON.VertexBuffer.NormalKind] = null;
+            }
             this._source.getScene().getEngine()._releaseBuffer(this._ib);
             this._lineShader.dispose();
         };
@@ -208,10 +216,8 @@ var BABYLON;
             }
             // Merge into a single mesh
             var engine = this._source.getScene().getEngine();
-            this._vb0 = new BABYLON.VertexBuffer(engine, this._linesPositions, BABYLON.VertexBuffer.PositionKind, false);
-            this._vb1 = new BABYLON.VertexBuffer(engine, this._linesNormals, BABYLON.VertexBuffer.NormalKind, false, false, 4);
-            this._buffers[BABYLON.VertexBuffer.PositionKind] = this._vb0;
-            this._buffers[BABYLON.VertexBuffer.NormalKind] = this._vb1;
+            this._buffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(engine, this._linesPositions, BABYLON.VertexBuffer.PositionKind, false);
+            this._buffers[BABYLON.VertexBuffer.NormalKind] = new BABYLON.VertexBuffer(engine, this._linesNormals, BABYLON.VertexBuffer.NormalKind, false, false, 4);
             this._ib = engine.createIndexBuffer(this._linesIndices);
             this._indicesCount = this._linesIndices.length;
         };
@@ -223,7 +229,7 @@ var BABYLON;
             var engine = scene.getEngine();
             this._lineShader._preBind();
             // VBOs
-            engine.bindMultiBuffers(this._buffers, this._ib, this._lineShader.getEffect());
+            engine.bindBuffers(this._buffers, this._ib, this._lineShader.getEffect());
             scene.resetCachedMaterial();
             this._lineShader.setColor4("color", this._source.edgesColor);
             if (scene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
