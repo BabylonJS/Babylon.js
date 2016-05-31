@@ -21,6 +21,7 @@
     "gulp-changed": "~1.2.1",
     "run-sequence": "~1.1.0",
     "gulp-replace": "~0.5.3",
-    "gulp-content-to-variable": "^0.1.0"
+    "gulp-content-to-variable": "^0.1.0",
+    "gulp-expect-file": "^0.0.7"
   }
 }

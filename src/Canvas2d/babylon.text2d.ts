@@ -25,7 +25,7 @@
 
             engine.enableEffect(effect);
             effect.setTexture("diffuseSampler", this.fontTexture);
-            engine.bindBuffers(this.vb, this.ib, [1], 4, effect);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
 
             var curAlphaMode = engine.getAlphaMode();
 

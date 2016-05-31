@@ -7,9 +7,9 @@ var BABYLON;
 (function (BABYLON) {
     var RefractionPostProcess = (function (_super) {
         __extends(RefractionPostProcess, _super);
-        function RefractionPostProcess(name, refractionTextureUrl, color, depth, colorLevel, ratio, camera, samplingMode, engine, reusable) {
+        function RefractionPostProcess(name, refractionTextureUrl, color, depth, colorLevel, options, camera, samplingMode, engine, reusable) {
             var _this = this;
-            _super.call(this, name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], ratio, camera, samplingMode, engine, reusable);
+            _super.call(this, name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], options, camera, samplingMode, engine, reusable);
             this.color = color;
             this.depth = depth;
             this.colorLevel = colorLevel;

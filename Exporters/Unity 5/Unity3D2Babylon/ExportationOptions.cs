@@ -9,6 +9,7 @@ namespace Unity3D2Babylon
         public float ReflectionDefaultLevel { get; set; }
         public bool ExportCollisions { get; set; }
         public bool ExportPhysics { get; set; }
+        public bool ExportShadows { get; set; }
         public SerializableVector3 CameraEllipsoid { get; set; }
         public SerializableVector3 Gravity { get; set; }
 
@@ -18,6 +19,7 @@ namespace Unity3D2Babylon
             ReflectionDefaultLevel = 0.3f;
             ExportCollisions = false;
             ExportPhysics = false;
+            ExportShadows = false;
             CameraEllipsoid = new Vector3(0.5f, 1.0f, 0.5f);
             Gravity = new Vector3(0, -0.9f, 0);
         }

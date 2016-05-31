@@ -247,6 +247,9 @@ var BABYLON;
                     cam._postProcesses = this._postProcesses.slice(0).concat(rigPostProcess);
                     rigPostProcess.markTextureDirty();
                 }
+                else {
+                    cam._postProcesses = this._postProcesses.slice(0);
+                }
             }
         };
         Camera.prototype.attachPostProcess = function (postProcess, insertAt) {

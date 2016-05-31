@@ -272,6 +272,7 @@ var BABYLON;
             var serializationObject = {};
             serializationObject.name = this.name;
             serializationObject.id = this.id;
+            serializationObject.dimensionsAtRest = this.dimensionsAtRest;
             serializationObject.bones = [];
             serializationObject.needInitialSkinMatrix = this.needInitialSkinMatrix;
             for (var index = 0; index < this.bones.length; index++) {
@@ -302,6 +303,9 @@ var BABYLON;
         };
         Skeleton.Parse = function (parsedSkeleton, scene) {
             var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+            if (parsedSkeleton.dimensionsAtRest) {
+                skeleton.dimensionsAtRest = BABYLON.Vector3.FromArray(parsedSkeleton.dimensionsAtRest);
+            }
             skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
             var index;
             for (index = 0; index < parsedSkeleton.bones.length; index++) {

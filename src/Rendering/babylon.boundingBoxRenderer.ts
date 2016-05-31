@@ -7,8 +7,8 @@
 
         private _scene: Scene;
         private _colorShader: ShaderMaterial;
-        private _vb: VertexBuffer;
-        private _ib: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+        private _indexBuffer: WebGLBuffer;
 
         constructor(scene: Scene) {
             this._scene = scene;
@@ -21,15 +21,15 @@
 
             this._colorShader = new ShaderMaterial("colorShader", this._scene, "color",
                 {
-                    attributes: ["position"],
+                    attributes: [VertexBuffer.PositionKind],
                     uniforms: ["worldViewProjection", "color"]
                 });
 
 
             var engine = this._scene.getEngine();
             var boxdata = VertexData.CreateBox(1.0);
-            this._vb = new VertexBuffer(engine, boxdata.positions, VertexBuffer.PositionKind, false);
-            this._ib = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, boxdata.positions, VertexBuffer.PositionKind, false);
+            this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
         }
 
         public reset(): void {
@@ -62,7 +62,7 @@
                     .multiply(boundingBox.getWorldMatrix());
 
                 // VBOs
-                engine.bindBuffers(this._vb.getBuffer(), this._ib, [3], 3 * 4, this._colorShader.getEffect());
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
 
                 if (this.showBackLines) {
                     // Back
@@ -95,8 +95,13 @@
             }
 
             this._colorShader.dispose();
-            this._vb.dispose();
-            this._scene.getEngine()._releaseBuffer(this._ib);
+
+            var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
+            }
+            this._scene.getEngine()._releaseBuffer(this._indexBuffer);
         }
     }
 } 
