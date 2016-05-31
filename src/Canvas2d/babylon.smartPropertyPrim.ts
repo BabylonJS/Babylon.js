@@ -297,6 +297,10 @@
         private static propChangedInfo = new PropertyChangedInfo();
 
         public markAsDirty(propertyName: string) {
+            if (this.isDisposed) {
+                return;
+            }
+
             let i = propertyName.indexOf(".");
             if (i !== -1) {
                 propertyName = propertyName.substr(0, i);

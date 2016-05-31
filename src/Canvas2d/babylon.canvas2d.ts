@@ -146,7 +146,7 @@
 
             this.setupGroup2D(this, null, name, Vector2.Zero(), origin, size, isVisible, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
 
-            this._hierarchyLevelMaxSiblingCount = 100;
+            this._hierarchyLevelMaxSiblingCount = 10;
             this._hierarchyDepthOffset = 0;
             this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
             this._scene = scene;
@@ -816,8 +816,7 @@
                 }
             }
 
-            var context = new Render2DContext();
-            context.forceRefreshPrimitive = false;
+            var context = new PreapreRender2DContext();
 
             ++this._globalTransformProcessStep;
             this.updateGlobalTransVis(false);
@@ -839,12 +838,11 @@
                 this._updateOverStatus();   // TODO this._primPointerInfo may not be up to date!
             }
 
-            var context = new Render2DContext();
-            this._groupRender(context);
+            this._groupRender();
 
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
-                this._cachedCanvasGroup._renderCachedCanvas(context);
+                this._cachedCanvasGroup._renderCachedCanvas();
             }
         }
 
