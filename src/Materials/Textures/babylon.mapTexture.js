@@ -71,24 +71,8 @@ var BABYLON;
             engine.bindFramebuffer(this._texture);
             this._replacedViewport = engine.setDirectViewport(pos.x, pos.y, size.width, size.height);
             if (clear) {
-                var gl = engine._gl;
                 // We only want to clear the part of the texture we're binding to, only the scissor can help us to achieve that
-                // Save state
-                var curScissor = gl.getParameter(gl.SCISSOR_TEST);
-                var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
-                // Change state
-                gl.enable(gl.SCISSOR_TEST);
-                gl.scissor(pos.x, pos.y, size.width, size.height);
-                // Clear
-                engine.clear(new BABYLON.Color4(0, 0, 0, 0), true, true);
-                // Restore state
-                gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
-                if (curScissor === true) {
-                    gl.enable(gl.SCISSOR_TEST);
-                }
-                else {
-                    gl.disable(gl.SCISSOR_TEST);
-                }
+                engine.scissorClear(pos.x, pos.y, size.width, size.height, new BABYLON.Color4(0, 0, 0, 0));
             }
         };
         /**
@@ -121,6 +105,6 @@ var BABYLON;
             return null;
         };
         return MapTexture;
-    })(BABYLON.Texture);
+    }(BABYLON.Texture));
     BABYLON.MapTexture = MapTexture;
 })(BABYLON || (BABYLON = {}));

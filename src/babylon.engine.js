@@ -103,13 +103,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    })();
+    }());
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    })();
+    }());
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -594,6 +594,25 @@ var BABYLON;
             }
             this._gl.clear(mode);
         };
+        Engine.prototype.scissorClear = function (x, y, width, height, clearColor) {
+            var gl = this._gl;
+            // Save state
+            var curScissor = gl.getParameter(gl.SCISSOR_TEST);
+            var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
+            // Change state
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor(x, y, width, height);
+            // Clear
+            this.clear(clearColor, true, true);
+            // Restore state
+            gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
+            if (curScissor === true) {
+                gl.enable(gl.SCISSOR_TEST);
+            }
+            else {
+                gl.disable(gl.SCISSOR_TEST);
+            }
+        };
         /**
          * Set the WebGL's viewport
          * @param {BABYLON.Viewport} viewport - the viewport element to be used.
@@ -781,6 +800,12 @@ var BABYLON;
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
             return vbo;
+        };
+        Engine.prototype.bindArrayBuffer = function (buffer) {
+            this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+        };
+        Engine.prototype.updateArrayBuffer = function (data) {
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
         };
         Engine.prototype.bindBuffer = function (buffer, target) {
             if (this._currentBoundBuffer[target] !== buffer) {
@@ -2084,6 +2109,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    })();
+    }());
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
