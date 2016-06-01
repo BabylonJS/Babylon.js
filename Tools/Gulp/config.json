@@ -179,6 +179,7 @@
       "../../src/PostProcess/babylon.displayPassPostProcess.js",
       "../../src/Mesh/babylon.meshSimplification.js",
       "../../src/Tools/babylon.sceneSerializer.js",
+      "../../src/Tools/babylon.earcut.js",
       "../../src/Mesh/babylon.csg.js",
       "../../src/PostProcess/babylon.vrDistortionCorrectionPostProcess.js",
       "../../src/Tools/babylon.virtualJoystick.js",
