@@ -98,7 +98,6 @@ module BABYLON {
 
     export class PolygonMeshBuilder {
 
-        private _swctx: poly2tri.SweepContext;
         private _points = new PolygonPoints();
         private _outlinepoints = new PolygonPoints();
         private _holes = [];
@@ -106,13 +105,18 @@ module BABYLON {
         private _name: string;
         private _scene: Scene;
 
+        private _epoints: number[] = new Array<number>();
+        private _eholes: number[] = new Array<number>();
+
+        private _addToepoint(points: Vector2[]) {
+            for (let p of points) {
+                this._epoints.push(p.x, p.y);
+            }
+        }
+
         constructor(name: string, contours: Path2, scene: Scene)
         constructor(name: string, contours: Vector2[], scene: Scene)
         constructor(name: string, contours: any, scene: Scene) {
-            if (!("poly2tri" in window)) {
-                throw "PolygonMeshBuilder cannot be used because poly2tri is not referenced";
-            }
-
             this._name = name;
             this._scene = scene;
 
@@ -123,15 +127,21 @@ module BABYLON {
                 points = (<Vector2[]>contours);
             }
 
-            this._swctx = new poly2tri.SweepContext(this._points.add(points));
-            this._outlinepoints.add(points)
+            this._addToepoint(points);
+
+            this._points.add(points);
+            this._outlinepoints.add(points);
         }
 
         addHole(hole: Vector2[]): PolygonMeshBuilder {
-            this._swctx.addHole(this._points.add(hole));
+            this._points.add(hole);
             var holepoints = new PolygonPoints();
             holepoints.add(hole); 
-            this._holes.push(holepoints) ;
+            this._holes.push(holepoints);
+
+            this._eholes.push(this._epoints.length/2);
+            this._addToepoint(hole);
+
             return this;
         }
 
@@ -151,14 +161,13 @@ module BABYLON {
 
             var indices = [];
 
-            this._swctx.triangulate();
-            this._swctx.getTriangles().forEach((triangle) => {
-                triangle.getPoints().forEach((point) => {
-                    indices.push((<IndexedVector2>point).index);
-                });
-            });
+            let res = Earcut.earcut(this._epoints, this._eholes, 2);
 
-            if (depth > 0) { 
+            for (let i = 0; i < res.length; i++) {
+                indices.push(res[i]);
+            }
+
+            if (depth > 0) {
                 var positionscount = (positions.length / 3); //get the current pointcount
                
                 this._points.elements.forEach((p) => { //add the elements at the depth
@@ -167,35 +176,22 @@ module BABYLON {
                     uvs.push(1-(p.x - bounds.min.x) / bounds.width,1-(p.y - bounds.min.y) / bounds.height);
                 });
 
-                var p1: IndexedVector2;           //we need to change order of point so the triangles are made in the rigth way.
-                var p2: IndexedVector2;
-                var poscounter: number = 0;
-                this._swctx.getTriangles().forEach((triangle) => {
-                    triangle.getPoints().forEach((point) => {
+                let totalCount = indices.length;
+                for (let i = 0; i < totalCount; i += 3) {
+                    let i0 = indices[i + 0];
+                    let i1 = indices[i + 1];
+                    let i2 = indices[i + 2];
 
-                        switch (poscounter) {
-                            case 0:
-                                p1 = <IndexedVector2>point;
-                                break;
-                            case 1:
-                                p2 = <IndexedVector2>point;
-                                break;
-                            case 2:
-                                indices.push((<IndexedVector2>point).index + positionscount); 
-                                indices.push(p2.index + positionscount);
-                                indices.push(p1.index + positionscount);
-                                poscounter = -1;
-                                break;
-                        }
-                        poscounter++;
-                        //indices.push((<IndexedVector2>point).index + positionscount);
-                    });
-                });
+                    indices.push(i2 + positionscount);
+                    indices.push(i1 + positionscount);
+                    indices.push(i0 + positionscount);
+                }
+
                 //Add the sides
-                this.addSide(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false)
+                this.addSide(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false);
 
                 this._holes.forEach((hole) => {
-                    this.addSide(positions, normals, uvs, indices, bounds, hole, depth, true)
+                    this.addSide(positions, normals, uvs, indices, bounds, hole, depth, true);
                 });                               
             }
 
