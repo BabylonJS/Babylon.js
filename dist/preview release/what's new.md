@@ -27,6 +27,7 @@
     - Added support for various normal maps conventions ([deltakosh](https://github.com/deltakosh))
     - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
     - Enabled other post processes to be used when also using a 3D Rig ([jcpalmer](https://github.com/Palmer-JC))
+    - Got Skeleton.copyAminationRange scaling better for different bone lengths ([jcpalmer](https://github.com/Palmer-JC))
     - Added skeleton.getBoneIndexByName(boneName: string) ([dad72](https://github.com/dad72))
     - Added node._children to track children hierarchy ([deltakosh](https://github.com/deltakosh))
     - Added Camera.ForceAttachControlToAlwaysPreventDefault to help embedding Babylon.js in iFrames ([deltakosh](https://github.com/deltakosh))
@@ -60,7 +61,7 @@
     - Unity exporter now support skeletons ([sebavan](https://github.com/sebavan))
     - Support for 3dsmax 2017 ([deltakosh](https://github.com/deltakosh))
     - Added support for up to 8 bones influences per vertex for 3dsmax exporter ([deltakosh](https://github.com/deltakosh))
-    - Added console logging for .babylon file loading ([jcpalmer](https://github.com/Palmer-JC))
+    - Added console logging for .babylon file loading & depreciated SceneLoader.Load() in favor of Append() ([jcpalmer](https://github.com/Palmer-JC))
   - **API doc**
     - class `SolidParticleSystem` documented ([jerome](https://github.com/jbousquie))
     - class `MeshBuilder` documented ([jerome](https://github.com/jbousquie))
