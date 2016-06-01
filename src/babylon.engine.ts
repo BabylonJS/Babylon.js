@@ -727,6 +727,30 @@
             this._gl.clear(mode);
         }
 
+        public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
+            let gl = this._gl;
+
+            // Save state
+            var curScissor = gl.getParameter(gl.SCISSOR_TEST);
+            var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
+
+            // Change state
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor(x, y, width, height);
+
+            // Clear
+            this.clear(clearColor, true, true);
+
+            // Restore state
+            gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
+
+            if (curScissor === true) {
+                gl.enable(gl.SCISSOR_TEST);
+            } else {
+                gl.disable(gl.SCISSOR_TEST);
+            }
+        }
+
         /**
          * Set the WebGL's viewport
          * @param {BABYLON.Viewport} viewport - the viewport element to be used.
@@ -949,6 +973,14 @@
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
             return vbo;
+        }
+
+        public bindArrayBuffer(buffer: WebGLBuffer): void {
+            this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+        }
+
+        public updateArrayBuffer(data: Float32Array): void {
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
         }
 
         private bindBuffer(buffer: WebGLBuffer, target: number): void {
@@ -2423,7 +2455,6 @@
         }
 
         // Loading screen
-
         public displayLoadingUI(): void {
             this._loadingScreen.displayLoadingUI();
         }
