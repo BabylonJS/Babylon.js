@@ -946,7 +946,7 @@
 
         private addChild(child: Prim2DBase) {
             child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
-            console.log(`Node: ${child.id} has depth: ${child._hierarchyDepthOffset}`);
+//            console.log(`Node: ${child.id} has depth: ${child._hierarchyDepthOffset}`);
             child._siblingDepthOffset = this._siblingDepthOffset / this.owner.hierarchyLevelMaxSiblingCount;
             this._children.push(child);
         }
