@@ -4,15 +4,18 @@
     }
 
     export class GroupInstanceInfo {
-        constructor(owner: Group2D, cache: ModelRenderCache) {
-            this._owner = owner;
-            this._modelCache = cache;
-            this._modelCache.addRef();
-            this._instancesPartsData = new Array<DynamicFloatArray>();
-            this._instancesPartsBuffer = new Array<WebGLBuffer>();
-            this._instancesPartsBufferSize = new Array<number>();
-            this._partIndexFromId = new StringDictionary<number>();
-            this._instancesPartsUsedShaderCategories = new Array<string>();
+        constructor(owner: Group2D, mrc: ModelRenderCache, partCount: number) {
+            this._partCount = partCount;
+            this.owner = owner;
+            this.modelRenderCache = mrc;
+            this.modelRenderCache.addRef();
+            this.partIndexFromId = new StringDictionary<number>();
+            this._usedShaderCategories = new Array<string>(partCount);
+            this._strides = new Array<number>(partCount);
+            this._opaqueData = null;
+            this._alphaTestData = null;
+            this._transparentData = null;
+            this.opaqueDirty = this.alphaTestDirty = this.transparentDirty = this.transparentOrderDirty = false;
         }
 
         public dispose(): boolean {
@@ -20,44 +23,158 @@
                 return false;
             }
 
-            if (this._modelCache) {
-                this._modelCache.dispose();
+            if (this.modelRenderCache) {
+                this.modelRenderCache.dispose();
             }
 
-            let engine = this._owner.owner.engine;
-            if (this._instancesPartsBuffer) {
-                this._instancesPartsBuffer.forEach(b => {
-                    engine._releaseBuffer(b);
-                });
+            let engine = this.owner.owner.engine;
+
+            if (this.opaqueData) {
+                this.opaqueData.forEach(d => d.dispose(engine));
+                this.opaqueData = null;
             }
 
-            this._partIndexFromId = null;
-            this._instancesPartsData = null;
-            this._instancesPartsBufferSize = null;
-            this._instancesPartsUsedShaderCategories = null;
-
+            this.partIndexFromId = null;
+            this._isDisposed = true;
             return true;
         }
 
-        _isDisposed: boolean;
-        _owner: Group2D;
-        _modelCache: ModelRenderCache;
-        _partIndexFromId: StringDictionary<number>;
-        _instancesPartsData: DynamicFloatArray[];
-        _dirtyInstancesData: boolean;
-        _instancesPartsBuffer: WebGLBuffer[];
-        _instancesPartsBufferSize: number[];
-        _instancesPartsUsedShaderCategories: string[];
+        private _isDisposed: boolean;
+        owner: Group2D;
+
+        modelRenderCache: ModelRenderCache;
+        partIndexFromId: StringDictionary<number>;
+
+        get hasOpaqueData(): boolean {
+            return this._opaqueData != null;
+        }
+
+        get hasAlphaTestData(): boolean {
+            return this._alphaTestData != null;
+        }
+
+        get hasTransparentData(): boolean {
+            return this._transparentData != null;
+        }
+
+        opaqueDirty: boolean;
+        get opaqueData(): GroupInfoPartData[] {
+            if (!this._opaqueData) {
+                this._opaqueData = new Array<GroupInfoPartData>(this._partCount);
+                for (let i = 0; i < this._partCount; i++) {
+                    this._opaqueData[i] = new GroupInfoPartData(this._strides[i]);
+                }
+            }
+            return this._opaqueData;
+        }
+
+        alphaTestDirty: boolean;
+        get alphaTestData(): GroupInfoPartData[] {
+            if (!this._alphaTestData) {
+                this._alphaTestData = new Array<GroupInfoPartData>(this._partCount);
+                for (let i = 0; i < this._partCount; i++) {
+                    this._alphaTestData[i] = new GroupInfoPartData(this._strides[i]);
+                }
+            }
+            return this._alphaTestData;
+        }
+
+        transparentOrderDirty: boolean;
+        transparentDirty: boolean;
+        get transparentData(): TransparentGroupInfoPartData[] {
+            if (!this._transparentData) {
+                this._transparentData = new Array<TransparentGroupInfoPartData>(this._partCount);
+                for (let i = 0; i < this._partCount; i++) {
+                    let zoff = this.modelRenderCache._partData[i]._zBiasOffset;
+                    this._transparentData[i] = new TransparentGroupInfoPartData(this._strides[i], zoff);
+                }
+            }
+            return this._transparentData;
+        }
+
+        sortTransparentData() {
+            if (!this.transparentOrderDirty) {
+                return;
+            }
+
+            for (let i = 0; i < this._transparentData.length; i++) {
+                let td = this._transparentData[i];
+                td._partData.sort();
+
+            }
+
+            this.transparentOrderDirty = false;
+        }
+
+        get usedShaderCategories(): string[] {
+            return this._usedShaderCategories;
+        }
+
+        get strides(): number[] {
+            return this._strides;
+        }
+
+        private _partCount: number;
+        private _strides: number[];
+        private _usedShaderCategories: string[];
+        private _opaqueData: GroupInfoPartData[];
+        private _alphaTestData: GroupInfoPartData[];
+        private _transparentData: TransparentGroupInfoPartData[];
+    }
+
+    export class TransparentSegment {
+        groupInsanceInfo: GroupInstanceInfo;
+        startZ: number;
+        endZ: number;
+        startDataIndex: number;
+        endDataIndex: number;
+    }
+
+    export class GroupInfoPartData {
+        _partData: DynamicFloatArray = null;
+        _partBuffer: WebGLBuffer     = null;
+        _partBufferSize: number      = 0;
+
+        constructor(stride: number) {
+            this._partData = new DynamicFloatArray(stride/4, 50);
+            this._isDisposed = false;
+        }
+
+        public dispose(engine: Engine): boolean {
+            if (this._isDisposed) {
+                return false;
+            }
+
+            if (this._partBuffer) {
+                engine._releaseBuffer(this._partBuffer);
+                this._partBuffer = null;
+            }
+
+            this._partData = null;
+
+            this._isDisposed = true;
+        }
+
+        private _isDisposed: boolean;        
+    }
+
+    export class TransparentGroupInfoPartData extends GroupInfoPartData {
+        constructor(stride: number, zoff: number) {
+            super(stride);
+            this._partData.compareValueOffset = zoff;
+            this._partData.sortingAscending = false;
+        }
+        
     }
 
     export class ModelRenderCache {
-        constructor(engine: Engine, modelKey: string, isTransparent: boolean) {
+        constructor(engine: Engine, modelKey: string) {
             this._engine = engine;
             this._modelKey = modelKey;
-            this._isTransparent = isTransparent;
             this._nextKey = 1;
             this._refCounter = 1;
             this._instancesData = new StringDictionary<InstanceDataBase[]>();
+            this._partData = null;
         }
 
         public dispose(): boolean {
@@ -113,8 +230,8 @@
         }
 
         protected getPartIndexFromId(partId: number) {
-            for (var i = 0; i < this._partIdList.length; i++) {
-                if (this._partIdList[i] === partId) {
+            for (var i = 0; i < this._partData.length; i++) {
+                if (this._partData[i]._partId === partId) {
                     return i;
                 }
             }
@@ -128,7 +245,7 @@
             }
 
             var ci = this._partsClassInfo[i];
-            var categories = this._partsUsedCategories[i];
+            var categories = this._partData[i]._partUsedCategories;
             let res = ci.classContent.getInstancingAttributeInfos(effect, categories);
 
             return res;
@@ -153,22 +270,23 @@
         private static v4 = Vector4.Zero();
 
         protected setupUniforms(effect: Effect, partIndex: number, data: DynamicFloatArray, elementCount: number) {
-            let offset = (this._partsDataStride[partIndex]/4) * elementCount;
+            let pd = this._partData[partIndex];
+            let offset = (pd._partDataStride/4) * elementCount;
             let pci = this._partsClassInfo[partIndex];
 
             let self = this;
             pci.fullContent.forEach((k, v) => {
-                if (!v.category || self._partsUsedCategories[partIndex].indexOf(v.category)!==1) {
+                if (!v.category || pd._partUsedCategories.indexOf(v.category) !== -1) {
                     switch (v.dataType) {
                         case ShaderDataType.float:
                         {
-                            let attribOffset = v.instanceOffset.get(self._partsJoinedUsedCategories[partIndex]);
+                            let attribOffset = v.instanceOffset.get(pd._partJoinedUsedCategories);
                             effect.setFloat(v.attributeName, data.buffer[offset + attribOffset]);
                             break;
                         }
                         case ShaderDataType.Vector2:
                         {
-                            let attribOffset = v.instanceOffset.get(self._partsJoinedUsedCategories[partIndex]);
+                            let attribOffset = v.instanceOffset.get(pd._partJoinedUsedCategories);
                             ModelRenderCache.v2.x = data.buffer[offset + attribOffset + 0];
                             ModelRenderCache.v2.y = data.buffer[offset + attribOffset + 1];
                             effect.setVector2(v.attributeName, ModelRenderCache.v2);
@@ -177,7 +295,7 @@
                         case ShaderDataType.Color3:
                         case ShaderDataType.Vector3:
                         {
-                            let attribOffset = v.instanceOffset.get(self._partsJoinedUsedCategories[partIndex]);
+                            let attribOffset = v.instanceOffset.get(pd._partJoinedUsedCategories);
                             ModelRenderCache.v3.x = data.buffer[offset + attribOffset + 0];
                             ModelRenderCache.v3.y = data.buffer[offset + attribOffset + 1];
                             ModelRenderCache.v3.z = data.buffer[offset + attribOffset + 2];
@@ -187,7 +305,7 @@
                         case ShaderDataType.Color4:
                         case ShaderDataType.Vector4:
                         {
-                            let attribOffset = v.instanceOffset.get(self._partsJoinedUsedCategories[partIndex]);
+                            let attribOffset = v.instanceOffset.get(pd._partJoinedUsedCategories);
                             ModelRenderCache.v4.x = data.buffer[offset + attribOffset + 0];
                             ModelRenderCache.v4.y = data.buffer[offset + attribOffset + 1];
                             ModelRenderCache.v4.z = data.buffer[offset + attribOffset + 2];
@@ -203,20 +321,21 @@
 
         protected _engine: Engine;
         private _modelKey: string;
-        private _isTransparent: boolean;
-
-        public get isTransparent() {
-            return this._isTransparent;
-        }
 
         _instancesData: StringDictionary<InstanceDataBase[]>;
 
         private _nextKey: number;
         private _refCounter: number;
-        _partIdList: number[];
-        _partsDataStride: number[];
-        _partsUsedCategories: Array<string[]>;
-        _partsJoinedUsedCategories: string[];
+
+        _partData: ModelRenderCachePartData[];
         _partsClassInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>[];
+    }
+
+    export class ModelRenderCachePartData {
+        _partId: number;
+        _zBiasOffset: number;
+        _partDataStride: number;
+        _partUsedCategories: string[];
+        _partJoinedUsedCategories: string;
     }
 }

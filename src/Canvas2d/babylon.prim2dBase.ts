@@ -1,7 +1,85 @@
 ﻿module BABYLON {
 
-    export class Render2DContext {
+    export class PreapreRender2DContext {
+        constructor() {
+            this.forceRefreshPrimitive = false;
+        }
+
+        /**
+         * True if the primitive must be refreshed no matter what
+         * This mode is needed because sometimes the primitive doesn't change by itself, but external changes make a refresh of its InstanceData necessary
+         */
         forceRefreshPrimitive: boolean;
+    }
+
+    export class Render2DContext {
+
+        constructor(renderMode: number) {
+            this._renderMode = renderMode;
+            this.useInstancing = false;
+            this.groupInfoPartData = null;
+            this.partDataStartIndex = this.partDataEndIndex = null;
+        }
+        /**
+         * Define which render Mode should be used to render the primitive: one of Render2DContext.RenderModeXxxx property
+         */
+        get renderMode(): number {
+            return this._renderMode;
+        }
+
+        /**
+         * If true hardware instancing is supported and must be used for the rendering. The groupInfoPartData._partBuffer must be used.
+         * If false rendering on a per primitive basis must be made. The following properties must be used
+         *  - groupInfoPartData._partData: contains the primitive instances data to render
+         *  - partDataStartIndex: the index into instanceArrayData of the first instance to render.
+         *  - partDataCount: the number of primitive to render
+         */
+        useInstancing: boolean;
+
+        /**
+         * Contains the data related to the primitives instances to render
+         */
+        groupInfoPartData: GroupInfoPartData[];
+
+        /**
+         * The index into groupInfoPartData._partData of the first primitive to render. This is an index, not an offset: it represent the nth primitive which is the first to render.
+         */
+        partDataStartIndex: number;
+
+        /**
+         * The exclusive end index, you have to render the primitive instances until you reach this one, but don't render this one!
+         */
+        partDataEndIndex: number;
+
+        /**
+         * The set of primitives to render is opaque.
+         * This is the first rendering pass. All Opaque primitives are rendered. Depth Compare and Write are both enabled.
+         */
+        public static get RenderModeOpaque(): number {
+            return Render2DContext._renderModeOpaque;
+        }
+
+        /**
+         * The set of primitives to render is using Alpha Test (aka masking).
+         * Alpha Blend is enabled, the AlphaMode must be manually set, the render occurs after the RenderModeOpaque and is depth independent (i.e. primitives are not sorted by depth). Depth Compare and Write are both enabled.
+         */
+        public static get RenderModeAlphaTest(): number {
+            return Render2DContext._renderModeAlphaTest;
+        }
+
+        /**
+         * The set of primitives to render is transparent.
+         * Alpha Blend is enabled, the AlphaMode must be manually set, the render occurs after the RenderModeAlphaTest and is depth dependent (i.e. primitives are stored by depth and rendered back to front). Depth Compare is on, but Depth write is Off.
+         */
+        public static get RenderModeTransparent(): number {
+            return Render2DContext._renderModeTransparent;
+        }
+
+        private static _renderModeOpaque:      number = 1;
+        private static _renderModeAlphaTest:   number = 2;
+        private static _renderModeTransparent: number = 3;
+
+        private _renderMode: number;
     }
 
     /**
@@ -396,6 +474,7 @@
             this._boundingInfo = new BoundingInfo2D();
             this._owner = owner;
             this._parent = parent;
+            this._id = id;
             if (parent != null) {
                 this._hierarchyDepth = parent._hierarchyDepth + 1;
                 this._renderGroup = <Group2D>this.parent.traverseUp(p => p instanceof Group2D && p.isRenderableGroup);
@@ -405,7 +484,6 @@
                 this._renderGroup = null;
             }
 
-            this._id = id;
             this.propertyChanged = new Observable<PropertyChangedInfo>();
             this._children = new Array<Prim2DBase>();
             this._globalTransformProcessStep = 0;
@@ -627,6 +705,47 @@
 
         public set zOrder(value: number) {
             this._zOrder = value;
+            this.onZOrderChanged();
+        }
+
+        @dynamicLevelProperty(8, pi => Prim2DBase.marginProperty = pi)
+        /**
+         * You can get/set a margin on the primitive through this property
+         * @returns the margin object, if there was none, a default one is created and returned
+         */
+        public get margin(): PrimitiveMargin {
+            if (!this._margin) {
+                this._margin = new PrimitiveMargin(this);
+            }
+            return this._margin;
+        }
+
+        public set margin(value: PrimitiveMargin) {
+            this._margin = value;
+        }
+
+        @dynamicLevelProperty(9, pi => Prim2DBase.hAlignmentProperty = pi)
+        /**
+         * You can get/set the horizontal alignment through this property
+         */
+        public get hAlignment(): number {
+            return this._hAlignment;
+        }
+
+        public set hAlignment(value: number) {
+            this._hAlignment = value;
+        }
+
+        @dynamicLevelProperty(10, pi => Prim2DBase.vAlignmentProperty = pi)
+        /**
+         * You can get/set the vertical alignment through this property
+         */
+        public get vAlignment(): number {
+            return this._vAlignment;
+        }
+
+        public set vAlignment(value: number) {
+            this._vAlignment = value;
         }
 
         @dynamicLevelProperty(8, pi => Prim2DBase.marginProperty = pi)
@@ -746,6 +865,10 @@
             return this._pointerEventObservable;
         }
 
+        protected onZOrderChanged() {
+            
+        }
+
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
 
             return false;
@@ -863,6 +986,7 @@
 
         private addChild(child: Prim2DBase) {
             child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
+            console.log(`Node: ${child.id} has depth: ${child._hierarchyDepthOffset}`);
             child._siblingDepthOffset = this._siblingDepthOffset / this.owner.hierarchyLevelMaxSiblingCount;
             this._children.push(child);
         }
@@ -914,15 +1038,15 @@
             return this._visibilityChanged || this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         }
 
-        public _prepareRender(context: Render2DContext) {
+        public _prepareRender(context: PreapreRender2DContext) {
             this._prepareRenderPre(context);
             this._prepareRenderPost(context);
         }
 
-        public _prepareRenderPre(context: Render2DContext) {
+        public _prepareRenderPre(context: PreapreRender2DContext) {
         }
 
-        public _prepareRenderPost(context: Render2DContext) {
+        public _prepareRenderPost(context: PreapreRender2DContext) {
             // Don't recurse if it's a renderable group, the content will be processed by the group itself
             if (this instanceof Group2D) {
                 var self: any = this;
