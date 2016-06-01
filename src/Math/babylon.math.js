@@ -32,7 +32,7 @@ var BABYLON;
             return Math.min(max, Math.max(min, value));
         };
         return MathTools;
-    })();
+    }());
     BABYLON.MathTools = MathTools;
     var Color3 = (function () {
         function Color3(r, g, b) {
@@ -196,7 +196,7 @@ var BABYLON;
         Color3.Yellow = function () { return new Color3(1, 1, 0); };
         Color3.Gray = function () { return new Color3(0.5, 0.5, 0.5); };
         return Color3;
-    })();
+    }());
     BABYLON.Color3 = Color3;
     var Color4 = (function () {
         function Color4(r, g, b, a) {
@@ -250,6 +250,27 @@ var BABYLON;
             result.b = this.b * scale;
             result.a = this.a * scale;
             return this;
+        };
+        /**
+          * Multipy an RGBA Color4 value by another and return a new Color4 object
+          * @param color The Color4 (RGBA) value to multiply by
+          * @returns A new Color4.
+          */
+        Color4.prototype.multiply = function (color) {
+            return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
+        };
+        /**
+         * Multipy an RGBA Color4 value by another and push the result in a reference value
+         * @param color The Color4 (RGBA) value to multiply by
+         * @param result The Color4 (RGBA) to fill the result in
+         * @returns the result Color4.
+         */
+        Color4.prototype.multiplyToRef = function (color, result) {
+            result.r = this.r * color.r;
+            result.g = this.g * color.g;
+            result.b = this.b * color.b;
+            result.a = this.a * color.a;
+            return result;
         };
         Color4.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
@@ -327,7 +348,7 @@ var BABYLON;
             return colors;
         };
         return Color4;
-    })();
+    }());
     BABYLON.Color4 = Color4;
     var Vector2 = (function () {
         function Vector2(x, y) {
@@ -370,11 +391,21 @@ var BABYLON;
         Vector2.prototype.add = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
+        Vector2.prototype.addToRef = function (otherVector, result) {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+            return this;
+        };
         Vector2.prototype.addVector3 = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
         Vector2.prototype.subtract = function (otherVector) {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        };
+        Vector2.prototype.subtractToRef = function (otherVector, result) {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+            return this;
         };
         Vector2.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
@@ -520,6 +551,13 @@ var BABYLON;
             result.x = x;
             result.y = y;
         };
+        Vector2.PointInTriangle = function (p, p0, p1, p2) {
+            var a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+            var sign = a < 0 ? -1 : 1;
+            var s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
+            var t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
+            return s > 0 && t > 0 && (s + t) < 2 * a * sign;
+        };
         Vector2.Distance = function (value1, value2) {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
         };
@@ -528,8 +566,18 @@ var BABYLON;
             var y = value1.y - value2.y;
             return (x * x) + (y * y);
         };
+        Vector2.DistanceOfPointFromSegment = function (p, segA, segB) {
+            var l2 = Vector2.DistanceSquared(segA, segB);
+            if (l2 === 0.0) {
+                return Vector2.Distance(p, segA);
+            }
+            var v = segB.subtract(segA);
+            var t = Math.max(0, Math.min(1, Vector2.Dot(p.subtract(segA), v) / l2));
+            var proj = segA.add(v.multiplyByFloats(t, t));
+            return Vector2.Distance(p, proj);
+        };
         return Vector2;
-    })();
+    }());
     BABYLON.Vector2 = Vector2;
     var Vector3 = (function () {
         function Vector3(x, y, z) {
@@ -1037,7 +1085,7 @@ var BABYLON;
             ref.z = roll;
         };
         return Vector3;
-    })();
+    }());
     BABYLON.Vector3 = Vector3;
     //Vector4 class created for EulerAngle class conversion to Quaternion
     var Vector4 = (function () {
@@ -1307,7 +1355,7 @@ var BABYLON;
             return center;
         };
         return Vector4;
-    })();
+    }());
     BABYLON.Vector4 = Vector4;
     var Size = (function () {
         function Size(width, height) {
@@ -1358,7 +1406,7 @@ var BABYLON;
             return new Size(w, h);
         };
         return Size;
-    })();
+    }());
     BABYLON.Size = Size;
     var Quaternion = (function () {
         function Quaternion(x, y, z, w) {
@@ -1654,7 +1702,7 @@ var BABYLON;
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         };
         return Quaternion;
-    })();
+    }());
     BABYLON.Quaternion = Quaternion;
     var Matrix = (function () {
         function Matrix() {
@@ -2326,7 +2374,7 @@ var BABYLON;
         Matrix._yAxis = Vector3.Zero();
         Matrix._zAxis = Vector3.Zero();
         return Matrix;
-    })();
+    }());
     BABYLON.Matrix = Matrix;
     var Plane = (function () {
         function Plane(a, b, c, d) {
@@ -2427,7 +2475,7 @@ var BABYLON;
             return Vector3.Dot(point, normal) + d;
         };
         return Plane;
-    })();
+    }());
     BABYLON.Plane = Plane;
     var Viewport = (function () {
         function Viewport(x, y, width, height) {
@@ -2440,7 +2488,7 @@ var BABYLON;
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         };
         return Viewport;
-    })();
+    }());
     BABYLON.Viewport = Viewport;
     var Frustum = (function () {
         function Frustum() {
@@ -2492,7 +2540,7 @@ var BABYLON;
             frustumPlanes[5].normalize();
         };
         return Frustum;
-    })();
+    }());
     BABYLON.Frustum = Frustum;
     (function (Space) {
         Space[Space["LOCAL"] = 0] = "LOCAL";
@@ -2506,7 +2554,7 @@ var BABYLON;
         Axis.Y = new Vector3(0, 1, 0);
         Axis.Z = new Vector3(0, 0, 1);
         return Axis;
-    })();
+    }());
     BABYLON.Axis = Axis;
     ;
     var BezierCurve = (function () {
@@ -2532,7 +2580,7 @@ var BABYLON;
                 Math.pow(refinedT, 3);
         };
         return BezierCurve;
-    })();
+    }());
     BABYLON.BezierCurve = BezierCurve;
     (function (Orientation) {
         Orientation[Orientation["CW"] = 0] = "CW";
@@ -2560,7 +2608,7 @@ var BABYLON;
             return new Angle(degrees * Math.PI / 180);
         };
         return Angle;
-    })();
+    }());
     BABYLON.Angle = Angle;
     var Arc2 = (function () {
         function Arc2(startPoint, midPoint, endPoint) {
@@ -2590,7 +2638,7 @@ var BABYLON;
             this.angle = Angle.FromDegrees(this.orientation === Orientation.CW ? a1 - a3 : a3 - a1);
         }
         return Arc2;
-    })();
+    }());
     BABYLON.Arc2 = Arc2;
     var Path2 = (function () {
         function Path2(x, y) {
@@ -2675,7 +2723,7 @@ var BABYLON;
             return new Path2(x, y);
         };
         return Path2;
-    })();
+    }());
     BABYLON.Path2 = Path2;
     var Path3D = (function () {
         /**
@@ -2843,7 +2891,7 @@ var BABYLON;
             return normal0;
         };
         return Path3D;
-    })();
+    }());
     BABYLON.Path3D = Path3D;
     var Curve3 = (function () {
         /**
@@ -2946,7 +2994,7 @@ var BABYLON;
             return l;
         };
         return Curve3;
-    })();
+    }());
     BABYLON.Curve3 = Curve3;
     // SphericalHarmonics
     var SphericalHarmonics = (function () {
@@ -2986,7 +3034,7 @@ var BABYLON;
             this.L22 = this.L22.scale(scale);
         };
         return SphericalHarmonics;
-    })();
+    }());
     BABYLON.SphericalHarmonics = SphericalHarmonics;
     // SphericalPolynomial
     var SphericalPolynomial = (function () {
@@ -3021,7 +3069,7 @@ var BABYLON;
             return result;
         };
         return SphericalPolynomial;
-    })();
+    }());
     BABYLON.SphericalPolynomial = SphericalPolynomial;
     // Vertex formats
     var PositionNormalVertex = (function () {
@@ -3035,7 +3083,7 @@ var BABYLON;
             return new PositionNormalVertex(this.position.clone(), this.normal.clone());
         };
         return PositionNormalVertex;
-    })();
+    }());
     BABYLON.PositionNormalVertex = PositionNormalVertex;
     var PositionNormalTextureVertex = (function () {
         function PositionNormalTextureVertex(position, normal, uv) {
@@ -3050,7 +3098,7 @@ var BABYLON;
             return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
         };
         return PositionNormalTextureVertex;
-    })();
+    }());
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
     // Temporary pre-allocated objects for engine internal use
     // usage in any internal function :
@@ -3070,6 +3118,6 @@ var BABYLON;
             Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero()]; // 6 temp Matrices at once should be enough
         return Tmp;
-    })();
+    }());
     BABYLON.Tmp = Tmp;
 })(BABYLON || (BABYLON = {}));

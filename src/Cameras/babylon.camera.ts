@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export class Camera extends Node {
         public inputs: CameraInputsManager<Camera>;
-        
+
         // Statics
         private static _PERSPECTIVE_CAMERA = 0;
         private static _ORTHOGRAPHIC_CAMERA = 1;
@@ -57,7 +57,7 @@
         }
 
         public static ForceAttachControlToAlwaysPreventDefault = false;
-        
+
         // Members
         @serializeAsVector3()
         public position: Vector3;
@@ -100,7 +100,7 @@
 
         @serialize()
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
-   
+
         // Camera rig members
         @serialize()
         public cameraRigMode = Camera.RIG_MODE_NONE;
@@ -113,7 +113,7 @@
 
         public _cameraRigParams: any;
         public _rigCameras = new Array<Camera>();
-        public _rigPostProcess : PostProcess;
+        public _rigPostProcess: PostProcess;
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();
@@ -274,27 +274,30 @@
 
         public _checkInputs(): void {
         }
-        
-        private _cascadePostProcessesToRigCams() : void {
+
+        private _cascadePostProcessesToRigCams(): void {
             // invalidate framebuffer
-            if (this._postProcesses.length > 0){
+            if (this._postProcesses.length > 0) {
                 this._postProcesses[0].markTextureDirty();
             }
-            
+
             // glue the rigPostProcess to the end of the user postprocesses & assign to each sub-camera
-            for(var i = 0, len = this._rigCameras.length; i < len; i++){
+            for (var i = 0, len = this._rigCameras.length; i < len; i++) {
                 var cam = this._rigCameras[i];
                 var rigPostProcess = cam._rigPostProcess;
-                
+
                 // for VR rig, there does not have to be a post process 
-                if (rigPostProcess){
+                if (rigPostProcess) {
                     var isPass = rigPostProcess instanceof PassPostProcess;
-                    if (isPass){
+                    if (isPass) {
                         // any rig which has a PassPostProcess for rig[0], cannot be isIntermediate when there are also user postProcesses
                         cam.isIntermediate = this._postProcesses.length === 0;
-                    }               
+                    }
                     cam._postProcesses = this._postProcesses.slice(0).concat(rigPostProcess);
                     rigPostProcess.markTextureDirty();
+
+                } else {
+                    cam._postProcesses = this._postProcesses.slice(0);
                 }
             }
         }
@@ -304,17 +307,17 @@
                 Tools.Error("You're trying to reuse a post process not defined as reusable.");
                 return 0;
             }
-            
+
             if (insertAt == null || insertAt < 0) {
                 this._postProcesses.push(postProcess);
-                
-            }else{
+
+            } else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated            
             return this._postProcesses.indexOf(postProcess);
         }
-        
+
         public detachPostProcess(postProcess: PostProcess, atIndices: any = null): number[] {
             var result = [];
             var i: number;
@@ -322,14 +325,14 @@
 
             if (!atIndices) {
                 var idx = this._postProcesses.indexOf(postProcess);
-                if (idx !== -1){
+                if (idx !== -1) {
                     this._postProcesses.splice(idx, 1);
                 }
             } else {
                 atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
                 // iterate descending, so can just splice as we go
                 for (i = atIndices.length - 1; i >= 0; i--) {
-                    if ( this._postProcesses[atIndices[i]] !== postProcess) {
+                    if (this._postProcesses[atIndices[i]] !== postProcess) {
                         result.push(i);
                         continue;
                     }
@@ -339,7 +342,7 @@
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
             return result;
         }
-        
+
         public getWorldMatrix(): Matrix {
             if (!this._worldMatrix) {
                 this._worldMatrix = Matrix.Identity();
@@ -434,7 +437,7 @@
 
             super.dispose();
         }
-        
+
         // ---- Camera rigs section ----
         public setCameraRigMode(mode: number, rigParams: any): void {
             while (this._rigCameras.length > 0) {
@@ -448,7 +451,7 @@
             this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
 
             // create the rig cameras, unless none
-            if (this.cameraRigMode !== Camera.RIG_MODE_NONE){
+            if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
                 this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
             }
@@ -463,14 +466,14 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                     var isStereoscopicHoriz = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
-                    
+
                     this._rigCameras[0]._rigPostProcess = new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]);
                     this._rigCameras[1]._rigPostProcess = new StereoscopicInterlacePostProcess(this.name + "_stereoInterlace", this._rigCameras, isStereoscopicHoriz);
                     break;
 
                 case Camera.RIG_MODE_VR:
                     var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
-                    
+
                     this._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
                     this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
                     this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
@@ -492,7 +495,7 @@
                     break;
             }
 
-            this._cascadePostProcessesToRigCams(); 
+            this._cascadePostProcessesToRigCams();
             this._update();
         }
 
@@ -503,8 +506,8 @@
         }
 
         public setCameraRigParameter(name: string, value: any) {
-            if (!this._cameraRigParams){
-               this._cameraRigParams = {}; 
+            if (!this._cameraRigParams) {
+                this._cameraRigParams = {};
             }
             this._cameraRigParams[name] = value;
             //provisionnally:
@@ -512,14 +515,14 @@
                 this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value / 0.0637);
             }
         }
-        
+
         /**
          * needs to be overridden by children so sub has required properties to be copied
          */
         public createRigCamera(name: string, cameraIndex: number): Camera {
-           return null;
+            return null;
         }
-        
+
         /**
          * May need to be overridden by children
          */
@@ -529,7 +532,7 @@
                 this._rigCameras[i].maxZ = this.maxZ;
                 this._rigCameras[i].fov = this.fov;
             }
-            
+
             // only update viewport when ANAGLYPH
             if (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH) {
                 this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
@@ -621,14 +624,14 @@
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
             }
-            
+
             //If camera has an input manager, let it parse inputs settings
             if (camera.inputs) {
                 camera.inputs.parse(parsedCamera);
 
                 camera._setupInputs();
             }
-            
+
             // Target
             if (parsedCamera.target) {
                 if ((<any>camera).setTarget) {
@@ -660,7 +663,3 @@
         }
     }
 }
-
-
-
-

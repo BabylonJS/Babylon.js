@@ -106,8 +106,8 @@ var BABYLON;
                 this._depthMask = true;
                 this._depthTest = true;
                 this._depthFunc = null;
-                this._cull = null;
                 this._cullFace = null;
+                this._cull = null;
                 this._zOffset = 0;
                 this._isDepthTestDirty = true;
                 this._isDepthMaskDirty = true;
@@ -168,7 +168,7 @@ var BABYLON;
                 }
             };
             return _DepthCullingState;
-        })();
+        }());
         Internals._DepthCullingState = _DepthCullingState;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));

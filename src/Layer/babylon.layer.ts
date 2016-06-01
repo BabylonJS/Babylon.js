@@ -9,9 +9,7 @@
         public alphaTest: boolean;
 
         private _scene: Scene;
-        private _vertexDeclaration = [2];
-        private _vertexStrideSize = 2 * 4;
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
         private _alphaTestEffect: Effect;
@@ -69,6 +67,8 @@
             this._scene = scene;
             this._scene.layers.push(this);
 
+            var engine = scene.getEngine();
+
             // VBO
             var vertices = [];
             vertices.push(1, 1);
@@ -76,7 +76,8 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            var vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+            this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
 
             // Indices
             var indices = [];
@@ -88,16 +89,16 @@
             indices.push(2);
             indices.push(3);
 
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
 
             // Effects
-            this._effect = this._scene.getEngine().createEffect("layer",
-                ["position"],
+            this._effect = engine.createEffect("layer",
+                [VertexBuffer.PositionKind],
                 ["textureMatrix", "color", "scale", "offset"],
                 ["textureSampler"], "");
 
-            this._alphaTestEffect = this._scene.getEngine().createEffect("layer",
-                ["position"],
+            this._alphaTestEffect = engine.createEffect("layer",
+                [VertexBuffer.PositionKind],
                 ["textureMatrix", "color", "scale", "offset"],
                 ["textureSampler"], "#define ALPHATEST");
         }
@@ -130,7 +131,7 @@
             currentEffect.setVector2("scale", this.scale);
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, currentEffect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect);
 
             // Draw order
             if (!this._alphaTestEffect) {
@@ -146,9 +147,10 @@
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
             }
 
             if (this._indexBuffer) {

@@ -29,14 +29,14 @@ var BABYLON;
             this.fontTexture.update();
             engine.enableEffect(this.effect);
             this.effect.setTexture("diffuseSampler", this.fontTexture);
-            engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, this.effect);
             var cur = engine.getAlphaMode();
             engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
             var count = instanceInfo._instancesPartsData[0].usedElementCount;
             if (instanceInfo._owner.owner.supportInstancedArray) {
                 engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
                 engine.draw(true, 0, 6, count);
-                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
+                engine.unbindInstanceAttributes();
             }
             else {
                 for (var i = 0; i < count; i++) {
@@ -70,7 +70,7 @@ var BABYLON;
             return true;
         };
         return Text2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -118,7 +118,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
         return Text2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -228,8 +228,8 @@ var BABYLON;
         Text2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         };
-        Text2D.prototype.setupText2D = function (owner, parent, id, position, fontName, text, areaSize, defaultFontColor, vAlign, hAlign, tabulationSize) {
-            this.setupRenderablePrim2D(owner, parent, id, position, true);
+        Text2D.prototype.setupText2D = function (owner, parent, id, position, origin, fontName, text, areaSize, defaultFontColor, vAlign, hAlign, tabulationSize) {
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, true);
             this.fontName = fontName;
             this.defaultFontColor = defaultFontColor;
             this.text = text;
@@ -239,13 +239,26 @@ var BABYLON;
             this._tabulationSize = tabulationSize;
             this._isTransparent = true;
         };
-        Text2D.Create = function (parent, id, x, y, fontName, text, defaultFontColor, areaSize, vAlign, hAlign, tabulationSize) {
-            if (vAlign === void 0) { vAlign = Text2D.TEXT2D_VALIGN_TOP; }
-            if (hAlign === void 0) { hAlign = Text2D.TEXT2D_HALIGN_LEFT; }
-            if (tabulationSize === void 0) { tabulationSize = 4; }
+        /**
+         * Create a Text primitive
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * @param text the text to display
+         * Options:
+         *  - id a text identifier, for information purpose
+         *  - x: the X position relative to its parent, default is 0
+         *  - y: the Y position relative to its parent, default is 0
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
+         *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
+         *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
+         *  - vAlign: vertical alignment (areaSize must be specified), default is Text2D.TEXT2D_VALIGN_CENTER
+         *  - hAlign: horizontal alignment (areaSize must be specified), default is Text2D.TEXT2D_HALIGN_CENTER
+         *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
+         */
+        Text2D.Create = function (parent, text, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
             var text2d = new Text2D();
-            text2d.setupText2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), fontName, text, areaSize, defaultFontColor || new BABYLON.Color4(0, 0, 0, 1), vAlign, hAlign, tabulationSize);
+            text2d.setupText2D(parent.owner, parent, options && options.id || null, new BABYLON.Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, options && options.fontName || "12pt Arial", text, options && options.areaSize, options && options.defaultFontColor || new BABYLON.Color4(1, 1, 1, 1), options && options.vAlign || Text2D.TEXT2D_VALIGN_CENTER, options && options.hAlign || Text2D.TEXT2D_HALIGN_CENTER, options && options.tabulationSize || 4);
             return text2d;
         };
         Text2D.prototype.levelIntersect = function (intersectInfo) {
@@ -381,6 +394,6 @@ var BABYLON;
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));
