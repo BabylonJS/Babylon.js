@@ -106,6 +106,6 @@ var BABYLON;
             }
         };
         return Analyser;
-    }());
+    })();
     BABYLON.Analyser = Analyser;
 })(BABYLON || (BABYLON = {}));

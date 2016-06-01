@@ -26,7 +26,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    }());
+    })();
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -43,16 +43,27 @@ var BABYLON;
          * @param scene the Scene that owns the Canvas
          * Options:
          *  - id: a text identifier, for information purpose only
-         *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport
-         *  - size: the Size of the canvas. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
-         *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS
+         *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
+         *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
+         *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property.
+         *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
         Canvas2D.CreateScreenSpace = function (scene, options) {
             var c = new Canvas2D();
-            c.setupCanvas(scene, options && options.id || null, options && options.size || null, true, options && options.cachingStrategy || Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS, options && options.enableInteraction || true);
-            c.position = options && options.pos || BABYLON.Vector2.Zero();
-            c.origin = options && options.origin || BABYLON.Vector2.Zero();
+            if (!options) {
+                c.setupCanvas(scene, null, null, true, Canvas2D.CACHESTRATEGY_DONTCACHE, true, BABYLON.Vector2.Zero(), true, null, null, null, null, null, null);
+                c.position = BABYLON.Vector2.Zero();
+            }
+            else {
+                var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
+                var size = (!options.size && !options.width && !options.height) ? null : (options.size || (new BABYLON.Size(options.width || 0, options.height || 0)));
+                c.setupCanvas(scene, options.id || null, size, true, options.cachingStrategy || Canvas2D.CACHESTRATEGY_DONTCACHE, options.enableInteraction || true, options.origin || BABYLON.Vector2.Zero(), options.isVisible || true, options.marginTop, options.marginLeft, options.marginRight, options.marginBottom, options.hAlignment || BABYLON.Prim2DBase.HAlignLeft, options.vAlignment || BABYLON.Prim2DBase.VAlignTop);
+                c.position = pos;
+            }
             return c;
         };
         /**
@@ -69,6 +80,7 @@ var BABYLON;
          * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
+         * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          */
         Canvas2D.CreateWorldSpace = function (scene, size, options) {
             var cs = options && options.cachingStrategy || Canvas2D.CACHESTRATEGY_CANVAS;
@@ -81,7 +93,7 @@ var BABYLON;
             var id = options && options.id || null;
             var rsf = options && options.renderScaleFactor || 1;
             var c = new Canvas2D();
-            c.setupCanvas(scene, id, new BABYLON.Size(size.width * rsf, size.height * rsf), false, cs, options && options.enableInteraction || true);
+            c.setupCanvas(scene, id, new BABYLON.Size(size.width * rsf, size.height * rsf), false, cs, options && options.enableInteraction || true, BABYLON.Vector2.Zero(), options && options.isVisible || true, null, null, null, null, null, null);
             var plane = new BABYLON.WorldSpaceCanvas2D(id, scene, c);
             var vertexData = BABYLON.VertexData.CreatePlane({ width: size.width / 2, height: size.height / 2, sideOrientation: options && options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE });
             var mtl = new BABYLON.StandardMaterial(id + "_Material", scene);
@@ -96,7 +108,7 @@ var BABYLON;
             c._worldSpaceNode = plane;
             return c;
         };
-        Canvas2D.prototype.setupCanvas = function (scene, name, size, isScreenSpace, cachingstrategy, enableInteraction) {
+        Canvas2D.prototype.setupCanvas = function (scene, name, size, isScreenSpace, cachingstrategy, enableInteraction, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign) {
             var _this = this;
             var engine = scene.getEngine();
             this._fitRenderingDevice = !size;
@@ -108,8 +120,8 @@ var BABYLON;
             this._primPointerInfo = new BABYLON.PrimitivePointerInfo();
             this._capturedPointers = new BABYLON.StringDictionary();
             this._pickStartingPosition = BABYLON.Vector2.Zero();
-            this.setupGroup2D(this, null, name, BABYLON.Vector2.Zero(), null, size, this._cachingStrategy === Canvas2D.CACHESTRATEGY_ALLGROUPS ? BABYLON.Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : BABYLON.Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY);
-            this._hierarchyLevelMaxSiblingCount = 100;
+            this.setupGroup2D(this, null, name, BABYLON.Vector2.Zero(), origin, size, isVisible, this._cachingStrategy === Canvas2D.CACHESTRATEGY_ALLGROUPS ? BABYLON.Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : BABYLON.Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
+            this._hierarchyLevelMaxSiblingCount = 10;
             this._hierarchyDepthOffset = 0;
             this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
             this._scene = scene;
@@ -693,8 +705,7 @@ var BABYLON;
                     this._background.size = this.size;
                 }
             }
-            var context = new BABYLON.Render2DContext();
-            context.forceRefreshPrimitive = false;
+            var context = new BABYLON.PreapreRender2DContext();
             ++this._globalTransformProcessStep;
             this.updateGlobalTransVis(false);
             this._prepareGroupRender(context);
@@ -709,11 +720,10 @@ var BABYLON;
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
                 this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
             }
-            var context = new BABYLON.Render2DContext();
-            this._groupRender(context);
+            this._groupRender();
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
-                this._cachedCanvasGroup._renderCachedCanvas(context);
+                this._cachedCanvasGroup._renderCachedCanvas();
             }
         };
         /**
@@ -833,6 +843,6 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
 })(BABYLON || (BABYLON = {}));

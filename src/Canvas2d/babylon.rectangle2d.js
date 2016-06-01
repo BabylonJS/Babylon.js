@@ -13,69 +13,87 @@ var BABYLON;
 (function (BABYLON) {
     var Rectangle2DRenderCache = (function (_super) {
         __extends(Rectangle2DRenderCache, _super);
-        function Rectangle2DRenderCache(engine, modelKey, isTransparent) {
-            _super.call(this, engine, modelKey, isTransparent);
+        function Rectangle2DRenderCache(engine, modelKey) {
+            _super.call(this, engine, modelKey);
+            this.effectsReady = false;
+            this.fillVB = null;
+            this.fillIB = null;
+            this.fillIndicesCount = 0;
+            this.instancingFillAttributes = null;
+            this.effectFill = null;
+            this.effectFillInstanced = null;
+            this.borderVB = null;
+            this.borderIB = null;
+            this.borderIndicesCount = 0;
+            this.instancingBorderAttributes = null;
+            this.effectBorder = null;
+            this.effectBorderInstanced = null;
         }
         Rectangle2DRenderCache.prototype.render = function (instanceInfo, context) {
-            // Do nothing if the shader is still loading/preparing
-            if ((this.effectFill && !this.effectFill.isReady()) || (this.effectBorder && !this.effectBorder.isReady())) {
-                return false;
+            // Do nothing if the shader is still loading/preparing 
+            if (!this.effectsReady) {
+                if ((this.effectFill && (!this.effectFill.isReady() || (this.effectFillInstanced && !this.effectFillInstanced.isReady()))) ||
+                    (this.effectBorder && (!this.effectBorder.isReady() || (this.effectBorderInstanced && !this.effectBorderInstanced.isReady())))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
-            var engine = instanceInfo._owner.owner.engine;
+            var engine = instanceInfo.owner.owner.engine;
             var depthFunction = 0;
             if (this.effectFill && this.effectBorder) {
                 depthFunction = engine.getDepthFunction();
                 engine.setDepthFunctionToLessOrEqual();
             }
-            var cur;
-            if (this.isTransparent) {
-                cur = engine.getAlphaMode();
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-            }
+            var curAlphaMode = engine.getAlphaMode();
             if (this.effectFill) {
-                var partIndex = instanceInfo._partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_FILLPARTID.toString());
-                engine.enableEffect(this.effectFill);
-                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [1], 4, this.effectFill);
-                var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
-                if (instanceInfo._owner.owner.supportInstancedArray) {
+                var partIndex = instanceInfo.partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_FILLPARTID.toString());
+                var pid = context.groupInfoPartData[partIndex];
+                if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                }
+                var effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
+                engine.enableEffect(effect);
+                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [1], 4, effect);
+                if (context.useInstancing) {
                     if (!this.instancingFillAttributes) {
-                        // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
-                        this.instancingFillAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
+                        this.instancingFillAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_FILLPARTID, effect);
                     }
-                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
-                    engine.draw(true, 0, this.fillIndicesCount, count);
+                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 }
                 else {
-                    for (var i = 0; i < count; i++) {
-                        this.setupUniforms(this.effectFill, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                    for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.fillIndicesCount);
                     }
                 }
             }
             if (this.effectBorder) {
-                var partIndex = instanceInfo._partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_BORDERPARTID.toString());
-                engine.enableEffect(this.effectBorder);
-                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [1], 4, this.effectBorder);
-                var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
-                if (instanceInfo._owner.owner.supportInstancedArray) {
+                var partIndex = instanceInfo.partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_BORDERPARTID.toString());
+                var pid = context.groupInfoPartData[partIndex];
+                if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                }
+                var effect = context.useInstancing ? this.effectBorderInstanced : this.effectBorder;
+                engine.enableEffect(effect);
+                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [1], 4, effect);
+                if (context.useInstancing) {
                     if (!this.instancingBorderAttributes) {
-                        this.instancingBorderAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, this.effectBorder);
+                        this.instancingBorderAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, effect);
                     }
-                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
-                    engine.draw(true, 0, this.borderIndicesCount, count);
+                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 }
                 else {
-                    for (var i = 0; i < count; i++) {
-                        this.setupUniforms(this.effectBorder, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                    for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.borderIndicesCount);
                     }
                 }
             }
-            if (this.isTransparent) {
-                engine.setAlphaMode(cur);
-            }
+            engine.setAlphaMode(curAlphaMode);
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
             }
@@ -97,6 +115,10 @@ var BABYLON;
                 this._engine._releaseEffect(this.effectFill);
                 this.effectFill = null;
             }
+            if (this.effectFillInstanced) {
+                this._engine._releaseEffect(this.effectFillInstanced);
+                this.effectFillInstanced = null;
+            }
             if (this.borderVB) {
                 this._engine._releaseBuffer(this.borderVB);
                 this.borderVB = null;
@@ -109,10 +131,14 @@ var BABYLON;
                 this._engine._releaseEffect(this.effectBorder);
                 this.effectBorder = null;
             }
+            if (this.effectBorderInstanced) {
+                this._engine._releaseEffect(this.effectBorderInstanced);
+                this.effectBorderInstanced = null;
+            }
             return true;
         };
         return Rectangle2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Rectangle2DRenderCache = Rectangle2DRenderCache;
     var Rectangle2DInstanceData = (function (_super) {
         __extends(Rectangle2DInstanceData, _super);
@@ -130,7 +156,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Rectangle2DInstanceData.prototype, "properties", null);
         return Rectangle2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Rectangle2DInstanceData = Rectangle2DInstanceData;
     var Rectangle2D = (function (_super) {
         __extends(Rectangle2D, _super);
@@ -187,10 +213,8 @@ var BABYLON;
         Rectangle2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         };
-        Rectangle2D.prototype.setupRectangle2D = function (owner, parent, id, position, origin, size, roundRadius, fill, border, borderThickness) {
-            if (roundRadius === void 0) { roundRadius = 0; }
-            if (borderThickness === void 0) { borderThickness = 1; }
-            this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
+        Rectangle2D.prototype.setupRectangle2D = function (owner, parent, id, position, origin, size, roundRadius, fill, border, borderThickness, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
+            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.size = size;
             this.notRounded = !roundRadius;
             this.roundRadius = roundRadius;
@@ -200,32 +224,34 @@ var BABYLON;
          * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * options:
          *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - width: the width of the rectangle, default is 10
-         *  - height: the height of the rectangle, default is 10
+         *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
          *  - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp rectangle).
          *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
          *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
          *  - borderThickness: the thickness of the drawn border, default is 1.
+         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
         Rectangle2D.Create = function (parent, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
             var rect = new Rectangle2D();
-            rect.setupRectangle2D(parent.owner, parent, options && options.id || null, new BABYLON.Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, new BABYLON.Size(options && options.width || 10, options && options.height || 10), options && options.roundRadius || 0);
-            if (options && options.fill !== undefined) {
-                rect.fill = options.fill;
+            if (!options) {
+                rect.setupRectangle2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, new BABYLON.Size(10, 10), 0, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
             }
             else {
-                rect.fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+                var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
+                var size = options.size || (new BABYLON.Size(options.width || 10, options.height || 10));
+                var fill = options.fill === undefined ? BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF") : options.fill;
+                rect.setupRectangle2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, options.roundRadius || 0, fill, options.border || null, options.borderThickness || 1, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
             }
-            rect.border = options && options.border || null;
-            rect.borderThickness = options && options.borderThickness || 1;
             return rect;
         };
-        Rectangle2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
-            var renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        Rectangle2D.prototype.createModelRenderCache = function (modelKey) {
+            var renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         };
         Rectangle2D.prototype.setupModelRenderCache = function (modelRenderCache) {
@@ -249,10 +275,14 @@ var BABYLON;
                 ib[triCount * 3 - 2] = 1;
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = triCount * 3;
-                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["index"]);
-                renderCache.effectFill = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, ei.uniforms, [], ei.defines, null, function (e) {
-                    //                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_FILLPARTID);
-                });
+                // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["index"], true);
+                if (ei) {
+                    renderCache.effectFillInstanced = engine.createEffect("rect2d", ei.attributes, ei.uniforms, [], ei.defines, null);
+                }
+                // Get the non instanced version
+                ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["index"], false);
+                renderCache.effectFill = engine.createEffect("rect2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             }
             // Need to create WebGL resource for border part?
             if (this.border) {
@@ -277,10 +307,14 @@ var BABYLON;
                 }
                 renderCache.borderIB = engine.createIndexBuffer(ib);
                 renderCache.borderIndicesCount = triCount * 3;
-                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["index"]);
-                renderCache.effectBorder = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, ei.uniforms, [], ei.defines, null, function (e) {
-                    //                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_BORDERPARTID);
-                });
+                // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["index"], true);
+                if (ei) {
+                    renderCache.effectBorderInstanced = engine.createEffect("rect2d", ei.attributes, ei.uniforms, [], ei.defines, null);
+                }
+                // Get the non instanced version
+                ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["index"], false);
+                renderCache.effectBorder = engine.createEffect("rect2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             }
             return renderCache;
         };
@@ -324,6 +358,6 @@ var BABYLON;
             BABYLON.className("Rectangle2D")
         ], Rectangle2D);
         return Rectangle2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Rectangle2D = Rectangle2D;
 })(BABYLON || (BABYLON = {}));
