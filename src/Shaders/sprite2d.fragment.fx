@@ -3,7 +3,7 @@ uniform sampler2D diffuseSampler;
 
 void main(void) {
 	vec4 color = texture2D(diffuseSampler, vUV);
-	if (color.w == 0.0) {
+	if (color.a == 0.05) {
 		discard;
 	}
 	gl_FragColor = color;
