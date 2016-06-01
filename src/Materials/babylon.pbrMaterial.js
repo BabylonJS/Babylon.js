@@ -62,6 +62,7 @@ var BABYLON;
             this.CAMERATONEMAP = false;
             this.CAMERACONTRAST = false;
             this.CAMERACOLORGRADING = false;
+            this.CAMERACOLORCURVES = false;
             this.OVERLOADEDVALUES = false;
             this.OVERLOADEDSHADOWVALUES = false;
             this.USESPHERICALFROMREFLECTIONMAP = false;
@@ -80,7 +81,7 @@ var BABYLON;
             this.rebuild();
         }
         return PBRMaterialDefines;
-    })(BABYLON.MaterialDefines);
+    }(BABYLON.MaterialDefines));
     /**
      * The Physically based material of BJS.
      *
@@ -153,6 +154,13 @@ var BABYLON;
             this.cameraColorGradingTexture = null;
             this._cameraColorGradingScaleOffset = new BABYLON.Vector4(1.0, 1.0, 0.0, 0.0);
             this._cameraColorGradingInfos = new BABYLON.Vector4(1.0, 1.0, 0.0, 0.0);
+            /**
+             * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+             * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+             * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+             * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+             */
+            this.cameraColorCurves = null;
             this._cameraInfos = new BABYLON.Vector4(1.0, 1.0, 0.0, 0.0);
             this._microsurfaceTextureLods = new BABYLON.Vector2(0.0, 0.0);
             /**
@@ -618,6 +626,9 @@ var BABYLON;
             if (this.cameraExposure != 1) {
                 this._defines.CAMERATONEMAP = true;
             }
+            if (this.cameraColorCurves) {
+                this._defines.CAMERACOLORCURVES = true;
+            }
             if (this.overloadedShadeIntensity != 1 ||
                 this.overloadedShadowIntensity != 1) {
                 this._defines.OVERLOADEDSHADOWVALUES = true;
@@ -783,6 +794,7 @@ var BABYLON;
                 ];
                 var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
                     "cameraColorGrading2DSampler"];
+                BABYLON.ColorCurves.PrepareUniforms(uniforms);
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
                 this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
             }
@@ -967,6 +979,9 @@ var BABYLON;
                 this._cameraInfos.x = this.cameraExposure;
                 this._cameraInfos.y = this.cameraContrast;
                 this._effect.setVector4("vCameraInfos", this._cameraInfos);
+                if (this.cameraColorCurves) {
+                    BABYLON.ColorCurves.Bind(this.cameraColorCurves, this._effect);
+                }
                 this._overloadedIntensity.x = this.overloadedAmbientIntensity;
                 this._overloadedIntensity.y = this.overloadedAlbedoIntensity;
                 this._overloadedIntensity.z = this.overloadedReflectivityIntensity;
@@ -1108,6 +1123,9 @@ var BABYLON;
         __decorate([
             BABYLON.serializeAsTexture()
         ], PBRMaterial.prototype, "cameraColorGradingTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsColorCurves()
+        ], PBRMaterial.prototype, "cameraColorCurves", void 0);
         __decorate([
             BABYLON.serializeAsColor3()
         ], PBRMaterial.prototype, "overloadedAmbient", void 0);
@@ -1259,6 +1277,6 @@ var BABYLON;
             BABYLON.serialize()
         ], PBRMaterial.prototype, "useLogarithmicDepth", null);
         return PBRMaterial;
-    })(BABYLON.Material);
+    }(BABYLON.Material));
     BABYLON.PBRMaterial = PBRMaterial;
 })(BABYLON || (BABYLON = {}));

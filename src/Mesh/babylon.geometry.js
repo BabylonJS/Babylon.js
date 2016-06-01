@@ -74,14 +74,20 @@ var BABYLON;
             this.notifyUpdate();
         };
         Geometry.prototype.setVerticesData = function (kind, data, updatable, stride) {
+            var buffer = new BABYLON.VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
+            this.setVerticesBuffer(buffer);
+        };
+        Geometry.prototype.setVerticesBuffer = function (buffer) {
+            var kind = buffer.getKind();
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
             }
-            this._vertexBuffers[kind] = new BABYLON.VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
+            this._vertexBuffers[kind] = buffer;
             if (kind === BABYLON.VertexBuffer.PositionKind) {
-                stride = this._vertexBuffers[kind].getStrideSize();
+                var data = buffer.getData();
+                var stride = buffer.getStrideSize();
                 this._totalVertices = data.length / stride;
-                this.updateExtend(data);
+                this.updateExtend(data, stride);
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
                 for (var index = 0; index < numOfMeshes; index++) {
@@ -278,12 +284,12 @@ var BABYLON;
                 mesh._boundingInfo = this._boundingInfo;
             }
         };
-        Geometry.prototype.updateExtend = function (data) {
+        Geometry.prototype.updateExtend = function (data, stride) {
             if (data === void 0) { data = null; }
             if (!data) {
                 data = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind].getData();
             }
-            this._extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias);
+            this._extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias, stride);
         };
         Geometry.prototype._applyToMesh = function (mesh) {
             var numOfMeshes = this._meshes.length;
@@ -292,7 +298,7 @@ var BABYLON;
                 if (numOfMeshes === 1) {
                     this._vertexBuffers[kind].create();
                 }
-                this._vertexBuffers[kind]._buffer.references = numOfMeshes;
+                this._vertexBuffers[kind].getBuffer().references = numOfMeshes;
                 if (kind === BABYLON.VertexBuffer.PositionKind) {
                     mesh._resetPointsArrayCache();
                     if (!this._extend) {
@@ -305,7 +311,7 @@ var BABYLON;
                 }
             }
             // indexBuffer
-            if (numOfMeshes === 1 && this._indices) {
+            if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
                 this._indexBuffer = this._engine.createIndexBuffer(this._indices);
             }
             if (this._indexBuffer) {
@@ -345,6 +351,37 @@ var BABYLON;
                 }
             }, function () { }, scene.database);
         };
+        /**
+         * Invert the geometry to move from a right handed system to a left handed one.
+         */
+        Geometry.prototype.toLeftHanded = function () {
+            // Flip faces
+            var tIndices = this.getIndices(false);
+            if (tIndices != null && tIndices.length > 0) {
+                for (var i = 0; i < tIndices.length; i += 3) {
+                    var tTemp = tIndices[i + 0];
+                    tIndices[i + 0] = tIndices[i + 2];
+                    tIndices[i + 2] = tTemp;
+                }
+                this.setIndices(tIndices);
+            }
+            // Negate position.z
+            var tPositions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind, false);
+            if (tPositions != null && tPositions.length > 0) {
+                for (var i = 0; i < tPositions.length; i += 3) {
+                    tPositions[i + 2] = -tPositions[i + 2];
+                }
+                this.setVerticesData(BABYLON.VertexBuffer.PositionKind, tPositions, false);
+            }
+            // Negate normal.z
+            var tNormals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind, false);
+            if (tNormals != null && tNormals.length > 0) {
+                for (var i = 0; i < tNormals.length; i += 3) {
+                    tNormals[i + 2] = -tNormals[i + 2];
+                }
+                this.setVerticesData(BABYLON.VertexBuffer.NormalKind, tNormals, false);
+            }
+        };
         Geometry.prototype.isDisposed = function () {
             return this._isDisposed;
         };
@@ -359,7 +396,7 @@ var BABYLON;
             for (var kind in this._vertexBuffers) {
                 this._vertexBuffers[kind].dispose();
             }
-            this._vertexBuffers = [];
+            this._vertexBuffers = {};
             this._totalVertices = 0;
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
@@ -679,7 +716,7 @@ var BABYLON;
             return geometry;
         };
         return Geometry;
-    })();
+    }());
     BABYLON.Geometry = Geometry;
     /////// Primitives //////////////////////////////////////////////
     var Geometry;
@@ -737,7 +774,7 @@ var BABYLON;
                     return serializationObject;
                 };
                 return _Primitive;
-            })(Geometry);
+            }(Geometry));
             Primitives._Primitive = _Primitive;
             var Ribbon = (function (_super) {
                 __extends(Ribbon, _super);
@@ -758,7 +795,7 @@ var BABYLON;
                     return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), null, this.side);
                 };
                 return Ribbon;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.Ribbon = Ribbon;
             var Box = (function (_super) {
                 __extends(Box, _super);
@@ -790,7 +827,7 @@ var BABYLON;
                     return box;
                 };
                 return Box;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.Box = Box;
             var Sphere = (function (_super) {
                 __extends(Sphere, _super);
@@ -823,7 +860,7 @@ var BABYLON;
                     return sphere;
                 };
                 return Sphere;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.Sphere = Sphere;
             var Disc = (function (_super) {
                 __extends(Disc, _super);
@@ -842,7 +879,7 @@ var BABYLON;
                     return new Disc(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
                 };
                 return Disc;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.Disc = Disc;
             var Cylinder = (function (_super) {
                 __extends(Cylinder, _super);
@@ -881,7 +918,7 @@ var BABYLON;
                     return cylinder;
                 };
                 return Cylinder;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.Cylinder = Cylinder;
             var Torus = (function (_super) {
                 __extends(Torus, _super);
@@ -916,7 +953,7 @@ var BABYLON;
                     return torus;
                 };
                 return Torus;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.Torus = Torus;
             var Ground = (function (_super) {
                 __extends(Ground, _super);
@@ -949,7 +986,7 @@ var BABYLON;
                     return ground;
                 };
                 return Ground;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.Ground = Ground;
             var TiledGround = (function (_super) {
                 __extends(TiledGround, _super);
@@ -969,7 +1006,7 @@ var BABYLON;
                     return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
                 };
                 return TiledGround;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.TiledGround = TiledGround;
             var Plane = (function (_super) {
                 __extends(Plane, _super);
@@ -1000,7 +1037,7 @@ var BABYLON;
                     return plane;
                 };
                 return Plane;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.Plane = Plane;
             var TorusKnot = (function (_super) {
                 __extends(TorusKnot, _super);
@@ -1042,7 +1079,7 @@ var BABYLON;
                     return torusKnot;
                 };
                 return TorusKnot;
-            })(_Primitive);
+            }(_Primitive));
             Primitives.TorusKnot = TorusKnot;
         })(Primitives = Geometry.Primitives || (Geometry.Primitives = {}));
     })(Geometry = BABYLON.Geometry || (BABYLON.Geometry = {}));

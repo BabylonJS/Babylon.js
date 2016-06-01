@@ -27,7 +27,7 @@ var BABYLON;
             }
         };
         InstanceClassInfo.prototype.getInstancingAttributeInfos = function (effect, categories) {
-            var catInline = categories.join(";");
+            var catInline = ";" + categories.join(";") + ";";
             var res = new Array();
             var curInfo = this;
             while (curInfo) {
@@ -73,10 +73,9 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    })();
+    }());
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
-        //uniformLocation: WebGLUniformLocation;
         function InstancePropInfo() {
             this.instanceOffset = new BABYLON.StringDictionary();
         }
@@ -112,6 +111,11 @@ var BABYLON;
             if (val instanceof BABYLON.Color4) {
                 this.size = 16;
                 this.dataType = 6 /* Color4 */;
+                return;
+            }
+            if (val instanceof BABYLON.Size) {
+                this.size = 8;
+                this.dataType = 7 /* Size */;
                 return;
             }
             return;
@@ -173,10 +177,17 @@ var BABYLON;
                         }
                         break;
                     }
+                case 7 /* Size */:
+                    {
+                        var s = val;
+                        array[offset + 0] = s.width;
+                        array[offset + 1] = s.height;
+                        break;
+                    }
             }
         };
         return InstancePropInfo;
-    })();
+    }());
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -191,11 +202,19 @@ var BABYLON;
             info = new InstancePropInfo();
             info.attributeName = shaderAttributeName;
             info.category = category || null;
+            if (info.category) {
+                info.delimitedCategory = ";" + info.category + ";";
+            }
             node.levelContent.add(instanceDataName, info);
             descriptor.get = function () {
                 return null;
             };
             descriptor.set = function (val) {
+                // Check that we're not trying to set a property that belongs to a category that is not allowed (current)
+                // Quit if it's the case, otherwise we could overwrite data somewhere...
+                if (info.category && InstanceClassInfo._CurCategories.indexOf(info.delimitedCategory) === -1) {
+                    return;
+                }
                 if (!info.size) {
                     info.setSize(val);
                     node.classContent.mapProperty(info, true);
@@ -300,7 +319,7 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "origin", null);
         return InstanceDataBase;
-    })();
+    }());
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
@@ -317,8 +336,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        RenderablePrim2D.prototype.setupRenderablePrim2D = function (owner, parent, id, position, isVisible) {
-            this.setupPrim2DBase(owner, parent, id, position);
+        RenderablePrim2D.prototype.setupRenderablePrim2D = function (owner, parent, id, position, origin, isVisible) {
+            this.setupPrim2DBase(owner, parent, id, position, origin);
             this._isTransparent = false;
         };
         RenderablePrim2D.prototype.dispose = function () {
@@ -382,8 +401,8 @@ var BABYLON;
                     var usedCatList = new Array();
                     var partIdList = new Array();
                     var joinedUsedCatList = new Array();
-                    for (var _i = 0; _i < parts.length; _i++) {
-                        var dataPart = parts[_i];
+                    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
+                        var dataPart = parts_1[_i];
                         var cat = this.getUsedShaderCategories(dataPart);
                         var cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
@@ -391,7 +410,7 @@ var BABYLON;
                         this.isVisible = true;
                         // We manually trigger refreshInstanceData for the only sake of evaluating each instance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
                         //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
-                        var joinCat = cat.join(";");
+                        var joinCat = ";" + cat.join(";") + ";";
                         joinedUsedCatList.push(joinCat);
                         InstanceClassInfo._CurCategories = joinCat;
                         var obj = this.beforeRefreshForLayoutConstruction(dataPart);
@@ -432,7 +451,7 @@ var BABYLON;
                         gii._partIndexFromId.add(this._modelRenderCache._partIdList[j].toString(), j);
                         for (var _a = 0, _b = this._instanceDataParts; _a < _b.length; _a++) {
                             var part = _b[_a];
-                            gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())] = this.getUsedShaderCategories(part).join(";");
+                            gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())] = ";" + this.getUsedShaderCategories(part).join(";") + ";";
                         }
                     }
                 }
@@ -476,6 +495,23 @@ var BABYLON;
                 gii._dirtyInstancesData = true;
                 this._visibilityChanged = false; // Reset the flag as we've handled the case
             }
+        };
+        /**
+         * Transform a given point using the Primitive's origin setting.
+         * This method requires the Primitive's actualSize to be accurate
+         * @param p the point to transform
+         * @param originOffset an offset applied on the current origin before performing the transformation. Depending on which frame of reference your data is expressed you may have to apply a offset. (if you data is expressed from the bottom/left, no offset is required. If it's expressed from the center the a [-0.5;-0.5] offset has to be applied.
+         * @param res an allocated Vector2 that will receive the transformed content
+         */
+        RenderablePrim2D.prototype.transformPointWithOriginByRef = function (p, originOffset, res) {
+            var actualSize = this.actualSize;
+            res.x = p.x - ((this.origin.x + (originOffset ? originOffset.x : 0)) * actualSize.width);
+            res.y = p.y - ((this.origin.y + (originOffset ? originOffset.y : 0)) * actualSize.height);
+        };
+        RenderablePrim2D.prototype.transformPointWithOrigin = function (p, originOffset) {
+            var res = new BABYLON.Vector2(0, 0);
+            this.transformPointWithOriginByRef(p, originOffset, res);
+            return res;
         };
         RenderablePrim2D.prototype.getDataPartEffectInfo = function (dataPartId, vertexBufferAttributes) {
             var dataPart = BABYLON.Tools.first(this._instanceDataParts, function (i) { return i.id === dataPartId; });
@@ -571,6 +607,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    })(BABYLON.Prim2DBase);
+    }(BABYLON.Prim2DBase));
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));

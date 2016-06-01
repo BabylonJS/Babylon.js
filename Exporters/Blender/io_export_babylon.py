@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 5, 0),
+    'version': (4, 6, 0),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -304,6 +304,7 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 
             # separate loop doing all skeletons, so available in Mesh to make skipping IK bones possible
             for object in [object for object in scene.objects]:
+                scene.frame_set(currentFrame)
                 if object.type == 'ARMATURE':  #skeleton.pose.bones
                     if object.is_visible(scene):
                         self.skeletons.append(Skeleton(object, scene, skeletonId))
@@ -311,9 +312,9 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                     else:
                         Main.warn('The following armature not visible in scene thus ignored: ' + object.name)
 
-            bpy.context.scene.frame_set(0)
             # exclude lamps in this pass, so ShadowGenerator constructor can be passed meshesAnNodes
             for object in [object for object in scene.objects]:
+                scene.frame_set(currentFrame)
                 if object.type == 'CAMERA':
                     if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
                         self.cameras.append(Camera(object))
@@ -354,6 +355,7 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 
             # Lamp / shadow Generator pass; meshesAnNodes complete & forceParents included
             for object in [object for object in scene.objects]:
+                scene.frame_set(currentFrame)
                 if object.type == 'LAMP':
                     if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
                         bulb = Light(object)
@@ -1425,6 +1427,9 @@ class Skeleton:
         scene.objects.active = skeleton
         bpy.ops.object.mode_set(mode='EDIT')
 
+        # dimensions when in edit mode, are those at rest
+        self.dimensions = skeleton.dimensions
+
         # you need to access edit_bones from skeleton.data not skeleton.pose when in edit mode
         for editBone in skeleton.data.edit_bones:
             for myBoneObj in self.bones:
@@ -1447,6 +1452,7 @@ class Skeleton:
         file_handler.write('{')
         write_string(file_handler, 'name', self.name, True)
         write_int(file_handler, 'id', self.id)  # keep int for legacy of original exporter
+        write_vector(file_handler, 'dimensionsAtRest', self.dimensions)
 
         file_handler.write(',"bones":[')
         first = True

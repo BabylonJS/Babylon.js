@@ -3,6 +3,8 @@
         public color = new Color3(1, 1, 1);
         public alpha = 1;
 
+        private _positionBuffer: { [key: string]: VertexBuffer } = {};
+
         /**
          * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
          * This margin is expressed in world space coordinates, so its value may vary.
@@ -43,10 +45,12 @@
             this._intersectionThreshold = 0.1;
             this._colorShader = new ShaderMaterial("colorShader", scene, "color",
                 {
-                    attributes: ["position"],
+                    attributes: [VertexBuffer.PositionKind],
                     uniforms: ["worldViewProjection", "color"],
                     needAlphaBlending: true
                 });
+
+            this._positionBuffer[VertexBuffer.PositionKind] = null;
         }
 
         public get material(): Material {
@@ -65,10 +69,10 @@
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void {
             var engine = this.getScene().getEngine();
 
-            var indexToBind = this._geometry.getIndexBuffer();
+            this._positionBuffer[VertexBuffer.PositionKind] = this._geometry.getVertexBuffer(VertexBuffer.PositionKind);
 
             // VBOs
-            engine.bindBuffers(this._geometry.getVertexBuffer(VertexBuffer.PositionKind).getBuffer(), indexToBind, [3], 3 * 4, this._colorShader.getEffect());
+            engine.bindBuffers(this._positionBuffer, this._geometry.getIndexBuffer(), this._colorShader.getEffect());
 
             // Color
             this._colorShader.setColor4("color", this.color.toColor4(this.alpha));

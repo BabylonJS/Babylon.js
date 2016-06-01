@@ -15,7 +15,7 @@ var BABYLON;
         function Render2DContext() {
         }
         return Render2DContext;
-    })();
+    }());
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -175,7 +175,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    })();
+    }());
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     /**
      * Stores information about a Primitive that was intersected
@@ -186,7 +186,7 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    })();
+    }());
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
     /**
      * Main class used for the Primitive Intersection API
@@ -223,14 +223,14 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    })();
+    }());
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
         function Prim2DBase() {
             _super.apply(this, arguments);
         }
-        Prim2DBase.prototype.setupPrim2DBase = function (owner, parent, id, position, isVisible) {
+        Prim2DBase.prototype.setupPrim2DBase = function (owner, parent, id, position, origin, isVisible) {
             if (isVisible === void 0) { isVisible = true; }
             if (!(this instanceof BABYLON.Group2D) && !(this instanceof BABYLON.Sprite2D && id !== null && id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
                 throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
@@ -265,7 +265,7 @@ var BABYLON;
             this.rotation = 0;
             this.scale = 1;
             this.levelVisible = isVisible;
-            this.origin = new BABYLON.Vector2(0.5, 0.5);
+            this.origin = origin || new BABYLON.Vector2(0.5, 0.5);
         };
         Object.defineProperty(Prim2DBase.prototype, "actionManager", {
             get: function () {
@@ -696,8 +696,8 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype.updateGlobalTransVisOf = function (list, recurse) {
-            for (var _i = 0; _i < list.length; _i++) {
-                var cur = list[_i];
+            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+                var cur = list_1[_i];
                 cur.updateGlobalTransVis(recurse);
             }
         };
@@ -778,6 +778,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    })(BABYLON.SmartPropertyPrim);
+    }(BABYLON.SmartPropertyPrim));
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

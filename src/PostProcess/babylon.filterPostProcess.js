@@ -7,15 +7,15 @@ var BABYLON;
 (function (BABYLON) {
     var FilterPostProcess = (function (_super) {
         __extends(FilterPostProcess, _super);
-        function FilterPostProcess(name, kernelMatrix, ratio, camera, samplingMode, engine, reusable) {
+        function FilterPostProcess(name, kernelMatrix, options, camera, samplingMode, engine, reusable) {
             var _this = this;
-            _super.call(this, name, "filter", ["kernelMatrix"], null, ratio, camera, samplingMode, engine, reusable);
+            _super.call(this, name, "filter", ["kernelMatrix"], null, options, camera, samplingMode, engine, reusable);
             this.kernelMatrix = kernelMatrix;
             this.onApply = function (effect) {
                 effect.setMatrix("kernelMatrix", _this.kernelMatrix);
             };
         }
         return FilterPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.FilterPostProcess = FilterPostProcess;
 })(BABYLON || (BABYLON = {}));

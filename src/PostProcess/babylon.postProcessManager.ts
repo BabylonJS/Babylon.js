@@ -2,16 +2,14 @@
     export class PostProcessManager {
         private _scene: Scene;
         private _indexBuffer: WebGLBuffer;
-        private _vertexDeclaration = [2];
-        private _vertexStrideSize = 2 * 4;
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
 
         constructor(scene: Scene) {
             this._scene = scene;
         }
 
         private _prepareBuffers(): void {
-            if (this._vertexBuffer) {
+            if (this._vertexBuffers[VertexBuffer.PositionKind]) {
                 return;
             }
 
@@ -21,7 +19,8 @@
             vertices.push(-1, 1);
             vertices.push(-1, -1);
             vertices.push(1, -1);
-            this._vertexBuffer = this._scene.getEngine().createVertexBuffer(vertices);
+
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._scene.getEngine(), vertices, VertexBuffer.PositionKind, false, false, 2);
 
             // Indices
             var indices = [];
@@ -70,12 +69,12 @@
 
                     // VBOs
                     this._prepareBuffers();
-                    engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+                    engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
                     engine.draw(true, 0, 6);
 
-                    pp.onAfterRenderObservable.notifyObservers(effect);                    
+                    pp.onAfterRenderObservable.notifyObservers(effect);
                 }
             }
 
@@ -114,7 +113,7 @@
 
                     // VBOs
                     this._prepareBuffers();
-                    engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+                    engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
                     engine.draw(true, 0, 6);
@@ -129,9 +128,10 @@
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
             }
 
             if (this._indexBuffer) {

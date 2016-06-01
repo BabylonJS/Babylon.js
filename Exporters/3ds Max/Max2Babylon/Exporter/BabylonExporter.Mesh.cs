@@ -192,7 +192,7 @@ namespace Max2Babylon
             var unskinnedMesh = gameMesh;
             IGMatrix skinInitPoseMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
             List<int> boneIds = null;
-            int nbBones = 0;
+            int maxNbBones = 0;
             if (isSkinned)
             {
                 bonesCount = skin.TotalSkinBoneCount;
@@ -255,7 +255,7 @@ namespace Max2Babylon
                 {
                     for (var vertexIndex = 0; vertexIndex < unskinnedMesh.NumberOfVerts; vertexIndex++)
                     {
-                        nbBones = Math.Max(nbBones, skin.GetNumberOfBones(vertexIndex));
+                        maxNbBones = Math.Max(maxNbBones, skin.GetNumberOfBones(vertexIndex));
                     }
                 }
 
@@ -355,7 +355,7 @@ namespace Max2Babylon
                         for (int j = 0; j < unskinnedMesh.NumberOfFaces; ++j)
                         {
                             var face = unskinnedMesh.GetFace(j);
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds, nbBones);
+                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
                         }
                     }
                     else
@@ -373,7 +373,7 @@ namespace Max2Babylon
 #if !MAX2017
                             Marshal.FreeHGlobal(faceIndexer);
 #endif
-                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds, nbBones);
+                            ExtractFace(skin, unskinnedMesh, vertices, indices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, ref indexCount, ref minVertexIndex, ref maxVertexIndex, face, boneIds);
                         }
                     }
 
@@ -419,8 +419,8 @@ namespace Max2Babylon
                     babylonMesh.matricesWeights = vertices.SelectMany(v => v.Weights.ToArray()).ToArray();
                     babylonMesh.matricesIndices = vertices.Select(v => v.BonesIndices).ToArray();
 
-                    babylonMesh.numBoneInfluencers = nbBones;
-                    if (nbBones > 4)
+                    babylonMesh.numBoneInfluencers = maxNbBones;
+                    if (maxNbBones > 4)
                     {
                         babylonMesh.matricesWeightsExtra = vertices.SelectMany(v => v.WeightsExtra.ToArray()).ToArray();
                         babylonMesh.matricesIndicesExtra = vertices.Select(v => v.BonesIndicesExtra).ToArray();
@@ -523,11 +523,11 @@ namespace Max2Babylon
             babylonScene.MeshesList.Add(babylonMesh);
         }
 
-        private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face, List<int> boneIds, int nbBones)
+        private void ExtractFace(IIGameSkin skin, IIGameMesh unskinnedMesh, List<GlobalVertex> vertices, List<int> indices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, ref int indexCount, ref int minVertexIndex, ref int maxVertexIndex, IFaceEx face, List<int> boneIds)
         {
-            var a = CreateGlobalVertex(unskinnedMesh, face, 0, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds, nbBones);
-            var b = CreateGlobalVertex(unskinnedMesh, face, 2, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds, nbBones);
-            var c = CreateGlobalVertex(unskinnedMesh, face, 1, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds, nbBones);
+            var a = CreateGlobalVertex(unskinnedMesh, face, 0, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
+            var b = CreateGlobalVertex(unskinnedMesh, face, 2, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
+            var c = CreateGlobalVertex(unskinnedMesh, face, 1, vertices, hasUV, hasUV2, hasColor, hasAlpha, verticesAlreadyExported, skin, boneIds);
             indices.Add(a);
             indices.Add(b);
             indices.Add(c);
@@ -625,7 +625,7 @@ namespace Max2Babylon
         }
 
 
-        int CreateGlobalVertex(IIGameMesh mesh, IFaceEx face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, IIGameSkin skin, List<int> boneIds, int nbBones)
+        int CreateGlobalVertex(IIGameMesh mesh, IFaceEx face, int facePart, List<GlobalVertex> vertices, bool hasUV, bool hasUV2, bool hasColor, bool hasAlpha, List<GlobalVertex>[] verticesAlreadyExported, IIGameSkin skin, List<int> boneIds)
         {
             var vertexIndex = (int)face.Vert[facePart];
 
@@ -697,6 +697,7 @@ namespace Max2Babylon
                 int bone1 = bonesCount;
                 int bone2 = bonesCount;
                 int bone3 = bonesCount;
+                var nbBones = skin.GetNumberOfBones(vertexIndex);
 
                 if (nbBones > 0)
                 {
