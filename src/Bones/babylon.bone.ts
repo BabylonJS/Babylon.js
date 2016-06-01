@@ -98,7 +98,7 @@
             this._skeleton._markAsDirty();
         }
 
-        public copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false): boolean {
+        public copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false, skelDimensionsRatio : Vector3 = null): boolean {
             // all animation may be coming from a library skeleton, so may need to create animation
             if (this.animations.length === 0) {
                 this.animations.push(new Animation(this.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0));
@@ -116,25 +116,40 @@
             
             // rescaling prep
             var sourceBoneLength = source.length;
-            var scalingReqd = rescaleAsRequired && sourceBoneLength && this.length && sourceBoneLength !== this.length;
-            var ratio = scalingReqd ? this.length / sourceBoneLength : null;
-
+            var sourceParent = source.getParent();
+            var parent = this.getParent();
+            var parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
+            var parentRatio = parentScalingReqd ? parent.length / sourceParent.length : null;
+            
+            var dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);           
+            
             var destKeys = this.animations[0].getKeys();
             
-            // loop vars declaration / initialization
+            // loop vars declaration
             var orig: { frame: number, value: Matrix };
-            var origScale = scalingReqd ? Vector3.Zero() : null;
-            var origRotation = scalingReqd ? new Quaternion() : null;
-            var origTranslation = scalingReqd ? Vector3.Zero() : null;
+            var origTranslation : Vector3;
             var mat: Matrix;
 
             for (var key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
                 orig = sourceKeys[key];
                 if (orig.frame >= from && orig.frame <= to) {
-                    if (scalingReqd) {
-                        orig.value.decompose(origScale, origRotation, origTranslation);
-                        origTranslation.scaleInPlace(ratio);
-                        mat = Matrix.Compose(origScale, origRotation, origTranslation);
+                    if (rescaleAsRequired) {
+                        mat = orig.value.clone();
+                        
+                        // scale based on parent ratio, when bone has parent
+                        if (parentScalingReqd) {
+                            origTranslation = mat.getTranslation();
+                            mat.setTranslation(origTranslation.scaleInPlace(parentRatio));
+                            
+                        // scale based on skeleton dimension ratio when root bone, and value is passed
+                        } else if (dimensionsScalingReqd) {
+                            origTranslation = mat.getTranslation();
+                            mat.setTranslation(origTranslation.multiplyInPlace(skelDimensionsRatio));                            
+
+                        // use original when root bone, and no data for skelDimensionsRatio
+                        } else {
+                            mat = orig.value;                            
+                        }
                     } else {
                         mat = orig.value;
                     }
