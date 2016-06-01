@@ -7,10 +7,11 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube, samplingMode) {
             if (doNotChangeAspectRatio === void 0) { doNotChangeAspectRatio = true; }
             if (type === void 0) { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             if (isCube === void 0) { isCube = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, null, scene, !generateMipMaps);
             this.isCube = isCube;
             /**
@@ -48,13 +49,17 @@ var BABYLON;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
+            if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            }
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, samplingMode: samplingMode });
                 this.coordinatesMode = BABYLON.Texture.INVCUBIC_MODE;
                 this._textureMatrix = BABYLON.Matrix.Identity();
             }
             else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
+                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type, samplingMode: samplingMode });
             }
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
@@ -184,6 +189,9 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
+            if (this.useCameraPostProcesses !== undefined) {
+                useCameraPostProcess = this.useCameraPostProcesses;
+            }
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
             }
@@ -321,6 +329,6 @@ var BABYLON;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES = 2;
         return RenderTargetTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.RenderTargetTexture = RenderTargetTexture;
 })(BABYLON || (BABYLON = {}));

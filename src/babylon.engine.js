@@ -103,13 +103,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    }());
+    })();
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    }());
+    })();
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -594,6 +594,25 @@ var BABYLON;
             }
             this._gl.clear(mode);
         };
+        Engine.prototype.scissorClear = function (x, y, width, height, clearColor) {
+            var gl = this._gl;
+            // Save state
+            var curScissor = gl.getParameter(gl.SCISSOR_TEST);
+            var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
+            // Change state
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor(x, y, width, height);
+            // Clear
+            this.clear(clearColor, true, true);
+            // Restore state
+            gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
+            if (curScissor === true) {
+                gl.enable(gl.SCISSOR_TEST);
+            }
+            else {
+                gl.disable(gl.SCISSOR_TEST);
+            }
+        };
         /**
          * Set the WebGL's viewport
          * @param {BABYLON.Viewport} viewport - the viewport element to be used.
@@ -781,6 +800,12 @@ var BABYLON;
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
             return vbo;
+        };
+        Engine.prototype.bindArrayBuffer = function (buffer) {
+            this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+        };
+        Engine.prototype.updateArrayBuffer = function (data) {
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
         };
         Engine.prototype.bindBuffer = function (buffer, target) {
             if (this._currentBoundBuffer[target] !== buffer) {
@@ -1152,45 +1177,42 @@ var BABYLON;
         Engine.prototype.setColorWrite = function (enable) {
             this._gl.colorMask(enable, enable, enable, enable);
         };
-        Engine.prototype.setAlphaMode = function (mode) {
+        Engine.prototype.setAlphaMode = function (mode, noDepthWriteChange) {
+            if (noDepthWriteChange === void 0) { noDepthWriteChange = false; }
             if (this._alphaMode === mode) {
                 return;
             }
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
-                    this.setDepthWrite(true);
                     this._alphaState.alphaBlend = false;
                     break;
                 case Engine.ALPHA_COMBINE:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_ONEONE:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_ADD:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_SUBTRACT:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_MULTIPLY:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_MAXIMIZED:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
+            }
+            if (!noDepthWriteChange) {
+                this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
             }
             this._alphaMode = mode;
         };
@@ -1516,8 +1538,8 @@ var BABYLON;
                 type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); //filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
@@ -1744,7 +1766,7 @@ var BABYLON;
                 else {
                     noMipmap = true;
                 }
-                if (textureType == gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
+                if (textureType === gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
@@ -2084,6 +2106,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    }());
+    })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));

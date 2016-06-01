@@ -1,38 +1,48 @@
 ﻿module BABYLON {
     export class Sprite2DRenderCache extends ModelRenderCache {
-        vb: WebGLBuffer;
-        ib: WebGLBuffer;
-        instancingAttributes: InstancingAttributeInfo[];
-
-        texture: Texture;
-        effect: Effect;
+        effectsReady: boolean                           = false;
+        vb: WebGLBuffer                                 = null;
+        ib: WebGLBuffer                                 = null;
+        instancingAttributes: InstancingAttributeInfo[] = null;
+        texture: Texture                                = null;
+        effect: Effect                                  = null;
+        effectInstanced: Effect                         = null;
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
-            // Do nothing if the shader is still loading/preparing
-            if (!this.effect.isReady() || !this.texture.isReady()) {
-                return false;
+            // Do nothing if the shader is still loading/preparing 
+            if (!this.effectsReady) {
+                if ((!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady()))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
 
             // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
-            var engine = instanceInfo._owner.owner.engine;
+            var engine = instanceInfo.owner.owner.engine;
 
-            engine.enableEffect(this.effect);
-            this.effect.setTexture("diffuseSampler", this.texture);
-            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, this.effect);
+            let effect = context.useInstancing ? this.effectInstanced : this.effect;
+
+            engine.enableEffect(effect);
+            effect.setTexture("diffuseSampler", this.texture);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
 
             var cur = engine.getAlphaMode();
-            engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            let count = instanceInfo._instancesPartsData[0].usedElementCount;
-            if (instanceInfo._owner.owner.supportInstancedArray) {
+
+            if (context.renderMode !== Render2DContext.RenderModeOpaque) {
+                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            }
+
+            let pid = context.groupInfoPartData[0];
+            if (context.useInstancing) {
                 if (!this.instancingAttributes) {
-                    this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, this.effect);
+                    this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, effect);
                 }
-                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
-                engine.draw(true, 0, 6, count);
+                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, pid._partData.usedElementCount);
                 engine.unbindInstanceAttributes();
             } else {
-                for (let i = 0; i < count; i++) {
-                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                    this.setupUniforms(effect, 0, pid._partData, i);
                     engine.draw(true, 0, 6);
                 }
             }
@@ -65,6 +75,11 @@
             if (this.effect) {
                 this._engine._releaseEffect(this.effect);
                 this.effect = null;
+            }
+
+            if (this.effectInstanced) {
+                this._engine._releaseEffect(this.effectInstanced);
+                this.effectInstanced = null;
             }
 
             return true;
@@ -179,8 +194,8 @@
             return true;
         }
 
-        protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean) {
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, true);
+        protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.texture = texture;
             this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -202,31 +217,40 @@
          * @param texture the texture that stores the sprite to render
          * options:
          *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - spriteSize: the size of the sprite, if null the size of the given texture will be used, default is null.
          *  - spriteLocation: the location in the texture of the top/left corner of the Sprite to display, default is null (0,0)
          *  - invertY: if true the texture Y will be inverted, default is false.
+         *  - isVisible: true if the sprite must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, texture: Texture, options: { id?: string, x?: number, y?: number, origin?: Vector2, spriteSize?: Size, spriteLocation?: Vector2, invertY?: boolean}): Sprite2D {
+        public static Create(parent: Prim2DBase, texture: Texture, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, spriteSize?: Size, spriteLocation?: Vector2, invertY?: boolean, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Sprite2D {
             Prim2DBase.CheckParent(parent);
 
             let sprite = new Sprite2D();
-            sprite.setupSprite2D(parent.owner, parent, options && options.id || null, new Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, texture, options && options.spriteSize || null, options && options.spriteLocation || null, options && options.invertY || false);
+            if (!options) {
+                sprite.setupSprite2D(parent.owner, parent, null, Vector2.Zero(), null, texture, null, null, false, true, null, null, null, null, null, null);
+            } else {
+                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
+                sprite.setupSprite2D(parent.owner, parent, options.id || null, pos, options.origin || null, texture, options.spriteSize || null, options.spriteLocation || null, options.invertY || false, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+            }
+
             return sprite;
         }
 
         static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D {
 
             let sprite = new Sprite2D();
-            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new Vector2(0, 0), null, texture, size, pos, false);
+            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new Vector2(0, 0), null, texture, size, pos, false, true, null, null, null, null, null, null);
 
             return sprite;
         }
 
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        protected createModelRenderCache(modelKey: string): ModelRenderCache {
+            let renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         }
 
@@ -252,10 +276,14 @@
 
             renderCache.texture = this.texture;
 
-            var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, e => {
-//                renderCache.setupUniformsLocation(e, ei.uniforms, Sprite2D.SPRITE2D_MAINPARTID);
-            });
+            // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+            let ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], true);
+            if (ei) {
+                renderCache.effectInstanced = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
+            }
+
+            ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], false);
+            renderCache.effect = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
 
             return renderCache;
         }

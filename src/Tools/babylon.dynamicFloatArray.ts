@@ -80,6 +80,7 @@
             }
 
             // If the buffer is already packed the last used will always be lower than the first free
+            // The opposite may not be true, we can have a lastUsed greater than firstFree but the array still packed, because when an element is freed, lastUsed is not updated (for speed reason) so we may have a lastUsed of a freed element. But that's ok, well soon realize this case.
             if (this._lastUsed < this._firstFree) {
                 let elementsBuffer = this.buffer.subarray(0, this._lastUsed + this._stride);
                 return elementsBuffer;
@@ -242,10 +243,138 @@
             return this._stride;
         }
 
+        compareValueOffset: number = null;
+        sortingAscending: boolean = true;
+
+        public sort(): boolean {
+            if (!this.compareValueOffset) {
+                throw new Error("The DynamicFloatArray.sort() method needs a valid 'compareValueOffset' property");
+            }
+
+            let count = this.usedElementCount;
+
+            // Do we have to (re)create the sort table?
+            if (!this._sortTable || this._sortTable.length < count) {
+                // Small heuristic... We don't want to allocate totalElementCount right away because it may have 50 for 3 used elements, but on the other side we don't want to allocate just 3 when we just need 2, so double this value to give us some air to breath...
+                let newCount = Math.min(this.totalElementCount, count * 2);
+
+                this._sortTable = new Array<SortInfo>(newCount);
+                this._sortedTable = new Array<SortInfo>(newCount);
+            }
+
+            // Because, you know...
+            this.pack();
+
+            //let stride = this.stride;
+            //for (let i = 0; i < count; i++) {
+            //    let si = this._sortTable[i];
+            //    if (!si) {
+            //        si = new SortInfo();
+            //        this._sortTable[i] = si;
+            //    }
+            //    si.entry = this._allEntries[i];
+            //    si.compareData = this.buffer[si.entry.offset + this.compareValueOffset];
+            //    si.swapedOffset = null;
+
+            //    this._sortedTable[i] = si;
+            //}
+
+            let curOffset = 0;
+            let stride = this.stride;
+            for (let i = 0; i < count; i++ , curOffset += stride) {
+                let si = this._sortTable[i];
+                if (!si) {
+                    si = new SortInfo();
+                    this._sortTable[i] = si;
+                }
+                si.compareData = this.buffer[curOffset + this.compareValueOffset];
+                si.offset = curOffset;
+                si.swapedOffset = null;
+
+                this._sortedTable[i] = si;
+            }
+
+            // Let's sort the sorted table, we want to keep a track of the original one (that's why we have two buffers)
+            if (this.sortingAscending) {
+                this._sortedTable.sort((a, b) => a.compareData - b.compareData);
+            } else {
+                this._sortedTable.sort((a, b) => b.compareData - a.compareData);
+            }
+
+            let swapElements = (src: number, dst: number) => {
+                for (let i = 0; i < stride; i++) {
+                    let tps = this.buffer[dst + i];
+                    this.buffer[dst + i] = this.buffer[src + i];
+                    this.buffer[src + i] = tps;
+                }
+            }
+
+            // The fun part begin, sortedTable give us the ordered layout to obtain, to get that we have to move elements, but when we move an element: 
+            //  it replaces an existing one.I don't want to allocate a new Float32Array and do a raw copy, because it's awful (GC - wise), 
+            //  and I still want something with a good algorithm complexity.
+            // So here's the deal: we are going to swap elements, but we have to track the change of location of the element being replaced, 
+            //  we need sortTable for that, it contains the original layout of SortInfo object, not the sorted one.
+            // The best way is to use an extra field in SortInfo, because potentially every element can be replaced.
+            // When we'll look for and element, we'll check if its swapedOffset is set, if so we reiterate the operation with the one there 
+            //  until we find a SortInfo object without a swapedOffset which means we got the right location
+            // Yes, we may have to do multiple iterations to find the right location, but hey, it won't be huge: <3 in most cases, and it's better 
+            //  than a double allocation of the whole float32Array or a O(n²/2) typical algorithm.
+
+            for (let i = 0; i < count; i++) {
+                // Get the element to move
+                let sourceSI = this._sortedTable[i];
+                let destSI = this._sortTable[i];
+
+                let sourceOff = sourceSI.offset;
+
+                // If the source changed location, find the new one
+                if (sourceSI.swapedOffset) {
+                    // Follow the swapedOffset until there's none, it will mean that curSI contains the new location in its offset member
+                    let curSI = sourceSI;
+                    while (curSI.swapedOffset) {
+
+                        curSI = this._sortTable[curSI.swapedOffset / stride];
+                    }
+
+                    // Finally get the right location
+                    sourceOff = curSI.offset;
+                }
+
+                // Tag the element being replaced with its new location
+                destSI.swapedOffset = sourceOff;
+
+                // Swap elements (only if needed)
+                if (sourceOff !== destSI.offset) {
+                    swapElements(sourceOff, destSI.offset);
+                }
+
+                // Update the offset in the corresponding DFAE
+                //sourceSI.entry.offset = destSI.entry.offset;
+                this._allEntries[sourceSI.offset / stride].offset = destSI.offset;
+            }
+
+            this._allEntries.sort((a, b) => a.offset - b.offset);
+            return true;
+        }
+
         private _allEntries: Array<DynamicFloatArrayElementInfo>;
         private _freeEntries: Array<DynamicFloatArrayElementInfo>;
         private _stride: number;
         private _lastUsed: number;
         private _firstFree: number;
+
+        private _sortTable: SortInfo[];
+        private _sortedTable: SortInfo[];
+    }
+
+    class SortInfo {
+        constructor() {
+            this.compareData = this.offset = this.swapedOffset = null;
+        }
+
+        compareData: number;
+        //entry: DynamicFloatArrayElementInfo;
+        offset: number;
+        swapedOffset: number;
     }
 }

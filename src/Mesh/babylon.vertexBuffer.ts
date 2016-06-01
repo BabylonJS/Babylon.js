@@ -46,7 +46,7 @@
                 this._buffer = data;
                 this._ownsBuffer = false;
             } else {
-                this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced);
+                this._buffer = new Buffer(engine, <number[] | Float32Array>data, updatable, stride, postponeInternalCreation, instanced);
                 this._ownsBuffer = true;
             }
 

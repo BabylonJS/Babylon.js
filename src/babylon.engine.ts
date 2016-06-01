@@ -727,6 +727,30 @@
             this._gl.clear(mode);
         }
 
+        public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
+            let gl = this._gl;
+
+            // Save state
+            var curScissor = gl.getParameter(gl.SCISSOR_TEST);
+            var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
+
+            // Change state
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor(x, y, width, height);
+
+            // Clear
+            this.clear(clearColor, true, true);
+
+            // Restore state
+            gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
+
+            if (curScissor === true) {
+                gl.enable(gl.SCISSOR_TEST);
+            } else {
+                gl.disable(gl.SCISSOR_TEST);
+            }
+        }
+
         /**
          * Set the WebGL's viewport
          * @param {BABYLON.Viewport} viewport - the viewport element to be used.
@@ -949,6 +973,14 @@
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
             return vbo;
+        }
+
+        public bindArrayBuffer(buffer: WebGLBuffer): void {
+            this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+        }
+
+        public updateArrayBuffer(data: Float32Array): void {
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
         }
 
         private bindBuffer(buffer: WebGLBuffer, target: number): void {
@@ -1420,48 +1452,43 @@
             this._gl.colorMask(enable, enable, enable, enable);
         }
 
-        public setAlphaMode(mode: number): void {
+        public setAlphaMode(mode: number, noDepthWriteChange: boolean=false): void {
             if (this._alphaMode === mode) {
                 return;
             }
 
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
-                    this.setDepthWrite(true);
                     this._alphaState.alphaBlend = false;
                     break;
                 case Engine.ALPHA_COMBINE:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_ONEONE:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_ADD:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_SUBTRACT:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_MULTIPLY:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_MAXIMIZED:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
             }
-
+            if (!noDepthWriteChange) {
+                this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
+            }
             this._alphaMode = mode;
         }
 
@@ -1843,8 +1870,8 @@
                 Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);//filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);//filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -2132,7 +2159,7 @@
                     noMipmap = true;
                 }
 
-                if (textureType == gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
+                if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
@@ -2427,7 +2454,6 @@
         }
 
         // Loading screen
-
         public displayLoadingUI(): void {
             this._loadingScreen.displayLoadingUI();
         }
