@@ -332,9 +332,19 @@
     export class RenderablePrim2D extends Prim2DBase {
         static RENDERABLEPRIM2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
 
+        public static isAlphaTestProperty: Prim2DPropInfo;
         public static isTransparentProperty: Prim2DPropInfo;
 
-        @modelLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => RenderablePrim2D.isTransparentProperty = pi)
+        @dynamicLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, pi => RenderablePrim2D.isAlphaTestProperty = pi)
+        public get isAlphaTest(): boolean {
+            return this._isAlphaTest;
+        }
+
+        public set isAlphaTest(value: boolean) {
+            this._isAlphaTest = value;
+        }
+
+        @dynamicLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => RenderablePrim2D.isTransparentProperty = pi)
         public get isTransparent(): boolean {
             return this._isTransparent;
         }
@@ -343,9 +353,11 @@
             this._isTransparent = value;
         }
 
-        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean) {
-            this.setupPrim2DBase(owner, parent, id, position, origin);
+        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
+            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
             this._isTransparent = false;
+            this._isAlphaTest = false;
+            this._transparentPrimitiveInfo = null;
         }
 
         public dispose(): boolean {
@@ -373,7 +385,7 @@
             return true;
         }
 
-        public _prepareRenderPre(context: Render2DContext) {
+        public _prepareRenderPre(context: PreapreRender2DContext) {
             super._prepareRenderPre(context);
 
             // If the model changed and we have already an instance, we must remove this instance from the obsolete model
@@ -385,107 +397,17 @@
             // Need to create the model?
             let setupModelRenderCache = false;
             if (!this._modelRenderCache || this._modelDirty) {
-                if (this._modelRenderCache) {
-                    this._modelRenderCache.dispose();
-                }
-                this._modelRenderCache = this.owner._engineData.GetOrAddModelCache(this.modelKey, (key: string) => {
-                    let mrc = this.createModelRenderCache(key, this.isTransparent);
-                    setupModelRenderCache = true;
-                    return mrc;
-                });
-                this._modelDirty = false;
-
-                // if this is still false it means the MRC already exists, so we add a reference to it
-                if (!setupModelRenderCache) {
-                    this._modelRenderCache.addRef();
-                }
+                setupModelRenderCache = this._createModelRenderCache();
             }
 
-            let gii: GroupInstanceInfo;
+            let gii: GroupInstanceInfo = null;
             let newInstance = false;
 
             // Need to create the instance data parts?
             if (!this._modelRenderInstanceID) {
                 // Yes, flag it for later, more processing will have to be done
                 newInstance = true;
-
-                // Create the instance data parts of the primitive and store them
-                let parts = this.createInstanceDataParts();
-                this._instanceDataParts = parts;
-
-                // Check if the ModelRenderCache for this particular instance is also brand new, initialize it if it's the case
-                if (!this._modelRenderCache._partsDataStride) {
-                    let ctiArray = new Array<ClassTreeInfo<InstanceClassInfo, InstancePropInfo>>();
-                    let dataStrides = new Array<number>();
-                    let usedCatList = new Array<string[]>();
-                    let partIdList = new Array<number>();
-                    let joinedUsedCatList = new Array<string>();
-
-                    for (let dataPart of parts) {
-                        var cat = this.getUsedShaderCategories(dataPart);
-                        var cti = dataPart.getClassTreeInfo();
-                        // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
-                        let curVisible = this.isVisible;
-                        this.isVisible = true;
-                        // We manually trigger refreshInstanceData for the only sake of evaluating each instance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
-                        //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
-                        let joinCat = ";" + cat.join(";") + ";";
-                        joinedUsedCatList.push(joinCat);
-                        InstanceClassInfo._CurCategories = joinCat;
-                        let obj = this.beforeRefreshForLayoutConstruction(dataPart);
-                        this.refreshInstanceDataPart(dataPart);
-                        this.afterRefreshForLayoutConstruction(dataPart, obj);
-                        this.isVisible = curVisible;
-
-                        var size = 0;
-                        cti.fullContent.forEach((k, v) => {
-                            if (!v.category || cat.indexOf(v.category) !== -1) {
-                                if (!v.size) {
-                                    console.log(`ERROR: Couldn't detect the size of the Property ${v.attributeName} from type ${Tools.getClassName(cti.type)}. Property is ignored.`);
-                                } else {
-                                    size += v.size;
-                                }
-                            }
-                        });
-                        dataStrides.push(size);
-                        usedCatList.push(cat);
-                        ctiArray.push(cti);
-                        partIdList.push(dataPart.id);
-                    }
-                    this._modelRenderCache._partsDataStride = dataStrides;
-                    this._modelRenderCache._partsUsedCategories = usedCatList;
-                    this._modelRenderCache._partsJoinedUsedCategories = joinedUsedCatList;
-                    this._modelRenderCache._partsClassInfo = ctiArray;
-                    this._modelRenderCache._partIdList = partIdList;
-                }
-
-                // The Rendering resources (Effect, VB, IB, Textures) are stored in the ModelRenderCache
-                // But it's the RenderGroup that will store all the Instanced related data to render all the primitive it owns.
-                // So for a given ModelKey we getOrAdd a GroupInstanceInfo that will store all these data
-                gii = this.renderGroup._renderGroupInstancesInfo.getOrAddWithFactory(this.modelKey, k => new GroupInstanceInfo(this.renderGroup, this._modelRenderCache));
-
-                // First time init of the GroupInstanceInfo
-                if (gii._instancesPartsData.length === 0) {
-                    for (let j = 0; j < this._modelRenderCache._partsDataStride.length; j++) {
-                        let stride = this._modelRenderCache._partsDataStride[j];
-                        gii._instancesPartsData.push(new DynamicFloatArray(stride / 4, 50));
-                        gii._partIndexFromId.add(this._modelRenderCache._partIdList[j].toString(), j);
-
-                        for (let part of this._instanceDataParts) {
-                            gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())] = ";" + this.getUsedShaderCategories(part).join(";") + ";";
-                        }
-                    }
-                }
-
-                // For each instance data part of the primitive, allocate the instanced element it needs for render
-                for (let i = 0; i < parts.length; i++) {
-                    let part = parts[i];
-                    part.dataBuffer = gii._instancesPartsData[i];
-                    part.allocElements();
-                }
-
-                // Add the instance data parts in the ModelRenderCache they belong, track them by storing their ID in the primitive in case we need to change the model later on, so we'll have to release the allocated instance data parts because they won't fit anymore
-                this._modelRenderInstanceID = this._modelRenderCache.addInstanceDataParts(this._instanceDataParts);
+                gii = this._createModelDataParts();
             }
 
             // If the ModelRenderCache is brand new, now is the time to call the implementation's specific setup method to create the rendering resources
@@ -497,34 +419,246 @@
 
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
             if (this._visibilityChanged || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+                this._updateInstanceDataParts(gii);
+            }
+        }
 
-                // Fetch the GroupInstanceInfo if we don't already have it
-                if (!gii) {
-                    gii = this.renderGroup._renderGroupInstancesInfo.get(this.modelKey);
+        private _createModelRenderCache(): boolean {
+            let setupModelRenderCache = false;
+
+            if (this._modelRenderCache) {
+                this._modelRenderCache.dispose();
+            }
+            this._modelRenderCache = this.owner._engineData.GetOrAddModelCache(this.modelKey, (key: string) => {
+                let mrc = this.createModelRenderCache(key);
+                setupModelRenderCache = true;
+                return mrc;
+            });
+            this._modelDirty = false;
+
+            // if this is still false it means the MRC already exists, so we add a reference to it
+            if (!setupModelRenderCache) {
+                this._modelRenderCache.addRef();
+            }
+
+            return setupModelRenderCache;
+        }
+
+        private _createModelDataParts(): GroupInstanceInfo {
+            // Create the instance data parts of the primitive and store them
+            let parts = this.createInstanceDataParts();
+            this._instanceDataParts = parts;
+
+            // Check if the ModelRenderCache for this particular instance is also brand new, initialize it if it's the case
+            if (!this._modelRenderCache._partData) {
+                this._setupModelRenderCache(parts);
+            }
+
+            // The Rendering resources (Effect, VB, IB, Textures) are stored in the ModelRenderCache
+            // But it's the RenderGroup that will store all the Instanced related data to render all the primitive it owns.
+            // So for a given ModelKey we getOrAdd a GroupInstanceInfo that will store all these data
+            let gii = this.renderGroup._renderableData._renderGroupInstancesInfo.getOrAddWithFactory(this.modelKey, k => {
+
+                let res = new GroupInstanceInfo(this.renderGroup, this._modelRenderCache, this._modelRenderCache._partData.length);
+
+                for (let j = 0; j < this._modelRenderCache._partData.length; j++) {
+                    let part = this._instanceDataParts[j];
+                    res.partIndexFromId.add(part.id.toString(), j);
+                    res.usedShaderCategories[j] = ";" + this.getUsedShaderCategories(part).join(";") + ";";
+                    res.strides[j] = this._modelRenderCache._partData[j]._partDataStride;
                 }
 
-                // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
-                for (let part of this._instanceDataParts) {
-                    // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                    if (this._visibilityChanged && !part.dataElements) {
-                        part.allocElements();
-                    }
+                return res;
+            });
 
-                    InstanceClassInfo._CurCategories = gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())];
+            // Get the GroupInfoDataPart corresponding to the render category of the part
+            let gipd: GroupInfoPartData[] = null;
+            if (this.isTransparent) {
+                gipd = gii.transparentData;
+            } else if (this.isAlphaTest) {
+                gipd = gii.alphaTestData;
+            } else {
+                gipd = gii.opaqueData;
+            }
 
-                    // Will return false if the instance should not be rendered (not visible or other any reasons)
-                    if (!this.refreshInstanceDataPart(part)) {
-                        // Free the data element
-                        if (part.dataElements) {
-                            part.freeElements();
+            // For each instance data part of the primitive, allocate the instanced element it needs for render
+            for (let i = 0; i < parts.length; i++) {
+                let part = parts[i];
+                part.dataBuffer = gipd[i]._partData;
+                part.allocElements();
+            }
+
+            // Add the instance data parts in the ModelRenderCache they belong, track them by storing their ID in the primitive in case we need to change the model later on, so we'll have to release the allocated instance data parts because they won't fit anymore
+            this._modelRenderInstanceID = this._modelRenderCache.addInstanceDataParts(this._instanceDataParts);
+
+            return gii;
+        }
+
+        private _setupModelRenderCache(parts: InstanceDataBase[]) {
+            let ctiArray = new Array<ClassTreeInfo<InstanceClassInfo, InstancePropInfo>>();
+            this._modelRenderCache._partData = new Array<ModelRenderCachePartData>();
+            for (let dataPart of parts) {
+                let pd = new ModelRenderCachePartData();
+                this._modelRenderCache._partData.push(pd)
+                var cat = this.getUsedShaderCategories(dataPart);
+                var cti = dataPart.getClassTreeInfo();
+                // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
+                let curVisible = this.isVisible;
+                this.isVisible = true;
+                // We manually trigger refreshInstanceData for the only sake of evaluating each instance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
+                //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
+                let joinCat = ";" + cat.join(";") + ";";
+                pd._partJoinedUsedCategories = joinCat;
+                InstanceClassInfo._CurCategories = joinCat;
+                let obj = this.beforeRefreshForLayoutConstruction(dataPart);
+                this.refreshInstanceDataPart(dataPart);
+                this.afterRefreshForLayoutConstruction(dataPart, obj);
+                this.isVisible = curVisible;
+
+                var size = 0;
+                cti.fullContent.forEach((k, v) => {
+                    if (!v.category || cat.indexOf(v.category) !== -1) {
+                        if (v.attributeName === "zBias") {
+                            pd._zBiasOffset = v.instanceOffset.get(joinCat);
+                        }
+                        if (!v.size) {
+                            console.log(`ERROR: Couldn't detect the size of the Property ${v.attributeName} from type ${Tools.getClassName(cti.type)}. Property is ignored.`);
+                        } else {
+                            size += v.size;
                         }
                     }
-                }
-                this._instanceDirtyFlags = 0;
-
-                gii._dirtyInstancesData = true;
-                this._visibilityChanged = false;    // Reset the flag as we've handled the case
+                });
+                pd._partDataStride = size;
+                pd._partUsedCategories = cat;
+                pd._partId = dataPart.id;
+                ctiArray.push(cti);
             }
+            this._modelRenderCache._partsClassInfo = ctiArray;
+        }
+
+        protected onZOrderChanged() {
+            if (this.isTransparent && this._transparentPrimitiveInfo) {
+                this.renderGroup._renderableData.transparentPrimitiveZChanged(this._transparentPrimitiveInfo);
+                let gii = this.renderGroup._renderableData._renderGroupInstancesInfo.get(this.modelKey);
+
+                // Flag the transparentData dirty has will have to sort it again
+                gii.transparentOrderDirty = true;
+            }
+        }
+
+        private _updateInstanceDataParts(gii: GroupInstanceInfo) {
+            // Fetch the GroupInstanceInfo if we don't already have it
+            if (!gii) {
+                gii = this.renderGroup._renderableData._renderGroupInstancesInfo.get(this.modelKey);
+            }
+
+            // Handle changes related to ZOffset
+            if (this.isTransparent) {
+                // Handle visibility change, which is also triggered when the primitive just got created
+                if (this._visibilityChanged) {
+                    if (this.isVisible) {
+                        if (!this._transparentPrimitiveInfo) {
+                            // Add the primitive to the list of transparent ones in the group that render is
+                            this._transparentPrimitiveInfo = this.renderGroup._renderableData.addNewTransparentPrimitiveInfo(this, gii);
+                        }
+                    } else {
+                        if (this._transparentPrimitiveInfo) {
+                            this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
+                        }
+                    }
+                    gii.transparentOrderDirty = true;
+                }
+            }
+
+            // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
+            for (let part of this._instanceDataParts) {
+                // Check if we need to allocate data elements (hidden prim which becomes visible again)
+                if (this._visibilityChanged && !part.dataElements) {
+                    part.allocElements();
+                }
+
+                InstanceClassInfo._CurCategories = gii.usedShaderCategories[gii.partIndexFromId.get(part.id.toString())];
+
+                // Will return false if the instance should not be rendered (not visible or other any reasons)
+                if (!this.refreshInstanceDataPart(part)) {
+                    // Free the data element
+                    if (part.dataElements) {
+                        part.freeElements();
+                    }
+                }
+            }
+            this._instanceDirtyFlags = 0;
+
+            // Make the appropriate data dirty
+            if (this.isTransparent) {
+                gii.transparentDirty = true;
+            } else if (this.isAlphaTest) {
+                gii.alphaTestDirty = true;
+            } else {
+                gii.opaqueDirty = true;
+            }
+
+            this._visibilityChanged = false;    // Reset the flag as we've handled the case            
+        }
+
+        public _getFirstIndexInDataBuffer(): number {
+            for (let part of this._instanceDataParts) {
+                if (part) {
+                    return part.dataElements[0].offset / part.dataBuffer.stride;
+                }
+            }
+            return null;
+        }
+
+        public _getLastIndexInDataBuffer(): number {
+            for (let part of this._instanceDataParts) {
+                if (part) {
+                    return part.dataElements[part.dataElements.length-1].offset / part.dataBuffer.stride;
+                }
+            }
+            return null;
+        }
+
+        // This internal method is mainly used for transparency processing
+        public _getNextPrimZOrder(): number {
+            let length = this._instanceDataParts.length;
+            for (let i = 0; i < length; i++) {
+                let part = this._instanceDataParts[i];
+                if (part) {
+                    let stride = part.dataBuffer.stride;
+                    let lastElementOffset = part.dataElements[part.dataElements.length - 1].offset;
+
+                    // check if it's the last in the DFA
+                    if (part.dataBuffer.totalElementCount * stride <= lastElementOffset) {
+                        return null;
+                    }
+
+                    // Return the Z of the next primitive that lies in the DFA
+                    return part.dataBuffer[lastElementOffset + stride + this.modelRenderCache._partData[i]._zBiasOffset];
+                }
+            }
+            return null;
+        }
+
+        // This internal method is mainly used for transparency processing
+        public _getPrevPrimZOrder(): number {
+            let length = this._instanceDataParts.length;
+            for (let i = 0; i < length; i++) {
+                let part = this._instanceDataParts[i];
+                if (part) {
+                    let stride = part.dataBuffer.stride;
+                    let firstElementOffset = part.dataElements[0].offset;
+
+                    // check if it's the first in the DFA
+                    if (firstElementOffset === 0) {
+                        return null;
+                    }
+
+                    // Return the Z of the previous primitive that lies in the DFA
+                    return part.dataBuffer[firstElementOffset - stride + this.modelRenderCache._partData[i]._zBiasOffset];
+                }
+            }
+            return null;
         }
 
         /**
@@ -546,13 +680,28 @@
             return res;
         }
 
-        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): { attributes: string[], uniforms: string[], defines: string } {
+        /**
+         * Get the info for a given effect based on the dataPart metadata
+         * @param dataPartId partId in part list to get the info
+         * @param vertexBufferAttributes vertex buffer attributes to manually add
+         * @param useInstanced specified if Instanced Array should be used, if null the engine caps will be used (so true if WebGL supports it, false otherwise), but you have the possibility to override the engine capability. However, if you manually set true but the engine does not support Instanced Array, this method will return null
+         */
+        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[], useInstanced: boolean = null): { attributes: string[], uniforms: string[], defines: string } {
             let dataPart = Tools.first(this._instanceDataParts, i => i.id === dataPartId);
             if (!dataPart) {
                 return null;
             }
 
             let instancedArray = this.owner.supportInstancedArray;
+            if (useInstanced != null) {
+                // Check if the caller ask for Instanced Array and the engine does not support it, return null if it's the case
+                if (useInstanced && instancedArray === false) {
+                    return null;
+                }
+
+                // Use the caller's setting
+                instancedArray = useInstanced;
+            }
 
             let cti = dataPart.getClassTreeInfo();
             let categories = this.getUsedShaderCategories(dataPart);
@@ -570,7 +719,7 @@
             return this._modelRenderCache;
         }
 
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
+        protected createModelRenderCache(modelKey: string): ModelRenderCache {
             return null;
         }
 
@@ -628,15 +777,14 @@
 
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
             // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
-            // RenderGroup Width and Height are multiplied by zBias because the VertexShader will multiply X and Y by W, which is 1/zBias. As we divide our coordinate by these Width/Height, we will also divide by the zBias to compensate the operation made by the VertexShader.
             // So for X: 
             //  - tx.x = value * 2 / width: is to switch from [0, renderGroup.width] to [0, 2]
-            //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1]. Don't forget it's -(1/zBias) and not -1 because everything need to be scaled by 1/zBias.
-            let w = size.width * zBias;
-            let h = size.height * zBias;
+            //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1].
+            let w = size.width;
+            let h = size.height;
             let invZBias = 1 / zBias;
-            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - (invZBias));
-            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - (invZBias));
+            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - 1);
+            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
             part.transformX = tx;
             part.transformY = ty;
             part.origin = this.origin;
@@ -647,8 +795,10 @@
 
         private _modelRenderCache: ModelRenderCache;
         private _modelRenderInstanceID: string;
+        private _transparentPrimitiveInfo: TransparentPrimitiveInfo;
 
         protected _instanceDataParts: InstanceDataBase[];
+        protected _isAlphaTest: boolean;
         protected _isTransparent: boolean;
     }
 

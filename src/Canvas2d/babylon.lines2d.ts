@@ -1,28 +1,35 @@
 ﻿module BABYLON {
     export class Lines2DRenderCache extends ModelRenderCache {
-        fillVB: WebGLBuffer;
-        fillIB: WebGLBuffer;
-        fillIndicesCount: number;
-        instancingFillAttributes: InstancingAttributeInfo[];
-        effectFill: Effect;
+        effectsReady: boolean                               = false;
+        fillVB: WebGLBuffer                                 = null;
+        fillIB: WebGLBuffer                                 = null;
+        fillIndicesCount: number                            = 0;
+        instancingFillAttributes: InstancingAttributeInfo[] = null;
+        effectFill: Effect                                  = null;
+        effectFillInstanced: Effect                         = null;
 
-        borderVB: WebGLBuffer;
-        borderIB: WebGLBuffer;
-        borderIndicesCount: number;
-        instancingBorderAttributes: InstancingAttributeInfo[];
-        effectBorder: Effect;
+        borderVB: WebGLBuffer                                 = null;
+        borderIB: WebGLBuffer                                 = null;
+        borderIndicesCount: number                            = 0;
+        instancingBorderAttributes: InstancingAttributeInfo[] = null;
+        effectBorder: Effect                                  = null;
+        effectBorderInstanced: Effect                         = null;
 
-        constructor(engine: Engine, modelKey: string, isTransparent: boolean) {
-            super(engine, modelKey, isTransparent);
+        constructor(engine: Engine, modelKey: string) {
+            super(engine, modelKey);
         }
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             // Do nothing if the shader is still loading/preparing 
-            if ((this.effectFill && !this.effectFill.isReady()) || (this.effectBorder && !this.effectBorder.isReady())) {
-                return false;
+            if (!this.effectsReady) {
+                if ((this.effectFill && (!this.effectFill.isReady() || (this.effectFillInstanced && !this.effectFillInstanced.isReady()))) ||
+                    (this.effectBorder && (!this.effectBorder.isReady() || (this.effectBorderInstanced && !this.effectBorderInstanced.isReady())))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
 
-            var engine = instanceInfo._owner.owner.engine;
+            var engine = instanceInfo.owner.owner.engine;
 
             let depthFunction = 0;
             if (this.effectFill && this.effectBorder) {
@@ -30,60 +37,65 @@
                 engine.setDepthFunctionToLessOrEqual();
             }
 
-            var cur: number;
-            if (this.isTransparent) {
-                cur = engine.getAlphaMode();
-                engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            }
+            let curAlphaMode = engine.getAlphaMode();
 
             if (this.effectFill) {
-                let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
+                let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
+                let pid = context.groupInfoPartData[partIndex];
              
-                engine.enableEffect(this.effectFill);
-                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [2], 2*4, this.effectFill);
-                let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
-                if (instanceInfo._owner.owner.supportInstancedArray) {
+                if (context.renderMode !== Render2DContext.RenderModeOpaque) {
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                }
+
+                let effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
+
+                engine.enableEffect(effect);
+                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [2], 2*4, effect);
+                if (context.useInstancing) {
                     if (!this.instancingFillAttributes) {
-                        // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
-                        this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
+                        this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, effect);
                     }
 
-                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
-                    engine.draw(true, 0, this.fillIndicesCount, count);
+                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 } else {
-                    for (let i = 0; i < count; i++) {
-                        this.setupUniforms(this.effectFill, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                    for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.fillIndicesCount);                        
                     }
                 }
             }
 
             if (this.effectBorder) {
-                let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_BORDERPARTID.toString());
+                let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_BORDERPARTID.toString());
+                let pid = context.groupInfoPartData[partIndex];
 
-                engine.enableEffect(this.effectBorder);
-                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [2], 2 * 4, this.effectBorder);
-                let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
-                if (instanceInfo._owner.owner.supportInstancedArray) {
+                if (context.renderMode !== Render2DContext.RenderModeOpaque) {
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                }
+
+                let effect = context.useInstancing ? this.effectBorderInstanced : this.effectBorder;
+
+                engine.enableEffect(effect);
+                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [2], 2 * 4, effect);
+                if (context.useInstancing) {
                     if (!this.instancingBorderAttributes) {
-                        this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, this.effectBorder);
+                        this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, effect);
                     }
 
-                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
-                    engine.draw(true, 0, this.borderIndicesCount, count);
+                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 } else {
-                    for (let i = 0; i < count; i++) {
-                        this.setupUniforms(this.effectBorder, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                    for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.borderIndicesCount);
                     }
                 }
             }
 
-            if (this.isTransparent) {
-                engine.setAlphaMode(cur);
-            }
+            engine.setAlphaMode(curAlphaMode);
 
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
@@ -111,6 +123,11 @@
                 this.effectFill = null;
             }
 
+            if (this.effectFillInstanced) {
+                this._engine._releaseEffect(this.effectFillInstanced);
+                this.effectFillInstanced = null;
+            }
+
             if (this.borderVB) {
                 this._engine._releaseBuffer(this.borderVB);
                 this.borderVB = null;
@@ -124,6 +141,11 @@
             if (this.effectBorder) {
                 this._engine._releaseEffect(this.effectBorder);
                 this.effectBorder = null;
+            }
+
+            if (this.effectBorderInstanced) {
+                this._engine._releaseEffect(this.effectBorderInstanced);
+                this.effectBorderInstanced = null;
             }
 
             return true;
@@ -265,8 +287,8 @@
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean) {
-            this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
+        protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.fillThickness = fillThickness;
             this.startCap = startCap;
             this.endCap = endCap;
@@ -283,8 +305,7 @@
          * @param points an array that describe the points to use to draw the line, must contain at least two entries.
          * options:
          *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
          *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
@@ -293,24 +314,35 @@
          *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
          *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
          *  - borderThickness: the thickness of the drawn border, default is 1.
+         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, points: Vector2[], options: { id?: string, x?: number, y?: number, origin?: Vector2, fillThickness?: number, closed?: boolean, startCap?: number, endCap?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number }): Lines2D {
+        public static Create(parent: Prim2DBase, points: Vector2[], options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, fillThickness?: number, closed?: boolean, startCap?: number, endCap?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number }): Lines2D {
             Prim2DBase.CheckParent(parent);
 
-            let fill: IBrush2D;
-            if (options && options.fill !== undefined) {
-                fill = options.fill;
+            let lines = new Lines2D();
+
+            if (!options) {
+                lines.setupLines2D(parent.owner, parent, null, Vector2.Zero(), null, points, 1, 0, 0, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, false, true, null, null, null, null, null, null);
             } else {
-                fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+                let fill: IBrush2D;
+                if (options.fill === undefined) {
+                    fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+                } else {
+                    fill = options.fill;
+                }
+                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
+
+                lines.setupLines2D(parent.owner, parent, options.id || null, pos, options.origin || null, points, options.fillThickness || 1, options.startCap || 0, options.endCap || 0, fill, options.border || null, options.borderThickness || 1, options.closed || false, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);                
             }
 
-            let lines = new Lines2D();
-            lines.setupLines2D(parent.owner, parent, options && options.id || null, new Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, points, options && options.fillThickness || 1, options && options.startCap || 0, options && options.endCap || 0, fill, options && options.border || null, options && options.borderThickness || 0, options && options.closed || false);
             return lines;
         }
 
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Lines2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        protected createModelRenderCache(modelKey: string): ModelRenderCache {
+            let renderCache = new Lines2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         }
 
@@ -862,8 +894,15 @@
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = ib.length;
 
-                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"]);
-                renderCache.effectFill = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
+                // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"], true);
+                if (ei) {
+                    renderCache.effectFillInstanced = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
+                }
+
+                // Get the non instanced version
+                ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"], false);
+                renderCache.effectFill = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             }
 
             // Need to create WebGL resources for border part?
@@ -907,7 +946,14 @@
                 renderCache.borderIB = engine.createIndexBuffer(ib);
                 renderCache.borderIndicesCount = ib.length;
 
-                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"]);
+                // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"], true);
+                if (ei) {
+                    renderCache.effectBorderInstanced = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
+                }
+
+                // Get the non instanced version
+                ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"], false);
                 renderCache.effectBorder = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
             }
 
