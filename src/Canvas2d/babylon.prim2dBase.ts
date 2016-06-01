@@ -748,46 +748,6 @@
             this._vAlignment = value;
         }
 
-        @dynamicLevelProperty(8, pi => Prim2DBase.marginProperty = pi)
-        /**
-         * You can get/set a margin on the primitive through this property
-         * @returns the margin object, if there was none, a default one is created and returned
-         */
-        public get margin(): PrimitiveMargin {
-            if (!this._margin) {
-                this._margin = new PrimitiveMargin(this);
-            }
-            return this._margin;
-        }
-
-        public set margin(value: PrimitiveMargin) {
-            this._margin = value;
-        }
-
-        @dynamicLevelProperty(9, pi => Prim2DBase.hAlignmentProperty = pi)
-        /**
-         * You can get/set the horizontal alignment through this property
-         */
-        public get hAlignment(): number {
-            return this._hAlignment;
-        }
-
-        public set hAlignment(value: number) {
-            this._hAlignment = value;
-        }
-
-        @dynamicLevelProperty(10, pi => Prim2DBase.vAlignmentProperty = pi)
-        /**
-         * You can get/set the vertical alignment through this property
-         */
-        public get vAlignment(): number {
-            return this._vAlignment;
-        }
-
-        public set vAlignment(value: number) {
-            this._vAlignment = value;
-        }
-
         /**
          * Define if the Primitive can be subject to intersection test or not (default is true)
          */
