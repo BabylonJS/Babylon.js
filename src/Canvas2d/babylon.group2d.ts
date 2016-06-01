@@ -86,6 +86,28 @@
         }
 
         /**
+         * Allow you to access the information regarding the cached rectangle of the Group2D into the MapTexture.
+         * If the `noWorldSpaceNode` options was used at the creation of a WorldSpaceCanvas, the rendering of the canvas must be made by the caller, so typically you want to bind the cacheTexture property to some material/mesh and you must use the cachedRect.UVs property to get the UV coordinates to use for your quad that will display the Canvas.
+         */
+        public get cachedRect(): PackedRect {
+            if (!this._renderableData) {
+                return null;
+            }
+            return this._renderableData._cacheNode;
+        }
+
+        /**
+         * Access the texture that maintains a cached version of the Group2D.
+         * This is useful only if you're not using a WorldSpaceNode for your WorldSpace Canvas and therefore need to perform the rendering yourself.
+         */
+        public get cacheTexture(): MapTexture {
+            if (!this._renderableData) {
+                return null;
+            }
+            return this._renderableData._cacheTexture;
+        }
+
+        /**
          * Call this method to remove this Group and its children from the Canvas
          */
         public dispose(): boolean {
