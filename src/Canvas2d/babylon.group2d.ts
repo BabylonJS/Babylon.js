@@ -558,16 +558,16 @@
                         if (pid._partBuffer) {
                             engine.deleteInstancesBuffer(pid._partBuffer);
                         }
-                        pid._partBuffer = engine.createInstancesBuffer(neededSize);
+                        pid._partBuffer = engine.createInstancesBuffer(neededSize); // Create + bind
                         pid._partBufferSize = neededSize;
                         setDirty(false);
 
                         // Update the WebGL buffer to match the new content of the instances data
-                        engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
+                        engine.updateArrayBuffer(instanceData);
                     } else if (getDirty()) {
                         // Update the WebGL buffer to match the new content of the instances data
-                        engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, pid._partBuffer);
-                        engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
+                        engine.bindArrayBuffer(pid._partBuffer);
+                        engine.updateArrayBuffer(instanceData);
 
                     }
                 }
