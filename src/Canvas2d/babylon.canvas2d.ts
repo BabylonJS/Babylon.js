@@ -96,8 +96,9 @@
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
          * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
+         * - noWorldSpaceNode: if true there won't be a WorldSpaceNode created for this canvas, you'll be responsible of rendering the canvas texture in the scene.
          */
-        static CreateWorldSpace(scene: Scene, size: Size, options: { id?: string, position?: Vector3, rotation?: Quaternion, renderScaleFactor?: number, sideOrientation?: number, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean}): Canvas2D {
+        static CreateWorldSpace(scene: Scene, size: Size, options: { id?: string, position?: Vector3, rotation?: Quaternion, renderScaleFactor?: number, sideOrientation?: number, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, noWorldSpaceNode?: boolean}): Canvas2D {
 
             let cs = options && options.cachingStrategy || Canvas2D.CACHESTRATEGY_CANVAS;
 
@@ -114,20 +115,26 @@
             let c = new Canvas2D();
             c.setupCanvas(scene, id, new Size(size.width * rsf, size.height * rsf), false, cs, options && options.enableInteraction || true, Vector2.Zero(), options && options.isVisible || true, null, null, null, null, null, null);
 
-            let plane = new WorldSpaceCanvas2D(id, scene, c);
-            let vertexData = VertexData.CreatePlane({ width: size.width / 2, height: size.height / 2, sideOrientation: options && options.sideOrientation || Mesh.DEFAULTSIDE });
-            let mtl = new StandardMaterial(id + "_Material", scene);
+            if (!options || !options.noWorldSpaceNode) {
+                let plane = new WorldSpaceCanvas2D(id, scene, c);
+                let vertexData = VertexData.CreatePlane({
+                    width: size.width / 2,
+                    height: size.height / 2,
+                    sideOrientation: options && options.sideOrientation || Mesh.DEFAULTSIDE
+                });
+                let mtl = new StandardMaterial(id + "_Material", scene);
 
-            c.applyCachedTexture(vertexData, mtl);
-            vertexData.applyToMesh(plane, false);
+                c.applyCachedTexture(vertexData, mtl);
+                vertexData.applyToMesh(plane, false);
 
-            mtl.specularColor = new Color3(0, 0, 0);
-            mtl.disableLighting =true;
-            mtl.useAlphaFromDiffuseTexture = true;
-            plane.position = options && options.position || Vector3.Zero();
-            plane.rotationQuaternion = options && options.rotation || Quaternion.Identity();
-            plane.material = mtl;
-            c._worldSpaceNode = plane;
+                mtl.specularColor = new Color3(0, 0, 0);
+                mtl.disableLighting = true;
+                mtl.useAlphaFromDiffuseTexture = true;
+                plane.position = options && options.position || Vector3.Zero();
+                plane.rotationQuaternion = options && options.rotation || Quaternion.Identity();
+                plane.material = mtl;
+                c._worldSpaceNode = plane;
+            }
 
             return c;
         }
