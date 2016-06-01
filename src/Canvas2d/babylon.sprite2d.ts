@@ -1,38 +1,48 @@
 ﻿module BABYLON {
     export class Sprite2DRenderCache extends ModelRenderCache {
-        vb: WebGLBuffer;
-        ib: WebGLBuffer;
-        instancingAttributes: InstancingAttributeInfo[];
-
-        texture: Texture;
-        effect: Effect;
+        effectsReady: boolean                           = false;
+        vb: WebGLBuffer                                 = null;
+        ib: WebGLBuffer                                 = null;
+        instancingAttributes: InstancingAttributeInfo[] = null;
+        texture: Texture                                = null;
+        effect: Effect                                  = null;
+        effectInstanced: Effect                         = null;
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
-            // Do nothing if the shader is still loading/preparing
-            if (!this.effect.isReady() || !this.texture.isReady()) {
-                return false;
+            // Do nothing if the shader is still loading/preparing 
+            if (!this.effectsReady) {
+                if ((!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady()))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
 
             // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
-            var engine = instanceInfo._owner.owner.engine;
+            var engine = instanceInfo.owner.owner.engine;
 
-            engine.enableEffect(this.effect);
-            this.effect.setTexture("diffuseSampler", this.texture);
-            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, this.effect);
+            let effect = context.useInstancing ? this.effectInstanced : this.effect;
+
+            engine.enableEffect(effect);
+            effect.setTexture("diffuseSampler", this.texture);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
 
             var cur = engine.getAlphaMode();
-            engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            let count = instanceInfo._instancesPartsData[0].usedElementCount;
-            if (instanceInfo._owner.owner.supportInstancedArray) {
+
+            if (context.renderMode !== Render2DContext.RenderModeOpaque) {
+                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            }
+
+            let pid = context.groupInfoPartData[0];
+            if (context.useInstancing) {
                 if (!this.instancingAttributes) {
-                    this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, this.effect);
+                    this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, effect);
                 }
-                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
-                engine.draw(true, 0, 6, count);
+                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, pid._partData.usedElementCount);
                 engine.unbindInstanceAttributes();
             } else {
-                for (let i = 0; i < count; i++) {
-                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                    this.setupUniforms(effect, 0, pid._partData, i);
                     engine.draw(true, 0, 6);
                 }
             }
@@ -65,6 +75,11 @@
             if (this.effect) {
                 this._engine._releaseEffect(this.effect);
                 this.effect = null;
+            }
+
+            if (this.effectInstanced) {
+                this._engine._releaseEffect(this.effectInstanced);
+                this.effectInstanced = null;
             }
 
             return true;
@@ -234,8 +249,8 @@
             return sprite;
         }
 
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        protected createModelRenderCache(modelKey: string): ModelRenderCache {
+            let renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         }
 
@@ -261,10 +276,14 @@
 
             renderCache.texture = this.texture;
 
-            var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, e => {
-//                renderCache.setupUniformsLocation(e, ei.uniforms, Sprite2D.SPRITE2D_MAINPARTID);
-            });
+            // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+            let ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], true);
+            if (ei) {
+                renderCache.effectInstanced = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
+            }
+
+            ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], false);
+            renderCache.effect = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
 
             return renderCache;
         }

@@ -1,44 +1,53 @@
 ﻿module BABYLON {
     export class Text2DRenderCache extends ModelRenderCache {
-        vb: WebGLBuffer;
-        ib: WebGLBuffer;
-        instancingAttributes: InstancingAttributeInfo[];
-        fontTexture: FontTexture;
-        effect: Effect;
+        effectsReady: boolean                           = false;
+        vb: WebGLBuffer                                 = null;
+        ib: WebGLBuffer                                 = null;
+        instancingAttributes: InstancingAttributeInfo[] = null;
+        fontTexture: FontTexture                        = null;
+        effect: Effect                                  = null;
+        effectInstanced: Effect                         = null;
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
-            // Do nothing if the shader is still loading/preparing
-            if (!this.effect.isReady() || !this.fontTexture.isReady()) {
-                return false;
+            // Do nothing if the shader is still loading/preparing 
+            if (!this.effectsReady) {
+                if ((!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady()))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
 
-            // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
-            if (!this.instancingAttributes) {
-                this.instancingAttributes = this.loadInstancingAttributes(Text2D.TEXT2D_MAINPARTID, this.effect);
-            }
-            var engine = instanceInfo._owner.owner.engine;
+            var engine = instanceInfo.owner.owner.engine;
 
             this.fontTexture.update();
 
-            engine.enableEffect(this.effect);
-            this.effect.setTexture("diffuseSampler", this.fontTexture);
-            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, this.effect);
+            let effect = context.useInstancing ? this.effectInstanced : this.effect;
 
-            var cur = engine.getAlphaMode();
-            engine.setAlphaMode(Engine.ALPHA_ADD);
-            let count = instanceInfo._instancesPartsData[0].usedElementCount;
-            if (instanceInfo._owner.owner.supportInstancedArray) {
-                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
-                engine.draw(true, 0, 6, count);
+            engine.enableEffect(effect);
+            effect.setTexture("diffuseSampler", this.fontTexture);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
+
+            var curAlphaMode = engine.getAlphaMode();
+
+            engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
+
+            let pid = context.groupInfoPartData[0];
+            if (context.useInstancing) {
+                if (!this.instancingAttributes) {
+                    this.instancingAttributes = this.loadInstancingAttributes(Text2D.TEXT2D_MAINPARTID, effect);
+                }
+
+                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, pid._partData.usedElementCount);
                 engine.unbindInstanceAttributes();
             } else {
-                for (let i = 0; i < count; i++) {
-                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                    this.setupUniforms(effect, 0, pid._partData, i);
                     engine.draw(true, 0, 6);
                 }
             }
 
-            engine.setAlphaMode(cur);
+            engine.setAlphaMode(curAlphaMode);
 
             return true;
         }
@@ -66,6 +75,11 @@
             if (this.effect) {
                 this._engine._releaseEffect(this.effect);
                 this.effect = null;
+            }
+
+            if (this.effectInstanced) {
+                this._engine._releaseEffect(this.effectInstanced);
+                this.effectInstanced = null;
             }
 
             return true;
@@ -197,7 +211,7 @@
             this.text = text;
             this.areaSize = areaSize;
             this._tabulationSize = tabulationSize;
-            this._isTransparent = true;
+            this.isAlphaTest = true;
         }
 
         /**
@@ -235,8 +249,8 @@
             return true;
         }
 
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Text2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        protected createModelRenderCache(modelKey: string): ModelRenderCache {
+            let renderCache = new Text2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         }
 
@@ -262,8 +276,13 @@
 
             renderCache.ib = engine.createIndexBuffer(ib);
 
-            // Effects
-            let ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"]);
+            // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+            let ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], true);
+            if (ei) {
+                renderCache.effectInstanced = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
+            }
+
+            ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], false);
             renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
 
             return renderCache;

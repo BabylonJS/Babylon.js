@@ -1,28 +1,35 @@
 ﻿module BABYLON {
     export class Lines2DRenderCache extends ModelRenderCache {
-        fillVB: WebGLBuffer;
-        fillIB: WebGLBuffer;
-        fillIndicesCount: number;
-        instancingFillAttributes: InstancingAttributeInfo[];
-        effectFill: Effect;
+        effectsReady: boolean                               = false;
+        fillVB: WebGLBuffer                                 = null;
+        fillIB: WebGLBuffer                                 = null;
+        fillIndicesCount: number                            = 0;
+        instancingFillAttributes: InstancingAttributeInfo[] = null;
+        effectFill: Effect                                  = null;
+        effectFillInstanced: Effect                         = null;
 
-        borderVB: WebGLBuffer;
-        borderIB: WebGLBuffer;
-        borderIndicesCount: number;
-        instancingBorderAttributes: InstancingAttributeInfo[];
-        effectBorder: Effect;
+        borderVB: WebGLBuffer                                 = null;
+        borderIB: WebGLBuffer                                 = null;
+        borderIndicesCount: number                            = 0;
+        instancingBorderAttributes: InstancingAttributeInfo[] = null;
+        effectBorder: Effect                                  = null;
+        effectBorderInstanced: Effect                         = null;
 
-        constructor(engine: Engine, modelKey: string, isTransparent: boolean) {
-            super(engine, modelKey, isTransparent);
+        constructor(engine: Engine, modelKey: string) {
+            super(engine, modelKey);
         }
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             // Do nothing if the shader is still loading/preparing 
-            if ((this.effectFill && !this.effectFill.isReady()) || (this.effectBorder && !this.effectBorder.isReady())) {
-                return false;
+            if (!this.effectsReady) {
+                if ((this.effectFill && (!this.effectFill.isReady() || (this.effectFillInstanced && !this.effectFillInstanced.isReady()))) ||
+                    (this.effectBorder && (!this.effectBorder.isReady() || (this.effectBorderInstanced && !this.effectBorderInstanced.isReady())))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
 
-            var engine = instanceInfo._owner.owner.engine;
+            var engine = instanceInfo.owner.owner.engine;
 
             let depthFunction = 0;
             if (this.effectFill && this.effectBorder) {
@@ -30,60 +37,65 @@
                 engine.setDepthFunctionToLessOrEqual();
             }
 
-            var cur: number;
-            if (this.isTransparent) {
-                cur = engine.getAlphaMode();
-                engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            }
+            let curAlphaMode = engine.getAlphaMode();
 
             if (this.effectFill) {
-                let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
+                let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
+                let pid = context.groupInfoPartData[partIndex];
              
-                engine.enableEffect(this.effectFill);
-                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [2], 2*4, this.effectFill);
-                let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
-                if (instanceInfo._owner.owner.supportInstancedArray) {
+                if (context.renderMode !== Render2DContext.RenderModeOpaque) {
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                }
+
+                let effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
+
+                engine.enableEffect(effect);
+                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [2], 2*4, effect);
+                if (context.useInstancing) {
                     if (!this.instancingFillAttributes) {
-                        // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
-                        this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
+                        this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, effect);
                     }
 
-                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
-                    engine.draw(true, 0, this.fillIndicesCount, count);
+                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 } else {
-                    for (let i = 0; i < count; i++) {
-                        this.setupUniforms(this.effectFill, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                    for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.fillIndicesCount);                        
                     }
                 }
             }
 
             if (this.effectBorder) {
-                let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_BORDERPARTID.toString());
+                let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_BORDERPARTID.toString());
+                let pid = context.groupInfoPartData[partIndex];
 
-                engine.enableEffect(this.effectBorder);
-                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [2], 2 * 4, this.effectBorder);
-                let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
-                if (instanceInfo._owner.owner.supportInstancedArray) {
+                if (context.renderMode !== Render2DContext.RenderModeOpaque) {
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                }
+
+                let effect = context.useInstancing ? this.effectBorderInstanced : this.effectBorder;
+
+                engine.enableEffect(effect);
+                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [2], 2 * 4, effect);
+                if (context.useInstancing) {
                     if (!this.instancingBorderAttributes) {
-                        this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, this.effectBorder);
+                        this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, effect);
                     }
 
-                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
-                    engine.draw(true, 0, this.borderIndicesCount, count);
+                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 } else {
-                    for (let i = 0; i < count; i++) {
-                        this.setupUniforms(this.effectBorder, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                    for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.borderIndicesCount);
                     }
                 }
             }
 
-            if (this.isTransparent) {
-                engine.setAlphaMode(cur);
-            }
+            engine.setAlphaMode(curAlphaMode);
 
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
@@ -111,6 +123,11 @@
                 this.effectFill = null;
             }
 
+            if (this.effectFillInstanced) {
+                this._engine._releaseEffect(this.effectFillInstanced);
+                this.effectFillInstanced = null;
+            }
+
             if (this.borderVB) {
                 this._engine._releaseBuffer(this.borderVB);
                 this.borderVB = null;
@@ -124,6 +141,11 @@
             if (this.effectBorder) {
                 this._engine._releaseEffect(this.effectBorder);
                 this.effectBorder = null;
+            }
+
+            if (this.effectBorderInstanced) {
+                this._engine._releaseEffect(this.effectBorderInstanced);
+                this.effectBorderInstanced = null;
             }
 
             return true;
@@ -306,7 +328,7 @@
                 lines.setupLines2D(parent.owner, parent, null, Vector2.Zero(), null, points, 1, 0, 0, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, false, true, null, null, null, null, null, null);
             } else {
                 let fill: IBrush2D;
-                if (!options.fill) {
+                if (options.fill === undefined) {
                     fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
                 } else {
                     fill = options.fill;
@@ -319,8 +341,8 @@
             return lines;
         }
 
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Lines2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        protected createModelRenderCache(modelKey: string): ModelRenderCache {
+            let renderCache = new Lines2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         }
 
@@ -872,8 +894,15 @@
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = ib.length;
 
-                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"]);
-                renderCache.effectFill = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
+                // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"], true);
+                if (ei) {
+                    renderCache.effectFillInstanced = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
+                }
+
+                // Get the non instanced version
+                ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"], false);
+                renderCache.effectFill = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             }
 
             // Need to create WebGL resources for border part?
@@ -917,7 +946,14 @@
                 renderCache.borderIB = engine.createIndexBuffer(ib);
                 renderCache.borderIndicesCount = ib.length;
 
-                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"]);
+                // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"], true);
+                if (ei) {
+                    renderCache.effectBorderInstanced = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
+                }
+
+                // Get the non instanced version
+                ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"], false);
                 renderCache.effectBorder = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
             }
 
