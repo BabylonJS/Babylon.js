@@ -4,7 +4,7 @@ var BABYLON;
         function DynamicFloatArrayElementInfo() {
         }
         return DynamicFloatArrayElementInfo;
-    })();
+    }());
     BABYLON.DynamicFloatArrayElementInfo = DynamicFloatArrayElementInfo;
     /**
     * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
@@ -212,6 +212,6 @@ var BABYLON;
             configurable: true
         });
         return DynamicFloatArray;
-    })();
+    }());
     BABYLON.DynamicFloatArray = DynamicFloatArray;
 })(BABYLON || (BABYLON = {}));
