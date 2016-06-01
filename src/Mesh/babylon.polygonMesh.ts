@@ -117,10 +117,6 @@ module BABYLON {
         constructor(name: string, contours: Path2, scene: Scene)
         constructor(name: string, contours: Vector2[], scene: Scene)
         constructor(name: string, contours: any, scene: Scene) {
-            if (!("poly2tri" in window)) {
-                throw "PolygonMeshBuilder cannot be used because poly2tri is not referenced";
-            }
-
             this._name = name;
             this._scene = scene;
 

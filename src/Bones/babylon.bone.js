@@ -80,8 +80,9 @@ var BABYLON;
             this._currentRenderId++;
             this._skeleton._markAsDirty();
         };
-        Bone.prototype.copyAnimationRange = function (source, rangeName, frameOffset, rescaleAsRequired) {
+        Bone.prototype.copyAnimationRange = function (source, rangeName, frameOffset, rescaleAsRequired, skelDimensionsRatio) {
             if (rescaleAsRequired === void 0) { rescaleAsRequired = false; }
+            if (skelDimensionsRatio === void 0) { skelDimensionsRatio = null; }
             // all animation may be coming from a library skeleton, so may need to create animation
             if (this.animations.length === 0) {
                 this.animations.push(new BABYLON.Animation(this.name, "_matrix", source.animations[0].framePerSecond, BABYLON.Animation.ANIMATIONTYPE_MATRIX, 0));
@@ -97,22 +98,33 @@ var BABYLON;
             var sourceKeys = source.animations[0].getKeys();
             // rescaling prep
             var sourceBoneLength = source.length;
-            var scalingReqd = rescaleAsRequired && sourceBoneLength && this.length && sourceBoneLength !== this.length;
-            var ratio = scalingReqd ? this.length / sourceBoneLength : null;
+            var sourceParent = source.getParent();
+            var parent = this.getParent();
+            var parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
+            var parentRatio = parentScalingReqd ? parent.length / sourceParent.length : null;
+            var dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
             var destKeys = this.animations[0].getKeys();
-            // loop vars declaration / initialization
+            // loop vars declaration
             var orig;
-            var origScale = scalingReqd ? BABYLON.Vector3.Zero() : null;
-            var origRotation = scalingReqd ? new BABYLON.Quaternion() : null;
-            var origTranslation = scalingReqd ? BABYLON.Vector3.Zero() : null;
+            var origTranslation;
             var mat;
             for (var key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
                 orig = sourceKeys[key];
                 if (orig.frame >= from && orig.frame <= to) {
-                    if (scalingReqd) {
-                        orig.value.decompose(origScale, origRotation, origTranslation);
-                        origTranslation.scaleInPlace(ratio);
-                        mat = BABYLON.Matrix.Compose(origScale, origRotation, origTranslation);
+                    if (rescaleAsRequired) {
+                        mat = orig.value.clone();
+                        // scale based on parent ratio, when bone has parent
+                        if (parentScalingReqd) {
+                            origTranslation = mat.getTranslation();
+                            mat.setTranslation(origTranslation.scaleInPlace(parentRatio));
+                        }
+                        else if (dimensionsScalingReqd) {
+                            origTranslation = mat.getTranslation();
+                            mat.setTranslation(origTranslation.multiplyInPlace(skelDimensionsRatio));
+                        }
+                        else {
+                            mat = orig.value;
+                        }
                     }
                     else {
                         mat = orig.value;
