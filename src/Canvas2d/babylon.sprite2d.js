@@ -15,31 +15,44 @@ var BABYLON;
         __extends(Sprite2DRenderCache, _super);
         function Sprite2DRenderCache() {
             _super.apply(this, arguments);
+            this.effectsReady = false;
+            this.vb = null;
+            this.ib = null;
+            this.instancingAttributes = null;
+            this.texture = null;
+            this.effect = null;
+            this.effectInstanced = null;
         }
         Sprite2DRenderCache.prototype.render = function (instanceInfo, context) {
-            // Do nothing if the shader is still loading/preparing
-            if (!this.effect.isReady() || !this.texture.isReady()) {
-                return false;
+            // Do nothing if the shader is still loading/preparing 
+            if (!this.effectsReady) {
+                if ((!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady()))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
             // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
-            var engine = instanceInfo._owner.owner.engine;
-            engine.enableEffect(this.effect);
-            this.effect.setTexture("diffuseSampler", this.texture);
-            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, this.effect);
+            var engine = instanceInfo.owner.owner.engine;
+            var effect = context.useInstancing ? this.effectInstanced : this.effect;
+            engine.enableEffect(effect);
+            effect.setTexture("diffuseSampler", this.texture);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
             var cur = engine.getAlphaMode();
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-            var count = instanceInfo._instancesPartsData[0].usedElementCount;
-            if (instanceInfo._owner.owner.supportInstancedArray) {
+            if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            }
+            var pid = context.groupInfoPartData[0];
+            if (context.useInstancing) {
                 if (!this.instancingAttributes) {
-                    this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, this.effect);
+                    this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, effect);
                 }
-                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
-                engine.draw(true, 0, 6, count);
+                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, pid._partData.usedElementCount);
                 engine.unbindInstanceAttributes();
             }
             else {
-                for (var i = 0; i < count; i++) {
-                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                    this.setupUniforms(effect, 0, pid._partData, i);
                     engine.draw(true, 0, 6);
                 }
             }
@@ -66,10 +79,14 @@ var BABYLON;
                 this._engine._releaseEffect(this.effect);
                 this.effect = null;
             }
+            if (this.effectInstanced) {
+                this._engine._releaseEffect(this.effectInstanced);
+                this.effectInstanced = null;
+            }
             return true;
         };
         return Sprite2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -127,7 +144,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "invertY", null);
         return Sprite2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -205,8 +222,8 @@ var BABYLON;
             // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
             return true;
         };
-        Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, origin, texture, spriteSize, spriteLocation, invertY) {
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, true);
+        Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, origin, texture, spriteSize, spriteLocation, invertY, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.texture = texture;
             this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
@@ -226,26 +243,35 @@ var BABYLON;
          * @param texture the texture that stores the sprite to render
          * options:
          *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - spriteSize: the size of the sprite, if null the size of the given texture will be used, default is null.
          *  - spriteLocation: the location in the texture of the top/left corner of the Sprite to display, default is null (0,0)
          *  - invertY: if true the texture Y will be inverted, default is false.
+         *  - isVisible: true if the sprite must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
         Sprite2D.Create = function (parent, texture, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
             var sprite = new Sprite2D();
-            sprite.setupSprite2D(parent.owner, parent, options && options.id || null, new BABYLON.Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, texture, options && options.spriteSize || null, options && options.spriteLocation || null, options && options.invertY || false);
+            if (!options) {
+                sprite.setupSprite2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, texture, null, null, false, true, null, null, null, null, null, null);
+            }
+            else {
+                var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
+                sprite.setupSprite2D(parent.owner, parent, options.id || null, pos, options.origin || null, texture, options.spriteSize || null, options.spriteLocation || null, options.invertY || false, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+            }
             return sprite;
         };
         Sprite2D._createCachedCanvasSprite = function (owner, texture, size, pos) {
             var sprite = new Sprite2D();
-            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new BABYLON.Vector2(0, 0), null, texture, size, pos, false);
+            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new BABYLON.Vector2(0, 0), null, texture, size, pos, false, true, null, null, null, null, null, null);
             return sprite;
         };
-        Sprite2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
-            var renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        Sprite2D.prototype.createModelRenderCache = function (modelKey) {
+            var renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         };
         Sprite2D.prototype.setupModelRenderCache = function (modelRenderCache) {
@@ -265,10 +291,13 @@ var BABYLON;
             ib[5] = 2;
             renderCache.ib = engine.createIndexBuffer(ib);
             renderCache.texture = this.texture;
-            var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, function (e) {
-                //                renderCache.setupUniformsLocation(e, ei.uniforms, Sprite2D.SPRITE2D_MAINPARTID);
-            });
+            // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+            var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], true);
+            if (ei) {
+                renderCache.effectInstanced = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
+            }
+            ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], false);
+            renderCache.effect = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             return renderCache;
         };
         Sprite2D.prototype.createInstanceDataParts = function () {
@@ -312,6 +341,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));
