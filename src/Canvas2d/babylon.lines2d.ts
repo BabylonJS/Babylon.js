@@ -243,7 +243,6 @@
             let pl = this.points.length;
             let l = this.closed ? pl + 1 : pl;
 
-//            let originOffset = new Vector2(-0.5, -0.5);
             let p = intersectInfo._localPickPosition;
 
             this.transformPointWithOriginToRef(this._contour[0], null, Lines2D._prevA);
@@ -263,6 +262,37 @@
                 Lines2D._prevA.y = Lines2D._curA.y;
                 Lines2D._prevB.x = Lines2D._curB.x;
                 Lines2D._prevB.y = Lines2D._curB.y;
+            }
+
+            let capIntersect = (tri: number[], points: number[]): boolean => {
+                let l = tri.length;
+                for (let i = 0; i < l; i += 3) {
+                    Lines2D._curA.x = points[tri[i + 0] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 0] * 2 + 1];
+                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._curB);
+
+                    Lines2D._curA.x = points[tri[i + 1] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 1] * 2 + 1];
+                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevA);
+
+                    Lines2D._curA.x = points[tri[i + 2] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 2] * 2 + 1];
+                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevB);
+
+                    if (Vector2.PointInTriangle(p, Lines2D._prevA, Lines2D._prevB, Lines2D._curB)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            if (this._startCapTriIndices) {
+                if (capIntersect(this._startCapTriIndices, this._startCapContour)) {
+                    return true;
+                }
+                if (capIntersect(this._endCapTriIndices, this._endCapContour)) {
+                    return true;
+                }
             }
 
             return false;
@@ -569,7 +599,7 @@
             }
 
             let v = Vector2.Zero();
-            let storeVertex = (vb: Float32Array, baseOffset: number, index: number, basePos: Vector2, rotation: number, vertex: Vector2): number => {
+            let storeVertex = (vb: Float32Array, baseOffset: number, index: number, basePos: Vector2, rotation: number, vertex: Vector2, contour: number[]): number => {
                 let c = Math.cos(rotation);
                 let s = Math.sin(rotation);
 
@@ -579,6 +609,11 @@
                 vb[offset + 0] = v.x;
                 vb[offset + 1] = v.y;
 
+                if (contour) {
+                    contour.push(v.x);
+                    contour.push(v.y);
+                }
+
                 updateMinMax(vb, offset);
                 return (baseOffset + index*2) / 2;
             }
@@ -587,7 +622,7 @@
                 ib[baseOffset + index] = vertexIndex;
             }
 
-            let buildCap = (vb: Float32Array, vbi: number, ib: Float32Array, ibi: number, pos: Vector2, thickness: number, borderThickness: number, type: number, capDir: Vector2): { vbsize: number; ibsize: number } => {
+            let buildCap = (vb: Float32Array, vbi: number, ib: Float32Array, ibi: number, pos: Vector2, thickness: number, borderThickness: number, type: number, capDir: Vector2, contour: number[]): { vbsize: number; ibsize: number } => {
 
                 // Compute the transformation from the direction of the cap to build relative to our default orientation [1;0] (our cap are by default pointing toward right, horizontal
                 let dir = new Vector2(1, 0);
@@ -602,10 +637,10 @@
                         if (borderMode && !this.closed) {
                             let vi = 0;
                             let ii = 0;
-                            let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht + bt));
-                            let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(bt, ht + bt));
-                            let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(bt, -(ht + bt)));
-                            let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -(ht + bt)));
+                            let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht + bt), contour);
+                            let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(bt, ht + bt), contour);
+                            let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(bt, -(ht + bt)), contour);
+                            let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -(ht + bt)), contour);
 
                             storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v3);
                             storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v4);
@@ -617,12 +652,12 @@
                     {
                         if (borderMode) {
                             let f = type===Lines2D.TriangleCap ? bt : Math.sqrt(bt * bt * 2);
-                            let v1 = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, ht));
-                            let v2 = storeVertex(vb, vbi, 1, pos, angle, new Vector2(ht, 0));
-                            let v3 = storeVertex(vb, vbi, 2, pos, angle, new Vector2(0, -ht));
-                            let v4 = storeVertex(vb, vbi, 3, pos, angle, new Vector2(0, ht+f));
-                            let v5 = storeVertex(vb, vbi, 4, pos, angle, new Vector2(ht+f, 0));
-                            let v6 = storeVertex(vb, vbi, 5, pos, angle, new Vector2(0, -(ht+f)));
+                            let v1 = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, ht), null);
+                            let v2 = storeVertex(vb, vbi, 1, pos, angle, new Vector2(ht, 0), null);
+                            let v3 = storeVertex(vb, vbi, 2, pos, angle, new Vector2(0, -ht), null);
+                            let v4 = storeVertex(vb, vbi, 3, pos, angle, new Vector2(0, ht + f), contour);
+                            let v5 = storeVertex(vb, vbi, 4, pos, angle, new Vector2(ht + f, 0), contour);
+                            let v6 = storeVertex(vb, vbi, 5, pos, angle, new Vector2(0, -(ht + f)), contour);
 
                             let ii = 0;
                             storeIndex(ib, ibi, ii++, v1);  storeIndex(ib, ibi, ii++, v4);  storeIndex(ib, ibi, ii++, v5);
@@ -632,13 +667,14 @@
 
                             if (type === Lines2D.ArrowCap) {
                                 let rht = thickness / 2;
-                                let v7 = storeVertex(vb, vbi, 6, pos, angle, new Vector2(0, rht+bt));
-                                let v8 = storeVertex(vb, vbi, 7, pos, angle, new Vector2(-bt, rht+bt));
-                                let v9 = storeVertex(vb, vbi, 8, pos, angle, new Vector2(-bt, ht+f));
+                                let v10 = storeVertex(vb, vbi, 9, pos, angle, new Vector2(0, -(rht + bt)), null);
+                                let v12 = storeVertex(vb, vbi, 11, pos, angle, new Vector2(-bt, -(ht + f)), contour);
+                                let v11 = storeVertex(vb, vbi, 10, pos, angle, new Vector2(-bt, -(rht + bt)), contour);
 
-                                let v10 = storeVertex(vb, vbi, 9, pos, angle, new Vector2(0, -(rht+bt)));
-                                let v11 = storeVertex(vb, vbi, 10, pos, angle, new Vector2(-bt, -(rht+bt)));
-                                let v12 = storeVertex(vb, vbi, 11, pos, angle, new Vector2(-bt, -(ht+f)));
+                                let v7 = storeVertex(vb, vbi, 6, pos, angle, new Vector2(0, rht + bt), null);
+                                let v8 = storeVertex(vb, vbi, 7, pos, angle, new Vector2(-bt, rht + bt), contour);
+                                let v9 = storeVertex(vb, vbi, 8, pos, angle, new Vector2(-bt, ht + f), contour);
+
 
                                 storeIndex(ib, ibi, ii++, v7);  storeIndex(ib, ibi, ii++, v8);  storeIndex(ib, ibi, ii++, v9);
                                 storeIndex(ib, ibi, ii++, v7);  storeIndex(ib, ibi, ii++, v9);  storeIndex(ib, ibi, ii++, v4);
@@ -646,9 +682,9 @@
                                 storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v6);  storeIndex(ib, ibi, ii++, v12);
                             }
                         } else {
-                            let v1 = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, ht));
-                            let v2 = storeVertex(vb, vbi, 1, pos, angle, new Vector2(ht, 0));
-                            let v3 = storeVertex(vb, vbi, 2, pos, angle, new Vector2(0, -ht));
+                            let v1 = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, ht), contour);
+                            let v2 = storeVertex(vb, vbi, 1, pos, angle, new Vector2(ht, 0), contour);
+                            let v3 = storeVertex(vb, vbi, 2, pos, angle, new Vector2(0, -ht), contour);
 
                             storeIndex(ib, ibi, 0, v1);
                             storeIndex(ib, ibi, 1, v2);
@@ -664,8 +700,8 @@
                             let ii = 0;
 
                             for (let i = 0; i < (sd / 2); i++) {
-                                let v1 = storeVertex(vb, vbi, i*2 + 0, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
-                                let v2 = storeVertex(vb, vbi, i*2 + 1, pos, angle, new Vector2(Math.cos(curA) * (ht+bt), Math.sin(curA) * (ht+bt)));
+                                let v1 = storeVertex(vb, vbi, i*2 + 0, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), null);
+                                let v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new Vector2(Math.cos(curA) * (ht + bt), Math.sin(curA) * (ht + bt)), contour);
 
                                 if (i > 0) {
                                     storeIndex(ib, ibi, ii++, v1 - 2);
@@ -679,14 +715,14 @@
                                 curA += incA;
                             }
                         } else {
-                            let c = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, 0));
+                            let c = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, 0), null);
                             let curA = -Math.PI / 2;
                             let incA = Math.PI / (sd / 2 - 1);
 
-                            storeVertex(vb, vbi, 1, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
+                            storeVertex(vb, vbi, 1, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), null);
                             curA += incA;
                             for (let i = 1; i < (sd / 2); i++) {
-                                let v2 = storeVertex(vb, vbi, i + 1, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
+                                let v2 = storeVertex(vb, vbi, i + 1, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), contour);
 
                                 storeIndex(ib, ibi, i * 3 + 0, c);
                                 storeIndex(ib, ibi, i * 3 + 1, v2 - 1);
@@ -699,21 +735,22 @@
                     case Lines2D.SquareAnchorCap:
                     {
                         let vi = 0;
-                        let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, t));
-                        let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2, t));
-                        let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2, -t));
-                        let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -t));
+                        let c = borderMode ? null : contour;
+                        let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, t), c);
+                        let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2, t), c);
+                        let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2, -t), c);
+                        let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -t), c);
 
                         if (borderMode) {
-                            let v5 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht+bt));
-                            let v6 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, ht+bt));
-                            let v7 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, t + bt));
-                            let v8 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2 + bt, t + bt));
+                            let v5 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht+bt), null);
+                            let v6 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, ht+bt), contour);
+                            let v7 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, t + bt), contour);
+                            let v8 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2 + bt, t + bt), contour);
 
-                            let v9 =  storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2 + bt, -(t+bt)));
-                            let v10 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, -(t + bt)));
-                            let v11 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, -(ht+bt)));
-                            let v12 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -(ht+bt)));
+                            let v9 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2 + bt, -(t + bt)), contour);
+                            let v10 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, -(t + bt)), contour);
+                            let v11 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, -(ht + bt)), contour);
+                            let v12 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -(ht+bt)), null);
 
                             let ii = 0;
                             storeIndex(ib, ibi, ii++, v6);  storeIndex(ib, ibi, ii++, v1);  storeIndex(ib, ibi, ii++, v5);
@@ -749,8 +786,8 @@
                             let ii = 0;
 
                             for (let i = 0; i < sd; i++) {
-                                let v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
-                                let v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new Vector2(cpos + Math.cos(curA) * (t + bt), Math.sin(curA) * (t + bt)));
+                                let v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), null);
+                                let v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new Vector2(cpos + Math.cos(curA) * (t + bt), Math.sin(curA) * (t + bt)), contour);
 
                                 if (i > 0) {
                                     storeIndex(ib, ibi, ii++, v1 - 2);
@@ -764,11 +801,11 @@
                                 curA += incA;
                             }
                         } else {
-                            let c = storeVertex(vb, vbi, 0, pos, angle, center);
-                            storeVertex(vb, vbi, 1, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
+                            let c = storeVertex(vb, vbi, 0, pos, angle, center, null);
+                            storeVertex(vb, vbi, 1, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), null);  // contour maybe TODO
                             curA += incA;
                             for (let i = 1; i < sd; i++) {
-                                let v2 = storeVertex(vb, vbi, i + 1, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
+                                let v2 = storeVertex(vb, vbi, i + 1, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), contour);
 
                                 storeIndex(ib, ibi, i * 3 + 0, c);
                                 storeIndex(ib, ibi, i * 3 + 1, v2 - 1);
@@ -784,19 +821,20 @@
                     case Lines2D.DiamondAnchorCap:
                     {
                         let vi = 0;
-                        let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht));
-                        let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, t));
-                        let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht * 3, 0));
-                        let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, -t));
-                        let v5 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -ht));
+                        let c = borderMode ? null : contour;
+                        let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht), c);
+                        let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, t), c);
+                        let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht * 3, 0), c);
+                        let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, -t), c);
+                        let v5 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -ht), c);
 
                         if (borderMode) {
                             let f = Math.sqrt(bt * bt * 2);
-                            let v6 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-f,ht));
-                            let v7 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht,t+f));
-                            let v8 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht*3+f,0));
-                            let v9 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht,-(t+f)));
-                            let v10 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-f, -ht));
+                            let v6 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-f, ht), contour);
+                            let v7 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, t + f), contour);
+                            let v8 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht * 3 + f, 0), contour);
+                            let v9 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, -(t + f)), contour);
+                            let v10 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-f, -ht), contour);
 
                             let ii = 0;
                             storeIndex(ib, ibi, ii++, v6); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v1);
@@ -890,6 +928,8 @@
             }
 
             let contour = new Array<Vector2>();
+            let startCapContour = new Array<number>();
+            let endCapContour = new Array<number>();
 
             // Need to create WebGL resources for fill part?
             if (this.fill) {
@@ -916,8 +956,8 @@
                     ib[i * 3 + 5] = (i + 2) % max;
                 }
 
-                buildCap(vb, count * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, null, this.startCap, startDir);
-                buildCap(vb, (count * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, null, this.endCap, endDir);
+                buildCap(vb, count * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, null, this.startCap, startDir, this.border ? null : startCapContour);
+                buildCap(vb, (count * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, null, this.endCap, endDir, this.border ? null : startCapContour);
 
                 renderCache.fillVB = engine.createVertexBuffer(vb);
                 renderCache.fillIB = engine.createIndexBuffer(ib);
@@ -968,8 +1008,8 @@
                     ib[i * 3 + 11] = (i + 7) % max;
                 }
 
-                buildCap(vb, count * 2 * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, this.borderThickness, this.startCap, startDir);
-                buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, endDir);
+                buildCap(vb, count * 2 * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, this.borderThickness, this.startCap, startDir, startCapContour);
+                buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, endDir, endCapContour);
 
                 renderCache.borderVB = engine.createVertexBuffer(vb);
                 renderCache.borderIB = engine.createIndexBuffer(ib);
@@ -987,6 +1027,16 @@
             }
 
             this._contour = contour;
+            if (startCapContour.length > 0) {
+                let startCapTri = Earcut.earcut(startCapContour, null, 2);
+                this._startCapTriIndices = startCapTri;
+                this._startCapContour = startCapContour;
+            }
+            if (endCapContour.length > 0) {
+                let endCapTri = Earcut.earcut(endCapContour, null, 2);
+                this._endCapContour = endCapContour;
+                this._endCapTriIndices = endCapTri;
+            }
             let bs = this._boundingMax.subtract(this._boundingMin);
             this._size.width = bs.x;
             this._size.height = bs.y;
@@ -1036,6 +1086,10 @@
         private _boundingMax: Vector2;
         private _size: Size;
         private _contour: Vector2[];
+        private _startCapContour: number[];
+        private _startCapTriIndices: number[];
+        private _endCapContour: number[];
+        private _endCapTriIndices: number[];
 
         private _closed: boolean;
         private _startCap: number;
