@@ -234,29 +234,37 @@
             this._endCap = value;
         }
 
+        private static _prevA: Vector2 = Vector2.Zero();
+        private static _prevB: Vector2 = Vector2.Zero();
+        private static _curA: Vector2 = Vector2.Zero();
+        private static _curB: Vector2 = Vector2.Zero();
+
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
             let pl = this.points.length;
             let l = this.closed ? pl + 1 : pl;
 
-            let originOffset = new Vector2(-0.5, -0.5);
+//            let originOffset = new Vector2(-0.5, -0.5);
             let p = intersectInfo._localPickPosition;
 
-            let prevA = this.transformPointWithOrigin(this._contour[0], originOffset);
-            let prevB = this.transformPointWithOrigin(this._contour[1], originOffset);
+            this.transformPointWithOriginToRef(this._contour[0], null, Lines2D._prevA);
+            this.transformPointWithOriginToRef(this._contour[1], null, Lines2D._prevB);
             for (let i = 1; i < l; i++) {
-                let curA = this.transformPointWithOrigin(this._contour[(i % pl) * 2 + 0], originOffset);
-                let curB = this.transformPointWithOrigin(this._contour[(i % pl) * 2 + 1], originOffset);
+                this.transformPointWithOriginToRef(this._contour[(i % pl) * 2 + 0], null, Lines2D._curA);
+                this.transformPointWithOriginToRef(this._contour[(i % pl) * 2 + 1], null, Lines2D._curB);
 
-                if (Vector2.PointInTriangle(p, prevA, prevB, curA)) {
+                if (Vector2.PointInTriangle(p, Lines2D._prevA, Lines2D._prevB, Lines2D._curA)) {
                     return true;
                 }
-                if (Vector2.PointInTriangle(p, curA, prevB, curB)) {
+                if (Vector2.PointInTriangle(p, Lines2D._curA, Lines2D._prevB, Lines2D._curB)) {
                     return true;
                 }
 
-                prevA = curA;
-                prevB = curB;
+                Lines2D._prevA.x = Lines2D._curA.x;
+                Lines2D._prevA.y = Lines2D._curA.y;
+                Lines2D._prevB.x = Lines2D._curB.x;
+                Lines2D._prevB.y = Lines2D._curB.y;
             }
+
             return false;
         }
 
@@ -284,7 +292,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
+            BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo, this.origin);
         }
 
         protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
@@ -335,7 +343,28 @@
                 }
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
 
-                lines.setupLines2D(parent.owner, parent, options.id || null, pos, options.origin || null, points, options.fillThickness || 1, options.startCap || 0, options.endCap || 0, fill, options.border || null, options.borderThickness || 1, options.closed || false, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);                
+                lines.setupLines2D
+                (
+                    parent.owner,
+                    parent,
+                    options.id || null,
+                    pos,
+                    options.origin || null,
+                    points,
+                    (options.fillThickness == null) ? 1 : options.fillThickness,
+                    (options.startCap == null) ? 0 : options.startCap,
+                    (options.endCap == null) ? 0 : options.endCap,
+                    fill,
+                    options.border || null,
+                    (options.borderThickness == null) ? 1 : options.borderThickness,
+                    (options.closed == null) ? false : options.closed,
+                    (options.isVisible == null) ? true : options.isVisible,
+                    options.marginTop || null,
+                    options.marginLeft || null,
+                    options.marginRight || null,
+                    options.marginBottom || null,
+                    options.vAlignment || null,
+                    options.hAlignment || null);                
             }
 
             return lines;
@@ -351,8 +380,8 @@
             let engine = this.owner.engine;
 
             // Init min/max because their being computed here
-            this.boundingMin = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
-            this.boundingMax = new Vector2(Number.MIN_VALUE, Number.MIN_VALUE);
+            this._boundingMin = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            this._boundingMax = new Vector2(Number.MIN_VALUE, Number.MIN_VALUE);
 
             let perp = (v: Vector2, res: Vector2) => {
                 res.x = v.y;
