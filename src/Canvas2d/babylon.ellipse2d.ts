@@ -40,6 +40,7 @@
             let curAlphaMode = engine.getAlphaMode();
 
             if (this.effectFill) {
+
                 let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
                 let pid = context.groupInfoPartData[partIndex];
 
@@ -89,7 +90,7 @@
                     engine.unbindInstanceAttributes();
                 } else {
                     for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
-                        this.setupUniforms(this.effectBorder, partIndex, pid._partData, i);
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.borderIndicesCount);
                     }
                 }
