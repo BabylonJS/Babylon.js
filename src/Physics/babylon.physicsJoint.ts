@@ -69,6 +69,7 @@ module BABYLON {
         public static PointToPointJoint = 8;
         //Cannon only at the moment
         public static SpringJoint = 9;
+        public static LockJoint = 10;
     }
 
     /**
