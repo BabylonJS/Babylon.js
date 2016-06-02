@@ -88,7 +88,7 @@ var BABYLON;
                 }
                 else {
                     for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
-                        this.setupUniforms(this.effectBorder, partIndex, pid._partData, i);
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.borderIndicesCount);
                     }
                 }
@@ -138,7 +138,7 @@ var BABYLON;
             return true;
         };
         return Ellipse2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Ellipse2DRenderCache = Ellipse2DRenderCache;
     var Ellipse2DInstanceData = (function (_super) {
         __extends(Ellipse2DInstanceData, _super);
@@ -156,7 +156,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Ellipse2DInstanceData.prototype, "properties", null);
         return Ellipse2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Ellipse2DInstanceData = Ellipse2DInstanceData;
     var Ellipse2D = (function (_super) {
         __extends(Ellipse2D, _super);
@@ -229,7 +229,7 @@ var BABYLON;
                 ellipse.setupEllipse2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, new BABYLON.Size(10, 10), 64, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
             }
             else {
-                var fill = void 0;
+                var fill;
                 if (options.fill === undefined) {
                     fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
                 }
@@ -238,7 +238,7 @@ var BABYLON;
                 }
                 var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
                 var size = options.size || (new BABYLON.Size(options.width || 10, options.height || 10));
-                ellipse.setupEllipse2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, options.subdivisions || 64, fill, options.border || null, options.borderThickness || 1, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+                ellipse.setupEllipse2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, (options.subdivisions == null) ? 64 : options.subdivisions, fill, options.border || null, (options.borderThickness == null) ? 1 : options.borderThickness, (options.isVisible == null) ? true : options.isVisible, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
             }
             return ellipse;
         };
@@ -346,6 +346,6 @@ var BABYLON;
             BABYLON.className("Ellipse2D")
         ], Ellipse2D);
         return Ellipse2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Ellipse2D = Ellipse2D;
 })(BABYLON || (BABYLON = {}));

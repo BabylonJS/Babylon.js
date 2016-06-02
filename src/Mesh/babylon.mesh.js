@@ -12,7 +12,7 @@ var BABYLON;
             this.renderSelf = new Array();
         }
         return _InstancesBatch;
-    }());
+    })();
     BABYLON._InstancesBatch = _InstancesBatch;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
@@ -887,11 +887,11 @@ var BABYLON;
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
-                engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
             }
             else {
                 instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
             }
+            engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
             this._draw(subMesh, fillMode, instancesCount);
             engine.unbindInstanceAttributes();
         };
@@ -2371,6 +2371,6 @@ var BABYLON;
         Mesh._CAP_END = 2;
         Mesh._CAP_ALL = 3;
         return Mesh;
-    }(BABYLON.AbstractMesh));
+    })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
