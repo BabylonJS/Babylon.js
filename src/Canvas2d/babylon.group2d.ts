@@ -205,7 +205,7 @@
 
         public _renderCachedCanvas() {
             this.updateGlobalTransVis(true);
-            let context = new PreapreRender2DContext();
+            let context = new PrepareRender2DContext();
             this._prepareGroupRender(context);
             this._groupRender();
         }
@@ -231,7 +231,7 @@
         }
 
         // Method called only on renderable groups to prepare the rendering
-        protected _prepareGroupRender(context: PreapreRender2DContext) {
+        protected _prepareGroupRender(context: PrepareRender2DContext) {
             let sortedDirtyList: Prim2DBase[] = null;
 
             // Update the Global Transformation and visibility status of the changed primitives

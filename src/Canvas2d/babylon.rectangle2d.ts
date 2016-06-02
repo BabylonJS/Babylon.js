@@ -203,14 +203,80 @@
             this.notRounded = value === 0;
         }
 
+        private static _i0 = Vector2.Zero();
+        private static _i1 = Vector2.Zero();
+        private static _i2 = Vector2.Zero();
+
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
             // If we got there it mean the boundingInfo intersection succeed, if the rectangle has not roundRadius, it means it succeed!
             if (this.notRounded) {
                 return true;
             }
 
-            // Well, for now we neglect the area where the pickPosition could be outside due to the roundRadius...
-            // TODO make REAL intersection test here!
+            // If we got so far it means the bounding box at least passed, so we know it's inside the bounding rectangle, but it can be outside the roundedRectangle.
+            // The easiest way is to check if the point is inside on of the four corners area (a little square of roundRadius size at the four corners)
+            // If it's the case for one, check if the mouse is located in the quarter that we care about (the one who is visible) then finally make a distance check with the roundRadius radius to see if it's inside the circle quarter or outside.
+
+            // First let remove the origin out the equation, to have the rectangle with an origin at bottom/left
+            let o = this.origin;
+            let size = this.size;
+            Rectangle2D._i0.x = intersectInfo._localPickPosition.x + (size.width * o.x);
+            Rectangle2D._i0.y = intersectInfo._localPickPosition.y + (size.height * o.y);
+
+            let rr = this.roundRadius;
+            let rrs = rr * rr;
+
+            // Check if the point is in the bottom/left quarter area
+            Rectangle2D._i1.x = rr;
+            Rectangle2D._i1.y = rr;
+            if (Rectangle2D._i0.x <= Rectangle2D._i1.x && Rectangle2D._i0.y <= Rectangle2D._i1.y) {
+                // Compute the intersection point in the quarter local space
+                Rectangle2D._i2.x = Rectangle2D._i0.x - Rectangle2D._i1.x;
+                Rectangle2D._i2.y = Rectangle2D._i0.y - Rectangle2D._i1.y;
+
+                // It's a hit if the squared distance is less/equal to the squared radius of the round circle
+                return Rectangle2D._i2.lengthSquared() <= rrs;
+            }
+
+            // Check if the point is in the top/left quarter area
+            Rectangle2D._i1.x = rr;
+            Rectangle2D._i1.y = size.height - rr;
+            if (Rectangle2D._i0.x <= Rectangle2D._i1.x && Rectangle2D._i0.y >= Rectangle2D._i1.y) {
+                // Compute the intersection point in the quarter local space
+                Rectangle2D._i2.x = Rectangle2D._i0.x - Rectangle2D._i1.x;
+                Rectangle2D._i2.y = Rectangle2D._i0.y - Rectangle2D._i1.y;
+
+                // It's a hit if the squared distance is less/equal to the squared radius of the round circle
+                return Rectangle2D._i2.lengthSquared() <= rrs;
+            }
+
+            // Check if the point is in the top/right quarter area
+            Rectangle2D._i1.x = size.width - rr;
+            Rectangle2D._i1.y = size.height - rr;
+            if (Rectangle2D._i0.x >= Rectangle2D._i1.x && Rectangle2D._i0.y >= Rectangle2D._i1.y) {
+                // Compute the intersection point in the quarter local space
+                Rectangle2D._i2.x = Rectangle2D._i0.x - Rectangle2D._i1.x;
+                Rectangle2D._i2.y = Rectangle2D._i0.y - Rectangle2D._i1.y;
+
+                // It's a hit if the squared distance is less/equal to the squared radius of the round circle
+                return Rectangle2D._i2.lengthSquared() <= rrs;
+            }
+
+
+            // Check if the point is in the bottom/right quarter area
+            Rectangle2D._i1.x = size.width - rr;
+            Rectangle2D._i1.y = rr;
+            if (Rectangle2D._i0.x >= Rectangle2D._i1.x && Rectangle2D._i0.y <= Rectangle2D._i1.y) {
+                // Compute the intersection point in the quarter local space
+                Rectangle2D._i2.x = Rectangle2D._i0.x - Rectangle2D._i1.x;
+                Rectangle2D._i2.y = Rectangle2D._i0.y - Rectangle2D._i1.y;
+
+                // It's a hit if the squared distance is less/equal to the squared radius of the round circle
+                return Rectangle2D._i2.lengthSquared() <= rrs;
+            }
+
+            // At any other locations the point is guarantied to be inside
+
             return true;
         }
 

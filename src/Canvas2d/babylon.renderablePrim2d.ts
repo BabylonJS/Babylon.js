@@ -385,7 +385,7 @@
             return true;
         }
 
-        public _prepareRenderPre(context: PreapreRender2DContext) {
+        public _prepareRenderPre(context: PrepareRender2DContext) {
             super._prepareRenderPre(context);
 
             // If the model changed and we have already an instance, we must remove this instance from the obsolete model
