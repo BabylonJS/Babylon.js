@@ -11,7 +11,7 @@
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             // Do nothing if the shader is still loading/preparing 
             if (!this.effectsReady) {
-                if ((!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady()))) {
+                if ((this.effect && (!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady())))) {
                     return false;
                 }
                 this.effectsReady = true;
@@ -239,7 +239,25 @@
                 text2d.setupText2D(parent.owner, parent, null, Vector2.Zero(), null, "12pt Arial", text, null, new Color4(1,1,1,1), 4, true, null, null, null, null, null, null);
             } else {
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                text2d.setupText2D(parent.owner, parent, options.id || null, pos, options.origin || null, options.fontName || "12pt Arial", text, options.areaSize, options.defaultFontColor || new Color4(1, 1, 1, 1), options.tabulationSize || 4, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+                text2d.setupText2D
+                (
+                    parent.owner,
+                    parent,
+                    options.id || null,
+                    pos,
+                    options.origin || null,
+                    options.fontName || "12pt Arial",
+                    text,
+                    options.areaSize,
+                    options.defaultFontColor || new Color4(1, 1, 1, 1),
+                    (options.tabulationSize==null) ? 4 : options.tabulationSize,
+                    (options.isVisible==null) ? true : options.isVisible,
+                    options.marginTop || null,
+                    options.marginLeft || null,
+                    options.marginRight || null,
+                    options.marginBottom || null,
+                    options.vAlignment || null,
+                    options.hAlignment || null);
             }
             return text2d;
         }

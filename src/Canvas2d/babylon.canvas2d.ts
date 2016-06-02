@@ -453,8 +453,6 @@
                 return;
             }
 
-            this._updateCanvasState();
-
             this.intersect(ii);
 
             this._previousIntersectionList = this._actualIntersectionList;
@@ -902,7 +900,7 @@
                 }
             }
 
-            var context = new PreapreRender2DContext();
+            var context = new PrepareRender2DContext();
 
             ++this._globalTransformProcessStep;
             this.updateGlobalTransVis(false);

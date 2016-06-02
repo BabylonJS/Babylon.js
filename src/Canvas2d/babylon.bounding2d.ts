@@ -135,6 +135,8 @@
             return r;
         }
 
+        private static _transform: Array<Vector2> = new Array<Vector2>(Vector2.Zero(), Vector2.Zero(), Vector2.Zero(), Vector2.Zero());
+
         /**
          * Transform this BoundingInfo2D with a given matrix and store the result in an existing BoundingInfo2D instance.
          * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
@@ -143,11 +145,15 @@
          */
         public transformToRef(matrix: Matrix, result: BoundingInfo2D) {
             // Construct a bounding box based on the extent values
-            let p = new Array<Vector2>(4);
-            p[0] = new Vector2(this.center.x + this.extent.x, this.center.y + this.extent.y);
-            p[1] = new Vector2(this.center.x + this.extent.x, this.center.y - this.extent.y);
-            p[2] = new Vector2(this.center.x - this.extent.x, this.center.y - this.extent.y);
-            p[3] = new Vector2(this.center.x - this.extent.x, this.center.y + this.extent.y);
+            let p = BoundingInfo2D._transform;
+            p[0].x = this.center.x + this.extent.x;
+            p[0].y = this.center.y + this.extent.y;
+            p[1].x = this.center.x + this.extent.x;
+            p[1].y = this.center.y - this.extent.y;
+            p[2].x = this.center.x - this.extent.x;
+            p[2].y = this.center.y - this.extent.y;
+            p[3].x = this.center.x - this.extent.x;
+            p[3].y = this.center.y + this.extent.y;
 
             // Transform the four points of the bounding box with the matrix
             for (let i = 0; i < 4; i++) {
