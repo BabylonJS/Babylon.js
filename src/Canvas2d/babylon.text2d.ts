@@ -11,7 +11,7 @@
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             // Do nothing if the shader is still loading/preparing 
             if (!this.effectsReady) {
-                if ((!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady()))) {
+                if ((this.effect && (!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady())))) {
                     return false;
                 }
                 this.effectsReady = true;
