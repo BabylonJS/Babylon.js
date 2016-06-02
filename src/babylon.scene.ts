@@ -1868,7 +1868,9 @@
 
         private _activeMesh(mesh: AbstractMesh): void {
             if (mesh.skeleton && this.skeletonsEnabled) {
-                this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
+                if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
+                    mesh.skeleton.prepare();
+                }
 
                 if (!mesh.computeBonesUsingShaders) {
                     this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
@@ -1936,13 +1938,6 @@
             this._evaluateActiveMeshes();
             this._evaluateActiveMeshesDuration += Tools.Now - beforeEvaluateActiveMeshesDate;
             Tools.EndPerformanceCounter("Active meshes evaluation");
-
-            // Skeletons
-            for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
-                var skeleton = this._activeSkeletons.data[skeletonIndex];
-
-                skeleton.prepare();
-            }
 
             // Software skinning
             for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
