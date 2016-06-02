@@ -26,7 +26,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    }());
+    })();
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -394,7 +394,6 @@ var BABYLON;
                 this._actualOverPrimitive = null;
                 return;
             }
-            this._updateCanvasState();
             this.intersect(ii);
             this._previousIntersectionList = this._actualIntersectionList;
             this._actualIntersectionList = ii.intersectedPrimitives;
@@ -776,7 +775,7 @@ var BABYLON;
                     this._background.size = this.size;
                 }
             }
-            var context = new BABYLON.PreapreRender2DContext();
+            var context = new BABYLON.PrepareRender2DContext();
             ++this._globalTransformProcessStep;
             this.updateGlobalTransVis(false);
             this._prepareGroupRender(context);
@@ -791,6 +790,7 @@ var BABYLON;
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
                 this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
             }
+            this.engine.setState(false);
             this._groupRender();
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
@@ -914,6 +914,6 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
 })(BABYLON || (BABYLON = {}));

@@ -11,13 +11,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var PreapreRender2DContext = (function () {
-        function PreapreRender2DContext() {
+    var PrepareRender2DContext = (function () {
+        function PrepareRender2DContext() {
             this.forceRefreshPrimitive = false;
         }
-        return PreapreRender2DContext;
-    }());
-    BABYLON.PreapreRender2DContext = PreapreRender2DContext;
+        return PrepareRender2DContext;
+    })();
+    BABYLON.PrepareRender2DContext = PrepareRender2DContext;
     var Render2DContext = (function () {
         function Render2DContext(renderMode) {
             this._renderMode = renderMode;
@@ -72,7 +72,7 @@ var BABYLON;
         Render2DContext._renderModeAlphaTest = 2;
         Render2DContext._renderModeTransparent = 3;
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -232,7 +232,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    }());
+    })();
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     /**
      * Stores information about a Primitive that was intersected
@@ -243,7 +243,7 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    }());
+    })();
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
     var PrimitiveMargin = (function () {
         function PrimitiveMargin(owner) {
@@ -310,7 +310,7 @@ var BABYLON;
             return new PrimitiveMargin(owner);
         };
         return PrimitiveMargin;
-    }());
+    })();
     BABYLON.PrimitiveMargin = PrimitiveMargin;
     /**
      * Main class used for the Primitive Intersection API
@@ -347,7 +347,7 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    }());
+    })();
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -699,7 +699,7 @@ var BABYLON;
         });
         Object.defineProperty(Prim2DBase.prototype, "boundingInfo", {
             /**
-             * Get the boundingInfo associated to the primitive.
+             * Get the boundingInfo associated to the primitive and its children.
              * The value is supposed to be always up to date
              */
             get: function () {
@@ -771,23 +771,26 @@ var BABYLON;
                 return false;
             }
             // Fast rejection test with boundingInfo
-            if (!this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
+            if (this.isPickable && !this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
                 // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
                 intersectInfo._exit(firstLevel);
                 return false;
             }
             // We hit the boundingInfo that bounds this primitive and its children, now we have to test on the primitive of this level
-            var levelIntersectRes = this.levelIntersect(intersectInfo);
-            if (levelIntersectRes) {
-                var pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
-                intersectInfo.intersectedPrimitives.push(pii);
-                if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
-                    intersectInfo.topMostIntersectedPrimitive = pii;
-                }
-                // If we must stop at the first intersection, we're done, quit!
-                if (intersectInfo.findFirstOnly) {
-                    intersectInfo._exit(firstLevel);
-                    return true;
+            var levelIntersectRes = false;
+            if (this.isPickable) {
+                levelIntersectRes = this.levelIntersect(intersectInfo);
+                if (levelIntersectRes) {
+                    var pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
+                    intersectInfo.intersectedPrimitives.push(pii);
+                    if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
+                        intersectInfo.topMostIntersectedPrimitive = pii;
+                    }
+                    // If we must stop at the first intersection, we're done, quit!
+                    if (intersectInfo.findFirstOnly) {
+                        intersectInfo._exit(firstLevel);
+                        return true;
+                    }
                 }
             }
             // Recurse to children if needed
@@ -909,8 +912,8 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype.updateGlobalTransVisOf = function (list, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
                 cur.updateGlobalTransVis(recurse);
             }
         };
@@ -1008,6 +1011,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

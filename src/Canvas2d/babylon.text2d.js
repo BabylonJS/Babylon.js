@@ -26,7 +26,7 @@ var BABYLON;
         Text2DRenderCache.prototype.render = function (instanceInfo, context) {
             // Do nothing if the shader is still loading/preparing 
             if (!this.effectsReady) {
-                if ((!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady()))) {
+                if ((this.effect && (!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady())))) {
                     return false;
                 }
                 this.effectsReady = true;
@@ -84,7 +84,7 @@ var BABYLON;
             return true;
         };
         return Text2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -132,7 +132,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
         return Text2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -256,7 +256,7 @@ var BABYLON;
             }
             else {
                 var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
-                text2d.setupText2D(parent.owner, parent, options.id || null, pos, options.origin || null, options.fontName || "12pt Arial", text, options.areaSize, options.defaultFontColor || new BABYLON.Color4(1, 1, 1, 1), options.tabulationSize || 4, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+                text2d.setupText2D(parent.owner, parent, options.id || null, pos, options.origin || null, options.fontName || "12pt Arial", text, options.areaSize, options.defaultFontColor || new BABYLON.Color4(1, 1, 1, 1), (options.tabulationSize == null) ? 4 : options.tabulationSize, (options.isVisible == null) ? true : options.isVisible, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
             }
             return text2d;
         };
@@ -385,6 +385,6 @@ var BABYLON;
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));

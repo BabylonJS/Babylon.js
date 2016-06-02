@@ -26,7 +26,7 @@ var BABYLON;
         Sprite2DRenderCache.prototype.render = function (instanceInfo, context) {
             // Do nothing if the shader is still loading/preparing 
             if (!this.effectsReady) {
-                if ((!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady()))) {
+                if ((this.effect && (!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady())))) {
                     return false;
                 }
                 this.effectsReady = true;
@@ -86,7 +86,7 @@ var BABYLON;
             return true;
         };
         return Sprite2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -114,14 +114,11 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Sprite2DInstanceData.prototype, "frame", {
-            get: function () {
-                return null;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Sprite2DInstanceData.prototype, "invertY", {
+        Object.defineProperty(Sprite2DInstanceData.prototype, "properties", {
+            // 3 floats being:
+            // - x: frame number to display
+            // - y: invertY setting
+            // - z: alignToPixel setting
             get: function () {
                 return null;
             },
@@ -139,12 +136,9 @@ var BABYLON;
         ], Sprite2DInstanceData.prototype, "textureSize", null);
         __decorate([
             BABYLON.instanceData()
-        ], Sprite2DInstanceData.prototype, "frame", null);
-        __decorate([
-            BABYLON.instanceData()
-        ], Sprite2DInstanceData.prototype, "invertY", null);
+        ], Sprite2DInstanceData.prototype, "properties", null);
         return Sprite2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -208,6 +202,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Sprite2D.prototype, "alignToPixel", {
+            get: function () {
+                return this._alignToPixel;
+            },
+            set: function (value) {
+                this._alignToPixel = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Sprite2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo, this.origin);
         };
@@ -222,7 +226,7 @@ var BABYLON;
             // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
             return true;
         };
-        Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, origin, texture, spriteSize, spriteLocation, invertY, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
+        Sprite2D.prototype.setupSprite2D = function (owner, parent, id, position, origin, texture, spriteSize, spriteLocation, invertY, alignToPixel, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
             this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.texture = texture;
             this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
@@ -231,6 +235,7 @@ var BABYLON;
             this.spriteLocation = spriteLocation || new BABYLON.Vector2(0, 0);
             this.spriteFrame = 0;
             this.invertY = invertY;
+            this.alignToPixel = alignToPixel;
             this._isTransparent = true;
             if (!this.spriteSize) {
                 var s = texture.getSize();
@@ -248,6 +253,7 @@ var BABYLON;
          *  - spriteSize: the size of the sprite, if null the size of the given texture will be used, default is null.
          *  - spriteLocation: the location in the texture of the top/left corner of the Sprite to display, default is null (0,0)
          *  - invertY: if true the texture Y will be inverted, default is false.
+         *  - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          *  - isVisible: true if the sprite must be visible, false for hidden. Default is true.
          *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
@@ -257,17 +263,17 @@ var BABYLON;
             BABYLON.Prim2DBase.CheckParent(parent);
             var sprite = new Sprite2D();
             if (!options) {
-                sprite.setupSprite2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, texture, null, null, false, true, null, null, null, null, null, null);
+                sprite.setupSprite2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, texture, null, null, false, true, true, null, null, null, null, null, null);
             }
             else {
                 var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
-                sprite.setupSprite2D(parent.owner, parent, options.id || null, pos, options.origin || null, texture, options.spriteSize || null, options.spriteLocation || null, options.invertY || false, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+                sprite.setupSprite2D(parent.owner, parent, options.id || null, pos, options.origin || null, texture, options.spriteSize || null, options.spriteLocation || null, (options.invertY == null) ? false : options.invertY, (options.alignToPixel == null) ? true : options.alignToPixel, (options.isVisible == null) ? true : options.isVisible, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
             }
             return sprite;
         };
         Sprite2D._createCachedCanvasSprite = function (owner, texture, size, pos) {
             var sprite = new Sprite2D();
-            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new BABYLON.Vector2(0, 0), null, texture, size, pos, false, true, null, null, null, null, null, null);
+            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new BABYLON.Vector2(0, 0), null, texture, size, pos, false, true, true, null, null, null, null, null, null);
             return sprite;
         };
         Sprite2D.prototype.createModelRenderCache = function (modelKey) {
@@ -315,13 +321,16 @@ var BABYLON;
                 d.topLeftUV = new BABYLON.Vector2(sl.x / ts.width, sl.y / ts.height);
                 var suv = new BABYLON.Vector2(ss.width / ts.width, ss.height / ts.height);
                 d.sizeUV = suv;
-                d.frame = this.spriteFrame;
+                Sprite2D._prop.x = this.spriteFrame;
+                Sprite2D._prop.y = this.invertY ? 1 : 0;
+                Sprite2D._prop.z = this.alignToPixel ? 1 : 0;
+                d.properties = Sprite2D._prop;
                 d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
-                d.invertY = this.invertY ? 1 : 0;
             }
             return true;
         };
         Sprite2D.SPRITE2D_MAINPARTID = 1;
+        Sprite2D._prop = BABYLON.Vector3.Zero();
         __decorate([
             BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Sprite2D.textureProperty = pi; })
         ], Sprite2D.prototype, "texture", null);
@@ -341,6 +350,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));

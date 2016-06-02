@@ -128,7 +128,7 @@ var BABYLON;
             }
         };
         return Gamepads;
-    }());
+    })();
     BABYLON.Gamepads = Gamepads;
     var StickValues = (function () {
         function StickValues(x, y) {
@@ -136,7 +136,7 @@ var BABYLON;
             this.y = y;
         }
         return StickValues;
-    }());
+    })();
     BABYLON.StickValues = StickValues;
     var Gamepad = (function () {
         function Gamepad(id, index, browserGamepad) {
@@ -191,7 +191,7 @@ var BABYLON;
             }
         };
         return Gamepad;
-    }());
+    })();
     BABYLON.Gamepad = Gamepad;
     var GenericPad = (function (_super) {
         __extends(GenericPad, _super);
@@ -226,7 +226,7 @@ var BABYLON;
             }
         };
         return GenericPad;
-    }(Gamepad));
+    })(Gamepad);
     BABYLON.GenericPad = GenericPad;
     (function (Xbox360Button) {
         Xbox360Button[Xbox360Button["A"] = 0] = "A";
@@ -495,6 +495,6 @@ var BABYLON;
             this.dPadRight = this.browserGamepad.buttons[15].value;
         };
         return Xbox360Pad;
-    }(Gamepad));
+    })(Gamepad);
     BABYLON.Xbox360Pad = Xbox360Pad;
 })(BABYLON || (BABYLON = {}));

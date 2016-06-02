@@ -101,6 +101,6 @@ var BABYLON;
             }
         };
         return AudioEngine;
-    }());
+    })();
     BABYLON.AudioEngine = AudioEngine;
 })(BABYLON || (BABYLON = {}));

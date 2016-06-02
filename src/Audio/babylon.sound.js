@@ -382,15 +382,11 @@ var BABYLON;
                     var stopTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
                     this._soundSource.stop(stopTime);
                     this._soundSource.onended = null;
-                    console.log("STOPPED OK");
                     if (!this.isPaused) {
                         this._startOffset = 0;
                     }
                 }
                 this.isPlaying = false;
-            }
-            else {
-                console.log("Already STOPPED");
             }
         };
         Sound.prototype.pause = function () {
@@ -559,7 +555,6 @@ var BABYLON;
             return newSound;
         };
         return Sound;
-    }());
+    })();
     BABYLON.Sound = Sound;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sound.js.map
