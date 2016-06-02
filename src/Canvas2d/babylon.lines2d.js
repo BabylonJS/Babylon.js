@@ -138,7 +138,7 @@ var BABYLON;
             return true;
         };
         return Lines2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Lines2DRenderCache = Lines2DRenderCache;
     var Lines2DInstanceData = (function (_super) {
         __extends(Lines2DInstanceData, _super);
@@ -166,7 +166,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Lines2DInstanceData.prototype, "boundingMax", null);
         return Lines2DInstanceData;
-    })(BABYLON.Shape2DInstanceData);
+    }(BABYLON.Shape2DInstanceData));
     BABYLON.Lines2DInstanceData = Lines2DInstanceData;
     var Lines2D = (function (_super) {
         __extends(Lines2D, _super);
@@ -358,7 +358,7 @@ var BABYLON;
                 lines.setupLines2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, points, 1, 0, 0, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, false, true, null, null, null, null, null, null);
             }
             else {
-                var fill;
+                var fill = void 0;
                 if (options.fill === undefined) {
                     fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
                 }
@@ -1033,6 +1033,6 @@ var BABYLON;
             BABYLON.className("Lines2D")
         ], Lines2D);
         return Lines2D;
-    })(BABYLON.Shape2D);
+    }(BABYLON.Shape2D));
     BABYLON.Lines2D = Lines2D;
 })(BABYLON || (BABYLON = {}));
