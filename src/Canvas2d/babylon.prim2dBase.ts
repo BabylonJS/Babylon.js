@@ -1,6 +1,6 @@
 ﻿module BABYLON {
 
-    export class PreapreRender2DContext {
+    export class PrepareRender2DContext {
         constructor() {
             this.forceRefreshPrimitive = false;
         }
@@ -799,7 +799,7 @@
         }
 
         /**
-         * Get the boundingInfo associated to the primitive.
+         * Get the boundingInfo associated to the primitive and its children.
          * The value is supposed to be always up to date
          */
         public get boundingInfo(): BoundingInfo2D {
@@ -998,15 +998,15 @@
             return this._visibilityChanged || this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         }
 
-        public _prepareRender(context: PreapreRender2DContext) {
+        public _prepareRender(context: PrepareRender2DContext) {
             this._prepareRenderPre(context);
             this._prepareRenderPost(context);
         }
 
-        public _prepareRenderPre(context: PreapreRender2DContext) {
+        public _prepareRenderPre(context: PrepareRender2DContext) {
         }
 
-        public _prepareRenderPost(context: PreapreRender2DContext) {
+        public _prepareRenderPost(context: PrepareRender2DContext) {
             // Don't recurse if it's a renderable group, the content will be processed by the group itself
             if (this instanceof Group2D) {
                 var self: any = this;
