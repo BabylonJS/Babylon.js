@@ -320,7 +320,25 @@
                 let size = options.size || (new Size(options.width || 10, options.height || 10));
                 let fill = options.fill===undefined ? Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF") : options.fill;
 
-                rect.setupRectangle2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, options.roundRadius || 0, fill, options.border || null, options.borderThickness || 1, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+                rect.setupRectangle2D
+                (
+                    parent.owner,
+                    parent,
+                    options.id || null,
+                    pos,
+                    options.origin || null,
+                    size,
+                    (options.roundRadius == null) ? 0 : options.roundRadius,
+                    fill,
+                    options.border || null,
+                    (options.borderThickness==null) ? 1 : options.borderThickness,
+                    options.isVisible || true,
+                    options.marginTop || null,
+                    options.marginLeft || null,
+                    options.marginRight || null,
+                    options.marginBottom || null,
+                    options.vAlignment || null,
+                    options.hAlignment || null);
             }
             return rect;
         }

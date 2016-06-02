@@ -343,7 +343,28 @@
                 }
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
 
-                lines.setupLines2D(parent.owner, parent, options.id || null, pos, options.origin || null, points, options.fillThickness || 1, options.startCap || 0, options.endCap || 0, fill, options.border || null, options.borderThickness || 1, options.closed || false, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);                
+                lines.setupLines2D
+                (
+                    parent.owner,
+                    parent,
+                    options.id || null,
+                    pos,
+                    options.origin || null,
+                    points,
+                    (options.fillThickness == null) ? 1 : options.fillThickness,
+                    (options.startCap == null) ? 0 : options.startCap,
+                    (options.endCap == null) ? 0 : options.endCap,
+                    fill,
+                    options.border || null,
+                    (options.borderThickness == null) ? 1 : options.borderThickness,
+                    (options.closed == null) ? false : options.closed,
+                    (options.isVisible == null) ? true : options.isVisible,
+                    options.marginTop || null,
+                    options.marginLeft || null,
+                    options.marginRight || null,
+                    options.marginBottom || null,
+                    options.vAlignment || null,
+                    options.hAlignment || null);                
             }
 
             return lines;

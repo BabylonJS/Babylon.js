@@ -55,7 +55,22 @@
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
                 let size = (!options.size && !options.width && !options.height) ? null : (options.size || (new Size(options.width || 0, options.height || 0)));
                 
-                g.setupGroup2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, options.isVisible || true, options.cacheBehavior || Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, options.marginTop, options.marginLeft, options.marginRight, options.marginBottom, options.hAlignment || Prim2DBase.HAlignLeft, options.vAlignment || Prim2DBase.VAlignTop);
+                g.setupGroup2D
+                (
+                    parent.owner,
+                    parent,
+                    options.id || null,
+                    pos,
+                    options.origin || null,
+                    size,
+                    (options.isVisible == null) ? true : options.isVisible,
+                    (options.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : options.cacheBehavior,
+                    options.marginTop,
+                    options.marginLeft,
+                    options.marginRight,
+                    options.marginBottom,
+                    options.hAlignment || Prim2DBase.HAlignLeft,
+                    options.vAlignment || Prim2DBase.VAlignTop);
             }
        
             return g;
