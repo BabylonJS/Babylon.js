@@ -60,7 +60,7 @@ void main(void) {
 #endif
 
 	vec4 pos;
-	pos.xy = position.xy - ((origin.xy-vec2(0.5,0.5)) * (boundingMax - boundingMin));
+	pos.xy = position.xy - (origin.xy * (boundingMax - boundingMin));
 	pos.z = 1.0;
 	pos.w = 1.0;
 	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);

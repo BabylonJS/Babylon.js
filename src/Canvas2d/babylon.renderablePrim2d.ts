@@ -674,8 +674,7 @@
             res.y = p.y - ((this.origin.y + (originOffset ? originOffset.y : 0)) * actualSize.height);
         }
 
-        protected transformPointWithOrigin(p: Vector2, originOffset: Vector2): Vector2 {
-            let res = new Vector2(0, 0);
+        protected transformPointWithOriginToRef(p: Vector2, originOffset: Vector2, res: Vector2) {
             this.transformPointWithOriginByRef(p, originOffset, res);
             return res;
         }

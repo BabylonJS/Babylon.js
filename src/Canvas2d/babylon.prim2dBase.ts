@@ -876,28 +876,30 @@
             }
 
             // Fast rejection test with boundingInfo
-            if (!this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
+            if (this.isPickable && !this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
                 // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
                 intersectInfo._exit(firstLevel);
                 return false;
             }
 
             // We hit the boundingInfo that bounds this primitive and its children, now we have to test on the primitive of this level
-            let levelIntersectRes = this.levelIntersect(intersectInfo);
-            if (levelIntersectRes) {
-                let pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
-                intersectInfo.intersectedPrimitives.push(pii);
-                if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
-                    intersectInfo.topMostIntersectedPrimitive = pii;
-                }
+            let levelIntersectRes = false;
+            if (this.isPickable) {
+                levelIntersectRes = this.levelIntersect(intersectInfo);
+                if (levelIntersectRes) {
+                    let pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
+                    intersectInfo.intersectedPrimitives.push(pii);
+                    if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
+                        intersectInfo.topMostIntersectedPrimitive = pii;
+                    }
 
-                // If we must stop at the first intersection, we're done, quit!
-                if (intersectInfo.findFirstOnly) {
-                    intersectInfo._exit(firstLevel);
-                    return true;
+                    // If we must stop at the first intersection, we're done, quit!
+                    if (intersectInfo.findFirstOnly) {
+                        intersectInfo._exit(firstLevel);
+                        return true;
+                    }
                 }
             }
-
             // Recurse to children if needed
             if (!levelIntersectRes || !intersectInfo.findFirstOnly) {
                 for (let curChild of this._children) {
