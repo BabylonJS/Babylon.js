@@ -416,6 +416,7 @@
                 else {
                     var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     this._soundSource.stop(stopTime);
+                    this._soundSource.onended = null;
                     if (!this.isPaused) {
                         this._startOffset = 0;
                     }
@@ -484,6 +485,14 @@
             this._onRegisterAfterWorldMatrixUpdate(this._connectedMesh);
             this._registerFunc = (connectedMesh: AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
+        }
+
+        public detachFromMesh() {
+            if (this._connectedMesh) {
+                this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+                this._registerFunc = null;
+                this._connectedMesh = null;
+            }
         }
 
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {

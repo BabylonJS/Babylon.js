@@ -1,3 +1,8 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var BABYLON;
 (function (BABYLON) {
     var PointerEventTypes = (function () {
@@ -44,34 +49,42 @@ var BABYLON;
         PointerEventTypes._POINTERWHEEL = 0x08;
         PointerEventTypes._POINTERPICK = 0x10;
         return PointerEventTypes;
-    }());
+    })();
     BABYLON.PointerEventTypes = PointerEventTypes;
+    var PointerInfoBase = (function () {
+        function PointerInfoBase(type, event) {
+            this.type = type;
+            this.event = event;
+        }
+        return PointerInfoBase;
+    })();
+    BABYLON.PointerInfoBase = PointerInfoBase;
     /**
      * This class is used to store pointer related info for the onPrePointerObservable event.
      * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
      */
-    var PointerInfoPre = (function () {
+    var PointerInfoPre = (function (_super) {
+        __extends(PointerInfoPre, _super);
         function PointerInfoPre(type, event, localX, localY) {
-            this.type = type;
-            this.event = event;
+            _super.call(this, type, event);
             this.skipOnPointerObservable = false;
             this.localPosition = new BABYLON.Vector2(localX, localY);
         }
         return PointerInfoPre;
-    }());
+    })(PointerInfoBase);
     BABYLON.PointerInfoPre = PointerInfoPre;
     /**
      * This type contains all the data related to a pointer event in Babylon.js.
      * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
      */
-    var PointerInfo = (function () {
+    var PointerInfo = (function (_super) {
+        __extends(PointerInfo, _super);
         function PointerInfo(type, event, pickInfo) {
-            this.type = type;
-            this.event = event;
+            _super.call(this, type, event);
             this.pickInfo = pickInfo;
         }
         return PointerInfo;
-    }());
+    })(PointerInfoBase);
     BABYLON.PointerInfo = PointerInfo;
     /**
      * Represents a scene to be rendered by the engine.
@@ -1537,7 +1550,9 @@ var BABYLON;
         };
         Scene.prototype._activeMesh = function (mesh) {
             if (mesh.skeleton && this.skeletonsEnabled) {
-                this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
+                if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
+                    mesh.skeleton.prepare();
+                }
                 if (!mesh.computeBonesUsingShaders) {
                     this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
                 }
@@ -1589,11 +1604,6 @@ var BABYLON;
             this._evaluateActiveMeshes();
             this._evaluateActiveMeshesDuration += BABYLON.Tools.Now - beforeEvaluateActiveMeshesDate;
             BABYLON.Tools.EndPerformanceCounter("Active meshes evaluation");
-            // Skeletons
-            for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
-                var skeleton = this._activeSkeletons.data[skeletonIndex];
-                skeleton.prepare();
-            }
             // Software skinning
             for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
                 var mesh = this._softwareSkinnedMeshes.data[softwareSkinnedMeshIndex];
@@ -2363,6 +2373,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    }());
+    })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));

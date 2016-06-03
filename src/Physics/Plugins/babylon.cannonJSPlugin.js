@@ -175,6 +175,9 @@ var BABYLON;
                         localAnchorB: constraintData.pivotB
                     });
                     break;
+                case BABYLON.PhysicsJoint.LockJoint:
+                    constraint = new CANNON.LockConstraint(mainBody, connectedBody, constraintData);
+                    break;
                 case BABYLON.PhysicsJoint.PointToPointJoint:
                 case BABYLON.PhysicsJoint.BallAndSocketJoint:
                 default:
@@ -421,6 +424,6 @@ var BABYLON;
             //nothing to do, actually.
         };
         return CannonJSPlugin;
-    }());
+    })();
     BABYLON.CannonJSPlugin = CannonJSPlugin;
 })(BABYLON || (BABYLON = {}));

@@ -11,11 +11,68 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var Render2DContext = (function () {
-        function Render2DContext() {
+    var PrepareRender2DContext = (function () {
+        function PrepareRender2DContext() {
+            this.forceRefreshPrimitive = false;
         }
+        return PrepareRender2DContext;
+    })();
+    BABYLON.PrepareRender2DContext = PrepareRender2DContext;
+    var Render2DContext = (function () {
+        function Render2DContext(renderMode) {
+            this._renderMode = renderMode;
+            this.useInstancing = false;
+            this.groupInfoPartData = null;
+            this.partDataStartIndex = this.partDataEndIndex = null;
+        }
+        Object.defineProperty(Render2DContext.prototype, "renderMode", {
+            /**
+             * Define which render Mode should be used to render the primitive: one of Render2DContext.RenderModeXxxx property
+             */
+            get: function () {
+                return this._renderMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Render2DContext, "RenderModeOpaque", {
+            /**
+             * The set of primitives to render is opaque.
+             * This is the first rendering pass. All Opaque primitives are rendered. Depth Compare and Write are both enabled.
+             */
+            get: function () {
+                return Render2DContext._renderModeOpaque;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Render2DContext, "RenderModeAlphaTest", {
+            /**
+             * The set of primitives to render is using Alpha Test (aka masking).
+             * Alpha Blend is enabled, the AlphaMode must be manually set, the render occurs after the RenderModeOpaque and is depth independent (i.e. primitives are not sorted by depth). Depth Compare and Write are both enabled.
+             */
+            get: function () {
+                return Render2DContext._renderModeAlphaTest;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Render2DContext, "RenderModeTransparent", {
+            /**
+             * The set of primitives to render is transparent.
+             * Alpha Blend is enabled, the AlphaMode must be manually set, the render occurs after the RenderModeAlphaTest and is depth dependent (i.e. primitives are stored by depth and rendered back to front). Depth Compare is on, but Depth write is Off.
+             */
+            get: function () {
+                return Render2DContext._renderModeTransparent;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Render2DContext._renderModeOpaque = 1;
+        Render2DContext._renderModeAlphaTest = 2;
+        Render2DContext._renderModeTransparent = 3;
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -175,7 +232,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    }());
+    })();
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     /**
      * Stores information about a Primitive that was intersected
@@ -186,8 +243,75 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    }());
+    })();
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
+    var PrimitiveMargin = (function () {
+        function PrimitiveMargin(owner) {
+            this._owner = owner;
+            this._left = this._top = this._bottom = this.right = 0;
+        }
+        Object.defineProperty(PrimitiveMargin.prototype, "top", {
+            get: function () {
+                return this._top;
+            },
+            set: function (value) {
+                if (value === this._top) {
+                    return;
+                }
+                this._top = value;
+                this._owner._marginChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PrimitiveMargin.prototype, "left", {
+            get: function () {
+                return this._left;
+            },
+            set: function (value) {
+                if (value === this._left) {
+                    return;
+                }
+                this._left = value;
+                this._owner._marginChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PrimitiveMargin.prototype, "right", {
+            get: function () {
+                return this._right;
+            },
+            set: function (value) {
+                if (value === this._right) {
+                    return;
+                }
+                this._right = value;
+                this._owner._marginChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PrimitiveMargin.prototype, "bottom", {
+            get: function () {
+                return this._bottom;
+            },
+            set: function (value) {
+                if (value === this._bottom) {
+                    return;
+                }
+                this._bottom = value;
+                this._owner._marginChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        PrimitiveMargin.Zero = function (owner) {
+            return new PrimitiveMargin(owner);
+        };
+        return PrimitiveMargin;
+    })();
+    BABYLON.PrimitiveMargin = PrimitiveMargin;
     /**
      * Main class used for the Primitive Intersection API
      */
@@ -223,17 +347,64 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    }());
+    })();
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
         function Prim2DBase() {
             _super.apply(this, arguments);
         }
-        Prim2DBase.prototype.setupPrim2DBase = function (owner, parent, id, position, origin, isVisible) {
-            if (isVisible === void 0) { isVisible = true; }
+        Object.defineProperty(Prim2DBase, "HAlignLeft", {
+            get: function () { return Prim2DBase._hAlignLeft; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase, "HAlignCenter", {
+            get: function () { return Prim2DBase._hAlignCenter; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase, "HAlignRight", {
+            get: function () { return Prim2DBase._hAlignRight; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase, "HAlignStretch", {
+            get: function () { return Prim2DBase._hAlignStretch; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase, "VAlignTop", {
+            get: function () { return Prim2DBase._vAlignTop; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase, "VAlignCenter", {
+            get: function () { return Prim2DBase._vAlignCenter; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase, "VAlignBottom", {
+            get: function () { return Prim2DBase._vAlignBottom; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase, "VAlignStretch", {
+            get: function () { return Prim2DBase._vAlignStretch; },
+            enumerable: true,
+            configurable: true
+        });
+        Prim2DBase.prototype.setupPrim2DBase = function (owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
             if (!(this instanceof BABYLON.Group2D) && !(this instanceof BABYLON.Sprite2D && id !== null && id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
                 throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
+            }
+            var m = null;
+            if (marginTop || marginLeft || marginRight || marginBottom) {
+                m = new PrimitiveMargin(this);
+                m.top = marginTop || 0;
+                m.left = marginLeft || 0;
+                m.right = marginRight || 0;
+                m.bottom = marginBottom || 0;
             }
             this.setupSmartPropertyPrim();
             this._pointerEventObservable = new BABYLON.Observable();
@@ -243,6 +414,7 @@ var BABYLON;
             this._boundingInfo = new BABYLON.BoundingInfo2D();
             this._owner = owner;
             this._parent = parent;
+            this._id = id;
             if (parent != null) {
                 this._hierarchyDepth = parent._hierarchyDepth + 1;
                 this._renderGroup = this.parent.traverseUp(function (p) { return p instanceof BABYLON.Group2D && p.isRenderableGroup; });
@@ -252,7 +424,6 @@ var BABYLON;
                 this._hierarchyDepth = 0;
                 this._renderGroup = null;
             }
-            this._id = id;
             this.propertyChanged = new BABYLON.Observable();
             this._children = new Array();
             this._globalTransformProcessStep = 0;
@@ -266,6 +437,9 @@ var BABYLON;
             this.scale = 1;
             this.levelVisible = isVisible;
             this.origin = origin || new BABYLON.Vector2(0.5, 0.5);
+            this.margin = m;
+            this.hAlignment = hAlignment;
+            this.vAlignment = vAlignment;
         };
         Object.defineProperty(Prim2DBase.prototype, "actionManager", {
             get: function () {
@@ -418,6 +592,40 @@ var BABYLON;
             },
             set: function (value) {
                 this._zOrder = value;
+                this.onZOrderChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "margin", {
+            get: function () {
+                if (!this._margin) {
+                    this._margin = new PrimitiveMargin(this);
+                }
+                return this._margin;
+            },
+            set: function (value) {
+                this._margin = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "hAlignment", {
+            get: function () {
+                return this._hAlignment;
+            },
+            set: function (value) {
+                this._hAlignment = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "vAlignment", {
+            get: function () {
+                return this._vAlignment;
+            },
+            set: function (value) {
+                this._vAlignment = value;
             },
             enumerable: true,
             configurable: true
@@ -491,7 +699,7 @@ var BABYLON;
         });
         Object.defineProperty(Prim2DBase.prototype, "boundingInfo", {
             /**
-             * Get the boundingInfo associated to the primitive.
+             * Get the boundingInfo associated to the primitive and its children.
              * The value is supposed to be always up to date
              */
             get: function () {
@@ -521,6 +729,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Prim2DBase.prototype.onZOrderChanged = function () {
+        };
         Prim2DBase.prototype.levelIntersect = function (intersectInfo) {
             return false;
         };
@@ -561,23 +771,26 @@ var BABYLON;
                 return false;
             }
             // Fast rejection test with boundingInfo
-            if (!this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
+            if (this.isPickable && !this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
                 // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
                 intersectInfo._exit(firstLevel);
                 return false;
             }
             // We hit the boundingInfo that bounds this primitive and its children, now we have to test on the primitive of this level
-            var levelIntersectRes = this.levelIntersect(intersectInfo);
-            if (levelIntersectRes) {
-                var pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
-                intersectInfo.intersectedPrimitives.push(pii);
-                if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
-                    intersectInfo.topMostIntersectedPrimitive = pii;
-                }
-                // If we must stop at the first intersection, we're done, quit!
-                if (intersectInfo.findFirstOnly) {
-                    intersectInfo._exit(firstLevel);
-                    return true;
+            var levelIntersectRes = false;
+            if (this.isPickable) {
+                levelIntersectRes = this.levelIntersect(intersectInfo);
+                if (levelIntersectRes) {
+                    var pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
+                    intersectInfo.intersectedPrimitives.push(pii);
+                    if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
+                        intersectInfo.topMostIntersectedPrimitive = pii;
+                    }
+                    // If we must stop at the first intersection, we're done, quit!
+                    if (intersectInfo.findFirstOnly) {
+                        intersectInfo._exit(firstLevel);
+                        return true;
+                    }
                 }
             }
             // Recurse to children if needed
@@ -621,6 +834,7 @@ var BABYLON;
         };
         Prim2DBase.prototype.addChild = function (child) {
             child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
+            //            console.log(`Node: ${child.id} has depth: ${child._hierarchyDepthOffset}`);
             child._siblingDepthOffset = this._siblingDepthOffset / this.owner.hierarchyLevelMaxSiblingCount;
             this._children.push(child);
         };
@@ -655,6 +869,8 @@ var BABYLON;
             if (this._renderGroup) {
                 this._renderGroup._addPrimToDirtyList(this);
             }
+        };
+        Prim2DBase.prototype._marginChanged = function () {
         };
         Prim2DBase.prototype._needPrepare = function () {
             return this._visibilityChanged || this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
@@ -696,8 +912,8 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype.updateGlobalTransVisOf = function (list, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
                 cur.updateGlobalTransVis(recurse);
             }
         };
@@ -752,7 +968,15 @@ var BABYLON;
                 }
             }
         };
-        Prim2DBase.PRIM2DBASE_PROPCOUNT = 10;
+        Prim2DBase.PRIM2DBASE_PROPCOUNT = 12;
+        Prim2DBase._hAlignLeft = 1;
+        Prim2DBase._hAlignCenter = 2;
+        Prim2DBase._hAlignRight = 3;
+        Prim2DBase._hAlignStretch = 4;
+        Prim2DBase._vAlignTop = 1;
+        Prim2DBase._vAlignCenter = 2;
+        Prim2DBase._vAlignBottom = 3;
+        Prim2DBase._vAlignStretch = 4;
         __decorate([
             BABYLON.instanceLevelProperty(1, function (pi) { return Prim2DBase.positionProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "position", null);
@@ -774,10 +998,19 @@ var BABYLON;
         __decorate([
             BABYLON.instanceLevelProperty(7, function (pi) { return Prim2DBase.zOrderProperty = pi; })
         ], Prim2DBase.prototype, "zOrder", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(8, function (pi) { return Prim2DBase.marginProperty = pi; })
+        ], Prim2DBase.prototype, "margin", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(9, function (pi) { return Prim2DBase.hAlignmentProperty = pi; })
+        ], Prim2DBase.prototype, "hAlignment", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(10, function (pi) { return Prim2DBase.vAlignmentProperty = pi; })
+        ], Prim2DBase.prototype, "vAlignment", null);
         Prim2DBase = __decorate([
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

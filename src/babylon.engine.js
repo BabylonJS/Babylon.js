@@ -103,13 +103,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    }());
+    })();
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    }());
+    })();
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -1177,45 +1177,42 @@ var BABYLON;
         Engine.prototype.setColorWrite = function (enable) {
             this._gl.colorMask(enable, enable, enable, enable);
         };
-        Engine.prototype.setAlphaMode = function (mode) {
+        Engine.prototype.setAlphaMode = function (mode, noDepthWriteChange) {
+            if (noDepthWriteChange === void 0) { noDepthWriteChange = false; }
             if (this._alphaMode === mode) {
                 return;
             }
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
-                    this.setDepthWrite(true);
                     this._alphaState.alphaBlend = false;
                     break;
                 case Engine.ALPHA_COMBINE:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_ONEONE:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_ADD:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_SUBTRACT:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_MULTIPLY:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_MAXIMIZED:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
+            }
+            if (!noDepthWriteChange) {
+                this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
             }
             this._alphaMode = mode;
         };
@@ -2109,6 +2106,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    }());
+    })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));

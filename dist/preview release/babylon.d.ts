@@ -284,7 +284,7 @@ declare module BABYLON {
         getDepthWrite(): boolean;
         setDepthWrite(enable: boolean): void;
         setColorWrite(enable: boolean): void;
-        setAlphaMode(mode: number): void;
+        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
         getAlphaMode(): number;
         setAlphaTesting(enable: boolean): void;
         getAlphaTesting(): boolean;
@@ -570,13 +570,16 @@ declare module BABYLON {
         static POINTERWHEEL: number;
         static POINTERPICK: number;
     }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
     /**
      * This class is used to store pointer related info for the onPrePointerObservable event.
      * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
      */
-    class PointerInfoPre {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
+    class PointerInfoPre extends PointerInfoBase {
         constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: any, localY: any);
         localPosition: Vector2;
         skipOnPointerObservable: boolean;
@@ -585,9 +588,7 @@ declare module BABYLON {
      * This type contains all the data related to a pointer event in Babylon.js.
      * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
      */
-    class PointerInfo {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
+    class PointerInfo extends PointerInfoBase {
         pickInfo: PickingInfo;
         constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: PickingInfo);
     }
@@ -1487,181 +1488,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Analyser {
-        SMOOTHING: number;
-        FFT_SIZE: number;
-        BARGRAPHAMPLITUDE: number;
-        DEBUGCANVASPOS: {
-            x: number;
-            y: number;
-        };
-        DEBUGCANVASSIZE: {
-            width: number;
-            height: number;
-        };
-        private _byteFreqs;
-        private _byteTime;
-        private _floatFreqs;
-        private _webAudioAnalyser;
-        private _debugCanvas;
-        private _debugCanvasContext;
-        private _scene;
-        private _registerFunc;
-        private _audioEngine;
-        constructor(scene: Scene);
-        getFrequencyBinCount(): number;
-        getByteFrequencyData(): Uint8Array;
-        getByteTimeDomainData(): Uint8Array;
-        getFloatFrequencyData(): Uint8Array;
-        drawDebugCanvas(): void;
-        stopDebugCanvas(): void;
-        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AudioEngine {
-        private _audioContext;
-        private _audioContextInitialized;
-        canUseWebAudio: boolean;
-        masterGain: GainNode;
-        private _connectedAnalyser;
-        WarnedWebAudioUnsupported: boolean;
-        unlocked: boolean;
-        onAudioUnlocked: () => any;
-        audioContext: AudioContext;
-        constructor();
-        private _unlockiOSaudio();
-        private _initializeAudioContext();
-        dispose(): void;
-        getGlobalVolume(): number;
-        setGlobalVolume(newVolume: number): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Sound {
-        name: string;
-        autoplay: boolean;
-        loop: boolean;
-        useCustomAttenuation: boolean;
-        soundTrackId: number;
-        spatialSound: boolean;
-        refDistance: number;
-        rolloffFactor: number;
-        maxDistance: number;
-        distanceModel: string;
-        private _panningModel;
-        onended: () => any;
-        private _playbackRate;
-        private _streaming;
-        private _startTime;
-        private _startOffset;
-        private _position;
-        private _localDirection;
-        private _volume;
-        private _isLoaded;
-        private _isReadyToPlay;
-        isPlaying: boolean;
-        isPaused: boolean;
-        private _isDirectional;
-        private _readyToPlayCallback;
-        private _audioBuffer;
-        private _soundSource;
-        private _streamingSource;
-        private _soundPanner;
-        private _soundGain;
-        private _inputAudioNode;
-        private _ouputAudioNode;
-        private _coneInnerAngle;
-        private _coneOuterAngle;
-        private _coneOuterGain;
-        private _scene;
-        private _connectedMesh;
-        private _customAttenuationFunction;
-        private _registerFunc;
-        private _isOutputConnected;
-        private _htmlAudioElement;
-        /**
-        * Create a sound and attach it to a scene
-        * @param name Name of your sound
-        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
-        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-        */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
-        dispose(): void;
-        private _soundLoaded(audioData);
-        setAudioBuffer(audioBuffer: AudioBuffer): void;
-        updateOptions(options: any): void;
-        private _createSpatialParameters();
-        private _updateSpatialParameters();
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        private _switchPanningModel();
-        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
-        /**
-        * Transform this sound into a directional source
-        * @param coneInnerAngle Size of the inner cone in degree
-        * @param coneOuterAngle Size of the outer cone in degree
-        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-        */
-        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
-        setPosition(newPosition: Vector3): void;
-        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
-        private _updateDirection();
-        updateDistanceFromListener(): void;
-        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
-        /**
-        * Play the sound
-        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        */
-        play(time?: number): void;
-        private _onended();
-        /**
-        * Stop the sound
-        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-        */
-        stop(time?: number): void;
-        pause(): void;
-        setVolume(newVolume: number, time?: number): void;
-        setPlaybackRate(newPlaybackRate: number): void;
-        getVolume(): number;
-        attachToMesh(meshToConnectTo: AbstractMesh): void;
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
-        clone(): Sound;
-        getAudioBuffer(): AudioBuffer;
-        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
-    }
-}
-
-declare module BABYLON {
-    class SoundTrack {
-        private _outputAudioNode;
-        private _inputAudioNode;
-        private _trackConvolver;
-        private _scene;
-        id: number;
-        soundCollection: Array<Sound>;
-        private _isMainTrack;
-        private _connectedAnalyser;
-        private _options;
-        private _isInitialized;
-        constructor(scene: Scene, options?: any);
-        private _initializeSoundTrackAudioGraph();
-        dispose(): void;
-        AddSound(sound: Sound): void;
-        RemoveSound(sound: Sound): void;
-        setVolume(newVolume: number): void;
-        switchPanningModelToHRTF(): void;
-        switchPanningModelToEqualPower(): void;
-        connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
     class Animatable {
         target: any;
         fromFrame: number;
@@ -1883,6 +1709,182 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Analyser {
+        SMOOTHING: number;
+        FFT_SIZE: number;
+        BARGRAPHAMPLITUDE: number;
+        DEBUGCANVASPOS: {
+            x: number;
+            y: number;
+        };
+        DEBUGCANVASSIZE: {
+            width: number;
+            height: number;
+        };
+        private _byteFreqs;
+        private _byteTime;
+        private _floatFreqs;
+        private _webAudioAnalyser;
+        private _debugCanvas;
+        private _debugCanvasContext;
+        private _scene;
+        private _registerFunc;
+        private _audioEngine;
+        constructor(scene: Scene);
+        getFrequencyBinCount(): number;
+        getByteFrequencyData(): Uint8Array;
+        getByteTimeDomainData(): Uint8Array;
+        getFloatFrequencyData(): Uint8Array;
+        drawDebugCanvas(): void;
+        stopDebugCanvas(): void;
+        connectAudioNodes(inputAudioNode: AudioNode, outputAudioNode: AudioNode): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AudioEngine {
+        private _audioContext;
+        private _audioContextInitialized;
+        canUseWebAudio: boolean;
+        masterGain: GainNode;
+        private _connectedAnalyser;
+        WarnedWebAudioUnsupported: boolean;
+        unlocked: boolean;
+        onAudioUnlocked: () => any;
+        audioContext: AudioContext;
+        constructor();
+        private _unlockiOSaudio();
+        private _initializeAudioContext();
+        dispose(): void;
+        getGlobalVolume(): number;
+        setGlobalVolume(newVolume: number): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
+    class Sound {
+        name: string;
+        autoplay: boolean;
+        loop: boolean;
+        useCustomAttenuation: boolean;
+        soundTrackId: number;
+        spatialSound: boolean;
+        refDistance: number;
+        rolloffFactor: number;
+        maxDistance: number;
+        distanceModel: string;
+        private _panningModel;
+        onended: () => any;
+        private _playbackRate;
+        private _streaming;
+        private _startTime;
+        private _startOffset;
+        private _position;
+        private _localDirection;
+        private _volume;
+        private _isLoaded;
+        private _isReadyToPlay;
+        isPlaying: boolean;
+        isPaused: boolean;
+        private _isDirectional;
+        private _readyToPlayCallback;
+        private _audioBuffer;
+        private _soundSource;
+        private _streamingSource;
+        private _soundPanner;
+        private _soundGain;
+        private _inputAudioNode;
+        private _ouputAudioNode;
+        private _coneInnerAngle;
+        private _coneOuterAngle;
+        private _coneOuterGain;
+        private _scene;
+        private _connectedMesh;
+        private _customAttenuationFunction;
+        private _registerFunc;
+        private _isOutputConnected;
+        private _htmlAudioElement;
+        /**
+        * Create a sound and attach it to a scene
+        * @param name Name of your sound
+        * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
+        * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+        */
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?: any);
+        dispose(): void;
+        private _soundLoaded(audioData);
+        setAudioBuffer(audioBuffer: AudioBuffer): void;
+        updateOptions(options: any): void;
+        private _createSpatialParameters();
+        private _updateSpatialParameters();
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        private _switchPanningModel();
+        connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void;
+        /**
+        * Transform this sound into a directional source
+        * @param coneInnerAngle Size of the inner cone in degree
+        * @param coneOuterAngle Size of the outer cone in degree
+        * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+        */
+        setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void;
+        setPosition(newPosition: Vector3): void;
+        setLocalDirectionToMesh(newLocalDirection: Vector3): void;
+        private _updateDirection();
+        updateDistanceFromListener(): void;
+        setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void;
+        /**
+        * Play the sound
+        * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        */
+        play(time?: number): void;
+        private _onended();
+        /**
+        * Stop the sound
+        * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+        */
+        stop(time?: number): void;
+        pause(): void;
+        setVolume(newVolume: number, time?: number): void;
+        setPlaybackRate(newPlaybackRate: number): void;
+        getVolume(): number;
+        attachToMesh(meshToConnectTo: AbstractMesh): void;
+        detachFromMesh(): void;
+        private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
+        clone(): Sound;
+        getAudioBuffer(): AudioBuffer;
+        static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound;
+    }
+}
+
+declare module BABYLON {
+    class SoundTrack {
+        private _outputAudioNode;
+        private _inputAudioNode;
+        private _trackConvolver;
+        private _scene;
+        id: number;
+        soundCollection: Array<Sound>;
+        private _isMainTrack;
+        private _connectedAnalyser;
+        private _options;
+        private _isInitialized;
+        constructor(scene: Scene, options?: any);
+        private _initializeSoundTrackAudioGraph();
+        dispose(): void;
+        AddSound(sound: Sound): void;
+        RemoveSound(sound: Sound): void;
+        setVolume(newVolume: number): void;
+        switchPanningModelToHRTF(): void;
+        switchPanningModelToEqualPower(): void;
+        connectToAnalyser(analyser: Analyser): void;
+    }
+}
+
+declare module BABYLON {
     class Bone extends Node {
         name: string;
         children: Bone[];
@@ -1908,7 +1910,7 @@ declare module BABYLON {
         updateMatrix(matrix: Matrix): void;
         _updateDifferenceMatrix(rootMatrix?: Matrix): void;
         markAsDirty(): void;
-        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean): boolean;
+        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Vector3): boolean;
     }
 }
 
@@ -1964,1972 +1966,6 @@ declare module BABYLON {
         dispose(): void;
         serialize(): any;
         static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Stores 2D Bounding Information.
-     * This class handles a circle area and a bounding rectangle one.
-     */
-    class BoundingInfo2D {
-        /**
-         * The coordinate of the center of the bounding info
-         */
-        center: Vector2;
-        /**
-         * The radius of the bounding circle, from the center of the bounded object
-         */
-        radius: number;
-        /**
-         * The extent of the bounding rectangle, from the center of the bounded object.
-         * This is an absolute value in both X and Y of the vector which describe the right/top corner of the rectangle, you can easily reconstruct the whole rectangle by negating X &| Y.
-         */
-        extent: Vector2;
-        constructor();
-        static CreateFromSize(size: Size, origin?: Vector2): BoundingInfo2D;
-        static CreateFromRadius(radius: number, origin?: Vector2): BoundingInfo2D;
-        static CreateFromPoints(points: Vector2[], origin?: Vector2): BoundingInfo2D;
-        static CreateFromSizeToRef(size: Size, b: BoundingInfo2D, origin?: Vector2): void;
-        static CreateFromRadiusToRef(radius: number, b: BoundingInfo2D, origin?: Vector2): void;
-        static CreateFromPointsToRef(points: Vector2[], b: BoundingInfo2D, origin?: Vector2): void;
-        static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D, origin?: Vector2): void;
-        /**
-         * Duplicate this instance and return a new one
-         * @return the duplicated instance
-         */
-        clone(): BoundingInfo2D;
-        max(): Vector2;
-        maxToRef(result: Vector2): void;
-        /**
-         * Apply a transformation matrix to this BoundingInfo2D and return a new instance containing the result
-         * @param matrix the transformation matrix to apply
-         * @return the new instance containing the result of the transformation applied on this BoundingInfo2D
-         */
-        transform(matrix: Matrix): BoundingInfo2D;
-        /**
-         * Compute the union of this BoundingInfo2D with a given one, return a new BoundingInfo2D as a result
-         * @param other the second BoundingInfo2D to compute the union with this one
-         * @return a new instance containing the result of the union
-         */
-        union(other: BoundingInfo2D): BoundingInfo2D;
-        /**
-         * Transform this BoundingInfo2D with a given matrix and store the result in an existing BoundingInfo2D instance.
-         * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
-         * @param matrix The matrix to use to compute the transformation
-         * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
-         */
-        transformToRef(matrix: Matrix, result: BoundingInfo2D): void;
-        /**
-         * Compute the union of this BoundingInfo2D with another one and store the result in a third valid BoundingInfo2D object
-         * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
-         * @param other the second object used to compute the union
-         * @param result a VALID BoundingInfo2D instance (i.e. allocated) where the result will be stored
-         */
-        unionToRef(other: BoundingInfo2D, result: BoundingInfo2D): void;
-        doesIntersect(pickPosition: Vector2): boolean;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This interface is used to implement a lockable instance pattern.
-     * Classes that implements it may be locked at any time, making their content immutable from now on.
-     * You also can query if a given instance is locked or not.
-     * This allow instances to be shared among several 'consumers'.
-     */
-    interface ILockable {
-        /**
-         * Query the lock state
-         * @returns returns true if the object is locked and immutable, false if it's not
-         */
-        isLocked(): boolean;
-        /**
-         * A call to this method will definitely lock the instance, making its content immutable
-         * @returns the previous lock state of the object. so if true is returned the object  were already locked and this method does nothing, if false is returned it means the object wasn't locked and this call locked it for good.
-         */
-        lock(): boolean;
-    }
-    /**
-     * This interface defines the IBrush2D contract.
-     * Classes implementing a new type of Brush2D must implement this interface
-     */
-    interface IBrush2D extends ILockable {
-        /**
-         * Define if the brush will use transparency / alpha blending
-         * @returns true if the brush use transparency
-         */
-        isTransparent(): boolean;
-        /**
-         * It is critical for each instance of a given Brush2D type to return a unique string that identifies it because the Border instance will certainly be part of the computed ModelKey for a given Primitive
-         * @returns A string identifier that uniquely identify the instance
-         */
-        toString(): string;
-    }
-    /**
-     * Base class implementing the ILocable interface.
-     * The particularity of this class is to call the protected onLock() method when the instance is about to be locked for good.
-     */
-    class LockableBase implements ILockable {
-        isLocked(): boolean;
-        private _isLocked;
-        lock(): boolean;
-        /**
-         * Protected handler that will be called when the instance is about to be locked.
-         */
-        protected onLock(): void;
-    }
-    /**
-     * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
-     */
-    class SolidColorBrush2D extends LockableBase implements IBrush2D {
-        constructor(color: Color4, lock?: boolean);
-        isTransparent(): boolean;
-        /**
-         * The color used by this instance to render
-         * @returns the color object. Note that it's not a clone of the actual object stored in the instance so you MUST NOT modify it, otherwise unexpected behavior might occurs.
-         */
-        color: Color4;
-        /**
-         * Return a unique identifier of the instance, which is simply the hexadecimal representation (CSS Style) of the solid color.
-         */
-        toString(): string;
-        private _color;
-    }
-    class GradientColorBrush2D extends LockableBase implements IBrush2D {
-        constructor(color1: Color4, color2: Color4, translation?: Vector2, rotation?: number, scale?: number, lock?: boolean);
-        isTransparent(): boolean;
-        color1: Color4;
-        color2: Color4;
-        translation: Vector2;
-        rotation: number;
-        scale: number;
-        toString(): string;
-        static BuildKey(color1: Color4, color2: Color4, translation: Vector2, rotation: number, scale: number): string;
-        private _color1;
-        private _color2;
-        private _translation;
-        private _rotation;
-        private _scale;
-    }
-}
-
-declare module BABYLON {
-    class Canvas2DEngineBoundData {
-        GetOrAddModelCache<TInstData>(key: string, factory: (key: string) => ModelRenderCache): ModelRenderCache;
-        private _modelCache;
-        DisposeModelRenderCache(modelRenderCache: ModelRenderCache): boolean;
-    }
-    class Canvas2D extends Group2D {
-        /**
-         * In this strategy only the direct children groups of the Canvas will be cached, their whole content (whatever the sub groups they have) into a single bitmap.
-         * This strategy doesn't allow primitives added directly as children of the Canvas.
-         * You typically want to use this strategy of a screenSpace fullscreen canvas: you don't want a bitmap cache taking the whole screen resolution but still want the main contents (say UI in the topLeft and rightBottom for instance) to be efficiently cached.
-         */
-        static CACHESTRATEGY_TOPLEVELGROUPS: number;
-        /**
-         * In this strategy each group will have its own cache bitmap (except if a given group explicitly defines the DONTCACHEOVERRIDE or CACHEINPARENTGROUP behaviors).
-         * This strategy is typically used if the canvas has some groups that are frequently animated. Unchanged ones will have a steady cache and the others will be refreshed when they change, reducing the redraw operation count to their content only.
-         * When using this strategy, group instances can rely on the DONTCACHEOVERRIDE or CACHEINPARENTGROUP behaviors to minimize the amount of cached bitmaps.
-         * Note that in this mode the Canvas itself is not cached, it only contains the sprites of its direct children group to render, there's no point to cache the whole canvas, sprites will be rendered pretty efficiently, the memory cost would be too great for the value of it.
-         */
-        static CACHESTRATEGY_ALLGROUPS: number;
-        /**
-         * In this strategy the whole canvas is cached into a single bitmap containing every primitives it owns, at the exception of the ones that are owned by a group having the DONTCACHEOVERRIDE behavior (these primitives will be directly drawn to the viewport at each render for screenSpace Canvas or be part of the Canvas cache bitmap for worldSpace Canvas).
-         */
-        static CACHESTRATEGY_CANVAS: number;
-        /**
-         * This strategy is used to recompose/redraw the canvas entirely at each viewport render.
-         * Use this strategy if memory is a concern above rendering performances and/or if the canvas is frequently animated (hence reducing the benefits of caching).
-         * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
-         */
-        static CACHESTRATEGY_DONTCACHE: number;
-        /**
-         * Create a new 2D ScreenSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a position relative to the bottom/left corner of the screen.
-         * ScreenSpace Canvas will be drawn in the Viewport as a 2D Layer lying to the top of the 3D Scene. Typically used for traditional UI.
-         * All caching strategies will be available.
-         * PLEASE NOTE: the origin of a Screen Space Canvas is set to [0;0] (bottom/left) which is different than the default origin of a Primitive which is centered [0.5;0.5]
-         * @param scene the Scene that owns the Canvas
-         * Options:
-         *  - id: a text identifier, for information purpose only
-         *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport
-         *  - size: the Size of the canvas. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
-         *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS
-         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property.
-         */
-        static CreateScreenSpace(scene: Scene, options: {
-            id?: string;
-            pos?: Vector2;
-            origin?: Vector2;
-            size?: Size;
-            cachingStrategy?: number;
-            enableInteraction?: boolean;
-        }): Canvas2D;
-        /**
-         * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation information to place it in the world space.
-         * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. For now only CACHESTRATEGY_CANVAS is supported, but the remaining strategies will be soon.
-         * @param scene the Scene that owns the Canvas
-         * @param size the dimension of the Canvas in World Space
-         * Options:
-         *  - id: a text identifier, for information purpose only, default is null.
-         *  - position the position of the Canvas in World Space, default is [0,0,0]
-         *  - rotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
-         *  - renderScaleFactor A scale factor applied to create the rendering texture that will be mapped in the Scene Rectangle. If you set 2 for instance the texture will be twice large in width and height. A greater value will allow to achieve a better rendering quality. Default value is 1.
-         * BE AWARE that the Canvas true dimension will be size*renderScaleFactor, then all coordinates and size will have to be express regarding this size.
-         * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
-         * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
-         * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
-         */
-        static CreateWorldSpace(scene: Scene, size: Size, options: {
-            id?: string;
-            position?: Vector3;
-            rotation?: Quaternion;
-            renderScaleFactor?: number;
-            sideOrientation?: number;
-            cachingStrategy?: number;
-            enableInteraction?: boolean;
-        }): Canvas2D;
-        protected setupCanvas(scene: Scene, name: string, size: Size, isScreenSpace: boolean, cachingstrategy: number, enableInteraction: boolean): void;
-        hierarchyLevelMaxSiblingCount: number;
-        private _setupInteraction(enable);
-        /**
-         * Internal method, you should use the Prim2DBase version instead
-         */
-        _setPointerCapture(pointerId: number, primitive: Prim2DBase): boolean;
-        /**
-         * Internal method, you should use the Prim2DBase version instead
-         */
-        _releasePointerCapture(pointerId: number, primitive: Prim2DBase): boolean;
-        /**
-         * Determine if the given pointer is captured or not
-         * @param pointerId the Id of the pointer
-         * @return true if it's captured, false otherwise
-         */
-        isPointerCaptured(pointerId: number): boolean;
-        private getCapturedPrimitive(pointerId);
-        private static _interInfo;
-        private _handlePointerEventForInteraction(eventData, eventState);
-        private _updatePointerInfo(eventData);
-        private _updateIntersectionList(mouseLocalPos, isCapture);
-        private _updateOverStatus();
-        private _updatePrimPointerPos(prim);
-        private _notifDebugMode;
-        private _debugExecObserver(prim, mask);
-        private _bubbleNotifyPrimPointerObserver(prim, mask, eventData);
-        private _triggerActionManager(prim, ppi, mask, eventData);
-        _notifChildren(prim: Prim2DBase, mask: number): void;
-        /**
-         * Don't forget to call the dispose method when you're done with the Canvas instance.
-         * But don't worry, if you dispose its scene, the canvas will be automatically disposed too.
-         */
-        dispose(): boolean;
-        /**
-         * Accessor to the Scene that owns the Canvas
-         * @returns The instance of the Scene object
-         */
-        scene: Scene;
-        /**
-         * Accessor to the Engine that drives the Scene used by this Canvas
-         * @returns The instance of the Engine object
-         */
-        engine: Engine;
-        /**
-         * Accessor of the Caching Strategy used by this Canvas.
-         * See Canvas2D.CACHESTRATEGY_xxxx static members for more information
-         * @returns the value corresponding to the used strategy.
-         */
-        cachingStrategy: number;
-        /**
-         * Only valid for World Space Canvas, returns the scene node that display the canvas
-         */
-        worldSpaceCanvasNode: WorldSpaceCanvas2D;
-        /**
-         * Check if the WebGL Instanced Array extension is supported or not
-         * @returns {}
-         */
-        supportInstancedArray: boolean;
-        /**
-         * Property that defines the fill object used to draw the background of the Canvas.
-         * Note that Canvas with a Caching Strategy of
-         * @returns If the background is not set, null will be returned, otherwise a valid fill object is returned.
-         */
-        backgroundFill: IBrush2D;
-        /**
-         * Property that defines the border object used to draw the background of the Canvas.
-         * @returns If the background is not set, null will be returned, otherwise a valid border object is returned.
-         */
-        backgroundBorder: IBrush2D;
-        /**
-         * You can set the roundRadius of the background
-         * @returns The current roundRadius
-         */
-        backgroundRoundRadius: number;
-        /**
-         * Enable/Disable interaction for this Canvas
-         * When enabled the Prim2DBase.pointerEventObservable property will notified when appropriate events occur
-         */
-        interactionEnabled: boolean;
-        _engineData: Canvas2DEngineBoundData;
-        private checkBackgroundAvailability();
-        private __engineData;
-        private _interactionEnabled;
-        private _primPointerInfo;
-        private _updateRenderId;
-        private _intersectionRenderId;
-        private _hoverStatusRenderId;
-        private _pickStartingPosition;
-        private _pickedDownPrim;
-        private _pickStartingTime;
-        private _previousIntersectionList;
-        private _actualIntersectionList;
-        private _previousOverPrimitive;
-        private _actualOverPrimitive;
-        private _capturedPointers;
-        private _scenePrePointerObserver;
-        private _worldSpaceNode;
-        private _mapCounter;
-        private _background;
-        private _scene;
-        private _engine;
-        private _fitRenderingDevice;
-        private _isScreeSpace;
-        private _cachedCanvasGroup;
-        private _cachingStrategy;
-        private _hierarchyLevelMaxSiblingCount;
-        private _groupCacheMaps;
-        private _beforeRenderObserver;
-        private _afterRenderObserver;
-        private _supprtInstancedArray;
-        _renderingSize: Size;
-        protected onPrimBecomesDirty(): void;
-        private _updateCanvasState();
-        /**
-         * Method that renders the Canvas, you should not invoke
-         */
-        private _render();
-        /**
-         * Internal method that allocate a cache for the given group.
-         * Caching is made using a collection of MapTexture where many groups have their bitmap cache stored inside.
-         * @param group The group to allocate the cache of.
-         * @return custom type with the PackedRect instance giving information about the cache location into the texture and also the MapTexture instance that stores the cache.
-         */
-        _allocateGroupCache(group: Group2D, parent: Group2D, minSize?: Size): {
-            node: PackedRect;
-            texture: MapTexture;
-            sprite: Sprite2D;
-        };
-        /**
-         * Define the default size used for both the width and height of a MapTexture to allocate.
-         * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
-         */
-        private static _groupTextureCacheSize;
-        /**
-         * Get a Solid Color Brush instance matching the given color.
-         * @param color The color to retrieve
-         * @return A shared instance of the SolidColorBrush2D class that use the given color
-         */
-        static GetSolidColorBrush(color: Color4): IBrush2D;
-        /**
-         * Get a Solid Color Brush instance matching the given color expressed as a CSS formatted hexadecimal value.
-         * @param color The color to retrieve
-         * @return A shared instance of the SolidColorBrush2D class that uses the given color
-         */
-        static GetSolidColorBrushFromHex(hexValue: string): IBrush2D;
-        static GetGradientColorBrush(color1: Color4, color2: Color4, translation?: Vector2, rotation?: number, scale?: number): IBrush2D;
-        private static _solidColorBrushes;
-        private static _gradientColorBrushes;
-    }
-}
-
-declare module BABYLON {
-    class Ellipse2DRenderCache extends ModelRenderCache {
-        fillVB: WebGLBuffer;
-        fillIB: WebGLBuffer;
-        fillIndicesCount: number;
-        instancingFillAttributes: InstancingAttributeInfo[];
-        effectFill: Effect;
-        borderVB: WebGLBuffer;
-        borderIB: WebGLBuffer;
-        borderIndicesCount: number;
-        instancingBorderAttributes: InstancingAttributeInfo[];
-        effectBorder: Effect;
-        constructor(engine: Engine, modelKey: string, isTransparent: boolean);
-        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
-        dispose(): boolean;
-    }
-    class Ellipse2DInstanceData extends Shape2DInstanceData {
-        constructor(partId: number);
-        properties: Vector3;
-    }
-    class Ellipse2D extends Shape2D {
-        static sizeProperty: Prim2DPropInfo;
-        static subdivisionsProperty: Prim2DPropInfo;
-        actualSize: Size;
-        size: Size;
-        subdivisions: number;
-        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
-        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number): void;
-        /**
-         * Create an Ellipse 2D Shape primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * options:
-         *  - id: a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - width: the width of the ellipse, default is 10
-         *  - height: the height of the ellipse, default is 10
-         *  - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
-         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
-         *  - borderThickness: the thickness of the drawn border, default is 1.
-         */
-        static Create(parent: Prim2DBase, options: {
-            id?: string;
-            x?: number;
-            y?: number;
-            origin?: Vector2;
-            width?: number;
-            height?: number;
-            subdivisions?: number;
-            fill?: IBrush2D;
-            border?: IBrush2D;
-            borderThickness?: number;
-        }): Ellipse2D;
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache;
-        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Ellipse2DRenderCache;
-        protected createInstanceDataParts(): InstanceDataBase[];
-        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
-        private _size;
-        private _subdivisions;
-    }
-}
-
-declare module BABYLON {
-    class Group2D extends Prim2DBase {
-        static GROUP2D_PROPCOUNT: number;
-        static sizeProperty: Prim2DPropInfo;
-        static actualSizeProperty: Prim2DPropInfo;
-        /**
-         * Default behavior, the group will use the caching strategy defined at the Canvas Level
-         */
-        static GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY: number;
-        /**
-         * When used, this group's content won't be cached, no matter which strategy used.
-         * If the group is part of a WorldSpace Canvas, its content will be drawn in the Canvas cache bitmap.
-         */
-        static GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE: number;
-        /**
-         * When used, the group's content will be cached in the nearest cached parent group/canvas
-         */
-        static GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP: number;
-        /**
-         * Don't invoke directly, rely on Group2D.CreateXXX methods
-         */
-        constructor();
-        /**
-         * Create an Logical or Renderable Group.
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * options:
-         *  - id a text identifier, for information purpose
-         *  - position: the X & Y positions relative to its parent, default is [0;0]
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - size: the size of the group, if null the size will be computed from its content, default is null.
-         *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
-         */
-        static CreateGroup2D(parent: Prim2DBase, options: {
-            id?: string;
-            position?: Vector2;
-            origin?: Vector2;
-            size?: Size;
-            cacheBehavior?: number;
-        }): Group2D;
-        static _createCachedCanvasGroup(owner: Canvas2D): Group2D;
-        protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial): void;
-        /**
-         * Call this method to remove this Group and its children from the Canvas
-         */
-        dispose(): boolean;
-        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size?: Size, cacheBehavior?: number): void;
-        /**
-         * @returns Returns true if the Group render content, false if it's a logical group only
-         */
-        isRenderableGroup: boolean;
-        /**
-         * @returns only meaningful for isRenderableGroup, will be true if the content of the Group is cached into a texture, false if it's rendered every time
-         */
-        isCachedGroup: boolean;
-        /**
-         * Get/Set the size of the group. If null the size of the group will be determine from its content.
-         * BEWARE: if the Group is a RenderableGroup and its content is cache the texture will be resized each time the group is getting bigger. For performance reason the opposite won't be true: the texture won't shrink if the group does.
-         */
-        size: Size;
-        viewportSize: ISize;
-        actualSize: Size;
-        /**
-         * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.
-         * It is critical to understand than you HAVE TO play with this behavior in order to achieve a good performance/memory ratio. Caching all groups would certainly be the worst strategy of all.
-         */
-        cacheBehavior: number;
-        _addPrimToDirtyList(prim: Prim2DBase): void;
-        _renderCachedCanvas(context: Render2DContext): void;
-        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
-        protected _prepareGroupRender(context: Render2DContext): void;
-        protected _groupRender(context: Render2DContext): void;
-        private _bindCacheTarget();
-        private _unbindCacheTarget();
-        protected handleGroupChanged(prop: Prim2DPropInfo): void;
-        private detectGroupStates();
-        protected _isRenderableGroup: boolean;
-        protected _isCachedGroup: boolean;
-        private _cacheGroupDirty;
-        protected _childrenRenderableGroups: Array<Group2D>;
-        private _size;
-        private _actualSize;
-        private _cacheBehavior;
-        private _primDirtyList;
-        private _cacheNode;
-        private _cacheTexture;
-        private _cacheRenderSprite;
-        private _viewportPosition;
-        private _viewportSize;
-        _renderGroupInstancesInfo: StringDictionary<GroupInstanceInfo>;
-    }
-}
-
-declare module BABYLON {
-    class Lines2DRenderCache extends ModelRenderCache {
-        fillVB: WebGLBuffer;
-        fillIB: WebGLBuffer;
-        fillIndicesCount: number;
-        instancingFillAttributes: InstancingAttributeInfo[];
-        effectFill: Effect;
-        borderVB: WebGLBuffer;
-        borderIB: WebGLBuffer;
-        borderIndicesCount: number;
-        instancingBorderAttributes: InstancingAttributeInfo[];
-        effectBorder: Effect;
-        constructor(engine: Engine, modelKey: string, isTransparent: boolean);
-        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
-        dispose(): boolean;
-    }
-    class Lines2DInstanceData extends Shape2DInstanceData {
-        constructor(partId: number);
-        boundingMin: Vector2;
-        boundingMax: Vector2;
-    }
-    class Lines2D extends Shape2D {
-        static NoCap: number;
-        static RoundCap: number;
-        static TriangleCap: number;
-        static SquareAnchorCap: number;
-        static RoundAnchorCap: number;
-        static DiamondAnchorCap: number;
-        static ArrowCap: number;
-        static pointsProperty: Prim2DPropInfo;
-        static fillThicknessProperty: Prim2DPropInfo;
-        static closedProperty: Prim2DPropInfo;
-        static startCapProperty: Prim2DPropInfo;
-        static endCapProperty: Prim2DPropInfo;
-        actualSize: Size;
-        points: Vector2[];
-        fillThickness: number;
-        closed: boolean;
-        startCap: number;
-        endCap: number;
-        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected size: Size;
-        protected boundingMin: Vector2;
-        protected boundingMax: Vector2;
-        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
-        protected updateLevelBoundingInfo(): void;
-        protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean): void;
-        /**
-         * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * @param points an array that describe the points to use to draw the line, must contain at least two entries.
-         * options:
-         *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
-         *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
-         *  - Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
-         *  - Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
-         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
-         *  - borderThickness: the thickness of the drawn border, default is 1.
-         */
-        static Create(parent: Prim2DBase, points: Vector2[], options: {
-            id?: string;
-            x?: number;
-            y?: number;
-            origin?: Vector2;
-            fillThickness?: number;
-            closed?: boolean;
-            startCap?: number;
-            endCap?: number;
-            fill?: IBrush2D;
-            border?: IBrush2D;
-            borderThickness?: number;
-        }): Lines2D;
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache;
-        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Lines2DRenderCache;
-        protected createInstanceDataParts(): InstanceDataBase[];
-        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
-        private static _noCap;
-        private static _roundCap;
-        private static _triangleCap;
-        private static _squareAnchorCap;
-        private static _roundAnchorCap;
-        private static _diamondAnchorCap;
-        private static _arrowCap;
-        private static _roundCapSubDiv;
-        private _boundingMin;
-        private _boundingMax;
-        private _size;
-        private _contour;
-        private _closed;
-        private _startCap;
-        private _endCap;
-        private _fillThickness;
-        private _points;
-    }
-}
-
-declare module BABYLON {
-    const enum ShaderDataType {
-        Vector2 = 0,
-        Vector3 = 1,
-        Vector4 = 2,
-        Matrix = 3,
-        float = 4,
-        Color3 = 5,
-        Color4 = 6,
-        Size = 7,
-    }
-    class GroupInstanceInfo {
-        constructor(owner: Group2D, cache: ModelRenderCache);
-        dispose(): boolean;
-        _isDisposed: boolean;
-        _owner: Group2D;
-        _modelCache: ModelRenderCache;
-        _partIndexFromId: StringDictionary<number>;
-        _instancesPartsData: DynamicFloatArray[];
-        _dirtyInstancesData: boolean;
-        _instancesPartsBuffer: WebGLBuffer[];
-        _instancesPartsBufferSize: number[];
-        _instancesPartsUsedShaderCategories: string[];
-    }
-    class ModelRenderCache {
-        constructor(engine: Engine, modelKey: string, isTransparent: boolean);
-        dispose(): boolean;
-        isDisposed: boolean;
-        addRef(): number;
-        modelKey: string;
-        /**
-         * Render the model instances
-         * @param instanceInfo
-         * @param context
-         * @return must return true is the rendering succeed, false if the rendering couldn't be done (asset's not yet ready, like Effect)
-         */
-        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
-        addInstanceDataParts(data: InstanceDataBase[]): string;
-        removeInstanceData(key: string): void;
-        protected getPartIndexFromId(partId: number): number;
-        protected loadInstancingAttributes(partId: number, effect: Effect): InstancingAttributeInfo[];
-        private static v2;
-        private static v3;
-        private static v4;
-        protected setupUniforms(effect: Effect, partIndex: number, data: DynamicFloatArray, elementCount: number): void;
-        protected _engine: Engine;
-        private _modelKey;
-        private _isTransparent;
-        isTransparent: boolean;
-        _instancesData: StringDictionary<InstanceDataBase[]>;
-        private _nextKey;
-        private _refCounter;
-        _partIdList: number[];
-        _partsDataStride: number[];
-        _partsUsedCategories: Array<string[]>;
-        _partsJoinedUsedCategories: string[];
-        _partsClassInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>[];
-    }
-}
-
-declare module BABYLON {
-    class Render2DContext {
-        forceRefreshPrimitive: boolean;
-    }
-    /**
-     * This class store information for the pointerEventObservable Observable.
-     * The Observable is divided into many sub events (using the Mask feature of the Observable pattern): PointerOver, PointerEnter, PointerDown, PointerMouseWheel, PointerMove, PointerUp, PointerDown, PointerLeave, PointerGotCapture and PointerLostCapture.
-     */
-    class PrimitivePointerInfo {
-        private static _pointerOver;
-        private static _pointerEnter;
-        private static _pointerDown;
-        private static _pointerMouseWheel;
-        private static _pointerMove;
-        private static _pointerUp;
-        private static _pointerOut;
-        private static _pointerLeave;
-        private static _pointerGotCapture;
-        private static _pointerLostCapture;
-        private static _mouseWheelPrecision;
-        /**
-         * This event type is raised when a pointing device is moved into the hit test boundaries of a primitive.
-         * Bubbles: yes
-         */
-        static PointerOver: number;
-        /**
-         * This event type is raised when a pointing device is moved into the hit test boundaries of a primitive or one of its descendants.
-         * Bubbles: no
-         */
-        static PointerEnter: number;
-        /**
-         * This event type is raised when a pointer enters the active button state (non-zero value in the buttons property). For mouse it's when the device transitions from no buttons depressed to at least one button depressed. For touch/pen this is when a physical contact is made.
-         * Bubbles: yes
-         */
-        static PointerDown: number;
-        /**
-         * This event type is raised when the pointer is a mouse and it's wheel is rolling
-         * Bubbles: yes
-         */
-        static PointerMouseWheel: number;
-        /**
-         * This event type is raised when a pointer change coordinates or when a pointer changes button state, pressure, tilt, or contact geometry and the circumstances produce no other pointers events.
-         * Bubbles: yes
-         */
-        static PointerMove: number;
-        /**
-         * This event type is raised when the pointer leaves the active buttons states (zero value in the buttons property). For mouse, this is when the device transitions from at least one button depressed to no buttons depressed. For touch/pen, this is when physical contact is removed.
-         * Bubbles: yes
-         */
-        static PointerUp: number;
-        /**
-         * This event type is raised when a pointing device is moved out of the hit test the boundaries of a primitive.
-         * Bubbles: yes
-         */
-        static PointerOut: number;
-        /**
-         * This event type is raised when a pointing device is moved out of the hit test boundaries of a primitive and all its descendants.
-         * Bubbles: no
-         */
-        static PointerLeave: number;
-        /**
-         * This event type is raised when a primitive receives the pointer capture. This event is fired at the element that is receiving pointer capture. Subsequent events for that pointer will be fired at this element.
-         * Bubbles: yes
-         */
-        static PointerGotCapture: number;
-        /**
-         * This event type is raised after pointer capture is released for a pointer.
-         * Bubbles: yes
-         */
-        static PointerLostCapture: number;
-        static MouseWheelPrecision: number;
-        /**
-         * Event Type, one of the static PointerXXXX property defined above (PrimitivePointerInfo.PointerOver to PrimitivePointerInfo.PointerLostCapture)
-         */
-        eventType: number;
-        /**
-         * Position of the pointer relative to the bottom/left of the Canvas
-         */
-        canvasPointerPos: Vector2;
-        /**
-         * Position of the pointer relative to the bottom/left of the primitive that registered the Observer
-         */
-        primitivePointerPos: Vector2;
-        /**
-         * The primitive where the event was initiated first (in case of bubbling)
-         */
-        relatedTarget: Prim2DBase;
-        /**
-         * Position of the pointer relative to the bottom/left of the relatedTarget
-         */
-        relatedTargetPointerPos: Vector2;
-        /**
-         * An observable can set this property to true to stop bubbling on the upper levels
-         */
-        cancelBubble: boolean;
-        /**
-         * True if the Control keyboard key is down
-         */
-        ctrlKey: boolean;
-        /**
-         * true if the Shift keyboard key is down
-         */
-        shiftKey: boolean;
-        /**
-         * true if the Alt keyboard key is down
-         */
-        altKey: boolean;
-        /**
-         * true if the Meta keyboard key is down
-         */
-        metaKey: boolean;
-        /**
-         * For button, buttons, refer to https://www.w3.org/TR/pointerevents/#button-states
-         */
-        button: number;
-        /**
-         * For button, buttons, refer to https://www.w3.org/TR/pointerevents/#button-states
-         */
-        buttons: number;
-        /**
-         * The amount of mouse wheel rolled
-         */
-        mouseWheelDelta: number;
-        /**
-         * Id of the Pointer involved in the event
-         */
-        pointerId: number;
-        width: number;
-        height: number;
-        presssure: number;
-        tilt: Vector2;
-        /**
-         * true if the involved pointer is captured for a particular primitive, false otherwise.
-         */
-        isCaptured: boolean;
-        constructor();
-        updateRelatedTarget(prim: Prim2DBase, primPointerPos: Vector2): void;
-        static getEventTypeName(mask: number): string;
-    }
-    /**
-     * Stores information about a Primitive that was intersected
-     */
-    class PrimitiveIntersectedInfo {
-        prim: Prim2DBase;
-        intersectionLocation: Vector2;
-        constructor(prim: Prim2DBase, intersectionLocation: Vector2);
-    }
-    /**
-     * Main class used for the Primitive Intersection API
-     */
-    class IntersectInfo2D {
-        constructor();
-        /**
-         * Set the pick position, relative to the primitive where the intersection test is made
-         */
-        pickPosition: Vector2;
-        /**
-         * If true the intersection will stop at the first hit, if false all primitives will be tested and the intersectedPrimitives array will be filled accordingly (false default)
-         */
-        findFirstOnly: boolean;
-        /**
-         * If true the intersection test will also be made on hidden primitive (false default)
-         */
-        intersectHidden: boolean;
-        _globalPickPosition: Vector2;
-        _localPickPosition: Vector2;
-        /**
-         * The topmost intersected primitive
-         */
-        topMostIntersectedPrimitive: PrimitiveIntersectedInfo;
-        /**
-         * The array containing all intersected primitive, in no particular order.
-         */
-        intersectedPrimitives: Array<PrimitiveIntersectedInfo>;
-        /**
-         * true if at least one primitive intersected during the test
-         */
-        isIntersected: boolean;
-        isPrimIntersected(prim: Prim2DBase): Vector2;
-        _exit(firstLevel: boolean): void;
-    }
-    class Prim2DBase extends SmartPropertyPrim {
-        static PRIM2DBASE_PROPCOUNT: number;
-        protected setupPrim2DBase(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible?: boolean): void;
-        actionManager: ActionManager;
-        /**
-         * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
-         * @param predicate the predicate to test on each parent
-         * @return the first primitive where the predicate was successful
-         */
-        traverseUp(predicate: (p: Prim2DBase) => boolean): Prim2DBase;
-        /**
-         * Retrieve the owner Canvas2D
-         */
-        owner: Canvas2D;
-        /**
-         * Get the parent primitive (can be the Canvas, only the Canvas has no parent)
-         */
-        parent: Prim2DBase;
-        /**
-         * The array of direct children primitives
-         */
-        children: Prim2DBase[];
-        /**
-         * The identifier of this primitive, may not be unique, it's for information purpose only
-         */
-        id: string;
-        /**
-         * Metadata of the position property
-         */
-        static positionProperty: Prim2DPropInfo;
-        /**
-         * Metadata of the rotation property
-         */
-        static rotationProperty: Prim2DPropInfo;
-        /**
-         * Metadata of the scale property
-         */
-        static scaleProperty: Prim2DPropInfo;
-        /**
-         * Metadata of the origin property
-         */
-        static originProperty: Prim2DPropInfo;
-        /**
-         * Metadata of the levelVisible property
-         */
-        static levelVisibleProperty: Prim2DPropInfo;
-        /**
-         * Metadata of the isVisible property
-         */
-        static isVisibleProperty: Prim2DPropInfo;
-        /**
-         * Metadata of the zOrder property
-         */
-        static zOrderProperty: Prim2DPropInfo;
-        position: Vector2;
-        rotation: number;
-        scale: number;
-        /**
-         * this method must be implemented by the primitive type to return its size
-         * @returns The size of the primitive
-         */
-        actualSize: Size;
-        /**
-         * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
-         * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
-         * For instance:
-         * 0,0 means the center is bottom/left. Which is the default for Canvas2D instances
-         * 0.5,0.5 means the center is at the center of the primitive, which is default of all types of Primitives
-         * 0,1 means the center is top/left
-         * @returns The normalized center.
-         */
-        origin: Vector2;
-        levelVisible: boolean;
-        isVisible: boolean;
-        zOrder: number;
-        /**
-         * Define if the Primitive can be subject to intersection test or not (default is true)
-         */
-        isPickable: boolean;
-        /**
-         * Return the depth level of the Primitive into the Canvas' Graph. A Canvas will be 0, its direct children 1, and so on.
-         * @returns {}
-         */
-        hierarchyDepth: number;
-        /**
-         * Retrieve the Group that is responsible to render this primitive
-         * @returns {}
-         */
-        renderGroup: Group2D;
-        /**
-         * Get the global transformation matrix of the primitive
-         */
-        globalTransform: Matrix;
-        /**
-         * Get invert of the global transformation matrix of the primitive
-         * @returns {}
-         */
-        invGlobalTransform: Matrix;
-        /**
-         * Get the local transformation of the primitive
-         */
-        localTransform: Matrix;
-        /**
-         * Get the boundingInfo associated to the primitive.
-         * The value is supposed to be always up to date
-         */
-        boundingInfo: BoundingInfo2D;
-        /**
-         * Interaction with the primitive can be create using this Observable. See the PrimitivePointerInfo class for more information
-         */
-        pointerEventObservable: Observable<PrimitivePointerInfo>;
-        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        /**
-         * Capture all the Events of the given PointerId for this primitive.
-         * Don't forget to call releasePointerEventsCapture when done.
-         * @param pointerId the Id of the pointer to capture the events from.
-         */
-        setPointerEventCapture(pointerId: number): boolean;
-        /**
-         * Release a captured pointer made with setPointerEventCapture.
-         * @param pointerId the Id of the pointer to release the capture from.
-         */
-        releasePointerEventsCapture(pointerId: number): boolean;
-        /**
-         * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
-         * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
-         */
-        intersect(intersectInfo: IntersectInfo2D): boolean;
-        moveChild(child: Prim2DBase, previous: Prim2DBase): boolean;
-        private addChild(child);
-        dispose(): boolean;
-        getActualZOffset(): number;
-        protected onPrimBecomesDirty(): void;
-        _needPrepare(): boolean;
-        _prepareRender(context: Render2DContext): void;
-        _prepareRenderPre(context: Render2DContext): void;
-        _prepareRenderPost(context: Render2DContext): void;
-        protected static CheckParent(parent: Prim2DBase): void;
-        protected updateGlobalTransVisOf(list: Prim2DBase[], recurse: boolean): void;
-        private _updateLocalTransform();
-        protected updateGlobalTransVis(recurse: boolean): void;
-        private _owner;
-        private _parent;
-        private _actionManager;
-        protected _children: Array<Prim2DBase>;
-        private _renderGroup;
-        private _hierarchyDepth;
-        protected _hierarchyDepthOffset: number;
-        protected _siblingDepthOffset: number;
-        private _zOrder;
-        private _levelVisible;
-        _pointerEventObservable: Observable<PrimitivePointerInfo>;
-        _boundingInfoDirty: boolean;
-        protected _visibilityChanged: any;
-        private _isPickable;
-        private _isVisible;
-        private _id;
-        private _position;
-        private _rotation;
-        private _scale;
-        private _origin;
-        protected _parentTransformStep: number;
-        protected _globalTransformStep: number;
-        protected _globalTransformProcessStep: number;
-        protected _localTransform: Matrix;
-        protected _globalTransform: Matrix;
-        protected _invGlobalTransform: Matrix;
-    }
-}
-
-declare module BABYLON {
-    class Rectangle2DRenderCache extends ModelRenderCache {
-        fillVB: WebGLBuffer;
-        fillIB: WebGLBuffer;
-        fillIndicesCount: number;
-        instancingFillAttributes: InstancingAttributeInfo[];
-        effectFill: Effect;
-        borderVB: WebGLBuffer;
-        borderIB: WebGLBuffer;
-        borderIndicesCount: number;
-        instancingBorderAttributes: InstancingAttributeInfo[];
-        effectBorder: Effect;
-        constructor(engine: Engine, modelKey: string, isTransparent: boolean);
-        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
-        dispose(): boolean;
-    }
-    class Rectangle2DInstanceData extends Shape2DInstanceData {
-        constructor(partId: number);
-        properties: Vector3;
-    }
-    class Rectangle2D extends Shape2D {
-        static sizeProperty: Prim2DPropInfo;
-        static notRoundedProperty: Prim2DPropInfo;
-        static roundRadiusProperty: Prim2DPropInfo;
-        actualSize: Size;
-        size: Size;
-        notRounded: boolean;
-        roundRadius: number;
-        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
-        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number): void;
-        /**
-         * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * options:
-         *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - width: the width of the rectangle, default is 10
-         *  - height: the height of the rectangle, default is 10
-         *  - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp rectangle).
-         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
-         *  - borderThickness: the thickness of the drawn border, default is 1.
-         */
-        static Create(parent: Prim2DBase, options: {
-            id?: string;
-            x?: number;
-            y?: number;
-            origin?: Vector2;
-            width?: number;
-            height?: number;
-            roundRadius?: number;
-            fill?: IBrush2D;
-            border?: IBrush2D;
-            borderThickness?: number;
-        }): Rectangle2D;
-        static roundSubdivisions: number;
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache;
-        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Rectangle2DRenderCache;
-        protected createInstanceDataParts(): InstanceDataBase[];
-        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
-        private _size;
-        private _notRounded;
-        private _roundRadius;
-    }
-}
-
-declare module BABYLON {
-    class InstanceClassInfo {
-        constructor(base: InstanceClassInfo);
-        mapProperty(propInfo: InstancePropInfo, push: boolean): void;
-        getInstancingAttributeInfos(effect: Effect, categories: string[]): InstancingAttributeInfo[];
-        getShaderAttributes(categories: string[]): string[];
-        private _getBaseOffset(categories);
-        static _CurCategories: string;
-        private _baseInfo;
-        private _nextOffset;
-        private _attributes;
-    }
-    class InstancePropInfo {
-        attributeName: string;
-        category: string;
-        size: number;
-        shaderOffset: number;
-        instanceOffset: StringDictionary<number>;
-        dataType: ShaderDataType;
-        delimitedCategory: string;
-        constructor();
-        setSize(val: any): void;
-        writeData(array: Float32Array, offset: number, val: any): void;
-    }
-    function instanceData<T>(category?: string, shaderAttributeName?: string): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
-    class InstanceDataBase {
-        constructor(partId: number, dataElementCount: number);
-        id: number;
-        isVisible: boolean;
-        zBias: Vector2;
-        transformX: Vector4;
-        transformY: Vector4;
-        origin: Vector2;
-        getClassTreeInfo(): ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
-        allocElements(): void;
-        freeElements(): void;
-        dataElementCount: number;
-        curElement: number;
-        dataElements: DynamicFloatArrayElementInfo[];
-        dataBuffer: DynamicFloatArray;
-        typeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
-        private _dataElementCount;
-    }
-    class RenderablePrim2D extends Prim2DBase {
-        static RENDERABLEPRIM2D_PROPCOUNT: number;
-        static isTransparentProperty: Prim2DPropInfo;
-        isTransparent: boolean;
-        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean): void;
-        dispose(): boolean;
-        _prepareRenderPre(context: Render2DContext): void;
-        /**
-         * Transform a given point using the Primitive's origin setting.
-         * This method requires the Primitive's actualSize to be accurate
-         * @param p the point to transform
-         * @param originOffset an offset applied on the current origin before performing the transformation. Depending on which frame of reference your data is expressed you may have to apply a offset. (if you data is expressed from the bottom/left, no offset is required. If it's expressed from the center the a [-0.5;-0.5] offset has to be applied.
-         * @param res an allocated Vector2 that will receive the transformed content
-         */
-        protected transformPointWithOriginByRef(p: Vector2, originOffset: Vector2, res: Vector2): void;
-        protected transformPointWithOrigin(p: Vector2, originOffset: Vector2): Vector2;
-        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): {
-            attributes: string[];
-            uniforms: string[];
-            defines: string;
-        };
-        protected modelRenderCache: ModelRenderCache;
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache;
-        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): void;
-        protected createInstanceDataParts(): InstanceDataBase[];
-        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
-        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any;
-        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
-        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
-        /**
-         * Update the instanceDataBase level properties of a part
-         * @param part the part to update
-         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text). You MUST also set customSize.
-         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin property.
-         */
-        protected updateInstanceDataPart(part: InstanceDataBase, positionOffset?: Vector2, customSize?: Size): void;
-        private _modelRenderCache;
-        private _modelRenderInstanceID;
-        protected _instanceDataParts: InstanceDataBase[];
-        protected _isTransparent: boolean;
-    }
-}
-
-declare module BABYLON {
-    class Shape2D extends RenderablePrim2D {
-        static SHAPE2D_BORDERPARTID: number;
-        static SHAPE2D_FILLPARTID: number;
-        static SHAPE2D_CATEGORY_BORDER: string;
-        static SHAPE2D_CATEGORY_BORDERSOLID: string;
-        static SHAPE2D_CATEGORY_BORDERGRADIENT: string;
-        static SHAPE2D_CATEGORY_FILLSOLID: string;
-        static SHAPE2D_CATEGORY_FILLGRADIENT: string;
-        static SHAPE2D_PROPCOUNT: number;
-        static borderProperty: Prim2DPropInfo;
-        static fillProperty: Prim2DPropInfo;
-        static borderThicknessProperty: Prim2DPropInfo;
-        border: IBrush2D;
-        fill: IBrush2D;
-        borderThickness: number;
-        setupShape2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D, borderThickness?: number): void;
-        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
-        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
-        private _updateTransparencyStatus();
-        private _border;
-        private _borderThickness;
-        private _fill;
-    }
-    class Shape2DInstanceData extends InstanceDataBase {
-        fillSolidColor: Color4;
-        fillGradientColor1: Color4;
-        fillGradientColor2: Color4;
-        fillGradientTY: Vector4;
-        borderThickness: number;
-        borderSolidColor: Color4;
-        borderGradientColor1: Color4;
-        borderGradientColor2: Color4;
-        borderGradientTY: Vector4;
-    }
-}
-
-declare module BABYLON {
-    class Prim2DClassInfo {
-    }
-    class Prim2DPropInfo {
-        static PROPKIND_MODEL: number;
-        static PROPKIND_INSTANCE: number;
-        static PROPKIND_DYNAMIC: number;
-        id: number;
-        flagId: number;
-        kind: number;
-        name: string;
-        dirtyBoundingInfo: boolean;
-        typeLevelCompare: boolean;
-    }
-    class PropertyChangedInfo {
-        oldValue: any;
-        newValue: any;
-        propertyName: string;
-    }
-    interface IPropertyChanged {
-        propertyChanged: Observable<PropertyChangedInfo>;
-    }
-    class ClassTreeInfo<TClass, TProp> {
-        constructor(baseClass: ClassTreeInfo<TClass, TProp>, type: Object, classContentFactory: (base: TClass) => TClass);
-        classContent: TClass;
-        type: Object;
-        levelContent: StringDictionary<TProp>;
-        fullContent: StringDictionary<TProp>;
-        getLevelOf(type: Object): ClassTreeInfo<TClass, TProp>;
-        getOrAddType(baseType: Object, type: Object): ClassTreeInfo<TClass, TProp>;
-        static get<TClass, TProp>(type: Object): ClassTreeInfo<TClass, TProp>;
-        static getOrRegister<TClass, TProp>(type: Object, classContentFactory: (base: TClass) => TClass): ClassTreeInfo<TClass, TProp>;
-        private _type;
-        private _classContent;
-        private _baseClass;
-        private _subClasses;
-        private _levelContent;
-        private _fullContent;
-        private _classContentFactory;
-    }
-    class SmartPropertyPrim implements IPropertyChanged {
-        protected setupSmartPropertyPrim(): void;
-        /**
-         * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
-         * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
-         */
-        propertyChanged: Observable<PropertyChangedInfo>;
-        /**
-         * Check if the object is disposed or not.
-         * @returns true if the object is dispose, false otherwise.
-         */
-        isDisposed: boolean;
-        /**
-         * Disposable pattern, this method must be overloaded by derived types in order to clean up hardware related resources.
-         * @returns false if the object is already dispose, true otherwise. Your implementation must call super.dispose() and check for a false return and return immediately if it's the case.
-         */
-        dispose(): boolean;
-        /**
-         * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
-         */
-        animations: Animation[];
-        /**
-         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
-         * Look at Sprite2D for more information
-         */
-        getAnimatables(): IAnimatable[];
-        /**
-         * Property giving the Model Key associated to the property.
-         * This value is constructed from the type of the primitive and all the name/value of its properties declared with the modelLevelProperty decorator
-         * @returns the model key string.
-         */
-        modelKey: string;
-        /**
-         * States if the Primitive is dirty and should be rendered again next time.
-         * @returns true is dirty, false otherwise
-         */
-        isDirty: boolean;
-        /**
-         * Access the dictionary of properties metadata. Only properties decorated with XXXXLevelProperty are concerned
-         * @returns the dictionary, the key is the property name as declared in Javascript, the value is the metadata object
-         */
-        private propDic;
-        private static _createPropInfo(target, propName, propId, dirtyBoundingInfo, typeLevelCompare, kind);
-        private static _checkUnchanged(curValue, newValue);
-        private static propChangedInfo;
-        markAsDirty(propertyName: string): void;
-        private _handlePropChanged<T>(curValue, newValue, propName, propInfo, typeLevelCompare);
-        protected handleGroupChanged(prop: Prim2DPropInfo): void;
-        /**
-         * Check if a given set of properties are dirty or not.
-         * @param flags a ORed combination of Prim2DPropInfo.flagId values
-         * @return true if at least one property is dirty, false if none of them are.
-         */
-        checkPropertiesDirty(flags: number): boolean;
-        /**
-         * Clear a given set of properties.
-         * @param flags a ORed combination of Prim2DPropInfo.flagId values
-         * @return the new set of property still marked as dirty
-         */
-        protected clearPropertiesDirty(flags: number): number;
-        _resetPropertiesDirty(): void;
-        /**
-         * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
-         * @returns {}
-         */
-        levelBoundingInfo: BoundingInfo2D;
-        /**
-         * This method must be overridden by a given Primitive implementation to compute its boundingInfo
-         */
-        protected updateLevelBoundingInfo(): void;
-        /**
-         * Property method called when the Primitive becomes dirty
-         */
-        protected onPrimBecomesDirty(): void;
-        static _hookProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare: boolean, dirtyBoundingInfo: boolean, kind: number): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
-        private _modelKey;
-        string: any;
-        private _propInfo;
-        private _isDisposed;
-        protected _levelBoundingInfoDirty: boolean;
-        protected _levelBoundingInfo: BoundingInfo2D;
-        protected _boundingInfo: BoundingInfo2D;
-        protected _modelDirty: boolean;
-        protected _instanceDirtyFlags: number;
-    }
-    function modelLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
-    function instanceLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
-    function dynamicLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
-}
-
-declare module BABYLON {
-    class Sprite2DRenderCache extends ModelRenderCache {
-        vb: WebGLBuffer;
-        ib: WebGLBuffer;
-        instancingAttributes: InstancingAttributeInfo[];
-        texture: Texture;
-        effect: Effect;
-        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
-        dispose(): boolean;
-    }
-    class Sprite2DInstanceData extends InstanceDataBase {
-        constructor(partId: number);
-        topLeftUV: Vector2;
-        sizeUV: Vector2;
-        textureSize: Vector2;
-        frame: number;
-        invertY: number;
-    }
-    class Sprite2D extends RenderablePrim2D {
-        static SPRITE2D_MAINPARTID: number;
-        static textureProperty: Prim2DPropInfo;
-        static spriteSizeProperty: Prim2DPropInfo;
-        static spriteLocationProperty: Prim2DPropInfo;
-        static spriteFrameProperty: Prim2DPropInfo;
-        static invertYProperty: Prim2DPropInfo;
-        texture: Texture;
-        actualSize: Size;
-        spriteSize: Size;
-        spriteLocation: Vector2;
-        spriteFrame: number;
-        invertY: boolean;
-        protected updateLevelBoundingInfo(): void;
-        getAnimatables(): IAnimatable[];
-        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean): void;
-        /**
-         * Create an 2D Sprite primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * @param texture the texture that stores the sprite to render
-         * options:
-         *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - spriteSize: the size of the sprite, if null the size of the given texture will be used, default is null.
-         *  - spriteLocation: the location in the texture of the top/left corner of the Sprite to display, default is null (0,0)
-         *  - invertY: if true the texture Y will be inverted, default is false.
-         */
-        static Create(parent: Prim2DBase, texture: Texture, options: {
-            id?: string;
-            x?: number;
-            y?: number;
-            origin?: Vector2;
-            spriteSize?: Size;
-            spriteLocation?: Vector2;
-            invertY?: boolean;
-        }): Sprite2D;
-        static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D;
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache;
-        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Sprite2DRenderCache;
-        protected createInstanceDataParts(): InstanceDataBase[];
-        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
-        private _texture;
-        private _size;
-        private _location;
-        private _spriteFrame;
-        private _invertY;
-    }
-}
-
-declare module BABYLON {
-    class Text2DRenderCache extends ModelRenderCache {
-        vb: WebGLBuffer;
-        ib: WebGLBuffer;
-        instancingAttributes: InstancingAttributeInfo[];
-        fontTexture: FontTexture;
-        effect: Effect;
-        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
-        dispose(): boolean;
-    }
-    class Text2DInstanceData extends InstanceDataBase {
-        constructor(partId: number, dataElementCount: number);
-        topLeftUV: Vector2;
-        sizeUV: Vector2;
-        textureSize: Vector2;
-        color: Color4;
-    }
-    class Text2D extends RenderablePrim2D {
-        static TEXT2D_MAINPARTID: number;
-        static fontProperty: Prim2DPropInfo;
-        static defaultFontColorProperty: Prim2DPropInfo;
-        static textProperty: Prim2DPropInfo;
-        static areaSizeProperty: Prim2DPropInfo;
-        static vAlignProperty: Prim2DPropInfo;
-        static hAlignProperty: Prim2DPropInfo;
-        static TEXT2D_VALIGN_TOP: number;
-        static TEXT2D_VALIGN_CENTER: number;
-        static TEXT2D_VALIGN_BOTTOM: number;
-        static TEXT2D_HALIGN_LEFT: number;
-        static TEXT2D_HALIGN_CENTER: number;
-        static TEXT2D_HALIGN_RIGHT: number;
-        fontName: string;
-        defaultFontColor: Color4;
-        text: string;
-        areaSize: Size;
-        vAlign: number;
-        hAlign: number;
-        actualSize: Size;
-        protected fontTexture: FontTexture;
-        dispose(): boolean;
-        protected updateLevelBoundingInfo(): void;
-        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, vAlign: any, hAlign: any, tabulationSize: number): void;
-        /**
-         * Create a Text primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * @param text the text to display
-         * Options:
-         *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
-         *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
-         *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
-         *  - vAlign: vertical alignment (areaSize must be specified), default is Text2D.TEXT2D_VALIGN_CENTER
-         *  - hAlign: horizontal alignment (areaSize must be specified), default is Text2D.TEXT2D_HALIGN_CENTER
-         *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
-         */
-        static Create(parent: Prim2DBase, text: string, options?: {
-            id?: string;
-            x?: number;
-            y?: number;
-            origin?: Vector2;
-            fontName?: string;
-            defaultFontColor?: Color4;
-            areaSize?: Size;
-            vAlign?: number;
-            hAlign?: number;
-            tabulationSize?: number;
-        }): Text2D;
-        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache;
-        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Text2DRenderCache;
-        protected createInstanceDataParts(): InstanceDataBase[];
-        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any;
-        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
-        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
-        private _updateCharCount();
-        private _fontTexture;
-        private _tabulationSize;
-        private _charCount;
-        private _fontName;
-        private _defaultFontColor;
-        private _text;
-        private _areaSize;
-        private _actualSize;
-        private _vAlign;
-        private _hAlign;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This is the class that is used to display a World Space Canvas into a scene
-     */
-    class WorldSpaceCanvas2D extends Mesh {
-        constructor(name: string, scene: Scene, canvas: Canvas2D);
-        dispose(): void;
-        private _canvas;
-    }
-}
-
-declare module BABYLON {
-    class Collider {
-        radius: Vector3;
-        retry: number;
-        velocity: Vector3;
-        basePoint: Vector3;
-        epsilon: number;
-        collisionFound: boolean;
-        velocityWorldLength: number;
-        basePointWorld: Vector3;
-        velocityWorld: Vector3;
-        normalizedVelocity: Vector3;
-        initialVelocity: Vector3;
-        initialPosition: Vector3;
-        nearestDistance: number;
-        intersectionPoint: Vector3;
-        collidedMesh: AbstractMesh;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): any;
-        onMeshUpdated(mesh: AbstractMesh): any;
-        onMeshRemoved(mesh: AbstractMesh): any;
-        onGeometryAdded(geometry: Geometry): any;
-        onGeometryUpdated(geometry: Geometry): any;
-        onGeometryDeleted(geometry: Geometry): any;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: string;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    interface SerializedGeometry {
-        id: string;
-        positions: Float32Array;
-        indices: Int32Array;
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId?: number;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _runningCollisionTask;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (mesh: AbstractMesh) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: number;
-        bv: number;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: number, bv: number, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Vector3;
-        pickedMesh: AbstractMesh;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Sprite;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
-        getTextureCoordinates(): Vector2;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        extendSize: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingInfo {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
-        intersectsPlane(plane: Plane): number;
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        private _camera;
-        private _transformationMatrix;
-        private _enabled;
-        private _labelsEnabled;
-        private _displayStatistics;
-        private _displayTree;
-        private _displayLogs;
-        private _globalDiv;
-        private _statsDiv;
-        private _statsSubsetDiv;
-        private _optionsDiv;
-        private _optionsSubsetDiv;
-        private _logDiv;
-        private _logSubsetDiv;
-        private _treeDiv;
-        private _treeSubsetDiv;
-        private _drawingCanvas;
-        private _drawingContext;
-        private _rootElement;
-        private _skeletonViewers;
-        _syncPositions: () => void;
-        private _syncData;
-        private _syncUI;
-        private _onCanvasClick;
-        private _clickPosition;
-        private _ratio;
-        private _identityMatrix;
-        private _showUI;
-        private _needToRefreshMeshesTree;
-        shouldDisplayLabel: (node: Node) => boolean;
-        shouldDisplayAxis: (mesh: Mesh) => boolean;
-        axisRatio: number;
-        accentColor: string;
-        customStatsFunction: () => string;
-        constructor(scene: Scene);
-        private _refreshMeshesTreeContent();
-        private _renderSingleAxis(zero, unit, unitText, label, color);
-        private _renderAxis(projectedPosition, mesh, globalViewport);
-        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
-        private _isClickInsideRect(x, y, width, height);
-        isVisible(): boolean;
-        hide(): void;
-        private _clearSkeletonViewers();
-        show(showUI?: boolean, camera?: Camera, rootElement?: HTMLElement): void;
-        private _clearLabels();
-        private _generateheader(root, text);
-        private _generateTexBox(root, title, color);
-        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
-        private _generateCheckBox(root, title, initialState, task, tag?);
-        private _generateButton(root, title, task, tag?);
-        private _generateRadio(root, title, name, initialState, task, tag?);
-        private _generateDOMelements();
-        private _displayStats();
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        private _updateBoneMatrix(bone);
-        dispose(): void;
     }
 }
 
@@ -4353,6 +2389,2269 @@ declare module BABYLON {
 declare module BABYLON {
     class VirtualJoysticksCamera extends FreeCamera {
         constructor(name: string, position: Vector3, scene: Scene);
+    }
+}
+
+declare module BABYLON {
+    class Collider {
+        radius: Vector3;
+        retry: number;
+        velocity: Vector3;
+        basePoint: Vector3;
+        epsilon: number;
+        collisionFound: boolean;
+        velocityWorldLength: number;
+        basePointWorld: Vector3;
+        velocityWorld: Vector3;
+        normalizedVelocity: Vector3;
+        initialVelocity: Vector3;
+        initialPosition: Vector3;
+        nearestDistance: number;
+        intersectionPoint: Vector3;
+        collidedMesh: AbstractMesh;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): any;
+        onMeshUpdated(mesh: AbstractMesh): any;
+        onMeshRemoved(mesh: AbstractMesh): any;
+        onGeometryAdded(geometry: Geometry): any;
+        onGeometryUpdated(geometry: Geometry): any;
+        onGeometryDeleted(geometry: Geometry): any;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: string;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Int32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId?: number;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _runningCollisionTask;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: number;
+        bv: number;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: number, bv: number, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Vector3;
+        pickedMesh: AbstractMesh;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Sprite;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
+        getTextureCoordinates(): Vector2;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Stores 2D Bounding Information.
+     * This class handles a circle area and a bounding rectangle one.
+     */
+    class BoundingInfo2D {
+        /**
+         * The coordinate of the center of the bounding info
+         */
+        center: Vector2;
+        /**
+         * The radius of the bounding circle, from the center of the bounded object
+         */
+        radius: number;
+        /**
+         * The extent of the bounding rectangle, from the center of the bounded object.
+         * This is an absolute value in both X and Y of the vector which describe the right/top corner of the rectangle, you can easily reconstruct the whole rectangle by negating X &| Y.
+         */
+        extent: Vector2;
+        constructor();
+        static CreateFromSize(size: Size, origin?: Vector2): BoundingInfo2D;
+        static CreateFromRadius(radius: number, origin?: Vector2): BoundingInfo2D;
+        static CreateFromPoints(points: Vector2[], origin?: Vector2): BoundingInfo2D;
+        static CreateFromSizeToRef(size: Size, b: BoundingInfo2D, origin?: Vector2): void;
+        static CreateFromRadiusToRef(radius: number, b: BoundingInfo2D, origin?: Vector2): void;
+        static CreateFromPointsToRef(points: Vector2[], b: BoundingInfo2D, origin?: Vector2): void;
+        static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D, origin?: Vector2): void;
+        /**
+         * Duplicate this instance and return a new one
+         * @return the duplicated instance
+         */
+        clone(): BoundingInfo2D;
+        max(): Vector2;
+        maxToRef(result: Vector2): void;
+        /**
+         * Apply a transformation matrix to this BoundingInfo2D and return a new instance containing the result
+         * @param matrix the transformation matrix to apply
+         * @return the new instance containing the result of the transformation applied on this BoundingInfo2D
+         */
+        transform(matrix: Matrix): BoundingInfo2D;
+        /**
+         * Compute the union of this BoundingInfo2D with a given one, return a new BoundingInfo2D as a result
+         * @param other the second BoundingInfo2D to compute the union with this one
+         * @return a new instance containing the result of the union
+         */
+        union(other: BoundingInfo2D): BoundingInfo2D;
+        private static _transform;
+        /**
+         * Transform this BoundingInfo2D with a given matrix and store the result in an existing BoundingInfo2D instance.
+         * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
+         * @param matrix The matrix to use to compute the transformation
+         * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
+         */
+        transformToRef(matrix: Matrix, result: BoundingInfo2D): void;
+        /**
+         * Compute the union of this BoundingInfo2D with another one and store the result in a third valid BoundingInfo2D object
+         * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
+         * @param other the second object used to compute the union
+         * @param result a VALID BoundingInfo2D instance (i.e. allocated) where the result will be stored
+         */
+        unionToRef(other: BoundingInfo2D, result: BoundingInfo2D): void;
+        doesIntersect(pickPosition: Vector2): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This interface is used to implement a lockable instance pattern.
+     * Classes that implements it may be locked at any time, making their content immutable from now on.
+     * You also can query if a given instance is locked or not.
+     * This allow instances to be shared among several 'consumers'.
+     */
+    interface ILockable {
+        /**
+         * Query the lock state
+         * @returns returns true if the object is locked and immutable, false if it's not
+         */
+        isLocked(): boolean;
+        /**
+         * A call to this method will definitely lock the instance, making its content immutable
+         * @returns the previous lock state of the object. so if true is returned the object  were already locked and this method does nothing, if false is returned it means the object wasn't locked and this call locked it for good.
+         */
+        lock(): boolean;
+    }
+    /**
+     * This interface defines the IBrush2D contract.
+     * Classes implementing a new type of Brush2D must implement this interface
+     */
+    interface IBrush2D extends ILockable {
+        /**
+         * Define if the brush will use transparency / alpha blending
+         * @returns true if the brush use transparency
+         */
+        isTransparent(): boolean;
+        /**
+         * It is critical for each instance of a given Brush2D type to return a unique string that identifies it because the Border instance will certainly be part of the computed ModelKey for a given Primitive
+         * @returns A string identifier that uniquely identify the instance
+         */
+        toString(): string;
+    }
+    /**
+     * Base class implementing the ILocable interface.
+     * The particularity of this class is to call the protected onLock() method when the instance is about to be locked for good.
+     */
+    class LockableBase implements ILockable {
+        isLocked(): boolean;
+        private _isLocked;
+        lock(): boolean;
+        /**
+         * Protected handler that will be called when the instance is about to be locked.
+         */
+        protected onLock(): void;
+    }
+    /**
+     * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
+     */
+    class SolidColorBrush2D extends LockableBase implements IBrush2D {
+        constructor(color: Color4, lock?: boolean);
+        isTransparent(): boolean;
+        /**
+         * The color used by this instance to render
+         * @returns the color object. Note that it's not a clone of the actual object stored in the instance so you MUST NOT modify it, otherwise unexpected behavior might occurs.
+         */
+        color: Color4;
+        /**
+         * Return a unique identifier of the instance, which is simply the hexadecimal representation (CSS Style) of the solid color.
+         */
+        toString(): string;
+        private _color;
+    }
+    class GradientColorBrush2D extends LockableBase implements IBrush2D {
+        constructor(color1: Color4, color2: Color4, translation?: Vector2, rotation?: number, scale?: number, lock?: boolean);
+        isTransparent(): boolean;
+        color1: Color4;
+        color2: Color4;
+        translation: Vector2;
+        rotation: number;
+        scale: number;
+        toString(): string;
+        static BuildKey(color1: Color4, color2: Color4, translation: Vector2, rotation: number, scale: number): string;
+        private _color1;
+        private _color2;
+        private _translation;
+        private _rotation;
+        private _scale;
+    }
+}
+
+declare module BABYLON {
+    class Canvas2DEngineBoundData {
+        GetOrAddModelCache<TInstData>(key: string, factory: (key: string) => ModelRenderCache): ModelRenderCache;
+        private _modelCache;
+        DisposeModelRenderCache(modelRenderCache: ModelRenderCache): boolean;
+    }
+    class Canvas2D extends Group2D {
+        /**
+         * In this strategy only the direct children groups of the Canvas will be cached, their whole content (whatever the sub groups they have) into a single bitmap.
+         * This strategy doesn't allow primitives added directly as children of the Canvas.
+         * You typically want to use this strategy of a screenSpace fullscreen canvas: you don't want a bitmap cache taking the whole screen resolution but still want the main contents (say UI in the topLeft and rightBottom for instance) to be efficiently cached.
+         */
+        static CACHESTRATEGY_TOPLEVELGROUPS: number;
+        /**
+         * In this strategy each group will have its own cache bitmap (except if a given group explicitly defines the DONTCACHEOVERRIDE or CACHEINPARENTGROUP behaviors).
+         * This strategy is typically used if the canvas has some groups that are frequently animated. Unchanged ones will have a steady cache and the others will be refreshed when they change, reducing the redraw operation count to their content only.
+         * When using this strategy, group instances can rely on the DONTCACHEOVERRIDE or CACHEINPARENTGROUP behaviors to minimize the amount of cached bitmaps.
+         * Note that in this mode the Canvas itself is not cached, it only contains the sprites of its direct children group to render, there's no point to cache the whole canvas, sprites will be rendered pretty efficiently, the memory cost would be too great for the value of it.
+         */
+        static CACHESTRATEGY_ALLGROUPS: number;
+        /**
+         * In this strategy the whole canvas is cached into a single bitmap containing every primitives it owns, at the exception of the ones that are owned by a group having the DONTCACHEOVERRIDE behavior (these primitives will be directly drawn to the viewport at each render for screenSpace Canvas or be part of the Canvas cache bitmap for worldSpace Canvas).
+         */
+        static CACHESTRATEGY_CANVAS: number;
+        /**
+         * This strategy is used to recompose/redraw the canvas entirely at each viewport render.
+         * Use this strategy if memory is a concern above rendering performances and/or if the canvas is frequently animated (hence reducing the benefits of caching).
+         * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
+         */
+        static CACHESTRATEGY_DONTCACHE: number;
+        /**
+         * Create a new 2D ScreenSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a position relative to the bottom/left corner of the screen.
+         * ScreenSpace Canvas will be drawn in the Viewport as a 2D Layer lying to the top of the 3D Scene. Typically used for traditional UI.
+         * All caching strategies will be available.
+         * PLEASE NOTE: the origin of a Screen Space Canvas is set to [0;0] (bottom/left) which is different than the default origin of a Primitive which is centered [0.5;0.5]
+         * @param scene the Scene that owns the Canvas
+         * Options:
+         *  - id: a text identifier, for information purpose only
+         *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
+         *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
+         *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
+         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
+         *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        static CreateScreenSpace(scene: Scene, options: {
+            id?: string;
+            x?: number;
+            y?: number;
+            position?: Vector2;
+            origin?: Vector2;
+            width?: number;
+            height?: number;
+            size?: Size;
+            cachingStrategy?: number;
+            enableInteraction?: boolean;
+            isVisible?: boolean;
+            marginTop?: number;
+            marginLeft?: number;
+            marginRight?: number;
+            marginBottom?: number;
+            hAlignment?: number;
+            vAlignment?: number;
+        }): Canvas2D;
+        /**
+         * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation information to place it in the world space.
+         * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. For now only CACHESTRATEGY_CANVAS is supported, but the remaining strategies will be soon.
+         * @param scene the Scene that owns the Canvas
+         * @param size the dimension of the Canvas in World Space
+         * Options:
+         *  - id: a text identifier, for information purpose only, default is null.
+         *  - position the position of the Canvas in World Space, default is [0,0,0]
+         *  - rotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         *  - renderScaleFactor A scale factor applied to create the rendering texture that will be mapped in the Scene Rectangle. If you set 2 for instance the texture will be twice large in width and height. A greater value will allow to achieve a better rendering quality. Default value is 1.
+         * BE AWARE that the Canvas true dimension will be size*renderScaleFactor, then all coordinates and size will have to be express regarding this size.
+         * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
+         * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
+         * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
+         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
+         * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
+         * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
+         */
+        static CreateWorldSpace(scene: Scene, size: Size, options: {
+            id?: string;
+            position?: Vector3;
+            rotation?: Quaternion;
+            renderScaleFactor?: number;
+            sideOrientation?: number;
+            cachingStrategy?: number;
+            enableInteraction?: boolean;
+            isVisible?: boolean;
+            customWorldSpaceNode?: Node;
+        }): Canvas2D;
+        protected setupCanvas(scene: Scene, name: string, size: Size, renderScaleFactor: number, isScreenSpace: boolean, cachingstrategy: number, enableInteraction: boolean, origin: Vector2, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number): void;
+        hierarchyLevelMaxSiblingCount: number;
+        private _setupInteraction(enable);
+        /**
+         * If you set your own WorldSpaceNode to display the Canvas2D you have to provide your own implementation of this method which computes the local position in the Canvas based on the given 3D World one.
+         * Beware that you have to take under consideration the origin and the renderScaleFactor in your calculations! Good luck!
+         */
+        worldSpaceToNodeLocal: (worldPos: Vector3) => Vector2;
+        /**
+         * Internal method, you should use the Prim2DBase version instead
+         */
+        _setPointerCapture(pointerId: number, primitive: Prim2DBase): boolean;
+        /**
+         * Internal method, you should use the Prim2DBase version instead
+         */
+        _releasePointerCapture(pointerId: number, primitive: Prim2DBase): boolean;
+        /**
+         * Determine if the given pointer is captured or not
+         * @param pointerId the Id of the pointer
+         * @return true if it's captured, false otherwise
+         */
+        isPointerCaptured(pointerId: number): boolean;
+        private getCapturedPrimitive(pointerId);
+        private static _interInfo;
+        private _handlePointerEventForInteraction(eventData, localPosition, eventState);
+        private _updatePointerInfo(eventData, localPosition);
+        private _updateIntersectionList(mouseLocalPos, isCapture);
+        private _updateOverStatus();
+        private _updatePrimPointerPos(prim);
+        private _notifDebugMode;
+        private _debugExecObserver(prim, mask);
+        private _bubbleNotifyPrimPointerObserver(prim, mask, eventData);
+        private _triggerActionManager(prim, ppi, mask, eventData);
+        _notifChildren(prim: Prim2DBase, mask: number): void;
+        /**
+         * Don't forget to call the dispose method when you're done with the Canvas instance.
+         * But don't worry, if you dispose its scene, the canvas will be automatically disposed too.
+         */
+        dispose(): boolean;
+        /**
+         * Accessor to the Scene that owns the Canvas
+         * @returns The instance of the Scene object
+         */
+        scene: Scene;
+        /**
+         * Accessor to the Engine that drives the Scene used by this Canvas
+         * @returns The instance of the Engine object
+         */
+        engine: Engine;
+        /**
+         * Accessor of the Caching Strategy used by this Canvas.
+         * See Canvas2D.CACHESTRATEGY_xxxx static members for more information
+         * @returns the value corresponding to the used strategy.
+         */
+        cachingStrategy: number;
+        /**
+         * Only valid for World Space Canvas, returns the scene node that displays the canvas
+         */
+        worldSpaceCanvasNode: Node;
+        /**
+         * Check if the WebGL Instanced Array extension is supported or not
+         * @returns {}
+         */
+        supportInstancedArray: boolean;
+        /**
+         * Property that defines the fill object used to draw the background of the Canvas.
+         * Note that Canvas with a Caching Strategy of
+         * @returns If the background is not set, null will be returned, otherwise a valid fill object is returned.
+         */
+        backgroundFill: IBrush2D;
+        /**
+         * Property that defines the border object used to draw the background of the Canvas.
+         * @returns If the background is not set, null will be returned, otherwise a valid border object is returned.
+         */
+        backgroundBorder: IBrush2D;
+        /**
+         * You can set the roundRadius of the background
+         * @returns The current roundRadius
+         */
+        backgroundRoundRadius: number;
+        /**
+         * Enable/Disable interaction for this Canvas
+         * When enabled the Prim2DBase.pointerEventObservable property will notified when appropriate events occur
+         */
+        interactionEnabled: boolean;
+        _engineData: Canvas2DEngineBoundData;
+        private checkBackgroundAvailability();
+        private __engineData;
+        private _interactionEnabled;
+        private _primPointerInfo;
+        private _updateRenderId;
+        private _intersectionRenderId;
+        private _hoverStatusRenderId;
+        private _pickStartingPosition;
+        private _renderScaleFactor;
+        private _pickedDownPrim;
+        private _pickStartingTime;
+        private _previousIntersectionList;
+        private _actualIntersectionList;
+        private _previousOverPrimitive;
+        private _actualOverPrimitive;
+        private _capturedPointers;
+        private _scenePrePointerObserver;
+        private _scenePointerObserver;
+        private _worldSpaceNode;
+        private _mapCounter;
+        private _background;
+        private _scene;
+        private _engine;
+        private _fitRenderingDevice;
+        private _isScreeSpace;
+        private _cachedCanvasGroup;
+        private _cachingStrategy;
+        private _hierarchyLevelMaxSiblingCount;
+        private _groupCacheMaps;
+        private _beforeRenderObserver;
+        private _afterRenderObserver;
+        private _supprtInstancedArray;
+        _renderingSize: Size;
+        protected onPrimBecomesDirty(): void;
+        private _updateCanvasState();
+        /**
+         * Method that renders the Canvas, you should not invoke
+         */
+        private _render();
+        /**
+         * Internal method that allocate a cache for the given group.
+         * Caching is made using a collection of MapTexture where many groups have their bitmap cache stored inside.
+         * @param group The group to allocate the cache of.
+         * @return custom type with the PackedRect instance giving information about the cache location into the texture and also the MapTexture instance that stores the cache.
+         */
+        _allocateGroupCache(group: Group2D, parent: Group2D, minSize?: Size): {
+            node: PackedRect;
+            texture: MapTexture;
+            sprite: Sprite2D;
+        };
+        /**
+         * Define the default size used for both the width and height of a MapTexture to allocate.
+         * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
+         */
+        private static _groupTextureCacheSize;
+        /**
+         * Get a Solid Color Brush instance matching the given color.
+         * @param color The color to retrieve
+         * @return A shared instance of the SolidColorBrush2D class that use the given color
+         */
+        static GetSolidColorBrush(color: Color4): IBrush2D;
+        /**
+         * Get a Solid Color Brush instance matching the given color expressed as a CSS formatted hexadecimal value.
+         * @param color The color to retrieve
+         * @return A shared instance of the SolidColorBrush2D class that uses the given color
+         */
+        static GetSolidColorBrushFromHex(hexValue: string): IBrush2D;
+        static GetGradientColorBrush(color1: Color4, color2: Color4, translation?: Vector2, rotation?: number, scale?: number): IBrush2D;
+        private static _solidColorBrushes;
+        private static _gradientColorBrushes;
+    }
+}
+
+declare module BABYLON {
+    class Ellipse2DRenderCache extends ModelRenderCache {
+        effectsReady: boolean;
+        fillVB: WebGLBuffer;
+        fillIB: WebGLBuffer;
+        fillIndicesCount: number;
+        instancingFillAttributes: InstancingAttributeInfo[];
+        effectFillInstanced: Effect;
+        effectFill: Effect;
+        borderVB: WebGLBuffer;
+        borderIB: WebGLBuffer;
+        borderIndicesCount: number;
+        instancingBorderAttributes: InstancingAttributeInfo[];
+        effectBorderInstanced: Effect;
+        effectBorder: Effect;
+        constructor(engine: Engine, modelKey: string);
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        dispose(): boolean;
+    }
+    class Ellipse2DInstanceData extends Shape2DInstanceData {
+        constructor(partId: number);
+        properties: Vector3;
+    }
+    class Ellipse2D extends Shape2D {
+        static sizeProperty: Prim2DPropInfo;
+        static subdivisionsProperty: Prim2DPropInfo;
+        actualSize: Size;
+        size: Size;
+        subdivisions: number;
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        protected updateLevelBoundingInfo(): void;
+        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number): void;
+        /**
+         * Create an Ellipse 2D Shape primitive
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id: a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
+         *  - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
+         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
+         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - borderThickness: the thickness of the drawn border, default is 1.
+         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        static Create(parent: Prim2DBase, options: {
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            origin?: Vector2;
+            size?: Size;
+            width?: number;
+            height?: number;
+            subdivisions?: number;
+            fill?: IBrush2D;
+            border?: IBrush2D;
+            borderThickness?: number;
+            isVisible?: boolean;
+            marginTop?: number;
+            marginLeft?: number;
+            marginRight?: number;
+            marginBottom?: number;
+            vAlignment?: number;
+            hAlignment?: number;
+        }): Ellipse2D;
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Ellipse2DRenderCache;
+        protected createInstanceDataParts(): InstanceDataBase[];
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _size;
+        private _subdivisions;
+    }
+}
+
+declare module BABYLON {
+    class Group2D extends Prim2DBase {
+        static GROUP2D_PROPCOUNT: number;
+        static sizeProperty: Prim2DPropInfo;
+        static actualSizeProperty: Prim2DPropInfo;
+        /**
+         * Default behavior, the group will use the caching strategy defined at the Canvas Level
+         */
+        static GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY: number;
+        /**
+         * When used, this group's content won't be cached, no matter which strategy used.
+         * If the group is part of a WorldSpace Canvas, its content will be drawn in the Canvas cache bitmap.
+         */
+        static GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE: number;
+        /**
+         * When used, the group's content will be cached in the nearest cached parent group/canvas
+         */
+        static GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP: number;
+        /**
+         * Don't invoke directly, rely on Group2D.CreateXXX methods
+         */
+        constructor();
+        /**
+         * Create an Logical or Renderable Group.
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
+         *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
+         *  - isVisible: true if the group must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        static CreateGroup2D(parent: Prim2DBase, options: {
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            origin?: Vector2;
+            size?: Size;
+            width?: number;
+            height?: number;
+            cacheBehavior?: number;
+            isVisible?: boolean;
+            marginTop?: number;
+            marginLeft?: number;
+            marginRight?: number;
+            marginBottom?: number;
+            vAlignment?: number;
+            hAlignment?: number;
+        }): Group2D;
+        static _createCachedCanvasGroup(owner: Canvas2D): Group2D;
+        protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial): void;
+        /**
+         * Allow you to access the information regarding the cached rectangle of the Group2D into the MapTexture.
+         * If the `noWorldSpaceNode` options was used at the creation of a WorldSpaceCanvas, the rendering of the canvas must be made by the caller, so typically you want to bind the cacheTexture property to some material/mesh and you must use the cachedRect.UVs property to get the UV coordinates to use for your quad that will display the Canvas.
+         */
+        cachedRect: PackedRect;
+        /**
+         * Access the texture that maintains a cached version of the Group2D.
+         * This is useful only if you're not using a WorldSpaceNode for your WorldSpace Canvas and therefore need to perform the rendering yourself.
+         */
+        cacheTexture: MapTexture;
+        /**
+         * Call this method to remove this Group and its children from the Canvas
+         */
+        dispose(): boolean;
+        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, isVisible: boolean, cacheBehavior: number, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number): void;
+        /**
+         * @returns Returns true if the Group render content, false if it's a logical group only
+         */
+        isRenderableGroup: boolean;
+        /**
+         * @returns only meaningful for isRenderableGroup, will be true if the content of the Group is cached into a texture, false if it's rendered every time
+         */
+        isCachedGroup: boolean;
+        /**
+         * Get/Set the size of the group. If null the size of the group will be determine from its content.
+         * BEWARE: if the Group is a RenderableGroup and its content is cache the texture will be resized each time the group is getting bigger. For performance reason the opposite won't be true: the texture won't shrink if the group does.
+         */
+        size: Size;
+        viewportSize: ISize;
+        actualSize: Size;
+        /**
+         * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.
+         * It is critical to understand than you HAVE TO play with this behavior in order to achieve a good performance/memory ratio. Caching all groups would certainly be the worst strategy of all.
+         */
+        cacheBehavior: number;
+        _addPrimToDirtyList(prim: Prim2DBase): void;
+        _renderCachedCanvas(): void;
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        protected updateLevelBoundingInfo(): void;
+        protected _prepareGroupRender(context: PrepareRender2DContext): void;
+        protected _groupRender(): void;
+        private _updateTransparentData();
+        private _renderTransparentData();
+        private _prepareContext(engine, context, gii);
+        private _bindCacheTarget();
+        private _unbindCacheTarget();
+        protected handleGroupChanged(prop: Prim2DPropInfo): void;
+        private detectGroupStates();
+        protected _isRenderableGroup: boolean;
+        protected _isCachedGroup: boolean;
+        private _cacheGroupDirty;
+        private _size;
+        private _actualSize;
+        private _cacheBehavior;
+        private _viewportPosition;
+        private _viewportSize;
+        _renderableData: RenderableGroupData;
+    }
+    class RenderableGroupData {
+        constructor();
+        dispose(): void;
+        addNewTransparentPrimitiveInfo(prim: RenderablePrim2D, gii: GroupInstanceInfo): TransparentPrimitiveInfo;
+        removeTransparentPrimitiveInfo(tpi: TransparentPrimitiveInfo): void;
+        transparentPrimitiveZChanged(tpi: TransparentPrimitiveInfo): void;
+        updateSmallestZChangedPrim(tpi: TransparentPrimitiveInfo): void;
+        _primDirtyList: Array<Prim2DBase>;
+        _childrenRenderableGroups: Array<Group2D>;
+        _renderGroupInstancesInfo: StringDictionary<GroupInstanceInfo>;
+        _cacheNode: PackedRect;
+        _cacheTexture: MapTexture;
+        _cacheRenderSprite: Sprite2D;
+        _transparentListChanged: boolean;
+        _transparentPrimitives: Array<TransparentPrimitiveInfo>;
+        _transparentSegments: Array<TransparentSegment>;
+        _firstChangedPrim: TransparentPrimitiveInfo;
+    }
+    class TransparentPrimitiveInfo {
+        _primitive: RenderablePrim2D;
+        _groupInstanceInfo: GroupInstanceInfo;
+        _transparentSegment: TransparentSegment;
+    }
+}
+
+declare module BABYLON {
+    class Lines2DRenderCache extends ModelRenderCache {
+        effectsReady: boolean;
+        fillVB: WebGLBuffer;
+        fillIB: WebGLBuffer;
+        fillIndicesCount: number;
+        instancingFillAttributes: InstancingAttributeInfo[];
+        effectFill: Effect;
+        effectFillInstanced: Effect;
+        borderVB: WebGLBuffer;
+        borderIB: WebGLBuffer;
+        borderIndicesCount: number;
+        instancingBorderAttributes: InstancingAttributeInfo[];
+        effectBorder: Effect;
+        effectBorderInstanced: Effect;
+        constructor(engine: Engine, modelKey: string);
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        dispose(): boolean;
+    }
+    class Lines2DInstanceData extends Shape2DInstanceData {
+        constructor(partId: number);
+        boundingMin: Vector2;
+        boundingMax: Vector2;
+    }
+    class Lines2D extends Shape2D {
+        static NoCap: number;
+        static RoundCap: number;
+        static TriangleCap: number;
+        static SquareAnchorCap: number;
+        static RoundAnchorCap: number;
+        static DiamondAnchorCap: number;
+        static ArrowCap: number;
+        static pointsProperty: Prim2DPropInfo;
+        static fillThicknessProperty: Prim2DPropInfo;
+        static closedProperty: Prim2DPropInfo;
+        static startCapProperty: Prim2DPropInfo;
+        static endCapProperty: Prim2DPropInfo;
+        actualSize: Size;
+        points: Vector2[];
+        fillThickness: number;
+        closed: boolean;
+        startCap: number;
+        endCap: number;
+        private static _prevA;
+        private static _prevB;
+        private static _curA;
+        private static _curB;
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        protected size: Size;
+        protected boundingMin: Vector2;
+        protected boundingMax: Vector2;
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
+        protected updateLevelBoundingInfo(): void;
+        protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number): void;
+        /**
+         * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * @param points an array that describe the points to use to draw the line, must contain at least two entries.
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
+         *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
+         *  - Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
+         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - borderThickness: the thickness of the drawn border, default is 1.
+         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        static Create(parent: Prim2DBase, points: Vector2[], options: {
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            origin?: Vector2;
+            fillThickness?: number;
+            closed?: boolean;
+            startCap?: number;
+            endCap?: number;
+            fill?: IBrush2D;
+            border?: IBrush2D;
+            borderThickness?: number;
+            isVisible?: boolean;
+            marginTop?: number;
+            marginLeft?: number;
+            marginRight?: number;
+            marginBottom?: number;
+            vAlignment?: number;
+            hAlignment?: number;
+        }): Lines2D;
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Lines2DRenderCache;
+        protected createInstanceDataParts(): InstanceDataBase[];
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private static _noCap;
+        private static _roundCap;
+        private static _triangleCap;
+        private static _squareAnchorCap;
+        private static _roundAnchorCap;
+        private static _diamondAnchorCap;
+        private static _arrowCap;
+        private static _roundCapSubDiv;
+        private _boundingMin;
+        private _boundingMax;
+        private _size;
+        private _contour;
+        private _startCapContour;
+        private _startCapTriIndices;
+        private _endCapContour;
+        private _endCapTriIndices;
+        private _closed;
+        private _startCap;
+        private _endCap;
+        private _fillThickness;
+        private _points;
+    }
+}
+
+declare module BABYLON {
+    const enum ShaderDataType {
+        Vector2 = 0,
+        Vector3 = 1,
+        Vector4 = 2,
+        Matrix = 3,
+        float = 4,
+        Color3 = 5,
+        Color4 = 6,
+        Size = 7,
+    }
+    class GroupInstanceInfo {
+        constructor(owner: Group2D, mrc: ModelRenderCache, partCount: number);
+        dispose(): boolean;
+        private _isDisposed;
+        owner: Group2D;
+        modelRenderCache: ModelRenderCache;
+        partIndexFromId: StringDictionary<number>;
+        hasOpaqueData: boolean;
+        hasAlphaTestData: boolean;
+        hasTransparentData: boolean;
+        opaqueDirty: boolean;
+        opaqueData: GroupInfoPartData[];
+        alphaTestDirty: boolean;
+        alphaTestData: GroupInfoPartData[];
+        transparentOrderDirty: boolean;
+        transparentDirty: boolean;
+        transparentData: TransparentGroupInfoPartData[];
+        sortTransparentData(): void;
+        usedShaderCategories: string[];
+        strides: number[];
+        private _partCount;
+        private _strides;
+        private _usedShaderCategories;
+        private _opaqueData;
+        private _alphaTestData;
+        private _transparentData;
+    }
+    class TransparentSegment {
+        groupInsanceInfo: GroupInstanceInfo;
+        startZ: number;
+        endZ: number;
+        startDataIndex: number;
+        endDataIndex: number;
+    }
+    class GroupInfoPartData {
+        _partData: DynamicFloatArray;
+        _partBuffer: WebGLBuffer;
+        _partBufferSize: number;
+        constructor(stride: number);
+        dispose(engine: Engine): boolean;
+        private _isDisposed;
+    }
+    class TransparentGroupInfoPartData extends GroupInfoPartData {
+        constructor(stride: number, zoff: number);
+    }
+    class ModelRenderCache {
+        constructor(engine: Engine, modelKey: string);
+        dispose(): boolean;
+        isDisposed: boolean;
+        addRef(): number;
+        modelKey: string;
+        /**
+         * Render the model instances
+         * @param instanceInfo
+         * @param context
+         * @return must return true is the rendering succeed, false if the rendering couldn't be done (asset's not yet ready, like Effect)
+         */
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        addInstanceDataParts(data: InstanceDataBase[]): string;
+        removeInstanceData(key: string): void;
+        protected getPartIndexFromId(partId: number): number;
+        protected loadInstancingAttributes(partId: number, effect: Effect): InstancingAttributeInfo[];
+        private static v2;
+        private static v3;
+        private static v4;
+        protected setupUniforms(effect: Effect, partIndex: number, data: DynamicFloatArray, elementCount: number): void;
+        protected _engine: Engine;
+        private _modelKey;
+        _instancesData: StringDictionary<InstanceDataBase[]>;
+        private _nextKey;
+        private _refCounter;
+        _partData: ModelRenderCachePartData[];
+        _partsClassInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>[];
+    }
+    class ModelRenderCachePartData {
+        _partId: number;
+        _zBiasOffset: number;
+        _partDataStride: number;
+        _partUsedCategories: string[];
+        _partJoinedUsedCategories: string;
+    }
+}
+
+declare module BABYLON {
+    class PrepareRender2DContext {
+        constructor();
+        /**
+         * True if the primitive must be refreshed no matter what
+         * This mode is needed because sometimes the primitive doesn't change by itself, but external changes make a refresh of its InstanceData necessary
+         */
+        forceRefreshPrimitive: boolean;
+    }
+    class Render2DContext {
+        constructor(renderMode: number);
+        /**
+         * Define which render Mode should be used to render the primitive: one of Render2DContext.RenderModeXxxx property
+         */
+        renderMode: number;
+        /**
+         * If true hardware instancing is supported and must be used for the rendering. The groupInfoPartData._partBuffer must be used.
+         * If false rendering on a per primitive basis must be made. The following properties must be used
+         *  - groupInfoPartData._partData: contains the primitive instances data to render
+         *  - partDataStartIndex: the index into instanceArrayData of the first instance to render.
+         *  - partDataCount: the number of primitive to render
+         */
+        useInstancing: boolean;
+        /**
+         * Contains the data related to the primitives instances to render
+         */
+        groupInfoPartData: GroupInfoPartData[];
+        /**
+         * The index into groupInfoPartData._partData of the first primitive to render. This is an index, not an offset: it represent the nth primitive which is the first to render.
+         */
+        partDataStartIndex: number;
+        /**
+         * The exclusive end index, you have to render the primitive instances until you reach this one, but don't render this one!
+         */
+        partDataEndIndex: number;
+        /**
+         * The set of primitives to render is opaque.
+         * This is the first rendering pass. All Opaque primitives are rendered. Depth Compare and Write are both enabled.
+         */
+        static RenderModeOpaque: number;
+        /**
+         * The set of primitives to render is using Alpha Test (aka masking).
+         * Alpha Blend is enabled, the AlphaMode must be manually set, the render occurs after the RenderModeOpaque and is depth independent (i.e. primitives are not sorted by depth). Depth Compare and Write are both enabled.
+         */
+        static RenderModeAlphaTest: number;
+        /**
+         * The set of primitives to render is transparent.
+         * Alpha Blend is enabled, the AlphaMode must be manually set, the render occurs after the RenderModeAlphaTest and is depth dependent (i.e. primitives are stored by depth and rendered back to front). Depth Compare is on, but Depth write is Off.
+         */
+        static RenderModeTransparent: number;
+        private static _renderModeOpaque;
+        private static _renderModeAlphaTest;
+        private static _renderModeTransparent;
+        private _renderMode;
+    }
+    /**
+     * This class store information for the pointerEventObservable Observable.
+     * The Observable is divided into many sub events (using the Mask feature of the Observable pattern): PointerOver, PointerEnter, PointerDown, PointerMouseWheel, PointerMove, PointerUp, PointerDown, PointerLeave, PointerGotCapture and PointerLostCapture.
+     */
+    class PrimitivePointerInfo {
+        private static _pointerOver;
+        private static _pointerEnter;
+        private static _pointerDown;
+        private static _pointerMouseWheel;
+        private static _pointerMove;
+        private static _pointerUp;
+        private static _pointerOut;
+        private static _pointerLeave;
+        private static _pointerGotCapture;
+        private static _pointerLostCapture;
+        private static _mouseWheelPrecision;
+        /**
+         * This event type is raised when a pointing device is moved into the hit test boundaries of a primitive.
+         * Bubbles: yes
+         */
+        static PointerOver: number;
+        /**
+         * This event type is raised when a pointing device is moved into the hit test boundaries of a primitive or one of its descendants.
+         * Bubbles: no
+         */
+        static PointerEnter: number;
+        /**
+         * This event type is raised when a pointer enters the active button state (non-zero value in the buttons property). For mouse it's when the device transitions from no buttons depressed to at least one button depressed. For touch/pen this is when a physical contact is made.
+         * Bubbles: yes
+         */
+        static PointerDown: number;
+        /**
+         * This event type is raised when the pointer is a mouse and it's wheel is rolling
+         * Bubbles: yes
+         */
+        static PointerMouseWheel: number;
+        /**
+         * This event type is raised when a pointer change coordinates or when a pointer changes button state, pressure, tilt, or contact geometry and the circumstances produce no other pointers events.
+         * Bubbles: yes
+         */
+        static PointerMove: number;
+        /**
+         * This event type is raised when the pointer leaves the active buttons states (zero value in the buttons property). For mouse, this is when the device transitions from at least one button depressed to no buttons depressed. For touch/pen, this is when physical contact is removed.
+         * Bubbles: yes
+         */
+        static PointerUp: number;
+        /**
+         * This event type is raised when a pointing device is moved out of the hit test the boundaries of a primitive.
+         * Bubbles: yes
+         */
+        static PointerOut: number;
+        /**
+         * This event type is raised when a pointing device is moved out of the hit test boundaries of a primitive and all its descendants.
+         * Bubbles: no
+         */
+        static PointerLeave: number;
+        /**
+         * This event type is raised when a primitive receives the pointer capture. This event is fired at the element that is receiving pointer capture. Subsequent events for that pointer will be fired at this element.
+         * Bubbles: yes
+         */
+        static PointerGotCapture: number;
+        /**
+         * This event type is raised after pointer capture is released for a pointer.
+         * Bubbles: yes
+         */
+        static PointerLostCapture: number;
+        static MouseWheelPrecision: number;
+        /**
+         * Event Type, one of the static PointerXXXX property defined above (PrimitivePointerInfo.PointerOver to PrimitivePointerInfo.PointerLostCapture)
+         */
+        eventType: number;
+        /**
+         * Position of the pointer relative to the bottom/left of the Canvas
+         */
+        canvasPointerPos: Vector2;
+        /**
+         * Position of the pointer relative to the bottom/left of the primitive that registered the Observer
+         */
+        primitivePointerPos: Vector2;
+        /**
+         * The primitive where the event was initiated first (in case of bubbling)
+         */
+        relatedTarget: Prim2DBase;
+        /**
+         * Position of the pointer relative to the bottom/left of the relatedTarget
+         */
+        relatedTargetPointerPos: Vector2;
+        /**
+         * An observable can set this property to true to stop bubbling on the upper levels
+         */
+        cancelBubble: boolean;
+        /**
+         * True if the Control keyboard key is down
+         */
+        ctrlKey: boolean;
+        /**
+         * true if the Shift keyboard key is down
+         */
+        shiftKey: boolean;
+        /**
+         * true if the Alt keyboard key is down
+         */
+        altKey: boolean;
+        /**
+         * true if the Meta keyboard key is down
+         */
+        metaKey: boolean;
+        /**
+         * For button, buttons, refer to https://www.w3.org/TR/pointerevents/#button-states
+         */
+        button: number;
+        /**
+         * For button, buttons, refer to https://www.w3.org/TR/pointerevents/#button-states
+         */
+        buttons: number;
+        /**
+         * The amount of mouse wheel rolled
+         */
+        mouseWheelDelta: number;
+        /**
+         * Id of the Pointer involved in the event
+         */
+        pointerId: number;
+        width: number;
+        height: number;
+        presssure: number;
+        tilt: Vector2;
+        /**
+         * true if the involved pointer is captured for a particular primitive, false otherwise.
+         */
+        isCaptured: boolean;
+        constructor();
+        updateRelatedTarget(prim: Prim2DBase, primPointerPos: Vector2): void;
+        static getEventTypeName(mask: number): string;
+    }
+    /**
+     * Stores information about a Primitive that was intersected
+     */
+    class PrimitiveIntersectedInfo {
+        prim: Prim2DBase;
+        intersectionLocation: Vector2;
+        constructor(prim: Prim2DBase, intersectionLocation: Vector2);
+    }
+    class PrimitiveMargin {
+        constructor(owner: Prim2DBase);
+        top: number;
+        left: number;
+        right: number;
+        bottom: number;
+        private _owner;
+        private _top;
+        private _left;
+        private _right;
+        private _bottom;
+        static Zero(owner: Prim2DBase): PrimitiveMargin;
+    }
+    /**
+     * Main class used for the Primitive Intersection API
+     */
+    class IntersectInfo2D {
+        constructor();
+        /**
+         * Set the pick position, relative to the primitive where the intersection test is made
+         */
+        pickPosition: Vector2;
+        /**
+         * If true the intersection will stop at the first hit, if false all primitives will be tested and the intersectedPrimitives array will be filled accordingly (false default)
+         */
+        findFirstOnly: boolean;
+        /**
+         * If true the intersection test will also be made on hidden primitive (false default)
+         */
+        intersectHidden: boolean;
+        _globalPickPosition: Vector2;
+        _localPickPosition: Vector2;
+        /**
+         * The topmost intersected primitive
+         */
+        topMostIntersectedPrimitive: PrimitiveIntersectedInfo;
+        /**
+         * The array containing all intersected primitive, in no particular order.
+         */
+        intersectedPrimitives: Array<PrimitiveIntersectedInfo>;
+        /**
+         * true if at least one primitive intersected during the test
+         */
+        isIntersected: boolean;
+        isPrimIntersected(prim: Prim2DBase): Vector2;
+        _exit(firstLevel: boolean): void;
+    }
+    class Prim2DBase extends SmartPropertyPrim {
+        static PRIM2DBASE_PROPCOUNT: number;
+        static HAlignLeft: number;
+        static HAlignCenter: number;
+        static HAlignRight: number;
+        static HAlignStretch: number;
+        static VAlignTop: number;
+        static VAlignCenter: number;
+        static VAlignBottom: number;
+        static VAlignStretch: number;
+        protected setupPrim2DBase(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number): void;
+        actionManager: ActionManager;
+        /**
+         * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
+         * @param predicate the predicate to test on each parent
+         * @return the first primitive where the predicate was successful
+         */
+        traverseUp(predicate: (p: Prim2DBase) => boolean): Prim2DBase;
+        /**
+         * Retrieve the owner Canvas2D
+         */
+        owner: Canvas2D;
+        /**
+         * Get the parent primitive (can be the Canvas, only the Canvas has no parent)
+         */
+        parent: Prim2DBase;
+        /**
+         * The array of direct children primitives
+         */
+        children: Prim2DBase[];
+        /**
+         * The identifier of this primitive, may not be unique, it's for information purpose only
+         */
+        id: string;
+        /**
+         * Metadata of the position property
+         */
+        static positionProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the rotation property
+         */
+        static rotationProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the scale property
+         */
+        static scaleProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the origin property
+         */
+        static originProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the levelVisible property
+         */
+        static levelVisibleProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the isVisible property
+         */
+        static isVisibleProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the zOrder property
+         */
+        static zOrderProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the margin property
+         */
+        static marginProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the vAlignment property
+         */
+        static vAlignmentProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the hAlignment property
+         */
+        static hAlignmentProperty: Prim2DPropInfo;
+        position: Vector2;
+        rotation: number;
+        scale: number;
+        /**
+         * this method must be implemented by the primitive type to return its size
+         * @returns The size of the primitive
+         */
+        actualSize: Size;
+        /**
+         * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
+         * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
+         * For instance:
+         * 0,0 means the center is bottom/left. Which is the default for Canvas2D instances
+         * 0.5,0.5 means the center is at the center of the primitive, which is default of all types of Primitives
+         * 0,1 means the center is top/left
+         * @returns The normalized center.
+         */
+        origin: Vector2;
+        levelVisible: boolean;
+        isVisible: boolean;
+        zOrder: number;
+        margin: PrimitiveMargin;
+        hAlignment: number;
+        vAlignment: number;
+        /**
+         * Define if the Primitive can be subject to intersection test or not (default is true)
+         */
+        isPickable: boolean;
+        /**
+         * Return the depth level of the Primitive into the Canvas' Graph. A Canvas will be 0, its direct children 1, and so on.
+         * @returns {}
+         */
+        hierarchyDepth: number;
+        /**
+         * Retrieve the Group that is responsible to render this primitive
+         * @returns {}
+         */
+        renderGroup: Group2D;
+        /**
+         * Get the global transformation matrix of the primitive
+         */
+        globalTransform: Matrix;
+        /**
+         * Get invert of the global transformation matrix of the primitive
+         * @returns {}
+         */
+        invGlobalTransform: Matrix;
+        /**
+         * Get the local transformation of the primitive
+         */
+        localTransform: Matrix;
+        /**
+         * Get the boundingInfo associated to the primitive and its children.
+         * The value is supposed to be always up to date
+         */
+        boundingInfo: BoundingInfo2D;
+        /**
+         * Interaction with the primitive can be create using this Observable. See the PrimitivePointerInfo class for more information
+         */
+        pointerEventObservable: Observable<PrimitivePointerInfo>;
+        protected onZOrderChanged(): void;
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        /**
+         * Capture all the Events of the given PointerId for this primitive.
+         * Don't forget to call releasePointerEventsCapture when done.
+         * @param pointerId the Id of the pointer to capture the events from.
+         */
+        setPointerEventCapture(pointerId: number): boolean;
+        /**
+         * Release a captured pointer made with setPointerEventCapture.
+         * @param pointerId the Id of the pointer to release the capture from.
+         */
+        releasePointerEventsCapture(pointerId: number): boolean;
+        /**
+         * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
+         * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
+         */
+        intersect(intersectInfo: IntersectInfo2D): boolean;
+        moveChild(child: Prim2DBase, previous: Prim2DBase): boolean;
+        private addChild(child);
+        dispose(): boolean;
+        getActualZOffset(): number;
+        protected onPrimBecomesDirty(): void;
+        _marginChanged(): void;
+        _needPrepare(): boolean;
+        _prepareRender(context: PrepareRender2DContext): void;
+        _prepareRenderPre(context: PrepareRender2DContext): void;
+        _prepareRenderPost(context: PrepareRender2DContext): void;
+        protected static CheckParent(parent: Prim2DBase): void;
+        protected updateGlobalTransVisOf(list: Prim2DBase[], recurse: boolean): void;
+        private _updateLocalTransform();
+        protected updateGlobalTransVis(recurse: boolean): void;
+        private static _hAlignLeft;
+        private static _hAlignCenter;
+        private static _hAlignRight;
+        private static _hAlignStretch;
+        private static _vAlignTop;
+        private static _vAlignCenter;
+        private static _vAlignBottom;
+        private static _vAlignStretch;
+        private _owner;
+        private _parent;
+        private _actionManager;
+        protected _children: Array<Prim2DBase>;
+        private _renderGroup;
+        private _hierarchyDepth;
+        protected _hierarchyDepthOffset: number;
+        protected _siblingDepthOffset: number;
+        private _zOrder;
+        private _margin;
+        private _hAlignment;
+        private _vAlignment;
+        private _levelVisible;
+        _pointerEventObservable: Observable<PrimitivePointerInfo>;
+        _boundingInfoDirty: boolean;
+        protected _visibilityChanged: any;
+        private _isPickable;
+        private _isVisible;
+        private _id;
+        private _position;
+        private _rotation;
+        private _scale;
+        private _origin;
+        protected _parentTransformStep: number;
+        protected _globalTransformStep: number;
+        protected _globalTransformProcessStep: number;
+        protected _localTransform: Matrix;
+        protected _globalTransform: Matrix;
+        protected _invGlobalTransform: Matrix;
+    }
+}
+
+declare module BABYLON {
+    class Rectangle2DRenderCache extends ModelRenderCache {
+        effectsReady: boolean;
+        fillVB: WebGLBuffer;
+        fillIB: WebGLBuffer;
+        fillIndicesCount: number;
+        instancingFillAttributes: InstancingAttributeInfo[];
+        effectFill: Effect;
+        effectFillInstanced: Effect;
+        borderVB: WebGLBuffer;
+        borderIB: WebGLBuffer;
+        borderIndicesCount: number;
+        instancingBorderAttributes: InstancingAttributeInfo[];
+        effectBorder: Effect;
+        effectBorderInstanced: Effect;
+        constructor(engine: Engine, modelKey: string);
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        dispose(): boolean;
+    }
+    class Rectangle2DInstanceData extends Shape2DInstanceData {
+        constructor(partId: number);
+        properties: Vector3;
+    }
+    class Rectangle2D extends Shape2D {
+        static sizeProperty: Prim2DPropInfo;
+        static notRoundedProperty: Prim2DPropInfo;
+        static roundRadiusProperty: Prim2DPropInfo;
+        actualSize: Size;
+        size: Size;
+        notRounded: boolean;
+        roundRadius: number;
+        private static _i0;
+        private static _i1;
+        private static _i2;
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        protected updateLevelBoundingInfo(): void;
+        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius: any, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number): void;
+        /**
+         * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
+         *  - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp rectangle).
+         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
+         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - borderThickness: the thickness of the drawn border, default is 1.
+         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        static Create(parent: Prim2DBase, options: {
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            origin?: Vector2;
+            size?: Size;
+            width?: number;
+            height?: number;
+            roundRadius?: number;
+            fill?: IBrush2D;
+            border?: IBrush2D;
+            borderThickness?: number;
+            isVisible?: boolean;
+            marginTop?: number;
+            marginLeft?: number;
+            marginRight?: number;
+            marginBottom?: number;
+            vAlignment?: number;
+            hAlignment?: number;
+        }): Rectangle2D;
+        static roundSubdivisions: number;
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Rectangle2DRenderCache;
+        protected createInstanceDataParts(): InstanceDataBase[];
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _size;
+        private _notRounded;
+        private _roundRadius;
+    }
+}
+
+declare module BABYLON {
+    class InstanceClassInfo {
+        constructor(base: InstanceClassInfo);
+        mapProperty(propInfo: InstancePropInfo, push: boolean): void;
+        getInstancingAttributeInfos(effect: Effect, categories: string[]): InstancingAttributeInfo[];
+        getShaderAttributes(categories: string[]): string[];
+        private _getBaseOffset(categories);
+        static _CurCategories: string;
+        private _baseInfo;
+        private _nextOffset;
+        private _attributes;
+    }
+    class InstancePropInfo {
+        attributeName: string;
+        category: string;
+        size: number;
+        shaderOffset: number;
+        instanceOffset: StringDictionary<number>;
+        dataType: ShaderDataType;
+        delimitedCategory: string;
+        constructor();
+        setSize(val: any): void;
+        writeData(array: Float32Array, offset: number, val: any): void;
+    }
+    function instanceData<T>(category?: string, shaderAttributeName?: string): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+    class InstanceDataBase {
+        constructor(partId: number, dataElementCount: number);
+        id: number;
+        isVisible: boolean;
+        zBias: Vector2;
+        transformX: Vector4;
+        transformY: Vector4;
+        origin: Vector2;
+        getClassTreeInfo(): ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
+        allocElements(): void;
+        freeElements(): void;
+        dataElementCount: number;
+        curElement: number;
+        dataElements: DynamicFloatArrayElementInfo[];
+        dataBuffer: DynamicFloatArray;
+        typeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
+        private _dataElementCount;
+    }
+    class RenderablePrim2D extends Prim2DBase {
+        static RENDERABLEPRIM2D_PROPCOUNT: number;
+        static isAlphaTestProperty: Prim2DPropInfo;
+        static isTransparentProperty: Prim2DPropInfo;
+        isAlphaTest: boolean;
+        isTransparent: boolean;
+        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number): void;
+        dispose(): boolean;
+        _prepareRenderPre(context: PrepareRender2DContext): void;
+        private _createModelRenderCache();
+        private _createModelDataParts();
+        private _setupModelRenderCache(parts);
+        protected onZOrderChanged(): void;
+        private _updateInstanceDataParts(gii);
+        _getFirstIndexInDataBuffer(): number;
+        _getLastIndexInDataBuffer(): number;
+        _getNextPrimZOrder(): number;
+        _getPrevPrimZOrder(): number;
+        /**
+         * Transform a given point using the Primitive's origin setting.
+         * This method requires the Primitive's actualSize to be accurate
+         * @param p the point to transform
+         * @param originOffset an offset applied on the current origin before performing the transformation. Depending on which frame of reference your data is expressed you may have to apply a offset. (if you data is expressed from the bottom/left, no offset is required. If it's expressed from the center the a [-0.5;-0.5] offset has to be applied.
+         * @param res an allocated Vector2 that will receive the transformed content
+         */
+        protected transformPointWithOriginByRef(p: Vector2, originOffset: Vector2, res: Vector2): void;
+        protected transformPointWithOriginToRef(p: Vector2, originOffset: Vector2, res: Vector2): Vector2;
+        /**
+         * Get the info for a given effect based on the dataPart metadata
+         * @param dataPartId partId in part list to get the info
+         * @param vertexBufferAttributes vertex buffer attributes to manually add
+         * @param useInstanced specified if Instanced Array should be used, if null the engine caps will be used (so true if WebGL supports it, false otherwise), but you have the possibility to override the engine capability. However, if you manually set true but the engine does not support Instanced Array, this method will return null
+         */
+        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[], useInstanced?: boolean): {
+            attributes: string[];
+            uniforms: string[];
+            defines: string;
+        };
+        protected modelRenderCache: ModelRenderCache;
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): void;
+        protected createInstanceDataParts(): InstanceDataBase[];
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
+        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any;
+        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        /**
+         * Update the instanceDataBase level properties of a part
+         * @param part the part to update
+         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text). You MUST also set customSize.
+         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin property.
+         */
+        protected updateInstanceDataPart(part: InstanceDataBase, positionOffset?: Vector2, customSize?: Size): void;
+        private _modelRenderCache;
+        private _modelRenderInstanceID;
+        private _transparentPrimitiveInfo;
+        protected _instanceDataParts: InstanceDataBase[];
+        protected _isAlphaTest: boolean;
+        protected _isTransparent: boolean;
+    }
+}
+
+declare module BABYLON {
+    class Shape2D extends RenderablePrim2D {
+        static SHAPE2D_BORDERPARTID: number;
+        static SHAPE2D_FILLPARTID: number;
+        static SHAPE2D_CATEGORY_BORDER: string;
+        static SHAPE2D_CATEGORY_BORDERSOLID: string;
+        static SHAPE2D_CATEGORY_BORDERGRADIENT: string;
+        static SHAPE2D_CATEGORY_FILLSOLID: string;
+        static SHAPE2D_CATEGORY_FILLGRADIENT: string;
+        static SHAPE2D_PROPCOUNT: number;
+        static borderProperty: Prim2DPropInfo;
+        static fillProperty: Prim2DPropInfo;
+        static borderThicknessProperty: Prim2DPropInfo;
+        border: IBrush2D;
+        fill: IBrush2D;
+        borderThickness: number;
+        setupShape2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D, borderThickness: number, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number): void;
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _updateTransparencyStatus();
+        private _border;
+        private _borderThickness;
+        private _fill;
+    }
+    class Shape2DInstanceData extends InstanceDataBase {
+        fillSolidColor: Color4;
+        fillGradientColor1: Color4;
+        fillGradientColor2: Color4;
+        fillGradientTY: Vector4;
+        borderThickness: number;
+        borderSolidColor: Color4;
+        borderGradientColor1: Color4;
+        borderGradientColor2: Color4;
+        borderGradientTY: Vector4;
+    }
+}
+
+declare module BABYLON {
+    class Prim2DClassInfo {
+    }
+    class Prim2DPropInfo {
+        static PROPKIND_MODEL: number;
+        static PROPKIND_INSTANCE: number;
+        static PROPKIND_DYNAMIC: number;
+        id: number;
+        flagId: number;
+        kind: number;
+        name: string;
+        dirtyBoundingInfo: boolean;
+        typeLevelCompare: boolean;
+    }
+    class PropertyChangedInfo {
+        oldValue: any;
+        newValue: any;
+        propertyName: string;
+    }
+    interface IPropertyChanged {
+        propertyChanged: Observable<PropertyChangedInfo>;
+    }
+    class ClassTreeInfo<TClass, TProp> {
+        constructor(baseClass: ClassTreeInfo<TClass, TProp>, type: Object, classContentFactory: (base: TClass) => TClass);
+        classContent: TClass;
+        type: Object;
+        levelContent: StringDictionary<TProp>;
+        fullContent: StringDictionary<TProp>;
+        getLevelOf(type: Object): ClassTreeInfo<TClass, TProp>;
+        getOrAddType(baseType: Object, type: Object): ClassTreeInfo<TClass, TProp>;
+        static get<TClass, TProp>(type: Object): ClassTreeInfo<TClass, TProp>;
+        static getOrRegister<TClass, TProp>(type: Object, classContentFactory: (base: TClass) => TClass): ClassTreeInfo<TClass, TProp>;
+        private _type;
+        private _classContent;
+        private _baseClass;
+        private _subClasses;
+        private _levelContent;
+        private _fullContent;
+        private _classContentFactory;
+    }
+    class SmartPropertyPrim implements IPropertyChanged {
+        protected setupSmartPropertyPrim(): void;
+        /**
+         * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
+         * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
+         */
+        propertyChanged: Observable<PropertyChangedInfo>;
+        /**
+         * Check if the object is disposed or not.
+         * @returns true if the object is dispose, false otherwise.
+         */
+        isDisposed: boolean;
+        /**
+         * Disposable pattern, this method must be overloaded by derived types in order to clean up hardware related resources.
+         * @returns false if the object is already dispose, true otherwise. Your implementation must call super.dispose() and check for a false return and return immediately if it's the case.
+         */
+        dispose(): boolean;
+        /**
+         * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
+         */
+        animations: Animation[];
+        /**
+         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
+         * Look at Sprite2D for more information
+         */
+        getAnimatables(): IAnimatable[];
+        /**
+         * Property giving the Model Key associated to the property.
+         * This value is constructed from the type of the primitive and all the name/value of its properties declared with the modelLevelProperty decorator
+         * @returns the model key string.
+         */
+        modelKey: string;
+        /**
+         * States if the Primitive is dirty and should be rendered again next time.
+         * @returns true is dirty, false otherwise
+         */
+        isDirty: boolean;
+        /**
+         * Access the dictionary of properties metadata. Only properties decorated with XXXXLevelProperty are concerned
+         * @returns the dictionary, the key is the property name as declared in Javascript, the value is the metadata object
+         */
+        private propDic;
+        private static _createPropInfo(target, propName, propId, dirtyBoundingInfo, typeLevelCompare, kind);
+        private static _checkUnchanged(curValue, newValue);
+        private static propChangedInfo;
+        markAsDirty(propertyName: string): void;
+        private _handlePropChanged<T>(curValue, newValue, propName, propInfo, typeLevelCompare);
+        protected handleGroupChanged(prop: Prim2DPropInfo): void;
+        /**
+         * Check if a given set of properties are dirty or not.
+         * @param flags a ORed combination of Prim2DPropInfo.flagId values
+         * @return true if at least one property is dirty, false if none of them are.
+         */
+        checkPropertiesDirty(flags: number): boolean;
+        /**
+         * Clear a given set of properties.
+         * @param flags a ORed combination of Prim2DPropInfo.flagId values
+         * @return the new set of property still marked as dirty
+         */
+        protected clearPropertiesDirty(flags: number): number;
+        _resetPropertiesDirty(): void;
+        /**
+         * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
+         * @returns {}
+         */
+        levelBoundingInfo: BoundingInfo2D;
+        /**
+         * This method must be overridden by a given Primitive implementation to compute its boundingInfo
+         */
+        protected updateLevelBoundingInfo(): void;
+        /**
+         * Property method called when the Primitive becomes dirty
+         */
+        protected onPrimBecomesDirty(): void;
+        static _hookProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare: boolean, dirtyBoundingInfo: boolean, kind: number): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+        private _modelKey;
+        string: any;
+        private _propInfo;
+        private _isDisposed;
+        protected _levelBoundingInfoDirty: boolean;
+        protected _levelBoundingInfo: BoundingInfo2D;
+        protected _boundingInfo: BoundingInfo2D;
+        protected _modelDirty: boolean;
+        protected _instanceDirtyFlags: number;
+    }
+    function modelLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+    function instanceLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+    function dynamicLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+}
+
+declare module BABYLON {
+    class Sprite2DRenderCache extends ModelRenderCache {
+        effectsReady: boolean;
+        vb: WebGLBuffer;
+        ib: WebGLBuffer;
+        instancingAttributes: InstancingAttributeInfo[];
+        texture: Texture;
+        effect: Effect;
+        effectInstanced: Effect;
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        dispose(): boolean;
+    }
+    class Sprite2DInstanceData extends InstanceDataBase {
+        constructor(partId: number);
+        topLeftUV: Vector2;
+        sizeUV: Vector2;
+        textureSize: Vector2;
+        properties: Vector3;
+    }
+    class Sprite2D extends RenderablePrim2D {
+        static SPRITE2D_MAINPARTID: number;
+        static textureProperty: Prim2DPropInfo;
+        static spriteSizeProperty: Prim2DPropInfo;
+        static spriteLocationProperty: Prim2DPropInfo;
+        static spriteFrameProperty: Prim2DPropInfo;
+        static invertYProperty: Prim2DPropInfo;
+        static alignToPixelProperty: Prim2DPropInfo;
+        texture: Texture;
+        actualSize: Size;
+        spriteSize: Size;
+        spriteLocation: Vector2;
+        spriteFrame: number;
+        invertY: boolean;
+        alignToPixel: boolean;
+        protected updateLevelBoundingInfo(): void;
+        getAnimatables(): IAnimatable[];
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean, alignToPixel: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number): void;
+        /**
+         * Create an 2D Sprite primitive
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * @param texture the texture that stores the sprite to render
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - spriteSize: the size of the sprite, if null the size of the given texture will be used, default is null.
+         *  - spriteLocation: the location in the texture of the top/left corner of the Sprite to display, default is null (0,0)
+         *  - invertY: if true the texture Y will be inverted, default is false.
+         *  - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
+         *  - isVisible: true if the sprite must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        static Create(parent: Prim2DBase, texture: Texture, options: {
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            origin?: Vector2;
+            spriteSize?: Size;
+            spriteLocation?: Vector2;
+            invertY?: boolean;
+            alignToPixel?: boolean;
+            isVisible?: boolean;
+            marginTop?: number;
+            marginLeft?: number;
+            marginRight?: number;
+            marginBottom?: number;
+            vAlignment?: number;
+            hAlignment?: number;
+        }): Sprite2D;
+        static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D;
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Sprite2DRenderCache;
+        protected createInstanceDataParts(): InstanceDataBase[];
+        private static _prop;
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _texture;
+        private _size;
+        private _location;
+        private _spriteFrame;
+        private _invertY;
+        private _alignToPixel;
+    }
+}
+
+declare module BABYLON {
+    class Text2DRenderCache extends ModelRenderCache {
+        effectsReady: boolean;
+        vb: WebGLBuffer;
+        ib: WebGLBuffer;
+        instancingAttributes: InstancingAttributeInfo[];
+        fontTexture: FontTexture;
+        effect: Effect;
+        effectInstanced: Effect;
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        dispose(): boolean;
+    }
+    class Text2DInstanceData extends InstanceDataBase {
+        constructor(partId: number, dataElementCount: number);
+        topLeftUV: Vector2;
+        sizeUV: Vector2;
+        textureSize: Vector2;
+        color: Color4;
+    }
+    class Text2D extends RenderablePrim2D {
+        static TEXT2D_MAINPARTID: number;
+        static fontProperty: Prim2DPropInfo;
+        static defaultFontColorProperty: Prim2DPropInfo;
+        static textProperty: Prim2DPropInfo;
+        static areaSizeProperty: Prim2DPropInfo;
+        fontName: string;
+        defaultFontColor: Color4;
+        text: string;
+        areaSize: Size;
+        actualSize: Size;
+        protected fontTexture: FontTexture;
+        dispose(): boolean;
+        protected updateLevelBoundingInfo(): void;
+        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, tabulationSize: number, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number): void;
+        /**
+         * Create a Text primitive
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * @param text the text to display
+         * Options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
+         *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
+         *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
+         *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
+         *  - isVisible: true if the text must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        static Create(parent: Prim2DBase, text: string, options?: {
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            origin?: Vector2;
+            fontName?: string;
+            defaultFontColor?: Color4;
+            areaSize?: Size;
+            tabulationSize?: number;
+            isVisible?: boolean;
+            marginTop?: number;
+            marginLeft?: number;
+            marginRight?: number;
+            marginBottom?: number;
+            hAlignment?: number;
+            vAlignment?: number;
+        }): Text2D;
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Text2DRenderCache;
+        protected createInstanceDataParts(): InstanceDataBase[];
+        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any;
+        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _updateCharCount();
+        private _fontTexture;
+        private _tabulationSize;
+        private _charCount;
+        private _fontName;
+        private _defaultFontColor;
+        private _text;
+        private _areaSize;
+        private _actualSize;
+        private _vAlign;
+        private _hAlign;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This is the class that is used to display a World Space Canvas into a scene
+     */
+    class WorldSpaceCanvas2D extends Mesh {
+        constructor(name: string, scene: Scene, canvas: Canvas2D);
+        dispose(): void;
+        private _canvas;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBox {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        extendSize: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingInfo {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
+        intersectsPlane(plane: Plane): number;
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        private _camera;
+        private _transformationMatrix;
+        private _enabled;
+        private _labelsEnabled;
+        private _displayStatistics;
+        private _displayTree;
+        private _displayLogs;
+        private _globalDiv;
+        private _statsDiv;
+        private _statsSubsetDiv;
+        private _optionsDiv;
+        private _optionsSubsetDiv;
+        private _logDiv;
+        private _logSubsetDiv;
+        private _treeDiv;
+        private _treeSubsetDiv;
+        private _drawingCanvas;
+        private _drawingContext;
+        private _rootElement;
+        private _skeletonViewers;
+        _syncPositions: () => void;
+        private _syncData;
+        private _syncUI;
+        private _onCanvasClick;
+        private _clickPosition;
+        private _ratio;
+        private _identityMatrix;
+        private _showUI;
+        private _needToRefreshMeshesTree;
+        shouldDisplayLabel: (node: Node) => boolean;
+        shouldDisplayAxis: (mesh: Mesh) => boolean;
+        axisRatio: number;
+        accentColor: string;
+        customStatsFunction: () => string;
+        constructor(scene: Scene);
+        private _refreshMeshesTreeContent();
+        private _renderSingleAxis(zero, unit, unitText, label, color);
+        private _renderAxis(projectedPosition, mesh, globalViewport);
+        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
+        private _isClickInsideRect(x, y, width, height);
+        isVisible(): boolean;
+        hide(): void;
+        private _clearSkeletonViewers();
+        show(showUI?: boolean, camera?: Camera, rootElement?: HTMLElement): void;
+        private _clearLabels();
+        private _generateheader(root, text);
+        private _generateTexBox(root, title, color);
+        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
+        private _generateCheckBox(root, title, initialState, task, tag?);
+        private _generateButton(root, title, task, tag?);
+        private _generateRadio(root, title, name, initialState, task, tag?);
+        private _generateDOMelements();
+        private _displayStats();
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        private _updateBoneMatrix(bone);
+        dispose(): void;
     }
 }
 
@@ -8420,12 +8719,14 @@ declare module BABYLON {
         static StartingAt(x: number, y: number): Path2;
     }
     class PolygonMeshBuilder {
-        private _swctx;
         private _points;
         private _outlinepoints;
         private _holes;
         private _name;
         private _scene;
+        private _epoints;
+        private _eholes;
+        private _addToepoint(points);
         constructor(name: string, contours: Path2, scene: Scene);
         constructor(name: string, contours: Vector2[], scene: Scene);
         addHole(hole: Vector2[]): PolygonMeshBuilder;
@@ -8520,381 +8821,6 @@ declare module BABYLON {
         static MatricesWeightsKind: string;
         static MatricesIndicesExtraKind: string;
         static MatricesWeightsExtraKind: string;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorJoint {
-        mainImpostor: PhysicsImpostor;
-        connectedImpostor: PhysicsImpostor;
-        joint: PhysicsJoint;
-    }
-    class PhysicsEngine {
-        private _physicsPlugin;
-        gravity: Vector3;
-        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
-        setGravity(gravity: Vector3): void;
-        /**
-         * Set the time step of the physics engine.
-         * default is 1/60.
-         * To slow it down, enter 1/600 for example.
-         * To speed it up, 1/30
-         * @param {number} newTimeStep the new timestep to apply to this world.
-         */
-        setTimeStep(newTimeStep?: number): void;
-        dispose(): void;
-        getPhysicsPluginName(): string;
-        /**
-         * @Deprecated
-         *
-         */
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static HeightmapImpostor: number;
-        static CapsuleImpostor: number;
-        static ConeImpostor: number;
-        static ConvexHullImpostor: number;
-        static Epsilon: number;
-        private _impostors;
-        private _joints;
-        /**
-         * Adding a new impostor for the impostor tracking.
-         * This will be done by the impostor itself.
-         * @param {PhysicsImpostor} impostor the impostor to add
-         */
-        addImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Remove an impostor from the engine.
-         * This impostor and its mesh will not longer be updated by the physics engine.
-         * @param {PhysicsImpostor} impostor the impostor to remove
-         */
-        removeImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Add a joint to the physics engine
-         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
-         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
-         * @param {PhysicsJoint} the joint that will connect both impostors.
-         */
-        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Called by the scene. no need to call it.
-         */
-        _step(delta: number): void;
-        getPhysicsPlugin(): IPhysicsEnginePlugin;
-        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor;
-        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
-    }
-    interface IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        setGravity(gravity: Vector3): any;
-        setTimeStep(timeStep: number): any;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        generatePhysicsBody(impostor: PhysicsImpostor): any;
-        removePhysicsBody(impostor: PhysicsImpostor): any;
-        generateJoint(joint: PhysicsImpostorJoint): any;
-        removeJoint(joint: PhysicsImpostorJoint): any;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        getLinearVelocity(impostor: PhysicsImpostor): Vector3;
-        getAngularVelocity(impostor: PhysicsImpostor): Vector3;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
-        sleepBody(impostor: PhysicsImpostor): any;
-        wakeUpBody(impostor: PhysicsImpostor): any;
-        updateDistanceJoint(joint: DistanceJoint, maxDistance: number, minDistance?: number): any;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): any;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
-        dispose(): any;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorParameters {
-        mass: number;
-        friction?: number;
-        restitution?: number;
-        nativeOptions?: any;
-    }
-    interface IPhysicsEnabledObject {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        rotation?: Vector3;
-        parent?: any;
-        getBoundingInfo?(): BoundingInfo;
-        computeWorldMatrix?(force: boolean): void;
-        getChildMeshes?(): Array<AbstractMesh>;
-        getVerticesData?(kind: string): Array<number> | Float32Array;
-        getIndices?(): Array<number> | Int32Array;
-        getScene?(): Scene;
-    }
-    class PhysicsImpostor {
-        object: IPhysicsEnabledObject;
-        type: number;
-        private _options;
-        private _scene;
-        static DEFAULT_OBJECT_SIZE: Vector3;
-        private _physicsEngine;
-        private _physicsBody;
-        private _bodyUpdateRequired;
-        private _onBeforePhysicsStepCallbacks;
-        private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
-        private _deltaPosition;
-        private _deltaRotation;
-        private _deltaRotationConjugated;
-        private _parent;
-        uniqueId: number;
-        private _joints;
-        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene);
-        /**
-         * This function will completly initialize this impostor.
-         * It will create a new body - but only if this mesh has no parent.
-         * If it has, this impostor will not be used other than to define the impostor
-         * of the child mesh.
-         */
-        _init(): void;
-        private _getPhysicsParent();
-        /**
-         * Should a new body be generated.
-         */
-        isBodyInitRequired(): boolean;
-        setScalingUpdated(updated: boolean): void;
-        /**
-         * Force a regeneration of this or the parent's impostor's body.
-         * Use under cautious - This will remove all joints already implemented.
-         */
-        forceUpdate(): void;
-        /**
-         * Gets the body that holds this impostor. Either its own, or its parent.
-         */
-        /**
-         * Set the physics body. Used mainly by the physics engine/plugin
-         */
-        physicsBody: any;
-        parent: PhysicsImpostor;
-        resetUpdateFlags(): void;
-        getObjectExtendSize(): Vector3;
-        getObjectCenter(): Vector3;
-        /**
-         * Get a specific parametes from the options parameter.
-         */
-        getParam(paramName: string): any;
-        /**
-         * Sets a specific parameter in the options given to the physics plugin
-         */
-        setParam(paramName: string, value: number): void;
-        /**
-         * Specifically change the body's mass option. Won't recreate the physics body object
-         */
-        setMass(mass: number): void;
-        getLinearVelocity(): Vector3;
-        /**
-         * Set the body's linear velocity.
-         */
-        setLinearVelocity(velocity: Vector3): void;
-        getAngularVelocity(): Vector3;
-        /**
-         * Set the body's linear velocity.
-         */
-        setAngularVelocity(velocity: Vector3): void;
-        /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
-         */
-        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
-        /**
-         * Register a function that will be executed before the physics world is stepping forward.
-         */
-        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * Register a function that will be executed after the physics step
-         */
-        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * register a function that will be executed when this impostor collides against a different body.
-         */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
-        private _tmpPositionWithDelta;
-        private _tmpRotationWithDelta;
-        /**
-         * this function is executed by the physics engine.
-         */
-        beforeStep: () => void;
-        /**
-         * this function is executed by the physics engine.
-         */
-        afterStep: () => void;
-        onCollide: (e: {
-            body: any;
-        }) => void;
-        /**
-         * Apply a force
-         */
-        applyForce(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * Apply an impulse
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * A help function to create a joint.
-         */
-        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
-        /**
-         * Add a joint to this impostor with a different impostor.
-         */
-        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Will keep this body still, in a sleep mode.
-         */
-        sleep(): void;
-        /**
-         * Wake the body up.
-         */
-        wakeUp(): void;
-        clone(newObject: IPhysicsEnabledObject): PhysicsImpostor;
-        dispose(): void;
-        setDeltaPosition(position: Vector3): void;
-        setDeltaRotation(rotation: Quaternion): void;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static ParticleImpostor: number;
-        static HeightmapImpostor: number;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsJointData {
-        mainPivot?: Vector3;
-        connectedPivot?: Vector3;
-        mainAxis?: Vector3;
-        connectedAxis?: Vector3;
-        collision?: boolean;
-        nativeParams?: any;
-    }
-    /**
-     * This is a holder class for the physics joint created by the physics plugin.
-     * It holds a set of functions to control the underlying joint.
-     */
-    class PhysicsJoint {
-        type: number;
-        jointData: PhysicsJointData;
-        private _physicsJoint;
-        protected _physicsPlugin: IPhysicsEnginePlugin;
-        constructor(type: number, jointData: PhysicsJointData);
-        physicsJoint: any;
-        physicsPlugin: IPhysicsEnginePlugin;
-        /**
-         * Execute a function that is physics-plugin specific.
-         * @param {Function} func the function that will be executed.
-         *                        It accepts two parameters: the physics world and the physics joint.
-         */
-        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
-        static DistanceJoint: number;
-        static HingeJoint: number;
-        static BallAndSocketJoint: number;
-        static WheelJoint: number;
-        static SliderJoint: number;
-        static PrismaticJoint: number;
-        static UniversalJoint: number;
-        static Hinge2Joint: number;
-        static PointToPointJoint: number;
-        static SpringJoint: number;
-    }
-    /**
-     * A class representing a physics distance joint.
-     */
-    class DistanceJoint extends PhysicsJoint {
-        constructor(jointData: DistanceJointData);
-        /**
-         * Update the predefined distance.
-         */
-        updateDistance(maxDistance: number, minDistance?: number): void;
-    }
-    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-        constructor(type: number, jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a single hinge physics joint
-     */
-    class HingeJoint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a dual hinge physics joint (same as wheel joint)
-     */
-    class Hinge2Joint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        /**
-         * Set the motor limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} upperLimit the upper limit
-         * @param {number} lowerLimit lower limit
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface IMotorEnabledJoint {
-        physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): any;
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
-    }
-    interface DistanceJointData extends PhysicsJointData {
-        maxDistance: number;
-    }
-    interface SpringJointData extends PhysicsJointData {
-        length: number;
-        stiffness: number;
-        damping: number;
     }
 }
 
@@ -9295,6 +9221,382 @@ declare module BABYLON {
         * @param update the boolean update value actually passed to setParticles()
         */
         afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
+    }
+    class PhysicsEngine {
+        private _physicsPlugin;
+        gravity: Vector3;
+        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
+        setGravity(gravity: Vector3): void;
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep?: number): void;
+        dispose(): void;
+        getPhysicsPluginName(): string;
+        /**
+         * @Deprecated
+         *
+         */
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static HeightmapImpostor: number;
+        static CapsuleImpostor: number;
+        static ConeImpostor: number;
+        static ConvexHullImpostor: number;
+        static Epsilon: number;
+        private _impostors;
+        private _joints;
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
+        addImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
+        removeImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
+        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Called by the scene. no need to call it.
+         */
+        _step(delta: number): void;
+        getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor;
+        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
+    }
+    interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3): any;
+        setTimeStep(timeStep: number): any;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        generatePhysicsBody(impostor: PhysicsImpostor): any;
+        removePhysicsBody(impostor: PhysicsImpostor): any;
+        generateJoint(joint: PhysicsImpostorJoint): any;
+        removeJoint(joint: PhysicsImpostorJoint): any;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        getLinearVelocity(impostor: PhysicsImpostor): Vector3;
+        getAngularVelocity(impostor: PhysicsImpostor): Vector3;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
+        sleepBody(impostor: PhysicsImpostor): any;
+        wakeUpBody(impostor: PhysicsImpostor): any;
+        updateDistanceJoint(joint: DistanceJoint, maxDistance: number, minDistance?: number): any;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): any;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
+        dispose(): any;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorParameters {
+        mass: number;
+        friction?: number;
+        restitution?: number;
+        nativeOptions?: any;
+    }
+    interface IPhysicsEnabledObject {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        rotation?: Vector3;
+        parent?: any;
+        getBoundingInfo?(): BoundingInfo;
+        computeWorldMatrix?(force: boolean): void;
+        getChildMeshes?(): Array<AbstractMesh>;
+        getVerticesData?(kind: string): Array<number> | Float32Array;
+        getIndices?(): Array<number> | Int32Array;
+        getScene?(): Scene;
+    }
+    class PhysicsImpostor {
+        object: IPhysicsEnabledObject;
+        type: number;
+        private _options;
+        private _scene;
+        static DEFAULT_OBJECT_SIZE: Vector3;
+        private _physicsEngine;
+        private _physicsBody;
+        private _bodyUpdateRequired;
+        private _onBeforePhysicsStepCallbacks;
+        private _onAfterPhysicsStepCallbacks;
+        private _onPhysicsCollideCallbacks;
+        private _deltaPosition;
+        private _deltaRotation;
+        private _deltaRotationConjugated;
+        private _parent;
+        uniqueId: number;
+        private _joints;
+        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene);
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
+        _init(): void;
+        private _getPhysicsParent();
+        /**
+         * Should a new body be generated.
+         */
+        isBodyInitRequired(): boolean;
+        setScalingUpdated(updated: boolean): void;
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
+        forceUpdate(): void;
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
+        /**
+         * Set the physics body. Used mainly by the physics engine/plugin
+         */
+        physicsBody: any;
+        parent: PhysicsImpostor;
+        resetUpdateFlags(): void;
+        getObjectExtendSize(): Vector3;
+        getObjectCenter(): Vector3;
+        /**
+         * Get a specific parametes from the options parameter.
+         */
+        getParam(paramName: string): any;
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
+        setParam(paramName: string, value: number): void;
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        setMass(mass: number): void;
+        getLinearVelocity(): Vector3;
+        /**
+         * Set the body's linear velocity.
+         */
+        setLinearVelocity(velocity: Vector3): void;
+        getAngularVelocity(): Vector3;
+        /**
+         * Set the body's linear velocity.
+         */
+        setAngularVelocity(velocity: Vector3): void;
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
+        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
+        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * Register a function that will be executed after the physics step
+         */
+        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        private _tmpPositionWithDelta;
+        private _tmpRotationWithDelta;
+        /**
+         * this function is executed by the physics engine.
+         */
+        beforeStep: () => void;
+        /**
+         * this function is executed by the physics engine.
+         */
+        afterStep: () => void;
+        onCollide: (e: {
+            body: any;
+        }) => void;
+        /**
+         * Apply a force
+         */
+        applyForce(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Apply an impulse
+         */
+        applyImpulse(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * A help function to create a joint.
+         */
+        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
+        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        sleep(): void;
+        /**
+         * Wake the body up.
+         */
+        wakeUp(): void;
+        clone(newObject: IPhysicsEnabledObject): PhysicsImpostor;
+        dispose(): void;
+        setDeltaPosition(position: Vector3): void;
+        setDeltaRotation(rotation: Quaternion): void;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static ParticleImpostor: number;
+        static HeightmapImpostor: number;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsJointData {
+        mainPivot?: Vector3;
+        connectedPivot?: Vector3;
+        mainAxis?: Vector3;
+        connectedAxis?: Vector3;
+        collision?: boolean;
+        nativeParams?: any;
+    }
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
+    class PhysicsJoint {
+        type: number;
+        jointData: PhysicsJointData;
+        private _physicsJoint;
+        protected _physicsPlugin: IPhysicsEnginePlugin;
+        constructor(type: number, jointData: PhysicsJointData);
+        physicsJoint: any;
+        physicsPlugin: IPhysicsEnginePlugin;
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed.
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
+        static DistanceJoint: number;
+        static HingeJoint: number;
+        static BallAndSocketJoint: number;
+        static WheelJoint: number;
+        static SliderJoint: number;
+        static PrismaticJoint: number;
+        static UniversalJoint: number;
+        static Hinge2Joint: number;
+        static PointToPointJoint: number;
+        static SpringJoint: number;
+        static LockJoint: number;
+    }
+    /**
+     * A class representing a physics distance joint.
+     */
+    class DistanceJoint extends PhysicsJoint {
+        constructor(jointData: DistanceJointData);
+        /**
+         * Update the predefined distance.
+         */
+        updateDistance(maxDistance: number, minDistance?: number): void;
+    }
+    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
+        constructor(type: number, jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a single hinge physics joint
+     */
+    class HingeJoint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
+    class Hinge2Joint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface IMotorEnabledJoint {
+        physicsJoint: any;
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): any;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
+    }
+    interface DistanceJointData extends PhysicsJointData {
+        maxDistance: number;
+    }
+    interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
     }
 }
 
@@ -10355,12 +10657,40 @@ declare module BABYLON {
          * @returns the size in float
          */
         stride: number;
+        compareValueOffset: number;
+        sortingAscending: boolean;
+        sort(): boolean;
         private _allEntries;
         private _freeEntries;
         private _stride;
         private _lastUsed;
         private _firstFree;
+        private _sortTable;
+        private _sortedTable;
     }
+}
+
+declare module Earcut {
+    /**
+     * The fastest and smallest JavaScript polygon triangulation library for your WebGL apps
+     * @param data is a flat array of vertice coordinates like [x0, y0, x1, y1, x2, y2, ...].
+     * @param holeIndices is an array of hole indices if any (e.g. [5, 8] for a 12- vertice input would mean one hole with vertices 5–7 and another with 8–11).
+     * @param dim is the number of coordinates per vertice in the input array (2 by default).
+     */
+    function earcut(data: number[], holeIndices: number[], dim: number): any[];
+    /**
+     * return a percentage difference between the polygon area and its triangulation area;
+     * used to verify correctness of triangulation
+     */
+    function deviation(data: number[], holeIndices: number[], dim: number, triangles: number[]): number;
+    /**
+     *  turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts
+     */
+    function flatten(data: number[][][]): {
+        vertices: any[];
+        holes: any[];
+        dimensions: number;
+    };
 }
 
 declare module BABYLON {
@@ -10751,7 +11081,7 @@ declare module BABYLON {
         private _duplicateId;
         constructor(capacity: number);
         push(value: any): void;
-        pushNoDuplicate(value: any): void;
+        pushNoDuplicate(value: any): boolean;
         sort(compareFn: any): void;
         reset(): void;
         concat(array: any): void;
@@ -11122,53 +11452,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        capacity: number;
-        minPoint: Vector3;
-        maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArray<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArray<T>): void;
-        createInnerBlocks(): void;
-    }
-}
-
-declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -11445,6 +11728,53 @@ declare module BABYLON {
         detachControl(element: HTMLElement): void;
         requestVRFullscreen(requestPointerlock: boolean): void;
         getTypeName(): string;
+    }
+}
+
+declare module BABYLON {
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        capacity: number;
+        minPoint: Vector3;
+        maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArray<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArray<T>): void;
+        createInnerBlocks(): void;
     }
 }
 

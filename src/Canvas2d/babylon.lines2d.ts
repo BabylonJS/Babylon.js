@@ -1,19 +1,19 @@
 ﻿module BABYLON {
     export class Lines2DRenderCache extends ModelRenderCache {
-        effectsReady: boolean                               = false;
-        fillVB: WebGLBuffer                                 = null;
-        fillIB: WebGLBuffer                                 = null;
-        fillIndicesCount: number                            = 0;
+        effectsReady: boolean = false;
+        fillVB: WebGLBuffer = null;
+        fillIB: WebGLBuffer = null;
+        fillIndicesCount: number = 0;
         instancingFillAttributes: InstancingAttributeInfo[] = null;
-        effectFill: Effect                                  = null;
-        effectFillInstanced: Effect                         = null;
+        effectFill: Effect = null;
+        effectFillInstanced: Effect = null;
 
-        borderVB: WebGLBuffer                                 = null;
-        borderIB: WebGLBuffer                                 = null;
-        borderIndicesCount: number                            = 0;
+        borderVB: WebGLBuffer = null;
+        borderIB: WebGLBuffer = null;
+        borderIndicesCount: number = 0;
         instancingBorderAttributes: InstancingAttributeInfo[] = null;
-        effectBorder: Effect                                  = null;
-        effectBorderInstanced: Effect                         = null;
+        effectBorder: Effect = null;
+        effectBorderInstanced: Effect = null;
 
         constructor(engine: Engine, modelKey: string) {
             super(engine, modelKey);
@@ -42,7 +42,7 @@
             if (this.effectFill) {
                 let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
                 let pid = context.groupInfoPartData[partIndex];
-             
+
                 if (context.renderMode !== Render2DContext.RenderModeOpaque) {
                     engine.setAlphaMode(Engine.ALPHA_COMBINE);
                 }
@@ -50,7 +50,7 @@
                 let effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
 
                 engine.enableEffect(effect);
-                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [2], 2*4, effect);
+                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [2], 2 * 4, effect);
                 if (context.useInstancing) {
                     if (!this.instancingFillAttributes) {
                         this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, effect);
@@ -62,7 +62,7 @@
                 } else {
                     for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                         this.setupUniforms(effect, partIndex, pid._partData, i);
-                        engine.draw(true, 0, this.fillIndicesCount);                        
+                        engine.draw(true, 0, this.fillIndicesCount);
                     }
                 }
             }
@@ -170,13 +170,13 @@
 
     @className("Lines2D")
     export class Lines2D extends Shape2D {
-        static get NoCap            () { return Lines2D._noCap;            }
-        static get RoundCap         () { return Lines2D._roundCap;         }
-        static get TriangleCap      () { return Lines2D._triangleCap;      }
-        static get SquareAnchorCap  () { return Lines2D._squareAnchorCap;  }
-        static get RoundAnchorCap   () { return Lines2D._roundAnchorCap;   }
-        static get DiamondAnchorCap () { return Lines2D._diamondAnchorCap; }
-        static get ArrowCap         () { return Lines2D._arrowCap;         }
+        static get NoCap() { return Lines2D._noCap; }
+        static get RoundCap() { return Lines2D._roundCap; }
+        static get TriangleCap() { return Lines2D._triangleCap; }
+        static get SquareAnchorCap() { return Lines2D._squareAnchorCap; }
+        static get RoundAnchorCap() { return Lines2D._roundAnchorCap; }
+        static get DiamondAnchorCap() { return Lines2D._diamondAnchorCap; }
+        static get ArrowCap() { return Lines2D._arrowCap; }
 
         public static pointsProperty: Prim2DPropInfo;
         public static fillThicknessProperty: Prim2DPropInfo;
@@ -234,29 +234,67 @@
             this._endCap = value;
         }
 
+        private static _prevA: Vector2 = Vector2.Zero();
+        private static _prevB: Vector2 = Vector2.Zero();
+        private static _curA: Vector2 = Vector2.Zero();
+        private static _curB: Vector2 = Vector2.Zero();
+
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
             let pl = this.points.length;
             let l = this.closed ? pl + 1 : pl;
 
-            let originOffset = new Vector2(-0.5, -0.5);
             let p = intersectInfo._localPickPosition;
 
-            let prevA = this.transformPointWithOrigin(this._contour[0], originOffset);
-            let prevB = this.transformPointWithOrigin(this._contour[1], originOffset);
+            this.transformPointWithOriginToRef(this._contour[0], null, Lines2D._prevA);
+            this.transformPointWithOriginToRef(this._contour[1], null, Lines2D._prevB);
             for (let i = 1; i < l; i++) {
-                let curA = this.transformPointWithOrigin(this._contour[(i % pl) * 2 + 0], originOffset);
-                let curB = this.transformPointWithOrigin(this._contour[(i % pl) * 2 + 1], originOffset);
+                this.transformPointWithOriginToRef(this._contour[(i % pl) * 2 + 0], null, Lines2D._curA);
+                this.transformPointWithOriginToRef(this._contour[(i % pl) * 2 + 1], null, Lines2D._curB);
 
-                if (Vector2.PointInTriangle(p, prevA, prevB, curA)) {
+                if (Vector2.PointInTriangle(p, Lines2D._prevA, Lines2D._prevB, Lines2D._curA)) {
                     return true;
                 }
-                if (Vector2.PointInTriangle(p, curA, prevB, curB)) {
+                if (Vector2.PointInTriangle(p, Lines2D._curA, Lines2D._prevB, Lines2D._curB)) {
                     return true;
                 }
 
-                prevA = curA;
-                prevB = curB;
+                Lines2D._prevA.x = Lines2D._curA.x;
+                Lines2D._prevA.y = Lines2D._curA.y;
+                Lines2D._prevB.x = Lines2D._curB.x;
+                Lines2D._prevB.y = Lines2D._curB.y;
             }
+
+            let capIntersect = (tri: number[], points: number[]): boolean => {
+                let l = tri.length;
+                for (let i = 0; i < l; i += 3) {
+                    Lines2D._curA.x = points[tri[i + 0] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 0] * 2 + 1];
+                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._curB);
+
+                    Lines2D._curA.x = points[tri[i + 1] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 1] * 2 + 1];
+                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevA);
+
+                    Lines2D._curA.x = points[tri[i + 2] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 2] * 2 + 1];
+                    this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevB);
+
+                    if (Vector2.PointInTriangle(p, Lines2D._prevA, Lines2D._prevB, Lines2D._curB)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            if (this._startCapTriIndices) {
+                if (capIntersect(this._startCapTriIndices, this._startCapContour)) {
+                    return true;
+                }
+                if (capIntersect(this._endCapTriIndices, this._endCapContour)) {
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -284,7 +322,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
+            BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo, this.origin);
         }
 
         protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
@@ -335,7 +373,28 @@
                 }
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
 
-                lines.setupLines2D(parent.owner, parent, options.id || null, pos, options.origin || null, points, options.fillThickness || 1, options.startCap || 0, options.endCap || 0, fill, options.border || null, options.borderThickness || 1, options.closed || false, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);                
+                lines.setupLines2D
+                    (
+                    parent.owner,
+                    parent,
+                    options.id || null,
+                    pos,
+                    options.origin || null,
+                    points,
+                    (options.fillThickness == null) ? 1 : options.fillThickness,
+                    (options.startCap == null) ? 0 : options.startCap,
+                    (options.endCap == null) ? 0 : options.endCap,
+                    fill,
+                    options.border || null,
+                    (options.borderThickness == null) ? 1 : options.borderThickness,
+                    (options.closed == null) ? false : options.closed,
+                    (options.isVisible == null) ? true : options.isVisible,
+                    options.marginTop || null,
+                    options.marginLeft || null,
+                    options.marginRight || null,
+                    options.marginBottom || null,
+                    options.vAlignment || null,
+                    options.hAlignment || null);
             }
 
             return lines;
@@ -351,8 +410,8 @@
             let engine = this.owner.engine;
 
             // Init min/max because their being computed here
-            this.boundingMin = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
-            this.boundingMax = new Vector2(Number.MIN_VALUE, Number.MIN_VALUE);
+            this._boundingMin = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            this._boundingMax = new Vector2(Number.MIN_VALUE, Number.MIN_VALUE);
 
             let perp = (v: Vector2, res: Vector2) => {
                 res.x = v.y;
@@ -399,8 +458,8 @@
                 }
                 this._boundingMin.x = Math.min(this._boundingMin.x, array[offset]);
                 this._boundingMax.x = Math.max(this._boundingMax.x, array[offset]);
-                this._boundingMin.y = Math.min(this._boundingMin.y, array[offset+1]);
-                this._boundingMax.y = Math.max(this._boundingMax.y, array[offset+1]);
+                this._boundingMin.y = Math.min(this._boundingMin.y, array[offset + 1]);
+                this._boundingMax.y = Math.max(this._boundingMax.y, array[offset + 1]);
             }
 
             let store = (array: Float32Array, contour: Vector2[], index: number, max: number, p: Vector2, n: Vector2, halfThickness: number, borderThickness: number, detectFlip?: number) => {
@@ -483,7 +542,7 @@
                     case Lines2D.RoundCap:
                         if (border) {
                             vbsize = sd;
-                            ibsize = (sd-2) * 3;
+                            ibsize = (sd - 2) * 3;
                         } else {
                             vbsize = (sd / 2) + 1;
                             ibsize = (sd / 2) * 3;
@@ -527,7 +586,7 @@
                         break;
                     case Lines2D.RoundAnchorCap:
                         if (border) {
-                            vbsize = sd*2;
+                            vbsize = sd * 2;
                             ibsize = (sd - 1) * 6;
                         } else {
                             vbsize = sd + 1;
@@ -536,29 +595,34 @@
                         break;
                 }
 
-                return { vbsize: vbsize*2, ibsize: ibsize };
+                return { vbsize: vbsize * 2, ibsize: ibsize };
             }
 
             let v = Vector2.Zero();
-            let storeVertex = (vb: Float32Array, baseOffset: number, index: number, basePos: Vector2, rotation: number, vertex: Vector2): number => {
+            let storeVertex = (vb: Float32Array, baseOffset: number, index: number, basePos: Vector2, rotation: number, vertex: Vector2, contour: number[]): number => {
                 let c = Math.cos(rotation);
                 let s = Math.sin(rotation);
 
                 v.x = (c * vertex.x) + (-s * vertex.y) + basePos.x;
-                v.y = (s * vertex.x) + ( c * vertex.y) + basePos.y;
-                let offset = baseOffset + (index*2);
+                v.y = (s * vertex.x) + (c * vertex.y) + basePos.y;
+                let offset = baseOffset + (index * 2);
                 vb[offset + 0] = v.x;
                 vb[offset + 1] = v.y;
 
+                if (contour) {
+                    contour.push(v.x);
+                    contour.push(v.y);
+                }
+
                 updateMinMax(vb, offset);
-                return (baseOffset + index*2) / 2;
+                return (baseOffset + index * 2) / 2;
             }
 
             let storeIndex = (ib: Float32Array, baseOffset: number, index: number, vertexIndex: number) => {
                 ib[baseOffset + index] = vertexIndex;
             }
 
-            let buildCap = (vb: Float32Array, vbi: number, ib: Float32Array, ibi: number, pos: Vector2, thickness: number, borderThickness: number, type: number, capDir: Vector2): { vbsize: number; ibsize: number } => {
+            let buildCap = (vb: Float32Array, vbi: number, ib: Float32Array, ibi: number, pos: Vector2, thickness: number, borderThickness: number, type: number, capDir: Vector2, contour: number[]): { vbsize: number; ibsize: number } => {
 
                 // Compute the transformation from the direction of the cap to build relative to our default orientation [1;0] (our cap are by default pointing toward right, horizontal
                 let dir = new Vector2(1, 0);
@@ -573,10 +637,10 @@
                         if (borderMode && !this.closed) {
                             let vi = 0;
                             let ii = 0;
-                            let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht + bt));
-                            let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(bt, ht + bt));
-                            let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(bt, -(ht + bt)));
-                            let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -(ht + bt)));
+                            let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht + bt), contour);
+                            let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(bt, ht + bt), contour);
+                            let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(bt, -(ht + bt)), contour);
+                            let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -(ht + bt)), contour);
 
                             storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v3);
                             storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v4);
@@ -585,210 +649,213 @@
                     case Lines2D.ArrowCap:
                         ht *= 2;
                     case Lines2D.TriangleCap:
-                    {
-                        if (borderMode) {
-                            let f = type===Lines2D.TriangleCap ? bt : Math.sqrt(bt * bt * 2);
-                            let v1 = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, ht));
-                            let v2 = storeVertex(vb, vbi, 1, pos, angle, new Vector2(ht, 0));
-                            let v3 = storeVertex(vb, vbi, 2, pos, angle, new Vector2(0, -ht));
-                            let v4 = storeVertex(vb, vbi, 3, pos, angle, new Vector2(0, ht+f));
-                            let v5 = storeVertex(vb, vbi, 4, pos, angle, new Vector2(ht+f, 0));
-                            let v6 = storeVertex(vb, vbi, 5, pos, angle, new Vector2(0, -(ht+f)));
+                        {
+                            if (borderMode) {
+                                let f = type === Lines2D.TriangleCap ? bt : Math.sqrt(bt * bt * 2);
+                                let v1 = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, ht), null);
+                                let v2 = storeVertex(vb, vbi, 1, pos, angle, new Vector2(ht, 0), null);
+                                let v3 = storeVertex(vb, vbi, 2, pos, angle, new Vector2(0, -ht), null);
+                                let v4 = storeVertex(vb, vbi, 3, pos, angle, new Vector2(0, ht + f), contour);
+                                let v5 = storeVertex(vb, vbi, 4, pos, angle, new Vector2(ht + f, 0), contour);
+                                let v6 = storeVertex(vb, vbi, 5, pos, angle, new Vector2(0, -(ht + f)), contour);
 
-                            let ii = 0;
-                            storeIndex(ib, ibi, ii++, v1);  storeIndex(ib, ibi, ii++, v4);  storeIndex(ib, ibi, ii++, v5);
-                            storeIndex(ib, ibi, ii++, v1);  storeIndex(ib, ibi, ii++, v5);  storeIndex(ib, ibi, ii++, v2);
-                            storeIndex(ib, ibi, ii++, v6);  storeIndex(ib, ibi, ii++, v3);  storeIndex(ib, ibi, ii++, v2);
-                            storeIndex(ib, ibi, ii++, v6);  storeIndex(ib, ibi, ii++, v2);  storeIndex(ib, ibi, ii++, v5);
+                                let ii = 0;
+                                storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v4); storeIndex(ib, ibi, ii++, v5);
+                                storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v5); storeIndex(ib, ibi, ii++, v2);
+                                storeIndex(ib, ibi, ii++, v6); storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v2);
+                                storeIndex(ib, ibi, ii++, v6); storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v5);
 
-                            if (type === Lines2D.ArrowCap) {
-                                let rht = thickness / 2;
-                                let v7 = storeVertex(vb, vbi, 6, pos, angle, new Vector2(0, rht+bt));
-                                let v8 = storeVertex(vb, vbi, 7, pos, angle, new Vector2(-bt, rht+bt));
-                                let v9 = storeVertex(vb, vbi, 8, pos, angle, new Vector2(-bt, ht+f));
+                                if (type === Lines2D.ArrowCap) {
+                                    let rht = thickness / 2;
+                                    let v10 = storeVertex(vb, vbi, 9, pos, angle, new Vector2(0, -(rht + bt)), null);
+                                    let v12 = storeVertex(vb, vbi, 11, pos, angle, new Vector2(-bt, -(ht + f)), contour);
+                                    let v11 = storeVertex(vb, vbi, 10, pos, angle, new Vector2(-bt, -(rht + bt)), contour);
 
-                                let v10 = storeVertex(vb, vbi, 9, pos, angle, new Vector2(0, -(rht+bt)));
-                                let v11 = storeVertex(vb, vbi, 10, pos, angle, new Vector2(-bt, -(rht+bt)));
-                                let v12 = storeVertex(vb, vbi, 11, pos, angle, new Vector2(-bt, -(ht+f)));
+                                    let v7 = storeVertex(vb, vbi, 6, pos, angle, new Vector2(0, rht + bt), null);
+                                    let v8 = storeVertex(vb, vbi, 7, pos, angle, new Vector2(-bt, rht + bt), contour);
+                                    let v9 = storeVertex(vb, vbi, 8, pos, angle, new Vector2(-bt, ht + f), contour);
 
-                                storeIndex(ib, ibi, ii++, v7);  storeIndex(ib, ibi, ii++, v8);  storeIndex(ib, ibi, ii++, v9);
-                                storeIndex(ib, ibi, ii++, v7);  storeIndex(ib, ibi, ii++, v9);  storeIndex(ib, ibi, ii++, v4);
-                                storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v12); storeIndex(ib, ibi, ii++, v11);
-                                storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v6);  storeIndex(ib, ibi, ii++, v12);
+
+                                    storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v8); storeIndex(ib, ibi, ii++, v9);
+                                    storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v9); storeIndex(ib, ibi, ii++, v4);
+                                    storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v12); storeIndex(ib, ibi, ii++, v11);
+                                    storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v6); storeIndex(ib, ibi, ii++, v12);
+                                }
+                            } else {
+                                let v1 = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, ht), contour);
+                                let v2 = storeVertex(vb, vbi, 1, pos, angle, new Vector2(ht, 0), contour);
+                                let v3 = storeVertex(vb, vbi, 2, pos, angle, new Vector2(0, -ht), contour);
+
+                                storeIndex(ib, ibi, 0, v1);
+                                storeIndex(ib, ibi, 1, v2);
+                                storeIndex(ib, ibi, 2, v3);
                             }
-                        } else {
-                            let v1 = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, ht));
-                            let v2 = storeVertex(vb, vbi, 1, pos, angle, new Vector2(ht, 0));
-                            let v3 = storeVertex(vb, vbi, 2, pos, angle, new Vector2(0, -ht));
-
-                            storeIndex(ib, ibi, 0, v1);
-                            storeIndex(ib, ibi, 1, v2);
-                            storeIndex(ib, ibi, 2, v3);
+                            break;
                         }
-                        break;
-                    }
                     case Lines2D.RoundCap:
-                    {
-                        if (borderMode) {
-                            let curA = -Math.PI / 2;
-                            let incA = Math.PI / (sd / 2 - 1);
-                            let ii = 0;
+                        {
+                            if (borderMode) {
+                                let curA = -Math.PI / 2;
+                                let incA = Math.PI / (sd / 2 - 1);
+                                let ii = 0;
 
-                            for (let i = 0; i < (sd / 2); i++) {
-                                let v1 = storeVertex(vb, vbi, i*2 + 0, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
-                                let v2 = storeVertex(vb, vbi, i*2 + 1, pos, angle, new Vector2(Math.cos(curA) * (ht+bt), Math.sin(curA) * (ht+bt)));
+                                for (let i = 0; i < (sd / 2); i++) {
+                                    let v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), null);
+                                    let v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new Vector2(Math.cos(curA) * (ht + bt), Math.sin(curA) * (ht + bt)), contour);
 
-                                if (i > 0) {
-                                    storeIndex(ib, ibi, ii++, v1 - 2);
-                                    storeIndex(ib, ibi, ii++, v2 - 2);
-                                    storeIndex(ib, ibi, ii++, v2);
+                                    if (i > 0) {
+                                        storeIndex(ib, ibi, ii++, v1 - 2);
+                                        storeIndex(ib, ibi, ii++, v2 - 2);
+                                        storeIndex(ib, ibi, ii++, v2);
 
-                                    storeIndex(ib, ibi, ii++, v1 - 2);
-                                    storeIndex(ib, ibi, ii++, v2);
-                                    storeIndex(ib, ibi, ii++, v1);
+                                        storeIndex(ib, ibi, ii++, v1 - 2);
+                                        storeIndex(ib, ibi, ii++, v2);
+                                        storeIndex(ib, ibi, ii++, v1);
+                                    }
+                                    curA += incA;
                                 }
-                                curA += incA;
-                            }
-                        } else {
-                            let c = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, 0));
-                            let curA = -Math.PI / 2;
-                            let incA = Math.PI / (sd / 2 - 1);
+                            } else {
+                                let c = storeVertex(vb, vbi, 0, pos, angle, new Vector2(0, 0), null);
+                                let curA = -Math.PI / 2;
+                                let incA = Math.PI / (sd / 2 - 1);
 
-                            storeVertex(vb, vbi, 1, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
-                            curA += incA;
-                            for (let i = 1; i < (sd / 2); i++) {
-                                let v2 = storeVertex(vb, vbi, i + 1, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
-
-                                storeIndex(ib, ibi, i * 3 + 0, c);
-                                storeIndex(ib, ibi, i * 3 + 1, v2 - 1);
-                                storeIndex(ib, ibi, i * 3 + 2, v2);
+                                storeVertex(vb, vbi, 1, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), null);
                                 curA += incA;
+                                for (let i = 1; i < (sd / 2); i++) {
+                                    let v2 = storeVertex(vb, vbi, i + 1, pos, angle, new Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), contour);
+
+                                    storeIndex(ib, ibi, i * 3 + 0, c);
+                                    storeIndex(ib, ibi, i * 3 + 1, v2 - 1);
+                                    storeIndex(ib, ibi, i * 3 + 2, v2);
+                                    curA += incA;
+                                }
                             }
+                            break;
                         }
-                        break;
-                    }
                     case Lines2D.SquareAnchorCap:
-                    {
-                        let vi = 0;
-                        let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, t));
-                        let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2, t));
-                        let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2, -t));
-                        let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -t));
+                        {
+                            let vi = 0;
+                            let c = borderMode ? null : contour;
+                            let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, t), c);
+                            let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2, t), c);
+                            let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2, -t), c);
+                            let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -t), c);
 
-                        if (borderMode) {
-                            let v5 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht+bt));
-                            let v6 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, ht+bt));
-                            let v7 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, t + bt));
-                            let v8 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2 + bt, t + bt));
+                            if (borderMode) {
+                                let v5 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht + bt), null);
+                                let v6 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, ht + bt), contour);
+                                let v7 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, t + bt), contour);
+                                let v8 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2 + bt, t + bt), contour);
 
-                            let v9 =  storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2 + bt, -(t+bt)));
-                            let v10 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, -(t + bt)));
-                            let v11 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, -(ht+bt)));
-                            let v12 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -(ht+bt)));
+                                let v9 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(t * 2 + bt, -(t + bt)), contour);
+                                let v10 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, -(t + bt)), contour);
+                                let v11 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-bt, -(ht + bt)), contour);
+                                let v12 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -(ht + bt)), null);
 
-                            let ii = 0;
-                            storeIndex(ib, ibi, ii++, v6);  storeIndex(ib, ibi, ii++, v1);  storeIndex(ib, ibi, ii++, v5);
-                            storeIndex(ib, ibi, ii++, v6);  storeIndex(ib, ibi, ii++, v7);  storeIndex(ib, ibi, ii++, v1);
-                            storeIndex(ib, ibi, ii++, v1);  storeIndex(ib, ibi, ii++, v7);  storeIndex(ib, ibi, ii++, v8);
-                            storeIndex(ib, ibi, ii++, v1);  storeIndex(ib, ibi, ii++, v8);  storeIndex(ib, ibi, ii++, v2);
-                            storeIndex(ib, ibi, ii++, v2);  storeIndex(ib, ibi, ii++, v8);  storeIndex(ib, ibi, ii++, v9);
-                            storeIndex(ib, ibi, ii++, v2);  storeIndex(ib, ibi, ii++, v9);  storeIndex(ib, ibi, ii++, v3);
-                            storeIndex(ib, ibi, ii++, v3);  storeIndex(ib, ibi, ii++, v9);  storeIndex(ib, ibi, ii++, v10);
-                            storeIndex(ib, ibi, ii++, v3);  storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v4);
-                            storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v11); storeIndex(ib, ibi, ii++, v4);
-                            storeIndex(ib, ibi, ii++, v11); storeIndex(ib, ibi, ii++, v12); storeIndex(ib, ibi, ii++, v4);
+                                let ii = 0;
+                                storeIndex(ib, ibi, ii++, v6); storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v5);
+                                storeIndex(ib, ibi, ii++, v6); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v1);
+                                storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v8);
+                                storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v8); storeIndex(ib, ibi, ii++, v2);
+                                storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v8); storeIndex(ib, ibi, ii++, v9);
+                                storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v9); storeIndex(ib, ibi, ii++, v3);
+                                storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v9); storeIndex(ib, ibi, ii++, v10);
+                                storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v4);
+                                storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v11); storeIndex(ib, ibi, ii++, v4);
+                                storeIndex(ib, ibi, ii++, v11); storeIndex(ib, ibi, ii++, v12); storeIndex(ib, ibi, ii++, v4);
 
-                        } else {
-                            storeIndex(ib, ibi, 0, v1);
-                            storeIndex(ib, ibi, 1, v2);
-                            storeIndex(ib, ibi, 2, v3);
+                            } else {
+                                storeIndex(ib, ibi, 0, v1);
+                                storeIndex(ib, ibi, 1, v2);
+                                storeIndex(ib, ibi, 2, v3);
 
-                            storeIndex(ib, ibi, 3, v1);
-                            storeIndex(ib, ibi, 4, v3);
-                            storeIndex(ib, ibi, 5, v4);
+                                storeIndex(ib, ibi, 3, v1);
+                                storeIndex(ib, ibi, 4, v3);
+                                storeIndex(ib, ibi, 5, v4);
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case Lines2D.RoundAnchorCap:
-                    {
-                        let cpos = Math.sqrt(t * t - ht * ht);
-                        let center = new Vector2(cpos, 0);
-                        let curA = Tools.ToRadians(-150);
-                        let incA = Tools.ToRadians(300) / (sd - 1);
+                        {
+                            let cpos = Math.sqrt(t * t - ht * ht);
+                            let center = new Vector2(cpos, 0);
+                            let curA = Tools.ToRadians(-150);
+                            let incA = Tools.ToRadians(300) / (sd - 1);
 
-                        if (borderMode) {
-                            let ii = 0;
+                            if (borderMode) {
+                                let ii = 0;
 
-                            for (let i = 0; i < sd; i++) {
-                                let v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
-                                let v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new Vector2(cpos + Math.cos(curA) * (t + bt), Math.sin(curA) * (t + bt)));
+                                for (let i = 0; i < sd; i++) {
+                                    let v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), null);
+                                    let v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new Vector2(cpos + Math.cos(curA) * (t + bt), Math.sin(curA) * (t + bt)), contour);
 
-                                if (i > 0) {
-                                    storeIndex(ib, ibi, ii++, v1 - 2);
-                                    storeIndex(ib, ibi, ii++, v2 - 2);
-                                    storeIndex(ib, ibi, ii++, v2);
+                                    if (i > 0) {
+                                        storeIndex(ib, ibi, ii++, v1 - 2);
+                                        storeIndex(ib, ibi, ii++, v2 - 2);
+                                        storeIndex(ib, ibi, ii++, v2);
 
-                                    storeIndex(ib, ibi, ii++, v1 - 2);
-                                    storeIndex(ib, ibi, ii++, v2);
-                                    storeIndex(ib, ibi, ii++, v1);
+                                        storeIndex(ib, ibi, ii++, v1 - 2);
+                                        storeIndex(ib, ibi, ii++, v2);
+                                        storeIndex(ib, ibi, ii++, v1);
+                                    }
+                                    curA += incA;
                                 }
+                            } else {
+                                let c = storeVertex(vb, vbi, 0, pos, angle, center, null);
+                                storeVertex(vb, vbi, 1, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), null);  // contour maybe TODO
                                 curA += incA;
-                            }
-                        } else {
-                            let c = storeVertex(vb, vbi, 0, pos, angle, center);
-                            storeVertex(vb, vbi, 1, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
-                            curA += incA;
-                            for (let i = 1; i < sd; i++) {
-                                let v2 = storeVertex(vb, vbi, i + 1, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
+                                for (let i = 1; i < sd; i++) {
+                                    let v2 = storeVertex(vb, vbi, i + 1, pos, angle, new Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), contour);
 
-                                storeIndex(ib, ibi, i * 3 + 0, c);
-                                storeIndex(ib, ibi, i * 3 + 1, v2 - 1);
-                                storeIndex(ib, ibi, i * 3 + 2, v2);
-                                curA += incA;
+                                    storeIndex(ib, ibi, i * 3 + 0, c);
+                                    storeIndex(ib, ibi, i * 3 + 1, v2 - 1);
+                                    storeIndex(ib, ibi, i * 3 + 2, v2);
+                                    curA += incA;
+                                }
+                                storeIndex(ib, ibi, sd * 3 + 0, c);
+                                storeIndex(ib, ibi, sd * 3 + 1, c + 1);
+                                storeIndex(ib, ibi, sd * 3 + 2, c + sd);
                             }
-                            storeIndex(ib, ibi, sd * 3 + 0, c);
-                            storeIndex(ib, ibi, sd * 3 + 1, c + 1);
-                            storeIndex(ib, ibi, sd * 3 + 2, c + sd);
+                            break;
                         }
-                        break;
-                    }
                     case Lines2D.DiamondAnchorCap:
-                    {
-                        let vi = 0;
-                        let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht));
-                        let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, t));
-                        let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht * 3, 0));
-                        let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, -t));
-                        let v5 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -ht));
+                        {
+                            let vi = 0;
+                            let c = borderMode ? null : contour;
+                            let v1 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, ht), c);
+                            let v2 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, t), c);
+                            let v3 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht * 3, 0), c);
+                            let v4 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, -t), c);
+                            let v5 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(0, -ht), c);
 
-                        if (borderMode) {
-                            let f = Math.sqrt(bt * bt * 2);
-                            let v6 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-f,ht));
-                            let v7 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht,t+f));
-                            let v8 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht*3+f,0));
-                            let v9 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht,-(t+f)));
-                            let v10 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-f, -ht));
+                            if (borderMode) {
+                                let f = Math.sqrt(bt * bt * 2);
+                                let v6 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-f, ht), contour);
+                                let v7 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, t + f), contour);
+                                let v8 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht * 3 + f, 0), contour);
+                                let v9 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(ht, -(t + f)), contour);
+                                let v10 = storeVertex(vb, vbi, vi++, pos, angle, new Vector2(-f, -ht), contour);
 
-                            let ii = 0;
-                            storeIndex(ib, ibi, ii++, v6); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v1);
-                            storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v2);
+                                let ii = 0;
+                                storeIndex(ib, ibi, ii++, v6); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v1);
+                                storeIndex(ib, ibi, ii++, v1); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v2);
 
-                            storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v8);
-                            storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v8); storeIndex(ib, ibi, ii++, v3);
+                                storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v7); storeIndex(ib, ibi, ii++, v8);
+                                storeIndex(ib, ibi, ii++, v2); storeIndex(ib, ibi, ii++, v8); storeIndex(ib, ibi, ii++, v3);
 
-                            storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v8); storeIndex(ib, ibi, ii++, v9);
-                            storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v9); storeIndex(ib, ibi, ii++, v4);
+                                storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v8); storeIndex(ib, ibi, ii++, v9);
+                                storeIndex(ib, ibi, ii++, v3); storeIndex(ib, ibi, ii++, v9); storeIndex(ib, ibi, ii++, v4);
 
-                            storeIndex(ib, ibi, ii++, v4); storeIndex(ib, ibi, ii++, v9); storeIndex(ib, ibi, ii++, v10);
-                            storeIndex(ib, ibi, ii++, v4); storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v5);
+                                storeIndex(ib, ibi, ii++, v4); storeIndex(ib, ibi, ii++, v9); storeIndex(ib, ibi, ii++, v10);
+                                storeIndex(ib, ibi, ii++, v4); storeIndex(ib, ibi, ii++, v10); storeIndex(ib, ibi, ii++, v5);
 
-                        } else {
-                            storeIndex(ib, ibi, 0, v1); storeIndex(ib, ibi, 1, v2); storeIndex(ib, ibi, 2, v3);
-                            storeIndex(ib, ibi, 3, v1); storeIndex(ib, ibi, 4, v3); storeIndex(ib, ibi, 5, v5);
-                            storeIndex(ib, ibi, 6, v5); storeIndex(ib, ibi, 7, v3); storeIndex(ib, ibi, 8, v4);
+                            } else {
+                                storeIndex(ib, ibi, 0, v1); storeIndex(ib, ibi, 1, v2); storeIndex(ib, ibi, 2, v3);
+                                storeIndex(ib, ibi, 3, v1); storeIndex(ib, ibi, 4, v3); storeIndex(ib, ibi, 5, v5);
+                                storeIndex(ib, ibi, 6, v5); storeIndex(ib, ibi, 7, v3); storeIndex(ib, ibi, 8, v4);
+                            }
+                            break;
                         }
-                        break;
-                    }
                 }
 
                 return null;
@@ -828,7 +895,7 @@
                         direction(next, cur, lineB);
 
                         var miterLen = computeMiter(tangent, miter, lineA, lineB);
-                        store(vb, contour, i, total, this.points[i], miter, miterLen*ht, miterLen*bt, i - 1);
+                        store(vb, contour, i, total, this.points[i], miter, miterLen * ht, miterLen * bt, i - 1);
                     }
                 }
 
@@ -861,6 +928,8 @@
             }
 
             let contour = new Array<Vector2>();
+            let startCapContour = new Array<number>();
+            let endCapContour = new Array<number>();
 
             // Need to create WebGL resources for fill part?
             if (this.fill) {
@@ -877,7 +946,7 @@
                 let max = total * 2;
                 let triCount = (count - (this.closed ? 0 : 1)) * 2;
                 let ib = new Float32Array(triCount * 3 + startCapInfo.ibsize + endCapInfo.ibsize);
-                for (let i = 0; i < triCount; i+=2) {
+                for (let i = 0; i < triCount; i += 2) {
                     ib[i * 3 + 0] = i + 0;
                     ib[i * 3 + 1] = i + 1;
                     ib[i * 3 + 2] = (i + 2) % max;
@@ -887,8 +956,8 @@
                     ib[i * 3 + 5] = (i + 2) % max;
                 }
 
-                buildCap(vb, count * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, null, this.startCap, startDir);
-                buildCap(vb, (count * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, null, this.endCap, endDir);
+                buildCap(vb, count * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, null, this.startCap, startDir, this.border ? null : startCapContour);
+                buildCap(vb, (count * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, null, this.endCap, endDir, this.border ? null : startCapContour);
 
                 renderCache.fillVB = engine.createVertexBuffer(vb);
                 renderCache.fillIB = engine.createIndexBuffer(ib);
@@ -939,8 +1008,8 @@
                     ib[i * 3 + 11] = (i + 7) % max;
                 }
 
-                buildCap(vb, count * 2 * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, this.borderThickness, this.startCap, startDir);
-                buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, endDir);
+                buildCap(vb, count * 2 * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, this.borderThickness, this.startCap, startDir, startCapContour);
+                buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, endDir, endCapContour);
 
                 renderCache.borderVB = engine.createVertexBuffer(vb);
                 renderCache.borderIB = engine.createIndexBuffer(ib);
@@ -958,6 +1027,16 @@
             }
 
             this._contour = contour;
+            if (startCapContour.length > 0) {
+                let startCapTri = Earcut.earcut(startCapContour, null, 2);
+                this._startCapTriIndices = startCapTri;
+                this._startCapContour = startCapContour;
+            }
+            if (endCapContour.length > 0) {
+                let endCapTri = Earcut.earcut(endCapContour, null, 2);
+                this._endCapContour = endCapContour;
+                this._endCapTriIndices = endCapTri;
+            }
             let bs = this._boundingMax.subtract(this._boundingMin);
             this._size.width = bs.x;
             this._size.height = bs.y;
@@ -993,13 +1072,13 @@
             return true;
         }
 
-        private static _noCap            = 0;
-        private static _roundCap         = 1;
-        private static _triangleCap      = 2;
-        private static _squareAnchorCap  = 3;
-        private static _roundAnchorCap   = 4;
+        private static _noCap = 0;
+        private static _roundCap = 1;
+        private static _triangleCap = 2;
+        private static _squareAnchorCap = 3;
+        private static _roundAnchorCap = 4;
         private static _diamondAnchorCap = 5;
-        private static _arrowCap         = 6;
+        private static _arrowCap = 6;
 
         private static _roundCapSubDiv = 36;
 
@@ -1007,6 +1086,10 @@
         private _boundingMax: Vector2;
         private _size: Size;
         private _contour: Vector2[];
+        private _startCapContour: number[];
+        private _startCapTriIndices: number[];
+        private _endCapContour: number[];
+        private _endCapTriIndices: number[];
 
         private _closed: boolean;
         private _startCap: number;

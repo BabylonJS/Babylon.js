@@ -45,8 +45,8 @@ var BABYLON;
         };
         BoundingInfo2D.CreateFromPointsToRef = function (points, b, origin) {
             var xmin = Number.MAX_VALUE, ymin = Number.MAX_VALUE, xmax = Number.MIN_VALUE, ymax = Number.MIN_VALUE;
-            for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
-                var p = points_1[_i];
+            for (var _i = 0; _i < points.length; _i++) {
+                var p = points[_i];
                 xmin = Math.min(p.x, xmin);
                 xmax = Math.max(p.x, xmax);
                 ymin = Math.min(p.y, ymin);
@@ -113,11 +113,15 @@ var BABYLON;
          */
         BoundingInfo2D.prototype.transformToRef = function (matrix, result) {
             // Construct a bounding box based on the extent values
-            var p = new Array(4);
-            p[0] = new BABYLON.Vector2(this.center.x + this.extent.x, this.center.y + this.extent.y);
-            p[1] = new BABYLON.Vector2(this.center.x + this.extent.x, this.center.y - this.extent.y);
-            p[2] = new BABYLON.Vector2(this.center.x - this.extent.x, this.center.y - this.extent.y);
-            p[3] = new BABYLON.Vector2(this.center.x - this.extent.x, this.center.y + this.extent.y);
+            var p = BoundingInfo2D._transform;
+            p[0].x = this.center.x + this.extent.x;
+            p[0].y = this.center.y + this.extent.y;
+            p[1].x = this.center.x + this.extent.x;
+            p[1].y = this.center.y - this.extent.y;
+            p[2].x = this.center.x - this.extent.x;
+            p[2].y = this.center.y - this.extent.y;
+            p[3].x = this.center.x - this.extent.x;
+            p[3].y = this.center.y + this.extent.y;
             // Transform the four points of the bounding box with the matrix
             for (var i = 0; i < 4; i++) {
                 BABYLON.Vector2.TransformToRef(p[i], matrix, p[i]);
@@ -146,7 +150,8 @@ var BABYLON;
             }
             return false;
         };
+        BoundingInfo2D._transform = new Array(BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero());
         return BoundingInfo2D;
-    }());
+    })();
     BABYLON.BoundingInfo2D = BoundingInfo2D;
 })(BABYLON || (BABYLON = {}));

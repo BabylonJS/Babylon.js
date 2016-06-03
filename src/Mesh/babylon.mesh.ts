@@ -955,18 +955,17 @@
                     instancesBuffer.dispose();
                 }
 
-                instancesBuffer = new BABYLON.Buffer(engine, this._instancesData, true, 16, false, true);
+                instancesBuffer = new Buffer(engine, this._instancesData, true, 16, false, true);
                 this._instancesBuffer = instancesBuffer;
 
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world0", 0, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world1", 4, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
                 this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
-
-                engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
             } else {
                 instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
             }
+            engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
 
             this._draw(subMesh, fillMode, instancesCount);
 
