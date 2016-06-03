@@ -790,7 +790,6 @@ var BABYLON;
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
                 this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
             }
-            this.engine.setState(false);
             this._groupRender();
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {

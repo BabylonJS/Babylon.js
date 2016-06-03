@@ -39534,7 +39534,8 @@ var BABYLON;
                 }
                 // ===================================================================
                 // First pass, update the InstancedArray and render Opaque primitives
-                // Disable Alpha Testing, Enable Depth Write
+                // Disable Culling, Alpha Testing, Enable Depth Write
+                engine.setState(false);
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
@@ -43334,7 +43335,6 @@ var BABYLON;
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
                 this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
             }
-            this.engine.setState(false);
             this._groupRender();
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
