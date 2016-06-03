@@ -48,9 +48,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Shape2D.prototype.setupShape2D = function (owner, parent, id, position, origin, isVisible, fill, border, borderThickness) {
-            if (borderThickness === void 0) { borderThickness = 1.0; }
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible);
+        Shape2D.prototype.setupShape2D = function (owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment || BABYLON.Prim2DBase.HAlignLeft, vAlignment || BABYLON.Prim2DBase.VAlignTop);
             this.border = border;
             this.fill = fill;
             this.borderThickness = borderThickness;
@@ -144,7 +143,7 @@ var BABYLON;
             BABYLON.className("Shape2D")
         ], Shape2D);
         return Shape2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Shape2D = Shape2D;
     var Shape2DInstanceData = (function (_super) {
         __extends(Shape2DInstanceData, _super);
@@ -244,6 +243,6 @@ var BABYLON;
             BABYLON.instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
         ], Shape2DInstanceData.prototype, "borderGradientTY", null);
         return Shape2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Shape2DInstanceData = Shape2DInstanceData;
 })(BABYLON || (BABYLON = {}));

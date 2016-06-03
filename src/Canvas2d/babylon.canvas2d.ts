@@ -58,7 +58,7 @@
          *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
          *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
-         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property.
+         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
@@ -68,13 +68,13 @@
             let c = new Canvas2D();
 
             if (!options) {
-                c.setupCanvas(scene, null, null, true, Canvas2D.CACHESTRATEGY_DONTCACHE, true, Vector2.Zero(), true, null, null, null, null, null, null);
+                c.setupCanvas(scene, null, null, 1, true, Canvas2D.CACHESTRATEGY_DONTCACHE, true, Vector2.Zero(), true, null, null, null, null, null, null);
                 c.position = Vector2.Zero();
             } else { 
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
                 let size = (!options.size && !options.width && !options.height) ? null : (options.size || (new Size(options.width || 0, options.height || 0)));
 
-                c.setupCanvas(scene, options.id || null, size, true, options.cachingStrategy || Canvas2D.CACHESTRATEGY_DONTCACHE, options.enableInteraction || true, options.origin || Vector2.Zero(), options.isVisible || true, options.marginTop, options.marginLeft, options.marginRight, options.marginBottom, options.hAlignment || Prim2DBase.HAlignLeft, options.vAlignment || Prim2DBase.VAlignTop);
+                c.setupCanvas(scene, options.id || null, size, 1, true, options.cachingStrategy || Canvas2D.CACHESTRATEGY_DONTCACHE, options.enableInteraction || true, options.origin || Vector2.Zero(), options.isVisible || true, options.marginTop, options.marginLeft, options.marginRight, options.marginBottom, options.hAlignment || Prim2DBase.HAlignLeft, options.vAlignment || Prim2DBase.VAlignTop);
                 c.position = pos;
             }
 
@@ -95,10 +95,11 @@
          * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
+         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
          * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
-         * - noWorldSpaceNode: if true there won't be a WorldSpaceNode created for this canvas, you'll be responsible of rendering the canvas texture in the scene.
+         * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
          */
-        static CreateWorldSpace(scene: Scene, size: Size, options: { id?: string, position?: Vector3, rotation?: Quaternion, renderScaleFactor?: number, sideOrientation?: number, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, noWorldSpaceNode?: boolean}): Canvas2D {
+        static CreateWorldSpace(scene: Scene, size: Size, options: { id?: string, position?: Vector3, rotation?: Quaternion, renderScaleFactor?: number, sideOrientation?: number, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, customWorldSpaceNode?: Node}): Canvas2D {
 
             let cs = options && options.cachingStrategy || Canvas2D.CACHESTRATEGY_CANVAS;
 
@@ -110,16 +111,20 @@
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
 
-            let id = options && options.id || null;
-            let rsf = options && options.renderScaleFactor || 1;
-            let c = new Canvas2D();
-            c.setupCanvas(scene, id, new Size(size.width * rsf, size.height * rsf), false, cs, options && options.enableInteraction || true, Vector2.Zero(), options && options.isVisible || true, null, null, null, null, null, null);
+            let enableInteraction = options ? options.enableInteraction : true;
+            let createWorldSpaceNode = !options || (options.customWorldSpaceNode==null);
+            let isVisible = options ? options.isVisible || true : true;
+            let id = options ? options.id || null : null;
+            let rsf = options ? options.renderScaleFactor || 1 : 1;
 
-            if (!options || !options.noWorldSpaceNode) {
+            let c = new Canvas2D();
+            c.setupCanvas(scene, id, new Size(size.width, size.height), rsf, false, cs, enableInteraction, new Vector2(0.5, 0.5), isVisible, null, null, null, null, null, null);
+
+            if (createWorldSpaceNode) {
                 let plane = new WorldSpaceCanvas2D(id, scene, c);
                 let vertexData = VertexData.CreatePlane({
-                    width: size.width / 2,
-                    height: size.height / 2,
+                    width: size.width,
+                    height: size.height,
                     sideOrientation: options && options.sideOrientation || Mesh.DEFAULTSIDE
                 });
                 let mtl = new StandardMaterial(id + "_Material", scene);
@@ -134,18 +139,23 @@
                 plane.rotationQuaternion = options && options.rotation || Quaternion.Identity();
                 plane.material = mtl;
                 c._worldSpaceNode = plane;
+            } else {
+                c._worldSpaceNode = options.customWorldSpaceNode;
             }
-
             return c;
         }
 
-        protected setupCanvas(scene: Scene, name: string, size: Size, isScreenSpace: boolean, cachingstrategy: number, enableInteraction: boolean, origin: Vector2, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
+        protected setupCanvas(scene: Scene, name: string, size: Size, renderScaleFactor: number, isScreenSpace: boolean, cachingstrategy: number, enableInteraction: boolean, origin: Vector2, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
             let engine = scene.getEngine();
             this._fitRenderingDevice = !size;
             if (!size) {
                 size = new Size(engine.getRenderWidth(), engine.getRenderHeight());
+            } else {
+                size.height *= renderScaleFactor;
+                size.width *= renderScaleFactor;
             }
             this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
+            this._renderScaleFactor = renderScaleFactor;
             this._cachingStrategy = cachingstrategy;
             this._primPointerInfo = new PrimitivePointerInfo();
             this._capturedPointers = new StringDictionary<Prim2DBase>();
@@ -203,20 +213,72 @@
             // Set the new state
             this._interactionEnabled = enable;
 
-            // Disable interaction
-            if (!enable) {
-                if (this._scenePrePointerObserver) {
-                    this.scene.onPrePointerObservable.remove(this._scenePrePointerObserver);
-                    this._scenePrePointerObserver = null;
+            // ScreenSpace mode
+            if (this._isScreeSpace) {
+                // Disable interaction
+                if (!enable) {
+                    if (this._scenePrePointerObserver) {
+                        this.scene.onPrePointerObservable.remove(this._scenePrePointerObserver);
+                        this._scenePrePointerObserver = null;
+                    }
+
+                    return;
                 }
 
+                // Enable Interaction
+
+                // Register the observable
+                this._scenePrePointerObserver = this.scene.onPrePointerObservable.add((e, s) => {
+                    let hs = 1/this.engine.getHardwareScalingLevel();
+                    let localPos = e.localPosition.multiplyByFloats(hs, hs);
+                    this._handlePointerEventForInteraction(e, localPos, s);
+                });
+            }
+
+            // World Space Mode
+            else {
+                let scene = this.scene;
+                if (enable) {
+                    scene.constantlyUpdateMeshUnderPointer = true;
+                    this._scenePointerObserver = scene.onPointerObservable.add((e, s) => {
+
+                        if (e.pickInfo.hit && e.pickInfo.pickedMesh === this._worldSpaceNode && this.worldSpaceToNodeLocal) {
+                            let localPos = this.worldSpaceToNodeLocal(e.pickInfo.pickedPoint);
+                            this._handlePointerEventForInteraction(e, localPos, s);
+                        }
+                    });
+                }
+
+                // Disable
+                else {
+                    if (this._scenePointerObserver) {
+                        this.scene.onPointerObservable.remove(this._scenePointerObserver);
+                        this._scenePointerObserver = null;
+                    }
+                }
+            }
+        }
+
+        /**
+         * If you set your own WorldSpaceNode to display the Canvas2D you have to provide your own implementation of this method which computes the local position in the Canvas based on the given 3D World one.
+         * Beware that you have to take under consideration the origin and the renderScaleFactor in your calculations! Good luck!
+         */
+        public worldSpaceToNodeLocal = (worldPos: Vector3): Vector2 => {
+            let node = this._worldSpaceNode;
+            if (!node) {
                 return;
             }
 
-            // Enable Interaction
-
-            // Register the observable
-            this.scene.onPrePointerObservable.add((e, s) => this._handlePointerEventForInteraction(e, s));
+            let mtx = node.getWorldMatrix().clone();
+            mtx.invert();
+            let v = Vector3.TransformCoordinates(worldPos, mtx);
+            let rsf = this._renderScaleFactor;
+            let res = new Vector2(v.x*rsf, v.y*rsf);
+            let size = this.actualSize;
+            let o = this.origin;
+            res.x += size.width * o.x;
+            res.y += size.width * o.y;
+            return res;
         }
 
         /**
@@ -280,14 +342,14 @@
         }
            
         private static _interInfo = new IntersectInfo2D();
-        private _handlePointerEventForInteraction(eventData: PointerInfoPre, eventState: EventState) {
+        private _handlePointerEventForInteraction(eventData: PointerInfoBase, localPosition: Vector2, eventState: EventState) {
             // Dispose check
             if (this.isDisposed) {
                 return;
             }
 
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            this._updatePointerInfo(eventData);
+            this._updatePointerInfo(eventData, localPosition);
 
             let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
@@ -323,7 +385,7 @@
             }
         }
 
-        private _updatePointerInfo(eventData: PointerInfoPre) {
+        private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2) {
             let pii = this._primPointerInfo;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = Vector2.Zero();
@@ -331,15 +393,20 @@
             var camera = this._scene.activeCamera;
             var engine = this._scene.getEngine();
 
-            var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            if (this._isScreeSpace) {
+                var cameraViewport = camera.viewport;
+                var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
-            // Moving coordinates to local viewport world
-            var x = eventData.localPosition.x / engine.getHardwareScalingLevel() - viewport.x;
-            var y = eventData.localPosition.y / engine.getHardwareScalingLevel() - viewport.y;
+                // Moving coordinates to local viewport world
+                var x = localPosition.x - viewport.x;
+                var y = localPosition.y - viewport.y;
 
-            pii.canvasPointerPos.x = x - this.position.x;
-            pii.canvasPointerPos.y = engine.getRenderHeight() -y - this.position.y;
+                pii.canvasPointerPos.x = x - this.position.x;
+                pii.canvasPointerPos.y = engine.getRenderHeight() -y - this.position.y;
+            } else {
+                pii.canvasPointerPos.x = localPosition.x;
+                pii.canvasPointerPos.y = localPosition.y;
+            }
             pii.mouseWheelDelta = 0;
 
             if (eventData.type === PointerEventTypes.POINTERWHEEL) {
@@ -385,8 +452,6 @@
                 this._actualOverPrimitive      = null;
                 return;
             }
-
-            this._updateCanvasState();
 
             this.intersect(ii);
 
@@ -677,9 +742,9 @@
         }
 
         /**
-         * Only valid for World Space Canvas, returns the scene node that display the canvas
+         * Only valid for World Space Canvas, returns the scene node that displays the canvas
          */
-        public get worldSpaceCanvasNode(): WorldSpaceCanvas2D {
+        public get worldSpaceCanvasNode(): Node {
             return this._worldSpaceNode;
         }
 
@@ -788,6 +853,7 @@
         private _intersectionRenderId: number;
         private _hoverStatusRenderId: number;
         private _pickStartingPosition: Vector2;
+        private _renderScaleFactor: number;
         private _pickedDownPrim: Prim2DBase;
         private _pickStartingTime: number;
         private _previousIntersectionList: Array<PrimitiveIntersectedInfo>;
@@ -796,7 +862,8 @@
         private _actualOverPrimitive: PrimitiveIntersectedInfo;
         private _capturedPointers: StringDictionary<Prim2DBase>;
         private _scenePrePointerObserver: Observer<PointerInfoPre>;
-        private _worldSpaceNode: WorldSpaceCanvas2D;
+        private _scenePointerObserver: Observer<PointerInfo>;
+        private _worldSpaceNode: Node;
         private _mapCounter = 0;
         private _background: Rectangle2D;
         private _scene: Scene;
@@ -833,7 +900,7 @@
                 }
             }
 
-            var context = new PreapreRender2DContext();
+            var context = new PrepareRender2DContext();
 
             ++this._globalTransformProcessStep;
             this.updateGlobalTransVis(false);
@@ -855,6 +922,7 @@
                 this._updateOverStatus();   // TODO this._primPointerInfo may not be up to date!
             }
 
+            this.engine.setState(false);
             this._groupRender();
 
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content

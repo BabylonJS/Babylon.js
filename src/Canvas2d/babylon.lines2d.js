@@ -13,69 +13,87 @@ var BABYLON;
 (function (BABYLON) {
     var Lines2DRenderCache = (function (_super) {
         __extends(Lines2DRenderCache, _super);
-        function Lines2DRenderCache(engine, modelKey, isTransparent) {
-            _super.call(this, engine, modelKey, isTransparent);
+        function Lines2DRenderCache(engine, modelKey) {
+            _super.call(this, engine, modelKey);
+            this.effectsReady = false;
+            this.fillVB = null;
+            this.fillIB = null;
+            this.fillIndicesCount = 0;
+            this.instancingFillAttributes = null;
+            this.effectFill = null;
+            this.effectFillInstanced = null;
+            this.borderVB = null;
+            this.borderIB = null;
+            this.borderIndicesCount = 0;
+            this.instancingBorderAttributes = null;
+            this.effectBorder = null;
+            this.effectBorderInstanced = null;
         }
         Lines2DRenderCache.prototype.render = function (instanceInfo, context) {
             // Do nothing if the shader is still loading/preparing 
-            if ((this.effectFill && !this.effectFill.isReady()) || (this.effectBorder && !this.effectBorder.isReady())) {
-                return false;
+            if (!this.effectsReady) {
+                if ((this.effectFill && (!this.effectFill.isReady() || (this.effectFillInstanced && !this.effectFillInstanced.isReady()))) ||
+                    (this.effectBorder && (!this.effectBorder.isReady() || (this.effectBorderInstanced && !this.effectBorderInstanced.isReady())))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
-            var engine = instanceInfo._owner.owner.engine;
+            var engine = instanceInfo.owner.owner.engine;
             var depthFunction = 0;
             if (this.effectFill && this.effectBorder) {
                 depthFunction = engine.getDepthFunction();
                 engine.setDepthFunctionToLessOrEqual();
             }
-            var cur;
-            if (this.isTransparent) {
-                cur = engine.getAlphaMode();
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-            }
+            var curAlphaMode = engine.getAlphaMode();
             if (this.effectFill) {
-                var partIndex = instanceInfo._partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_FILLPARTID.toString());
-                engine.enableEffect(this.effectFill);
-                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [2], 2 * 4, this.effectFill);
-                var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
-                if (instanceInfo._owner.owner.supportInstancedArray) {
+                var partIndex = instanceInfo.partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_FILLPARTID.toString());
+                var pid = context.groupInfoPartData[partIndex];
+                if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                }
+                var effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
+                engine.enableEffect(effect);
+                engine.bindBuffersDirectly(this.fillVB, this.fillIB, [2], 2 * 4, effect);
+                if (context.useInstancing) {
                     if (!this.instancingFillAttributes) {
-                        // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
-                        this.instancingFillAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
+                        this.instancingFillAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_FILLPARTID, effect);
                     }
-                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
-                    engine.draw(true, 0, this.fillIndicesCount, count);
+                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 }
                 else {
-                    for (var i = 0; i < count; i++) {
-                        this.setupUniforms(this.effectFill, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                    for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.fillIndicesCount);
                     }
                 }
             }
             if (this.effectBorder) {
-                var partIndex = instanceInfo._partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_BORDERPARTID.toString());
-                engine.enableEffect(this.effectBorder);
-                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [2], 2 * 4, this.effectBorder);
-                var count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
-                if (instanceInfo._owner.owner.supportInstancedArray) {
+                var partIndex = instanceInfo.partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_BORDERPARTID.toString());
+                var pid = context.groupInfoPartData[partIndex];
+                if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                }
+                var effect = context.useInstancing ? this.effectBorderInstanced : this.effectBorder;
+                engine.enableEffect(effect);
+                engine.bindBuffersDirectly(this.borderVB, this.borderIB, [2], 2 * 4, effect);
+                if (context.useInstancing) {
                     if (!this.instancingBorderAttributes) {
-                        this.instancingBorderAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, this.effectBorder);
+                        this.instancingBorderAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, effect);
                     }
-                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
-                    engine.draw(true, 0, this.borderIndicesCount, count);
+                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 }
                 else {
-                    for (var i = 0; i < count; i++) {
-                        this.setupUniforms(this.effectBorder, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                    for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.borderIndicesCount);
                     }
                 }
             }
-            if (this.isTransparent) {
-                engine.setAlphaMode(cur);
-            }
+            engine.setAlphaMode(curAlphaMode);
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
             }
@@ -97,6 +115,10 @@ var BABYLON;
                 this._engine._releaseEffect(this.effectFill);
                 this.effectFill = null;
             }
+            if (this.effectFillInstanced) {
+                this._engine._releaseEffect(this.effectFillInstanced);
+                this.effectFillInstanced = null;
+            }
             if (this.borderVB) {
                 this._engine._releaseBuffer(this.borderVB);
                 this.borderVB = null;
@@ -109,10 +131,14 @@ var BABYLON;
                 this._engine._releaseEffect(this.effectBorder);
                 this.effectBorder = null;
             }
+            if (this.effectBorderInstanced) {
+                this._engine._releaseEffect(this.effectBorderInstanced);
+                this.effectBorderInstanced = null;
+            }
             return true;
         };
         return Lines2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Lines2DRenderCache = Lines2DRenderCache;
     var Lines2DInstanceData = (function (_super) {
         __extends(Lines2DInstanceData, _super);
@@ -140,7 +166,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Lines2DInstanceData.prototype, "boundingMax", null);
         return Lines2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Lines2DInstanceData = Lines2DInstanceData;
     var Lines2D = (function (_super) {
         __extends(Lines2D, _super);
@@ -241,23 +267,51 @@ var BABYLON;
             configurable: true
         });
         Lines2D.prototype.levelIntersect = function (intersectInfo) {
+            var _this = this;
             var pl = this.points.length;
             var l = this.closed ? pl + 1 : pl;
-            var originOffset = new BABYLON.Vector2(-0.5, -0.5);
             var p = intersectInfo._localPickPosition;
-            var prevA = this.transformPointWithOrigin(this._contour[0], originOffset);
-            var prevB = this.transformPointWithOrigin(this._contour[1], originOffset);
+            this.transformPointWithOriginToRef(this._contour[0], null, Lines2D._prevA);
+            this.transformPointWithOriginToRef(this._contour[1], null, Lines2D._prevB);
             for (var i = 1; i < l; i++) {
-                var curA = this.transformPointWithOrigin(this._contour[(i % pl) * 2 + 0], originOffset);
-                var curB = this.transformPointWithOrigin(this._contour[(i % pl) * 2 + 1], originOffset);
-                if (BABYLON.Vector2.PointInTriangle(p, prevA, prevB, curA)) {
+                this.transformPointWithOriginToRef(this._contour[(i % pl) * 2 + 0], null, Lines2D._curA);
+                this.transformPointWithOriginToRef(this._contour[(i % pl) * 2 + 1], null, Lines2D._curB);
+                if (BABYLON.Vector2.PointInTriangle(p, Lines2D._prevA, Lines2D._prevB, Lines2D._curA)) {
                     return true;
                 }
-                if (BABYLON.Vector2.PointInTriangle(p, curA, prevB, curB)) {
+                if (BABYLON.Vector2.PointInTriangle(p, Lines2D._curA, Lines2D._prevB, Lines2D._curB)) {
                     return true;
                 }
-                prevA = curA;
-                prevB = curB;
+                Lines2D._prevA.x = Lines2D._curA.x;
+                Lines2D._prevA.y = Lines2D._curA.y;
+                Lines2D._prevB.x = Lines2D._curB.x;
+                Lines2D._prevB.y = Lines2D._curB.y;
+            }
+            var capIntersect = function (tri, points) {
+                var l = tri.length;
+                for (var i = 0; i < l; i += 3) {
+                    Lines2D._curA.x = points[tri[i + 0] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 0] * 2 + 1];
+                    _this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._curB);
+                    Lines2D._curA.x = points[tri[i + 1] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 1] * 2 + 1];
+                    _this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevA);
+                    Lines2D._curA.x = points[tri[i + 2] * 2 + 0];
+                    Lines2D._curA.y = points[tri[i + 2] * 2 + 1];
+                    _this.transformPointWithOriginToRef(Lines2D._curA, null, Lines2D._prevB);
+                    if (BABYLON.Vector2.PointInTriangle(p, Lines2D._prevA, Lines2D._prevB, Lines2D._curB)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+            if (this._startCapTriIndices) {
+                if (capIntersect(this._startCapTriIndices, this._startCapContour)) {
+                    return true;
+                }
+                if (capIntersect(this._endCapTriIndices, this._endCapContour)) {
+                    return true;
+                }
             }
             return false;
         };
@@ -292,10 +346,10 @@ var BABYLON;
             return res;
         };
         Lines2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
+            BABYLON.BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo, this.origin);
         };
-        Lines2D.prototype.setupLines2D = function (owner, parent, id, position, origin, points, fillThickness, startCap, endCap, fill, border, borderThickness, closed) {
-            this.setupShape2D(owner, parent, id, position, origin, true, fill, border, borderThickness);
+        Lines2D.prototype.setupLines2D = function (owner, parent, id, position, origin, points, fillThickness, startCap, endCap, fill, border, borderThickness, closed, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
+            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.fillThickness = fillThickness;
             this.startCap = startCap;
             this.endCap = endCap;
@@ -311,8 +365,7 @@ var BABYLON;
          * @param points an array that describe the points to use to draw the line, must contain at least two entries.
          * options:
          *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
          *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
@@ -321,22 +374,32 @@ var BABYLON;
          *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
          *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
          *  - borderThickness: the thickness of the drawn border, default is 1.
+         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
         Lines2D.Create = function (parent, points, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
-            var fill;
-            if (options && options.fill !== undefined) {
-                fill = options.fill;
+            var lines = new Lines2D();
+            if (!options) {
+                lines.setupLines2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, points, 1, 0, 0, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, false, true, null, null, null, null, null, null);
             }
             else {
-                fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+                var fill;
+                if (options.fill === undefined) {
+                    fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+                }
+                else {
+                    fill = options.fill;
+                }
+                var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
+                lines.setupLines2D(parent.owner, parent, options.id || null, pos, options.origin || null, points, (options.fillThickness == null) ? 1 : options.fillThickness, (options.startCap == null) ? 0 : options.startCap, (options.endCap == null) ? 0 : options.endCap, fill, options.border || null, (options.borderThickness == null) ? 1 : options.borderThickness, (options.closed == null) ? false : options.closed, (options.isVisible == null) ? true : options.isVisible, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
             }
-            var lines = new Lines2D();
-            lines.setupLines2D(parent.owner, parent, options && options.id || null, new BABYLON.Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, points, options && options.fillThickness || 1, options && options.startCap || 0, options && options.endCap || 0, fill, options && options.border || null, options && options.borderThickness || 0, options && options.closed || false);
             return lines;
         };
-        Lines2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
-            var renderCache = new Lines2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        Lines2D.prototype.createModelRenderCache = function (modelKey) {
+            var renderCache = new Lines2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         };
         Lines2D.prototype.setupModelRenderCache = function (modelRenderCache) {
@@ -344,8 +407,8 @@ var BABYLON;
             var renderCache = modelRenderCache;
             var engine = this.owner.engine;
             // Init min/max because their being computed here
-            this.boundingMin = new BABYLON.Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
-            this.boundingMax = new BABYLON.Vector2(Number.MIN_VALUE, Number.MIN_VALUE);
+            this._boundingMin = new BABYLON.Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            this._boundingMax = new BABYLON.Vector2(Number.MIN_VALUE, Number.MIN_VALUE);
             var perp = function (v, res) {
                 res.x = v.y;
                 res.y = -v.x;
@@ -520,7 +583,7 @@ var BABYLON;
                 return { vbsize: vbsize * 2, ibsize: ibsize };
             };
             var v = BABYLON.Vector2.Zero();
-            var storeVertex = function (vb, baseOffset, index, basePos, rotation, vertex) {
+            var storeVertex = function (vb, baseOffset, index, basePos, rotation, vertex, contour) {
                 var c = Math.cos(rotation);
                 var s = Math.sin(rotation);
                 v.x = (c * vertex.x) + (-s * vertex.y) + basePos.x;
@@ -528,13 +591,17 @@ var BABYLON;
                 var offset = baseOffset + (index * 2);
                 vb[offset + 0] = v.x;
                 vb[offset + 1] = v.y;
+                if (contour) {
+                    contour.push(v.x);
+                    contour.push(v.y);
+                }
                 updateMinMax(vb, offset);
                 return (baseOffset + index * 2) / 2;
             };
             var storeIndex = function (ib, baseOffset, index, vertexIndex) {
                 ib[baseOffset + index] = vertexIndex;
             };
-            var buildCap = function (vb, vbi, ib, ibi, pos, thickness, borderThickness, type, capDir) {
+            var buildCap = function (vb, vbi, ib, ibi, pos, thickness, borderThickness, type, capDir, contour) {
                 // Compute the transformation from the direction of the cap to build relative to our default orientation [1;0] (our cap are by default pointing toward right, horizontal
                 var dir = new BABYLON.Vector2(1, 0);
                 var angle = Math.atan2(capDir.y, capDir.x) - Math.atan2(dir.y, dir.x);
@@ -547,10 +614,10 @@ var BABYLON;
                         if (borderMode && !_this.closed) {
                             var vi = 0;
                             var ii = 0;
-                            var v1 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, ht + bt));
-                            var v2 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(bt, ht + bt));
-                            var v3 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(bt, -(ht + bt)));
-                            var v4 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, -(ht + bt)));
+                            var v1 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, ht + bt), contour);
+                            var v2 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(bt, ht + bt), contour);
+                            var v3 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(bt, -(ht + bt)), contour);
+                            var v4 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, -(ht + bt)), contour);
                             storeIndex(ib, ibi, ii++, v1);
                             storeIndex(ib, ibi, ii++, v2);
                             storeIndex(ib, ibi, ii++, v3);
@@ -565,12 +632,12 @@ var BABYLON;
                         {
                             if (borderMode) {
                                 var f = type === Lines2D.TriangleCap ? bt : Math.sqrt(bt * bt * 2);
-                                var v1 = storeVertex(vb, vbi, 0, pos, angle, new BABYLON.Vector2(0, ht));
-                                var v2 = storeVertex(vb, vbi, 1, pos, angle, new BABYLON.Vector2(ht, 0));
-                                var v3 = storeVertex(vb, vbi, 2, pos, angle, new BABYLON.Vector2(0, -ht));
-                                var v4 = storeVertex(vb, vbi, 3, pos, angle, new BABYLON.Vector2(0, ht + f));
-                                var v5 = storeVertex(vb, vbi, 4, pos, angle, new BABYLON.Vector2(ht + f, 0));
-                                var v6 = storeVertex(vb, vbi, 5, pos, angle, new BABYLON.Vector2(0, -(ht + f)));
+                                var v1 = storeVertex(vb, vbi, 0, pos, angle, new BABYLON.Vector2(0, ht), null);
+                                var v2 = storeVertex(vb, vbi, 1, pos, angle, new BABYLON.Vector2(ht, 0), null);
+                                var v3 = storeVertex(vb, vbi, 2, pos, angle, new BABYLON.Vector2(0, -ht), null);
+                                var v4 = storeVertex(vb, vbi, 3, pos, angle, new BABYLON.Vector2(0, ht + f), contour);
+                                var v5 = storeVertex(vb, vbi, 4, pos, angle, new BABYLON.Vector2(ht + f, 0), contour);
+                                var v6 = storeVertex(vb, vbi, 5, pos, angle, new BABYLON.Vector2(0, -(ht + f)), contour);
                                 var ii = 0;
                                 storeIndex(ib, ibi, ii++, v1);
                                 storeIndex(ib, ibi, ii++, v4);
@@ -586,12 +653,12 @@ var BABYLON;
                                 storeIndex(ib, ibi, ii++, v5);
                                 if (type === Lines2D.ArrowCap) {
                                     var rht = thickness / 2;
-                                    var v7 = storeVertex(vb, vbi, 6, pos, angle, new BABYLON.Vector2(0, rht + bt));
-                                    var v8 = storeVertex(vb, vbi, 7, pos, angle, new BABYLON.Vector2(-bt, rht + bt));
-                                    var v9 = storeVertex(vb, vbi, 8, pos, angle, new BABYLON.Vector2(-bt, ht + f));
-                                    var v10 = storeVertex(vb, vbi, 9, pos, angle, new BABYLON.Vector2(0, -(rht + bt)));
-                                    var v11 = storeVertex(vb, vbi, 10, pos, angle, new BABYLON.Vector2(-bt, -(rht + bt)));
-                                    var v12 = storeVertex(vb, vbi, 11, pos, angle, new BABYLON.Vector2(-bt, -(ht + f)));
+                                    var v10 = storeVertex(vb, vbi, 9, pos, angle, new BABYLON.Vector2(0, -(rht + bt)), null);
+                                    var v12 = storeVertex(vb, vbi, 11, pos, angle, new BABYLON.Vector2(-bt, -(ht + f)), contour);
+                                    var v11 = storeVertex(vb, vbi, 10, pos, angle, new BABYLON.Vector2(-bt, -(rht + bt)), contour);
+                                    var v7 = storeVertex(vb, vbi, 6, pos, angle, new BABYLON.Vector2(0, rht + bt), null);
+                                    var v8 = storeVertex(vb, vbi, 7, pos, angle, new BABYLON.Vector2(-bt, rht + bt), contour);
+                                    var v9 = storeVertex(vb, vbi, 8, pos, angle, new BABYLON.Vector2(-bt, ht + f), contour);
                                     storeIndex(ib, ibi, ii++, v7);
                                     storeIndex(ib, ibi, ii++, v8);
                                     storeIndex(ib, ibi, ii++, v9);
@@ -607,9 +674,9 @@ var BABYLON;
                                 }
                             }
                             else {
-                                var v1 = storeVertex(vb, vbi, 0, pos, angle, new BABYLON.Vector2(0, ht));
-                                var v2 = storeVertex(vb, vbi, 1, pos, angle, new BABYLON.Vector2(ht, 0));
-                                var v3 = storeVertex(vb, vbi, 2, pos, angle, new BABYLON.Vector2(0, -ht));
+                                var v1 = storeVertex(vb, vbi, 0, pos, angle, new BABYLON.Vector2(0, ht), contour);
+                                var v2 = storeVertex(vb, vbi, 1, pos, angle, new BABYLON.Vector2(ht, 0), contour);
+                                var v3 = storeVertex(vb, vbi, 2, pos, angle, new BABYLON.Vector2(0, -ht), contour);
                                 storeIndex(ib, ibi, 0, v1);
                                 storeIndex(ib, ibi, 1, v2);
                                 storeIndex(ib, ibi, 2, v3);
@@ -623,8 +690,8 @@ var BABYLON;
                                 var incA = Math.PI / (sd / 2 - 1);
                                 var ii = 0;
                                 for (var i = 0; i < (sd / 2); i++) {
-                                    var v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new BABYLON.Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
-                                    var v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new BABYLON.Vector2(Math.cos(curA) * (ht + bt), Math.sin(curA) * (ht + bt)));
+                                    var v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new BABYLON.Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), null);
+                                    var v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new BABYLON.Vector2(Math.cos(curA) * (ht + bt), Math.sin(curA) * (ht + bt)), contour);
                                     if (i > 0) {
                                         storeIndex(ib, ibi, ii++, v1 - 2);
                                         storeIndex(ib, ibi, ii++, v2 - 2);
@@ -637,13 +704,13 @@ var BABYLON;
                                 }
                             }
                             else {
-                                var c = storeVertex(vb, vbi, 0, pos, angle, new BABYLON.Vector2(0, 0));
+                                var c = storeVertex(vb, vbi, 0, pos, angle, new BABYLON.Vector2(0, 0), null);
                                 var curA = -Math.PI / 2;
                                 var incA = Math.PI / (sd / 2 - 1);
-                                storeVertex(vb, vbi, 1, pos, angle, new BABYLON.Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
+                                storeVertex(vb, vbi, 1, pos, angle, new BABYLON.Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), null);
                                 curA += incA;
                                 for (var i = 1; i < (sd / 2); i++) {
-                                    var v2 = storeVertex(vb, vbi, i + 1, pos, angle, new BABYLON.Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht));
+                                    var v2 = storeVertex(vb, vbi, i + 1, pos, angle, new BABYLON.Vector2(Math.cos(curA) * ht, Math.sin(curA) * ht), contour);
                                     storeIndex(ib, ibi, i * 3 + 0, c);
                                     storeIndex(ib, ibi, i * 3 + 1, v2 - 1);
                                     storeIndex(ib, ibi, i * 3 + 2, v2);
@@ -655,19 +722,20 @@ var BABYLON;
                     case Lines2D.SquareAnchorCap:
                         {
                             var vi = 0;
-                            var v1 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, t));
-                            var v2 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(t * 2, t));
-                            var v3 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(t * 2, -t));
-                            var v4 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, -t));
+                            var c = borderMode ? null : contour;
+                            var v1 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, t), c);
+                            var v2 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(t * 2, t), c);
+                            var v3 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(t * 2, -t), c);
+                            var v4 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, -t), c);
                             if (borderMode) {
-                                var v5 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, ht + bt));
-                                var v6 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-bt, ht + bt));
-                                var v7 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-bt, t + bt));
-                                var v8 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(t * 2 + bt, t + bt));
-                                var v9 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(t * 2 + bt, -(t + bt)));
-                                var v10 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-bt, -(t + bt)));
-                                var v11 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-bt, -(ht + bt)));
-                                var v12 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, -(ht + bt)));
+                                var v5 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, ht + bt), null);
+                                var v6 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-bt, ht + bt), contour);
+                                var v7 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-bt, t + bt), contour);
+                                var v8 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(t * 2 + bt, t + bt), contour);
+                                var v9 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(t * 2 + bt, -(t + bt)), contour);
+                                var v10 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-bt, -(t + bt)), contour);
+                                var v11 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-bt, -(ht + bt)), contour);
+                                var v12 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, -(ht + bt)), null);
                                 var ii = 0;
                                 storeIndex(ib, ibi, ii++, v6);
                                 storeIndex(ib, ibi, ii++, v1);
@@ -719,8 +787,8 @@ var BABYLON;
                             if (borderMode) {
                                 var ii = 0;
                                 for (var i = 0; i < sd; i++) {
-                                    var v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new BABYLON.Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
-                                    var v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new BABYLON.Vector2(cpos + Math.cos(curA) * (t + bt), Math.sin(curA) * (t + bt)));
+                                    var v1 = storeVertex(vb, vbi, i * 2 + 0, pos, angle, new BABYLON.Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), null);
+                                    var v2 = storeVertex(vb, vbi, i * 2 + 1, pos, angle, new BABYLON.Vector2(cpos + Math.cos(curA) * (t + bt), Math.sin(curA) * (t + bt)), contour);
                                     if (i > 0) {
                                         storeIndex(ib, ibi, ii++, v1 - 2);
                                         storeIndex(ib, ibi, ii++, v2 - 2);
@@ -733,11 +801,11 @@ var BABYLON;
                                 }
                             }
                             else {
-                                var c = storeVertex(vb, vbi, 0, pos, angle, center);
-                                storeVertex(vb, vbi, 1, pos, angle, new BABYLON.Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
+                                var c = storeVertex(vb, vbi, 0, pos, angle, center, null);
+                                storeVertex(vb, vbi, 1, pos, angle, new BABYLON.Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), null); // contour maybe TODO
                                 curA += incA;
                                 for (var i = 1; i < sd; i++) {
-                                    var v2 = storeVertex(vb, vbi, i + 1, pos, angle, new BABYLON.Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t));
+                                    var v2 = storeVertex(vb, vbi, i + 1, pos, angle, new BABYLON.Vector2(cpos + Math.cos(curA) * t, Math.sin(curA) * t), contour);
                                     storeIndex(ib, ibi, i * 3 + 0, c);
                                     storeIndex(ib, ibi, i * 3 + 1, v2 - 1);
                                     storeIndex(ib, ibi, i * 3 + 2, v2);
@@ -752,18 +820,19 @@ var BABYLON;
                     case Lines2D.DiamondAnchorCap:
                         {
                             var vi = 0;
-                            var v1 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, ht));
-                            var v2 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht, t));
-                            var v3 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht * 3, 0));
-                            var v4 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht, -t));
-                            var v5 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, -ht));
+                            var c = borderMode ? null : contour;
+                            var v1 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, ht), c);
+                            var v2 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht, t), c);
+                            var v3 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht * 3, 0), c);
+                            var v4 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht, -t), c);
+                            var v5 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(0, -ht), c);
                             if (borderMode) {
                                 var f = Math.sqrt(bt * bt * 2);
-                                var v6 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-f, ht));
-                                var v7 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht, t + f));
-                                var v8 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht * 3 + f, 0));
-                                var v9 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht, -(t + f)));
-                                var v10 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-f, -ht));
+                                var v6 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-f, ht), contour);
+                                var v7 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht, t + f), contour);
+                                var v8 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht * 3 + f, 0), contour);
+                                var v9 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(ht, -(t + f)), contour);
+                                var v10 = storeVertex(vb, vbi, vi++, pos, angle, new BABYLON.Vector2(-f, -ht), contour);
                                 var ii = 0;
                                 storeIndex(ib, ibi, ii++, v6);
                                 storeIndex(ib, ibi, ii++, v7);
@@ -862,6 +931,8 @@ var BABYLON;
                 }
             };
             var contour = new Array();
+            var startCapContour = new Array();
+            var endCapContour = new Array();
             // Need to create WebGL resources for fill part?
             if (this.fill) {
                 var startCapInfo = getCapSize(this.startCap);
@@ -883,13 +954,19 @@ var BABYLON;
                     ib[i * 3 + 4] = (i + 3) % max;
                     ib[i * 3 + 5] = (i + 2) % max;
                 }
-                buildCap(vb, count * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, null, this.startCap, startDir);
-                buildCap(vb, (count * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, null, this.endCap, endDir);
+                buildCap(vb, count * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, null, this.startCap, startDir, this.border ? null : startCapContour);
+                buildCap(vb, (count * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, null, this.endCap, endDir, this.border ? null : startCapContour);
                 renderCache.fillVB = engine.createVertexBuffer(vb);
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = ib.length;
-                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["position"]);
-                renderCache.effectFill = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
+                // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["position"], true);
+                if (ei) {
+                    renderCache.effectFillInstanced = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
+                }
+                // Get the non instanced version
+                ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["position"], false);
+                renderCache.effectFill = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             }
             // Need to create WebGL resources for border part?
             if (this.border) {
@@ -919,15 +996,31 @@ var BABYLON;
                     ib[i * 3 + 10] = (i + 5) % max;
                     ib[i * 3 + 11] = (i + 7) % max;
                 }
-                buildCap(vb, count * 2 * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, this.borderThickness, this.startCap, startDir);
-                buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, endDir);
+                buildCap(vb, count * 2 * 2 * 2, ib, triCount * 3, this.points[0], this.fillThickness, this.borderThickness, this.startCap, startDir, startCapContour);
+                buildCap(vb, (count * 2 * 2 * 2) + startCapInfo.vbsize, ib, (triCount * 3) + startCapInfo.ibsize, this.points[total - 1], this.fillThickness, this.borderThickness, this.endCap, endDir, endCapContour);
                 renderCache.borderVB = engine.createVertexBuffer(vb);
                 renderCache.borderIB = engine.createIndexBuffer(ib);
                 renderCache.borderIndicesCount = ib.length;
-                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["position"]);
+                // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["position"], true);
+                if (ei) {
+                    renderCache.effectBorderInstanced = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
+                }
+                // Get the non instanced version
+                ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["position"], false);
                 renderCache.effectBorder = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
             }
             this._contour = contour;
+            if (startCapContour.length > 0) {
+                var startCapTri = Earcut.earcut(startCapContour, null, 2);
+                this._startCapTriIndices = startCapTri;
+                this._startCapContour = startCapContour;
+            }
+            if (endCapContour.length > 0) {
+                var endCapTri = Earcut.earcut(endCapContour, null, 2);
+                this._endCapContour = endCapContour;
+                this._endCapTriIndices = endCapTri;
+            }
             var bs = this._boundingMax.subtract(this._boundingMin);
             this._size.width = bs.x;
             this._size.height = bs.y;
@@ -959,6 +1052,10 @@ var BABYLON;
             }
             return true;
         };
+        Lines2D._prevA = BABYLON.Vector2.Zero();
+        Lines2D._prevB = BABYLON.Vector2.Zero();
+        Lines2D._curA = BABYLON.Vector2.Zero();
+        Lines2D._curB = BABYLON.Vector2.Zero();
         Lines2D._noCap = 0;
         Lines2D._roundCap = 1;
         Lines2D._triangleCap = 2;
@@ -986,6 +1083,6 @@ var BABYLON;
             BABYLON.className("Lines2D")
         ], Lines2D);
         return Lines2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Lines2D = Lines2D;
 })(BABYLON || (BABYLON = {}));

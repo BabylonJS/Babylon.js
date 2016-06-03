@@ -118,6 +118,7 @@ var BABYLON;
                 BABYLON.Tools.Warn("copyAnimationRange: this rig has " + this.bones.length + " bones, while source as " + sourceBones.length);
                 ret = false;
             }
+            var skelDimensionsRatio = (rescaleAsRequired && this.dimensionsAtRest && source.dimensionsAtRest) ? this.dimensionsAtRest.divide(source.dimensionsAtRest) : null;
             for (i = 0, nBones = this.bones.length; i < nBones; i++) {
                 var boneName = this.bones[i].name;
                 var sourceBone = boneDict[boneName];
@@ -333,6 +334,6 @@ var BABYLON;
             return skeleton;
         };
         return Skeleton;
-    }());
+    })();
     BABYLON.Skeleton = Skeleton;
 })(BABYLON || (BABYLON = {}));

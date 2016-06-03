@@ -31,12 +31,19 @@
         }
     }
 
+    export class PointerInfoBase {
+        constructor(public type: number, public event: PointerEvent | MouseWheelEvent) {
+        }
+        
+    }
+
     /**
      * This class is used to store pointer related info for the onPrePointerObservable event.
      * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
      */
-    export class PointerInfoPre {
-        constructor(public type: number, public event: PointerEvent | MouseWheelEvent, localX, localY) {
+    export class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX, localY) {
+            super(type, event);
             this.skipOnPointerObservable = false;
             this.localPosition = new Vector2(localX, localY);
         }
@@ -49,8 +56,9 @@
      * This type contains all the data related to a pointer event in Babylon.js.
      * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
      */
-    export class PointerInfo {
-        constructor(public type: number, public event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
+    export class PointerInfo extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
+            super(type, event);
         }
     }
 
@@ -1860,7 +1868,9 @@
 
         private _activeMesh(mesh: AbstractMesh): void {
             if (mesh.skeleton && this.skeletonsEnabled) {
-                this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
+                if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
+                    mesh.skeleton.prepare();
+                }
 
                 if (!mesh.computeBonesUsingShaders) {
                     this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
@@ -1928,13 +1938,6 @@
             this._evaluateActiveMeshes();
             this._evaluateActiveMeshesDuration += Tools.Now - beforeEvaluateActiveMeshesDate;
             Tools.EndPerformanceCounter("Active meshes evaluation");
-
-            // Skeletons
-            for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
-                var skeleton = this._activeSkeletons.data[skeletonIndex];
-
-                skeleton.prepare();
-            }
 
             // Software skinning
             for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {

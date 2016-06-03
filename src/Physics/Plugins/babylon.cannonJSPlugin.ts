@@ -186,6 +186,9 @@
                         localAnchorB: constraintData.pivotB
                     });
                     break;
+                case PhysicsJoint.LockJoint:
+                    constraint = new CANNON.LockConstraint(mainBody, connectedBody, constraintData);
+                    break;
                 case PhysicsJoint.PointToPointJoint:
                 case PhysicsJoint.BallAndSocketJoint:
                 default:

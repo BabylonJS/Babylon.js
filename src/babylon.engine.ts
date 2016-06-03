@@ -1459,7 +1459,6 @@
 
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
-                    this.setDepthWrite(true);
                     this._alphaState.alphaBlend = false;
                     break;
                 case Engine.ALPHA_COMBINE:
@@ -1488,7 +1487,7 @@
                     break;
             }
             if (!noDepthWriteChange) {
-                this.setDepthWrite(false);
+                this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
             }
             this._alphaMode = mode;
         }

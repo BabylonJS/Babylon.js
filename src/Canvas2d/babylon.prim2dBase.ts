@@ -1,6 +1,6 @@
 ﻿module BABYLON {
 
-    export class PreapreRender2DContext {
+    export class PrepareRender2DContext {
         constructor() {
             this.forceRefreshPrimitive = false;
         }
@@ -799,7 +799,7 @@
         }
 
         /**
-         * Get the boundingInfo associated to the primitive.
+         * Get the boundingInfo associated to the primitive and its children.
          * The value is supposed to be always up to date
          */
         public get boundingInfo(): BoundingInfo2D {
@@ -876,28 +876,30 @@
             }
 
             // Fast rejection test with boundingInfo
-            if (!this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
+            if (this.isPickable && !this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
                 // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
                 intersectInfo._exit(firstLevel);
                 return false;
             }
 
             // We hit the boundingInfo that bounds this primitive and its children, now we have to test on the primitive of this level
-            let levelIntersectRes = this.levelIntersect(intersectInfo);
-            if (levelIntersectRes) {
-                let pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
-                intersectInfo.intersectedPrimitives.push(pii);
-                if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
-                    intersectInfo.topMostIntersectedPrimitive = pii;
-                }
+            let levelIntersectRes = false;
+            if (this.isPickable) {
+                levelIntersectRes = this.levelIntersect(intersectInfo);
+                if (levelIntersectRes) {
+                    let pii = new PrimitiveIntersectedInfo(this, intersectInfo._localPickPosition.clone());
+                    intersectInfo.intersectedPrimitives.push(pii);
+                    if (!intersectInfo.topMostIntersectedPrimitive || (intersectInfo.topMostIntersectedPrimitive.prim.getActualZOffset() > pii.prim.getActualZOffset())) {
+                        intersectInfo.topMostIntersectedPrimitive = pii;
+                    }
 
-                // If we must stop at the first intersection, we're done, quit!
-                if (intersectInfo.findFirstOnly) {
-                    intersectInfo._exit(firstLevel);
-                    return true;
+                    // If we must stop at the first intersection, we're done, quit!
+                    if (intersectInfo.findFirstOnly) {
+                        intersectInfo._exit(firstLevel);
+                        return true;
+                    }
                 }
             }
-
             // Recurse to children if needed
             if (!levelIntersectRes || !intersectInfo.findFirstOnly) {
                 for (let curChild of this._children) {
@@ -946,7 +948,7 @@
 
         private addChild(child: Prim2DBase) {
             child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
-            console.log(`Node: ${child.id} has depth: ${child._hierarchyDepthOffset}`);
+//            console.log(`Node: ${child.id} has depth: ${child._hierarchyDepthOffset}`);
             child._siblingDepthOffset = this._siblingDepthOffset / this.owner.hierarchyLevelMaxSiblingCount;
             this._children.push(child);
         }
@@ -998,15 +1000,15 @@
             return this._visibilityChanged || this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         }
 
-        public _prepareRender(context: PreapreRender2DContext) {
+        public _prepareRender(context: PrepareRender2DContext) {
             this._prepareRenderPre(context);
             this._prepareRenderPost(context);
         }
 
-        public _prepareRenderPre(context: PreapreRender2DContext) {
+        public _prepareRenderPre(context: PrepareRender2DContext) {
         }
 
-        public _prepareRenderPost(context: PreapreRender2DContext) {
+        public _prepareRenderPost(context: PrepareRender2DContext) {
             // Don't recurse if it's a renderable group, the content will be processed by the group itself
             if (this instanceof Group2D) {
                 var self: any = this;

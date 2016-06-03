@@ -19,9 +19,10 @@ var BABYLON;
         };
         SmartArray.prototype.pushNoDuplicate = function (value) {
             if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
-                return;
+                return false;
             }
             this.push(value);
+            return true;
         };
         SmartArray.prototype.sort = function (compareFn) {
             this.data.sort(compareFn);
@@ -63,6 +64,6 @@ var BABYLON;
         // Statics
         SmartArray._GlobalId = 0;
         return SmartArray;
-    }());
+    })();
     BABYLON.SmartArray = SmartArray;
 })(BABYLON || (BABYLON = {}));

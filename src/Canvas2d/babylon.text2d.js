@@ -15,36 +15,46 @@ var BABYLON;
         __extends(Text2DRenderCache, _super);
         function Text2DRenderCache() {
             _super.apply(this, arguments);
+            this.effectsReady = false;
+            this.vb = null;
+            this.ib = null;
+            this.instancingAttributes = null;
+            this.fontTexture = null;
+            this.effect = null;
+            this.effectInstanced = null;
         }
         Text2DRenderCache.prototype.render = function (instanceInfo, context) {
-            // Do nothing if the shader is still loading/preparing
-            if (!this.effect.isReady() || !this.fontTexture.isReady()) {
-                return false;
+            // Do nothing if the shader is still loading/preparing 
+            if (!this.effectsReady) {
+                if ((this.effect && (!this.effect.isReady() || (this.effectInstanced && !this.effectInstanced.isReady())))) {
+                    return false;
+                }
+                this.effectsReady = true;
             }
-            // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
-            if (!this.instancingAttributes) {
-                this.instancingAttributes = this.loadInstancingAttributes(Text2D.TEXT2D_MAINPARTID, this.effect);
-            }
-            var engine = instanceInfo._owner.owner.engine;
+            var engine = instanceInfo.owner.owner.engine;
             this.fontTexture.update();
-            engine.enableEffect(this.effect);
-            this.effect.setTexture("diffuseSampler", this.fontTexture);
-            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, this.effect);
-            var cur = engine.getAlphaMode();
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
-            var count = instanceInfo._instancesPartsData[0].usedElementCount;
-            if (instanceInfo._owner.owner.supportInstancedArray) {
-                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
-                engine.draw(true, 0, 6, count);
+            var effect = context.useInstancing ? this.effectInstanced : this.effect;
+            engine.enableEffect(effect);
+            effect.setTexture("diffuseSampler", this.fontTexture);
+            engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
+            var curAlphaMode = engine.getAlphaMode();
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
+            var pid = context.groupInfoPartData[0];
+            if (context.useInstancing) {
+                if (!this.instancingAttributes) {
+                    this.instancingAttributes = this.loadInstancingAttributes(Text2D.TEXT2D_MAINPARTID, effect);
+                }
+                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, pid._partData.usedElementCount);
                 engine.unbindInstanceAttributes();
             }
             else {
-                for (var i = 0; i < count; i++) {
-                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
+                    this.setupUniforms(effect, 0, pid._partData, i);
                     engine.draw(true, 0, 6);
                 }
             }
-            engine.setAlphaMode(cur);
+            engine.setAlphaMode(curAlphaMode);
             return true;
         };
         Text2DRenderCache.prototype.dispose = function () {
@@ -67,10 +77,14 @@ var BABYLON;
                 this._engine._releaseEffect(this.effect);
                 this.effect = null;
             }
+            if (this.effectInstanced) {
+                this._engine._releaseEffect(this.effectInstanced);
+                this.effectInstanced = null;
+            }
             return true;
         };
         return Text2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -118,7 +132,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
         return Text2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -170,26 +184,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Text2D.prototype, "vAlign", {
-            get: function () {
-                return this._vAlign;
-            },
-            set: function (value) {
-                this._vAlign = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Text2D.prototype, "hAlign", {
-            get: function () {
-                return this._hAlign;
-            },
-            set: function (value) {
-                this._hAlign = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Text2D.prototype, "actualSize", {
             get: function () {
                 if (this.areaSize) {
@@ -228,16 +222,14 @@ var BABYLON;
         Text2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         };
-        Text2D.prototype.setupText2D = function (owner, parent, id, position, origin, fontName, text, areaSize, defaultFontColor, vAlign, hAlign, tabulationSize) {
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, true);
+        Text2D.prototype.setupText2D = function (owner, parent, id, position, origin, fontName, text, areaSize, defaultFontColor, tabulationSize, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.fontName = fontName;
             this.defaultFontColor = defaultFontColor;
             this.text = text;
             this.areaSize = areaSize;
-            this.vAlign = vAlign;
-            this.hAlign = hAlign;
             this._tabulationSize = tabulationSize;
-            this._isTransparent = true;
+            this.isAlphaTest = true;
         };
         /**
          * Create a Text primitive
@@ -245,28 +237,35 @@ var BABYLON;
          * @param text the text to display
          * Options:
          *  - id a text identifier, for information purpose
-         *  - x: the X position relative to its parent, default is 0
-         *  - y: the Y position relative to its parent, default is 0
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
          *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
-         *  - vAlign: vertical alignment (areaSize must be specified), default is Text2D.TEXT2D_VALIGN_CENTER
-         *  - hAlign: horizontal alignment (areaSize must be specified), default is Text2D.TEXT2D_HALIGN_CENTER
          *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
+         *  - isVisible: true if the text must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
         Text2D.Create = function (parent, text, options) {
             BABYLON.Prim2DBase.CheckParent(parent);
             var text2d = new Text2D();
-            text2d.setupText2D(parent.owner, parent, options && options.id || null, new BABYLON.Vector2(options && options.x || 0, options && options.y || 0), options && options.origin || null, options && options.fontName || "12pt Arial", text, options && options.areaSize, options && options.defaultFontColor || new BABYLON.Color4(1, 1, 1, 1), options && options.vAlign || Text2D.TEXT2D_VALIGN_CENTER, options && options.hAlign || Text2D.TEXT2D_HALIGN_CENTER, options && options.tabulationSize || 4);
+            if (!options) {
+                text2d.setupText2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, "12pt Arial", text, null, new BABYLON.Color4(1, 1, 1, 1), 4, true, null, null, null, null, null, null);
+            }
+            else {
+                var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
+                text2d.setupText2D(parent.owner, parent, options.id || null, pos, options.origin || null, options.fontName || "12pt Arial", text, options.areaSize, options.defaultFontColor || new BABYLON.Color4(1, 1, 1, 1), (options.tabulationSize == null) ? 4 : options.tabulationSize, (options.isVisible == null) ? true : options.isVisible, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+            }
             return text2d;
         };
         Text2D.prototype.levelIntersect = function (intersectInfo) {
             // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
             return true;
         };
-        Text2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
-            var renderCache = new Text2DRenderCache(this.owner.engine, modelKey, isTransparent);
+        Text2D.prototype.createModelRenderCache = function (modelKey) {
+            var renderCache = new Text2DRenderCache(this.owner.engine, modelKey);
             return renderCache;
         };
         Text2D.prototype.setupModelRenderCache = function (modelRenderCache) {
@@ -286,8 +285,12 @@ var BABYLON;
             ib[4] = 3;
             ib[5] = 2;
             renderCache.ib = engine.createIndexBuffer(ib);
-            // Effects
-            var ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"]);
+            // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+            var ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], true);
+            if (ei) {
+                renderCache.effectInstanced = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
+            }
+            ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], false);
             renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             return renderCache;
         };
@@ -366,12 +369,6 @@ var BABYLON;
             this._charCount = count;
         };
         Text2D.TEXT2D_MAINPARTID = 1;
-        Text2D.TEXT2D_VALIGN_TOP = 1;
-        Text2D.TEXT2D_VALIGN_CENTER = 2;
-        Text2D.TEXT2D_VALIGN_BOTTOM = 3;
-        Text2D.TEXT2D_HALIGN_LEFT = 1;
-        Text2D.TEXT2D_HALIGN_CENTER = 2;
-        Text2D.TEXT2D_HALIGN_RIGHT = 3;
         __decorate([
             BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Text2D.fontProperty = pi; }, false, true)
         ], Text2D.prototype, "fontName", null);
@@ -384,16 +381,10 @@ var BABYLON;
         __decorate([
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Text2D.areaSizeProperty = pi; })
         ], Text2D.prototype, "areaSize", null);
-        __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Text2D.vAlignProperty = pi; })
-        ], Text2D.prototype, "vAlign", null);
-        __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Text2D.hAlignProperty = pi; })
-        ], Text2D.prototype, "hAlign", null);
         Text2D = __decorate([
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));

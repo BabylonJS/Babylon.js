@@ -89,7 +89,7 @@
                     engine.unbindInstanceAttributes();
                 } else {
                     for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
-                        this.setupUniforms(this.effectBorder, partIndex, pid._partData, i);
+                        this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.borderIndicesCount);
                     }
                 }
@@ -243,7 +243,25 @@
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
                 let size = options.size || (new Size(options.width || 10, options.height || 10));
 
-                ellipse.setupEllipse2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, options.subdivisions || 64, fill, options.border || null, options.borderThickness || 1, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+                ellipse.setupEllipse2D
+                (
+                    parent.owner,
+                    parent,
+                    options.id || null,
+                    pos,
+                    options.origin || null,
+                    size,
+                    (options.subdivisions == null) ? 64 : options.subdivisions,
+                    fill,
+                    options.border || null,
+                    (options.borderThickness == null) ? 1 : options.borderThickness,
+                    (options.isVisible == null) ? true : options.isVisible,
+                    options.marginTop || null,
+                    options.marginLeft || null,
+                    options.marginRight || null,
+                    options.marginBottom || null,
+                    options.vAlignment || null,
+                    options.hAlignment || null);
             }
 
             return ellipse;

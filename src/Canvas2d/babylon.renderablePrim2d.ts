@@ -385,7 +385,7 @@
             return true;
         }
 
-        public _prepareRenderPre(context: PreapreRender2DContext) {
+        public _prepareRenderPre(context: PrepareRender2DContext) {
             super._prepareRenderPre(context);
 
             // If the model changed and we have already an instance, we must remove this instance from the obsolete model
@@ -498,7 +498,7 @@
             let ctiArray = new Array<ClassTreeInfo<InstanceClassInfo, InstancePropInfo>>();
             this._modelRenderCache._partData = new Array<ModelRenderCachePartData>();
             for (let dataPart of parts) {
-                let pd = new ModelRenderCachePartData();
+                var pd = new ModelRenderCachePartData();
                 this._modelRenderCache._partData.push(pd)
                 var cat = this.getUsedShaderCategories(dataPart);
                 var cti = dataPart.getClassTreeInfo();
@@ -507,7 +507,7 @@
                 this.isVisible = true;
                 // We manually trigger refreshInstanceData for the only sake of evaluating each instance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
                 //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
-                let joinCat = ";" + cat.join(";") + ";";
+                var joinCat = ";" + cat.join(";") + ";";
                 pd._partJoinedUsedCategories = joinCat;
                 InstanceClassInfo._CurCategories = joinCat;
                 let obj = this.beforeRefreshForLayoutConstruction(dataPart);
@@ -674,8 +674,7 @@
             res.y = p.y - ((this.origin.y + (originOffset ? originOffset.y : 0)) * actualSize.height);
         }
 
-        protected transformPointWithOrigin(p: Vector2, originOffset: Vector2): Vector2 {
-            let res = new Vector2(0, 0);
+        protected transformPointWithOriginToRef(p: Vector2, originOffset: Vector2, res: Vector2) {
             this.transformPointWithOriginByRef(p, originOffset, res);
             return res;
         }
