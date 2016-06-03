@@ -350,7 +350,8 @@
                 // ===================================================================
                 // First pass, update the InstancedArray and render Opaque primitives
 
-                // Disable Alpha Testing, Enable Depth Write
+                // Disable Culling, Alpha Testing, Enable Depth Write
+                engine.setState(false);
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
 
