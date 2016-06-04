@@ -136,11 +136,9 @@
     export class SmartPropertyPrim implements IPropertyChanged {
 
         protected setupSmartPropertyPrim() {
+            this._flags = 0;
             this._modelKey = null;
-            this._modelDirty = false;
-            this._levelBoundingInfoDirty = false;
             this._instanceDirtyFlags = 0;
-            this._isDisposed = false;
             this._levelBoundingInfo = new BoundingInfo2D();
             this.animations = new Array<Animation>();
         }
@@ -156,7 +154,7 @@
          * @returns true if the object is dispose, false otherwise.
          */
         public get isDisposed(): boolean {
-            return this._isDisposed;
+            return this._isFlagSet(SmartPropertyPrim.flagIsDisposed);
         }
 
         /**
@@ -171,7 +169,7 @@
             // Don't set to null, it may upset somebody...
             this.animations.splice(0);
 
-            this._isDisposed = true;
+            this._setFlags(SmartPropertyPrim.flagIsDisposed);
             return true;
         }
 
@@ -196,7 +194,7 @@
         public get modelKey(): string {
 
             // No need to compute it?
-            if (!this._modelDirty && this._modelKey) {
+            if (!this._isFlagSet(SmartPropertyPrim.flagModelDirty) && this._modelKey) {
                 return this._modelKey;
             }
 
@@ -220,7 +218,7 @@
                 }
             });
 
-            this._modelDirty = false;
+            this._clearFlags(SmartPropertyPrim.flagModelDirty);
             this._modelKey = modelKey;
 
             return modelKey;
@@ -231,7 +229,7 @@
          * @returns true is dirty, false otherwise
          */
         public get isDirty(): boolean {
-            return (this._instanceDirtyFlags !== 0) || this._modelDirty;
+            return (this._instanceDirtyFlags !== 0) || this._areSomeFlagsSet(SmartPropertyPrim.flagModelDirty | SmartPropertyPrim.flagPositioningDirty | SmartPropertyPrim.flagLayoutDirty);
         }
 
         /**
@@ -318,7 +316,7 @@
         private _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean) {
             // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
             if (propInfo.dirtyBoundingInfo) {
-                this._levelBoundingInfoDirty = true;
+                this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
 
                 // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
                 if (this instanceof Prim2DBase) {
@@ -365,7 +363,7 @@
                     if (!this.isDirty) {
                         this.onPrimBecomesDirty();
                     }
-                    this._modelDirty = true;
+                    this._setFlags(SmartPropertyPrim.flagModelDirty);
                 } else if ((propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
                     if (!this.isDirty) {
                         this.onPrimBecomesDirty();
@@ -407,9 +405,9 @@
          * @returns {} 
          */
         public get levelBoundingInfo(): BoundingInfo2D {
-            if (this._levelBoundingInfoDirty) {
+            if (this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
                 this.updateLevelBoundingInfo();
-                this._levelBoundingInfoDirty = false;
+                this._clearFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
             }
             return this._levelBoundingInfo;
         }
@@ -462,13 +460,105 @@
             }
         }
 
-        private _modelKey; string;
-        private _propInfo: StringDictionary<Prim2DPropInfo>;
-        private _isDisposed: boolean;
-        protected _levelBoundingInfoDirty: boolean;
-        protected _levelBoundingInfo: BoundingInfo2D;
-        protected _boundingInfo: BoundingInfo2D;
-        protected _modelDirty: boolean;
+        /**
+         * Add an externally attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        public addExternalData<T>(key: string, data: T): boolean {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
+            return this._externalData.add(key, data);
+        }
+
+        /**
+         * Get an externally attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        public getExternalData<T>(key: string): T {
+            if (!this._externalData) {
+                return null;
+            }
+            return <T>this._externalData.get(key);
+        }
+
+        /**
+         * Get an externally attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+            if (!this._externalData) {
+                this._externalData = new StringDictionary<Object>();
+            }
+            return <T>this._externalData.getOrAddWithFactory(key, factory);
+        }
+
+        /**
+         * Remove an externally attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        public removeExternalData(key): boolean {
+            if (!this._externalData) {
+                return false;
+            }
+            return this._externalData.remove(key);
+        }
+
+        public _isFlagSet(flag: number): boolean {
+            return (this._flags & flag) !== 0;
+        }
+
+        public _areAllFlagsSet(flags: number): boolean {
+            return (this._flags & flags) === flags;
+        }
+
+        public _areSomeFlagsSet(flags: number): boolean {
+            return (this._flags & flags) !== 0;
+        }
+
+        public _clearFlags(flags: number) {
+            this._flags &= ~flags;
+        }
+
+        public _setFlags(flags: number): number {
+            let cur = this._flags;
+            this._flags |= flags;
+            return cur;
+        }
+
+        public _changeFlags(flags: number, state: boolean) {
+            if (state) {
+                this._flags |= flags;
+            } else {
+                this._flags &= ~flags;
+            }
+        }
+
+        public static flagIsDisposed             = 0x0000001;    // set if the object is already disposed
+        public static flagLevelBoundingInfoDirty = 0x0000002;    // set if the primitive's level bounding box (not including children) is dirty
+        public static flagModelDirty             = 0x0000004;    // set if the model must be changed
+        public static flagLayoutDirty            = 0x0000008;    // set if the layout must be computed
+        public static flagLevelVisible           = 0x0000010;    // set if the primitive is set as visible for its level only
+        public static flagBoundingInfoDirty      = 0x0000020;    // set if the primitive's overall bounding box (including children) is dirty
+        public static flagIsPickable             = 0x0000040;    // set if the primitive can be picked during interaction
+        public static flagIsVisible              = 0x0000080;    // set if the primitive is concretely visible (use the levelVisible of parents)
+        public static flagVisibilityChanged      = 0x0000100;    // set if there was a transition between visible/hidden status
+        public static flagPositioningDirty       = 0x0000200;    // set if the primitive positioning must be computed
+
+        private   _flags             : number;
+        private   _externalData      : StringDictionary<Object>;
+        private   _modelKey          : string;
+        private   _propInfo          : StringDictionary<Prim2DPropInfo>;
+        protected _levelBoundingInfo : BoundingInfo2D;
+        protected _boundingInfo      : BoundingInfo2D;
         protected _instanceDirtyFlags: number;
     }
 

@@ -166,20 +166,19 @@
     @className("Ellipse2D")
     export class Ellipse2D extends Shape2D {
 
-        public static sizeProperty: Prim2DPropInfo;
+        public static acutalSizeProperty: Prim2DPropInfo;
         public static subdivisionsProperty: Prim2DPropInfo;
 
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Ellipse2D.acutalSizeProperty = pi, false, true)
         public get actualSize(): Size {
-            return this.size;
-        }
-
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Ellipse2D.sizeProperty = pi, false, true)
-        public get size(): Size {
+            if (this._actualSize) {
+                return this._actualSize;
+            }
             return this._size;
         }
 
-        public set size(value: Size) {
-            this._size = value;
+        public set actualSize(value: Size) {
+            this._actualSize = value;
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Ellipse2D.subdivisionsProperty = pi)
@@ -203,7 +202,7 @@
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
             this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.size = size;
             this.subdivisions = subdivisions;
@@ -226,7 +225,7 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, subdivisions?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Ellipse2D {
+        public static Create(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, subdivisions?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, vAlignment?: number, hAlignment?: number}): Ellipse2D {
             Prim2DBase.CheckParent(parent);
 
             let ellipse = new Ellipse2D();
@@ -256,12 +255,12 @@
                     options.border || null,
                     (options.borderThickness == null) ? 1 : options.borderThickness,
                     (options.isVisible == null) ? true : options.isVisible,
-                    options.marginTop || null,
-                    options.marginLeft || null,
-                    options.marginRight || null,
-                    options.marginBottom || null,
-                    options.vAlignment || null,
-                    options.hAlignment || null);
+                    options.marginTop,
+                    options.marginLeft,
+                    options.marginRight,
+                    options.marginBottom,
+                    options.vAlignment,
+                    options.hAlignment);
             }
 
             return ellipse;
@@ -368,18 +367,17 @@
             }
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
                 let d = <Ellipse2DInstanceData>part;
-                let size = this.size;
+                let size = this.actualSize;
                 d.properties = new Vector3(size.width, size.height, this.subdivisions);
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Ellipse2DInstanceData>part;
-                let size = this.size;
+                let size = this.actualSize;
                 d.properties = new Vector3(size.width, size.height, this.subdivisions);
             }
             return true;
         }
 
-        private _size: Size;
         private _subdivisions: number;
     }
 }

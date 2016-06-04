@@ -353,7 +353,7 @@
             this._isTransparent = value;
         }
 
-        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
+        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, hAlign: number, vAlign: number) {
             this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
             this._isTransparent = false;
             this._isAlphaTest = false;
@@ -389,14 +389,14 @@
             super._prepareRenderPre(context);
 
             // If the model changed and we have already an instance, we must remove this instance from the obsolete model
-            if (this._modelDirty && this._modelRenderInstanceID) {
+            if (this._isFlagSet(SmartPropertyPrim.flagModelDirty) && this._modelRenderInstanceID) {
                 this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
                 this._modelRenderInstanceID = null;
             }
 
             // Need to create the model?
             let setupModelRenderCache = false;
-            if (!this._modelRenderCache || this._modelDirty) {
+            if (!this._modelRenderCache || this._isFlagSet(SmartPropertyPrim.flagModelDirty)) {
                 setupModelRenderCache = this._createModelRenderCache();
             }
 
@@ -418,7 +418,7 @@
             // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
 
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
-            if (this._visibilityChanged || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+            if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
                 this._updateInstanceDataParts(gii);
             }
         }
@@ -434,7 +434,7 @@
                 setupModelRenderCache = true;
                 return mrc;
             });
-            this._modelDirty = false;
+            this._clearFlags(SmartPropertyPrim.flagModelDirty);
 
             // if this is still false it means the MRC already exists, so we add a reference to it
             if (!setupModelRenderCache) {
@@ -555,7 +555,7 @@
             // Handle changes related to ZOffset
             if (this.isTransparent) {
                 // Handle visibility change, which is also triggered when the primitive just got created
-                if (this._visibilityChanged) {
+                if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged)) {
                     if (this.isVisible) {
                         if (!this._transparentPrimitiveInfo) {
                             // Add the primitive to the list of transparent ones in the group that render is
@@ -573,7 +573,7 @@
             // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
             for (let part of this._instanceDataParts) {
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if (this._visibilityChanged && !part.dataElements) {
+                if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) && !part.dataElements) {
                     part.allocElements();
                 }
 
@@ -598,7 +598,7 @@
                 gii.opaqueDirty = true;
             }
 
-            this._visibilityChanged = false;    // Reset the flag as we've handled the case            
+            this._clearFlags(SmartPropertyPrim.flagVisibilityChanged);    // Reset the flag as we've handled the case            
         }
 
         public _getFirstIndexInDataBuffer(): number {
@@ -764,7 +764,7 @@
         protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null, customSize: Size = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
             let size = (<Size>this.renderGroup.viewportSize);
-            let zBias = this.getActualZOffset();
+            let zBias = this.actualZOffset;
 
             let offX = 0;
             let offY = 0;

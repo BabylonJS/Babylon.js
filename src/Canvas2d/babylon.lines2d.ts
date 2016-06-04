@@ -184,10 +184,6 @@
         public static startCapProperty: Prim2DPropInfo;
         public static endCapProperty: Prim2DPropInfo;
 
-        public get actualSize(): Size {
-            return this.size;
-        }
-
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Lines2D.pointsProperty = pi)
         public get points(): Vector2[] {
             return this._points;
@@ -195,7 +191,7 @@
 
         public set points(value: Vector2[]) {
             this._points = value;
-            this._levelBoundingInfoDirty = true;
+            this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Lines2D.fillThicknessProperty = pi)
@@ -298,9 +294,13 @@
             return false;
         }
 
-        protected get size(): Size {
-            return this._size;
-        }
+        //public  get size(): Size {
+        //    return this._size;
+        //}
+
+        //public set size(value: Size) {
+        //    // TODO implement lines size
+        //}
 
         protected get boundingMin(): Vector2 {
             return this._boundingMin;
@@ -325,7 +325,7 @@
             BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+        protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
             this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.fillThickness = fillThickness;
             this.startCap = startCap;
@@ -357,7 +357,7 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, points: Vector2[], options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, fillThickness?: number, closed?: boolean, startCap?: number, endCap?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number }): Lines2D {
+        public static Create(parent: Prim2DBase, points: Vector2[], options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, fillThickness?: number, closed?: boolean, startCap?: number, endCap?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, vAlignment?: number, hAlignment?: number }): Lines2D {
             Prim2DBase.CheckParent(parent);
 
             let lines = new Lines2D();
@@ -389,12 +389,12 @@
                     (options.borderThickness == null) ? 1 : options.borderThickness,
                     (options.closed == null) ? false : options.closed,
                     (options.isVisible == null) ? true : options.isVisible,
-                    options.marginTop || null,
-                    options.marginLeft || null,
-                    options.marginRight || null,
-                    options.marginBottom || null,
-                    options.vAlignment || null,
-                    options.hAlignment || null);
+                    options.marginTop,
+                    options.marginLeft,
+                    options.marginRight,
+                    options.marginBottom,
+                    options.vAlignment,
+                    options.hAlignment);
             }
 
             return lines;
@@ -1084,7 +1084,6 @@
 
         private _boundingMin: Vector2;
         private _boundingMax: Vector2;
-        private _size: Size;
         private _contour: Vector2[];
         private _startCapContour: number[];
         private _startCapTriIndices: number[];
