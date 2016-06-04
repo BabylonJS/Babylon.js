@@ -564,6 +564,7 @@
                     } else {
                         if (this._transparentPrimitiveInfo) {
                             this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
+                            this._transparentPrimitiveInfo = null;
                         }
                     }
                     gii.transparentOrderDirty = true;
