@@ -3566,7 +3566,6 @@
             }
             else {
                 normal0 = Vector3.Cross(vt, va);
-                //Vector3.CrossToRef(normal0, vt, normal0);
                 normal0 = Vector3.Cross(normal0, vt);
             }
             normal0.normalize();
