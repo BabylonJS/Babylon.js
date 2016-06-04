@@ -43,7 +43,7 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        static CreateGroup2D(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, cacheBehavior?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Group2D {
+        static CreateGroup2D(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, cacheBehavior?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number }): Group2D {
             Prim2DBase.CheckParent(parent);
 
 
@@ -54,9 +54,9 @@
             } else {
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
                 let size = (!options.size && !options.width && !options.height) ? null : (options.size || (new Size(options.width || 0, options.height || 0)));
-                
+
                 g.setupGroup2D
-                (
+                    (
                     parent.owner,
                     parent,
                     options.id || null,
@@ -72,7 +72,7 @@
                     options.hAlignment || Prim2DBase.HAlignLeft,
                     options.vAlignment || Prim2DBase.VAlignTop);
             }
-       
+
             return g;
         }
 
@@ -81,7 +81,7 @@
             g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero(), Vector2.Zero(), null, true, Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, null, null, null, null, null, null);
             g.origin = Vector2.Zero();
             return g;
-            
+
         }
 
         protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial) {
@@ -140,7 +140,7 @@
 
         protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, isVisible: boolean, cacheBehavior: number, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
             this._cacheBehavior = cacheBehavior;
-            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom , hAlign, vAlign);
+            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
             this.size = size;
             this._viewportPosition = Vector2.Zero();
         }
@@ -483,7 +483,7 @@
                 }
 
                 // Reset the segment, we have to create/rebuild it
-                tpi._transparentSegment = null;                
+                tpi._transparentSegment = null;
 
                 // If there's a previous valid segment, check if this prim can be part of it
                 if (prevSeg) {
@@ -544,27 +544,27 @@
             // Render Mode specifics
             switch (context.renderMode) {
                 case Render2DContext.RenderModeOpaque:
-                {
-                    if (!gii.hasOpaqueData) {
-                        return null;
+                    {
+                        if (!gii.hasOpaqueData) {
+                            return null;
+                        }
+                        setDirty = (dirty: boolean) => { gii.opaqueDirty = dirty; };
+                        getDirty = () => gii.opaqueDirty;
+                        context.groupInfoPartData = gii.opaqueData;
+                        gipd = gii.opaqueData;
+                        break;
                     }
-                    setDirty = (dirty: boolean) => { gii.opaqueDirty = dirty; };
-                    getDirty = () => gii.opaqueDirty;
-                    context.groupInfoPartData = gii.opaqueData;
-                    gipd = gii.opaqueData;
-                    break;
-                }
                 case Render2DContext.RenderModeAlphaTest:
-                {
-                    if (!gii.hasAlphaTestData) {
-                        return null;
+                    {
+                        if (!gii.hasAlphaTestData) {
+                            return null;
+                        }
+                        setDirty = (dirty: boolean) => { gii.alphaTestDirty = dirty; };
+                        getDirty = () => gii.alphaTestDirty;
+                        context.groupInfoPartData = gii.alphaTestData;
+                        gipd = gii.alphaTestData;
+                        break;
                     }
-                    setDirty = (dirty: boolean) => { gii.alphaTestDirty = dirty; };
-                    getDirty = () => gii.alphaTestDirty;
-                    context.groupInfoPartData = gii.alphaTestData;
-                    gipd = gii.alphaTestData;
-                    break;
-                }
                 default:
                     throw new Error("_prepareContext is only for opaque or alphaTest");
             }
@@ -851,7 +851,7 @@
         _primDirtyList: Array<Prim2DBase>;
         _childrenRenderableGroups: Array<Group2D>;
         _renderGroupInstancesInfo: StringDictionary<GroupInstanceInfo>;
-        
+
         _cacheNode: PackedRect;
         _cacheTexture: MapTexture;
         _cacheRenderSprite: Sprite2D;
