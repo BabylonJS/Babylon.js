@@ -43,7 +43,7 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        static CreateGroup2D(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, cacheBehavior?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Group2D {
+        static CreateGroup2D(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, cacheBehavior?: number, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, vAlignment?: number, hAlignment?: number}): Group2D {
             Prim2DBase.CheckParent(parent);
 
 
@@ -69,8 +69,8 @@
                     options.marginLeft,
                     options.marginRight,
                     options.marginBottom,
-                    options.hAlignment || Prim2DBase.HAlignLeft,
-                    options.vAlignment || Prim2DBase.VAlignTop);
+                    options.hAlignment || PrimitiveAlignment.AlignLeft,
+                    options.vAlignment || PrimitiveAlignment.AlignTop);
             }
        
             return g;
@@ -138,7 +138,7 @@
             return true;
         }
 
-        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, isVisible: boolean, cacheBehavior: number, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
+        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, isVisible: boolean, cacheBehavior: number, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, hAlign: number, vAlign: number) {
             this._cacheBehavior = cacheBehavior;
             this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom , hAlign, vAlign);
             this.size = size;
@@ -196,7 +196,7 @@
                 actualSize = new Size(Math.ceil(m.x), Math.ceil(m.y));
             }
 
-            // Compare the size with the one we previously had, if it differ we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
+            // Compare the size with the one we previously had, if it differs we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
             if (!actualSize.equals(this._actualSize)) {
                 this._instanceDirtyFlags |= Group2D.actualSizeProperty.flagId;
                 this._actualSize = actualSize;
@@ -219,7 +219,7 @@
         }
 
         public _renderCachedCanvas() {
-            this.updateGlobalTransVis(true);
+            this.updateCachedStates(true);
             let context = new PrepareRender2DContext();
             this._prepareGroupRender(context);
             this._groupRender();
@@ -252,7 +252,7 @@
             // Update the Global Transformation and visibility status of the changed primitives
             if ((this._renderableData._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 sortedDirtyList = this._renderableData._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
-                this.updateGlobalTransVisOf(sortedDirtyList, true);
+                this.updateCachedStatesOf(sortedDirtyList, true);
             }
 
             // Setup the size of the rendering viewport
@@ -446,7 +446,7 @@
             }
 
             // Sort all the primitive from their depth, max (bottom) to min (top)
-            rd._transparentPrimitives.sort((a, b) => b._primitive.getActualZOffset() - a._primitive.getActualZOffset());
+            rd._transparentPrimitives.sort((a, b) => b._primitive.actualZOffset - a._primitive.actualZOffset);
 
             let checkAndAddPrimInSegment = (seg: TransparentSegment, tpiI: number): boolean => {
                 let tpi = rd._transparentPrimitives[tpiI];
@@ -456,7 +456,7 @@
                     return false;
                 }
 
-                let tpiZ = tpi._primitive.getActualZOffset();
+                let tpiZ = tpi._primitive.actualZOffset;
 
                 // We've made it so far, the tpi can be part of the segment, add it
                 tpi._transparentSegment = seg;
@@ -494,7 +494,7 @@
                     let ts = new TransparentSegment();
                     ts.groupInsanceInfo = tpi._groupInstanceInfo;
                     let prim = tpi._primitive;
-                    ts.startZ = prim.getActualZOffset();
+                    ts.startZ = prim.actualZOffset;
                     ts.startDataIndex = prim._getFirstIndexInDataBuffer();
                     ts.endDataIndex = prim._getLastIndexInDataBuffer() + 1; // Make it exclusive, more natural to use in a for loop
                     ts.endZ = ts.startZ;
@@ -685,7 +685,7 @@
             } else if (prop.id === Prim2DBase.originProperty.id) {
                 rd._cacheRenderSprite.origin = this.origin.clone();
             } else if (prop.id === Group2D.actualSizeProperty.id) {
-                rd._cacheRenderSprite.spriteSize = this.actualSize.clone();
+                rd._cacheRenderSprite.size = this.actualSize.clone();
                 //console.log(`[${this._globalTransformProcessStep}] Sync Sprite ${this.id}, width: ${this.actualSize.width}, height: ${this.actualSize.height}`);
             }
         }
@@ -762,8 +762,6 @@
         protected _isRenderableGroup: boolean;
         protected _isCachedGroup: boolean;
         private _cacheGroupDirty: boolean;
-        private _size: Size;
-        private _actualSize: Size;
         private _cacheBehavior: number;
         private _viewportPosition: Vector2;
         private _viewportSize: Size;
@@ -839,8 +837,8 @@
 
         updateSmallestZChangedPrim(tpi: TransparentPrimitiveInfo) {
             if (tpi._primitive) {
-                let newZ = tpi._primitive.getActualZOffset();
-                let curZ = this._firstChangedPrim ? this._firstChangedPrim._primitive.getActualZOffset() : Number.MIN_VALUE;
+                let newZ = tpi._primitive.actualZOffset;
+                let curZ = this._firstChangedPrim ? this._firstChangedPrim._primitive.actualZOffset : Number.MIN_VALUE;
                 if (newZ > curZ) {
                     this._firstChangedPrim = tpi;
                 }

@@ -121,7 +121,7 @@
         static SPRITE2D_MAINPARTID = 1;
 
         public static textureProperty: Prim2DPropInfo;
-        public static spriteSizeProperty: Prim2DPropInfo;
+        public static actualSizeProperty: Prim2DPropInfo;
         public static spriteLocationProperty: Prim2DPropInfo;
         public static spriteFrameProperty: Prim2DPropInfo;
         public static invertYProperty: Prim2DPropInfo;
@@ -136,17 +136,16 @@
             this._texture = value;
         }
 
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.actualSizeProperty = pi, false, true)
         public get actualSize(): Size {
-            return this.spriteSize;
-        }
-
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.spriteSizeProperty = pi, false, true)
-        public get spriteSize(): Size {
+            if (this._actualSize) {
+                return this._actualSize;
+            }
             return this._size;
         }
 
-        public set spriteSize(value: Size) {
-            this._size = value;
+        public set actualSize(value: Size) {
+            this._actualSize = value;
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.spriteLocationProperty = pi)
@@ -185,7 +184,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo, this.origin);
+            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
         public getAnimatables(): IAnimatable[] {
@@ -202,21 +201,21 @@
             return true;
         }
 
-        protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean, alignToPixel: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+        protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean, alignToPixel: boolean, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
             this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
             this.texture = texture;
             this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this.spriteSize = spriteSize || null;
+            this.size = spriteSize || null;
             this.spriteLocation = spriteLocation || new Vector2(0,0);
             this.spriteFrame = 0;
             this.invertY = invertY;
             this.alignToPixel = alignToPixel;
             this._isTransparent = true;
 
-            if (!this.spriteSize) {
+            if (!this.size) {
                 var s = texture.getSize();
-                this.spriteSize = new Size(s.width, s.height);
+                this.size = new Size(s.width, s.height);
             }
         }
 
@@ -237,7 +236,7 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, texture: Texture, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, spriteSize?: Size, spriteLocation?: Vector2, invertY?: boolean, alignToPixel?: boolean, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Sprite2D {
+        public static Create(parent: Prim2DBase, texture: Texture, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, spriteSize?: Size, spriteLocation?: Vector2, invertY?: boolean, alignToPixel?: boolean, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, vAlignment?: number, hAlignment?: number}): Sprite2D {
             Prim2DBase.CheckParent(parent);
 
             let sprite = new Sprite2D();
@@ -257,12 +256,12 @@
                     (options.invertY == null) ? false : options.invertY,
                     (options.alignToPixel == null) ? true : options.alignToPixel,
                     (options.isVisible == null) ? true : options.isVisible,
-                    options.marginTop || null,
-                    options.marginLeft || null,
-                    options.marginRight || null,
-                    options.marginBottom || null,
-                    options.vAlignment || null,
-                    options.hAlignment || null
+                    options.marginTop,
+                    options.marginLeft,
+                    options.marginRight,
+                    options.marginBottom,
+                    options.vAlignment,
+                    options.hAlignment
                 );
             }
 
@@ -331,7 +330,7 @@
                 let d = <Sprite2DInstanceData>this._instanceDataParts[0];
                 let ts = this.texture.getBaseSize();
                 let sl = this.spriteLocation;
-                let ss = this.spriteSize;
+                let ss = this.actualSize;
                 d.topLeftUV = new Vector2(sl.x / ts.width, sl.y / ts.height);
                 let suv = new Vector2(ss.width / ts.width, ss.height / ts.height);
                 d.sizeUV = suv;
@@ -347,7 +346,6 @@
         }
 
         private _texture: Texture;
-        private _size: Size;
         private _location: Vector2;
         private _spriteFrame: number;
         private _invertY: boolean;

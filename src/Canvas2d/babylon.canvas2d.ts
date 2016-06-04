@@ -64,7 +64,7 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        static CreateScreenSpace(scene: Scene, options: { id?: string, x?: number, y?: number, position?: Vector2, origin?: Vector2, width?: number, height?: number, size?: Size, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, hAlignment?: number, vAlignment?: number }): Canvas2D {
+        static CreateScreenSpace(scene: Scene, options: { id?: string, x?: number, y?: number, position?: Vector2, origin?: Vector2, width?: number, height?: number, size?: Size, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, hAlignment?: number, vAlignment?: number }): Canvas2D {
             let c = new Canvas2D();
 
             if (!options) {
@@ -74,7 +74,7 @@
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
                 let size = (!options.size && !options.width && !options.height) ? null : (options.size || (new Size(options.width || 0, options.height || 0)));
 
-                c.setupCanvas(scene, options.id || null, size, 1, true, options.cachingStrategy || Canvas2D.CACHESTRATEGY_DONTCACHE, options.enableInteraction || true, options.origin || Vector2.Zero(), options.isVisible || true, options.marginTop, options.marginLeft, options.marginRight, options.marginBottom, options.hAlignment || Prim2DBase.HAlignLeft, options.vAlignment || Prim2DBase.VAlignTop);
+                c.setupCanvas(scene, options.id || null, size, 1, true, options.cachingStrategy || Canvas2D.CACHESTRATEGY_DONTCACHE, options.enableInteraction || true, options.origin || Vector2.Zero(), options.isVisible || true, options.marginTop, options.marginLeft, options.marginRight, options.marginBottom, options.hAlignment || PrimitiveAlignment.AlignLeft, options.vAlignment || PrimitiveAlignment.AlignTop);
                 c.position = pos;
             }
 
@@ -145,7 +145,7 @@
             return c;
         }
 
-        protected setupCanvas(scene: Scene, name: string, size: Size, renderScaleFactor: number, isScreenSpace: boolean, cachingstrategy: number, enableInteraction: boolean, origin: Vector2, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
+        protected setupCanvas(scene: Scene, name: string, size: Size, renderScaleFactor: number, isScreenSpace: boolean, cachingstrategy: number, enableInteraction: boolean, origin: Vector2, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, hAlign: number, vAlign: number) {
             let engine = scene.getEngine();
             this._fitRenderingDevice = !size;
             if (!size) {
@@ -439,6 +439,11 @@
                 return;
             }
 
+            // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
+            if (!this._globalTransform) {
+                this.updateCachedStates(true);
+            }
+
             let ii = Canvas2D._interInfo;
             ii.pickPosition.x = mouseLocalPos.x;
             ii.pickPosition.y = mouseLocalPos.y;
@@ -577,6 +582,11 @@
         }
 
         private _triggerActionManager(prim: Prim2DBase, ppi: PrimitivePointerInfo, mask: number, eventData) {
+
+            // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
+            if (!this._globalTransform) {
+                this.updateCachedStates(true);
+            }
 
             // Process Trigger related to PointerDown
             if ((mask & PrimitivePointerInfo.PointerDown) !== 0) {
@@ -890,20 +900,36 @@
                 return;
             }
 
-            this._renderingSize.width = this.engine.getRenderWidth();
-            this._renderingSize.height = this.engine.getRenderHeight();
+            // Detect a change of rendering size
+            let renderingSizeChanged = false;
+            let newWidth = this.engine.getRenderWidth();
+            if (newWidth !== this._renderingSize.width) {
+                renderingSizeChanged = true;
+            }
+            this._renderingSize.width = newWidth;
 
-            if (this._fitRenderingDevice) {
+            let newHeight = this.engine.getRenderHeight();
+            if (newHeight !== this._renderingSize.height) {
+                renderingSizeChanged = true;
+            }
+            this._renderingSize.height = newHeight;
+
+
+            // If the canvas fit the rendering size and it changed, update
+            if (renderingSizeChanged && this._fitRenderingDevice) {
                 this.size = this._renderingSize;
                 if (this._background) {
                     this._background.size = this.size;
                 }
+
+                // Dirty the Layout at the Canvas level to recompute as the size changed
+                this._setFlags(SmartPropertyPrim.flagLayoutDirty);
             }
 
             var context = new PrepareRender2DContext();
 
             ++this._globalTransformProcessStep;
-            this.updateGlobalTransVis(false);
+            this.updateCachedStates(false);
 
             this._prepareGroupRender(context);
 

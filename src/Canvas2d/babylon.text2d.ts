@@ -120,7 +120,7 @@
         public static fontProperty: Prim2DPropInfo;
         public static defaultFontColorProperty: Prim2DPropInfo;
         public static textProperty: Prim2DPropInfo;
-        public static areaSizeProperty: Prim2DPropInfo;
+        public static sizeProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Text2D.fontProperty = pi, false, true)
         public get fontName(): string {
@@ -154,18 +154,18 @@
             this._updateCharCount();
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.areaSizeProperty = pi)
-        public get areaSize(): Size {
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.sizeProperty = pi)
+        public get size(): Size {
             return this._areaSize;
         }
 
-        public set areaSize(value: Size) {
+        public set size(value: Size) {
             this._areaSize = value;
         }
 
         public get actualSize(): Size {
-            if (this.areaSize) {
-                return this.areaSize;
+            if (this.size) {
+                return this.size;
             }
 
             if (this._actualSize) {
@@ -203,13 +203,13 @@
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, tabulationSize: number, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, tabulationSize: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
             this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
 
             this.fontName = fontName;
             this.defaultFontColor = defaultFontColor;
             this.text = text;
-            this.areaSize = areaSize;
+            this.size = areaSize;
             this._tabulationSize = tabulationSize;
             this.isAlphaTest = true;
         }
@@ -231,7 +231,7 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, text: string, options?: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, fontName?: string, defaultFontColor?: Color4, areaSize?: Size, tabulationSize?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, hAlignment?: number, vAlignment?: number}): Text2D {
+        public static Create(parent: Prim2DBase, text: string, options?: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, fontName?: string, defaultFontColor?: Color4, size?: Size, tabulationSize?: number, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, hAlignment?: number, vAlignment?: number}): Text2D {
             Prim2DBase.CheckParent(parent);
 
             let text2d = new Text2D();
@@ -248,16 +248,16 @@
                     options.origin || null,
                     options.fontName || "12pt Arial",
                     text,
-                    options.areaSize,
+                    options.size,
                     options.defaultFontColor || new Color4(1, 1, 1, 1),
                     (options.tabulationSize==null) ? 4 : options.tabulationSize,
                     (options.isVisible==null) ? true : options.isVisible,
-                    options.marginTop || null,
-                    options.marginLeft || null,
-                    options.marginRight || null,
-                    options.marginBottom || null,
-                    options.vAlignment || null,
-                    options.hAlignment || null);
+                    options.marginTop,
+                    options.marginLeft,
+                    options.marginRight,
+                    options.marginBottom,
+                    options.vAlignment,
+                    options.hAlignment);
             }
             return text2d;
         }
@@ -399,9 +399,7 @@
         private _defaultFontColor: Color4;
         private _text: string;
         private _areaSize: Size;
-        private _actualSize: Size;
-        private _vAlign: number;
-        private _hAlign: number;
+
     }
 
 

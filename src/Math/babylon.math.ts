@@ -1707,6 +1707,11 @@
             return hash;
         }
 
+        public copyFrom(src: Size) {
+            this.width  = src.width;
+            this.height = src.height;
+        }
+
         public clone(): Size {
             return new Size(this.width, this.height);
         }

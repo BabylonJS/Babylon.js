@@ -52,7 +52,7 @@ void main(void) {
 
 	vColor = color;
 	vec4 pos;
-	pos.xy = (pos2.xy * sizeUV * textureSize) - origin;
+	pos.xy = floor((pos2.xy * sizeUV * textureSize) - origin);	// Align on target pixel to avoid bad interpolation
 	pos.z = 1.0;
 	pos.w = 1.0;
 	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);

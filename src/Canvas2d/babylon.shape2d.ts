@@ -44,9 +44,9 @@
             this._borderThickness = value;
         }
 
-        setupShape2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D, borderThickness: number, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+        setupShape2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D, borderThickness: number, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
 
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment || Prim2DBase.HAlignLeft, vAlignment || Prim2DBase.VAlignTop);
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment || PrimitiveAlignment.AlignLeft, vAlignment || PrimitiveAlignment.AlignTop);
             this.border = border;
             this.fill = fill;
             this.borderThickness = borderThickness;
