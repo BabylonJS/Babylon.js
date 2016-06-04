@@ -163,7 +163,7 @@ var BABYLON;
             return levelSize + size;
         };
         return PackedRect;
-    })();
+    }());
     BABYLON.PackedRect = PackedRect;
     /**
      * The purpose of this class is to pack several Rectangles into a big map, while trying to fit everything as optimally as possible.
@@ -203,6 +203,6 @@ var BABYLON;
             configurable: true
         });
         return RectPackingMap;
-    })(PackedRect);
+    }(PackedRect));
     BABYLON.RectPackingMap = RectPackingMap;
 })(BABYLON || (BABYLON = {}));

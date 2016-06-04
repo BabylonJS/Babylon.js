@@ -70,7 +70,7 @@
             if (!options) {
                 c.setupCanvas(scene, null, null, 1, true, Canvas2D.CACHESTRATEGY_DONTCACHE, true, Vector2.Zero(), true, null, null, null, null, null, null);
                 c.position = Vector2.Zero();
-            } else { 
+            } else {
                 let pos = options.position || new Vector2(options.x || 0, options.y || 0);
                 let size = (!options.size && !options.width && !options.height) ? null : (options.size || (new Size(options.width || 0, options.height || 0)));
 
@@ -99,7 +99,7 @@
          * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
          */
-        static CreateWorldSpace(scene: Scene, size: Size, options: { id?: string, position?: Vector3, rotation?: Quaternion, renderScaleFactor?: number, sideOrientation?: number, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, customWorldSpaceNode?: Node}): Canvas2D {
+        static CreateWorldSpace(scene: Scene, size: Size, options: { id?: string, position?: Vector3, rotation?: Quaternion, renderScaleFactor?: number, sideOrientation?: number, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, customWorldSpaceNode?: Node }): Canvas2D {
 
             let cs = options && options.cachingStrategy || Canvas2D.CACHESTRATEGY_CANVAS;
 
@@ -112,7 +112,7 @@
             //}
 
             let enableInteraction = options ? options.enableInteraction : true;
-            let createWorldSpaceNode = !options || (options.customWorldSpaceNode==null);
+            let createWorldSpaceNode = !options || (options.customWorldSpaceNode == null);
             let isVisible = options ? options.isVisible || true : true;
             let id = options ? options.id || null : null;
             let rsf = options ? options.renderScaleFactor || 1 : 1;
@@ -161,7 +161,7 @@
             this._capturedPointers = new StringDictionary<Prim2DBase>();
             this._pickStartingPosition = Vector2.Zero();
 
-            this.setupGroup2D(this, null, name, Vector2.Zero(), origin, size, isVisible, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
+            this.setupGroup2D(this, null, name, Vector2.Zero(), origin, size, isVisible, this._cachingStrategy === Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
 
             this._hierarchyLevelMaxSiblingCount = 10;
             this._hierarchyDepthOffset = 0;
@@ -176,7 +176,7 @@
             });
 
             if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
-                this._background = Rectangle2D.Create(this, { id: "###CANVAS BACKGROUND###", width: size.width, height: size.height});
+                this._background = Rectangle2D.Create(this, { id: "###CANVAS BACKGROUND###", width: size.width, height: size.height });
                 this._background.isPickable = false;
                 this._background.origin = Vector2.Zero();
                 this._background.levelVisible = false;
@@ -195,7 +195,7 @@
             }
 
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
-//            this._supprtInstancedArray = false; // TODO REMOVE!!!
+            //            this._supprtInstancedArray = false; // TODO REMOVE!!!
 
             this._setupInteraction(enableInteraction);
         }
@@ -229,7 +229,7 @@
 
                 // Register the observable
                 this._scenePrePointerObserver = this.scene.onPrePointerObservable.add((e, s) => {
-                    let hs = 1/this.engine.getHardwareScalingLevel();
+                    let hs = 1 / this.engine.getHardwareScalingLevel();
                     let localPos = e.localPosition.multiplyByFloats(hs, hs);
                     this._handlePointerEventForInteraction(e, localPos, s);
                 });
@@ -273,7 +273,7 @@
             mtx.invert();
             let v = Vector3.TransformCoordinates(worldPos, mtx);
             let rsf = this._renderScaleFactor;
-            let res = new Vector2(v.x*rsf, v.y*rsf);
+            let res = new Vector2(v.x * rsf, v.y * rsf);
             let size = this.actualSize;
             let o = this.origin;
             res.x += size.width * o.x;
@@ -340,7 +340,7 @@
             }
             return this._capturedPointers.get(pointerId.toString());
         }
-           
+
         private static _interInfo = new IntersectInfo2D();
         private _handlePointerEventForInteraction(eventData: PointerInfoBase, localPosition: Vector2, eventState: EventState) {
             // Dispose check
@@ -355,7 +355,7 @@
 
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim!==null);
+            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null);
 
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus();
@@ -402,7 +402,7 @@
                 var y = localPosition.y - viewport.y;
 
                 pii.canvasPointerPos.x = x - this.position.x;
-                pii.canvasPointerPos.y = engine.getRenderHeight() -y - this.position.y;
+                pii.canvasPointerPos.y = engine.getRenderHeight() - y - this.position.y;
             } else {
                 pii.canvasPointerPos.x = localPosition.x;
                 pii.canvasPointerPos.y = localPosition.y;
@@ -417,20 +417,20 @@
                     pii.mouseWheelDelta = -event.detail / PrimitivePointerInfo.MouseWheelPrecision;
                 }
             } else {
-                var pe         = <PointerEvent>eventData.event;
-                pii.ctrlKey    = pe.ctrlKey;
-                pii.altKey     = pe.altKey;
-                pii.shiftKey   = pe.shiftKey;
-                pii.metaKey    = pe.metaKey;
-                pii.button     = pe.button;
-                pii.buttons    = pe.buttons;
-                pii.pointerId  = pe.pointerId;
-                pii.width      = pe.width;
-                pii.height     = pe.height;
-                pii.presssure  = pe.pressure;
-                pii.tilt.x     = pe.tiltX;
-                pii.tilt.y     = pe.tiltY;
-                pii.isCaptured = this.getCapturedPrimitive(pe.pointerId)!==null;
+                var pe = <PointerEvent>eventData.event;
+                pii.ctrlKey = pe.ctrlKey;
+                pii.altKey = pe.altKey;
+                pii.shiftKey = pe.shiftKey;
+                pii.metaKey = pe.metaKey;
+                pii.button = pe.button;
+                pii.buttons = pe.buttons;
+                pii.pointerId = pe.pointerId;
+                pii.width = pe.width;
+                pii.height = pe.height;
+                pii.presssure = pe.pressure;
+                pii.tilt.x = pe.tiltX;
+                pii.tilt.y = pe.tiltY;
+                pii.isCaptured = this.getCapturedPrimitive(pe.pointerId) !== null;
             }
         }
 
@@ -447,18 +447,18 @@
             // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
             if (!isCapture && !this.boundingInfo.doesIntersect(ii.pickPosition)) {
                 this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList   = null;
-                this._previousOverPrimitive    = this._actualOverPrimitive;
-                this._actualOverPrimitive      = null;
+                this._actualIntersectionList = null;
+                this._previousOverPrimitive = this._actualOverPrimitive;
+                this._actualOverPrimitive = null;
                 return;
             }
 
             this.intersect(ii);
 
             this._previousIntersectionList = this._actualIntersectionList;
-            this._actualIntersectionList   = ii.intersectedPrimitives;
-            this._previousOverPrimitive    = this._actualOverPrimitive;
-            this._actualOverPrimitive      = ii.topMostIntersectedPrimitive;
+            this._actualIntersectionList = ii.intersectedPrimitives;
+            this._previousOverPrimitive = this._actualOverPrimitive;
+            this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
 
             this._intersectionRenderId = this.scene.getRenderId();
         }
@@ -471,14 +471,14 @@
 
             // Detect a change of over
             let prevPrim = this._previousOverPrimitive ? this._previousOverPrimitive.prim : null;
-            let actualPrim = this._actualOverPrimitive ? this._actualOverPrimitive.prim   : null;
+            let actualPrim = this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
 
             if (prevPrim !== actualPrim) {
                 // Detect if the current pointer is captured, only fire event if they belong to the capture primitive
                 let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
                 // Notify the previous "over" prim that the pointer is no longer over it
-                if ((capturedPrim && capturedPrim===prevPrim) || (!capturedPrim && prevPrim)) {
+                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim)) {
                     this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
                     this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut, null);
                 }
@@ -591,15 +591,15 @@
                         let actionEvent = ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
 
                         switch (eventData.button) {
-                        case 0:
-                            prim.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, actionEvent);
-                            break;
-                        case 1:
-                            prim.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, actionEvent);
-                            break;
-                        case 2:
-                            prim.actionManager.processTrigger(ActionManager.OnRightPickTrigger, actionEvent);
-                            break;
+                            case 0:
+                                prim.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, actionEvent);
+                                break;
+                            case 1:
+                                prim.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, actionEvent);
+                                break;
+                            case 2:
+                                prim.actionManager.processTrigger(ActionManager.OnRightPickTrigger, actionEvent);
+                                break;
                         }
                         prim.actionManager.processTrigger(ActionManager.OnPickDownTrigger, actionEvent);
                     }
@@ -876,7 +876,7 @@
         private _groupCacheMaps: MapTexture[];
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
-        private _supprtInstancedArray : boolean;
+        private _supprtInstancedArray: boolean;
 
         public _renderingSize: Size;
 
@@ -921,7 +921,7 @@
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
                 this._updateOverStatus();   // TODO this._primPointerInfo may not be up to date!
             }
-
+            
             this._groupRender();
 
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
@@ -941,7 +941,7 @@
             let size = group.actualSize;
             size = new Size(Math.ceil(size.width), Math.ceil(size.height));
             if (minSize) {
-                size.width  = Math.max(minSize.width, size.width);
+                size.width = Math.max(minSize.width, size.width);
                 size.height = Math.max(minSize.height, size.height);
             }
 
@@ -985,14 +985,14 @@
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    let sprite = Sprite2D.Create(this._cachedCanvasGroup, map, {id: "__cachedCanvasSprite__", spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = Sprite2D.Create(this._cachedCanvasGroup, map, { id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    let sprite = Sprite2D.Create(parent, map, {id:`__cachedSpriteOfGroup__${group.id}`, x: group.position.x, y: group.position.y, spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = Sprite2D.Create(parent, map, { id: `__cachedSpriteOfGroup__${group.id}`, x: group.position.x, y: group.position.y, spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.origin = group.origin.clone();
                     res.sprite = sprite;
                 }
