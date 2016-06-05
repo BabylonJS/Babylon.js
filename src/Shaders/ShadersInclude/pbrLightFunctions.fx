@@ -7,6 +7,47 @@ struct lightingInfo
     #endif
 };
 
+float computeDistanceLightFalloff(vec3 lightOffset, float lightDistanceSquared, float range)
+{   
+    #ifdef USEPHYSICALLIGHTFALLOFF
+        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001));
+    #else
+        float lightDistanceFalloff = max(0., 1.0 - length(lightOffset) / range);
+    #endif
+    
+    return lightDistanceFalloff;
+}
+
+float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightCenterW, float lightAngle, float exponent)
+{
+    float falloff = 0.0;
+    
+    #ifdef USEPHYSICALLIGHTFALLOFF
+        float cosHalfAngle = cos(lightAngle * 0.5);
+        const float kMinusLog2ConeAngleIntensityRatio = 6.64385618977; // -log2(0.01)
+
+        // Calculate a Spherical Gaussian (von Mises-Fisher distribution, not angle-based Gaussian) such that the peak is in the light direction,
+        // and the value at the nominal cone angle is 1% of the peak. Because we want the distribution to decay from unity (100%)
+        // at the peak direction (dot product = 1) down to 1% at the nominal cone cutoff (dot product = cosAngle) 
+        // the falloff rate expressed in terms of the base-two dot product is therefore -log2(ConeAngleIntensityRatio) / (1.0 - cosAngle).
+        // Note that the distribution is unnormalised in that peak density is unity, rather than the total energy is unity.
+        float concentrationKappa = kMinusLog2ConeAngleIntensityRatio / (1.0 - cosHalfAngle);
+    
+        // Evaluate spherical gaussian for light directional falloff for spot light type (note: spot directional falloff; 
+        // not directional light type)
+        vec4 lightDirectionSpreadSG = vec4(-lightDirection * concentrationKappa, -concentrationKappa);
+        falloff = exp2(dot(vec4(directionToLightCenterW, 1.0), lightDirectionSpreadSG));
+    #else
+        float cosAngle = max(0.000000000000001, dot(-lightDirection, directionToLightCenterW));
+        if (cosAngle >= lightAngle)
+        {
+            falloff = max(0., pow(cosAngle, exponent));
+        }
+    #endif
+    
+    return falloff;
+}
+
 lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, out float NdotL) {
     lightingInfo result;
 
@@ -19,7 +60,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     {
         vec3 lightOffset = lightData.xyz - vPositionW;
         float lightDistanceSquared = dot(lightOffset, lightOffset);
-        attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, rangeRadius);
+        attenuation = computeDistanceLightFalloff(lightOffset, lightDistanceSquared, rangeRadius);
         
         lightDistance = sqrt(lightDistanceSquared);
         lightDirection = normalize(lightOffset);
@@ -57,48 +98,34 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     lightingInfo result;
 
     vec3 lightOffset = lightData.xyz - vPositionW;
-    vec3 lightVectorW = normalize(lightOffset);
+    vec3 directionToLightCenterW = normalize(lightOffset);
 
-    // diffuse
-    float cosAngle = max(0.000000000000001, dot(-lightDirection.xyz, lightVectorW));
+    // Distance falloff.
+    float lightDistanceSquared = dot(lightOffset, lightOffset);
+    float attenuation = computeDistanceLightFalloff(lightOffset, lightDistanceSquared, rangeRadius);
     
-    if (cosAngle >= lightDirection.w)
-    {
-        cosAngle = max(0., pow(cosAngle, lightData.w));
-        
-        // Inverse squared falloff.
-        float lightDistanceSquared = dot(lightOffset, lightOffset);
-        float attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, rangeRadius);
-        
-        // Directional falloff.
-        attenuation *= cosAngle;
-        
-        // Roughness.
-        float lightDistance = sqrt(lightDistanceSquared);
-        roughness = adjustRoughnessFromLightProperties(roughness, rangeRadius, lightDistance);
-        
-        // Diffuse
-        vec3 H = normalize(viewDirectionW - lightDirection.xyz);
-        NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
-        float VdotH = clamp(dot(viewDirectionW, H), 0.00000000001, 1.0);
+    // Directional falloff.
+    float directionalAttenuation = computeDirectionalLightFalloff(lightDirection.xyz, directionToLightCenterW, lightDirection.w, lightData.w);
+    attenuation *= directionalAttenuation;
+    
+    // Roughness.
+    float lightDistance = sqrt(lightDistanceSquared);
+    roughness = adjustRoughnessFromLightProperties(roughness, rangeRadius, lightDistance);
+    
+    // Diffuse
+    vec3 H = normalize(viewDirectionW - lightDirection.xyz);
+    NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
+    float VdotH = clamp(dot(viewDirectionW, H), 0.00000000001, 1.0);
 
-        float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
-        result.diffuse = diffuseTerm * diffuseColor * attenuation;
+    float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
+    result.diffuse = diffuseTerm * diffuseColor * attenuation;
 
-        #ifdef SPECULARTERM
-            // Specular
-            float NdotH = max(0.00000000001, dot(vNormal, H));
-
-            vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
-            result.specular = specTerm  * attenuation;
-        #endif
-
-        return result;
-    }
-
-    result.diffuse = vec3(0.);
     #ifdef SPECULARTERM
-        result.specular = vec3(0.);
+        // Specular
+        float NdotH = max(0.00000000001, dot(vNormal, H));
+
+        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
+        result.specular = specTerm  * attenuation;
     #endif
 
     return result;
