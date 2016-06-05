@@ -150,17 +150,6 @@ vec3 toGammaSpace(vec3 color)
     return vec3(pow(color.r, 1.0 / 2.2), pow(color.g, 1.0 / 2.2), pow(color.b, 1.0 / 2.2));
 }
 
-float computeLightFalloff(vec3 lightOffset, float lightDistanceSquared, float range)
-{
-    #ifdef USEPHYSICALLIGHTFALLOFF
-        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001));
-        return lightDistanceFalloff;
-    #else
-        float lightFalloff = max(0., 1.0 - length(lightOffset) / range);
-        return lightFalloff;
-    #endif
-}
-
 #ifdef CAMERATONEMAP
     vec3 toneMaps(vec3 color)
     {
