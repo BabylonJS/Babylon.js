@@ -203,16 +203,16 @@
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, tabulationSize: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
+        //protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, tabulationSize: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
+        //    this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
 
-            this.fontName = fontName;
-            this.defaultFontColor = defaultFontColor;
-            this.text = text;
-            this.size = areaSize;
-            this._tabulationSize = tabulationSize;
-            this.isAlphaTest = true;
-        }
+        //    this.fontName = fontName;
+        //    this.defaultFontColor = defaultFontColor;
+        //    this.text = text;
+        //    this.size = areaSize;
+        //    this._tabulationSize = tabulationSize;
+        //    this.isAlphaTest = true;
+        //}
 
         /**
          * Create a Text primitive
@@ -231,35 +231,66 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, text: string, options?: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, fontName?: string, defaultFontColor?: Color4, size?: Size, tabulationSize?: number, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, hAlignment?: number, vAlignment?: number}): Text2D {
+        constructor(parent: Prim2DBase, text: string, settings?: {
+            id              ?: string,
+            position        ?: Vector2,
+            x               ?: number,
+            y               ?: number,
+            origin          ?: Vector2,
+            fontName        ?: string,
+            defaultFontColor?: Color4,
+            size            ?: Size,
+            tabulationSize  ?: number,
+            isVisible       ?: boolean,
+            marginTop       ?: number | string,
+            marginLeft      ?: number | string,
+            marginRight     ?: number | string,
+            marginBottom    ?: number | string,
+            hAlignment      ?: number,
+            vAlignment      ?: number,
+        }) {
+
+            super(parent.owner, parent, settings);
+
             Prim2DBase.CheckParent(parent);
 
-            let text2d = new Text2D();
-            if (!options) {
-                text2d.setupText2D(parent.owner, parent, null, Vector2.Zero(), null, "12pt Arial", text, null, new Color4(1,1,1,1), 4, true, null, null, null, null, null, null);
-            } else {
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                text2d.setupText2D
-                (
-                    parent.owner,
-                    parent,
-                    options.id || null,
-                    pos,
-                    options.origin || null,
-                    options.fontName || "12pt Arial",
-                    text,
-                    options.size,
-                    options.defaultFontColor || new Color4(1, 1, 1, 1),
-                    (options.tabulationSize==null) ? 4 : options.tabulationSize,
-                    (options.isVisible==null) ? true : options.isVisible,
-                    options.marginTop,
-                    options.marginLeft,
-                    options.marginRight,
-                    options.marginBottom,
-                    options.vAlignment,
-                    options.hAlignment);
+            if (!settings) {
+                settings = {};
             }
-            return text2d;
+
+            this.fontName         = (settings.fontName==null)         ? "12pt Arial"        : settings.fontName;
+            this.defaultFontColor = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
+            this._tabulationSize  = (settings.tabulationSize == null) ? 4                   : settings.tabulationSize;
+            this.text             = text;
+            this.size             = settings.size;
+            this.isAlphaTest      = true;
+
+            //let text2d = new Text2D();
+            //if (!settings) {
+            //    text2d.setupText2D(parent.owner, parent, null, Vector2.Zero(), null, "12pt Arial", text, null, new Color4(1,1,1,1), 4, true, null, null, null, null, null, null);
+            //} else {
+                //let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
+                //text2d.setupText2D
+                //(
+                //    parent.owner,
+                //    parent,
+                //    settings.id || null,
+                //    pos,
+                //    settings.origin || null,
+                //    settings.fontName || "12pt Arial",
+                //    text,
+                //    settings.size,
+                //    settings.defaultFontColor || new Color4(1, 1, 1, 1),
+                //    (settings.tabulationSize==null) ? 4 : settings.tabulationSize,
+                //    (settings.isVisible==null) ? true : settings.isVisible,
+                //    settings.marginTop,
+                //    settings.marginLeft,
+                //    settings.marginRight,
+                //    settings.marginBottom,
+                //    settings.vAlignment,
+                //    settings.hAlignment);
+            //}
+            //return text2d;
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {

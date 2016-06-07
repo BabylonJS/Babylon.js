@@ -353,8 +353,20 @@
             this._isTransparent = value;
         }
 
-        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, hAlign: number, vAlign: number) {
-            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
+        constructor(owner: Canvas2D, parent: Prim2DBase, settings?: {
+            id           ?: string,
+            position     ?: Vector2,
+            origin       ?: Vector2,
+            isVisible    ?: boolean,
+            marginTop    ?: number | string,
+            marginLeft   ?: number | string,
+            marginRight  ?: number | string,
+            marginBottom ?: number | string,
+            hAlign       ?: number,
+            vAlign       ?: number,
+        }) {
+            super(owner, parent, settings);
+//            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
             this._isTransparent = false;
             this._isAlphaTest = false;
             this._transparentPrimitiveInfo = null;

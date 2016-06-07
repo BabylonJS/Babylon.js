@@ -293,12 +293,12 @@
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-            this.size = size;
-            this.notRounded = !roundRadius;
-            this.roundRadius = roundRadius;
-        }
+        //protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
+        //    this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
+        //    this.size = size;
+        //    this.notRounded = !roundRadius;
+        //    this.roundRadius = roundRadius;
+        //}
 
         /**
          * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
@@ -317,39 +317,70 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, roundRadius?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, vAlignment?: number, hAlignment?: number}): Rectangle2D {
+        constructor(parent: Prim2DBase, settings?: {
+            id             ?: string,
+            position       ?: Vector2,
+            x              ?: number,
+            y              ?: number,
+            origin         ?: Vector2,
+            size           ?: Size,
+            width          ?: number,
+            height         ?: number,
+            roundRadius    ?: number,
+            fill           ?: IBrush2D,
+            border         ?: IBrush2D,
+            borderThickness?: number,
+            isVisible      ?: boolean,
+            marginTop      ?: number | string,
+            marginLeft     ?: number | string,
+            marginRight    ?: number | string,
+            marginBottom   ?: number | string,
+            vAlignment     ?: number,
+            hAlignment     ?: number,
+        }) {
+
+            super(parent.owner, parent, settings);
+
             Prim2DBase.CheckParent(parent);
 
-            let rect = new Rectangle2D();
+            //let rect = new Rectangle2D();
 
-            if (!options) {
-                rect.setupRectangle2D(parent.owner, parent, null, Vector2.Zero(), null, new Size(10, 10), 0, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
-            } else {
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                let size = options.size || (new Size((options.width === null) ? null : (options.width || 10), (options.height === null) ? null : (options.height || 10)));
-                let fill = options.fill===undefined ? Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF") : options.fill;
+            //if (!settings) {
+            //    rect.setupRectangle2D(parent.owner, parent, null, Vector2.Zero(), null, new Size(10, 10), 0, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
+            //} else {
+            let pos             = settings.position || new Vector2(settings.x || 0, settings.y || 0);
+            let size            = settings.size || (new Size((settings.width === null) ? null : (settings.width || 10), (settings.height === null) ? null : (settings.height || 10)));
+            let fill            = settings.fill === undefined ? Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF") : settings.fill;
+            let roundRadius     = (settings.roundRadius == null) ? 0 : settings.roundRadius;
+            let borderThickness = (settings.borderThickness == null) ? 1 : settings.borderThickness;
 
-                rect.setupRectangle2D
-                (
-                    parent.owner,
-                    parent,
-                    options.id || null,
-                    pos,
-                    options.origin || null,
-                    size,
-                    (options.roundRadius == null) ? 0 : options.roundRadius,
-                    fill,
-                    options.border || null,
-                    (options.borderThickness==null) ? 1 : options.borderThickness,
-                    options.isVisible || true,
-                    options.marginTop,
-                    options.marginLeft,
-                    options.marginRight,
-                    options.marginBottom,
-                    options.vAlignment,
-                    options.hAlignment);
-            }
-            return rect;
+            this.position        = pos;
+            this.size            = size;
+            this.fill            = fill;
+            this.roundRadius     = roundRadius;
+            this.borderThickness = borderThickness;
+
+            //rect.setupRectangle2D
+            //(
+            //    parent.owner,
+            //    parent,
+            //    settings.id || null,
+            //    pos,
+            //    settings.origin || null,
+            //    size,
+            //    (settings.roundRadius == null) ? 0 : settings.roundRadius,
+            //    fill,
+            //    settings.border || null,
+            //    (settings.borderThickness==null) ? 1 : settings.borderThickness,
+            //    settings.isVisible || true,
+            //    settings.marginTop,
+            //    settings.marginLeft,
+            //    settings.marginRight,
+            //    settings.marginBottom,
+            //    settings.vAlignment,
+            //    settings.hAlignment);
+            //}
+            //return rect;
         }
 
         public static roundSubdivisions = 16;

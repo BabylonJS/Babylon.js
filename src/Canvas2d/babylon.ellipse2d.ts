@@ -202,11 +202,11 @@
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
         }
 
-        protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-            this.size = size;
-            this.subdivisions = subdivisions;
-        }
+        //protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
+        //    this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
+        //    this.size = size;
+        //    this.subdivisions = subdivisions;
+        //}
 
         /**
          * Create an Ellipse 2D Shape primitive
@@ -225,45 +225,72 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, subdivisions?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, vAlignment?: number, hAlignment?: number}): Ellipse2D {
+        constructor(parent: Prim2DBase, settings?: {
+            id             ?: string,
+            position       ?: Vector2,
+            x              ?: number,
+            y              ?: number,
+            origin         ?: Vector2,
+            size           ?: Size,
+            width          ?: number,
+            height         ?: number,
+            subdivisions   ?: number,
+            fill           ?: IBrush2D,
+            border         ?: IBrush2D,
+            borderThickness?: number,
+            isVisible      ?: boolean,
+            marginTop      ?: number | string,
+            marginLeft     ?: number | string,
+            marginRight    ?: number | string,
+            marginBottom   ?: number | string,
+            vAlignment     ?: number,
+            hAlignment     ?: number,
+        }) {
+
+            super(parent.owner, parent, settings);
             Prim2DBase.CheckParent(parent);
 
-            let ellipse = new Ellipse2D();
+            //let ellipse = new Ellipse2D();
 
-            if (!options) {
-                ellipse.setupEllipse2D(parent.owner, parent, null, Vector2.Zero(), null, new Size(10, 10), 64, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
+            //if (!settings) {
+            //    ellipse.setupEllipse2D(parent.owner, parent, null, Vector2.Zero(), null, new Size(10, 10), 64, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
+            //} else {
+            let fill: IBrush2D;
+            if (settings.fill === undefined) {
+                fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
             } else {
-                let fill: IBrush2D;
-                if (options.fill === undefined) {
-                    fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
-                } else {
-                    fill = options.fill;
-                }
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                let size = options.size || (new Size(options.width || 10, options.height || 10));
-
-                ellipse.setupEllipse2D
-                (
-                    parent.owner,
-                    parent,
-                    options.id || null,
-                    pos,
-                    options.origin || null,
-                    size,
-                    (options.subdivisions == null) ? 64 : options.subdivisions,
-                    fill,
-                    options.border || null,
-                    (options.borderThickness == null) ? 1 : options.borderThickness,
-                    (options.isVisible == null) ? true : options.isVisible,
-                    options.marginTop,
-                    options.marginLeft,
-                    options.marginRight,
-                    options.marginBottom,
-                    options.vAlignment,
-                    options.hAlignment);
+                fill = settings.fill;
             }
+            let pos  = settings.position || new Vector2(settings.x || 0, settings.y || 0);
+            let size = settings.size || (new Size(settings.width || 10, settings.height || 10));
+            let sub  = (settings.subdivisions == null) ? 64 : settings.subdivisions;
 
-            return ellipse;
+            this.position     = pos;
+            this.size         = size;
+            this.subdivisions = sub;
+
+            //    ellipse.setupEllipse2D
+            //    (
+            //        parent.owner,
+            //        parent,
+            //        settings.id || null,
+            //        pos,
+            //        settings.origin || null,
+            //        size,
+            //        (settings.subdivisions == null) ? 64 : settings.subdivisions,
+            //        fill,
+            //        settings.border || null,
+            //        (settings.borderThickness == null) ? 1 : settings.borderThickness,
+            //        (settings.isVisible == null) ? true : settings.isVisible,
+            //        settings.marginTop,
+            //        settings.marginLeft,
+            //        settings.marginRight,
+            //        settings.marginBottom,
+            //        settings.vAlignment,
+            //        settings.hAlignment);
+            //}
+
+            //return ellipse;
         }
 
         protected createModelRenderCache(modelKey: string): ModelRenderCache {

@@ -201,23 +201,23 @@
             return true;
         }
 
-        protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean, alignToPixel: boolean, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-            this.texture = texture;
-            this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this.size = spriteSize || null;
-            this.spriteLocation = spriteLocation || new Vector2(0,0);
-            this.spriteFrame = 0;
-            this.invertY = invertY;
-            this.alignToPixel = alignToPixel;
-            this._isTransparent = true;
+        //protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean, alignToPixel: boolean, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
+        //    this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
+        //    this.texture = texture;
+        //    this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+        //    this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        //    this.size = spriteSize || null;
+        //    this.spriteLocation = spriteLocation || new Vector2(0,0);
+        //    this.spriteFrame = 0;
+        //    this.invertY = invertY;
+        //    this.alignToPixel = alignToPixel;
+        //    this._isTransparent = true;
 
-            if (!this.size) {
-                var s = texture.getSize();
-                this.size = new Size(s.width, s.height);
-            }
-        }
+        //    if (!this.size) {
+        //        var s = texture.getSize();
+        //        this.size = new Size(s.width, s.height);
+        //    }
+        //}
 
         /**
          * Create an 2D Sprite primitive
@@ -236,42 +236,81 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, texture: Texture, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, spriteSize?: Size, spriteLocation?: Vector2, invertY?: boolean, alignToPixel?: boolean, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, vAlignment?: number, hAlignment?: number}): Sprite2D {
+        constructor(parent: Prim2DBase, texture: Texture, settings?: {
+            id            ?: string,
+            position      ?: Vector2,
+            x             ?: number,
+            y             ?: number,
+            origin        ?: Vector2,
+            spriteSize    ?: Size,
+            spriteLocation?: Vector2,
+            invertY       ?: boolean,
+            alignToPixel  ?: boolean,
+            isVisible     ?: boolean,
+            marginTop     ?: number | string,
+            marginLeft    ?: number | string,
+            marginRight   ?: number | string,
+            marginBottom  ?: number | string,
+            vAlignment    ?: number,
+            hAlignment    ?: number,
+        }) {
+
+            super(parent.owner, parent, settings);
+
             Prim2DBase.CheckParent(parent);
 
-            let sprite = new Sprite2D();
-            if (!options) {
-                sprite.setupSprite2D(parent.owner, parent, null, Vector2.Zero(), null, texture, null, null, false, true, true, null, null, null, null, null, null);
-            } else {
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                sprite.setupSprite2D
-                (
-                    parent.owner,
-                    parent,
-                    options.id || null,
-                    pos,
-                    options.origin || null,
-                    texture, options.spriteSize || null,
-                    options.spriteLocation || null,
-                    (options.invertY == null) ? false : options.invertY,
-                    (options.alignToPixel == null) ? true : options.alignToPixel,
-                    (options.isVisible == null) ? true : options.isVisible,
-                    options.marginTop,
-                    options.marginLeft,
-                    options.marginRight,
-                    options.marginBottom,
-                    options.vAlignment,
-                    options.hAlignment
-                );
+            if (!settings) {
+                settings = {};
             }
 
-            return sprite;
+//            let sprite = new Sprite2D();
+            //if (!settings) {
+            //    sprite.setupSprite2D(parent.owner, parent, null, Vector2.Zero(), null, texture, null, null, false, true, true, null, null, null, null, null, null);
+            //} else {
+                //let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
+                //sprite.setupSprite2D
+                //(
+                //    parent.owner,
+                //    parent,
+                //    settings.id || null,
+                //    pos,
+                //    settings.origin || null,
+                //    texture, settings.spriteSize || null,
+                //    settings.spriteLocation || null,
+                //    (settings.invertY == null) ? false : settings.invertY,
+                //    (settings.alignToPixel == null) ? true : settings.alignToPixel,
+                //    (settings.isVisible == null) ? true : settings.isVisible,
+                //    settings.marginTop,
+                //    settings.marginLeft,
+                //    settings.marginRight,
+                //    settings.marginBottom,
+                //    settings.vAlignment,
+                //    settings.hAlignment
+                //);
+            //}
+
+                this.texture        = texture;
+                this.texture.wrapU  = Texture.CLAMP_ADDRESSMODE;
+                this.texture.wrapV  = Texture.CLAMP_ADDRESSMODE;
+                this.size           = settings.spriteSize || null;
+                this.spriteLocation = settings.spriteLocation || new Vector2(0, 0);
+                this.spriteFrame    = 0;
+                this.invertY        = (settings.invertY==null) ? false : settings.invertY;
+                this.alignToPixel   = (settings.alignToPixel==null) ? true : settings.alignToPixel;
+                this._isTransparent = true;
+
+                if (!this.size) {
+                    var s = texture.getSize();
+                    this.size = new Size(s.width, s.height);
+                }
+
+            //return sprite;
         }
 
         static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D {
 
-            let sprite = new Sprite2D();
-            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new Vector2(0, 0), null, texture, size, pos, false, true, true, null, null, null, null, null, null);
+            let sprite = new Sprite2D(owner, texture, { id:"__cachedCanvasSprite__", position: Vector2.Zero(), origin: Vector2.Zero(), spriteSize: size, spriteLocation:pos, alignToPixel: true});
+            //sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new Vector2(0, 0), null, texture, size, pos, false, true, true, null, null, null, null, null, null);
 
             return sprite;
         }
