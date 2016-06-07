@@ -724,7 +724,6 @@
     export class Vector3 {
 
         constructor(public x: number, public y: number, public z: number) {
-
         }
 
         public toString(): string {
@@ -744,7 +743,7 @@
 
         // Operators
         public asArray(): number[] {
-            var result = [];
+            var result: number[] = [];
 
             this.toArray(result, 0);
 
