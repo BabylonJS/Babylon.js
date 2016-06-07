@@ -1055,12 +1055,39 @@
     export class Prim2DBase extends SmartPropertyPrim {
         static PRIM2DBASE_PROPCOUNT: number = 15;
 
-        protected setupPrim2DBase(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, vAlignment?: number, hAlignment?: number) {
-            if (!(this instanceof Group2D) && !(this instanceof Sprite2D && id !== null && id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
+        constructor(owner: Canvas2D, parent: Prim2DBase, settings: {
+            id?: string,
+            position?: Vector2,
+            x?: number,
+            y?: number,
+            origin?: Vector2,
+            isVisible?: boolean,
+            marginTop?: number | string,
+            marginLeft?: number | string,
+            marginRight?: number | string,
+            marginBottom?: number | string,
+            vAlignment?: number,
+            hAlignment?: number,
+        }
+        ) {
+
+            if (settings == null) {
+                settings = {};
+            }
+
+            super();
+
+            if (Prim2DBase._isCanvasInit) {
+                owner = <Canvas2D><any>this;
+                parent = null;
+
+                this._canvasPreInit(settings);
+            }
+
+            if (!(this instanceof Group2D) && !(this instanceof Sprite2D && settings.id !== null && settings.id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
                 throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
             }
 
-            this.setupSmartPropertyPrim();
             this._layoutEngine = CanvasLayoutEngine.Singleton;
             this._size = Size.Zero();
             this._layoutArea = Size.Zero();
@@ -1079,7 +1106,7 @@
             this._parent = parent;
             this._margin = null;
             this._padding = null;
-            this._id = id;
+            this._id = settings.id;
             if (parent != null) {
                 this._hierarchyDepth = parent._hierarchyDepth + 1;
                 this._renderGroup = <Group2D>this.parent.traverseUp(p => p instanceof Group2D && p.isRenderableGroup);
@@ -1099,23 +1126,24 @@
                 group.detectGroupStates();
             }
 
-            this.position = position;
+            let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
+            this.position = pos;
             this.rotation = 0;
             this.scale = 1;
-            this.levelVisible = isVisible;
-            this.origin = origin || new Vector2(0.5, 0.5);
+            this.levelVisible = (settings.isVisible==null) ? true : settings.isVisible;
+            this.origin = settings.origin || new Vector2(0.5, 0.5);
 
-            if (marginTop) {
-                this.margin.setTop(marginTop);
+            if (settings.marginTop) {
+                this.margin.setTop(settings.marginTop);
             }
-            if (marginLeft) {
-                this.margin.setLeft(marginLeft);
+            if (settings.marginLeft) {
+                this.margin.setLeft(settings.marginLeft);
             }
-            if (marginRight) {
-                this.margin.setRight(marginRight);
+            if (settings.marginRight) {
+                this.margin.setRight(settings.marginRight);
             }
-            if (marginBottom) {
-                this.margin.setBottom(marginBottom);
+            if (settings.marginBottom) {
+                this.margin.setBottom(settings.marginBottom);
             }
 
             this._parentLayoutDirty();
@@ -1401,7 +1429,10 @@
          * Note to implementers: you have to override this property and declare if necessary a @xxxxInstanceLevel decorator
          */
         public get actualSize(): Size {
-            return this._actualSize;
+            if (this._actualSize) {
+                return this._actualSize;
+            }
+            return this._size;
         }
 
         public set actualSize(value: Size) {
@@ -1885,8 +1916,13 @@
             this._instanceDirtyFlags = 0;
         }
 
+        protected _canvasPreInit(settings: any) {
+            
+        }
+
+        protected static _isCanvasInit: boolean = false;
         protected static CheckParent(parent: Prim2DBase) {
-            if (!parent) {
+            if (!Prim2DBase._isCanvasInit && !parent) {
                 throw new Error("A Primitive needs a valid Parent, it can be any kind of Primitives based types, even the Canvas (with the exception that only Group2D can be direct child of a Canvas if the cache strategy used is TOPLEVELGROUPS)");
             }
         }

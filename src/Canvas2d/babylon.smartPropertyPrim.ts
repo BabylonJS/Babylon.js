@@ -135,7 +135,7 @@
     @className("SmartPropertyPrim")
     export class SmartPropertyPrim implements IPropertyChanged {
 
-        protected setupSmartPropertyPrim() {
+        constructor() {
             this._flags = 0;
             this._modelKey = null;
             this._instanceDirtyFlags = 0;

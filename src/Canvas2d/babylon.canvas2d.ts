@@ -47,121 +47,48 @@
          */
         public static CACHESTRATEGY_DONTCACHE = 4;
 
-        /**
-         * Create a new 2D ScreenSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a position relative to the bottom/left corner of the screen.
-         * ScreenSpace Canvas will be drawn in the Viewport as a 2D Layer lying to the top of the 3D Scene. Typically used for traditional UI.
-         * All caching strategies will be available.
-         * PLEASE NOTE: the origin of a Screen Space Canvas is set to [0;0] (bottom/left) which is different than the default origin of a Primitive which is centered [0.5;0.5]
-         * @param scene the Scene that owns the Canvas
-         * Options:
-         *  - id: a text identifier, for information purpose only
-         *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
-         *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
-         *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
-         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
-         *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         */
-        static CreateScreenSpace(scene: Scene, options: { id?: string, x?: number, y?: number, position?: Vector2, origin?: Vector2, width?: number, height?: number, size?: Size, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, marginTop?: number | string, marginLeft?: number | string, marginRight?: number | string, marginBottom?: number | string, hAlignment?: number, vAlignment?: number }): Canvas2D {
-            let c = new Canvas2D();
+        constructor(scene: Scene, settings?: {
+            id               ?: string,
+            size             ?: Size,
+            renderScaleFactor?: number,
+            isScreenSpace    ?: boolean,
+            cachingStrategy  ?: number,
+            enableInteraction?: boolean,
+            origin           ?: Vector2,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            hAlign           ?: number,
+            vAlign           ?: number,
+        }) {
+            super(null, settings);
 
-            if (!options) {
-                c.setupCanvas(scene, null, null, 1, true, Canvas2D.CACHESTRATEGY_DONTCACHE, true, Vector2.Zero(), true, null, null, null, null, null, null);
-                c.position = Vector2.Zero();
-            } else { 
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                let size = (!options.size && !options.width && !options.height) ? null : (options.size || (new Size(options.width || 0, options.height || 0)));
+            Prim2DBase._isCanvasInit = false;
 
-                c.setupCanvas(scene, options.id || null, size, 1, true, options.cachingStrategy || Canvas2D.CACHESTRATEGY_DONTCACHE, options.enableInteraction || true, options.origin || Vector2.Zero(), options.isVisible || true, options.marginTop, options.marginLeft, options.marginRight, options.marginBottom, options.hAlignment || PrimitiveAlignment.AlignLeft, options.vAlignment || PrimitiveAlignment.AlignTop);
-                c.position = pos;
+            if (!settings) {
+                settings = {};
             }
 
-            return c;
-        }
+            let renderScaleFactor = (settings.renderScaleFactor == null) ? 1    : settings.renderScaleFactor;
+            let enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
 
-        /**
-         * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation information to place it in the world space.
-         * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. For now only CACHESTRATEGY_CANVAS is supported, but the remaining strategies will be soon.
-         * @param scene the Scene that owns the Canvas
-         * @param size the dimension of the Canvas in World Space
-         * Options:
-         *  - id: a text identifier, for information purpose only, default is null.
-         *  - position the position of the Canvas in World Space, default is [0,0,0]
-         *  - rotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
-         *  - renderScaleFactor A scale factor applied to create the rendering texture that will be mapped in the Scene Rectangle. If you set 2 for instance the texture will be twice large in width and height. A greater value will allow to achieve a better rendering quality. Default value is 1.
-         * BE AWARE that the Canvas true dimension will be size*renderScaleFactor, then all coordinates and size will have to be express regarding this size.
-         * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
-         * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
-         * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
-         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
-         * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
-         * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
-         */
-        static CreateWorldSpace(scene: Scene, size: Size, options: { id?: string, position?: Vector3, rotation?: Quaternion, renderScaleFactor?: number, sideOrientation?: number, cachingStrategy?: number, enableInteraction?: boolean, isVisible?: boolean, customWorldSpaceNode?: Node}): Canvas2D {
-
-            let cs = options && options.cachingStrategy || Canvas2D.CACHESTRATEGY_CANVAS;
-
-            if (cs !== Canvas2D.CACHESTRATEGY_CANVAS) {
-                throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
-            }
-
-            //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
-            //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
-            //}
-
-            let enableInteraction = options ? options.enableInteraction : true;
-            let createWorldSpaceNode = !options || (options.customWorldSpaceNode==null);
-            let isVisible = options ? options.isVisible || true : true;
-            let id = options ? options.id || null : null;
-            let rsf = options ? options.renderScaleFactor || 1 : 1;
-
-            let c = new Canvas2D();
-            c.setupCanvas(scene, id, new Size(size.width, size.height), rsf, false, cs, enableInteraction, new Vector2(0.5, 0.5), isVisible, null, null, null, null, null, null);
-
-            if (createWorldSpaceNode) {
-                let plane = new WorldSpaceCanvas2D(id, scene, c);
-                let vertexData = VertexData.CreatePlane({
-                    width: size.width,
-                    height: size.height,
-                    sideOrientation: options && options.sideOrientation || Mesh.DEFAULTSIDE
-                });
-                let mtl = new StandardMaterial(id + "_Material", scene);
-
-                c.applyCachedTexture(vertexData, mtl);
-                vertexData.applyToMesh(plane, false);
-
-                mtl.specularColor = new Color3(0, 0, 0);
-                mtl.disableLighting = true;
-                mtl.useAlphaFromDiffuseTexture = true;
-                plane.position = options && options.position || Vector3.Zero();
-                plane.rotationQuaternion = options && options.rotation || Quaternion.Identity();
-                plane.material = mtl;
-                c._worldSpaceNode = plane;
-            } else {
-                c._worldSpaceNode = options.customWorldSpaceNode;
-            }
-            return c;
-        }
-
-        protected setupCanvas(scene: Scene, name: string, size: Size, renderScaleFactor: number, isScreenSpace: boolean, cachingstrategy: number, enableInteraction: boolean, origin: Vector2, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, hAlign: number, vAlign: number) {
             let engine = scene.getEngine();
-            this._fitRenderingDevice = !size;
-            if (!size) {
-                size = new Size(engine.getRenderWidth(), engine.getRenderHeight());
+            this._fitRenderingDevice = !settings.size;
+            if (!settings.size) {
+                settings.size = new Size(engine.getRenderWidth(), engine.getRenderHeight());
             } else {
-                size.height *= renderScaleFactor;
-                size.width *= renderScaleFactor;
+                settings.size.height *= renderScaleFactor;
+                settings.size.width *= renderScaleFactor;
             }
             this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
             this._renderScaleFactor = renderScaleFactor;
-            this._cachingStrategy = cachingstrategy;
             this._primPointerInfo = new PrimitivePointerInfo();
             this._capturedPointers = new StringDictionary<Prim2DBase>();
             this._pickStartingPosition = Vector2.Zero();
 
-            this.setupGroup2D(this, null, name, Vector2.Zero(), origin, size, isVisible, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
+            //this.setupGroup2D(this, null, name, Vector2.Zero(), origin, size, isVisible, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
 
             this._hierarchyLevelMaxSiblingCount = 10;
             this._hierarchyDepthOffset = 0;
@@ -175,13 +102,12 @@
                 this.dispose();
             });
 
-            if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
-                this._background = Rectangle2D.Create(this, { id: "###CANVAS BACKGROUND###", width: size.width, height: size.height});
+            if (this._cachingStrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
+                this._background = new Rectangle2D(this, { id: "###CANVAS BACKGROUND###", size: settings.size}); //TODO CHECK when size is null
                 this._background.isPickable = false;
                 this._background.origin = Vector2.Zero();
                 this._background.levelVisible = false;
             }
-            this._isScreeSpace = isScreenSpace;
 
             if (this._isScreeSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
@@ -198,6 +124,12 @@
 //            this._supprtInstancedArray = false; // TODO REMOVE!!!
 
             this._setupInteraction(enableInteraction);
+        }
+
+        protected _canvasPreInit(settings: any) {
+            let cachingStrategy   = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
+            this._cachingStrategy = cachingStrategy;
+            this._isScreeSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
         }
 
         public get hierarchyLevelMaxSiblingCount(): number {
@@ -873,7 +805,7 @@
         private _capturedPointers: StringDictionary<Prim2DBase>;
         private _scenePrePointerObserver: Observer<PointerInfoPre>;
         private _scenePointerObserver: Observer<PointerInfo>;
-        private _worldSpaceNode: Node;
+        protected _worldSpaceNode: Node;
         private _mapCounter = 0;
         private _background: Rectangle2D;
         private _scene: Scene;
@@ -1012,14 +944,14 @@
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    let sprite = Sprite2D.Create(this._cachedCanvasGroup, map, {id: "__cachedCanvasSprite__", spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = new Sprite2D(this._cachedCanvasGroup, map, {id: "__cachedCanvasSprite__", spriteSize:node.contentSize, spriteLocation:node.pos});
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    let sprite = Sprite2D.Create(parent, map, {id:`__cachedSpriteOfGroup__${group.id}`, x: group.position.x, y: group.position.y, spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = new Sprite2D(parent, map, {id:`__cachedSpriteOfGroup__${group.id}`, x: group.position.x, y: group.position.y, spriteSize:node.contentSize, spriteLocation:node.pos});
                     sprite.origin = group.origin.clone();
                     res.sprite = sprite;
                 }
@@ -1058,4 +990,146 @@
         private static _solidColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
         private static _gradientColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
     }
+    @className("WorldSpaceCanvas2D")
+    export class WorldSpaceCanvas2D extends Canvas2D {
+        /**
+         * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation information to place it in the world space.
+         * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. For now only CACHESTRATEGY_CANVAS is supported, but the remaining strategies will be soon.
+         * @param scene the Scene that owns the Canvas
+         * @param size the dimension of the Canvas in World Space
+         * Options:
+         *  - id: a text identifier, for information purpose only, default is null.
+         *  - position the position of the Canvas in World Space, default is [0,0,0]
+         *  - rotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         *  - renderScaleFactor A scale factor applied to create the rendering texture that will be mapped in the Scene Rectangle. If you set 2 for instance the texture will be twice large in width and height. A greater value will allow to achieve a better rendering quality. Default value is 1.
+         * BE AWARE that the Canvas true dimension will be size*renderScaleFactor, then all coordinates and size will have to be express regarding this size.
+         * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
+         * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
+         * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
+         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
+         * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
+         * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
+         */
+        constructor(scene: Scene, size: Size, settings: {
+            id                  ?: string,
+            position            ?: Vector3,
+            rotation            ?: Quaternion,
+            renderScaleFactor   ?: number,
+            sideOrientation     ?: number,
+            cachingStrategy     ?: number,
+            enableInteraction   ?: boolean,
+            isVisible           ?: boolean,
+            customWorldSpaceNode?: Node,
+        }) {
+            Prim2DBase._isCanvasInit = true;
+            let s = <any>settings;
+            s.isScreenSpace = false;
+            s.size = size.clone();
+            settings.cachingStrategy = (settings.cachingStrategy==null) ? Canvas2D.CACHESTRATEGY_CANVAS : settings.cachingStrategy;
+
+            if (settings.cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
+                throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
+            }
+
+            super(scene, settings);
+            Prim2DBase._isCanvasInit = false;
+
+
+            //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
+            //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
+            //}
+
+            //let enableInteraction = settings ? settings.enableInteraction : true;
+            let createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
+            //let isVisible = settings ? settings.isVisible || true : true;
+            let id = settings ? settings.id || null : null;
+            //let rsf = settings ? settings.renderScaleFactor || 1 : 1;
+
+            //let c = new Canvas2D();
+            //c.setupCanvas(scene, id, new Size(size.width, size.height), rsf, false, cs, enableInteraction, new Vector2(0.5, 0.5), isVisible, null, null, null, null, null, null);
+
+            if (createWorldSpaceNode) {
+                let plane = new WorldSpaceCanvas2DNode(id, scene, this);
+                let vertexData = VertexData.CreatePlane({
+                    width: size.width,
+                    height: size.height,
+                    sideOrientation: settings && settings.sideOrientation || Mesh.DEFAULTSIDE
+                });
+                let mtl = new StandardMaterial(id + "_Material", scene);
+
+                this.applyCachedTexture(vertexData, mtl);
+                vertexData.applyToMesh(plane, false);
+
+                mtl.specularColor = new Color3(0, 0, 0);
+                mtl.disableLighting = true;
+                mtl.useAlphaFromDiffuseTexture = true;
+                plane.position = settings && settings.position || Vector3.Zero();
+                plane.rotationQuaternion = settings && settings.rotation || Quaternion.Identity();
+                plane.material = mtl;
+                this._worldSpaceNode = plane;
+            } else {
+                this._worldSpaceNode = settings.customWorldSpaceNode;
+            }
+            //            return c;
+        }
+    }
+
+    @className("ScreenSpaceCanvas2D")
+    export class ScreenSpaceCanvas2D extends Canvas2D {
+        /**
+         * Create a new 2D ScreenSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a position relative to the bottom/left corner of the screen.
+         * ScreenSpace Canvas will be drawn in the Viewport as a 2D Layer lying to the top of the 3D Scene. Typically used for traditional UI.
+         * All caching strategies will be available.
+         * PLEASE NOTE: the origin of a Screen Space Canvas is set to [0;0] (bottom/left) which is different than the default origin of a Primitive which is centered [0.5;0.5]
+         * @param scene the Scene that owns the Canvas
+         * Options:
+         *  - id: a text identifier, for information purpose only
+         *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
+         *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
+         *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
+         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
+         *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        constructor(scene: Scene, settings?: {
+            id               ?: string,
+            x                ?: number,
+            y                ?: number,
+            position         ?: Vector2,
+            origin           ?: Vector2,
+            width            ?: number,
+            height           ?: number,
+            size             ?: Size,
+            cachingStrategy  ?: number,
+            enableInteraction?: boolean,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            hAlignment       ?: number,
+            vAlignment       ?: number,
+        }) {
+            Prim2DBase._isCanvasInit = true;
+            super(scene, settings);
+
+            //let c = new Canvas2D();
+
+            //if (!settings) {
+            //    c.setupCanvas(scene, null, null, 1, true, Canvas2D.CACHESTRATEGY_DONTCACHE, true, Vector2.Zero(), true, null, null, null, null, null, null);
+            //    c.position = Vector2.Zero();
+            //} else {
+            //    let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
+            //    let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
+
+            //    c.setupCanvas(scene, settings.id || null, size, 1, true, settings.cachingStrategy || Canvas2D.CACHESTRATEGY_DONTCACHE, settings.enableInteraction || true, settings.origin || Vector2.Zero(), settings.isVisible || true, settings.marginTop, settings.marginLeft, settings.marginRight, settings.marginBottom, settings.hAlignment || PrimitiveAlignment.AlignLeft, settings.vAlignment || PrimitiveAlignment.AlignTop);
+            //    c.position = pos;
+            //}
+
+            //return c;
+        }
+    }
+
 }
