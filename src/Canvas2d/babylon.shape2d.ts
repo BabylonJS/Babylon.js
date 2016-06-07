@@ -44,24 +44,13 @@
             this._borderThickness = value;
         }
 
-        constructor(owner: Canvas2D, parent: Prim2DBase, settings?: {
-            id             ?: string,
-            position       ?: Vector2,
-            origin         ?: Vector2,
-            isVisible      ?: boolean,
+        constructor(settings?: {
             fill           ?: IBrush2D,
             border         ?: IBrush2D,
             borderThickness?: number,
-            marginTop      ?: number | string,
-            marginLeft     ?: number | string,
-            marginRight    ?: number | string,
-            marginBottom   ?: number | string,
-            vAlignment     ?: number,
-            hAlignment     ?: number,
         }) {
 
-            super(owner, parent, settings);
-            //this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment || PrimitiveAlignment.AlignLeft, vAlignment || PrimitiveAlignment.AlignTop);
+            super(settings);
 
             if (!settings) {
                 settings = {};

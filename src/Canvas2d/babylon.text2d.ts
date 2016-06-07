@@ -150,31 +150,35 @@
 
         public set text(value: string) {
             this._text = value;
-            this._actualSize = null;    // A change of text will reset the Actual Area Size which will be recomputed next time it's used
+            this._textSize = null;    // A change of text will reset the TextSize which will be recomputed next time it's used
             this._updateCharCount();
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.sizeProperty = pi)
         public get size(): Size {
-            return this._areaSize;
+            if (this._size != null) {
+                return this._size;
+            }
+            return this.textSize;
         }
 
         public set size(value: Size) {
-            this._areaSize = value;
+            this._size = value;
         }
 
         public get actualSize(): Size {
-            if (this.size) {
-                return this.size;
-            }
-
             if (this._actualSize) {
                 return this._actualSize;
             }
 
-            this._actualSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+            return this.size;
+        }
 
-            return this._actualSize;
+        public get textSize(): Size {
+            if (!this._textSize) {
+                this._textSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+            }
+            return this._textSize;
         }
 
         protected get fontTexture(): FontTexture {
@@ -231,66 +235,51 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        constructor(parent: Prim2DBase, text: string, settings?: {
-            id              ?: string,
-            position        ?: Vector2,
-            x               ?: number,
-            y               ?: number,
-            origin          ?: Vector2,
-            fontName        ?: string,
-            defaultFontColor?: Color4,
-            size            ?: Size,
-            tabulationSize  ?: number,
-            isVisible       ?: boolean,
-            marginTop       ?: number | string,
-            marginLeft      ?: number | string,
-            marginRight     ?: number | string,
-            marginBottom    ?: number | string,
-            hAlignment      ?: number,
-            vAlignment      ?: number,
+        constructor(text: string, settings?: {
+
+            parent           ?: Prim2DBase, 
+            children         ?: Array<Prim2DBase>,
+            id               ?: string,
+            position         ?: Vector2,
+            x                ?: number,
+            y                ?: number,
+            origin           ?: Vector2,
+            fontName         ?: string,
+            defaultFontColor ?: Color4,
+            size             ?: Size,
+            tabulationSize   ?: number,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+            paddingAlignment ?: string,
         }) {
-
-            super(parent.owner, parent, settings);
-
-            Prim2DBase.CheckParent(parent);
 
             if (!settings) {
                 settings = {};
             }
 
+            super(settings);
+
             this.fontName         = (settings.fontName==null)         ? "12pt Arial"        : settings.fontName;
             this.defaultFontColor = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
-            this._tabulationSize  = (settings.tabulationSize == null) ? 4                   : settings.tabulationSize;
+            this._tabulationSize  = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
+            this._textSize        = null;
             this.text             = text;
-            this.size             = settings.size;
+            this.size             = (settings.size==null) ? null : settings.size;
             this.isAlphaTest      = true;
-
-            //let text2d = new Text2D();
-            //if (!settings) {
-            //    text2d.setupText2D(parent.owner, parent, null, Vector2.Zero(), null, "12pt Arial", text, null, new Color4(1,1,1,1), 4, true, null, null, null, null, null, null);
-            //} else {
-                //let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
-                //text2d.setupText2D
-                //(
-                //    parent.owner,
-                //    parent,
-                //    settings.id || null,
-                //    pos,
-                //    settings.origin || null,
-                //    settings.fontName || "12pt Arial",
-                //    text,
-                //    settings.size,
-                //    settings.defaultFontColor || new Color4(1, 1, 1, 1),
-                //    (settings.tabulationSize==null) ? 4 : settings.tabulationSize,
-                //    (settings.isVisible==null) ? true : settings.isVisible,
-                //    settings.marginTop,
-                //    settings.marginLeft,
-                //    settings.marginRight,
-                //    settings.marginBottom,
-                //    settings.vAlignment,
-                //    settings.hAlignment);
-            //}
-            //return text2d;
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
@@ -429,8 +418,7 @@
         private _fontName: string;
         private _defaultFontColor: Color4;
         private _text: string;
-        private _areaSize: Size;
-
+        private _textSize: Size;
     }
 
 

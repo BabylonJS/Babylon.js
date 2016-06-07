@@ -317,37 +317,47 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        constructor(parent: Prim2DBase, settings?: {
-            id             ?: string,
-            position       ?: Vector2,
-            x              ?: number,
-            y              ?: number,
-            origin         ?: Vector2,
-            size           ?: Size,
-            width          ?: number,
-            height         ?: number,
-            roundRadius    ?: number,
-            fill           ?: IBrush2D,
-            border         ?: IBrush2D,
-            borderThickness?: number,
-            isVisible      ?: boolean,
-            marginTop      ?: number | string,
-            marginLeft     ?: number | string,
-            marginRight    ?: number | string,
-            marginBottom   ?: number | string,
-            vAlignment     ?: number,
-            hAlignment     ?: number,
+        constructor(settings ?: {
+            parent           ?: Prim2DBase, 
+            children         ?: Array<Prim2DBase>,
+            id               ?: string,
+            position         ?: Vector2,
+            x                ?: number,
+            y                ?: number,
+            origin           ?: Vector2,
+            size             ?: Size,
+            width            ?: number,
+            height           ?: number,
+            roundRadius      ?: number,
+            fill             ?: IBrush2D,
+            border           ?: IBrush2D,
+            borderThickness  ?: number,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+            paddingAlignment ?: string,
         }) {
 
-            super(parent.owner, parent, settings);
+            // Avoid checking every time if the object exists
+            if (settings == null) {
+                settings = {};
+            }
 
-            Prim2DBase.CheckParent(parent);
+            super(settings);
 
-            //let rect = new Rectangle2D();
-
-            //if (!settings) {
-            //    rect.setupRectangle2D(parent.owner, parent, null, Vector2.Zero(), null, new Size(10, 10), 0, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
-            //} else {
             let pos             = settings.position || new Vector2(settings.x || 0, settings.y || 0);
             let size            = settings.size || (new Size((settings.width === null) ? null : (settings.width || 10), (settings.height === null) ? null : (settings.height || 10)));
             let fill            = settings.fill === undefined ? Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF") : settings.fill;
@@ -359,28 +369,6 @@
             this.fill            = fill;
             this.roundRadius     = roundRadius;
             this.borderThickness = borderThickness;
-
-            //rect.setupRectangle2D
-            //(
-            //    parent.owner,
-            //    parent,
-            //    settings.id || null,
-            //    pos,
-            //    settings.origin || null,
-            //    size,
-            //    (settings.roundRadius == null) ? 0 : settings.roundRadius,
-            //    fill,
-            //    settings.border || null,
-            //    (settings.borderThickness==null) ? 1 : settings.borderThickness,
-            //    settings.isVisible || true,
-            //    settings.marginTop,
-            //    settings.marginLeft,
-            //    settings.marginRight,
-            //    settings.marginBottom,
-            //    settings.vAlignment,
-            //    settings.hAlignment);
-            //}
-            //return rect;
         }
 
         public static roundSubdivisions = 16;
@@ -474,7 +462,7 @@
             if (this._notRounded) {
                 super._getInitialContentAreaToRef(primSize, initialContentPosition, initialContentArea);
             } else {
-                let rr = (this.roundRadius - (this.roundRadius/Math.sqrt(2))) * 1.3;
+                let rr = Math.round((this.roundRadius - (this.roundRadius/Math.sqrt(2))) * 1.3);
                 initialContentPosition.x = initialContentPosition.y = rr;
                 initialContentArea.width = primSize.width - (rr * 2);
                 initialContentArea.height = primSize.height - (rr * 2);

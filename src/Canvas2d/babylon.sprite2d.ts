@@ -236,82 +236,63 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        constructor(parent: Prim2DBase, texture: Texture, settings?: {
-            id            ?: string,
-            position      ?: Vector2,
-            x             ?: number,
-            y             ?: number,
-            origin        ?: Vector2,
-            spriteSize    ?: Size,
-            spriteLocation?: Vector2,
-            invertY       ?: boolean,
-            alignToPixel  ?: boolean,
-            isVisible     ?: boolean,
-            marginTop     ?: number | string,
-            marginLeft    ?: number | string,
-            marginRight   ?: number | string,
-            marginBottom  ?: number | string,
-            vAlignment    ?: number,
-            hAlignment    ?: number,
+        constructor(texture: Texture, settings?: {
+
+            parent           ?: Prim2DBase, 
+            children         ?: Array<Prim2DBase>,
+            id               ?: string,
+            position         ?: Vector2,
+            x                ?: number,
+            y                ?: number,
+            origin           ?: Vector2,
+            spriteSize       ?: Size,
+            spriteLocation   ?: Vector2,
+            invertY          ?: boolean,
+            alignToPixel     ?: boolean,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+            paddingAlignment ?: string,
         }) {
-
-            super(parent.owner, parent, settings);
-
-            Prim2DBase.CheckParent(parent);
 
             if (!settings) {
                 settings = {};
             }
 
-//            let sprite = new Sprite2D();
-            //if (!settings) {
-            //    sprite.setupSprite2D(parent.owner, parent, null, Vector2.Zero(), null, texture, null, null, false, true, true, null, null, null, null, null, null);
-            //} else {
-                //let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
-                //sprite.setupSprite2D
-                //(
-                //    parent.owner,
-                //    parent,
-                //    settings.id || null,
-                //    pos,
-                //    settings.origin || null,
-                //    texture, settings.spriteSize || null,
-                //    settings.spriteLocation || null,
-                //    (settings.invertY == null) ? false : settings.invertY,
-                //    (settings.alignToPixel == null) ? true : settings.alignToPixel,
-                //    (settings.isVisible == null) ? true : settings.isVisible,
-                //    settings.marginTop,
-                //    settings.marginLeft,
-                //    settings.marginRight,
-                //    settings.marginBottom,
-                //    settings.vAlignment,
-                //    settings.hAlignment
-                //);
-            //}
+            super(settings);
 
-                this.texture        = texture;
-                this.texture.wrapU  = Texture.CLAMP_ADDRESSMODE;
-                this.texture.wrapV  = Texture.CLAMP_ADDRESSMODE;
-                this.size           = settings.spriteSize || null;
-                this.spriteLocation = settings.spriteLocation || new Vector2(0, 0);
-                this.spriteFrame    = 0;
-                this.invertY        = (settings.invertY==null) ? false : settings.invertY;
-                this.alignToPixel   = (settings.alignToPixel==null) ? true : settings.alignToPixel;
-                this._isTransparent = true;
+            this.texture = texture;
+            this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.size = settings.spriteSize || null;
+            this.spriteLocation = settings.spriteLocation || new Vector2(0, 0);
+            this.spriteFrame = 0;
+            this.invertY = (settings.invertY == null) ? false : settings.invertY;
+            this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
+            this._isTransparent = true;
 
-                if (!this.size) {
-                    var s = texture.getSize();
-                    this.size = new Size(s.width, s.height);
-                }
-
-            //return sprite;
+            if (!this.size) {
+                var s = texture.getSize();
+                this.size = new Size(s.width, s.height);
+            }
         }
 
         static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D {
 
-            let sprite = new Sprite2D(owner, texture, { id:"__cachedCanvasSprite__", position: Vector2.Zero(), origin: Vector2.Zero(), spriteSize: size, spriteLocation:pos, alignToPixel: true});
-            //sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new Vector2(0, 0), null, texture, size, pos, false, true, true, null, null, null, null, null, null);
-
+            let sprite = new Sprite2D(texture, { parent: owner, id:"__cachedCanvasSprite__", position: Vector2.Zero(), origin: Vector2.Zero(), spriteSize: size, spriteLocation:pos, alignToPixel: true});
             return sprite;
         }
 

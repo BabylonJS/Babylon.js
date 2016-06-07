@@ -359,43 +359,46 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        constructor(parent: Prim2DBase, points: Vector2[], settings?: {
-            id             ?: string,
-            position       ?: Vector2,
-            x              ?: number,
-            y              ?: number,
-            origin         ?: Vector2,
-            fillThickness  ?: number,
-            closed         ?: boolean,
-            startCap       ?: number,
-            endCap         ?: number,
-            fill           ?: IBrush2D,
-            border         ?: IBrush2D,
-            borderThickness?: number,
-            isVisible      ?: boolean,
-            marginTop      ?: number | string,
-            marginLeft     ?: number | string,
-            marginRight    ?: number | string,
-            marginBottom   ?: number | string,
-            vAlignment     ?: number,
-            hAlignment     ?: number,
+        constructor(points: Vector2[], settings?: {
+
+            parent           ?: Prim2DBase, 
+            children         ?: Array<Prim2DBase>,
+            id               ?: string,
+            position         ?: Vector2,
+            x                ?: number,
+            y                ?: number,
+            origin           ?: Vector2,
+            fillThickness    ?: number,
+            closed           ?: boolean,
+            startCap         ?: number,
+            endCap           ?: number,
+            fill             ?: IBrush2D,
+            border           ?: IBrush2D,
+            borderThickness  ?: number,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+            paddingAlignment ?: string,
         }) {
 
-            super(parent.owner, parent, settings);
-
-            Prim2DBase.CheckParent(parent);
-
-            //let lines = new Lines2D();
-
-            //if (!settings) {
-            //    lines.setupLines2D(parent.owner, parent, null, Vector2.Zero(), null, points, 1, 0, 0, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, false, true, null, null, null, null, null, null);
-            //} else {
-            let fill: IBrush2D;
-            if (settings.fill === undefined) {
-                fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
-            } else {
-                fill = settings.fill;
+            if (!settings) {
+                settings = {};
             }
+
+            super(settings);
 
             this._fillVB   = null;
             this._fillIB   = null;
@@ -404,7 +407,6 @@
 
             this._boundingMin = null;
             this._boundingMax = null;
-
 
             let fillThickness = (settings.fillThickness == null) ? 1     : settings.fillThickness;
             let startCap      = (settings.startCap == null)      ? 0     : settings.startCap;
@@ -416,32 +418,6 @@
             this.startCap      = startCap;
             this.endCap        = endCap;
             this.closed        = closed;
-
-            //    lines.setupLines2D
-            //        (
-            //        parent.owner,
-            //        parent,
-            //        settings.id || null,
-            //        pos,
-            //        settings.origin || null,
-            //points,
-            //(settings.fillThickness == null) ? 1 : settings.fillThickness,
-            //(settings.startCap == null) ? 0 : settings.startCap,
-            //(settings.endCap == null) ? 0 : settings.endCap,
-            //fill,
-            //settings.border || null,
-            //(settings.borderThickness == null) ? 1 : settings.borderThickness,
-            //(settings.closed == null) ? false : settings.closed,
-            //(settings.isVisible == null) ? true : settings.isVisible,
-            //        settings.marginTop,
-            //        settings.marginLeft,
-            //        settings.marginRight,
-            //        settings.marginBottom,
-            //        settings.vAlignment,
-            //        settings.hAlignment);
-            //}
-
-            //return lines;
         }
 
         protected createModelRenderCache(modelKey: string): ModelRenderCache {

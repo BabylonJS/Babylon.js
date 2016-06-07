@@ -36,35 +36,43 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        constructor(parent: Prim2DBase, settings?: {
-            id           ?: string,
-            position     ?: Vector2,
-            x            ?: number,
-            y            ?: number,
-            origin       ?: Vector2,
-            size         ?: Size,
-            width        ?: number,
-            height       ?: number,
-            cacheBehavior?: number,
-            isVisible    ?: boolean,
-            marginTop    ?: number | string,
-            marginLeft   ?: number | string,
-            marginRight  ?: number | string,
-            marginBottom ?: number | string,
-            vAlignment   ?: number,
-            hAlignment   ?: number,
-        }) {
-            Prim2DBase.CheckParent(parent);
+        constructor(settings?: {
 
+            parent            ?: Prim2DBase, 
+            children          ?: Array<Prim2DBase>,
+            id                ?: string,
+            position          ?: Vector2,
+            x                 ?: number,
+            y                 ?: number,
+            origin            ?: Vector2,
+            size              ?: Size,
+            width             ?: number,
+            height            ?: number,
+            cacheBehavior     ?: number,
+            isVisible         ?: boolean,
+            marginTop         ?: number | string,
+            marginLeft        ?: number | string,
+            marginRight       ?: number | string,
+            marginBottom      ?: number | string,
+            margin            ?: string,
+            marginHAlignment  ?: number,
+            marginVAlignment  ?: number,
+            marginAlignment   ?: string,
+            paddingTop        ?: number | string,
+            paddingLeft       ?: number | string,
+            paddingRight      ?: number | string,
+            paddingBottom     ?: number | string,
+            padding           ?: string,
+            paddingHAlignment ?: number,
+            paddingVAlignment ?: number,
+            paddingAlignment  ?: string,
+
+        }) {
             if (settings == null) {
                 settings = {};
             }
 
-            if (Prim2DBase._isCanvasInit) {
-                super(null, null, settings);
-            } else {
-                super(parent.owner, parent, settings);
-            }
+            super(settings);
  
             let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
 
@@ -74,7 +82,7 @@
         }
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
-            var g = new Group2D(owner, { id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size:null, isVisible:true});
+            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size:null, isVisible:true});
             //g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero(), Vector2.Zero(), null, true, Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, null, null, null, null, null, null);
             //g.origin = Vector2.Zero();
             return g;
@@ -344,6 +352,9 @@
                     var curVP = engine.setDirectViewport(this._viewportPosition.x, this._viewportPosition.y, this._viewportSize.width, this._viewportSize.height);
                 }
 
+                let curAlphaTest = engine.getAlphaTesting() === true;
+                let curDepthWrite = engine.getDepthWrite() === true;
+
                 // ===================================================================
                 // First pass, update the InstancedArray and render Opaque primitives
 
@@ -431,6 +442,10 @@
                         engine.setViewport(curVP);
                     }
                 }
+
+                // Restore saved states
+                engine.setAlphaTesting(curAlphaTest);
+                engine.setDepthWrite(curDepthWrite);
             }
         }
 
@@ -740,7 +755,10 @@
 
 
             if (this._isRenderableGroup) {
-                this._renderableData = new RenderableGroupData();
+                // Yes, we do need that check, trust me, unfortunately we can call _detectGroupStates many time on the same object...
+                if (!this._renderableData) {
+                    this._renderableData = new RenderableGroupData();
+                }
             }
 
             // If the group is tagged as renderable we add it to the renderable tree

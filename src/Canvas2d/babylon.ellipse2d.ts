@@ -225,42 +225,49 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        constructor(parent: Prim2DBase, settings?: {
-            id             ?: string,
-            position       ?: Vector2,
-            x              ?: number,
-            y              ?: number,
-            origin         ?: Vector2,
-            size           ?: Size,
-            width          ?: number,
-            height         ?: number,
-            subdivisions   ?: number,
-            fill           ?: IBrush2D,
-            border         ?: IBrush2D,
-            borderThickness?: number,
-            isVisible      ?: boolean,
-            marginTop      ?: number | string,
-            marginLeft     ?: number | string,
-            marginRight    ?: number | string,
-            marginBottom   ?: number | string,
-            vAlignment     ?: number,
-            hAlignment     ?: number,
+        constructor(settings?: {
+
+            parent            ?: Prim2DBase, 
+            children          ?: Array<Prim2DBase>,
+            id                ?: string,
+            position          ?: Vector2,
+            x                 ?: number,
+            y                 ?: number,
+            origin            ?: Vector2,
+            size              ?: Size,
+            width             ?: number,
+            height            ?: number,
+            subdivisions      ?: number,
+            fill              ?: IBrush2D,
+            border            ?: IBrush2D,
+            borderThickness   ?: number,
+            isVisible         ?: boolean,
+            marginTop         ?: number | string,
+            marginLeft        ?: number | string,
+            marginRight       ?: number | string,
+            marginBottom      ?: number | string,
+            margin            ?: string,
+            marginHAlignment  ?: number,
+            marginVAlignment  ?: number,
+            marginAlignment   ?: string,
+            paddingTop        ?: number | string,
+            paddingLeft       ?: number | string,
+            paddingRight      ?: number | string,
+            paddingBottom     ?: number | string,
+            padding           ?: string,
+            paddingHAlignment ?: number,
+            paddingVAlignment ?: number,
+            paddingAlignment  ?: string,
+
         }) {
 
-            super(parent.owner, parent, settings);
-            Prim2DBase.CheckParent(parent);
-
-            //let ellipse = new Ellipse2D();
-
-            //if (!settings) {
-            //    ellipse.setupEllipse2D(parent.owner, parent, null, Vector2.Zero(), null, new Size(10, 10), 64, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
-            //} else {
-            let fill: IBrush2D;
-            if (settings.fill === undefined) {
-                fill = Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
-            } else {
-                fill = settings.fill;
+            // Avoid checking every time if the object exists
+            if (settings == null) {
+                settings = {};
             }
+
+            super(settings);
+
             let pos  = settings.position || new Vector2(settings.x || 0, settings.y || 0);
             let size = settings.size || (new Size(settings.width || 10, settings.height || 10));
             let sub  = (settings.subdivisions == null) ? 64 : settings.subdivisions;
@@ -268,29 +275,6 @@
             this.position     = pos;
             this.size         = size;
             this.subdivisions = sub;
-
-            //    ellipse.setupEllipse2D
-            //    (
-            //        parent.owner,
-            //        parent,
-            //        settings.id || null,
-            //        pos,
-            //        settings.origin || null,
-            //        size,
-            //        (settings.subdivisions == null) ? 64 : settings.subdivisions,
-            //        fill,
-            //        settings.border || null,
-            //        (settings.borderThickness == null) ? 1 : settings.borderThickness,
-            //        (settings.isVisible == null) ? true : settings.isVisible,
-            //        settings.marginTop,
-            //        settings.marginLeft,
-            //        settings.marginRight,
-            //        settings.marginBottom,
-            //        settings.vAlignment,
-            //        settings.hAlignment);
-            //}
-
-            //return ellipse;
         }
 
         protected createModelRenderCache(modelKey: string): ModelRenderCache {
