@@ -48,22 +48,21 @@
         public static CACHESTRATEGY_DONTCACHE = 4;
 
         constructor(scene: Scene, settings?: {
-            id               ?: string,
-            size             ?: Size,
-            renderScaleFactor?: number,
-            isScreenSpace    ?: boolean,
-            cachingStrategy  ?: number,
-            enableInteraction?: boolean,
-            origin           ?: Vector2,
-            isVisible        ?: boolean,
-            marginTop        ?: number | string,
-            marginLeft       ?: number | string,
-            marginRight      ?: number | string,
-            marginBottom     ?: number | string,
-            hAlign           ?: number,
-            vAlign           ?: number,
+            id                        ?: string,
+            children                  ?: Array<Prim2DBase>,
+            size                      ?: Size,
+            renderScaleFactor         ?: number,
+            isScreenSpace             ?: boolean,
+            cachingStrategy           ?: number,
+            enableInteraction         ?: boolean,
+            origin                    ?: Vector2,
+            isVisible                 ?: boolean,
+            backgroundRoundRadius     ?: number,
+            backgroundFill            ?: IBrush2D,
+            backgroundBorder          ?: IBrush2D,
+            backgroundBorderThickNess ?: number,
         }) {
-            super(null, settings);
+            super(settings);
 
             Prim2DBase._isCanvasInit = false;
 
@@ -71,10 +70,51 @@
                 settings = {};
             }
 
-            let renderScaleFactor = (settings.renderScaleFactor == null) ? 1    : settings.renderScaleFactor;
-            let enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
+            let renderScaleFactor = (settings.renderScaleFactor == null) ? 1 : settings.renderScaleFactor;
+            if (this._cachingStrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
+                this._background              = new Rectangle2D({ parent: this, id: "###CANVAS BACKGROUND###", size: settings.size }); //TODO CHECK when size is null
+                this._background.zOrder       = 1.0;
+                this._background.isPickable   = false;
+                this._background.origin       = Vector2.Zero();
+                this._background.levelVisible = false;
+
+                if (settings.backgroundRoundRadius != null) {
+                    this.backgroundRoundRadius = settings.backgroundRoundRadius;
+                }
+
+                if (settings.backgroundBorder != null) {
+                    this.backgroundBorder = settings.backgroundBorder;
+                }
+
+                if (settings.backgroundBorderThickNess != null) {
+                    this.backgroundBorderThickness = settings.backgroundBorderThickNess;
+                }
+
+                if (settings.backgroundFill != null) {
+                    this.backgroundFill = settings.backgroundFill;
+                }
+
+                this._background._patchHierarchy(this);
+            }
 
             let engine = scene.getEngine();
+
+            this.__engineData                   = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
+            this._renderScaleFactor             = renderScaleFactor;
+            this._primPointerInfo               = new PrimitivePointerInfo();
+            this._capturedPointers              = new StringDictionary<Prim2DBase>();
+            this._pickStartingPosition          = Vector2.Zero();
+            this._hierarchyLevelMaxSiblingCount = 10;
+            this._hierarchyDepthOffset          = 0;
+            this._siblingDepthOffset            = 1 / this._hierarchyLevelMaxSiblingCount;
+            this._scene                         = scene;
+            this._engine                        = engine;
+            this._renderingSize                 = new Size(0, 0);
+
+            this._patchHierarchy(this);
+
+            let enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
+
             this._fitRenderingDevice = !settings.size;
             if (!settings.size) {
                 settings.size = new Size(engine.getRenderWidth(), engine.getRenderHeight());
@@ -82,32 +122,11 @@
                 settings.size.height *= renderScaleFactor;
                 settings.size.width *= renderScaleFactor;
             }
-            this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
-            this._renderScaleFactor = renderScaleFactor;
-            this._primPointerInfo = new PrimitivePointerInfo();
-            this._capturedPointers = new StringDictionary<Prim2DBase>();
-            this._pickStartingPosition = Vector2.Zero();
-
-            //this.setupGroup2D(this, null, name, Vector2.Zero(), origin, size, isVisible, this._cachingStrategy===Canvas2D.CACHESTRATEGY_ALLGROUPS ? Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE : Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
-
-            this._hierarchyLevelMaxSiblingCount = 10;
-            this._hierarchyDepthOffset = 0;
-            this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
-            this._scene = scene;
-            this._engine = engine;
-            this._renderingSize = new Size(0, 0);
 
             // Register scene dispose to also dispose the canvas when it'll happens
             scene.onDisposeObservable.add((d, s) => {
                 this.dispose();
             });
-
-            if (this._cachingStrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
-                this._background = new Rectangle2D(this, { id: "###CANVAS BACKGROUND###", size: settings.size}); //TODO CHECK when size is null
-                this._background.isPickable = false;
-                this._background.origin = Vector2.Zero();
-                this._background.levelVisible = false;
-            }
 
             if (this._isScreeSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
@@ -132,9 +151,7 @@
             this._isScreeSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
         }
 
-        public get hierarchyLevelMaxSiblingCount(): number {
-            return this._hierarchyLevelMaxSiblingCount;
-        }
+        public static hierarchyLevelMaxSiblingCount: number = 10;
 
         private _setupInteraction(enable: boolean) {
             // No change detection
@@ -744,6 +761,27 @@
         }
 
         /**
+         * Property that defines the thickness of the border object used to draw the background of the Canvas.
+         * @returns If the background is not set, null will be returned, otherwise a valid number matching the thickness is returned.
+         */
+        public get backgroundBorderThickness(): number {
+            if (!this._background || !this._background.isVisible) {
+                return null;
+            }
+            return this._background.borderThickness;
+        }
+
+        public set backgroundBorderThickness(value: number) {
+            this.checkBackgroundAvailability();
+
+            if (value === this._background.borderThickness) {
+                return;
+            }
+
+            this._background.borderThickness = value;
+        }
+
+        /**
          * You can set the roundRadius of the background
          * @returns The current roundRadius
          */
@@ -944,14 +982,14 @@
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    let sprite = new Sprite2D(this._cachedCanvasGroup, map, {id: "__cachedCanvasSprite__", spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize:node.contentSize, spriteLocation:node.pos});
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    let sprite = new Sprite2D(parent, map, {id:`__cachedSpriteOfGroup__${group.id}`, x: group.position.x, y: group.position.y, spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = new Sprite2D(map, { parent: parent, id:`__cachedSpriteOfGroup__${group.id}`, x: group.position.x, y: group.position.y, spriteSize:node.contentSize, spriteLocation:node.pos});
                     sprite.origin = group.origin.clone();
                     res.sprite = sprite;
                 }
@@ -1010,16 +1048,31 @@
          * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
          */
-        constructor(scene: Scene, size: Size, settings: {
-            id                  ?: string,
-            position            ?: Vector3,
-            rotation            ?: Quaternion,
-            renderScaleFactor   ?: number,
-            sideOrientation     ?: number,
-            cachingStrategy     ?: number,
-            enableInteraction   ?: boolean,
-            isVisible           ?: boolean,
-            customWorldSpaceNode?: Node,
+        constructor(scene: Scene, size: Size, settings?: {
+
+            children                 ?: Array<Prim2DBase>,
+            id                       ?: string,
+            position                 ?: Vector3,
+            rotation                 ?: Quaternion,
+            renderScaleFactor        ?: number,
+            sideOrientation          ?: number,
+            cachingStrategy          ?: number,
+            enableInteraction        ?: boolean,
+            isVisible                ?: boolean,
+            backgroundRoundRadius    ?: number,
+            backgroundFill           ?: IBrush2D,
+            backgroundBorder         ?: IBrush2D,
+            backgroundBorderThickNess?: number,
+            customWorldSpaceNode     ?: Node,
+            marginTop                ?: number | string,
+            marginLeft               ?: number | string,
+            marginRight              ?: number | string,
+            marginBottom             ?: number | string,
+            margin                   ?: string,
+            marginHAlignment         ?: number,
+            marginVAlignment         ?: number,
+            marginAlignment          ?: string,
+
         }) {
             Prim2DBase._isCanvasInit = true;
             let s = <any>settings;
@@ -1094,23 +1147,32 @@
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
         constructor(scene: Scene, settings?: {
-            id               ?: string,
-            x                ?: number,
-            y                ?: number,
-            position         ?: Vector2,
-            origin           ?: Vector2,
-            width            ?: number,
-            height           ?: number,
-            size             ?: Size,
-            cachingStrategy  ?: number,
-            enableInteraction?: boolean,
-            isVisible        ?: boolean,
-            marginTop        ?: number | string,
-            marginLeft       ?: number | string,
-            marginRight      ?: number | string,
-            marginBottom     ?: number | string,
-            hAlignment       ?: number,
-            vAlignment       ?: number,
+
+            children                  ?: Array<Prim2DBase>,
+            id                        ?: string,
+            x                         ?: number,
+            y                         ?: number,
+            position                  ?: Vector2,
+            origin                    ?: Vector2,
+            width                     ?: number,
+            height                    ?: number,
+            size                      ?: Size,
+            cachingStrategy           ?: number,
+            enableInteraction         ?: boolean,
+            isVisible                 ?: boolean,
+            backgroundRoundRadius     ?: number,
+            backgroundFill            ?: IBrush2D,
+            backgroundBorder          ?: IBrush2D,
+            backgroundBorderThickNess ?: number,
+            marginTop                 ?: number | string,
+            marginLeft                ?: number | string,
+            marginRight               ?: number | string,
+            marginBottom              ?: number | string,
+            margin                    ?: string,
+            marginHAlignment          ?: number,
+            marginVAlignment          ?: number,
+            marginAlignment           ?: string,
+
         }) {
             Prim2DBase._isCanvasInit = true;
             super(scene, settings);

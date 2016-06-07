@@ -353,28 +353,27 @@
             this._isTransparent = value;
         }
 
-        constructor(owner: Canvas2D, parent: Prim2DBase, settings?: {
+        constructor(settings?: {
+            parent       ?: Prim2DBase, 
             id           ?: string,
             position     ?: Vector2,
             origin       ?: Vector2,
             isVisible    ?: boolean,
-            marginTop    ?: number | string,
-            marginLeft   ?: number | string,
-            marginRight  ?: number | string,
-            marginBottom ?: number | string,
-            hAlign       ?: number,
-            vAlign       ?: number,
         }) {
-            super(owner, parent, settings);
-//            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
-            this._isTransparent = false;
-            this._isAlphaTest = false;
+            super(settings);
+            this._isTransparent            = false;
+            this._isAlphaTest              = false;
             this._transparentPrimitiveInfo = null;
         }
 
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
+            }
+
+            if (this._transparentPrimitiveInfo) {
+                this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
+                this._transparentPrimitiveInfo = null;
             }
 
             if (this._modelRenderInstanceID) {
@@ -431,6 +430,11 @@
 
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
             if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+
+                if (this.isTransparent) {
+                    //this.renderGroup._renderableData._transparentListChanged = true;
+                }
+
                 this._updateInstanceDataParts(gii);
             }
         }
@@ -576,6 +580,7 @@
                     } else {
                         if (this._transparentPrimitiveInfo) {
                             this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
+                            this._transparentPrimitiveInfo = null;
                         }
                     }
                     gii.transparentOrderDirty = true;

@@ -377,6 +377,37 @@
                     return;
             }
         }
+
+        fromString(value: string) {
+            let m = value.trim().split(",");
+            for (let v of m) {
+                v = v.toLocaleLowerCase().trim();
+
+                // Horizontal
+                let i = v.indexOf("h:");
+                if (i === -1) {
+                    i = v.indexOf("horizontal:");
+                }
+
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this.setHorizontal(v);
+                    continue;
+                }
+
+                // Vertical
+                i = v.indexOf("v:");
+                if (i === -1) {
+                    i = v.indexOf("vertical:");
+                }
+
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this.setVertical(v);
+                    continue;
+                }
+            }
+        }
     }
 
     /**
@@ -1055,77 +1086,116 @@
     export class Prim2DBase extends SmartPropertyPrim {
         static PRIM2DBASE_PROPCOUNT: number = 15;
 
-        constructor(owner: Canvas2D, parent: Prim2DBase, settings: {
-            id?: string,
-            position?: Vector2,
-            x?: number,
-            y?: number,
-            origin?: Vector2,
-            isVisible?: boolean,
-            marginTop?: number | string,
-            marginLeft?: number | string,
-            marginRight?: number | string,
-            marginBottom?: number | string,
-            vAlignment?: number,
-            hAlignment?: number,
-        }
-        ) {
+        constructor(settings: {
+            parent              ?: Prim2DBase, 
+            id                  ?: string,
+            children            ?: Array<Prim2DBase>,
+            position            ?: Vector2,
+            x                   ?: number,
+            y                   ?: number,
+            origin              ?: Vector2,
+            isVisible           ?: boolean,
+            marginTop           ?: number | string,
+            marginLeft          ?: number | string,
+            marginRight         ?: number | string,
+            marginBottom        ?: number | string,
+            margin              ?: string,
+            marginHAlignment    ?: number,
+            marginVAlignment    ?: number,
+            marginAlignment     ?: string,
+            paddingTop          ?: number | string,
+            paddingLeft         ?: number | string,
+            paddingRight        ?: number | string,
+            paddingBottom       ?: number | string,
+            padding             ?: string,
+            paddingHAlignment   ?: number,
+            paddingVAlignment   ?: number,
+            paddingAlignment    ?: string,
+        }) {
 
+            // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
             }
 
+            // BASE CLASS CALL
             super();
 
+            // Fetch the owner, parent. There're many ways to do it and we can end up with nothing for both
+            let owner: Canvas2D;
+            let parent: Prim2DBase;
             if (Prim2DBase._isCanvasInit) {
                 owner = <Canvas2D><any>this;
                 parent = null;
-
                 this._canvasPreInit(settings);
-            }
-
-            if (!(this instanceof Group2D) && !(this instanceof Sprite2D && settings.id !== null && settings.id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
-                throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
-            }
-
-            this._layoutEngine = CanvasLayoutEngine.Singleton;
-            this._size = Size.Zero();
-            this._layoutArea = Size.Zero();
-            this._paddingOffset = Vector2.Zero();
-            this._paddingArea = Size.Zero();
-            this._margingOffset = Vector2.Zero();
-            this._parentMargingOffset = Vector2.Zero();
-            this._parentContentArea = Size.Zero();
-            this._contentArea = new Size(null, null);
-            this._pointerEventObservable = new Observable<PrimitivePointerInfo>();
-            this._setFlags(SmartPropertyPrim.flagIsPickable);
-            this._siblingDepthOffset = this._hierarchyDepthOffset = 0;
-            this._setFlags(SmartPropertyPrim.flagBoundingInfoDirty);
-            this._boundingInfo = new BoundingInfo2D();
-            this._owner = owner;
-            this._parent = parent;
-            this._margin = null;
-            this._padding = null;
-            this._id = settings.id;
-            if (parent != null) {
-                this._hierarchyDepth = parent._hierarchyDepth + 1;
-                this._renderGroup = <Group2D>this.parent.traverseUp(p => p instanceof Group2D && p.isRenderableGroup);
-                parent.addChild(this);
             } else {
-                this._hierarchyDepth = 0;
-                this._renderGroup = null;
+                if (settings.parent != null) {
+                    parent = settings.parent;
+                    owner = settings.parent.owner;
+                    if (!owner) {
+                        throw new Error(`Parent ${parent.id} of ${settings.id} doesn't have a valid owner!`);
+                    }
+
+                    if (!(this instanceof Group2D) && !(this instanceof Sprite2D && settings.id !== null && settings.id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
+                        throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
+                    }
+                }
             }
 
-            this.propertyChanged = new Observable<PropertyChangedInfo>();
-            this._children = new Array<Prim2DBase>();
+            // Fields initialization
+            this._layoutEngine               = CanvasLayoutEngine.Singleton;
+            this._size                       = Size.Zero();
+            this._layoutArea                 = Size.Zero();
+            this._paddingOffset              = Vector2.Zero();
+            this._paddingArea                = Size.Zero();
+            this._margingOffset              = Vector2.Zero();
+            this._parentMargingOffset        = Vector2.Zero();
+            this._parentContentArea          = Size.Zero();
+            this._contentArea                = new Size(null, null);
+            this._pointerEventObservable     = new Observable<PrimitivePointerInfo>();
+            this._siblingDepthOffset         = this._hierarchyDepthOffset = 0;
+            this._boundingInfo               = new BoundingInfo2D();
+            this._owner                      = owner;
+            this._parent                     = null;
+            this._margin                     = null;
+            this._padding                    = null;
+            this._marginAlignment            = null;
+            this._paddingAlignment           = null;
+            this._id                         = settings.id;
+            this.propertyChanged             = new Observable<PropertyChangedInfo>();
+            this._children                   = new Array<Prim2DBase>();
+            this._globalTransform            = null;
+            this._invGlobalTransform         = null;
+            this._localTransform             = null;
             this._globalTransformProcessStep = 0;
-            this._globalTransformStep = 0;
+            this._globalTransformStep        = 0;
+            this._hierarchyDepth             = 0;
+            this._renderGroup                = null;
+            this._setFlags(SmartPropertyPrim.flagIsPickable | SmartPropertyPrim.flagBoundingInfoDirty);
 
-            if (this instanceof Group2D) {
+            // If the parent is given, initialize the hierarchy/owner related data
+            if (parent != null) {
+                parent.addChild(this);
+                this._patchHierarchy(parent.owner);
+            }
+
+            // If it's a group, detect its own states
+            if (this.owner && this instanceof Group2D) {
                 var group: any = this;
                 group.detectGroupStates();
             }
 
+            // Time to insert children if some are specified
+            if (settings.children != null) {
+                for (let child of settings.children) {
+                    this.addChild(child);
+
+                    // Good time to patch the hierarchy, it won't go very far if there's no need to
+                    child._patchHierarchy(this.owner);
+                } 
+            }
+
+            // Set the model related properties
             let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
             this.position = pos;
             this.rotation = 0;
@@ -1133,6 +1203,7 @@
             this.levelVisible = (settings.isVisible==null) ? true : settings.isVisible;
             this.origin = settings.origin || new Vector2(0.5, 0.5);
 
+            // Set the layout/margin stuffs
             if (settings.marginTop) {
                 this.margin.setTop(settings.marginTop);
             }
@@ -1146,6 +1217,52 @@
                 this.margin.setBottom(settings.marginBottom);
             }
 
+            if (settings.margin) {
+                this.margin.fromString(settings.margin);
+            }
+
+            if (settings.marginHAlignment) {
+                this.marginAlignment.horizontal = settings.marginHAlignment;
+            }
+
+            if (settings.marginVAlignment) {
+                this.marginAlignment.vertical = settings.marginVAlignment;
+            }
+
+            if (settings.marginAlignment) {
+                this.marginAlignment.fromString(settings.marginAlignment);
+            }
+
+            if (settings.paddingTop) {
+                this.padding.setTop(settings.paddingTop);
+            }
+            if (settings.paddingLeft) {
+                this.padding.setLeft(settings.paddingLeft);
+            }
+            if (settings.paddingRight) {
+                this.padding.setRight(settings.paddingRight);
+            }
+            if (settings.paddingBottom) {
+                this.padding.setBottom(settings.paddingBottom);
+            }
+
+            if (settings.padding) {
+                this.padding.fromString(settings.padding);
+            }
+
+            if (settings.paddingHAlignment) {
+                this.paddingAlignment.horizontal = settings.paddingHAlignment;
+            }
+
+            if (settings.paddingVAlignment) {
+                this.paddingAlignment.vertical = settings.paddingVAlignment;
+            }
+
+            if (settings.paddingAlignment) {
+                this.paddingAlignment.fromString(settings.paddingAlignment);
+            }
+
+            // Dirty layout and positioning
             this._parentLayoutDirty();
             this._positioningDirty();
         }
@@ -1557,8 +1674,8 @@
             return this._margin;
         }
 
-        public get hasMargin(): boolean {
-            return this._margin !== null;
+        private get _hasMargin(): boolean {
+            return (this._margin !== null) || (this._marginAlignment !== null);
         }
 
         @dynamicLevelProperty(10, pi => Prim2DBase.paddingProperty = pi)
@@ -1578,8 +1695,8 @@
             return this._padding;
         }
 
-        public get hasPadding(): boolean {
-            return this._padding !== null;
+        private get _hasPadding(): boolean {
+            return (this._padding !== null) || (this._paddingAlignment !== null);
         }
 
         @dynamicLevelProperty(11, pi => Prim2DBase.marginAlignmentProperty = pi)
@@ -1834,9 +1951,8 @@
         }
 
         private addChild(child: Prim2DBase) {
-            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
-//            console.log(`Node: ${child.id} has depth: ${child._hierarchyDepthOffset}`);
-            child._siblingDepthOffset = this._siblingDepthOffset / this.owner.hierarchyLevelMaxSiblingCount;
+            child._parent = this;
+            this._patchHierarchyDepth(child);
             this._children.push(child);
         }
 
@@ -1921,10 +2037,10 @@
         }
 
         protected static _isCanvasInit: boolean = false;
-        protected static CheckParent(parent: Prim2DBase) {
-            if (!Prim2DBase._isCanvasInit && !parent) {
-                throw new Error("A Primitive needs a valid Parent, it can be any kind of Primitives based types, even the Canvas (with the exception that only Group2D can be direct child of a Canvas if the cache strategy used is TOPLEVELGROUPS)");
-            }
+        protected static CheckParent(parent: Prim2DBase) {  // TODO remove
+            //if (!Prim2DBase._isCanvasInit && !parent) {
+            //    throw new Error("A Primitive needs a valid Parent, it can be any kind of Primitives based types, even the Canvas (with the exception that only Group2D can be direct child of a Canvas if the cache strategy used is TOPLEVELGROUPS)");
+            //}
         }
 
         protected updateCachedStatesOf(list: Prim2DBase[], recurse: boolean) {
@@ -2039,8 +2155,9 @@
                     let globalTransform = this._parent ? this._parent._globalTransform : null;
                     if (parentMarginOffset && (parentMarginOffset.x !== 0 || parentMarginOffset.y !== 0)) {
                         globalTransform = globalTransform.clone();
-                        globalTransform.m[12] += parentMarginOffset.x;
-                        globalTransform.m[13] += parentMarginOffset.y;
+                        // parentMarginOffset is expressed in bottom/left, so to apply origin on it (which we have to), we offset the by -0.5 to put it in the same frame of reference
+                        globalTransform.m[12] += parentMarginOffset.x * (this._origin.x - 0.5); 
+                        globalTransform.m[13] += parentMarginOffset.y * (this._origin.y - 0.5);
                     }
 
                     this._globalTransform = this._parent ? this._localTransform.multiply(globalTransform) : this._localTransform;
@@ -2075,22 +2192,28 @@
             //  2. Determine the contentArea based on the primitive's initialContentArea and the margin property.
 
             // Auto Create PaddingArea if there's no actualSize on width&|height to allocate the whole content available to the paddingArea where the actualSize is null
-            if (!this.hasPadding && (this.actualSize.width == null || this.actualSize.height == null)) {
+            if (!this._hasPadding && (this.actualSize.width == null || this.actualSize.height == null)) {
                 if (this.actualSize.width == null) {
                     this.paddingAlignment.horizontal = PrimitiveAlignment.AlignStretch;
-                    this.padding.leftPixels = 0;    // Ugly, but we need to fetch the padding object for the PaddingArea computing to trigger below
                 }
 
                 if (this.actualSize.height == null) {
                     this.paddingAlignment.vertical = PrimitiveAlignment.AlignStretch;
-                    this.padding.topPixels = 0;     // Same ugly thing as above
                 }
             }
 
             // Compute the PaddingArea
-            if (this.hasPadding) {
+            if (this._hasPadding) {
                 this.padding.compute(this._layoutArea, this.size, this.paddingAlignment, this._paddingOffset, this._paddingArea);
+
                 this.position = this._paddingOffset.clone();
+
+                // Origin correction
+                if (this.origin.x !== 0 || this.origin.y !== 0) {
+                    this.position.x += this._paddingArea.width  * this.origin.x;
+                    this.position.y += this._paddingArea.height * this.origin.y;
+                }
+
                 if (this.size.width != null) {
                     this.size.width = this._paddingArea.width;
                 }
@@ -2107,7 +2230,7 @@
                 this._paddingArea.copyFrom(this.actualSize);
             }
 
-            if (this.hasMargin) {
+            if (this._hasMargin) {
                 this._getInitialContentAreaToRef(this._paddingArea, Prim2DBase._icPos, Prim2DBase._icArea);
                 this.margin.compute(Prim2DBase._icArea, this._contentArea, this.marginAlignment, this._margingOffset, Prim2DBase._newContent);
                 this._margingOffset.x += Prim2DBase._icPos.x;
@@ -2130,17 +2253,56 @@
             return this._contentArea;
         }
 
+        public _patchHierarchy(owner: Canvas2D) {
+            this._owner = owner;
+
+            // The only place we initialize the _renderGroup is this method, if it's set, we already been there, no need to execute more
+            if (this._renderGroup!=null) {
+                return;
+            }
+
+            if (this instanceof Group2D) {
+                var group: any = this;
+                group.detectGroupStates();
+            }
+
+            if (this._parent) {
+                this._renderGroup = <Group2D>this.parent.traverseUp(p => p instanceof Group2D && p.isRenderableGroup);
+            }
+
+            // Make sure the prim is in the dirtyList if it should be
+            if (this._renderGroup && this.isDirty) {
+                let list = this._renderGroup._renderableData._primDirtyList;
+                let i = list.indexOf(this);
+                if (i === -1) {
+                    list.push(this);
+                }
+            }
+
+            // Recurse
+            for (let child of this._children) {
+                this._patchHierarchyDepth(child);
+                child._patchHierarchy(owner);
+            }
+        }
+
+        private _patchHierarchyDepth(child: Prim2DBase) {
+            child._hierarchyDepth = this._hierarchyDepth + 1;
+            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
+            child._siblingDepthOffset = this._siblingDepthOffset / Canvas2D.hierarchyLevelMaxSiblingCount;           
+        }
+
         /**
          * This method is used to alter the contentArea of the Primitive before margin is applied.
          * In most of the case you won't need to override this method, but it can prove some usefulness, check the Rectangle2D class for a concrete application.
          * @param primSize the current size of the primitive
-         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties
-         * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties
+         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
+         * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          */
         protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size) {
-            initialContentArea.width = primSize.width;
-            initialContentPosition.x = initialContentPosition.y = 0;
+            initialContentArea.width  = primSize.width;
             initialContentArea.height = primSize.height;
+            initialContentPosition.x  = initialContentPosition.y = 0;
         }
 
         private   _owner                 : Canvas2D;
