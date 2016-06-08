@@ -73,6 +73,7 @@
     - Fixed bug with OBJ Loader - All meshes were concatenated with the previous one ([Temechon](https://github.com/Temechon))
     - Fixed the device orientation cameras (both VR and non-VR cameras)  ([RaananW](https://github.com/RaananW))
     - Fixed the WebVR implementation  ([RaananW](https://github.com/RaananW))
+    - `DynamicTexture.clone()` now preserves height in addition to width  ([dahlbyk](https://github.com/dahlbyk))
   - **Breaking changes**
     - `VertexData.CreateLines()` removed as `MeshBuilder.CreateLines()` now calls `MeshBuilder.CreateLineSystem()`
     - `scene.onNewXXXAdded` and `scene.onXXXRemoved` callbacks were removed and replaced by `scene.onNewXXXAddedObservable` and `scene.onXXXRemovedObservable`
