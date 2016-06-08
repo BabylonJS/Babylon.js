@@ -30,7 +30,7 @@
     - Enabled other post processes to be used when also using a 3D Rig ([jcpalmer](https://github.com/Palmer-JC))
     - Got Skeleton.copyAminationRange scaling better for different bone lengths ([jcpalmer](https://github.com/Palmer-JC))
     - Added skeleton.getBoneIndexByName(boneName: string) ([dad72](https://github.com/dad72))
-    - Added node._children to track children hierarchy ([deltakosh](https://github.com/deltakosh))
+    - Added `node._children` to track children hierarchy ([deltakosh](https://github.com/deltakosh))
     - Added Camera.ForceAttachControlToAlwaysPreventDefault to help embedding Babylon.js in iFrames ([deltakosh](https://github.com/deltakosh))
     - Support for Layer.alphaTest ([deltakosh](https://github.com/deltakosh))
     - New scene.pointerDownPredicate, scene.pointerMovePredicate, scene.pointerUpPredicate to define your own predicates for meshes picking selection ([deltakosh](https://github.com/deltakosh))
