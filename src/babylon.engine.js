@@ -1414,12 +1414,12 @@ var BABYLON;
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode, forceExponantOfTwo) {
-            if (forceExponantOfTwo === void 0) { forceExponantOfTwo = true; }
+        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode, forceExponentOfTwo) {
+            if (forceExponentOfTwo === void 0) { forceExponentOfTwo = true; }
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
-            if (forceExponantOfTwo) {
+            if (forceExponentOfTwo) {
                 width = BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
                 height = BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }

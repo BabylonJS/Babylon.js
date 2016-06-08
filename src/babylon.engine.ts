@@ -1726,12 +1726,12 @@
             return texture;
         }
 
-        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number, forceExponantOfTwo = true): WebGLTexture {
+        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number, forceExponentOfTwo = true): WebGLTexture {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
 
-            if (forceExponantOfTwo) {
+            if (forceExponentOfTwo) {
                 width = Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
                 height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
