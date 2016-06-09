@@ -14,16 +14,18 @@
 
             this._generateMipMaps = generateMipMaps;
 
+            var forceExponentOfTwo = generateMipMaps || samplingMode !== Texture.NEAREST_SAMPLINGMODE;
+
             if (options.getContext) {
                 this._canvas = options;
-                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode, forceExponentOfTwo);
             } else {
                 this._canvas = document.createElement("canvas");
 
                 if (options.width) {
-                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode, forceExponentOfTwo);
                 } else {
-                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
+                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode, forceExponentOfTwo);
                 }
             }
 
