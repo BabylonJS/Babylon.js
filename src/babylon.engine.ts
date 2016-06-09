@@ -969,7 +969,7 @@
             }
 
             this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.STATIC_DRAW);
-            this._resetIndexBufferBinding();
+            //this._resetIndexBufferBinding();
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
             return vbo;
@@ -1726,12 +1726,12 @@
             return texture;
         }
 
-        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number, forceExponentOfTwo = true): WebGLTexture {
+        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
 
-            if (forceExponentOfTwo) {
+            if (generateMipMaps) {
                 width = Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
                 height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }

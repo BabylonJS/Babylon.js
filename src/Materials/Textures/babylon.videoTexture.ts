@@ -60,7 +60,7 @@
         }
 
         private _createTexture(): void {
-            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode, false);
+            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
             this._texture.isReady = true;
         }
 

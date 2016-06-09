@@ -796,7 +796,7 @@ var BABYLON;
                 arrayBuffer = new Uint16Array(indices);
             }
             this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.STATIC_DRAW);
-            this._resetIndexBufferBinding();
+            //this._resetIndexBufferBinding();
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
             return vbo;
@@ -1414,12 +1414,11 @@ var BABYLON;
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode, forceExponentOfTwo) {
-            if (forceExponentOfTwo === void 0) { forceExponentOfTwo = true; }
+        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
-            if (forceExponentOfTwo) {
+            if (generateMipMaps) {
                 width = BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
                 height = BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
