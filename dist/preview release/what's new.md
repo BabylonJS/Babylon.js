@@ -83,3 +83,4 @@
     - `Engine.bindMultiBuffers` is now `Engine.bindBuffers` and strongly typed `{ [key: string]: VertexBuffer; }` of buffers ([benaadams](https://github.com/benaadams))
     - `Engine.createDynamicVertexBuffer` takes vertices rather than capacity, creating and initalizing in one gpu instruction ([benaadams](https://github.com/benaadams)) 
     - Internally new `Engine.bindBuffer` is used rather than `gl.bindBuffer` which only binds when the bound buffer is changing ([benaadams](https://github.com/benaadams)) 
+    - `DynamicTexture` no longer forces height/width to exponents of 2 if MIP maps are disabled and sampling mode is nearest  ([dahlbyk](https://github.com/dahlbyk))
