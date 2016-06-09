@@ -835,7 +835,7 @@
                     if (this._unIndexed) {
                         engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
                     } else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                        engine.draw(false, 0, instancesCount > 0 ? subMesh.linesIndexCount / 2 : subMesh.linesIndexCount, instancesCount);
                     }
                     break;
 

@@ -14,18 +14,17 @@ var BABYLON;
             this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._generateMipMaps = generateMipMaps;
-            var forceExponentOfTwo = generateMipMaps || samplingMode !== BABYLON.Texture.NEAREST_SAMPLINGMODE;
             if (options.getContext) {
                 this._canvas = options;
-                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode, forceExponentOfTwo);
+                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
             }
             else {
                 this._canvas = document.createElement("canvas");
                 if (options.width) {
-                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode, forceExponentOfTwo);
+                    this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
                 }
                 else {
-                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode, forceExponentOfTwo);
+                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
                 }
             }
             var textureSize = this.getSize();

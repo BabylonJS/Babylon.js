@@ -111,7 +111,7 @@
             this._renderingMesh.render(this, enableAlphaMode);
         }
 
-        public getLinesIndexBuffer(indices: number[] | Int32Array, engine): WebGLBuffer {
+        public getLinesIndexBuffer(indices: number[] | Int32Array, engine: Engine): WebGLBuffer {
             if (!this._linesIndexBuffer) {
                 var linesIndices = [];
 

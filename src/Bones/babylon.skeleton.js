@@ -123,7 +123,7 @@ var BABYLON;
                 var boneName = this.bones[i].name;
                 var sourceBone = boneDict[boneName];
                 if (sourceBone) {
-                    ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired);
+                    ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired, skelDimensionsRatio);
                 }
                 else {
                     BABYLON.Tools.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);

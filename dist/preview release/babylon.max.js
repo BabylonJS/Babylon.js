@@ -6483,7 +6483,7 @@ var BABYLON;
                 arrayBuffer = new Uint16Array(indices);
             }
             this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.STATIC_DRAW);
-            this._resetIndexBufferBinding();
+            //this._resetIndexBufferBinding();
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
             return vbo;
@@ -7101,12 +7101,11 @@ var BABYLON;
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode, forceExponantOfTwo) {
-            if (forceExponantOfTwo === void 0) { forceExponantOfTwo = true; }
+        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
-            if (forceExponantOfTwo) {
+            if (generateMipMaps) {
                 width = BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
                 height = BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
@@ -18248,7 +18247,7 @@ var BABYLON;
                         engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
                     }
                     else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                        engine.draw(false, 0, instancesCount > 0 ? subMesh.linesIndexCount / 2 : subMesh.linesIndexCount, instancesCount);
                     }
                     break;
                 default:
@@ -22391,7 +22390,7 @@ var BABYLON;
         };
         DynamicTexture.prototype.clone = function () {
             var textureSize = this.getSize();
-            var newTexture = new DynamicTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new DynamicTexture(this.name, textureSize, this.getScene(), this._generateMipMaps);
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
             newTexture.level = this.level;
@@ -22469,7 +22468,7 @@ var BABYLON;
             this._lastUpdate = BABYLON.Tools.Now;
         }
         VideoTexture.prototype._createTexture = function () {
-            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode, false);
+            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
             this._texture.isReady = true;
         };
         VideoTexture.prototype.update = function () {
@@ -27718,7 +27717,7 @@ var BABYLON;
                 var boneName = this.bones[i].name;
                 var sourceBone = boneDict[boneName];
                 if (sourceBone) {
-                    ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired);
+                    ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired, skelDimensionsRatio);
                 }
                 else {
                     BABYLON.Tools.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);
