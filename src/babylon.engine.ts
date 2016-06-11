@@ -339,6 +339,7 @@
         private _maxTextureChannels = 16;
         private _activeTexturesCache = new Array<BaseTexture>(this._maxTextureChannels);
         private _currentEffect: Effect;
+        private _currentProgram: WebGLProgram;
         private _compiledEffects = {};
         private _vertexAttribArraysEnabled: boolean[];
         private _vertexAttribArraysToUse: boolean[];
@@ -1271,7 +1272,11 @@
             this._vertexAttribArraysEnabled = this._vertexAttribArraysEnabled || [];
 
             // Use program
-            this._gl.useProgram(effect.getProgram());
+            var program = effect.getProgram();
+            if (this._currentProgram !== program) {
+                this._gl.useProgram(program);
+                this._currentProgram = program;
+            }
 
             var i, ul;
             for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
@@ -2243,7 +2248,11 @@
         }
 
         public bindSamplers(effect: Effect): void {
-            this._gl.useProgram(effect.getProgram());
+            var program = effect.getProgram();
+            if (this._currentProgram !== program) {
+                this._gl.useProgram(program);
+                this._currentProgram = program;
+            }
             var samplers = effect.getSamplers();
             for (var index = 0; index < samplers.length; index++) {
                 var uniform = effect.getUniform(samplers[index]);
