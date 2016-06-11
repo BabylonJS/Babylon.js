@@ -350,6 +350,7 @@
         private _currentRenderTarget: WebGLTexture;
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<WebGLBuffer>();
+        private _currentBufferPointers: Array<{ indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number, buffer: WebGLBuffer }> = [];
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
 
@@ -984,6 +985,27 @@
             this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
         }
 
+        private vertexAttribPointer(indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
+            var pointer = this._currentBufferPointers[indx];
+            var buffer = this._currentBoundBuffer[this._gl.ARRAY_BUFFER];
+            var changed = false;
+            if (!pointer) {
+                changed = true;
+                this._currentBufferPointers[indx] = { indx, size, type, normalized, stride, offset, buffer: buffer };
+            } else {
+                if (pointer.buffer !== buffer) { pointer.buffer = buffer; changed = true; }
+                if (pointer.size !== size) { pointer.size = size; changed = true; }
+                if (pointer.type !== type) { pointer.type = type; changed = true; }
+                if (pointer.normalized !== normalized) { pointer.normalized = normalized; changed = true; }
+                if (pointer.stride !== stride) { pointer.stride = stride; changed = true; }
+                if (pointer.offset !== offset) { pointer.offset = offset; changed = true; }
+            }
+
+            if (changed) {
+                this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
+            }
+        }
+
         private bindBuffer(buffer: WebGLBuffer, target: number): void {
             if (this._currentBoundBuffer[target] !== buffer) {
                 this._gl.bindBuffer(target, buffer);
@@ -1003,7 +1025,7 @@
                     var order = effect.getAttributeLocation(index);
 
                     if (order >= 0) {
-                        this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+                        this.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
                     }
                     offset += vertexDeclaration[index] * 4;
                 }
@@ -1033,7 +1055,7 @@
                         }
                         var buffer = vertexBuffer.getBuffer();
                         this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
-                        this._gl.vertexAttribPointer(order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+                        this.vertexAttribPointer(order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
 
                         if (vertexBuffer.getIsInstanced()) {
                             this._caps.instancedArrays.vertexAttribDivisorANGLE(order, 1);
@@ -1106,7 +1128,7 @@
                 for (let i = 0; i < offsetLocations.length; i++) {
                     let ai = <InstancingAttributeInfo>offsetLocations[i];
                     this._gl.enableVertexAttribArray(ai.index);
-                    this._gl.vertexAttribPointer(ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                    this.vertexAttribPointer(ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
                     this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
                     this._currentInstanceLocations.push(ai.index);
                     this._currentInstanceBuffers.push(instancesBuffer);
@@ -1115,7 +1137,7 @@
                 for (let index = 0; index < 4; index++) {
                     let offsetLocation = <number>offsetLocations[index];
                     this._gl.enableVertexAttribArray(offsetLocation);
-                    this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
+                    this.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
                     this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
                     this._currentInstanceLocations.push(offsetLocation);
                     this._currentInstanceBuffers.push(instancesBuffer);
