@@ -415,6 +415,10 @@
 
             this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
+            this._queueLoad(scene, onLoaded);
+        }
+
+        private _queueLoad(scene: Scene, onLoaded?: () => void): void {
             scene._addPendingData(this);
             Tools.LoadFile(this.delayLoadingFile, data => {
                 this._delayLoadingFunction(JSON.parse(data), this);
