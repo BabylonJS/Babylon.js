@@ -350,6 +350,7 @@
         private _currentRenderTarget: WebGLTexture;
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<WebGLBuffer>();
+        private _currentFramebuffer: WebGLFramebuffer;
         private _currentBufferPointers: Array<{ indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number, buffer: WebGLBuffer }> = [];
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
@@ -837,7 +838,7 @@
             this._currentRenderTarget = texture;
 
             var gl = this._gl;
-            gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
+            this.bindUnboundFramebuffer(texture._framebuffer);
 
             if (texture.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
@@ -850,6 +851,13 @@
             this.wipeCaches();
         }
 
+        private bindUnboundFramebuffer(framebuffer: WebGLFramebuffer) {
+            if (this._currentFramebuffer !== framebuffer) {
+                this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, framebuffer);
+                this._currentFramebuffer = framebuffer;
+            }
+        }
+
         public unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps = false): void {
             this._currentRenderTarget = null;
             if (texture.generateMipMaps && !disableGenerateMipMaps) {
@@ -859,7 +867,7 @@
                 gl.bindTexture(gl.TEXTURE_2D, null);
             }
 
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
         }
 
         public generateMipMapsForCubemap(texture: WebGLTexture) {
@@ -877,7 +885,7 @@
 
         public restoreDefaultFramebuffer(): void {
             this._currentRenderTarget = null;
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
 
             this.setViewport(this._cachedViewport);
 
@@ -1917,7 +1925,7 @@
             }
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            this.bindUnboundFramebuffer(framebuffer);
             if (generateDepthBuffer) {
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
             }
@@ -1929,7 +1937,7 @@
             // Unbind
             gl.bindTexture(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
             if (generateDepthBuffer) {
@@ -1990,7 +1998,7 @@
 
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
 
             // Mipmaps
@@ -2002,7 +2010,7 @@
             // Unbind
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
             texture._depthBuffer = depthBuffer;
