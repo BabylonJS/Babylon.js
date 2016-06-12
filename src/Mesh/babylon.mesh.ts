@@ -1127,32 +1127,35 @@
         }
 
         public _checkDelayState(): void {
-            var that = this;
             var scene = this.getScene();
 
             if (this._geometry) {
                 this._geometry.load(scene);
             }
-            else if (that.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
-                that.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
+            else if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
+                this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
-                scene._addPendingData(that);
-
-                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
-
-                Tools.LoadFile(this.delayLoadingFile, data => {
-
-                    if (data instanceof ArrayBuffer) {
-                        this._delayLoadingFunction(data, this);
-                    }
-                    else {
-                        this._delayLoadingFunction(JSON.parse(data), this);
-                    }
-
-                    this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
-                    scene._removePendingData(this);
-                }, () => { }, scene.database, getBinaryData);
+                this._queueLoad(this, scene);
             }
+        }
+
+        private _queueLoad(mesh: Mesh, scene: Scene): void {
+            scene._addPendingData(mesh);
+
+            var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
+
+            Tools.LoadFile(this.delayLoadingFile, data => {
+
+                if (data instanceof ArrayBuffer) {
+                    this._delayLoadingFunction(data, this);
+                }
+                else {
+                    this._delayLoadingFunction(JSON.parse(data), this);
+                }
+
+                this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+                scene._removePendingData(this);
+            }, () => { }, scene.database, getBinaryData);
         }
 
         /**
