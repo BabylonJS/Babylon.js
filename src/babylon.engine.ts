@@ -987,9 +987,17 @@
         }
 
         public bindArrayBuffer(buffer: WebGLBuffer): void {
-            if (this._currentBoundBuffer[this._gl.ARRAY_BUFFER] !== buffer) {
-                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, buffer);
-                this._currentBoundBuffer[this._gl.ARRAY_BUFFER] = buffer;
+            this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+        }
+
+        private bindIndexBuffer(buffer: WebGLBuffer): void {
+            this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
+        }
+
+        private bindBuffer(buffer: WebGLBuffer, target: number): void {
+            if (this._currentBoundBuffer[target] !== buffer) {
+                this._gl.bindBuffer(target, buffer);
+                this._currentBoundBuffer[target] = buffer;
             }
         }
 
@@ -1014,18 +1022,8 @@
             }
 
             if (changed) {
-                if (this._currentBoundBuffer[this._gl.ARRAY_BUFFER] !== buffer) {
-                    this._gl.bindBuffer(this._gl.ARRAY_BUFFER, buffer);
-                    this._currentBoundBuffer[this._gl.ARRAY_BUFFER] = buffer;
-                }
+                this.bindArrayBuffer(buffer);
                 this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
-            }
-        }
-
-        private bindIndexBuffer(buffer: WebGLBuffer): void {
-            if (this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] !== buffer) {
-                this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, buffer);
-                this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = buffer;
             }
         }
 
