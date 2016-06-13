@@ -86,14 +86,14 @@ vec3 FresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectan
 }
 
 // Cook Torance Specular computation.
-vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 specularColor)
+vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 specularColor, vec3 reflectance90)
 {
     float alphaG = convertRoughnessToAverageSlope(roughness);
     float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
     float visibility = smithVisibilityG_TrowbridgeReitzGGX_Walter(NdotL, NdotV, alphaG);
     visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integated in viibility to avoid issues when visibility function changes.
 
-    vec3 fresnel = fresnelSchlickGGX(VdotH, specularColor, vec3(1., 1., 1.));
+    vec3 fresnel = fresnelSchlickGGX(VdotH, specularColor, reflectance90);
 
     float specTerm = max(0., visibility * distribution) * NdotL;
     return fresnel * specTerm * kPi; // TODO: audit pi constants
