@@ -555,6 +555,6 @@ var BABYLON;
             return newSound;
         };
         return Sound;
-    }());
+    })();
     BABYLON.Sound = Sound;
 })(BABYLON || (BABYLON = {}));

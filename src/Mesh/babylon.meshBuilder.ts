@@ -616,7 +616,7 @@
             var width = options.width || 10;
             var height = options.height || 10;
             var subdivisions = options.subdivisions || 1;
-            var minHeight = options.minHeight || 0;
+            var minHeight = options.minHeight;
             var maxHeight = options.maxHeight || 10;
             var updatable = options.updatable;
             var onReady = options.onReady;

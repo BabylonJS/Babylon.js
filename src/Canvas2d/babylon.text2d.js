@@ -84,7 +84,7 @@ var BABYLON;
             return true;
         };
         return Text2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -132,7 +132,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
         return Text2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -385,6 +385,6 @@ var BABYLON;
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));

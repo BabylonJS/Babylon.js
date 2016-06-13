@@ -77,6 +77,6 @@ var BABYLON;
             }
         };
         return Buffer;
-    }());
+    })();
     BABYLON.Buffer = Buffer;
 })(BABYLON || (BABYLON = {}));

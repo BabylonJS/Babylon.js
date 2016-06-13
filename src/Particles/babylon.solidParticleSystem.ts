@@ -328,7 +328,7 @@
 
                 if (this._copy.color) {
                     this._color = this._copy.color;
-                } else if (meshCol && meshCol[c] !== undefined) {
+                } else if (meshCol && meshCol[c]) {
                     this._color.r = meshCol[c];
                     this._color.g = meshCol[c + 1];
                     this._color.b = meshCol[c + 2];

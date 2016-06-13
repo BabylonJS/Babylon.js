@@ -16,7 +16,7 @@ var BABYLON;
             this.forceRefreshPrimitive = false;
         }
         return PrepareRender2DContext;
-    }());
+    })();
     BABYLON.PrepareRender2DContext = PrepareRender2DContext;
     var Render2DContext = (function () {
         function Render2DContext(renderMode) {
@@ -72,7 +72,7 @@ var BABYLON;
         Render2DContext._renderModeAlphaTest = 2;
         Render2DContext._renderModeTransparent = 3;
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -232,7 +232,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    }());
+    })();
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     /**
      * Stores information about a Primitive that was intersected
@@ -243,7 +243,7 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    }());
+    })();
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
     var PrimitiveMargin = (function () {
         function PrimitiveMargin(owner) {
@@ -310,7 +310,7 @@ var BABYLON;
             return new PrimitiveMargin(owner);
         };
         return PrimitiveMargin;
-    }());
+    })();
     BABYLON.PrimitiveMargin = PrimitiveMargin;
     /**
      * Main class used for the Primitive Intersection API
@@ -347,7 +347,7 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    }());
+    })();
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -912,8 +912,8 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype.updateGlobalTransVisOf = function (list, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
                 cur.updateGlobalTransVis(recurse);
             }
         };
@@ -1011,6 +1011,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

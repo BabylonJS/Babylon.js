@@ -162,7 +162,7 @@
         public maxCubemapTextureSize: number;
         public maxRenderTextureSize: number;
         public standardDerivatives: boolean;
-        public s3tc : WEBGL_compressed_texture_s3tc;
+        public s3tc: WEBGL_compressed_texture_s3tc;
         public textureFloat: boolean;
         public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
         public maxAnisotropy: number;
@@ -969,7 +969,7 @@
             }
 
             this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.STATIC_DRAW);
-            //this._resetIndexBufferBinding();
+            this._resetIndexBufferBinding();
             vbo.references = 1;
             vbo.is32Bits = need32Bits;
             return vbo;
@@ -1452,7 +1452,7 @@
             this._gl.colorMask(enable, enable, enable, enable);
         }
 
-        public setAlphaMode(mode: number, noDepthWriteChange: boolean=false): void {
+        public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
             if (this._alphaMode === mode) {
                 return;
             }
@@ -2153,7 +2153,7 @@
                         }
 
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                        
+
                         // Workaround firefox bug fix https://bugzilla.mozilla.org/show_bug.cgi?id=1221822
                         // By following the webgl standard changes from Revision 7, 2014/11/24
                         // Firefox Removed the support for RGB32F, since it is not natively supported on all platforms where WebGL is implemented.
@@ -2163,14 +2163,14 @@
                             // Data are known to be in +X +Y +Z -X -Y -Z
                             for (let index = 0; index < facesIndex.length; index++) {
                                 let faceData = <Float32Array>rgbeDataArrays[index];
-                                
+
                                 // Create a new RGBA Face.
                                 let newFaceData = new Float32Array(width * height * 4);
                                 for (let x = 0; x < width; x++) {
                                     for (let y = 0; y < height; y++) {
-                                        let index    = (y * width + x) * 3;
+                                        let index = (y * width + x) * 3;
                                         let newIndex = (y * width + x) * 4;
-                                        
+
                                         // Map Old Value to new value.
                                         newFaceData[newIndex + 0] = faceData[index + 0];
                                         newFaceData[newIndex + 1] = faceData[index + 1];
