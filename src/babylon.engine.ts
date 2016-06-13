@@ -1305,11 +1305,7 @@
             this._vertexAttribArraysEnabled = this._vertexAttribArraysEnabled || [];
 
             // Use program
-            var program = effect.getProgram();
-            if (this._currentProgram !== program) {
-                this._gl.useProgram(program);
-                this._currentProgram = program;
-            }
+            this.setProgram(effect.getProgram());
 
             var i, ul;
             for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
@@ -2280,12 +2276,16 @@
             }
         }
 
-        public bindSamplers(effect: Effect): void {
-            var program = effect.getProgram();
+        private setProgram(program: WebGLProgram): void {
             if (this._currentProgram !== program) {
                 this._gl.useProgram(program);
                 this._currentProgram = program;
             }
+        }
+
+        public bindSamplers(effect: Effect): void {
+            this.setProgram(effect.getProgram());
+
             var samplers = effect.getSamplers();
             for (var index = 0; index < samplers.length; index++) {
                 var uniform = effect.getUniform(samplers[index]);
