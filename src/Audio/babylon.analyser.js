@@ -106,6 +106,7 @@ var BABYLON;
             }
         };
         return Analyser;
-    })();
+    }());
     BABYLON.Analyser = Analyser;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.analyser.js.map

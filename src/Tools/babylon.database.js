@@ -508,6 +508,7 @@ var BABYLON;
             }
         };
         return Database;
-    })();
+    }());
     BABYLON.Database = Database;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.database.js.map

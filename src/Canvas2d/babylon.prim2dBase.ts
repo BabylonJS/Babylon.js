@@ -1006,8 +1006,8 @@
             dstOffset.x = isLeftAuto ? 0 : this.leftPixels;
             dstArea.width = sourceArea.width - (dstOffset.x + (isRightAuto ? 0 : this.rightPixels));
 
-            dstOffset.y = isTopAuto ? 0 : this.topPixels;
-            dstArea.height = sourceArea.height - (dstOffset.y + (isTopAuto ? 0 : this.bottomPixels));
+            dstOffset.y = isTopAuto ? 0 : this.bottomPixels;
+            dstArea.height = sourceArea.height - (dstOffset.y + (isTopAuto ? 0 : this.topPixels));
         }
     }
 
@@ -1145,7 +1145,6 @@
             this._size                       = Size.Zero();
             this._layoutArea                 = Size.Zero();
             this._paddingOffset              = Vector2.Zero();
-            this._margingOffset              = Vector2.Zero();
             this._parentMargingOffset        = Vector2.Zero();
             this._parentContentArea          = Size.Zero();
             this._contentArea                = new Size(null, null);
@@ -2122,7 +2121,7 @@
             let parentMarginOffsetChanged = false;
             let parentMarginOffset: Vector2 = null;
             if (this._parent) {
-                parentMarginOffset = this._parent._margingOffset;
+                parentMarginOffset = this._parent._paddingOffset;
                 parentMarginOffsetChanged = !parentMarginOffset.equals(this._parentMargingOffset);
                 this._parentMargingOffset.copyFrom(parentMarginOffset);
             } else {
@@ -2260,7 +2259,7 @@
                 }
             }
 
-            // Compute the PaddingArea
+            // Apply margin
             if (this._hasMargin) {
                 this.margin.computeWithAlignment(this._layoutArea, this.size, this.marginAlignment, this._paddingOffset, Prim2DBase._size);
 
@@ -2275,25 +2274,19 @@
                 this.actualSize.copyFrom(Prim2DBase._size.clone());
             }
 
-            // No Padding property, the padding area is the same as the actualSize
-            else {
-                this._paddingOffset.x    = 0;
-                this._paddingOffset.y    = 0;
-            }
-
             if (this._hasPadding) {
                 this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                 Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this.margin.compute(Prim2DBase._icArea, this._margingOffset, Prim2DBase._size);
-                this._margingOffset.x += Prim2DBase._icPos.x;
-                this._margingOffset.y += Prim2DBase._icPos.y;
+                this.padding.compute(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
+                this._paddingOffset.x += Prim2DBase._icPos.x;
+                this._paddingOffset.y += Prim2DBase._icPos.y;
                 this._contentArea.copyFrom(Prim2DBase._size);              
             } else {
                 this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                 Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this._margingOffset.copyFrom(Prim2DBase._icPos);
+                this._paddingOffset.copyFrom(Prim2DBase._icPos);
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
         }
@@ -2384,7 +2377,6 @@
         protected _desiredSize           : Size;
         private   _layoutEngine          : LayoutEngineBase;
         private   _paddingOffset         : Vector2;
-        private   _margingOffset         : Vector2;
         private   _parentMargingOffset   : Vector2;
         private   _parentContentArea     : Size;
         public    _layoutArea            : Size;
