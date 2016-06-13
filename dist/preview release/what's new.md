@@ -74,6 +74,8 @@
     - Fixed the device orientation cameras (both VR and non-VR cameras)  ([RaananW](https://github.com/RaananW))
     - Fixed the WebVR implementation  ([RaananW](https://github.com/RaananW))
     - `DynamicTexture.clone()` now preserves height in addition to width  ([dahlbyk](https://github.com/dahlbyk))
+    - Fixed missing some parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))
+    - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
   - **Breaking changes**
     - `VertexData.CreateLines()` removed as `MeshBuilder.CreateLines()` now calls `MeshBuilder.CreateLineSystem()`
     - `scene.onNewXXXAdded` and `scene.onXXXRemoved` callbacks were removed and replaced by `scene.onNewXXXAddedObservable` and `scene.onXXXRemovedObservable`
