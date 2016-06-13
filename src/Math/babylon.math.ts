@@ -1149,25 +1149,32 @@
             result.normalize();
         }
 
+        private static _viewportMatrixCache: Matrix;
+        private static _matrixCache: Matrix;
         public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
             var cw = viewport.width;
             var ch = viewport.height;
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = Matrix.FromValues(
+            var viewportMatrix = Vector3._viewportMatrixCache ? Vector3._viewportMatrixCache : (Vector3._viewportMatrixCache = new Matrix());
+
+            Matrix.FromValuesToRef(
                 cw / 2.0, 0, 0, 0,
                 0, -ch / 2.0, 0, 0,
                 0, 0, 1, 0,
-                cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
+                cx + cw / 2.0, ch / 2.0 + cy, 0, 1, viewportMatrix);
 
-            var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(transform, matrix);
+            matrix.multiplyToRef(viewportMatrix, matrix);
 
-            return Vector3.TransformCoordinates(vector, finalMatrix);
+            return Vector3.TransformCoordinates(vector, matrix);
         }
 
         public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
-            var matrix = world.multiply(transform);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(transform, matrix);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
@@ -1182,7 +1189,9 @@
         }
 
         public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
-            var matrix = world.multiply(view).multiply(projection);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(view, matrix)
+            matrix.multiplyToRef(projection, matrix);
             matrix.invert();
             var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), source.z);
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
