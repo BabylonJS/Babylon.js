@@ -429,6 +429,10 @@
             this._setType(1, PrimitiveThickness.Auto);
             this._setType(2, PrimitiveThickness.Auto);
             this._setType(3, PrimitiveThickness.Auto);
+            this._pixels[0] = 0;
+            this._pixels[1] = 0;
+            this._pixels[2] = 0;
+            this._pixels[3] = 0;
         }
 
         public fromString(margin: string) {
@@ -455,7 +459,7 @@
 
         }
 
-        public fromStrings(owner: Prim2DBase, top: string, left: string, right: string, bottom: string): PrimitiveThickness {
+        public fromStrings(top: string, left: string, right: string, bottom: string): PrimitiveThickness {
             this._clear();
 
             this._setStringValue(top, 0, false);
@@ -466,7 +470,7 @@
             return this;
         }
 
-        public fromPixels(owner: Prim2DBase, top: number, left: number, right: number, bottom: number): PrimitiveThickness {
+        public fromPixels(top: number, left: number, right: number, bottom: number): PrimitiveThickness {
             this._clear();
 
             this._pixels[0] = top;
@@ -477,20 +481,35 @@
             return this;
         }
 
+        public fromUniformPixels(margin: number): PrimitiveThickness {
+            this._clear();
+
+            this._pixels[0] = margin;
+            this._pixels[1] = margin;
+            this._pixels[2] = margin;
+            this._pixels[3] = margin;
+            this._changedCallback();
+            return this;
+        }
+
         public auto(): PrimitiveThickness {
             this._clear();
 
             this._flags = (PrimitiveThickness.Auto << 0) | (PrimitiveThickness.Auto << 4) | (PrimitiveThickness.Auto << 8) | (PrimitiveThickness.Auto << 12);
+            this._pixels[0] = 0;
+            this._pixels[1] = 0;
+            this._pixels[2] = 0;
+            this._pixels[3] = 0;
             this._changedCallback();
             return this;
         }
 
         private _clear() {
             this._flags = 0;
-            this._pixels[0] = null;
-            this._pixels[1] = null;
-            this._pixels[2] = null;
-            this._pixels[3] = null;
+            this._pixels[0] = 0;
+            this._pixels[1] = 0;
+            this._pixels[2] = 0;
+            this._pixels[3] = 0;
             this._percentages[0] = null;
             this._percentages[1] = null;
             this._percentages[2] = null;
@@ -531,7 +550,7 @@
                     return true;
                 }
                 this._setType(index, PrimitiveThickness.Auto);
-                this._pixels[index] = null;
+                this._pixels[index] = 0;
                 if (emitChanged) {
                     this._changedCallback();
                 }
@@ -835,8 +854,15 @@
         public static Percentage = 0x4;
         public static Pixel      = 0x8;
 
-        private _computePixels(index: number, type: number, sourceArea: Size, emitChanged: boolean) {
-            if (this._getType(index, false) !== PrimitiveThickness.Percentage) {
+        private _computePixels(index: number, sourceArea: Size, emitChanged: boolean) {
+            let type = this._getType(index, false);
+
+            if (type === PrimitiveThickness.Inherit) {
+                this._parentAccess()._computePixels(index, sourceArea, emitChanged);
+                return;
+            }
+
+            if (type !== PrimitiveThickness.Percentage) {
                 return;
             }
 
@@ -869,7 +895,7 @@
                     if (isLeftAuto) {
                         dstOffset.x = 0;
                     } else {
-                        this._computePixels(1, leftType, sourceArea, true);
+                        this._computePixels(1, sourceArea, true);
                         dstOffset.x = this.leftPixels;
                     }
                     dstArea.width = width;
@@ -881,7 +907,7 @@
                     if (isRightAuto) {
                         dstOffset.x = Math.round(sourceArea.width - width);
                     } else {
-                        this._computePixels(2, rightType, sourceArea, true);
+                        this._computePixels(2, sourceArea, true);
                         dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
                     }
                     dstArea.width = width;
@@ -892,13 +918,13 @@
                     if (isLeftAuto) {
                         dstOffset.x = 0;
                     } else {
-                        this._computePixels(1, leftType, sourceArea, true);
+                        this._computePixels(1, sourceArea, true);
                         dstOffset.x = this.leftPixels;
                     }
 
                     let right = 0;
                     if (!isRightAuto) {
-                        this._computePixels(2, rightType, sourceArea, true);
+                        this._computePixels(2, sourceArea, true);
                         right = this.rightPixels;
                     }
                     dstArea.width = sourceArea.width - (dstOffset.x + right);
@@ -907,10 +933,10 @@
                 case PrimitiveAlignment.AlignCenter:
                 {
                     if (!isLeftAuto) {
-                        this._computePixels(1, leftType, sourceArea, true);
+                        this._computePixels(1, sourceArea, true);
                     }
                     if (!isRightAuto) {
-                        this._computePixels(2, rightType, sourceArea, true);
+                        this._computePixels(2, sourceArea, true);
                     }
 
                     let offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
@@ -926,7 +952,7 @@
                     if (isTopAuto) {
                         dstOffset.y = sourceArea.height - height;
                     } else {
-                        this._computePixels(0, topType, sourceArea, true);
+                        this._computePixels(0, sourceArea, true);
                         dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
                     }
                     dstArea.height = height;
@@ -938,7 +964,7 @@
                     if (isBottomAuto) {
                         dstOffset.y = 0;
                     } else {
-                        this._computePixels(3, bottomType, sourceArea, true);
+                        this._computePixels(3, sourceArea, true);
                         dstOffset.y = this.bottomPixels;
                     }
                     dstArea.height = height;
@@ -950,13 +976,13 @@
                     if (isBottomAuto) {
                         dstOffset.y = 0;
                     } else {
-                        this._computePixels(3, bottomType, sourceArea, true);
+                        this._computePixels(3, sourceArea, true);
                         dstOffset.y = this.bottomPixels;
                     }
 
                     let top = 0;
                     if (!isTopAuto) {
-                        this._computePixels(0, topType, sourceArea, true);
+                        this._computePixels(0, sourceArea, true);
                         top = this.topPixels;
                     }
                     dstArea.height = sourceArea.height - (dstOffset.y + top);
@@ -965,10 +991,10 @@
                 case PrimitiveAlignment.AlignCenter:
                 {
                     if (!isTopAuto) {
-                        this._computePixels(0, topType, sourceArea, true);
+                        this._computePixels(0, sourceArea, true);
                     }
                     if (!isBottomAuto) {
-                        this._computePixels(3, bottomType, sourceArea, true);
+                        this._computePixels(3, sourceArea, true);
                     }
 
                     let offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
@@ -980,34 +1006,26 @@
         }
 
         public compute(sourceArea: Size, dstOffset: Vector2, dstArea: Size) {
-            // Fetch some data
-            let topType = this._getType(0, true);
-            let leftType = this._getType(1, true);
-            let rightType = this._getType(2, true);
-            let bottomType = this._getType(3, true);
-            let isTopAuto = topType === PrimitiveThickness.Auto;
-            let isLeftAuto = leftType === PrimitiveThickness.Auto;
-            let isRightAuto = rightType === PrimitiveThickness.Auto;
-            let isBottomAuto = bottomType === PrimitiveThickness.Auto;
+            this._computePixels(0, sourceArea, true);
+            this._computePixels(1, sourceArea, true);
+            this._computePixels(2, sourceArea, true);
+            this._computePixels(3, sourceArea, true);
 
-            if (!isTopAuto) {
-                this._computePixels(0, topType, sourceArea, true);
-            }
-            if (!isLeftAuto) {
-                this._computePixels(1, leftType, sourceArea, true);
-            }
-            if (!isRightAuto) {
-                this._computePixels(2, rightType, sourceArea, true);
-            }
-            if (!isBottomAuto) {
-                this._computePixels(3, bottomType, sourceArea, true);
-            }
+            dstOffset.x = this.leftPixels;
+            dstArea.width = sourceArea.width - (dstOffset.x + this.rightPixels);
 
-            dstOffset.x = isLeftAuto ? 0 : this.leftPixels;
-            dstArea.width = sourceArea.width - (dstOffset.x + (isRightAuto ? 0 : this.rightPixels));
+            dstOffset.y = this.bottomPixels;
+            dstArea.height = sourceArea.height - (dstOffset.y + this.topPixels);
+        }
 
-            dstOffset.y = isTopAuto ? 0 : this.bottomPixels;
-            dstArea.height = sourceArea.height - (dstOffset.y + (isTopAuto ? 0 : this.topPixels));
+        computeArea(sourceArea: Size, result: Size) {
+            this._computePixels(0, sourceArea, true);
+            this._computePixels(1, sourceArea, true);
+            this._computePixels(2, sourceArea, true);
+            this._computePixels(3, sourceArea, true);
+
+            result.width  = this.leftPixels + sourceArea.width + this.rightPixels;
+            result.height = this.bottomPixels + sourceArea.height + this.topPixels;
         }
     }
 
@@ -1095,12 +1113,13 @@
             rotation            ?: number,
             scale               ?: number,
             origin              ?: Vector2,
+            layoutEngine        ?: LayoutEngineBase | string,
             isVisible           ?: boolean,
             marginTop           ?: number | string,
             marginLeft          ?: number | string,
             marginRight         ?: number | string,
             marginBottom        ?: number | string,
-            margin              ?: string,
+            margin              ?: number | string,
             marginHAlignment    ?: number,
             marginVAlignment    ?: number,
             marginAlignment     ?: string,
@@ -1142,9 +1161,12 @@
 
             // Fields initialization
             this._layoutEngine               = CanvasLayoutEngine.Singleton;
-            this._size                       = Size.Zero();
+            this._size                       = null; //Size.Zero();
+            this._actualSize                 = null;
+            this._boundingSize               = null;
             this._layoutArea                 = Size.Zero();
-            this._paddingOffset              = Vector2.Zero();
+            this._layoutAreaPos              = Vector2.Zero();
+            this._marginOffset               = Vector2.Zero();
             this._parentMargingOffset        = Vector2.Zero();
             this._parentContentArea          = Size.Zero();
             this._contentArea                = new Size(null, null);
@@ -1204,6 +1226,22 @@
             this.levelVisible = (settings.isVisible==null) ? true : settings.isVisible;
             this.origin = settings.origin || new Vector2(0.5, 0.5);
 
+            // Layout Engine
+            if (settings.layoutEngine != null) {
+                if (typeof settings.layoutEngine === "string") {
+                    let name = (<string>settings.layoutEngine).toLocaleLowerCase().trim();
+                    if (name === "canvas" || name === "canvaslayoutengine") {
+                        this.layoutEngine = CanvasLayoutEngine.Singleton;
+                    } else if (name.indexOf("stackpanel") === 0 || name.indexOf("horizontalstackpanel") === 0) {
+                        this.layoutEngine = StackPanelLayoutEngine.Horizontal;
+                    } else if (name.indexOf("verticalstackpanel")===0) {
+                        this.layoutEngine = StackPanelLayoutEngine.Vertical;
+                    }
+                } else if (settings.layoutEngine instanceof LayoutEngineBase) {
+                    this.layoutEngine = <LayoutEngineBase>settings.layoutEngine;
+                }
+            }
+
             // Set the layout/margin stuffs
             if (settings.marginTop) {
                 this.margin.setTop(settings.marginTop);
@@ -1219,7 +1257,11 @@
             }
 
             if (settings.margin) {
-                this.margin.fromString(settings.margin);
+                if (typeof settings.margin === "string") {
+                    this.margin.fromString(<string>settings.margin);
+                } else {
+                    this.margin.fromUniformPixels(<number>settings.margin);
+                }
             }
 
             if (settings.marginHAlignment) {
@@ -1476,6 +1518,9 @@
             this.markAsDirty("position");
         }
 
+        private static boundinbBoxReentrency = false;
+        private static nullSize = Size.Zero();
+
         /**
          * Size of the primitive or its bounding area
          * BEWARE: if you change only size.width or height it won't trigger a property change and you won't have the expected behavior.
@@ -1483,6 +1528,25 @@
          */
         @dynamicLevelProperty(2, pi => Prim2DBase.sizeProperty = pi, false, true)
         public get size(): Size {
+
+            if (!this._size || this._size.width==null || this._size.height==null) {
+
+                if (Prim2DBase.boundinbBoxReentrency) {
+                    return Prim2DBase.nullSize;
+                }
+
+                if (this._boundingSize) {
+                    return this._boundingSize;
+                }
+
+                Prim2DBase.boundinbBoxReentrency = true;
+                let b = this.boundingInfo;
+                Prim2DBase.boundinbBoxReentrency = false;
+
+                return this._boundingSize;
+
+            }
+
             return this._size;
         }
 
@@ -1512,7 +1576,7 @@
             }
 
             this.size.width = value;
-            this.markAsDirty("actualSize");
+            this.markAsDirty("size");
             this._positioningDirty();
         }
 
@@ -1538,7 +1602,7 @@
             }
 
             this.size.height = value;
-            this.markAsDirty("actualSize");
+            this.markAsDirty("size");
             this._positioningDirty();
         }
 
@@ -1739,7 +1803,7 @@
 
         public get layoutEngine(): LayoutEngineBase {
             if (!this._layoutEngine) {
-                this._layoutEngine = new CanvasLayoutEngine();
+                this._layoutEngine = CanvasLayoutEngine.Singleton;
             }
             return this._layoutEngine;
         }
@@ -1750,6 +1814,30 @@
             }
 
             this._changeLayoutEngine(value);
+        }
+
+        public get layoutArea(): Size {
+            return this._layoutArea;
+        }
+
+        public set layoutArea(val: Size) {
+            if (this._layoutArea.equals(val)) {
+                return;
+            }
+            this._positioningDirty();
+            this._layoutArea = val;
+        }
+
+        public get layoutAreaPos(): Vector2 {
+            return this._layoutAreaPos;
+        }
+
+        public set layoutAreaPos(val: Vector2) {
+            if (this._layoutAreaPos.equals(val)) {
+                return;
+            }
+            this._positioningDirty();
+            this._layoutAreaPos = val;
         }
 
         /**
@@ -1814,6 +1902,10 @@
                     bi.unionToRef(tps, bi);
                 }
 
+                this._boundingSize = Size.Zero();
+                let m = this._boundingInfo.max();
+                this._boundingSize = new Size((!this._size || this._size.width == null) ? Math.ceil(m.x) : this._size.width, (!this._size || this._size.height == null) ? Math.ceil(m.y) : this._size.height);
+
                 this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
             }
             return this._boundingInfo;
@@ -1825,7 +1917,7 @@
          * @returns true if the size is automatically computed, false if it were manually specified.
          */
         public get isSizeAuto(): boolean {
-            return this.size == null;
+            return this._size == null;
         }
 
         /**
@@ -1980,6 +2072,7 @@
 
         private addChild(child: Prim2DBase) {
             child._parent = this;
+            this._boundingBoxDirty();
             this._patchHierarchyDepth(child);
             this._children.push(child);
         }
@@ -2109,7 +2202,7 @@
         }
 
         private _changeLayoutEngine(engine: LayoutEngineBase) {
-            
+            this._layoutEngine = engine;
         }
 
         private static _t0: Matrix = new Matrix();
@@ -2121,7 +2214,7 @@
             let parentMarginOffsetChanged = false;
             let parentMarginOffset: Vector2 = null;
             if (this._parent) {
-                parentMarginOffset = this._parent._paddingOffset;
+                parentMarginOffset = this._parent._marginOffset;
                 parentMarginOffsetChanged = !parentMarginOffset.equals(this._parentMargingOffset);
                 this._parentMargingOffset.copyFrom(parentMarginOffset);
             } else {
@@ -2174,13 +2267,16 @@
             // Otherwise positioning will take care of it.
             let sizeDirty = this.checkPropertiesDirty(Prim2DBase.sizeProperty.flagId);
             if (!this._isFlagSet(SmartPropertyPrim.flagLayoutDirty) && sizeDirty) {
-                if (this.size.width != null) {
-                    this.actualSize.width = this.size.width;
+                let size = this.size;
+                if (size) {
+                    if (this.size.width != null) {
+                        this.actualSize.width = this.size.width;
+                    }
+                    if (this.size.height != null) {
+                        this.actualSize.height = this.size.height;
+                    }
+                    this.clearPropertiesDirty(Prim2DBase.sizeProperty.flagId);
                 }
-                if (this.size.height != null) {
-                    this.actualSize.height = this.size.height;
-                }
-                this.clearPropertiesDirty(Prim2DBase.sizeProperty.flagId);
             }
 
             // Check for layout update
@@ -2261,9 +2357,9 @@
 
             // Apply margin
             if (this._hasMargin) {
-                this.margin.computeWithAlignment(this._layoutArea, this.size, this.marginAlignment, this._paddingOffset, Prim2DBase._size);
+                this.margin.computeWithAlignment(this.layoutArea, this.size, this.marginAlignment, this._marginOffset, Prim2DBase._size);
 
-                this.actualPosition = this._paddingOffset.clone();
+                this.actualPosition = this._marginOffset.add(this._layoutAreaPos);
 
                 if (this.size.width != null) {
                     this.size.width = Prim2DBase._size.width;
@@ -2278,15 +2374,15 @@
                 this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                 Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this.padding.compute(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
-                this._paddingOffset.x += Prim2DBase._icPos.x;
-                this._paddingOffset.y += Prim2DBase._icPos.y;
+                this.padding.compute(Prim2DBase._icArea, this._marginOffset, Prim2DBase._size);
+                this._marginOffset.x += Prim2DBase._icPos.x;
+                this._marginOffset.y += Prim2DBase._icPos.y;
                 this._contentArea.copyFrom(Prim2DBase._size);              
             } else {
                 this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                 Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this._paddingOffset.copyFrom(Prim2DBase._icPos);
+                this._marginOffset.copyFrom(Prim2DBase._icPos);
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
         }
@@ -2372,14 +2468,16 @@
         private   _actualPosition        : Vector2;
         protected _size                  : Size;
         protected _actualSize            : Size;
+        public    _boundingSize          : Size;
         protected _minSize               : Size;
         protected _maxSize               : Size;
         protected _desiredSize           : Size;
         private   _layoutEngine          : LayoutEngineBase;
-        private   _paddingOffset         : Vector2;
+        private   _marginOffset          : Vector2;
         private   _parentMargingOffset   : Vector2;
         private   _parentContentArea     : Size;
-        public    _layoutArea            : Size;
+        private   _layoutAreaPos         : Vector2;
+        private   _layoutArea            : Size;
         private   _contentArea           : Size;
         private   _rotation              : number;
         private   _scale                 : number;

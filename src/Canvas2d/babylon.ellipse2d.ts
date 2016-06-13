@@ -174,7 +174,7 @@
             if (this._actualSize) {
                 return this._actualSize;
             }
-            return this._size;
+            return this.size;
         }
 
         public set actualSize(value: Size) {
@@ -199,7 +199,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
         }
 
         /**
@@ -240,7 +240,7 @@
             marginLeft        ?: number | string,
             marginRight       ?: number | string,
             marginBottom      ?: number | string,
-            margin            ?: string,
+            margin            ?: number | string,
             marginHAlignment  ?: number,
             marginVAlignment  ?: number,
             marginAlignment   ?: string,
@@ -261,10 +261,15 @@
 
             super(settings);
 
-            let size = settings.size || (new Size(settings.width || 10, settings.height || 10));
-            let sub  = (settings.subdivisions == null) ? 64 : settings.subdivisions;
+            if (settings.size != null) {
+                this.size = settings.size;
+            }
+            else if (settings.width || settings.height) {
+                let size = new Size(settings.width, settings.height);
+                this.size = size;
+            }
 
-            this.size         = size;
+            let sub  = (settings.subdivisions == null) ? 64 : settings.subdivisions;
             this.subdivisions = sub;
         }
 

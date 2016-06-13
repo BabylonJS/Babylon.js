@@ -313,26 +313,34 @@
             this._handlePropChanged(undefined, newValue, propertyName, propInfo, propInfo.typeLevelCompare);
         }
 
+        protected _boundingBoxDirty() {
+            this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
+
+            // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
+            if (this instanceof Prim2DBase) {
+                let curprim: Prim2DBase = (<any>this);
+                while (curprim) {
+                    curprim._boundingSize = null;
+                    curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty);
+                    if (curprim.isSizeAuto) {
+                        curprim.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                    }
+
+                    if (curprim instanceof Group2D) {
+                        if (curprim.isRenderableGroup) {
+                            break;
+                        }
+                    }
+
+                    curprim = curprim.parent;
+                }
+            }
+        }
+
         private _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean) {
             // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
             if (propInfo.dirtyBoundingInfo) {
-                this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
-
-                // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
-                if (this instanceof Prim2DBase) {
-                    let curprim = (<any>this).parent;
-                    while (curprim) {
-                        curprim._boundingInfoDirty = true;
-
-                        if (curprim instanceof Group2D) {
-                            if (curprim.isRenderableGroup) {
-                                break;
-                            }
-                        }
-
-                        curprim = curprim.parent;
-                    }
-                }
+                this._boundingBoxDirty();
             }
 
             // Trigger property changed
@@ -346,6 +354,14 @@
             // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
             if (this instanceof Group2D) {
                 this.handleGroupChanged(propInfo);
+            }
+
+            // Check for parent layout dirty
+            if (this instanceof Prim2DBase) {
+                let p = (<any>this)._parent;
+                if (p != null && p.layoutEngine && (p.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
+                    p._setLayoutDirty();
+                }
             }
 
             // For type level compare, if there's a change of type it's a change of model, otherwise we issue an instance change
@@ -401,7 +417,6 @@
 
         /**
          * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
-         * @returns {} 
          */
         public get levelBoundingInfo(): BoundingInfo2D {
             if (this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {

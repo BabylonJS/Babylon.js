@@ -28,46 +28,45 @@
             this.extent = Vector2.Zero();
         }
 
-        public static CreateFromSize(size: Size, origin?: Vector2): BoundingInfo2D {
+        public static CreateFromSize(size: Size): BoundingInfo2D {
             let r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromSizeToRef(size, r, origin);
+            BoundingInfo2D.CreateFromSizeToRef(size, r);
             return r;
         }
 
-        public static CreateFromRadius(radius: number, origin?: Vector2): BoundingInfo2D {
+        public static CreateFromRadius(radius: number): BoundingInfo2D {
             let r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromRadiusToRef(radius, r, origin);
+            BoundingInfo2D.CreateFromRadiusToRef(radius, r);
             return r;
         }
 
-        public static CreateFromPoints(points: Vector2[], origin?: Vector2): BoundingInfo2D {
+        public static CreateFromPoints(points: Vector2[]): BoundingInfo2D {
             let r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromPointsToRef(points, r, origin);
+            BoundingInfo2D.CreateFromPointsToRef(points, r);
 
             return r;
         }
 
-        public static CreateFromSizeToRef(size: Size, b: BoundingInfo2D, origin?: Vector2) {
-            b.center = new Vector2(size.width / 2, size.height / 2);
-            b.extent = b.center.clone();
-            if (origin) {
-                b.center.x -= size.width * origin.x;
-                b.center.y -= size.height * origin.y;
+        public static CreateFromSizeToRef(size: Size, b: BoundingInfo2D) {
+            if (!size) {
+                size = Size.Zero();
             }
+            b.center.x = +size.width / 2;
+            b.center.y = +size.height / 2;
+            b.extent.x = b.center.x;
+            b.extent.y = b.center.y;
             b.radius = b.extent.length();
         }
 
-        public static CreateFromRadiusToRef(radius: number, b: BoundingInfo2D, origin?: Vector2) {
-            b.center = Vector2.Zero();
-            if (origin) {
-                b.center.x -= radius * origin.x;
-                b.center.y -= radius * origin.y;
-            }
-            b.extent = new Vector2(radius, radius);
-            b.radius = radius;
+        public static CreateFromRadiusToRef(radius: number, b: BoundingInfo2D) {
+            b.center.x = b.center.y = 0;
+            let r = +radius;
+            b.extent.x = r;
+            b.extent.y = r;
+            b.radius = r;
         }
 
-        public static CreateFromPointsToRef(points: Vector2[], b: BoundingInfo2D, origin?: Vector2) {
+        public static CreateFromPointsToRef(points: Vector2[], b: BoundingInfo2D) {
             let xmin = Number.MAX_VALUE, ymin = Number.MAX_VALUE, xmax = Number.MIN_VALUE, ymax = Number.MIN_VALUE;
             for (let p of points) {
                 xmin = Math.min(p.x, xmin);
@@ -75,17 +74,13 @@
                 ymin = Math.min(p.y, ymin);
                 ymax = Math.max(p.y, ymax);
             }
-            BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, b, origin);
+            BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, b);
         }
 
-        public static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D, origin?: Vector2) {
+        public static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D) {
             let w = xmax - xmin;
             let h = ymax - ymin;
             b.center = new Vector2(xmin + w / 2, ymin + h / 2);
-            if (origin) {
-                b.center.x -= w * origin.x;
-                b.center.y -= h * origin.y;
-            }
             b.extent = new Vector2(xmax - b.center.x, ymax - b.center.y);
             b.radius = b.extent.length();
         }
