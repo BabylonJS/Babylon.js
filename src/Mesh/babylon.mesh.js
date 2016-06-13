@@ -12,7 +12,7 @@ var BABYLON;
             this.renderSelf = new Array();
         }
         return _InstancesBatch;
-    }());
+    })();
     BABYLON._InstancesBatch = _InstancesBatch;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
@@ -781,7 +781,7 @@ var BABYLON;
                         engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
                     }
                     else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                        engine.draw(false, 0, instancesCount > 0 ? subMesh.linesIndexCount / 2 : subMesh.linesIndexCount, instancesCount);
                     }
                     break;
                 default:
@@ -2371,7 +2371,6 @@ var BABYLON;
         Mesh._CAP_END = 2;
         Mesh._CAP_ALL = 3;
         return Mesh;
-    }(BABYLON.AbstractMesh));
+    })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.js.map

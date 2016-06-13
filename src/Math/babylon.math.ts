@@ -304,16 +304,16 @@
 
             return this;
         }
-        
-       /**
-         * Multipy an RGBA Color4 value by another and return a new Color4 object
-         * @param color The Color4 (RGBA) value to multiply by
-         * @returns A new Color4.
-         */
+
+        /**
+          * Multipy an RGBA Color4 value by another and return a new Color4 object
+          * @param color The Color4 (RGBA) value to multiply by
+          * @returns A new Color4.
+          */
         public multiply(color: Color4): Color4 {
             return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
         }
-        
+
         /**
          * Multipy an RGBA Color4 value by another and push the result in a reference value
          * @param color The Color4 (RGBA) value to multiply by
@@ -325,10 +325,10 @@
             result.g = this.g * color.g;
             result.b = this.b * color.b;
             result.a = this.a * color.a;
-            
+
             return result;
         }
-        
+
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
@@ -695,7 +695,7 @@
             let s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
             let t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
 
-            return s > 0 && t > 0 && (s + t) < 2 * a * sign;            
+            return s > 0 && t > 0 && (s + t) < 2 * a * sign;
         }
 
         public static Distance(value1: Vector2, value2: Vector2): number {
@@ -1132,9 +1132,10 @@
         }
 
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-            result.x = left.y * right.z - left.z * right.y;
-            result.y = left.z * right.x - left.x * right.z;
-            result.z = left.x * right.y - left.y * right.x;
+            Tmp.Vector3[0].x = left.y * right.z - left.z * right.y;
+            Tmp.Vector3[0].y = left.z * right.x - left.x * right.z;
+            Tmp.Vector3[0].z = left.x * right.y - left.y * right.x;
+            result.copyFrom(Tmp.Vector3[0]);
         }
 
         public static Normalize(vector: Vector3): Vector3 {
@@ -3572,7 +3573,6 @@
             else {
                 normal0 = Vector3.Cross(vt, va);
                 Vector3.CrossToRef(normal0, vt, normal0);
-                //normal0 = Vector3.Cross(normal0, vt);
             }
             normal0.normalize();
             return normal0;

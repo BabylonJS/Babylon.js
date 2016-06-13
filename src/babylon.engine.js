@@ -103,13 +103,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    }());
+    })();
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    }());
+    })();
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -1414,12 +1414,11 @@ var BABYLON;
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode, forceExponantOfTwo) {
-            if (forceExponantOfTwo === void 0) { forceExponantOfTwo = true; }
+        Engine.prototype.createDynamicTexture = function (width, height, generateMipMaps, samplingMode) {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
-            if (forceExponantOfTwo) {
+            if (generateMipMaps) {
                 width = BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
                 height = BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
@@ -1538,8 +1537,8 @@ var BABYLON;
                 type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); //filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //filters.min);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
@@ -1761,6 +1760,34 @@ var BABYLON;
                             gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
                         }
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        // Workaround firefox bug fix https://bugzilla.mozilla.org/show_bug.cgi?id=1221822
+                        // By following the webgl standard changes from Revision 7, 2014/11/24
+                        // Firefox Removed the support for RGB32F, since it is not natively supported on all platforms where WebGL is implemented.
+                        if (textureType === gl.FLOAT && internalFormat === gl.RGB && gl.getError() === 1282) {
+                            BABYLON.Tools.Log("RGB32F not renderable on Firefox, trying fallback to RGBA32F.");
+                            // Data are known to be in +X +Y +Z -X -Y -Z
+                            for (var index = 0; index < facesIndex.length; index++) {
+                                var faceData = rgbeDataArrays[index];
+                                // Create a new RGBA Face.
+                                var newFaceData = new Float32Array(width * height * 4);
+                                for (var x = 0; x < width; x++) {
+                                    for (var y = 0; y < height; y++) {
+                                        var index_1 = (y * width + x) * 3;
+                                        var newIndex = (y * width + x) * 4;
+                                        // Map Old Value to new value.
+                                        newFaceData[newIndex + 0] = faceData[index_1 + 0];
+                                        newFaceData[newIndex + 1] = faceData[index_1 + 1];
+                                        newFaceData[newIndex + 2] = faceData[index_1 + 2];
+                                        // Add fully opaque alpha channel.
+                                        newFaceData[newIndex + 3] = 1;
+                                    }
+                                }
+                                // Reupload the face.
+                                gl.texImage2D(facesIndex[index], 0, gl.RGBA, width, height, 0, gl.RGBA, textureType, newFaceData);
+                            }
+                            // Try to generate mipmap again.
+                            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        }
                     }
                 }
                 else {
@@ -2106,7 +2133,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    }());
+    })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.engine.js.map
