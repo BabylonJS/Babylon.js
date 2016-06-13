@@ -6,13 +6,33 @@
      * Note that for performance reason, each different Layout Engine type must be instanced only once, good practice is through a static `Singleton`property defined in the type itself.
      * If data has to be associated to a given primitive you can use the SmartPropertyPrim.addExternalData API to do it.
      */
-    export class LayoutEngineBase {
+    export class LayoutEngineBase implements ILockable {
+        constructor() {
+            this.layoutDirtyOnPropertyChangedMask = 0;
+        }
+
         public updateLayout(prim: Prim2DBase) {
         }
 
         public get isChildPositionAllowed(): boolean {
             return false;
         }
+
+        isLocked(): boolean {
+            return this._isLocked;
+        }
+
+        lock(): boolean {
+            if (this._isLocked) {
+                return false;
+            }
+            this._isLocked = true;
+            return true;
+        }
+
+        public layoutDirtyOnPropertyChangedMask;
+
+        private _isLocked: boolean;
     }
 
     @className("CanvasLayoutEngine")
@@ -25,10 +45,8 @@
         public updateLayout(prim: Prim2DBase) {
 
             // If this prim is layoutDiry we update  its layoutArea and also the one of its direct children
-            // Then we recurse on each child where their respective layoutDirty will also be test, and so on.
             if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
 
-                // Recurse
                 for (let child of prim.children) {
                     this._doUpdate(child);
                 }
@@ -40,17 +58,17 @@
         private _doUpdate(prim: Prim2DBase) {
             // Canvas ?
             if (prim instanceof Canvas2D) {
-                prim._layoutArea = prim.actualSize;
+                prim.layoutArea = prim.actualSize;
             }
 
             // Direct child of Canvas ?
             else if (prim.parent instanceof Canvas2D) {
-                prim._layoutArea = prim.owner.actualSize;
+                prim.layoutArea = prim.owner.actualSize;
             }
 
             // Indirect child of Canvas
             else {
-                prim._layoutArea = prim.parent.contentArea;
+                prim.layoutArea = prim.parent.contentArea;
             }
         }
 
@@ -59,4 +77,86 @@
         }
     }
 
+
+    @className("StackPanelLayoutEngine")
+    export class StackPanelLayoutEngine extends LayoutEngineBase {
+        constructor() {
+            super();
+            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId;
+        }
+
+        public static get Horizontal(): StackPanelLayoutEngine {
+            if (!StackPanelLayoutEngine._horizontal) {
+                StackPanelLayoutEngine._horizontal = new StackPanelLayoutEngine();
+                StackPanelLayoutEngine._horizontal.isHorizontal = true;
+                StackPanelLayoutEngine._horizontal.lock();
+            }
+
+            return StackPanelLayoutEngine._horizontal;
+        }
+
+        public static get Vertical(): StackPanelLayoutEngine {
+            if (!StackPanelLayoutEngine._vertical) {
+                StackPanelLayoutEngine._vertical = new StackPanelLayoutEngine();
+                StackPanelLayoutEngine._vertical.isHorizontal = false;
+                StackPanelLayoutEngine._vertical.lock();
+            }
+
+            return StackPanelLayoutEngine._vertical;
+        }
+        private static _horizontal: StackPanelLayoutEngine = null;
+        private static _vertical: StackPanelLayoutEngine = null;
+
+
+        get isHorizontal(): boolean {
+            return this._isHorizontal;
+        }
+
+        set isHorizontal(val: boolean) {
+            if (this.isLocked()) {
+                return;
+            }
+            this._isHorizontal = val;
+        }
+
+        private _isHorizontal: boolean = true;
+
+        public updateLayout(prim: Prim2DBase) {
+            if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
+
+                let x = 0;
+                let y = 0;
+                let h = this.isHorizontal;
+                let max = 0;
+
+                for (let child of prim.children) {
+                    let layoutArea = child.layoutArea;
+                    child.margin.computeArea(child.actualSize, layoutArea);
+
+                    max = Math.max(max, h ? layoutArea.height : layoutArea.width);
+
+                }
+
+                for (let child of prim.children) {
+                    child.layoutAreaPos = new Vector2(x, y);
+
+                    let layoutArea = child.layoutArea;
+
+                    if (h) {
+                        x += layoutArea.width;
+                        child.layoutArea = new Size(layoutArea.width, max);
+                    } else {
+                        y += layoutArea.height;
+                        child.layoutArea = new Size(max, layoutArea.height);
+                    }
+                }
+                prim._clearFlags(SmartPropertyPrim.flagLayoutDirty);
+            }
+
+        }
+
+        get isChildPositionAllowed(): boolean {
+            return false;
+        }
+    }
 }

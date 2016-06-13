@@ -1127,7 +1127,7 @@
             marginLeft               ?: number | string,
             marginRight              ?: number | string,
             marginBottom             ?: number | string,
-            margin                   ?: string,
+            margin                   ?: number | string,
             marginHAlignment         ?: number,
             marginVAlignment         ?: number,
             marginAlignment          ?: string,

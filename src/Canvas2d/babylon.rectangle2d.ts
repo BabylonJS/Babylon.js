@@ -171,21 +171,12 @@
         public static notRoundedProperty: Prim2DPropInfo;
         public static roundRadiusProperty: Prim2DPropInfo;
 
-//        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.sizeProperty = pi, false, true)
-        public get size(): Size {
-            return this._size;
-        }
-
-        public set size(value: Size) {
-            this._size = value;
-        }
-
         @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.actualSizeProperty = pi, false, true)
         public get actualSize(): Size {
             if (this._actualSize) {
                 return this._actualSize;
             }
-            return this._size;
+            return this.size;
         }
 
         public set actualSize(value: Size) {
@@ -289,15 +280,8 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
         }
-
-        //protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-        //    this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-        //    this.size = size;
-        //    this.notRounded = !roundRadius;
-        //    this.roundRadius = roundRadius;
-        //}
 
         /**
          * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
@@ -338,7 +322,7 @@
             marginLeft       ?: number | string,
             marginRight      ?: number | string,
             marginBottom     ?: number | string,
-            margin           ?: string,
+            margin           ?: number | string,
             marginHAlignment ?: number,
             marginVAlignment ?: number,
             marginAlignment  ?: string,
@@ -358,11 +342,19 @@
 
             super(settings);
 
-            let size            = settings.size || (new Size((settings.width === null) ? null : (settings.width || 10), (settings.height === null) ? null : (settings.height || 10)));
+            if (settings.size != null) {
+                this.size = settings.size;
+            }
+            else if (settings.width || settings.height) {
+                let size = new Size(settings.width, settings.height);
+                this.size = size;
+            }
+
+            //let size            = settings.size || (new Size((settings.width === null) ? null : (settings.width || 10), (settings.height === null) ? null : (settings.height || 10)));
             let roundRadius     = (settings.roundRadius == null) ? 0 : settings.roundRadius;
             let borderThickness = (settings.borderThickness == null) ? 1 : settings.borderThickness;
 
-            this.size            = size;
+            //this.size            = size;
             this.roundRadius     = roundRadius;
             this.borderThickness = borderThickness;
         }

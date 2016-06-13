@@ -191,7 +191,7 @@
 
         public set points(value: Vector2[]) {
             this._points = value;
-            this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
+            this._boundingBoxDirty();
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Lines2D.fillThicknessProperty = pi)
@@ -371,7 +371,7 @@
             marginLeft       ?: number | string,
             marginRight      ?: number | string,
             marginBottom     ?: number | string,
-            margin           ?: string,
+            margin           ?: number | string,
             marginHAlignment ?: number,
             marginVAlignment ?: number,
             marginAlignment  ?: string,
@@ -394,6 +394,8 @@
             this._fillIB   = null;
             this._borderVB = null;
             this._borderIB = null;
+
+            this._size = Size.Zero();
 
             this._boundingMin = null;
             this._boundingMax = null;

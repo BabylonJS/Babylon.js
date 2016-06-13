@@ -141,7 +141,7 @@
             if (this._actualSize) {
                 return this._actualSize;
             }
-            return this._size;
+            return this.size;
         }
 
         public set actualSize(value: Size) {
@@ -236,7 +236,7 @@
             marginLeft       ?: number | string,
             marginRight      ?: number | string,
             marginBottom     ?: number | string,
-            margin           ?: string,
+            margin           ?: number | string,
             marginHAlignment ?: number,
             marginVAlignment ?: number,
             marginAlignment  ?: string,
