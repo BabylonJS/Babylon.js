@@ -1132,9 +1132,10 @@
         }
 
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-            result.x = left.y * right.z - left.z * right.y;
-            result.y = left.z * right.x - left.x * right.z;
-            result.z = left.x * right.y - left.y * right.x;
+            Tmp.Vector3[0].x = left.y * right.z - left.z * right.y;
+            Tmp.Vector3[0].y = left.z * right.x - left.x * right.z;
+            Tmp.Vector3[0].z = left.x * right.y - left.y * right.x;
+            result.copyFrom(Tmp.Vector3[0]);
         }
 
         public static Normalize(vector: Vector3): Vector3 {
@@ -3566,7 +3567,7 @@
             }
             else {
                 normal0 = Vector3.Cross(vt, va);
-                normal0 = Vector3.Cross(normal0, vt);
+                Vector3.CrossToRef(normal0, vt, normal0);
             }
             normal0.normalize();
             return normal0;
