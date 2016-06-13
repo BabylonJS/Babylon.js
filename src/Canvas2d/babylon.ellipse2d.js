@@ -138,7 +138,7 @@ var BABYLON;
             return true;
         };
         return Ellipse2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Ellipse2DRenderCache = Ellipse2DRenderCache;
     var Ellipse2DInstanceData = (function (_super) {
         __extends(Ellipse2DInstanceData, _super);
@@ -156,7 +156,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Ellipse2DInstanceData.prototype, "properties", null);
         return Ellipse2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Ellipse2DInstanceData = Ellipse2DInstanceData;
     var Ellipse2D = (function (_super) {
         __extends(Ellipse2D, _super);
@@ -229,7 +229,7 @@ var BABYLON;
                 ellipse.setupEllipse2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, new BABYLON.Size(10, 10), 64, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
             }
             else {
-                var fill = void 0;
+                var fill;
                 if (options.fill === undefined) {
                     fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
                 }
@@ -346,6 +346,6 @@ var BABYLON;
             BABYLON.className("Ellipse2D")
         ], Ellipse2D);
         return Ellipse2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Ellipse2D = Ellipse2D;
 })(BABYLON || (BABYLON = {}));
