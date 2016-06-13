@@ -451,8 +451,8 @@
                 cache[1] = y;
                 changed = true;
             }
-            if (cache[2] !== y) {
-                cache[2] = y;
+            if (cache[2] !== z) {
+                cache[2] = z;
                 changed = true;
             }
 
@@ -477,8 +477,8 @@
                 cache[1] = y;
                 changed = true;
             }
-            if (cache[2] !== y) {
-                cache[2] = y;
+            if (cache[2] !== z) {
+                cache[2] = z;
                 changed = true;
             }
             if (cache[3] !== w) {
