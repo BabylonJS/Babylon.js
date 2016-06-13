@@ -579,6 +579,7 @@ var BABYLON;
                 Tools.DumpFramebuffer(width, height, engine, successCallback);
             });
             scene.incrementRenderId();
+            scene.resetCachedMaterial();
             texture.render(true);
             texture.dispose();
             if (previousCamera) {
