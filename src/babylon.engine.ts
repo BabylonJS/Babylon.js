@@ -2147,12 +2147,47 @@
                     }
                     else {
                         // Data are known to be in +X +Y +Z -X -Y -Z
-                        for (var index = 0; index < facesIndex.length; index++) {
-                            var faceData = rgbeDataArrays[index];
+                        for (let index = 0; index < facesIndex.length; index++) {
+                            let faceData = rgbeDataArrays[index];
                             gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
                         }
 
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        
+                        // Workaround firefox bug fix https://bugzilla.mozilla.org/show_bug.cgi?id=1221822
+                        // By following the webgl standard changes from Revision 7, 2014/11/24
+                        // Firefox Removed the support for RGB32F, since it is not natively supported on all platforms where WebGL is implemented.
+                        if (textureType === gl.FLOAT && internalFormat === gl.RGB && gl.getError() === 1282) {
+                            Tools.Log("RGB32F not renderable on Firefox, trying fallback to RGBA32F.");
+
+                            // Data are known to be in +X +Y +Z -X -Y -Z
+                            for (let index = 0; index < facesIndex.length; index++) {
+                                let faceData = <Float32Array>rgbeDataArrays[index];
+                                
+                                // Create a new RGBA Face.
+                                let newFaceData = new Float32Array(width * height * 4);
+                                for (let x = 0; x < width; x++) {
+                                    for (let y = 0; y < height; y++) {
+                                        let index    = (y * width + x) * 3;
+                                        let newIndex = (y * width + x) * 4;
+                                        
+                                        // Map Old Value to new value.
+                                        newFaceData[newIndex + 0] = faceData[index + 0];
+                                        newFaceData[newIndex + 1] = faceData[index + 1];
+                                        newFaceData[newIndex + 2] = faceData[index + 2];
+
+                                        // Add fully opaque alpha channel.
+                                        newFaceData[newIndex + 3] = 1;
+                                    }
+                                }
+
+                                // Reupload the face.
+                                gl.texImage2D(facesIndex[index], 0, gl.RGBA, width, height, 0, gl.RGBA, textureType, newFaceData);
+                            }
+
+                            // Try to generate mipmap again.
+                            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        }
                     }
                 }
                 else {
