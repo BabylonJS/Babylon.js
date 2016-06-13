@@ -9,9 +9,6 @@ attribute vec2 position;
 att vec2 zBias;
 att vec4 transformX;
 att vec4 transformY;
-att vec2 origin;
-att vec2 boundingMin;
-att vec2 boundingMax;
 
 #ifdef FillSolid
 att vec4 fillSolidColor;
@@ -22,6 +19,8 @@ att vec4 borderSolidColor;
 #endif
 
 #ifdef FillGradient
+att vec2 boundingMin;
+att vec2 boundingMax;
 att vec4 fillGradientColor1;
 att vec4 fillGradientColor2;
 att vec4 fillGradientTY;
@@ -60,7 +59,7 @@ void main(void) {
 #endif
 
 	vec4 pos;
-	pos.xy = position.xy - (origin.xy * (boundingMax - boundingMin));
+	pos.xy = position.xy;
 	pos.z = 1.0;
 	pos.w = 1.0;
 	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);

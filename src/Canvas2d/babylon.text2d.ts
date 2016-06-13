@@ -151,7 +151,11 @@
         public set text(value: string) {
             this._text = value;
             this._textSize = null;    // A change of text will reset the TextSize which will be recomputed next time it's used
+            this._size = null;
             this._updateCharCount();
+
+            // Trigger a textSize to for a sizeChange if necessary, which is needed for layout to recompute
+            let s = this.textSize;
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.sizeProperty = pi)
@@ -170,13 +174,16 @@
             if (this._actualSize) {
                 return this._actualSize;
             }
-
             return this.size;
         }
 
         public get textSize(): Size {
-            if (!this._textSize) {
-                this._textSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+            if (!this._textSize && this.owner) {
+                let newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                if (newSize !== this._textSize) {
+                    this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                }
+                this._textSize = newSize;
             }
             return this._textSize;
         }
@@ -204,19 +211,8 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
+            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
         }
-
-        //protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, tabulationSize: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-        //    this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-
-        //    this.fontName = fontName;
-        //    this.defaultFontColor = defaultFontColor;
-        //    this.text = text;
-        //    this.size = areaSize;
-        //    this._tabulationSize = tabulationSize;
-        //    this.isAlphaTest = true;
-        //}
 
         /**
          * Create a Text primitive
@@ -264,7 +260,6 @@
             padding          ?: string,
             paddingHAlignment?: number,
             paddingVAlignment?: number,
-            paddingAlignment ?: string,
         }) {
 
             if (!settings) {
@@ -357,7 +352,6 @@
                 let d = <Text2DInstanceData>part;
                 let texture = this.fontTexture;
                 let ts = texture.getSize();
-                let textSize = texture.measureText(this.text, this._tabulationSize);
                 let offset = Vector2.Zero();
                 let charxpos = 0;
                 d.dataElementCount = this._charCount;
@@ -384,7 +378,7 @@
                         continue;
                     }
 
-                    this.updateInstanceDataPart(d, offset, textSize);
+                    this.updateInstanceDataPart(d, offset);
 
                     let ci = texture.getChar(char);
                     offset.x += ci.charWidth;

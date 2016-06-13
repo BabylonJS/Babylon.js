@@ -184,7 +184,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
+            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         }
 
         public getAnimatables(): IAnimatable[] {
@@ -200,24 +200,6 @@
             // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
             return true;
         }
-
-        //protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean, alignToPixel: boolean, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-        //    this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-        //    this.texture = texture;
-        //    this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        //    this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
-        //    this.size = spriteSize || null;
-        //    this.spriteLocation = spriteLocation || new Vector2(0,0);
-        //    this.spriteFrame = 0;
-        //    this.invertY = invertY;
-        //    this.alignToPixel = alignToPixel;
-        //    this._isTransparent = true;
-
-        //    if (!this.size) {
-        //        var s = texture.getSize();
-        //        this.size = new Size(s.width, s.height);
-        //    }
-        //}
 
         /**
          * Create an 2D Sprite primitive
@@ -265,7 +247,6 @@
             padding          ?: string,
             paddingHAlignment?: number,
             paddingVAlignment?: number,
-            paddingAlignment ?: string,
         }) {
 
             if (!settings) {

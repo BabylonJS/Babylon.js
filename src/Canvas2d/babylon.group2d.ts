@@ -65,13 +65,14 @@
             padding           ?: string,
             paddingHAlignment ?: number,
             paddingVAlignment ?: number,
-            paddingAlignment  ?: string,
 
         }) {
             if (settings == null) {
                 settings = {};
             }
-
+            if (settings.origin == null) {
+                settings.origin = new Vector2(0, 0);
+            }
             super(settings);
  
             let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
@@ -83,8 +84,6 @@
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
             var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size:null, isVisible:true});
-            //g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero(), Vector2.Zero(), null, true, Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, null, null, null, null, null, null);
-            //g.origin = Vector2.Zero();
             return g;
             
         }
@@ -143,13 +142,6 @@
             return true;
         }
 
-        //protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, isVisible: boolean, cacheBehavior: number, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, hAlign: number, vAlign: number) {
-        //    this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom , hAlign, vAlign);
-        //    this._cacheBehavior = cacheBehavior;
-        //    this.size = size;
-        //    this._viewportPosition = Vector2.Zero();
-        //}
-
         /**
          * @returns Returns true if the Group render content, false if it's a logical group only
          */
@@ -203,7 +195,7 @@
 
             // Compare the size with the one we previously had, if it differs we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
             if (!actualSize.equals(this._actualSize)) {
-                this._instanceDirtyFlags |= Group2D.actualSizeProperty.flagId;
+                this.onPrimitivePropertyDirty(Group2D.actualSizeProperty.flagId);
                 this._actualSize = actualSize;
                 this.handleGroupChanged(Group2D.actualSizeProperty);
             }
@@ -688,8 +680,8 @@
 
             // For now we only support these property changes
             // TODO: add more! :)
-            if (prop.id === Prim2DBase.positionProperty.id) {
-                rd._cacheRenderSprite.position = this.position.clone();
+            if (prop.id === Prim2DBase.actualPositionProperty.id) {
+                rd._cacheRenderSprite.actualPosition = this.actualPosition.clone();
             } else if (prop.id === Prim2DBase.rotationProperty.id) {
                 rd._cacheRenderSprite.rotation = this.rotation;
             } else if (prop.id === Prim2DBase.scaleProperty.id) {

@@ -272,11 +272,6 @@
             return null;
         }
 
-        @instanceData()
-        get origin(): Vector2 {
-            return null;
-        }
-
         getClassTreeInfo(): ClassTreeInfo<InstanceClassInfo, InstancePropInfo> {
             if (!this.typeInfo) {
                 this.typeInfo = ClassTreeInfo.get<InstanceClassInfo, InstancePropInfo>(Object.getPrototypeOf(this));
@@ -356,7 +351,6 @@
         constructor(settings?: {
             parent       ?: Prim2DBase, 
             id           ?: string,
-            position     ?: Vector2,
             origin       ?: Vector2,
             isVisible    ?: boolean,
         }) {
@@ -775,10 +769,9 @@
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
-         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text). You MUST also set customSize.
-         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin property.
+         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text).
          */
-        protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null, customSize: Size = null) {
+        protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
             let size = (<Size>this.renderGroup.viewportSize);
             let zBias = this.actualZOffset;
@@ -786,9 +779,9 @@
             let offX = 0;
             let offY = 0;
             // If there's an offset, apply the global transformation matrix on it to get a global offset
-            if (positionOffset && customSize) {
-                offX = (positionOffset.x-(customSize.width*this.origin.x)) * t.m[0] + (positionOffset.y-(customSize.height*this.origin.y)) * t.m[4];
-                offY = (positionOffset.x-(customSize.width*this.origin.x)) * t.m[1] + (positionOffset.y-(customSize.height*this.origin.y)) * t.m[5];
+            if (positionOffset) {
+                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
+                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[5];
             }
 
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
@@ -803,7 +796,6 @@
             let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
             part.transformX = tx;
             part.transformY = ty;
-            part.origin = this.origin;
 
             // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
             part.zBias = new Vector2(zBias, invZBias);

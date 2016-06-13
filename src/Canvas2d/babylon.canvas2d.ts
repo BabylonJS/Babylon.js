@@ -58,8 +58,8 @@
             origin                    ?: Vector2,
             isVisible                 ?: boolean,
             backgroundRoundRadius     ?: number,
-            backgroundFill            ?: IBrush2D,
-            backgroundBorder          ?: IBrush2D,
+            backgroundFill            ?: IBrush2D | string,
+            backgroundBorder          ?: IBrush2D | string,
             backgroundBorderThickNess ?: number,
         }) {
             super(settings);
@@ -83,7 +83,7 @@
                 }
 
                 if (settings.backgroundBorder != null) {
-                    this.backgroundBorder = settings.backgroundBorder;
+                    this.backgroundBorder = <IBrush2D>settings.backgroundBorder;        // TOFIX
                 }
 
                 if (settings.backgroundBorderThickNess != null) {
@@ -91,7 +91,7 @@
                 }
 
                 if (settings.backgroundFill != null) {
-                    this.backgroundFill = settings.backgroundFill;
+                    this.backgroundFill = <IBrush2D>settings.backgroundFill;
                 }
 
                 this._background._patchHierarchy(this);
@@ -225,8 +225,8 @@
             let res = new Vector2(v.x*rsf, v.y*rsf);
             let size = this.actualSize;
             let o = this.origin;
-            res.x += size.width * o.x;
-            res.y += size.width * o.y;
+            res.x += size.width * 0.5;  // res is centered, make it relative to bottom/left
+            res.y += size.width * 0.5;
             return res;
         }
 
@@ -350,8 +350,8 @@
                 var x = localPosition.x - viewport.x;
                 var y = localPosition.y - viewport.y;
 
-                pii.canvasPointerPos.x = x - this.position.x;
-                pii.canvasPointerPos.y = engine.getRenderHeight() -y - this.position.y;
+                pii.canvasPointerPos.x = x - this.actualPosition.x;
+                pii.canvasPointerPos.y = engine.getRenderHeight() -y - this.actualPosition.y;
             } else {
                 pii.canvasPointerPos.x = localPosition.x;
                 pii.canvasPointerPos.y = localPosition.y;
@@ -479,9 +479,9 @@
         private _bubbleNotifyPrimPointerObserver(prim: Prim2DBase, mask: number, eventData: any) {
             let ppi = this._primPointerInfo;
 
-            // In case of PointerOver/Out we will first notify the children (but the deepest to the closest) with PointerEnter/Leave
+            // In case of PointerOver/Out we will first notify the parent with PointerEnter/Leave
             if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) !== 0) {
-                this._notifChildren(prim, mask);
+                this._notifParents(prim, mask);
             }
 
             let bubbleCancelled = false;
@@ -623,27 +623,27 @@
             }
         }
 
-        _notifChildren(prim: Prim2DBase, mask: number) {
+        _notifParents(prim: Prim2DBase, mask: number) {
             let pii = this._primPointerInfo;
 
-            prim.children.forEach(curChild => {
-                // Recurse first, we want the deepest to be notified first
-                this._notifChildren(curChild, mask);
+            let curPrim: Prim2DBase = this;
 
-                this._updatePrimPointerPos(curChild);
+            while (curPrim) {
+                this._updatePrimPointerPos(curPrim);
 
                 // Fire the proper notification
                 if (mask === PrimitivePointerInfo.PointerOver) {
-                    this._debugExecObserver(curChild, PrimitivePointerInfo.PointerEnter);
-                    curChild._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerEnter);
+                    this._debugExecObserver(curPrim, PrimitivePointerInfo.PointerEnter);
+                    curPrim._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerEnter);
                 }
 
                 // Trigger a PointerLeave corresponding to the PointerOut
                 else if (mask === PrimitivePointerInfo.PointerOut) {
-                    this._debugExecObserver(curChild, PrimitivePointerInfo.PointerLeave);
-                    curChild._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerLeave);
+                    this._debugExecObserver(curPrim, PrimitivePointerInfo.PointerLeave);
+                    curPrim._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerLeave);
                 }
-            });
+                curPrim = curPrim.parent;
+            }
         }
 
         /**
@@ -893,7 +893,7 @@
                 }
 
                 // Dirty the Layout at the Canvas level to recompute as the size changed
-                this._setFlags(SmartPropertyPrim.flagLayoutDirty);
+                this._setLayoutDirty();
             }
 
             var context = new PrepareRender2DContext();
@@ -989,7 +989,7 @@
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    let sprite = new Sprite2D(map, { parent: parent, id:`__cachedSpriteOfGroup__${group.id}`, x: group.position.x, y: group.position.y, spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = new Sprite2D(map, { parent: parent, id:`__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize:node.contentSize, spriteLocation:node.pos});
                     sprite.origin = group.origin.clone();
                     res.sprite = sprite;
                 }
@@ -1025,6 +1025,65 @@
             return Canvas2D._gradientColorBrushes.getOrAddWithFactory(GradientColorBrush2D.BuildKey(color1, color2, translation, rotation, scale), () => new GradientColorBrush2D(color1, color2, translation, rotation, scale, true));
         }
 
+        public static GetBrushFromString(brushString: string): IBrush2D {
+            // Note: yes, I hate/don't know RegEx.. Feel free to add your contribution to the cause!
+
+            brushString = brushString.trim();
+            let split = brushString.split(",");
+
+            // Solid, formatted as: "[solid:]#FF808080"
+            if (split.length === 1) {
+                let value: string = null;
+                if (brushString.indexOf("solid:") === 0) {
+                    value = brushString.substr(6).trim();
+                } else if (brushString.indexOf("#") === 0) {
+                    value = brushString;
+                } else {
+                    return null;
+                }
+                return Canvas2D.GetSolidColorBrushFromHex(value);
+            }
+
+            // Gradient, formatted as: "[gradient:]#FF808080, #FFFFFFF[, [10:20], 180, 1]" [10:20] is a real formatting expected not a EBNF notation
+            // Order is: gradient start, gradient end, translation, rotation (degree), scale
+            else {
+                if (split[0].indexOf("gradient:") === 0) {
+                    split[0] = split[0].substr(9).trim();
+                }
+
+                try {
+                    let start = Color4.FromHexString(split[0].trim());
+                    let end = Color4.FromHexString(split[1].trim());
+
+                    let t: Vector2 = Vector2.Zero();
+                    if (split.length > 2) {
+                        let v = split[2].trim();
+                        if (v.charAt(0) !== "[" || v.charAt(v.length - 1) !== "]") {
+                            return null;
+                        }
+                        let sep = v.indexOf(":");
+                        let x = parseFloat(v.substr(1, sep));
+                        let y = parseFloat(v.substr(sep + 1, v.length - (sep + 1)));
+                        t = new Vector2(x, y);
+                    }
+
+                    let r: number = 0;
+                    if (split.length > 3) {
+                        r = Tools.ToRadians(parseFloat(split[3].trim()));
+                    }
+
+                    let s: number = 1;
+                    if (split.length > 4) {
+                        s = parseFloat(split[4].trim());
+                    }
+
+                    return Canvas2D.GetGradientColorBrush(start, end, t, r, s);
+                } catch (e) {
+                    return null;
+                } 
+            }
+        }
+
         private static _solidColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
         private static _gradientColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
     }
@@ -1052,16 +1111,16 @@
 
             children                 ?: Array<Prim2DBase>,
             id                       ?: string,
-            position                 ?: Vector3,
-            rotation                 ?: Quaternion,
+            worldPosition            ?: Vector3,
+            worldRotation            ?: Quaternion,
             renderScaleFactor        ?: number,
             sideOrientation          ?: number,
             cachingStrategy          ?: number,
             enableInteraction        ?: boolean,
             isVisible                ?: boolean,
             backgroundRoundRadius    ?: number,
-            backgroundFill           ?: IBrush2D,
-            backgroundBorder         ?: IBrush2D,
+            backgroundFill           ?: IBrush2D | string,
+            backgroundBorder         ?: IBrush2D | string,
             backgroundBorderThickNess?: number,
             customWorldSpaceNode     ?: Node,
             marginTop                ?: number | string,
@@ -1116,8 +1175,8 @@
                 mtl.specularColor = new Color3(0, 0, 0);
                 mtl.disableLighting = true;
                 mtl.useAlphaFromDiffuseTexture = true;
-                plane.position = settings && settings.position || Vector3.Zero();
-                plane.rotationQuaternion = settings && settings.rotation || Quaternion.Identity();
+                plane.position = settings && settings.worldPosition || Vector3.Zero();
+                plane.rotationQuaternion = settings && settings.worldRotation || Quaternion.Identity();
                 plane.material = mtl;
                 this._worldSpaceNode = plane;
             } else {
@@ -1161,8 +1220,8 @@
             enableInteraction         ?: boolean,
             isVisible                 ?: boolean,
             backgroundRoundRadius     ?: number,
-            backgroundFill            ?: IBrush2D,
-            backgroundBorder          ?: IBrush2D,
+            backgroundFill            ?: IBrush2D | string,
+            backgroundBorder          ?: IBrush2D | string,
             backgroundBorderThickNess ?: number,
             marginTop                 ?: number | string,
             marginLeft                ?: number | string,
