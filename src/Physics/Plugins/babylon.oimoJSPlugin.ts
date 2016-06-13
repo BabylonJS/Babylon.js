@@ -307,6 +307,7 @@ module BABYLON {
 
                 }
                 impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+                impostor.object.rotationQuaternion.normalize();
             }
         }
 
