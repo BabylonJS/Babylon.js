@@ -2011,7 +2011,10 @@
         }
 
         public static RotationAxis(axis: Vector3, angle: number): Quaternion {
-            var result = new Quaternion();
+            return Quaternion.RotationAxisToRef(axis, angle, new Quaternion());
+        }
+
+        public static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion {
             var sin = Math.sin(angle / 2);
 
             axis.normalize();
@@ -2033,14 +2036,10 @@
         }
 
         public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion {
-            var result = new Quaternion();
-
-            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, result);
-
-            return result;
+            return Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, new Quaternion());
         }
 
-        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
+        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): Quaternion {
             // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
@@ -2057,6 +2056,8 @@
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+
+            return result;
         }
 
         public static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion {
