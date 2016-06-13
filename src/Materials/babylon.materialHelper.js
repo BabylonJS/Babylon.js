@@ -230,6 +230,7 @@ var BABYLON;
             }
         };
         return MaterialHelper;
-    })();
+    }());
     BABYLON.MaterialHelper = MaterialHelper;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.materialHelper.js.map

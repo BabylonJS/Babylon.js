@@ -11,6 +11,7 @@ var BABYLON;
             _super.call(this, name, "blackAndWhite", null, null, options, camera, samplingMode, engine, reusable);
         }
         return BlackAndWhitePostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.BlackAndWhitePostProcess = BlackAndWhitePostProcess;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.blackAndWhitePostProcess.js.map

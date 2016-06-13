@@ -60,7 +60,8 @@ var BABYLON;
             BABYLON.serialize()
         ], FreeCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
         return FreeCameraGamepadInput;
-    })();
+    }());
     BABYLON.FreeCameraGamepadInput = FreeCameraGamepadInput;
     BABYLON.CameraInputTypes["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.freecamera.input.gamepad.js.map

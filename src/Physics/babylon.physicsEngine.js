@@ -146,6 +146,7 @@ var BABYLON;
         PhysicsEngine.ConvexHullImpostor = -1;
         PhysicsEngine.Epsilon = 0.001;
         return PhysicsEngine;
-    })();
+    }());
     BABYLON.PhysicsEngine = PhysicsEngine;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.physicsEngine.js.map

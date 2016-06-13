@@ -35,7 +35,7 @@ var BABYLON;
         LockableBase.prototype.onLock = function () {
         };
         return LockableBase;
-    })();
+    }());
     BABYLON.LockableBase = LockableBase;
     /**
      * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
@@ -82,7 +82,7 @@ var BABYLON;
             BABYLON.className("SolidColorBrush2D")
         ], SolidColorBrush2D);
         return SolidColorBrush2D;
-    })(LockableBase);
+    }(LockableBase));
     BABYLON.SolidColorBrush2D = SolidColorBrush2D;
     var GradientColorBrush2D = (function (_super) {
         __extends(GradientColorBrush2D, _super);
@@ -179,6 +179,7 @@ var BABYLON;
             BABYLON.className("GradientColorBrush2D")
         ], GradientColorBrush2D);
         return GradientColorBrush2D;
-    })(LockableBase);
+    }(LockableBase));
     BABYLON.GradientColorBrush2D = GradientColorBrush2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.brushes2d.js.map

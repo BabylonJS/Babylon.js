@@ -46,6 +46,7 @@ var BABYLON;
             BABYLON.serializeAsVector3()
         ], HemisphericLight.prototype, "direction", void 0);
         return HemisphericLight;
-    })(BABYLON.Light);
+    }(BABYLON.Light));
     BABYLON.HemisphericLight = HemisphericLight;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.hemisphericLight.js.map

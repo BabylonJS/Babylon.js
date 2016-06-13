@@ -13,8 +13,32 @@ var BABYLON;
 (function (BABYLON) {
     var Shape2D = (function (_super) {
         __extends(Shape2D, _super);
-        function Shape2D() {
-            _super.apply(this, arguments);
+        function Shape2D(settings) {
+            _super.call(this, settings);
+            if (!settings) {
+                settings = {};
+            }
+            var borderBrush = null;
+            if (settings.border) {
+                if (typeof (settings.border) === "string") {
+                    borderBrush = BABYLON.Canvas2D.GetBrushFromString(settings.border);
+                }
+                else {
+                    borderBrush = settings.border;
+                }
+            }
+            var fillBrush = null;
+            if (settings.fill) {
+                if (typeof (settings.fill) === "string") {
+                    fillBrush = BABYLON.Canvas2D.GetBrushFromString(settings.fill);
+                }
+                else {
+                    fillBrush = settings.fill;
+                }
+            }
+            this.border = borderBrush;
+            this.fill = fillBrush;
+            this.borderThickness = settings.borderThickness;
         }
         Object.defineProperty(Shape2D.prototype, "border", {
             get: function () {
@@ -48,12 +72,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Shape2D.prototype.setupShape2D = function (owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment || BABYLON.Prim2DBase.HAlignLeft, vAlignment || BABYLON.Prim2DBase.VAlignTop);
-            this.border = border;
-            this.fill = fill;
-            this.borderThickness = borderThickness;
-        };
         Shape2D.prototype.getUsedShaderCategories = function (dataPart) {
             var cat = _super.prototype.getUsedShaderCategories.call(this, dataPart);
             // Fill Part
@@ -143,7 +161,7 @@ var BABYLON;
             BABYLON.className("Shape2D")
         ], Shape2D);
         return Shape2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Shape2D = Shape2D;
     var Shape2DInstanceData = (function (_super) {
         __extends(Shape2DInstanceData, _super);
@@ -243,6 +261,7 @@ var BABYLON;
             BABYLON.instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
         ], Shape2DInstanceData.prototype, "borderGradientTY", null);
         return Shape2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Shape2DInstanceData = Shape2DInstanceData;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.shape2d.js.map

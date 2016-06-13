@@ -111,7 +111,8 @@ var BABYLON;
             BABYLON.serialize()
         ], FreeCameraKeyboardMoveInput.prototype, "keysRight", void 0);
         return FreeCameraKeyboardMoveInput;
-    })();
+    }());
     BABYLON.FreeCameraKeyboardMoveInput = FreeCameraKeyboardMoveInput;
     BABYLON.CameraInputTypes["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.freecamera.input.keyboard.js.map

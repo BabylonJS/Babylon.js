@@ -155,6 +155,7 @@ var BABYLON;
             return destination;
         };
         return SerializationHelper;
-    })();
+    }());
     BABYLON.SerializationHelper = SerializationHelper;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.decorators.js.map

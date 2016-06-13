@@ -136,6 +136,7 @@ var BABYLON;
             return true;
         };
         return Bone;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.Bone = Bone;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.bone.js.map

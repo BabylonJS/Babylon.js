@@ -196,7 +196,8 @@ var BABYLON;
                 return resultArray;
             };
             return HDRTools;
-        })();
+        }());
         Internals.HDRTools = HDRTools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tools.hdr.js.map

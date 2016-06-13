@@ -96,6 +96,7 @@ var BABYLON;
             }
         };
         return SoundTrack;
-    })();
+    }());
     BABYLON.SoundTrack = SoundTrack;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.soundtrack.js.map

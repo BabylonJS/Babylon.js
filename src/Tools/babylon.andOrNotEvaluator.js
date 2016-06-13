@@ -89,7 +89,8 @@ var BABYLON;
                 return booleanString;
             };
             return AndOrNotEvaluator;
-        })();
+        }());
         Internals.AndOrNotEvaluator = AndOrNotEvaluator;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.andOrNotEvaluator.js.map

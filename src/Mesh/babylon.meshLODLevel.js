@@ -8,7 +8,8 @@ var BABYLON;
                 this.mesh = mesh;
             }
             return MeshLODLevel;
-        })();
+        }());
         Internals.MeshLODLevel = MeshLODLevel;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.meshLODLevel.js.map

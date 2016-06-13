@@ -84,7 +84,7 @@ var BABYLON;
             BABYLON.serializeAsMeshReference("lockedTargetId")
         ], FollowCamera.prototype, "target", void 0);
         return FollowCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.FollowCamera = FollowCamera;
     var ArcFollowCamera = (function (_super) {
         __extends(ArcFollowCamera, _super);
@@ -112,6 +112,7 @@ var BABYLON;
             return "ArcFollowCamera";
         };
         return ArcFollowCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.ArcFollowCamera = ArcFollowCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.followCamera.js.map
