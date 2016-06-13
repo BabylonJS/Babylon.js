@@ -49,7 +49,6 @@ var BABYLON;
             return serializationObject;
         };
         return MirrorTexture;
-    }(BABYLON.RenderTargetTexture));
+    })(BABYLON.RenderTargetTexture);
     BABYLON.MirrorTexture = MirrorTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mirrorTexture.js.map

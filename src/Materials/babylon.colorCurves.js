@@ -540,7 +540,6 @@ var BABYLON;
             BABYLON.serialize()
         ], ColorCurves.prototype, "_midtonesExposure", void 0);
         return ColorCurves;
-    }());
+    })();
     BABYLON.ColorCurves = ColorCurves;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.colorCurves.js.map

@@ -58,8 +58,6 @@ ipch/
 # ReSharper is a .NET coding add-in
 _ReSharper*
 
-/src/**/*.js
-
 # NCrunch
 *.ncrunch*
 .*crunch*.local.xml
@@ -130,28 +128,3 @@ node_modules
 
 # for VSCode
 .vscode
-/typescript/SymbolicVisualHelper.ts
-/typescript/SymbolicVisualHelper.js
-/typescript/SimpleInteractionHelper.ts
-/typescript/simpleinteractionhelper.js
-/typescript/Radix.ts
-/typescript/Radix.js
-/typescript/ManipulatorInteractionHelper.ts
-/typescript/ManipulatorInteractionHelper.js
-/typescript/Manipulator.js
-/typescript/MainClass.ts
-/typescript/MainClass.js
-/Web.Release.config
-/Web.Debug.config
-/Web.config
-/tsconfig.json
-/packages.config
-/index.html
-/Babylon.js.sln
-/Babylon.js.csproj
-/src/Canvas2d/babylon.lines2d.js
-/src/Canvas2d/babylon.ellipse2d.js
-/Properties/AssemblyInfo.cs
-/assets
-/.vs/config
-/Typings

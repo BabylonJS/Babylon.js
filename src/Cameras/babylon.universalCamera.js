@@ -46,7 +46,6 @@ var BABYLON;
             return "UniversalCamera";
         };
         return UniversalCamera;
-    }(BABYLON.TouchCamera));
+    })(BABYLON.TouchCamera);
     BABYLON.UniversalCamera = UniversalCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.universalCamera.js.map

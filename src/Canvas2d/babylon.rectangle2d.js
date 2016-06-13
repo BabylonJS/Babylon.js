@@ -138,7 +138,7 @@ var BABYLON;
             return true;
         };
         return Rectangle2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Rectangle2DRenderCache = Rectangle2DRenderCache;
     var Rectangle2DInstanceData = (function (_super) {
         __extends(Rectangle2DInstanceData, _super);
@@ -156,66 +156,26 @@ var BABYLON;
             BABYLON.instanceData()
         ], Rectangle2DInstanceData.prototype, "properties", null);
         return Rectangle2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Rectangle2DInstanceData = Rectangle2DInstanceData;
     var Rectangle2D = (function (_super) {
         __extends(Rectangle2D, _super);
-        //protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-        //    this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-        //    this.size = size;
-        //    this.notRounded = !roundRadius;
-        //    this.roundRadius = roundRadius;
-        //}
-        /**
-         * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * options:
-         *  - id a text identifier, for information purpose
-         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
-         *  - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp rectangle).
-         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
-         *  - borderThickness: the thickness of the drawn border, default is 1.
-         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         */
-        function Rectangle2D(settings) {
-            // Avoid checking every time if the object exists
-            if (settings == null) {
-                settings = {};
-            }
-            _super.call(this, settings);
-            var size = settings.size || (new BABYLON.Size((settings.width === null) ? null : (settings.width || 10), (settings.height === null) ? null : (settings.height || 10)));
-            var roundRadius = (settings.roundRadius == null) ? 0 : settings.roundRadius;
-            var borderThickness = (settings.borderThickness == null) ? 1 : settings.borderThickness;
-            this.size = size;
-            this.roundRadius = roundRadius;
-            this.borderThickness = borderThickness;
+        function Rectangle2D() {
+            _super.apply(this, arguments);
         }
+        Object.defineProperty(Rectangle2D.prototype, "actualSize", {
+            get: function () {
+                return this.size;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Rectangle2D.prototype, "size", {
-            //        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.sizeProperty = pi, false, true)
             get: function () {
                 return this._size;
             },
             set: function (value) {
                 this._size = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Rectangle2D.prototype, "actualSize", {
-            get: function () {
-                if (this._actualSize) {
-                    return this._actualSize;
-                }
-                return this._size;
-            },
-            set: function (value) {
-                this._actualSize = value;
             },
             enumerable: true,
             configurable: true
@@ -237,7 +197,6 @@ var BABYLON;
             set: function (value) {
                 this._roundRadius = value;
                 this.notRounded = value === 0;
-                this._positioningDirty();
             },
             enumerable: true,
             configurable: true
@@ -251,9 +210,10 @@ var BABYLON;
             // The easiest way is to check if the point is inside on of the four corners area (a little square of roundRadius size at the four corners)
             // If it's the case for one, check if the mouse is located in the quarter that we care about (the one who is visible) then finally make a distance check with the roundRadius radius to see if it's inside the circle quarter or outside.
             // First let remove the origin out the equation, to have the rectangle with an origin at bottom/left
+            var o = this.origin;
             var size = this.size;
-            Rectangle2D._i0.x = intersectInfo._localPickPosition.x;
-            Rectangle2D._i0.y = intersectInfo._localPickPosition.y;
+            Rectangle2D._i0.x = intersectInfo._localPickPosition.x + (size.width * o.x);
+            Rectangle2D._i0.y = intersectInfo._localPickPosition.y + (size.height * o.y);
             var rr = this.roundRadius;
             var rrs = rr * rr;
             // Check if the point is in the bottom/left quarter area
@@ -300,7 +260,44 @@ var BABYLON;
             return true;
         };
         Rectangle2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
+        };
+        Rectangle2D.prototype.setupRectangle2D = function (owner, parent, id, position, origin, size, roundRadius, fill, border, borderThickness, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
+            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
+            this.size = size;
+            this.notRounded = !roundRadius;
+            this.roundRadius = roundRadius;
+        };
+        /**
+         * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
+         *  - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp rectangle).
+         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
+         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - borderThickness: the thickness of the drawn border, default is 1.
+         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        Rectangle2D.Create = function (parent, options) {
+            BABYLON.Prim2DBase.CheckParent(parent);
+            var rect = new Rectangle2D();
+            if (!options) {
+                rect.setupRectangle2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, new BABYLON.Size(10, 10), 0, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
+            }
+            else {
+                var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
+                var size = options.size || (new BABYLON.Size(options.width || 10, options.height || 10));
+                var fill = options.fill === undefined ? BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF") : options.fill;
+                rect.setupRectangle2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, (options.roundRadius == null) ? 0 : options.roundRadius, fill, options.border || null, (options.borderThickness == null) ? 1 : options.borderThickness, options.isVisible || true, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+            }
+            return rect;
         };
         Rectangle2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey);
@@ -370,19 +367,6 @@ var BABYLON;
             }
             return renderCache;
         };
-        // We override this method because if there's a roundRadius set, we will reduce the initial Content Area to make sure the computed area won't intersect with the shape contour. The formula is simple: we shrink the incoming size by the amount of the roundRadius
-        Rectangle2D.prototype._getInitialContentAreaToRef = function (primSize, initialContentPosition, initialContentArea) {
-            // Fall back to default implementation if there's no round Radius
-            if (this._notRounded) {
-                _super.prototype._getInitialContentAreaToRef.call(this, primSize, initialContentPosition, initialContentArea);
-            }
-            else {
-                var rr = Math.round((this.roundRadius - (this.roundRadius / Math.sqrt(2))) * 1.3);
-                initialContentPosition.x = initialContentPosition.y = rr;
-                initialContentArea.width = Math.max(0, primSize.width - (rr * 2));
-                initialContentArea.height = Math.max(0, primSize.height - (rr * 2));
-            }
-        };
         Rectangle2D.prototype.createInstanceDataParts = function () {
             var res = new Array();
             if (this.border) {
@@ -399,12 +383,12 @@ var BABYLON;
             }
             if (part.id === BABYLON.Shape2D.SHAPE2D_BORDERPARTID) {
                 var d = part;
-                var size = this.actualSize;
+                var size = this.size;
                 d.properties = new BABYLON.Vector3(size.width, size.height, this.roundRadius || 0);
             }
             else if (part.id === BABYLON.Shape2D.SHAPE2D_FILLPARTID) {
                 var d = part;
-                var size = this.actualSize;
+                var size = this.size;
                 d.properties = new BABYLON.Vector3(size.width, size.height, this.roundRadius || 0);
             }
             return true;
@@ -414,8 +398,8 @@ var BABYLON;
         Rectangle2D._i2 = BABYLON.Vector2.Zero();
         Rectangle2D.roundSubdivisions = 16;
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 1, function (pi) { return Rectangle2D.actualSizeProperty = pi; }, false, true)
-        ], Rectangle2D.prototype, "actualSize", null);
+            BABYLON.instanceLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 1, function (pi) { return Rectangle2D.sizeProperty = pi; }, false, true)
+        ], Rectangle2D.prototype, "size", null);
         __decorate([
             BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 2, function (pi) { return Rectangle2D.notRoundedProperty = pi; })
         ], Rectangle2D.prototype, "notRounded", null);
@@ -426,7 +410,6 @@ var BABYLON;
             BABYLON.className("Rectangle2D")
         ], Rectangle2D);
         return Rectangle2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Rectangle2D = Rectangle2D;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.rectangle2d.js.map

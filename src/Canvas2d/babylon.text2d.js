@@ -84,7 +84,7 @@ var BABYLON;
             return true;
         };
         return Text2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -132,39 +132,12 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
         return Text2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
-        /**
-         * Create a Text primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * @param text the text to display
-         * Options:
-         *  - id a text identifier, for information purpose
-         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
-         *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
-         *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
-         *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
-         *  - isVisible: true if the text must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         */
-        function Text2D(text, settings) {
-            if (!settings) {
-                settings = {};
-            }
-            _super.call(this, settings);
-            this.fontName = (settings.fontName == null) ? "12pt Arial" : settings.fontName;
-            this.defaultFontColor = (settings.defaultFontColor == null) ? new BABYLON.Color4(1, 1, 1, 1) : settings.defaultFontColor;
-            this._tabulationSize = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
-            this._textSize = null;
-            this.text = text;
-            this.size = (settings.size == null) ? null : settings.size;
-            this.isAlphaTest = true;
+        function Text2D() {
+            _super.apply(this, arguments);
         }
         Object.defineProperty(Text2D.prototype, "fontName", {
             get: function () {
@@ -195,48 +168,32 @@ var BABYLON;
             },
             set: function (value) {
                 this._text = value;
-                this._textSize = null; // A change of text will reset the TextSize which will be recomputed next time it's used
-                this._size = null;
+                this._actualSize = null; // A change of text will reset the Actual Area Size which will be recomputed next time it's used
                 this._updateCharCount();
-                // Trigger a textSize to for a sizeChange if necessary, which is needed for layout to recompute
-                var s = this.textSize;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Text2D.prototype, "size", {
+        Object.defineProperty(Text2D.prototype, "areaSize", {
             get: function () {
-                if (this._size != null) {
-                    return this._size;
-                }
-                return this.textSize;
+                return this._areaSize;
             },
             set: function (value) {
-                this._size = value;
+                this._areaSize = value;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Text2D.prototype, "actualSize", {
             get: function () {
+                if (this.areaSize) {
+                    return this.areaSize;
+                }
                 if (this._actualSize) {
                     return this._actualSize;
                 }
-                return this.size;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Text2D.prototype, "textSize", {
-            get: function () {
-                if (!this._textSize && this.owner) {
-                    var newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
-                    if (newSize !== this._textSize) {
-                        this.onPrimitivePropertyDirty(BABYLON.Prim2DBase.sizeProperty.flagId);
-                    }
-                    this._textSize = newSize;
-                }
-                return this._textSize;
+                this._actualSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                return this._actualSize;
             },
             enumerable: true,
             configurable: true
@@ -263,7 +220,45 @@ var BABYLON;
             return true;
         };
         Text2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
+        };
+        Text2D.prototype.setupText2D = function (owner, parent, id, position, origin, fontName, text, areaSize, defaultFontColor, tabulationSize, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
+            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
+            this.fontName = fontName;
+            this.defaultFontColor = defaultFontColor;
+            this.text = text;
+            this.areaSize = areaSize;
+            this._tabulationSize = tabulationSize;
+            this.isAlphaTest = true;
+        };
+        /**
+         * Create a Text primitive
+         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
+         * @param text the text to display
+         * Options:
+         *  - id a text identifier, for information purpose
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - origin: define the normalized origin point location, default [0.5;0.5]
+         *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
+         *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
+         *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
+         *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
+         *  - isVisible: true if the text must be visible, false for hidden. Default is true.
+         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
+         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         */
+        Text2D.Create = function (parent, text, options) {
+            BABYLON.Prim2DBase.CheckParent(parent);
+            var text2d = new Text2D();
+            if (!options) {
+                text2d.setupText2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, "12pt Arial", text, null, new BABYLON.Color4(1, 1, 1, 1), 4, true, null, null, null, null, null, null);
+            }
+            else {
+                var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
+                text2d.setupText2D(parent.owner, parent, options.id || null, pos, options.origin || null, options.fontName || "12pt Arial", text, options.areaSize, options.defaultFontColor || new BABYLON.Color4(1, 1, 1, 1), (options.tabulationSize == null) ? 4 : options.tabulationSize, (options.isVisible == null) ? true : options.isVisible, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+            }
+            return text2d;
         };
         Text2D.prototype.levelIntersect = function (intersectInfo) {
             // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
@@ -326,6 +321,7 @@ var BABYLON;
                 var d = part;
                 var texture = this.fontTexture;
                 var ts = texture.getSize();
+                var textSize = texture.measureText(this.text, this._tabulationSize);
                 var offset = BABYLON.Vector2.Zero();
                 var charxpos = 0;
                 d.dataElementCount = this._charCount;
@@ -348,7 +344,7 @@ var BABYLON;
                     if (char < " ") {
                         continue;
                     }
-                    this.updateInstanceDataPart(d, offset);
+                    this.updateInstanceDataPart(d, offset, textSize);
                     var ci = texture.getChar(char);
                     offset.x += ci.charWidth;
                     d.topLeftUV = ci.topLeftUV;
@@ -383,13 +379,12 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Text2D.textProperty = pi; }, false, true)
         ], Text2D.prototype, "text", null);
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Text2D.sizeProperty = pi; })
-        ], Text2D.prototype, "size", null);
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Text2D.areaSizeProperty = pi; })
+        ], Text2D.prototype, "areaSize", null);
         Text2D = __decorate([
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.text2d.js.map

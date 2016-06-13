@@ -27,7 +27,7 @@ var BABYLON;
             });
         };
         return MeshAssetTask;
-    }());
+    })();
     BABYLON.MeshAssetTask = MeshAssetTask;
     var TextFileAssetTask = (function () {
         function TextFileAssetTask(name, url) {
@@ -52,7 +52,7 @@ var BABYLON;
             });
         };
         return TextFileAssetTask;
-    }());
+    })();
     BABYLON.TextFileAssetTask = TextFileAssetTask;
     var BinaryFileAssetTask = (function () {
         function BinaryFileAssetTask(name, url) {
@@ -77,7 +77,7 @@ var BABYLON;
             });
         };
         return BinaryFileAssetTask;
-    }());
+    })();
     BABYLON.BinaryFileAssetTask = BinaryFileAssetTask;
     var ImageAssetTask = (function () {
         function ImageAssetTask(name, url) {
@@ -105,7 +105,7 @@ var BABYLON;
             img.src = this.url;
         };
         return ImageAssetTask;
-    }());
+    })();
     BABYLON.ImageAssetTask = ImageAssetTask;
     var TextureAssetTask = (function () {
         function TextureAssetTask(name, url, noMipmap, invertY, samplingMode) {
@@ -135,7 +135,7 @@ var BABYLON;
             this.texture = new BABYLON.Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
         };
         return TextureAssetTask;
-    }());
+    })();
     BABYLON.TextureAssetTask = TextureAssetTask;
     var AssetsManager = (function () {
         function AssetsManager(scene) {
@@ -215,7 +215,6 @@ var BABYLON;
             return this;
         };
         return AssetsManager;
-    }());
+    })();
     BABYLON.AssetsManager = AssetsManager;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.assetsManager.js.map

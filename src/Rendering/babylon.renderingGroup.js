@@ -91,7 +91,6 @@ var BABYLON;
             }
         };
         return RenderingGroup;
-    }());
+    })();
     BABYLON.RenderingGroup = RenderingGroup;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.renderingGroup.js.map

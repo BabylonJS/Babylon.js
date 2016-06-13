@@ -180,7 +180,6 @@ var BABYLON;
             BABYLON.serialize()
         ], FreeCamera.prototype, "applyGravity", void 0);
         return FreeCamera;
-    }(BABYLON.TargetCamera));
+    })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.freeCamera.js.map
