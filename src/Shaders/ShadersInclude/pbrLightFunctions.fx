@@ -48,7 +48,7 @@ float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightC
     return falloff;
 }
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, out float NdotL) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, vec3 reflectance90, out float NdotL) {
     lightingInfo result;
 
     vec3 lightDirection;
@@ -87,14 +87,14 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
         // Specular
         float NdotH = max(0.00000000001, dot(vNormal, H));
 
-        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
+        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor, reflectance90);
         result.specular = specTerm * attenuation;
     #endif
 
     return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, out float NdotL) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, vec3 reflectance90, out float NdotL) {
     lightingInfo result;
 
     vec3 lightOffset = lightData.xyz - vPositionW;
@@ -124,14 +124,14 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
         // Specular
         float NdotH = max(0.00000000001, dot(vNormal, H));
 
-        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
+        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor, reflectance90);
         result.specular = specTerm  * attenuation;
     #endif
 
     return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, out float NdotL) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, vec3 reflectance90, out float NdotL) {
     lightingInfo result;
 
     // Roughness
@@ -149,7 +149,7 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
         NdotL = max(0.00000000001, NdotL);
         float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
 
-        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
+        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor, reflectance90);
         result.specular = specTerm;
     #endif
 
