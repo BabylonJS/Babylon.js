@@ -227,10 +227,9 @@
             // If it's the case for one, check if the mouse is located in the quarter that we care about (the one who is visible) then finally make a distance check with the roundRadius radius to see if it's inside the circle quarter or outside.
 
             // First let remove the origin out the equation, to have the rectangle with an origin at bottom/left
-            let o = this.origin;
             let size = this.size;
-            Rectangle2D._i0.x = intersectInfo._localPickPosition.x + (size.width * o.x);
-            Rectangle2D._i0.y = intersectInfo._localPickPosition.y + (size.height * o.y);
+            Rectangle2D._i0.x = intersectInfo._localPickPosition.x;
+            Rectangle2D._i0.y = intersectInfo._localPickPosition.y;
 
             let rr = this.roundRadius;
             let rrs = rr * rr;
@@ -290,7 +289,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
+            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         }
 
         //protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
@@ -324,13 +323,15 @@
             position         ?: Vector2,
             x                ?: number,
             y                ?: number,
+            rotation         ?: number,
+            scale            ?: number,
             origin           ?: Vector2,
             size             ?: Size,
             width            ?: number,
             height           ?: number,
             roundRadius      ?: number,
-            fill             ?: IBrush2D,
-            border           ?: IBrush2D,
+            fill             ?: IBrush2D | string,
+            border           ?: IBrush2D | string,
             borderThickness  ?: number,
             isVisible        ?: boolean,
             marginTop        ?: number | string,
@@ -348,7 +349,6 @@
             padding          ?: string,
             paddingHAlignment?: number,
             paddingVAlignment?: number,
-            paddingAlignment ?: string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -358,15 +358,11 @@
 
             super(settings);
 
-            let pos             = settings.position || new Vector2(settings.x || 0, settings.y || 0);
             let size            = settings.size || (new Size((settings.width === null) ? null : (settings.width || 10), (settings.height === null) ? null : (settings.height || 10)));
-            let fill            = settings.fill === undefined ? Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF") : settings.fill;
             let roundRadius     = (settings.roundRadius == null) ? 0 : settings.roundRadius;
             let borderThickness = (settings.borderThickness == null) ? 1 : settings.borderThickness;
 
-            this.position        = pos;
             this.size            = size;
-            this.fill            = fill;
             this.roundRadius     = roundRadius;
             this.borderThickness = borderThickness;
         }
@@ -464,8 +460,8 @@
             } else {
                 let rr = Math.round((this.roundRadius - (this.roundRadius/Math.sqrt(2))) * 1.3);
                 initialContentPosition.x = initialContentPosition.y = rr;
-                initialContentArea.width = primSize.width - (rr * 2);
-                initialContentArea.height = primSize.height - (rr * 2);
+                initialContentArea.width = Math.max(0, primSize.width - (rr * 2));
+                initialContentArea.height = Math.max(0, primSize.height - (rr * 2));
             }
         }
 

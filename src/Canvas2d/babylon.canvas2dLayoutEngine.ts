@@ -27,15 +27,12 @@
             // If this prim is layoutDiry we update  its layoutArea and also the one of its direct children
             // Then we recurse on each child where their respective layoutDirty will also be test, and so on.
             if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
-                this._doUpdate(prim);
-                prim._clearFlags(SmartPropertyPrim.flagLayoutDirty);
 
                 // Recurse
                 for (let child of prim.children) {
                     this._doUpdate(child);
-                    child._clearFlags(SmartPropertyPrim.flagLayoutDirty);
-                    this.updateLayout(child);
                 }
+                prim._clearFlags(SmartPropertyPrim.flagLayoutDirty);
             }
 
         }

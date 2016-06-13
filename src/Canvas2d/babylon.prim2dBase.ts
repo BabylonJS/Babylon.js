@@ -295,7 +295,7 @@
         constructor(changeCallback: () => void) {
             this._changedCallback = changeCallback;
             this._horizontal = PrimitiveAlignment.AlignLeft;
-            this._vertical = PrimitiveAlignment.AlignTop;
+            this._vertical = PrimitiveAlignment.AlignBottom;
         }
 
         public static get AlignLeft():    number { return PrimitiveAlignment._AlignLeft;   }
@@ -848,7 +848,7 @@
             }
         }
 
-        public compute(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size) {
+        public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size) {
             // Fetch some data
             let topType      = this._getType(0, true);
             let leftType     = this._getType(1, true);
@@ -879,7 +879,7 @@
                 case PrimitiveAlignment.AlignRight:
                 {
                     if (isRightAuto) {
-                        dstOffset.x = sourceArea.width - width;
+                        dstOffset.x = Math.round(sourceArea.width - width);
                     } else {
                         this._computePixels(2, rightType, sourceArea, true);
                         dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
@@ -889,35 +889,19 @@
                 }
                 case PrimitiveAlignment.AlignStretch:
                 {
-                    if (hasWidth) {
-                        let left = 0;
-                        if (!isLeftAuto) {
-                            this._computePixels(1, leftType, sourceArea, true);
-                            left = this.leftPixels;
-                        }
-                        let right = 0;
-                        if (!isRightAuto) {
-                            this._computePixels(2, rightType, sourceArea, true);
-                            right = this.rightPixels;
-                        }
-                        let offset = left - right;
-                        dstOffset.x = Math.round(((sourceArea.width - width) / 2) + offset);
-                        dstArea.width = width;
+                    if (isLeftAuto) {
+                        dstOffset.x = 0;
                     } else {
-                        if (isLeftAuto) {
-                            dstOffset.x = 0;
-                        } else {
-                            this._computePixels(1, leftType, sourceArea, true);
-                            dstOffset.x = this.leftPixels;
-                        }
-
-                        let right = 0;
-                        if (!isRightAuto) {
-                            this._computePixels(2, rightType, sourceArea, true);
-                            right = this.rightPixels;
-                        }
-                        dstArea.width = sourceArea.width - (dstOffset.x + right);
+                        this._computePixels(1, leftType, sourceArea, true);
+                        dstOffset.x = this.leftPixels;
                     }
+
+                    let right = 0;
+                    if (!isRightAuto) {
+                        this._computePixels(2, rightType, sourceArea, true);
+                        right = this.rightPixels;
+                    }
+                    dstArea.width = sourceArea.width - (dstOffset.x + right);
                     break;
                 }
                 case PrimitiveAlignment.AlignCenter:
@@ -963,35 +947,19 @@
                 }
                 case PrimitiveAlignment.AlignStretch:
                 {
-                    if (hasHeight) {
-                        let top = 0;
-                        if (!isTopAuto) {
-                            this._computePixels(0, topType, sourceArea, true);
-                            top = this.topPixels;
-                        }
-                        let bottom = 0;
-                        if (!isBottomAuto) {
-                            this._computePixels(3, bottomType, sourceArea, true);
-                            bottom = this.bottomPixels;
-                        }
-                        let offset = bottom - top;
-                        dstOffset.y = Math.round(((sourceArea.height - height) / 2) + offset);
-                        dstArea.height = height;
+                    if (isBottomAuto) {
+                        dstOffset.y = 0;
                     } else {
-                        if (isBottomAuto) {
-                            dstOffset.y = 0;
-                        } else {
-                            this._computePixels(3, bottomType, sourceArea, true);
-                            dstOffset.y = this.bottomPixels;
-                        }
-
-                        let top = 0;
-                        if (!isTopAuto) {
-                            this._computePixels(0, topType, sourceArea, true);
-                            top = this.topPixels;
-                        }
-                        dstArea.height = sourceArea.height - (dstOffset.y + top);
+                        this._computePixels(3, bottomType, sourceArea, true);
+                        dstOffset.y = this.bottomPixels;
                     }
+
+                    let top = 0;
+                    if (!isTopAuto) {
+                        this._computePixels(0, topType, sourceArea, true);
+                        top = this.topPixels;
+                    }
+                    dstArea.height = sourceArea.height - (dstOffset.y + top);
                     break;
                 }
                 case PrimitiveAlignment.AlignCenter:
@@ -1009,6 +977,37 @@
                     break;
                 }
             }
+        }
+
+        public compute(sourceArea: Size, dstOffset: Vector2, dstArea: Size) {
+            // Fetch some data
+            let topType = this._getType(0, true);
+            let leftType = this._getType(1, true);
+            let rightType = this._getType(2, true);
+            let bottomType = this._getType(3, true);
+            let isTopAuto = topType === PrimitiveThickness.Auto;
+            let isLeftAuto = leftType === PrimitiveThickness.Auto;
+            let isRightAuto = rightType === PrimitiveThickness.Auto;
+            let isBottomAuto = bottomType === PrimitiveThickness.Auto;
+
+            if (!isTopAuto) {
+                this._computePixels(0, topType, sourceArea, true);
+            }
+            if (!isLeftAuto) {
+                this._computePixels(1, leftType, sourceArea, true);
+            }
+            if (!isRightAuto) {
+                this._computePixels(2, rightType, sourceArea, true);
+            }
+            if (!isBottomAuto) {
+                this._computePixels(3, bottomType, sourceArea, true);
+            }
+
+            dstOffset.x = isLeftAuto ? 0 : this.leftPixels;
+            dstArea.width = sourceArea.width - (dstOffset.x + (isRightAuto ? 0 : this.rightPixels));
+
+            dstOffset.y = isTopAuto ? 0 : this.topPixels;
+            dstArea.height = sourceArea.height - (dstOffset.y + (isTopAuto ? 0 : this.bottomPixels));
         }
     }
 
@@ -1093,6 +1092,8 @@
             position            ?: Vector2,
             x                   ?: number,
             y                   ?: number,
+            rotation            ?: number,
+            scale               ?: number,
             origin              ?: Vector2,
             isVisible           ?: boolean,
             marginTop           ?: number | string,
@@ -1108,9 +1109,6 @@
             paddingRight        ?: number | string,
             paddingBottom       ?: number | string,
             padding             ?: string,
-            paddingHAlignment   ?: number,
-            paddingVAlignment   ?: number,
-            paddingAlignment    ?: string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -1147,7 +1145,6 @@
             this._size                       = Size.Zero();
             this._layoutArea                 = Size.Zero();
             this._paddingOffset              = Vector2.Zero();
-            this._paddingArea                = Size.Zero();
             this._margingOffset              = Vector2.Zero();
             this._parentMargingOffset        = Vector2.Zero();
             this._parentContentArea          = Size.Zero();
@@ -1160,13 +1157,12 @@
             this._margin                     = null;
             this._padding                    = null;
             this._marginAlignment            = null;
-            this._paddingAlignment           = null;
             this._id                         = settings.id;
             this.propertyChanged             = new Observable<PropertyChangedInfo>();
             this._children                   = new Array<Prim2DBase>();
+            this._localTransform             = new Matrix();
             this._globalTransform            = null;
             this._invGlobalTransform         = null;
-            this._localTransform             = null;
             this._globalTransformProcessStep = 0;
             this._globalTransformStep        = 0;
             this._hierarchyDepth             = 0;
@@ -1196,10 +1192,16 @@
             }
 
             // Set the model related properties
-            let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
-            this.position = pos;
-            this.rotation = 0;
-            this.scale = 1;
+            if (settings.position != null) {
+                this.position = settings.position;
+            }
+            else if (settings.x != null || settings.y != null) {
+                this.position = new Vector2(settings.x || 0, settings.y || 0);
+            } else {
+                this._position = null;
+            }
+            this.rotation = (settings.rotation == null) ? 0 : settings.rotation;
+            this.scale = (settings.scale==null) ? 1 : settings.scale;
             this.levelVisible = (settings.isVisible==null) ? true : settings.isVisible;
             this.origin = settings.origin || new Vector2(0.5, 0.5);
 
@@ -1248,18 +1250,6 @@
 
             if (settings.padding) {
                 this.padding.fromString(settings.padding);
-            }
-
-            if (settings.paddingHAlignment) {
-                this.paddingAlignment.horizontal = settings.paddingHAlignment;
-            }
-
-            if (settings.paddingVAlignment) {
-                this.paddingAlignment.vertical = settings.paddingVAlignment;
-            }
-
-            if (settings.paddingAlignment) {
-                this.paddingAlignment.fromString(settings.paddingAlignment);
             }
 
             // Dirty layout and positioning
@@ -1324,6 +1314,11 @@
         public static positionProperty: Prim2DPropInfo;
 
         /**
+         * Metadata of the actualPosition property
+         */
+        public static actualPositionProperty: Prim2DPropInfo;
+
+        /**
          * Metadata of the size property
          */
         public static sizeProperty: Prim2DPropInfo;
@@ -1369,21 +1364,54 @@
         public static paddingProperty: Prim2DPropInfo;
 
         /**
-         * Metadata of the vAlignment property
-         */
-        public static paddingAlignmentProperty: Prim2DPropInfo;
-
-        /**
          * Metadata of the hAlignment property
          */
         public static marginAlignmentProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, true)
+        @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, true)
+        /**
+         * Return the position where the primitive is rendered in the Canvas, this position may be different than the one returned by the position property due to layout/alignment/margin/padding computing
+         */
+        public get actualPosition(): Vector2 {
+            if (this._actualPosition != null) {
+                return this._actualPosition;
+            }
+            if (this._position != null) {
+                return this._position;
+            }
+
+            // At least return 0,0, we can't return null on actualPosition
+            return Prim2DBase._nullPosition;
+        }
+        private static _nullPosition = Vector2.Zero();
+
+        /**
+         * DO NOT INVOKE for internal purpose only
+         */
+        public set actualPosition(val: Vector2) {
+            this._actualPosition = val;
+        }
+
+        /**
+         * Shortcut to actualPosition.x
+         */
+        public get actualX(): number {
+            return this.actualPosition.x;
+        }
+
+        /**
+         * Shortcut to actualPosition.y
+         */
+        public get actualY(): number {
+            return this.actualPosition.y;
+        }
+
         /**
          * Position of the primitive, relative to its parent.
          * BEWARE: if you change only position.x or y it won't trigger a property change and you won't have the expected behavior.
          * Use this property to set a new Vector2 object, otherwise to change only the x/y use Prim2DBase.x or y properties.
          */
+        @dynamicLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, true)
         public get position(): Vector2 {
             return this._position;
         }
@@ -1400,25 +1428,25 @@
          * Use this property when you only want to change one component of the position property
          */
         public get x(): number {
-            if (!this.position) {
+            if (!this._position) {
                 return null;
             }
-            return this.position.x;
+            return this._position.x;
         }
 
         public set x(value: number) {
             if (!this._checkPositionChange()) {
                 return;
             }
-            if (!this.position) {
+            if (!this._position) {
                 this._position = Vector2.Zero();
             }
 
-            if (this.position.x === value) {
+            if (this._position.x === value) {
                 return;
             }
 
-            this.position.x = value;
+            this._position.x = value;
             this.markAsDirty("position");
         }
 
@@ -1427,25 +1455,25 @@
          * Use this property when you only want to change one component of the position property
          */
         public get y(): number {
-            if (!this.position) {
+            if (!this._position) {
                 return null;
             }
-            return this.position.y;
+            return this._position.y;
         }
 
         public set y(value: number) {
             if (!this._checkPositionChange()) {
                 return;
             }
-            if (!this.position) {
+            if (!this._position) {
                 this._position = Vector2.Zero();
             }
 
-            if (this.position.y === value) {
+            if (this._position.y === value) {
                 return;
             }
 
-            this.position.y = value;
+            this._position.y = value;
             this.markAsDirty("position");
         }
 
@@ -1564,7 +1592,7 @@
             return this._zOrder || (1 - this._hierarchyDepthOffset);
         }
 
-        @instanceLevelProperty(5, pi => Prim2DBase.originProperty = pi, false, true)
+        @dynamicLevelProperty(5, pi => Prim2DBase.originProperty = pi, false, true)
         public set origin(value: Vector2) {
             this._origin = value;
         }
@@ -1696,7 +1724,7 @@
         }
 
         private get _hasPadding(): boolean {
-            return (this._padding !== null) || (this._paddingAlignment !== null);
+            return this._padding !== null;
         }
 
         @dynamicLevelProperty(11, pi => Prim2DBase.marginAlignmentProperty = pi)
@@ -1708,18 +1736,6 @@
                 this._marginAlignment = new PrimitiveAlignment(() => this._positioningDirty());
             }
             return this._marginAlignment;
-        }
-
-
-        @dynamicLevelProperty(12, pi => Prim2DBase.paddingAlignmentProperty = pi)
-        /**
-         * You can get/set the vertical alignment through this property
-         */
-        public get paddingAlignment(): PrimitiveAlignment {
-            if (!this._paddingAlignment) {
-                this._paddingAlignment = new PrimitiveAlignment(() => this._positioningDirty());
-            }
-            return this._paddingAlignment;
         }
 
         public get layoutEngine(): LayoutEngineBase {
@@ -1806,7 +1822,7 @@
 
         /**
          * Determine if the size is automatically computed or fixed because manually specified.
-         * Use getActualSize() to get the final/real size of the primitive
+         * Use the actualSize property to get the final/real size of the primitive
          * @returns true if the size is automatically computed, false if it were manually specified.
          */
         public get isSizeAuto(): boolean {
@@ -1815,11 +1831,11 @@
 
         /**
          * Determine if the position is automatically computed or fixed because manually specified.
-         * Use getActualPosition() to get the final/real position of the primitive
+         * Use the actualPosition property to get the final/real position of the primitive
          * @returns true if the position is automatically computed, false if it were manually specified.
          */
         public get isPositionAuto(): boolean {
-            return this.position == null;
+            return this._position == null;
         }
 
         /**
@@ -1827,6 +1843,19 @@
          */
         public get pointerEventObservable(): Observable<PrimitivePointerInfo> {
             return this._pointerEventObservable;
+        }
+
+        public findById(id: string): Prim2DBase {
+            if (this._id === id) {
+                return this;
+            }
+
+            for (let child of this._children) {
+                let r = child.findById(id);
+                if (r != null) {
+                    return r;
+                }
+            }
         }
 
         protected onZOrderChanged() {
@@ -2054,7 +2083,15 @@
                 return;
             }
 
-            this.parent._setFlags(SmartPropertyPrim.flagLayoutDirty);
+            this._parent._setLayoutDirty();
+        }
+
+        protected _setLayoutDirty() {
+            if (!this.isDirty) {
+                this.onPrimBecomesDirty();
+            }
+            this._setFlags(SmartPropertyPrim.flagLayoutDirty);
+
         }
 
         private _checkPositionChange(): boolean {
@@ -2076,13 +2113,48 @@
             
         }
 
-        private _updateLocalTransform(): boolean {
-            let tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
-            if (this.checkPropertiesDirty(tflags)) {
-                var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
-                var local = Matrix.Compose(new Vector3(this._scale, this._scale, this._scale), rot, new Vector3(this._position.x, this._position.y, 0));
+        private static _t0: Matrix = new Matrix();
+        private static _t1: Matrix = new Matrix();
+        private static _t2: Matrix = new Matrix();
+        private static _v0: Vector2 = Vector2.Zero();   // Must stay with the value 0,0
 
-                this._localTransform = local;
+        private _updateLocalTransform(): boolean {
+            let parentMarginOffsetChanged = false;
+            let parentMarginOffset: Vector2 = null;
+            if (this._parent) {
+                parentMarginOffset = this._parent._margingOffset;
+                parentMarginOffsetChanged = !parentMarginOffset.equals(this._parentMargingOffset);
+                this._parentMargingOffset.copyFrom(parentMarginOffset);
+            } else {
+                parentMarginOffset = Prim2DBase._v0;
+            }
+
+            let tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.originProperty.flagId;
+            if (parentMarginOffsetChanged || this.checkPropertiesDirty(tflags)) {
+                var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
+                var local: Matrix;
+
+                if (this._origin.x === 0 && this._origin.y === 0) {
+                    local = Matrix.Compose(new Vector3(this._scale, this._scale, 1), rot, new Vector3(this.actualPosition.x + parentMarginOffset.x, this.actualPosition.y + parentMarginOffset.y, 0));
+                    this._localTransform = local;
+                } else {
+                    // -Origin offset
+                    let as = this.actualSize;
+                    Matrix.TranslationToRef((-as.width * this._origin.x), (-as.height * this._origin.y), 0, Prim2DBase._t0);
+
+                    // -Origin * rotation
+                    rot.toRotationMatrix(Prim2DBase._t1);
+                    Prim2DBase._t0.multiplyToRef(Prim2DBase._t1, Prim2DBase._t2);
+
+                    // -Origin * rotation * scale
+                    Matrix.ScalingToRef(this._scale, this._scale, 1, Prim2DBase._t0);
+                    Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
+
+                    // -Origin * rotation * scale * (Origin + Position + Parent Margin Offset)
+                    Matrix.TranslationToRef((as.width * this._origin.x) + this.actualPosition.x + parentMarginOffset.x, (as.height * this._origin.y) + this.actualPosition.y + parentMarginOffset.y, 0, Prim2DBase._t2);
+                    Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, this._localTransform);
+                }
+
                 this.clearPropertiesDirty(tflags);
                 return true;
             }
@@ -2101,7 +2173,8 @@
 
             // Update actualSize only if there' not positioning to recompute and the size changed
             // Otherwise positioning will take care of it.
-            if (!this._isFlagSet(SmartPropertyPrim.flagLayoutDirty) && this.checkPropertiesDirty(Prim2DBase.sizeProperty.flagId)) {
+            let sizeDirty = this.checkPropertiesDirty(Prim2DBase.sizeProperty.flagId);
+            if (!this._isFlagSet(SmartPropertyPrim.flagLayoutDirty) && sizeDirty) {
                 if (this.size.width != null) {
                     this.actualSize.width = this.size.width;
                 }
@@ -2112,21 +2185,25 @@
             }
 
             // Check for layout update
+            let positioningDirty = this._isFlagSet(SmartPropertyPrim.flagPositioningDirty);
             if (this._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
                 this._layoutEngine.updateLayout(this);
 
                 this._clearFlags(SmartPropertyPrim.flagLayoutDirty);
             }
 
+            let positioningComputed = positioningDirty && !this._isFlagSet(SmartPropertyPrim.flagPositioningDirty);
+
             // Check for positioning update
-            if (this._isFlagSet(SmartPropertyPrim.flagPositioningDirty) || (this._parent && !this._parent.contentArea.equals(this._parentContentArea))) {
+            if (!positioningComputed && (sizeDirty || this._isFlagSet(SmartPropertyPrim.flagPositioningDirty) || (this._parent && !this._parent.contentArea.equals(this._parentContentArea)))) {
                 this._updatePositioning();
 
                 this._clearFlags(SmartPropertyPrim.flagPositioningDirty);
+                positioningComputed = true;
+            }
 
-                if (this._parent) {
-                    this._parentContentArea.copyFrom(this._parent.contentArea);
-                }
+            if (positioningComputed && this._parent) {
+                this._parentContentArea.copyFrom(this._parent.contentArea);
             }
 
             // Check if we must update this prim
@@ -2141,35 +2218,16 @@
                 let localDirty = this._updateLocalTransform();
 
                 // Check if there are changes in the parent that will force us to update the global matrix
-                let parentDirty = false;
-                let parentMarginOffsetChanged = false;
-                let parentMarginOffset: Vector2 = null;
-                if (this._parent) {
-                    parentMarginOffset = this._parent._margingOffset;
-                    parentDirty = this._parent._globalTransformStep !== this._parentTransformStep;
-                    parentMarginOffsetChanged = !parentMarginOffset.equals(this._parentMargingOffset);
-                }
+                let parentDirty = (this._parent!=null) ? (this._parent._globalTransformStep !== this._parentTransformStep) : false;
 
                 // Check if we have to update the globalTransform
-                if (!this._globalTransform || localDirty || parentDirty || parentMarginOffsetChanged) {
+                if (!this._globalTransform || localDirty || parentDirty) {
                     let globalTransform = this._parent ? this._parent._globalTransform : null;
-                    if (parentMarginOffset && (parentMarginOffset.x !== 0 || parentMarginOffset.y !== 0)) {
-                        globalTransform = globalTransform.clone();
-                        // parentMarginOffset is expressed in bottom/left, so to apply origin on it (which we have to), we offset the by -0.5 to put it in the same frame of reference
-                        globalTransform.m[12] += parentMarginOffset.x * (this._origin.x - 0.5); 
-                        globalTransform.m[13] += parentMarginOffset.y * (this._origin.y - 0.5);
-                    }
-
                     this._globalTransform = this._parent ? this._localTransform.multiply(globalTransform) : this._localTransform;
                     this._invGlobalTransform = Matrix.Invert(this._globalTransform);
 
                     this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
                     this._parentTransformStep = this._parent ? this._parent._globalTransformStep : 0;
-
-                    if (parentMarginOffsetChanged) {
-                        this._parentMargingOffset.x = parentMarginOffset.x;
-                        this._parentMargingOffset.y = parentMarginOffset.y;
-                    }
                 }
                 this._globalTransformProcessStep = this.owner._globalTransformProcessStep;
             }
@@ -2181,63 +2239,60 @@
             }
         }
 
-        private static _icPos           = Vector2.Zero();
-        private static _icArea          = Size.Zero();
-        private static _newContent      = Size.Zero();
+        private static _icPos  = Vector2.Zero();
+        private static _icArea = Size.Zero();
+        private static _size   = Size.Zero();
 
         private _updatePositioning() {
             // From this point we assume that the primitive layoutArea is computed and up to date.
             // We know have to :
-            //  1. Determine the PaddingArea based on the padding property, which will set the size property of the primitive
-            //  2. Determine the contentArea based on the primitive's initialContentArea and the margin property.
+            //  1. Determine the PaddingArea and the ActualPosition based on the margin/marginAlignment properties, which will also set the size property of the primitive
+            //  2. Determine the contentArea based on the padding property.
 
             // Auto Create PaddingArea if there's no actualSize on width&|height to allocate the whole content available to the paddingArea where the actualSize is null
-            if (!this._hasPadding && (this.actualSize.width == null || this.actualSize.height == null)) {
+            if (!this._hasMargin && (this.actualSize.width == null || this.actualSize.height == null)) {
                 if (this.actualSize.width == null) {
-                    this.paddingAlignment.horizontal = PrimitiveAlignment.AlignStretch;
+                    this.marginAlignment.horizontal = PrimitiveAlignment.AlignStretch;
                 }
 
                 if (this.actualSize.height == null) {
-                    this.paddingAlignment.vertical = PrimitiveAlignment.AlignStretch;
+                    this.marginAlignment.vertical = PrimitiveAlignment.AlignStretch;
                 }
             }
 
             // Compute the PaddingArea
-            if (this._hasPadding) {
-                this.padding.compute(this._layoutArea, this.size, this.paddingAlignment, this._paddingOffset, this._paddingArea);
+            if (this._hasMargin) {
+                this.margin.computeWithAlignment(this._layoutArea, this.size, this.marginAlignment, this._paddingOffset, Prim2DBase._size);
 
-                this.position = this._paddingOffset.clone();
-
-                // Origin correction
-                if (this.origin.x !== 0 || this.origin.y !== 0) {
-                    this.position.x += this._paddingArea.width  * this.origin.x;
-                    this.position.y += this._paddingArea.height * this.origin.y;
-                }
+                this.actualPosition = this._paddingOffset.clone();
 
                 if (this.size.width != null) {
-                    this.size.width = this._paddingArea.width;
+                    this.size.width = Prim2DBase._size.width;
                 }
                 if (this.size.height != null) {
-                    this.size.height = this._paddingArea.height;
+                    this.size.height = Prim2DBase._size.height;
                 }
-                this.actualSize = this._paddingArea.clone();
+                this.actualSize.copyFrom(Prim2DBase._size.clone());
             }
 
             // No Padding property, the padding area is the same as the actualSize
             else {
                 this._paddingOffset.x    = 0;
                 this._paddingOffset.y    = 0;
-                this._paddingArea.copyFrom(this.actualSize);
             }
 
-            if (this._hasMargin) {
-                this._getInitialContentAreaToRef(this._paddingArea, Prim2DBase._icPos, Prim2DBase._icArea);
-                this.margin.compute(Prim2DBase._icArea, this._contentArea, this.marginAlignment, this._margingOffset, Prim2DBase._newContent);
+            if (this._hasPadding) {
+                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
+                Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
+                Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
+                this.margin.compute(Prim2DBase._icArea, this._margingOffset, Prim2DBase._size);
                 this._margingOffset.x += Prim2DBase._icPos.x;
                 this._margingOffset.y += Prim2DBase._icPos.y;
-                this._contentArea.copyFrom(Prim2DBase._newContent);              
+                this._contentArea.copyFrom(Prim2DBase._size);              
             } else {
-                this._getInitialContentAreaToRef(this._paddingArea, Prim2DBase._icPos, Prim2DBase._icArea);
+                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
+                Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
+                Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
                 this._margingOffset.copyFrom(Prim2DBase._icPos);
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
@@ -2268,6 +2323,7 @@
 
             if (this._parent) {
                 this._renderGroup = <Group2D>this.parent.traverseUp(p => p instanceof Group2D && p.isRenderableGroup);
+                this._parentLayoutDirty();
             }
 
             // Make sure the prim is in the dirtyList if it should be
@@ -2317,10 +2373,10 @@
         private   _margin                : PrimitiveThickness;
         private   _padding               : PrimitiveThickness;
         private   _marginAlignment       : PrimitiveAlignment;
-        private   _paddingAlignment      : PrimitiveAlignment;
         public    _pointerEventObservable: Observable<PrimitivePointerInfo>;
         private   _id                    : string;
         private   _position              : Vector2;
+        private   _actualPosition        : Vector2;
         protected _size                  : Size;
         protected _actualSize            : Size;
         protected _minSize               : Size;
@@ -2328,7 +2384,6 @@
         protected _desiredSize           : Size;
         private   _layoutEngine          : LayoutEngineBase;
         private   _paddingOffset         : Vector2;
-        private   _paddingArea           : Size;
         private   _margingOffset         : Vector2;
         private   _parentMargingOffset   : Vector2;
         private   _parentContentArea     : Size;

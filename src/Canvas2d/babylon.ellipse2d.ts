@@ -191,22 +191,16 @@
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
-            let x = intersectInfo._localPickPosition.x;
-            let y = intersectInfo._localPickPosition.y;
-            let w = this.size.width/2;
-            let h = this.size.height/2;
+            let w = this.size.width / 2;
+            let h = this.size.height / 2;
+            let x = intersectInfo._localPickPosition.x-w;
+            let y = intersectInfo._localPickPosition.y-h;
             return ((x * x) / (w * w) + (y * y) / (h * h)) <= 1;
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
+            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         }
-
-        //protected setupEllipse2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, subdivisions: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-        //    this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-        //    this.size = size;
-        //    this.subdivisions = subdivisions;
-        //}
 
         /**
          * Create an Ellipse 2D Shape primitive
@@ -238,8 +232,8 @@
             width             ?: number,
             height            ?: number,
             subdivisions      ?: number,
-            fill              ?: IBrush2D,
-            border            ?: IBrush2D,
+            fill              ?: IBrush2D | string,
+            border            ?: IBrush2D | string,
             borderThickness   ?: number,
             isVisible         ?: boolean,
             marginTop         ?: number | string,
@@ -257,7 +251,6 @@
             padding           ?: string,
             paddingHAlignment ?: number,
             paddingVAlignment ?: number,
-            paddingAlignment  ?: string,
 
         }) {
 
@@ -268,11 +261,9 @@
 
             super(settings);
 
-            let pos  = settings.position || new Vector2(settings.x || 0, settings.y || 0);
             let size = settings.size || (new Size(settings.width || 10, settings.height || 10));
             let sub  = (settings.subdivisions == null) ? 64 : settings.subdivisions;
 
-            this.position     = pos;
             this.size         = size;
             this.subdivisions = sub;
         }

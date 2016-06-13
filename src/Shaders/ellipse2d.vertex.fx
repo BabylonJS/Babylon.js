@@ -9,7 +9,6 @@ attribute float index;
 att vec2 zBias;
 att vec4 transformX;
 att vec4 transformY;
-att vec2 origin;
 
 #ifdef Border
 att float borderThickness;
@@ -100,7 +99,7 @@ void main(void) {
 #endif
 
 	vec4 pos;
-	pos.xy = (pos2.xy - origin) * properties.xy;
+	pos.xy = pos2.xy * properties.xy;
 	pos.z = 1.0;
 	pos.w = 1.0;
 	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);

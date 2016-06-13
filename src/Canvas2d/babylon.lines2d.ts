@@ -157,12 +157,12 @@
             super(partId, 1);
         }
 
-        @instanceData()
+        @instanceData(Shape2D.SHAPE2D_CATEGORY_FILLGRADIENT)
         get boundingMin(): Vector2 {
             return null;
         }
 
-        @instanceData()
+        @instanceData(Shape2D.SHAPE2D_CATEGORY_FILLGRADIENT)
         get boundingMax(): Vector2 {
             return null;
         }
@@ -324,20 +324,11 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo, this.origin);
+            if (!this._boundingMin) {
+                this._computeLines2D();
+            }
+            BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo);
         }
-
-        //protected setupLines2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, points: Vector2[], fillThickness: number, startCap: number, endCap: number, fill: IBrush2D, border: IBrush2D, borderThickness: number, closed: boolean, isVisible: boolean, marginTop: number | string, marginLeft: number | string, marginRight: number | string, marginBottom: number | string, vAlignment: number, hAlignment: number) {
-        //    this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-        //    this.fillThickness = fillThickness;
-        //    this.startCap = startCap;
-        //    this.endCap = endCap;
-        //    this.points = points;
-        //    this.closed = closed;
-        //    this._size = Size.Zero();
-        //    this._boundingMin = Vector2.Zero();
-        //    this._boundingMax = Vector2.Zero();
-        //}
 
         /**
          * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
@@ -372,8 +363,8 @@
             closed           ?: boolean,
             startCap         ?: number,
             endCap           ?: number,
-            fill             ?: IBrush2D,
-            border           ?: IBrush2D,
+            fill             ?: IBrush2D | string,
+            border           ?: IBrush2D | string,
             borderThickness  ?: number,
             isVisible        ?: boolean,
             marginTop        ?: number | string,
@@ -391,7 +382,6 @@
             padding          ?: string,
             paddingHAlignment?: number,
             paddingVAlignment?: number,
-            paddingAlignment ?: string,
         }) {
 
             if (!settings) {
@@ -1139,13 +1129,17 @@
             }
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
                 let d = <Lines2DInstanceData>part;
-                d.boundingMin = this.boundingMin;
-                d.boundingMax = this.boundingMax;
+                if (this.border instanceof GradientColorBrush2D) {
+                    d.boundingMin = this.boundingMin;
+                    d.boundingMax = this.boundingMax;
+                }
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Lines2DInstanceData>part;
-                d.boundingMin = this.boundingMin;
-                d.boundingMax = this.boundingMax;
+                if (this.fill instanceof GradientColorBrush2D) {
+                    d.boundingMin = this.boundingMin;
+                    d.boundingMax = this.boundingMax;
+                }
             }
             return true;
         }

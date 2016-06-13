@@ -348,29 +348,28 @@
                 this.handleGroupChanged(propInfo);
             }
 
-            // Check if we need to dirty only if the type change and make the test
-            var skipDirty = false;
+            // For type level compare, if there's a change of type it's a change of model, otherwise we issue an instance change
+            var instanceDirty = false;
             if (typeLevelCompare && curValue != null && newValue != null) {
                 var cvProto = (<any>curValue).__proto__;
                 var nvProto = (<any>newValue).__proto__;
 
-                skipDirty = (cvProto === nvProto);
+                instanceDirty = (cvProto === nvProto);
             }
 
             // Set the dirty flags
-            if (!skipDirty) {
-                if (propInfo.kind === Prim2DPropInfo.PROPKIND_MODEL) {
-                    if (!this.isDirty) {
-                        this.onPrimBecomesDirty();
-                    }
-                    this._setFlags(SmartPropertyPrim.flagModelDirty);
-                } else if ((propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
-                    if (!this.isDirty) {
-                        this.onPrimBecomesDirty();
-                    }
-                    this._instanceDirtyFlags |= propMask;
-                }
+            if (!instanceDirty && (propInfo.kind === Prim2DPropInfo.PROPKIND_MODEL)) {
+                this.onPrimitivePropertyDirty(SmartPropertyPrim.flagModelDirty);
+            } else if (instanceDirty || (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
+                this.onPrimitivePropertyDirty(propMask);
             }
+        }
+
+        protected onPrimitivePropertyDirty(propFlagId: number) {
+            if (!this.isDirty) {
+                this.onPrimBecomesDirty();
+            }
+            this._instanceDirtyFlags |= propFlagId;
         }
 
         protected handleGroupChanged(prop: Prim2DPropInfo) {

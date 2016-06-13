@@ -45,8 +45,8 @@
         }
 
         constructor(settings?: {
-            fill           ?: IBrush2D,
-            border         ?: IBrush2D,
+            fill           ?: IBrush2D | string,
+            border         ?: IBrush2D | string,
             borderThickness?: number,
         }) {
 
@@ -56,8 +56,26 @@
                 settings = {};
             }
 
-            this.border = settings.border;
-            this.fill = settings.fill;
+            let borderBrush: IBrush2D = null;
+            if (settings.border) {
+                if (typeof (settings.border) === "string") {
+                    borderBrush = Canvas2D.GetBrushFromString(<string>settings.border);
+                } else {
+                    borderBrush = <IBrush2D>settings.border;
+                }
+            }
+
+            let fillBrush: IBrush2D = null;
+            if (settings.fill) {
+                if (typeof (settings.fill) === "string") {
+                    fillBrush = Canvas2D.GetBrushFromString(<string>settings.fill);
+                } else {
+                    fillBrush = <IBrush2D>settings.fill;
+                }
+            }
+
+            this.border = borderBrush;
+            this.fill = fillBrush;
             this.borderThickness = settings.borderThickness;
         }
 
