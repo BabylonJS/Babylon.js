@@ -42,8 +42,7 @@ var BABYLON;
             return "VRDeviceOrientation";
         };
         return ArcRotateCameraVRDeviceOrientationInput;
-    }());
+    })();
     BABYLON.ArcRotateCameraVRDeviceOrientationInput = ArcRotateCameraVRDeviceOrientationInput;
     BABYLON.CameraInputTypes["ArcRotateCameraVRDeviceOrientationInput"] = ArcRotateCameraVRDeviceOrientationInput;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.arcrotatecamera.input.vrdeviceorientation.js.map

@@ -56,8 +56,7 @@ var BABYLON;
             return "deviceOrientation";
         };
         return FreeCameraDeviceOrientationInput;
-    }());
+    })();
     BABYLON.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
     BABYLON.CameraInputTypes["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.freecamera.input.deviceorientation.js.map

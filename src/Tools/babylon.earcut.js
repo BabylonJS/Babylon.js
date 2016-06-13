@@ -557,4 +557,3 @@ var Earcut;
     Earcut.flatten = flatten;
     ;
 })(Earcut || (Earcut = {}));
-//# sourceMappingURL=babylon.earcut.js.map

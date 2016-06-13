@@ -73,8 +73,7 @@ var BABYLON;
                 }
             };
             return _AlphaState;
-        }());
+        })();
         Internals._AlphaState = _AlphaState;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.alphaCullingState.js.map

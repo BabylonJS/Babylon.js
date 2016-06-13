@@ -133,8 +133,7 @@ var BABYLON;
                 new BABYLON.Vector3(1.0, -1.0, -1.0)
             ];
             return PanoramaToCubeMapTools;
-        }());
+        })();
         Internals.PanoramaToCubeMapTools = PanoramaToCubeMapTools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.tools.panoramaToCubemap.js.map

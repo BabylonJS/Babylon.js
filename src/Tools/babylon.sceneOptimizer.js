@@ -15,7 +15,7 @@ var BABYLON;
             };
         }
         return SceneOptimization;
-    }());
+    })();
     BABYLON.SceneOptimization = SceneOptimization;
     var TextureOptimization = (function (_super) {
         __extends(TextureOptimization, _super);
@@ -44,7 +44,7 @@ var BABYLON;
             };
         }
         return TextureOptimization;
-    }(SceneOptimization));
+    })(SceneOptimization);
     BABYLON.TextureOptimization = TextureOptimization;
     var HardwareScalingOptimization = (function (_super) {
         __extends(HardwareScalingOptimization, _super);
@@ -63,7 +63,7 @@ var BABYLON;
             };
         }
         return HardwareScalingOptimization;
-    }(SceneOptimization));
+    })(SceneOptimization);
     BABYLON.HardwareScalingOptimization = HardwareScalingOptimization;
     var ShadowsOptimization = (function (_super) {
         __extends(ShadowsOptimization, _super);
@@ -75,7 +75,7 @@ var BABYLON;
             };
         }
         return ShadowsOptimization;
-    }(SceneOptimization));
+    })(SceneOptimization);
     BABYLON.ShadowsOptimization = ShadowsOptimization;
     var PostProcessesOptimization = (function (_super) {
         __extends(PostProcessesOptimization, _super);
@@ -87,7 +87,7 @@ var BABYLON;
             };
         }
         return PostProcessesOptimization;
-    }(SceneOptimization));
+    })(SceneOptimization);
     BABYLON.PostProcessesOptimization = PostProcessesOptimization;
     var LensFlaresOptimization = (function (_super) {
         __extends(LensFlaresOptimization, _super);
@@ -99,7 +99,7 @@ var BABYLON;
             };
         }
         return LensFlaresOptimization;
-    }(SceneOptimization));
+    })(SceneOptimization);
     BABYLON.LensFlaresOptimization = LensFlaresOptimization;
     var ParticlesOptimization = (function (_super) {
         __extends(ParticlesOptimization, _super);
@@ -111,7 +111,7 @@ var BABYLON;
             };
         }
         return ParticlesOptimization;
-    }(SceneOptimization));
+    })(SceneOptimization);
     BABYLON.ParticlesOptimization = ParticlesOptimization;
     var RenderTargetsOptimization = (function (_super) {
         __extends(RenderTargetsOptimization, _super);
@@ -123,7 +123,7 @@ var BABYLON;
             };
         }
         return RenderTargetsOptimization;
-    }(SceneOptimization));
+    })(SceneOptimization);
     BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
     var MergeMeshesOptimization = (function (_super) {
         __extends(MergeMeshesOptimization, _super);
@@ -206,7 +206,7 @@ var BABYLON;
         });
         MergeMeshesOptimization._UpdateSelectionTree = false;
         return MergeMeshesOptimization;
-    }(SceneOptimization));
+    })(SceneOptimization);
     BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;
     // Options
     var SceneOptimizerOptions = (function () {
@@ -275,7 +275,7 @@ var BABYLON;
             return result;
         };
         return SceneOptimizerOptions;
-    }());
+    })();
     BABYLON.SceneOptimizerOptions = SceneOptimizerOptions;
     // Scene optimizer tool
     var SceneOptimizer = (function () {
@@ -329,7 +329,6 @@ var BABYLON;
             });
         };
         return SceneOptimizer;
-    }());
+    })();
     BABYLON.SceneOptimizer = SceneOptimizer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sceneOptimizer.js.map

@@ -63,7 +63,6 @@ var BABYLON;
             return serializationObject;
         };
         return MultiMaterial;
-    }(BABYLON.Material));
+    })(BABYLON.Material);
     BABYLON.MultiMaterial = MultiMaterial;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.multiMaterial.js.map

@@ -21,7 +21,6 @@ var BABYLON;
             });
         }
         return StereoscopicInterlacePostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.StereoscopicInterlacePostProcess = StereoscopicInterlacePostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.stereoscopicInterlacePostProcess.js.map
