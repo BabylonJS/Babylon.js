@@ -78,7 +78,7 @@ var BABYLON;
         };
         DynamicTexture.prototype.clone = function () {
             var textureSize = this.getSize();
-            var newTexture = new DynamicTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new DynamicTexture(this.name, textureSize, this.getScene(), this._generateMipMaps);
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
             newTexture.level = this.level;
@@ -88,7 +88,6 @@ var BABYLON;
             return newTexture;
         };
         return DynamicTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.DynamicTexture = DynamicTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.dynamicTexture.js.map

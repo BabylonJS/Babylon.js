@@ -61,7 +61,7 @@ var BABYLON;
             this._lastUpdate = BABYLON.Tools.Now;
         }
         VideoTexture.prototype._createTexture = function () {
-            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode, false);
+            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
             this._texture.isReady = true;
         };
         VideoTexture.prototype.update = function () {
@@ -78,7 +78,6 @@ var BABYLON;
             return true;
         };
         return VideoTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.VideoTexture = VideoTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.videoTexture.js.map

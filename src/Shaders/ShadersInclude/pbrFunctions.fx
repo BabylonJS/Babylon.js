@@ -86,14 +86,14 @@ vec3 FresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectan
 }
 
 // Cook Torance Specular computation.
-vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 specularColor)
+vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 specularColor, vec3 reflectance90)
 {
     float alphaG = convertRoughnessToAverageSlope(roughness);
     float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
     float visibility = smithVisibilityG_TrowbridgeReitzGGX_Walter(NdotL, NdotV, alphaG);
     visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integated in viibility to avoid issues when visibility function changes.
 
-    vec3 fresnel = fresnelSchlickGGX(VdotH, specularColor, vec3(1., 1., 1.));
+    vec3 fresnel = fresnelSchlickGGX(VdotH, specularColor, reflectance90);
 
     float specTerm = max(0., visibility * distribution) * NdotL;
     return fresnel * specTerm * kPi; // TODO: audit pi constants
@@ -148,17 +148,6 @@ vec3 toLinearSpace(vec3 color)
 vec3 toGammaSpace(vec3 color)
 {
     return vec3(pow(color.r, 1.0 / 2.2), pow(color.g, 1.0 / 2.2), pow(color.b, 1.0 / 2.2));
-}
-
-float computeLightFalloff(vec3 lightOffset, float lightDistanceSquared, float range)
-{
-    #ifdef USEPHYSICALLIGHTFALLOFF
-        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001));
-        return lightDistanceFalloff;
-    #else
-        float lightFalloff = max(0., 1.0 - length(lightOffset) / range);
-        return lightFalloff;
-    #endif
 }
 
 #ifdef CAMERATONEMAP

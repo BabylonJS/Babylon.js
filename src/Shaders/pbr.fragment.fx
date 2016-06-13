@@ -293,6 +293,15 @@ void main(void) {
 	float NdotL = -1.;
 	lightingInfo info;
 
+	// Compute reflectance.
+	float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
+
+	// For typical incident reflectance range (between 4% to 100%) set the grazing reflectance to 100% for typical fresnel effect.
+    // For very low reflectance range on highly diffuse objects (below 4%), incrementally reduce grazing reflecance to 0%.
+    float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
+	vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
+	vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
+
 #include<pbrLightFunctionsCall>[0..maxSimultaneousLights]
 
 #ifdef SPECULARTERM
@@ -466,9 +475,7 @@ void main(void) {
 	environmentRadiance *= vLightingIntensity.z;
 	environmentIrradiance *= vLightingIntensity.z;
 
-	// Compute reflection specular fresnel
-	vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
-	vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
+	// Specular Environment Fresnel.
 	vec3 specularEnvironmentReflectance = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
 
 	// Compute refractance
@@ -510,7 +517,6 @@ void main(void) {
 #endif
 
 	// Apply Energy Conservation taking in account the environment level only if the environment is present.
-	float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
 	surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
 
 	refractance *= vLightingIntensity.z;

@@ -188,16 +188,6 @@ var BABYLON;
             BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
             return this._viewMatrix;
         };
-        TargetCamera.prototype._getVRViewMatrix = function () {
-            this._updateCameraRotationMatrix();
-            BABYLON.Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-            BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this._cameraRigParams.vrActualUp);
-            // Computing target and final matrix
-            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
-            BABYLON.Matrix.LookAtLHToRef(this.position, this._currentTarget, this._cameraRigParams.vrActualUp, this._cameraRigParams.vrWorkMatrix);
-            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._viewMatrix);
-            return this._viewMatrix;
-        };
         /**
          * @override
          * Override Camera.createRigCamera
@@ -210,8 +200,6 @@ var BABYLON;
                         this.rotationQuaternion = new BABYLON.Quaternion();
                     }
                     rigCamera._cameraRigParams = {};
-                    rigCamera._cameraRigParams.vrActualUp = new BABYLON.Vector3(0, 0, 0);
-                    rigCamera._getViewMatrix = rigCamera._getVRViewMatrix;
                     rigCamera.rotationQuaternion = new BABYLON.Quaternion();
                 }
                 return rigCamera;
@@ -269,7 +257,6 @@ var BABYLON;
             BABYLON.serializeAsMeshReference("lockedTargetId")
         ], TargetCamera.prototype, "lockedTarget", void 0);
         return TargetCamera;
-    }(BABYLON.Camera));
+    })(BABYLON.Camera);
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.targetCamera.js.map

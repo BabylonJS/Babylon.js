@@ -162,7 +162,7 @@
         public maxCubemapTextureSize: number;
         public maxRenderTextureSize: number;
         public standardDerivatives: boolean;
-        public s3tc : WEBGL_compressed_texture_s3tc;
+        public s3tc: WEBGL_compressed_texture_s3tc;
         public textureFloat: boolean;
         public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
         public maxAnisotropy: number;
@@ -1452,7 +1452,7 @@
             this._gl.colorMask(enable, enable, enable, enable);
         }
 
-        public setAlphaMode(mode: number, noDepthWriteChange: boolean=false): void {
+        public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
             if (this._alphaMode === mode) {
                 return;
             }
@@ -1726,12 +1726,12 @@
             return texture;
         }
 
-        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number, forceExponantOfTwo = true): WebGLTexture {
+        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
 
-            if (forceExponantOfTwo) {
+            if (generateMipMaps) {
                 width = Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
                 height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
@@ -1870,8 +1870,8 @@
                 Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);//filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);//filters.min);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -2147,12 +2147,47 @@
                     }
                     else {
                         // Data are known to be in +X +Y +Z -X -Y -Z
-                        for (var index = 0; index < facesIndex.length; index++) {
-                            var faceData = rgbeDataArrays[index];
+                        for (let index = 0; index < facesIndex.length; index++) {
+                            let faceData = rgbeDataArrays[index];
                             gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
                         }
 
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+                        // Workaround firefox bug fix https://bugzilla.mozilla.org/show_bug.cgi?id=1221822
+                        // By following the webgl standard changes from Revision 7, 2014/11/24
+                        // Firefox Removed the support for RGB32F, since it is not natively supported on all platforms where WebGL is implemented.
+                        if (textureType === gl.FLOAT && internalFormat === gl.RGB && gl.getError() === 1282) {
+                            Tools.Log("RGB32F not renderable on Firefox, trying fallback to RGBA32F.");
+
+                            // Data are known to be in +X +Y +Z -X -Y -Z
+                            for (let index = 0; index < facesIndex.length; index++) {
+                                let faceData = <Float32Array>rgbeDataArrays[index];
+
+                                // Create a new RGBA Face.
+                                let newFaceData = new Float32Array(width * height * 4);
+                                for (let x = 0; x < width; x++) {
+                                    for (let y = 0; y < height; y++) {
+                                        let index = (y * width + x) * 3;
+                                        let newIndex = (y * width + x) * 4;
+
+                                        // Map Old Value to new value.
+                                        newFaceData[newIndex + 0] = faceData[index + 0];
+                                        newFaceData[newIndex + 1] = faceData[index + 1];
+                                        newFaceData[newIndex + 2] = faceData[index + 2];
+
+                                        // Add fully opaque alpha channel.
+                                        newFaceData[newIndex + 3] = 1;
+                                    }
+                                }
+
+                                // Reupload the face.
+                                gl.texImage2D(facesIndex[index], 0, gl.RGBA, width, height, 0, gl.RGBA, textureType, newFaceData);
+                            }
+
+                            // Try to generate mipmap again.
+                            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        }
                     }
                 }
                 else {
