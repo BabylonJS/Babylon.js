@@ -258,6 +258,7 @@ var BABYLON;
                     impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
                 }
                 impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+                impostor.object.rotationQuaternion.normalize();
             }
         };
         OimoJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
