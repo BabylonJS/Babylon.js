@@ -899,9 +899,10 @@ var BABYLON;
             return result;
         };
         Vector3.CrossToRef = function (left, right, result) {
-            result.x = left.y * right.z - left.z * right.y;
-            result.y = left.z * right.x - left.x * right.z;
-            result.z = left.x * right.y - left.y * right.x;
+            Tmp.Vector3[0].x = left.y * right.z - left.z * right.y;
+            Tmp.Vector3[0].y = left.z * right.x - left.x * right.z;
+            Tmp.Vector3[0].z = left.x * right.y - left.y * right.x;
+            result.copyFrom(Tmp.Vector3[0]);
         };
         Vector3.Normalize = function (vector) {
             var result = Vector3.Zero();
@@ -2885,7 +2886,7 @@ var BABYLON;
             }
             else {
                 normal0 = Vector3.Cross(vt, va);
-                normal0 = Vector3.Cross(normal0, vt);
+                Vector3.CrossToRef(normal0, vt, normal0);
             }
             normal0.normalize();
             return normal0;

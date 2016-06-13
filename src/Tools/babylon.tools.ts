@@ -684,6 +684,7 @@
             });
 
             scene.incrementRenderId();
+            scene.resetCachedMaterial();
             texture.render(true);
             texture.dispose();
 
