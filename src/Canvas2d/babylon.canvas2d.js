@@ -70,13 +70,23 @@ var BABYLON;
                     this.backgroundRoundRadius = settings.backgroundRoundRadius;
                 }
                 if (settings.backgroundBorder != null) {
-                    this.backgroundBorder = settings.backgroundBorder; // TOFIX
+                    if (typeof (settings.backgroundBorder) === "string") {
+                        this.backgroundBorder = Canvas2D.GetBrushFromString(settings.backgroundBorder);
+                    }
+                    else {
+                        this.backgroundBorder = settings.backgroundBorder;
+                    }
                 }
                 if (settings.backgroundBorderThickNess != null) {
                     this.backgroundBorderThickness = settings.backgroundBorderThickNess;
                 }
                 if (settings.backgroundFill != null) {
-                    this.backgroundFill = settings.backgroundFill;
+                    if (typeof (settings.backgroundFill) === "string") {
+                        this.backgroundFill = Canvas2D.GetBrushFromString(settings.backgroundFill);
+                    }
+                    else {
+                        this.backgroundFill = settings.backgroundFill;
+                    }
                 }
                 this._background._patchHierarchy(this);
             }
@@ -86,7 +96,7 @@ var BABYLON;
             this._primPointerInfo = new BABYLON.PrimitivePointerInfo();
             this._capturedPointers = new BABYLON.StringDictionary();
             this._pickStartingPosition = BABYLON.Vector2.Zero();
-            this._hierarchyLevelMaxSiblingCount = 10;
+            this._hierarchyLevelMaxSiblingCount = 50;
             this._hierarchyDepthOffset = 0;
             this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
             this._scene = scene;
@@ -263,7 +273,7 @@ var BABYLON;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = BABYLON.Vector2.Zero();
             }
-            var camera = this._scene.activeCamera;
+            var camera = this._scene.cameraToUseForPointers || this._scene.activeCamera;
             var engine = this._scene.getEngine();
             if (this._isScreenSpace) {
                 var cameraViewport = camera.viewport;
@@ -586,6 +596,9 @@ var BABYLON;
             get: function () {
                 return this._worldSpaceNode;
             },
+            set: function (val) {
+                this._worldSpaceNode = val;
+            },
             enumerable: true,
             configurable: true
         });
@@ -718,7 +731,7 @@ var BABYLON;
             this._addPrimToDirtyList(this);
         };
         Canvas2D.prototype._updateTrackedNodes = function () {
-            var cam = this.scene.activeCamera;
+            var cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
             var rh = this.engine.getRenderHeight();
             var v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
@@ -1007,13 +1020,8 @@ var BABYLON;
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
-            //let enableInteraction = settings ? settings.enableInteraction : true;
             var createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
-            //let isVisible = settings ? settings.isVisible || true : true;
             var id = settings ? settings.id || null : null;
-            //let rsf = settings ? settings.renderScaleFactor || 1 : 1;
-            //let c = new Canvas2D();
-            //c.setupCanvas(scene, id, new Size(size.width, size.height), rsf, false, cs, enableInteraction, new Vector2(0.5, 0.5), isVisible, null, null, null, null, null, null);
             if (createWorldSpaceNode) {
                 var plane = new BABYLON.WorldSpaceCanvas2DNode(id, scene, this);
                 var vertexData = BABYLON.VertexData.CreatePlane({
@@ -1034,8 +1042,8 @@ var BABYLON;
             }
             else {
                 this._worldSpaceNode = settings.customWorldSpaceNode;
+                this.applyCachedTexture(null, null);
             }
-            //            return c;
         }
         WorldSpaceCanvas2D = __decorate([
             BABYLON.className("WorldSpaceCanvas2D")

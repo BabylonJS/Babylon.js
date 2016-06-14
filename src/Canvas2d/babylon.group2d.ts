@@ -38,35 +38,35 @@
          */
         constructor(settings?: {
 
-            parent            ?: Prim2DBase, 
-            children          ?: Array<Prim2DBase>,
-            id                ?: string,
-            position          ?: Vector2,
-            x                 ?: number,
-            y                 ?: number,
-            trackNode         ?: Node,
-            origin            ?: Vector2,
-            size              ?: Size,
-            width             ?: number,
-            height            ?: number,
-            cacheBehavior     ?: number,
-            layoutEngine      ?: LayoutEngineBase | string,
-            isVisible         ?: boolean,
-            marginTop         ?: number | string,
-            marginLeft        ?: number | string,
-            marginRight       ?: number | string,
-            marginBottom      ?: number | string,
-            margin            ?: number | string,
-            marginHAlignment  ?: number,
-            marginVAlignment  ?: number,
-            marginAlignment   ?: string,
-            paddingTop        ?: number | string,
-            paddingLeft       ?: number | string,
-            paddingRight      ?: number | string,
-            paddingBottom     ?: number | string,
-            padding           ?: string,
-            paddingHAlignment ?: number,
-            paddingVAlignment ?: number,
+            parent?: Prim2DBase,
+            children?: Array<Prim2DBase>,
+            id?: string,
+            position?: Vector2,
+            x?: number,
+            y?: number,
+            trackNode?: Node,
+            origin?: Vector2,
+            size?: Size,
+            width?: number,
+            height?: number,
+            cacheBehavior?: number,
+            layoutEngine?: LayoutEngineBase | string,
+            isVisible?: boolean,
+            marginTop?: number | string,
+            marginLeft?: number | string,
+            marginRight?: number | string,
+            marginBottom?: number | string,
+            margin?: number | string,
+            marginHAlignment?: number,
+            marginVAlignment?: number,
+            marginAlignment?: string,
+            paddingTop?: number | string,
+            paddingLeft?: number | string,
+            paddingRight?: number | string,
+            paddingBottom?: number | string,
+            padding?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
 
         }) {
             if (settings == null) {
@@ -76,7 +76,7 @@
                 settings.origin = new Vector2(0, 0);
             }
             super(settings);
- 
+
             let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
 
             this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
@@ -84,15 +84,15 @@
                 this.owner._registerTrackedNode(this);
             }
 
-            this._cacheBehavior = (settings.cacheBehavior==null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
+            this._cacheBehavior = (settings.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
             this.size = size;
             this._viewportPosition = Vector2.Zero();
         }
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
-            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size:null, isVisible:true});
+            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size: null, isVisible: true });
             return g;
-            
+
         }
 
         protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial) {
@@ -242,7 +242,7 @@
         }
 
         public set trackedNode(val: Node) {
-            if (val!=null) {
+            if (val != null) {
                 if (!this._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
                     this.owner._registerTrackedNode(this);
                 }
@@ -519,7 +519,7 @@
                 }
 
                 // Reset the segment, we have to create/rebuild it
-                tpi._transparentSegment = null;                
+                tpi._transparentSegment = null;
 
                 // If there's a previous valid segment, check if this prim can be part of it
                 if (prevSeg) {
@@ -580,27 +580,27 @@
             // Render Mode specifics
             switch (context.renderMode) {
                 case Render2DContext.RenderModeOpaque:
-                {
-                    if (!gii.hasOpaqueData) {
-                        return null;
+                    {
+                        if (!gii.hasOpaqueData) {
+                            return null;
+                        }
+                        setDirty = (dirty: boolean) => { gii.opaqueDirty = dirty; };
+                        getDirty = () => gii.opaqueDirty;
+                        context.groupInfoPartData = gii.opaqueData;
+                        gipd = gii.opaqueData;
+                        break;
                     }
-                    setDirty = (dirty: boolean) => { gii.opaqueDirty = dirty; };
-                    getDirty = () => gii.opaqueDirty;
-                    context.groupInfoPartData = gii.opaqueData;
-                    gipd = gii.opaqueData;
-                    break;
-                }
                 case Render2DContext.RenderModeAlphaTest:
-                {
-                    if (!gii.hasAlphaTestData) {
-                        return null;
+                    {
+                        if (!gii.hasAlphaTestData) {
+                            return null;
+                        }
+                        setDirty = (dirty: boolean) => { gii.alphaTestDirty = dirty; };
+                        getDirty = () => gii.alphaTestDirty;
+                        context.groupInfoPartData = gii.alphaTestData;
+                        gipd = gii.alphaTestData;
+                        break;
                     }
-                    setDirty = (dirty: boolean) => { gii.alphaTestDirty = dirty; };
-                    getDirty = () => gii.alphaTestDirty;
-                    context.groupInfoPartData = gii.alphaTestData;
-                    gipd = gii.alphaTestData;
-                    break;
-                }
                 default:
                     throw new Error("_prepareContext is only for opaque or alphaTest");
             }
@@ -894,7 +894,7 @@
         _primDirtyList: Array<Prim2DBase>;
         _childrenRenderableGroups: Array<Group2D>;
         _renderGroupInstancesInfo: StringDictionary<GroupInstanceInfo>;
-        
+
         _cacheNode: PackedRect;
         _cacheTexture: MapTexture;
         _cacheRenderSprite: Sprite2D;

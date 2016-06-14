@@ -48,19 +48,19 @@
         public static CACHESTRATEGY_DONTCACHE = 4;
 
         constructor(scene: Scene, settings?: {
-            id                        ?: string,
-            children                  ?: Array<Prim2DBase>,
-            size                      ?: Size,
-            renderScaleFactor         ?: number,
-            isScreenSpace             ?: boolean,
-            cachingStrategy           ?: number,
-            enableInteraction         ?: boolean,
-            origin                    ?: Vector2,
-            isVisible                 ?: boolean,
-            backgroundRoundRadius     ?: number,
-            backgroundFill            ?: IBrush2D | string,
-            backgroundBorder          ?: IBrush2D | string,
-            backgroundBorderThickNess ?: number,
+            id?: string,
+            children?: Array<Prim2DBase>,
+            size?: Size,
+            renderScaleFactor?: number,
+            isScreenSpace?: boolean,
+            cachingStrategy?: number,
+            enableInteraction?: boolean,
+            origin?: Vector2,
+            isVisible?: boolean,
+            backgroundRoundRadius?: number,
+            backgroundFill?: IBrush2D | string,
+            backgroundBorder?: IBrush2D | string,
+            backgroundBorderThickNess?: number,
         }) {
             super(settings);
 
@@ -72,10 +72,10 @@
 
             let renderScaleFactor = (settings.renderScaleFactor == null) ? 1 : settings.renderScaleFactor;
             if (this._cachingStrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
-                this._background              = new Rectangle2D({ parent: this, id: "###CANVAS BACKGROUND###", size: settings.size }); //TODO CHECK when size is null
-                this._background.zOrder       = 1.0;
-                this._background.isPickable   = false;
-                this._background.origin       = Vector2.Zero();
+                this._background = new Rectangle2D({ parent: this, id: "###CANVAS BACKGROUND###", size: settings.size }); //TODO CHECK when size is null
+                this._background.zOrder = 1.0;
+                this._background.isPickable = false;
+                this._background.origin = Vector2.Zero();
                 this._background.levelVisible = false;
 
                 if (settings.backgroundRoundRadius != null) {
@@ -107,18 +107,18 @@
 
             let engine = scene.getEngine();
 
-            this.__engineData                   = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
-            this._renderScaleFactor             = renderScaleFactor;
-            this._primPointerInfo               = new PrimitivePointerInfo();
-            this._capturedPointers              = new StringDictionary<Prim2DBase>();
-            this._pickStartingPosition          = Vector2.Zero();
+            this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
+            this._renderScaleFactor = renderScaleFactor;
+            this._primPointerInfo = new PrimitivePointerInfo();
+            this._capturedPointers = new StringDictionary<Prim2DBase>();
+            this._pickStartingPosition = Vector2.Zero();
             this._hierarchyLevelMaxSiblingCount = 50;
-            this._hierarchyDepthOffset          = 0;
-            this._siblingDepthOffset            = 1 / this._hierarchyLevelMaxSiblingCount;
-            this._scene                         = scene;
-            this._engine                        = engine;
-            this._renderingSize                 = new Size(0, 0);
-            this._trackedGroups                 = new Array<Group2D>();
+            this._hierarchyDepthOffset = 0;
+            this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
+            this._scene = scene;
+            this._engine = engine;
+            this._renderingSize = new Size(0, 0);
+            this._trackedGroups = new Array<Group2D>();
 
             this._patchHierarchy(this);
 
@@ -149,13 +149,13 @@
             }
 
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
-//            this._supprtInstancedArray = false; // TODO REMOVE!!!
+            //            this._supprtInstancedArray = false; // TODO REMOVE!!!
 
             this._setupInteraction(enableInteraction);
         }
 
         protected _canvasPreInit(settings: any) {
-            let cachingStrategy   = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
+            let cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
             this._cachingStrategy = cachingStrategy;
             this._isScreenSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
         }
@@ -187,7 +187,7 @@
 
                 // Register the observable
                 this._scenePrePointerObserver = this.scene.onPrePointerObservable.add((e, s) => {
-                    let hs = 1/this.engine.getHardwareScalingLevel();
+                    let hs = 1 / this.engine.getHardwareScalingLevel();
                     let localPos = e.localPosition.multiplyByFloats(hs, hs);
                     this._handlePointerEventForInteraction(e, localPos, s);
                 });
@@ -231,7 +231,7 @@
             mtx.invert();
             let v = Vector3.TransformCoordinates(worldPos, mtx);
             let rsf = this._renderScaleFactor;
-            let res = new Vector2(v.x*rsf, v.y*rsf);
+            let res = new Vector2(v.x * rsf, v.y * rsf);
             let size = this.actualSize;
             let o = this.origin;
             res.x += size.width * 0.5;  // res is centered, make it relative to bottom/left
@@ -298,7 +298,7 @@
             }
             return this._capturedPointers.get(pointerId.toString());
         }
-           
+
         private static _interInfo = new IntersectInfo2D();
         private _handlePointerEventForInteraction(eventData: PointerInfoBase, localPosition: Vector2, eventState: EventState) {
             // Dispose check
@@ -313,7 +313,7 @@
 
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim!==null);
+            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null);
 
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus();
@@ -348,7 +348,7 @@
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = Vector2.Zero();
             }
-            var camera = this._scene.activeCamera;
+            var camera = this._scene.cameraToUseForPointers || this._scene.activeCamera;
             var engine = this._scene.getEngine();
 
             if (this._isScreenSpace) {
@@ -360,7 +360,7 @@
                 var y = localPosition.y - viewport.y;
 
                 pii.canvasPointerPos.x = x - this.actualPosition.x;
-                pii.canvasPointerPos.y = engine.getRenderHeight() -y - this.actualPosition.y;
+                pii.canvasPointerPos.y = engine.getRenderHeight() - y - this.actualPosition.y;
             } else {
                 pii.canvasPointerPos.x = localPosition.x;
                 pii.canvasPointerPos.y = localPosition.y;
@@ -375,20 +375,20 @@
                     pii.mouseWheelDelta = -event.detail / PrimitivePointerInfo.MouseWheelPrecision;
                 }
             } else {
-                var pe         = <PointerEvent>eventData.event;
-                pii.ctrlKey    = pe.ctrlKey;
-                pii.altKey     = pe.altKey;
-                pii.shiftKey   = pe.shiftKey;
-                pii.metaKey    = pe.metaKey;
-                pii.button     = pe.button;
-                pii.buttons    = pe.buttons;
-                pii.pointerId  = pe.pointerId;
-                pii.width      = pe.width;
-                pii.height     = pe.height;
-                pii.presssure  = pe.pressure;
-                pii.tilt.x     = pe.tiltX;
-                pii.tilt.y     = pe.tiltY;
-                pii.isCaptured = this.getCapturedPrimitive(pe.pointerId)!==null;
+                var pe = <PointerEvent>eventData.event;
+                pii.ctrlKey = pe.ctrlKey;
+                pii.altKey = pe.altKey;
+                pii.shiftKey = pe.shiftKey;
+                pii.metaKey = pe.metaKey;
+                pii.button = pe.button;
+                pii.buttons = pe.buttons;
+                pii.pointerId = pe.pointerId;
+                pii.width = pe.width;
+                pii.height = pe.height;
+                pii.presssure = pe.pressure;
+                pii.tilt.x = pe.tiltX;
+                pii.tilt.y = pe.tiltY;
+                pii.isCaptured = this.getCapturedPrimitive(pe.pointerId) !== null;
             }
         }
 
@@ -410,18 +410,18 @@
             // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
             if (!isCapture && !this.boundingInfo.doesIntersect(ii.pickPosition)) {
                 this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList   = null;
-                this._previousOverPrimitive    = this._actualOverPrimitive;
-                this._actualOverPrimitive      = null;
+                this._actualIntersectionList = null;
+                this._previousOverPrimitive = this._actualOverPrimitive;
+                this._actualOverPrimitive = null;
                 return;
             }
 
             this.intersect(ii);
 
             this._previousIntersectionList = this._actualIntersectionList;
-            this._actualIntersectionList   = ii.intersectedPrimitives;
-            this._previousOverPrimitive    = this._actualOverPrimitive;
-            this._actualOverPrimitive      = ii.topMostIntersectedPrimitive;
+            this._actualIntersectionList = ii.intersectedPrimitives;
+            this._previousOverPrimitive = this._actualOverPrimitive;
+            this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
 
             this._intersectionRenderId = this.scene.getRenderId();
         }
@@ -434,14 +434,14 @@
 
             // Detect a change of over
             let prevPrim = this._previousOverPrimitive ? this._previousOverPrimitive.prim : null;
-            let actualPrim = this._actualOverPrimitive ? this._actualOverPrimitive.prim   : null;
+            let actualPrim = this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
 
             if (prevPrim !== actualPrim) {
                 // Detect if the current pointer is captured, only fire event if they belong to the capture primitive
                 let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
                 // Notify the previous "over" prim that the pointer is no longer over it
-                if ((capturedPrim && capturedPrim===prevPrim) || (!capturedPrim && prevPrim)) {
+                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim)) {
                     this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
                     this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut, null);
                 }
@@ -559,15 +559,15 @@
                         let actionEvent = ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
 
                         switch (eventData.button) {
-                        case 0:
-                            prim.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, actionEvent);
-                            break;
-                        case 1:
-                            prim.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, actionEvent);
-                            break;
-                        case 2:
-                            prim.actionManager.processTrigger(ActionManager.OnRightPickTrigger, actionEvent);
-                            break;
+                            case 0:
+                                prim.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, actionEvent);
+                                break;
+                            case 1:
+                                prim.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, actionEvent);
+                                break;
+                            case 2:
+                                prim.actionManager.processTrigger(ActionManager.OnRightPickTrigger, actionEvent);
+                                break;
                         }
                         prim.actionManager.processTrigger(ActionManager.OnPickDownTrigger, actionEvent);
                     }
@@ -882,7 +882,7 @@
         private static _m = Matrix.Identity();
 
         private _updateTrackedNodes() {
-            let cam = this.scene.activeCamera;
+            let cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
 
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
             let rh = this.engine.getRenderHeight();
@@ -978,7 +978,7 @@
             let size = group.actualSize;
             size = new Size(Math.ceil(size.width), Math.ceil(size.height));
             if (minSize) {
-                size.width  = Math.max(minSize.width, size.width);
+                size.width = Math.max(minSize.width, size.width);
                 size.height = Math.max(minSize.height, size.height);
             }
 
@@ -1022,14 +1022,14 @@
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    let sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    let sprite = new Sprite2D(map, { parent: parent, id:`__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize:node.contentSize, spriteLocation:node.pos});
+                    let sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.origin = group.origin.clone();
                     res.sprite = sprite;
                 }
@@ -1143,7 +1143,7 @@
                     return Canvas2D.GetGradientColorBrush(start, end, t, r, s);
                 } catch (e) {
                     return null;
-                } 
+                }
             }
         }
 
@@ -1172,35 +1172,35 @@
          */
         constructor(scene: Scene, size: Size, settings?: {
 
-            children                 ?: Array<Prim2DBase>,
-            id                       ?: string,
-            worldPosition            ?: Vector3,
-            worldRotation            ?: Quaternion,
-            renderScaleFactor        ?: number,
-            sideOrientation          ?: number,
-            cachingStrategy          ?: number,
-            enableInteraction        ?: boolean,
-            isVisible                ?: boolean,
-            backgroundRoundRadius    ?: number,
-            backgroundFill           ?: IBrush2D | string,
-            backgroundBorder         ?: IBrush2D | string,
+            children?: Array<Prim2DBase>,
+            id?: string,
+            worldPosition?: Vector3,
+            worldRotation?: Quaternion,
+            renderScaleFactor?: number,
+            sideOrientation?: number,
+            cachingStrategy?: number,
+            enableInteraction?: boolean,
+            isVisible?: boolean,
+            backgroundRoundRadius?: number,
+            backgroundFill?: IBrush2D | string,
+            backgroundBorder?: IBrush2D | string,
             backgroundBorderThickNess?: number,
-            customWorldSpaceNode     ?: Node,
-            marginTop                ?: number | string,
-            marginLeft               ?: number | string,
-            marginRight              ?: number | string,
-            marginBottom             ?: number | string,
-            margin                   ?: number | string,
-            marginHAlignment         ?: number,
-            marginVAlignment         ?: number,
-            marginAlignment          ?: string,
+            customWorldSpaceNode?: Node,
+            marginTop?: number | string,
+            marginLeft?: number | string,
+            marginRight?: number | string,
+            marginBottom?: number | string,
+            margin?: number | string,
+            marginHAlignment?: number,
+            marginVAlignment?: number,
+            marginAlignment?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;
             let s = <any>settings;
             s.isScreenSpace = false;
             s.size = size.clone();
-            settings.cachingStrategy = (settings.cachingStrategy==null) ? Canvas2D.CACHESTRATEGY_CANVAS : settings.cachingStrategy;
+            settings.cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_CANVAS : settings.cachingStrategy;
 
             if (settings.cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
                 throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
@@ -1264,30 +1264,30 @@
          */
         constructor(scene: Scene, settings?: {
 
-            children                  ?: Array<Prim2DBase>,
-            id                        ?: string,
-            x                         ?: number,
-            y                         ?: number,
-            position                  ?: Vector2,
-            origin                    ?: Vector2,
-            width                     ?: number,
-            height                    ?: number,
-            size                      ?: Size,
-            cachingStrategy           ?: number,
-            enableInteraction         ?: boolean,
-            isVisible                 ?: boolean,
-            backgroundRoundRadius     ?: number,
-            backgroundFill            ?: IBrush2D | string,
-            backgroundBorder          ?: IBrush2D | string,
-            backgroundBorderThickNess ?: number,
-            marginTop                 ?: number | string,
-            marginLeft                ?: number | string,
-            marginRight               ?: number | string,
-            marginBottom              ?: number | string,
-            margin                    ?: string,
-            marginHAlignment          ?: number,
-            marginVAlignment          ?: number,
-            marginAlignment           ?: string,
+            children?: Array<Prim2DBase>,
+            id?: string,
+            x?: number,
+            y?: number,
+            position?: Vector2,
+            origin?: Vector2,
+            width?: number,
+            height?: number,
+            size?: Size,
+            cachingStrategy?: number,
+            enableInteraction?: boolean,
+            isVisible?: boolean,
+            backgroundRoundRadius?: number,
+            backgroundFill?: IBrush2D | string,
+            backgroundBorder?: IBrush2D | string,
+            backgroundBorderThickNess?: number,
+            marginTop?: number | string,
+            marginLeft?: number | string,
+            marginRight?: number | string,
+            marginBottom?: number | string,
+            margin?: string,
+            marginHAlignment?: number,
+            marginVAlignment?: number,
+            marginAlignment?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;

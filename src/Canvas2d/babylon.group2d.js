@@ -50,14 +50,18 @@ var BABYLON;
         };
         Group2D.prototype.applyCachedTexture = function (vertexData, material) {
             this._bindCacheTarget();
-            var uv = vertexData.uvs;
-            var nodeuv = this._renderableData._cacheNode.UVs;
-            for (var i = 0; i < 4; i++) {
-                uv[i * 2 + 0] = nodeuv[i].x;
-                uv[i * 2 + 1] = nodeuv[i].y;
+            if (vertexData) {
+                var uv = vertexData.uvs;
+                var nodeuv = this._renderableData._cacheNode.UVs;
+                for (var i = 0; i < 4; i++) {
+                    uv[i * 2 + 0] = nodeuv[i].x;
+                    uv[i * 2 + 1] = nodeuv[i].y;
+                }
             }
-            material.diffuseTexture = this._renderableData._cacheTexture;
-            material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+            if (material) {
+                material.diffuseTexture = this._renderableData._cacheTexture;
+                material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+            }
             this._renderableData._cacheTexture.hasAlpha = true;
             this._unbindCacheTarget();
         };
@@ -656,7 +660,9 @@ var BABYLON;
                 var cur = this.parent;
                 while (cur) {
                     if (cur instanceof Group2D && cur._isRenderableGroup) {
-                        cur._renderableData._childrenRenderableGroups.push(this);
+                        if (cur._renderableData._childrenRenderableGroups.indexOf(this) === -1) {
+                            cur._renderableData._childrenRenderableGroups.push(this);
+                        }
                         break;
                     }
                     cur = cur.parent;
@@ -698,6 +704,9 @@ var BABYLON;
             this._transparentSegments = new Array();
             this._firstChangedPrim = null;
             this._transparentListChanged = false;
+            this._cacheNode = null;
+            this._cacheTexture = null;
+            this._cacheRenderSprite = null;
         }
         RenderableGroupData.prototype.dispose = function () {
             if (this._cacheRenderSprite) {
