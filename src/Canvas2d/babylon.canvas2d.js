@@ -26,7 +26,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    }());
+    })();
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -70,13 +70,23 @@ var BABYLON;
                     this.backgroundRoundRadius = settings.backgroundRoundRadius;
                 }
                 if (settings.backgroundBorder != null) {
-                    this.backgroundBorder = settings.backgroundBorder; // TOFIX
+                    if (typeof (settings.backgroundBorder) === "string") {
+                        this.backgroundBorder = Canvas2D.GetBrushFromString(settings.backgroundBorder);
+                    }
+                    else {
+                        this.backgroundBorder = settings.backgroundBorder;
+                    }
                 }
                 if (settings.backgroundBorderThickNess != null) {
                     this.backgroundBorderThickness = settings.backgroundBorderThickNess;
                 }
                 if (settings.backgroundFill != null) {
-                    this.backgroundFill = settings.backgroundFill;
+                    if (typeof (settings.backgroundFill) === "string") {
+                        this.backgroundFill = Canvas2D.GetBrushFromString(settings.backgroundFill);
+                    }
+                    else {
+                        this.backgroundFill = settings.backgroundFill;
+                    }
                 }
                 this._background._patchHierarchy(this);
             }
@@ -86,12 +96,13 @@ var BABYLON;
             this._primPointerInfo = new BABYLON.PrimitivePointerInfo();
             this._capturedPointers = new BABYLON.StringDictionary();
             this._pickStartingPosition = BABYLON.Vector2.Zero();
-            this._hierarchyLevelMaxSiblingCount = 10;
+            this._hierarchyLevelMaxSiblingCount = 50;
             this._hierarchyDepthOffset = 0;
             this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new BABYLON.Size(0, 0);
+            this._trackedGroups = new Array();
             this._patchHierarchy(this);
             var enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
             this._fitRenderingDevice = !settings.size;
@@ -106,7 +117,7 @@ var BABYLON;
             scene.onDisposeObservable.add(function (d, s) {
                 _this.dispose();
             });
-            if (this._isScreeSpace) {
+            if (this._isScreenSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add(function (d, s) {
                     _this._engine.clear(null, false, true);
                     _this._render();
@@ -124,7 +135,7 @@ var BABYLON;
         Canvas2D.prototype._canvasPreInit = function (settings) {
             var cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
             this._cachingStrategy = cachingStrategy;
-            this._isScreeSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
+            this._isScreenSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
         };
         Canvas2D.prototype._setupInteraction = function (enable) {
             var _this = this;
@@ -135,7 +146,7 @@ var BABYLON;
             // Set the new state
             this._interactionEnabled = enable;
             // ScreenSpace mode
-            if (this._isScreeSpace) {
+            if (this._isScreenSpace) {
                 // Disable interaction
                 if (!enable) {
                     if (this._scenePrePointerObserver) {
@@ -262,9 +273,9 @@ var BABYLON;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = BABYLON.Vector2.Zero();
             }
-            var camera = this._scene.activeCamera;
+            var camera = this._scene.cameraToUseForPointers || this._scene.activeCamera;
             var engine = this._scene.getEngine();
-            if (this._isScreeSpace) {
+            if (this._isScreenSpace) {
                 var cameraViewport = camera.viewport;
                 var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
                 // Moving coordinates to local viewport world
@@ -585,6 +596,9 @@ var BABYLON;
             get: function () {
                 return this._worldSpaceNode;
             },
+            set: function (val) {
+                this._worldSpaceNode = val;
+            },
             enumerable: true,
             configurable: true
         });
@@ -716,6 +730,23 @@ var BABYLON;
         Canvas2D.prototype.onPrimBecomesDirty = function () {
             this._addPrimToDirtyList(this);
         };
+        Canvas2D.prototype._updateTrackedNodes = function () {
+            var cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
+            cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
+            var rh = this.engine.getRenderHeight();
+            var v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
+            for (var _i = 0, _a = this._trackedGroups; _i < _a.length; _i++) {
+                var group = _a[_i];
+                if (group.isDisposed || !group.isVisible) {
+                    continue;
+                }
+                var node = group.trackedNode;
+                var worldMtx = node.getWorldMatrix();
+                var proj = BABYLON.Vector3.Project(Canvas2D._v, worldMtx, Canvas2D._m, v);
+                group.x = Math.round(proj.x);
+                group.y = Math.round(rh - proj.y);
+            }
+        };
         Canvas2D.prototype._updateCanvasState = function () {
             // Check if the update has already been made for this render Frame
             if (this.scene.getRenderId() === this._updateRenderId) {
@@ -752,6 +783,7 @@ var BABYLON;
          * Method that renders the Canvas, you should not invoke
          */
         Canvas2D.prototype._render = function () {
+            this._updateTrackedNodes();
             this._updateCanvasState();
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
@@ -807,7 +839,7 @@ var BABYLON;
             }
             // Check if we have to create a Sprite that will display the content of the Canvas which is cached.
             // Don't do it in case of the group being a worldspace canvas (because its texture is bound to a WorldSpaceCanvas node)
-            if (group !== this || this._isScreeSpace) {
+            if (group !== this || this._isScreenSpace) {
                 var node = res.node;
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
@@ -823,6 +855,23 @@ var BABYLON;
                 }
             }
             return res;
+        };
+        Canvas2D.prototype._registerTrackedNode = function (group) {
+            if (group._isFlagSet(BABYLON.SmartPropertyPrim.flagTrackedGroup)) {
+                return;
+            }
+            this._trackedGroups.push(group);
+            group._setFlags(BABYLON.SmartPropertyPrim.flagTrackedGroup);
+        };
+        Canvas2D.prototype._unregisterTrackedNode = function (group) {
+            if (!group._isFlagSet(BABYLON.SmartPropertyPrim.flagTrackedGroup)) {
+                return;
+            }
+            var i = this._trackedGroups.indexOf(group);
+            if (i !== -1) {
+                this._trackedGroups.splice(i, 1);
+            }
+            group._clearFlags(BABYLON.SmartPropertyPrim.flagTrackedGroup);
         };
         /**
          * Get a Solid Color Brush instance matching the given color.
@@ -922,6 +971,8 @@ var BABYLON;
         Canvas2D.CACHESTRATEGY_DONTCACHE = 4;
         Canvas2D.hierarchyLevelMaxSiblingCount = 10;
         Canvas2D._interInfo = new BABYLON.IntersectInfo2D();
+        Canvas2D._v = BABYLON.Vector3.Zero();
+        Canvas2D._m = BABYLON.Matrix.Identity();
         /**
          * Define the default size used for both the width and height of a MapTexture to allocate.
          * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
@@ -933,7 +984,7 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
     var WorldSpaceCanvas2D = (function (_super) {
         __extends(WorldSpaceCanvas2D, _super);
@@ -969,13 +1020,8 @@ var BABYLON;
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
-            //let enableInteraction = settings ? settings.enableInteraction : true;
             var createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
-            //let isVisible = settings ? settings.isVisible || true : true;
             var id = settings ? settings.id || null : null;
-            //let rsf = settings ? settings.renderScaleFactor || 1 : 1;
-            //let c = new Canvas2D();
-            //c.setupCanvas(scene, id, new Size(size.width, size.height), rsf, false, cs, enableInteraction, new Vector2(0.5, 0.5), isVisible, null, null, null, null, null, null);
             if (createWorldSpaceNode) {
                 var plane = new BABYLON.WorldSpaceCanvas2DNode(id, scene, this);
                 var vertexData = BABYLON.VertexData.CreatePlane({
@@ -996,14 +1042,14 @@ var BABYLON;
             }
             else {
                 this._worldSpaceNode = settings.customWorldSpaceNode;
+                this.applyCachedTexture(null, null);
             }
-            //            return c;
         }
         WorldSpaceCanvas2D = __decorate([
             BABYLON.className("WorldSpaceCanvas2D")
         ], WorldSpaceCanvas2D);
         return WorldSpaceCanvas2D;
-    }(Canvas2D));
+    })(Canvas2D);
     BABYLON.WorldSpaceCanvas2D = WorldSpaceCanvas2D;
     var ScreenSpaceCanvas2D = (function (_super) {
         __extends(ScreenSpaceCanvas2D, _super);
@@ -1043,6 +1089,6 @@ var BABYLON;
             BABYLON.className("ScreenSpaceCanvas2D")
         ], ScreenSpaceCanvas2D);
         return ScreenSpaceCanvas2D;
-    }(Canvas2D));
+    })(Canvas2D);
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
 })(BABYLON || (BABYLON = {}));
