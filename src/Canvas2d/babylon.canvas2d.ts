@@ -104,7 +104,7 @@
             this._primPointerInfo               = new PrimitivePointerInfo();
             this._capturedPointers              = new StringDictionary<Prim2DBase>();
             this._pickStartingPosition          = Vector2.Zero();
-            this._hierarchyLevelMaxSiblingCount = 10;
+            this._hierarchyLevelMaxSiblingCount = 50;
             this._hierarchyDepthOffset          = 0;
             this._siblingDepthOffset            = 1 / this._hierarchyLevelMaxSiblingCount;
             this._scene                         = scene;
