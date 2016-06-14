@@ -73,7 +73,7 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    }());
+    })();
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
         function InstancePropInfo() {
@@ -187,7 +187,7 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    }());
+    })();
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -309,7 +309,7 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "transformY", null);
         return InstanceDataBase;
-    }());
+    })();
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
@@ -459,8 +459,8 @@ var BABYLON;
         RenderablePrim2D.prototype._setupModelRenderCache = function (parts) {
             var ctiArray = new Array();
             this._modelRenderCache._partData = new Array();
-            for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
-                var dataPart = parts_1[_i];
+            for (var _i = 0; _i < parts.length; _i++) {
+                var dataPart = parts[_i];
                 var pd = new BABYLON.ModelRenderCachePartData();
                 this._modelRenderCache._partData.push(pd);
                 var cat = this.getUsedShaderCategories(dataPart);
@@ -737,6 +737,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));

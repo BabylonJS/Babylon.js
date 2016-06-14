@@ -16,7 +16,7 @@ var BABYLON;
             this.forceRefreshPrimitive = false;
         }
         return PrepareRender2DContext;
-    }());
+    })();
     BABYLON.PrepareRender2DContext = PrepareRender2DContext;
     var Render2DContext = (function () {
         function Render2DContext(renderMode) {
@@ -72,7 +72,7 @@ var BABYLON;
         Render2DContext._renderModeAlphaTest = 2;
         Render2DContext._renderModeTransparent = 3;
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -232,7 +232,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    }());
+    })();
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     var PrimitiveAlignment = (function () {
         function PrimitiveAlignment(changeCallback) {
@@ -334,8 +334,8 @@ var BABYLON;
         };
         PrimitiveAlignment.prototype.fromString = function (value) {
             var m = value.trim().split(",");
-            for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
-                var v = m_1[_i];
+            for (var _i = 0; _i < m.length; _i++) {
+                var v = m[_i];
                 v = v.toLocaleLowerCase().trim();
                 // Horizontal
                 var i = v.indexOf("h:");
@@ -366,7 +366,7 @@ var BABYLON;
         PrimitiveAlignment._AlignCenter = 3;
         PrimitiveAlignment._AlignStretch = 4;
         return PrimitiveAlignment;
-    }());
+    })();
     BABYLON.PrimitiveAlignment = PrimitiveAlignment;
     /**
      * Stores information about a Primitive that was intersected
@@ -377,7 +377,7 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    }());
+    })();
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
     var PrimitiveThickness = (function () {
         function PrimitiveThickness(parentAccess, changedCallback) {
@@ -398,8 +398,8 @@ var BABYLON;
             this._clear();
             var m = margin.trim().split(",");
             var res = false;
-            for (var _i = 0, m_2 = m; _i < m_2.length; _i++) {
-                var cm = m_2[_i];
+            for (var _i = 0; _i < m.length; _i++) {
+                var cm = m[_i];
                 res = this._extractString(cm, false) || res;
             }
             if (!res) {
@@ -527,7 +527,7 @@ var BABYLON;
                     return true;
                 }
                 // Check for pixel
-                var n = void 0;
+                var n;
                 pI = v.indexOf("px");
                 if (pI !== -1) {
                     n = v.substr(0, pI).trim();
@@ -966,7 +966,7 @@ var BABYLON;
         PrimitiveThickness.Percentage = 0x4;
         PrimitiveThickness.Pixel = 0x8;
         return PrimitiveThickness;
-    }());
+    })();
     BABYLON.PrimitiveThickness = PrimitiveThickness;
     /**
      * Main class used for the Primitive Intersection API
@@ -1003,7 +1003,7 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    }());
+    })();
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -1973,8 +1973,8 @@ var BABYLON;
             //}
         };
         Prim2DBase.prototype.updateCachedStatesOf = function (list, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
                 cur.updateCachedStates(recurse);
             }
         };
@@ -2175,6 +2175,9 @@ var BABYLON;
             if (this instanceof BABYLON.Group2D) {
                 var group = this;
                 group.detectGroupStates();
+                if (group._trackedNode && !group._isFlagSet(BABYLON.SmartPropertyPrim.flagTrackedGroup)) {
+                    group.owner._registerTrackedNode(this);
+                }
             }
             if (this._parent) {
                 this._renderGroup = this.parent.traverseUp(function (p) { return p instanceof BABYLON.Group2D && p.isRenderableGroup; });
@@ -2264,6 +2267,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

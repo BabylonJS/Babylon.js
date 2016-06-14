@@ -36,6 +36,10 @@ var BABYLON;
             }
             _super.call(this, settings);
             var size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new BABYLON.Size(settings.width || 0, settings.height || 0)));
+            this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
+            if (this._trackedNode && this.owner) {
+                this.owner._registerTrackedNode(this);
+            }
             this._cacheBehavior = (settings.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
             this.size = size;
             this._viewportPosition = BABYLON.Vector2.Zero();
@@ -46,14 +50,18 @@ var BABYLON;
         };
         Group2D.prototype.applyCachedTexture = function (vertexData, material) {
             this._bindCacheTarget();
-            var uv = vertexData.uvs;
-            var nodeuv = this._renderableData._cacheNode.UVs;
-            for (var i = 0; i < 4; i++) {
-                uv[i * 2 + 0] = nodeuv[i].x;
-                uv[i * 2 + 1] = nodeuv[i].y;
+            if (vertexData) {
+                var uv = vertexData.uvs;
+                var nodeuv = this._renderableData._cacheNode.UVs;
+                for (var i = 0; i < 4; i++) {
+                    uv[i * 2 + 0] = nodeuv[i].x;
+                    uv[i * 2 + 1] = nodeuv[i].y;
+                }
             }
-            material.diffuseTexture = this._renderableData._cacheTexture;
-            material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+            if (material) {
+                material.diffuseTexture = this._renderableData._cacheTexture;
+                material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+            }
             this._renderableData._cacheTexture.hasAlpha = true;
             this._unbindCacheTarget();
         };
@@ -91,6 +99,10 @@ var BABYLON;
         Group2D.prototype.dispose = function () {
             if (!_super.prototype.dispose.call(this)) {
                 return false;
+            }
+            if (this._trackedNode != null) {
+                this.owner._unregisterTrackedNode(this);
+                this._trackedNode = null;
             }
             if (this._renderableData) {
                 this._renderableData.dispose();
@@ -182,6 +194,27 @@ var BABYLON;
             this._prepareGroupRender(context);
             this._groupRender();
         };
+        Object.defineProperty(Group2D.prototype, "trackedNode", {
+            get: function () {
+                return this._trackedNode;
+            },
+            set: function (val) {
+                if (val != null) {
+                    if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagTrackedGroup)) {
+                        this.owner._registerTrackedNode(this);
+                    }
+                    this._trackedNode = val;
+                }
+                else {
+                    if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagTrackedGroup)) {
+                        this.owner._unregisterTrackedNode(this);
+                    }
+                    this._trackedNode = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Group2D.prototype.levelIntersect = function (intersectInfo) {
             // If we've made it so far it means the boundingInfo intersection test succeed, the Group2D is shaped the same, so we always return true
             return true;
@@ -297,10 +330,10 @@ var BABYLON;
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                var context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
+                var context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context_1, v);
+                    var renderCount = _this._prepareContext(engine, context, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -308,7 +341,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context_1);
+                        var renderFailed = !v.modelRenderCache.render(v, context);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -320,10 +353,10 @@ var BABYLON;
                 engine.setAlphaTesting(true);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
+                context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context_1, v);
+                    var renderCount = _this._prepareContext(engine, context, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -331,7 +364,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context_1);
+                        var renderFailed = !v.modelRenderCache.render(v, context);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -627,7 +660,9 @@ var BABYLON;
                 var cur = this.parent;
                 while (cur) {
                     if (cur instanceof Group2D && cur._isRenderableGroup) {
-                        cur._renderableData._childrenRenderableGroups.push(this);
+                        if (cur._renderableData._childrenRenderableGroups.indexOf(this) === -1) {
+                            cur._renderableData._childrenRenderableGroups.push(this);
+                        }
                         break;
                     }
                     cur = cur.parent;
@@ -658,7 +693,7 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.Group2D = Group2D;
     var RenderableGroupData = (function () {
         function RenderableGroupData() {
@@ -669,6 +704,9 @@ var BABYLON;
             this._transparentSegments = new Array();
             this._firstChangedPrim = null;
             this._transparentListChanged = false;
+            this._cacheNode = null;
+            this._cacheTexture = null;
+            this._cacheRenderSprite = null;
         }
         RenderableGroupData.prototype.dispose = function () {
             if (this._cacheRenderSprite) {
@@ -723,12 +761,12 @@ var BABYLON;
             }
         };
         return RenderableGroupData;
-    }());
+    })();
     BABYLON.RenderableGroupData = RenderableGroupData;
     var TransparentPrimitiveInfo = (function () {
         function TransparentPrimitiveInfo() {
         }
         return TransparentPrimitiveInfo;
-    }());
+    })();
     BABYLON.TransparentPrimitiveInfo = TransparentPrimitiveInfo;
 })(BABYLON || (BABYLON = {}));
