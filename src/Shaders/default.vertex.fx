@@ -78,7 +78,7 @@ varying vec4 vColor;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<shadowsVertexDeclaration>
+#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
 
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
@@ -198,7 +198,7 @@ void main(void) {
 
 #include<clipPlaneVertex>
 #include<fogVertex>
-#include<shadowsVertex>
+#include<shadowsVertex>[0..maxSimultaneousLights]
 
 	// Vertex color
 #ifdef VERTEXCOLOR
