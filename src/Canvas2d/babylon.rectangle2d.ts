@@ -167,21 +167,20 @@
     @className("Rectangle2D")
     export class Rectangle2D extends Shape2D {
 
-        public static sizeProperty: Prim2DPropInfo;
+        public static actualSizeProperty: Prim2DPropInfo;
         public static notRoundedProperty: Prim2DPropInfo;
         public static roundRadiusProperty: Prim2DPropInfo;
 
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.actualSizeProperty = pi, false, true)
         public get actualSize(): Size {
+            if (this._actualSize) {
+                return this._actualSize;
+            }
             return this.size;
         }
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.sizeProperty = pi, false, true)
-        public get size(): Size {
-            return this._size;
-        }
-
-        public set size(value: Size) {
-            this._size = value;
+        public set actualSize(value: Size) {
+            this._actualSize = value;
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)
@@ -201,6 +200,7 @@
         public set roundRadius(value: number) {
             this._roundRadius = value;
             this.notRounded = value === 0;
+            this._positioningDirty();
         }
 
         private static _i0 = Vector2.Zero();
@@ -218,10 +218,9 @@
             // If it's the case for one, check if the mouse is located in the quarter that we care about (the one who is visible) then finally make a distance check with the roundRadius radius to see if it's inside the circle quarter or outside.
 
             // First let remove the origin out the equation, to have the rectangle with an origin at bottom/left
-            let o = this.origin;
             let size = this.size;
-            Rectangle2D._i0.x = intersectInfo._localPickPosition.x + (size.width * o.x);
-            Rectangle2D._i0.y = intersectInfo._localPickPosition.y + (size.height * o.y);
+            Rectangle2D._i0.x = intersectInfo._localPickPosition.x;
+            Rectangle2D._i0.y = intersectInfo._localPickPosition.y;
 
             let rr = this.roundRadius;
             let rrs = rr * rr;
@@ -281,14 +280,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
-        }
-
-        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, roundRadius, fill: IBrush2D, border: IBrush2D, borderThickness: number, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
-            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-            this.size = size;
-            this.notRounded = !roundRadius;
-            this.roundRadius = roundRadius;
+            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
         }
 
         /**
@@ -308,39 +300,63 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, roundRadius?: number, fill?: IBrush2D, border?: IBrush2D, borderThickness?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Rectangle2D {
-            Prim2DBase.CheckParent(parent);
+        constructor(settings ?: {
+            parent           ?: Prim2DBase, 
+            children         ?: Array<Prim2DBase>,
+            id               ?: string,
+            position         ?: Vector2,
+            x                ?: number,
+            y                ?: number,
+            rotation         ?: number,
+            scale            ?: number,
+            origin           ?: Vector2,
+            size             ?: Size,
+            width            ?: number,
+            height           ?: number,
+            roundRadius      ?: number,
+            fill             ?: IBrush2D | string,
+            border           ?: IBrush2D | string,
+            borderThickness  ?: number,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: number | string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+        }) {
 
-            let rect = new Rectangle2D();
-
-            if (!options) {
-                rect.setupRectangle2D(parent.owner, parent, null, Vector2.Zero(), null, new Size(10, 10), 0, Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
-            } else {
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                let size = options.size || (new Size(options.width || 10, options.height || 10));
-                let fill = options.fill===undefined ? Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF") : options.fill;
-
-                rect.setupRectangle2D
-                (
-                    parent.owner,
-                    parent,
-                    options.id || null,
-                    pos,
-                    options.origin || null,
-                    size,
-                    (options.roundRadius == null) ? 0 : options.roundRadius,
-                    fill,
-                    options.border || null,
-                    (options.borderThickness==null) ? 1 : options.borderThickness,
-                    options.isVisible || true,
-                    options.marginTop || null,
-                    options.marginLeft || null,
-                    options.marginRight || null,
-                    options.marginBottom || null,
-                    options.vAlignment || null,
-                    options.hAlignment || null);
+            // Avoid checking every time if the object exists
+            if (settings == null) {
+                settings = {};
             }
-            return rect;
+
+            super(settings);
+
+            if (settings.size != null) {
+                this.size = settings.size;
+            }
+            else if (settings.width || settings.height) {
+                let size = new Size(settings.width, settings.height);
+                this.size = size;
+            }
+
+            //let size            = settings.size || (new Size((settings.width === null) ? null : (settings.width || 10), (settings.height === null) ? null : (settings.height || 10)));
+            let roundRadius     = (settings.roundRadius == null) ? 0 : settings.roundRadius;
+            let borderThickness = (settings.borderThickness == null) ? 1 : settings.borderThickness;
+
+            //this.size            = size;
+            this.roundRadius     = roundRadius;
+            this.borderThickness = borderThickness;
         }
 
         public static roundSubdivisions = 16;
@@ -428,6 +444,18 @@
             return renderCache;
         }
 
+        // We override this method because if there's a roundRadius set, we will reduce the initial Content Area to make sure the computed area won't intersect with the shape contour. The formula is simple: we shrink the incoming size by the amount of the roundRadius
+        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size) {
+            // Fall back to default implementation if there's no round Radius
+            if (this._notRounded) {
+                super._getInitialContentAreaToRef(primSize, initialContentPosition, initialContentArea);
+            } else {
+                let rr = Math.round((this.roundRadius - (this.roundRadius/Math.sqrt(2))) * 1.3);
+                initialContentPosition.x = initialContentPosition.y = rr;
+                initialContentArea.width = Math.max(0, primSize.width - (rr * 2));
+                initialContentArea.height = Math.max(0, primSize.height - (rr * 2));
+            }
+        }
 
         protected createInstanceDataParts(): InstanceDataBase[] {
             var res = new Array<InstanceDataBase>();
@@ -446,18 +474,17 @@
             }
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
                 let d = <Rectangle2DInstanceData>part;
-                let size = this.size;
+                let size = this.actualSize;
                 d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Rectangle2DInstanceData>part;
-                let size = this.size;
+                let size = this.actualSize;
                 d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
             }
             return true;
         }
 
-        private _size: Size;
         private _notRounded: boolean;
         private _roundRadius: number;
     }

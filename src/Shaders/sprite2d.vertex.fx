@@ -10,7 +10,6 @@ attribute float index;
 
 att vec2 topLeftUV;
 att vec2 sizeUV;
-att vec2 origin;
 att vec2 textureSize;
 
 // x: frame, y: invertY, z: alignToPixel
@@ -68,9 +67,9 @@ void main(void) {
 	vec4 pos;
 	if (alignToPixel == 1.0)
 	{
-		pos.xy = floor((pos2.xy * sizeUV * textureSize) - origin);
+		pos.xy = floor(pos2.xy * sizeUV * textureSize);
 	} else {
-		pos.xy = (pos2.xy * sizeUV * textureSize) - origin;
+		pos.xy = pos2.xy * sizeUV * textureSize;
 	}
 
 	pos.z = 1.0;

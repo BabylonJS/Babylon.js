@@ -23,13 +23,6 @@
         public static GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP = 2;
 
         /**
-         * Don't invoke directly, rely on Group2D.CreateXXX methods
-         */
-        constructor() {
-            super();
-        }
-
-        /**
          * Create an Logical or Renderable Group.
          * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * options:
@@ -43,45 +36,57 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        static CreateGroup2D(parent: Prim2DBase, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, size?: Size, width?: number, height?: number, cacheBehavior?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number }): Group2D {
-            Prim2DBase.CheckParent(parent);
+        constructor(settings?: {
 
+            parent            ?: Prim2DBase, 
+            children          ?: Array<Prim2DBase>,
+            id                ?: string,
+            position          ?: Vector2,
+            x                 ?: number,
+            y                 ?: number,
+            origin            ?: Vector2,
+            size              ?: Size,
+            width             ?: number,
+            height            ?: number,
+            cacheBehavior     ?: number,
+            layoutEngine      ?: LayoutEngineBase | string,
+            isVisible         ?: boolean,
+            marginTop         ?: number | string,
+            marginLeft        ?: number | string,
+            marginRight       ?: number | string,
+            marginBottom      ?: number | string,
+            margin            ?: number | string,
+            marginHAlignment  ?: number,
+            marginVAlignment  ?: number,
+            marginAlignment   ?: string,
+            paddingTop        ?: number | string,
+            paddingLeft       ?: number | string,
+            paddingRight      ?: number | string,
+            paddingBottom     ?: number | string,
+            padding           ?: string,
+            paddingHAlignment ?: number,
+            paddingVAlignment ?: number,
 
-            var g = new Group2D();
-
-            if (!options) {
-                g.setupGroup2D(parent.owner, parent, null, Vector2.Zero(), null, null, true, Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, null, null, null, null, null, null);
-            } else {
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                let size = (!options.size && !options.width && !options.height) ? null : (options.size || (new Size(options.width || 0, options.height || 0)));
-
-                g.setupGroup2D
-                    (
-                    parent.owner,
-                    parent,
-                    options.id || null,
-                    pos,
-                    options.origin || null,
-                    size,
-                    (options.isVisible == null) ? true : options.isVisible,
-                    (options.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : options.cacheBehavior,
-                    options.marginTop,
-                    options.marginLeft,
-                    options.marginRight,
-                    options.marginBottom,
-                    options.hAlignment || Prim2DBase.HAlignLeft,
-                    options.vAlignment || Prim2DBase.VAlignTop);
+        }) {
+            if (settings == null) {
+                settings = {};
             }
+            if (settings.origin == null) {
+                settings.origin = new Vector2(0, 0);
+            }
+            super(settings);
+ 
+            let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
 
-            return g;
+            this._cacheBehavior = (settings.cacheBehavior==null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
+            this.size = size;
+            this._viewportPosition = Vector2.Zero();
         }
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
-            var g = new Group2D();
-            g.setupGroup2D(owner, null, "__cachedCanvasGroup__", Vector2.Zero(), Vector2.Zero(), null, true, Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY, null, null, null, null, null, null);
-            g.origin = Vector2.Zero();
+            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size:null, isVisible:true});
             return g;
-
+            
         }
 
         protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial) {
@@ -138,13 +143,6 @@
             return true;
         }
 
-        protected setupGroup2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, size: Size, isVisible: boolean, cacheBehavior: number, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
-            this._cacheBehavior = cacheBehavior;
-            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
-            this.size = size;
-            this._viewportPosition = Vector2.Zero();
-        }
-
         /**
          * @returns Returns true if the Group render content, false if it's a logical group only
          */
@@ -196,9 +194,9 @@
                 actualSize = new Size(Math.ceil(m.x), Math.ceil(m.y));
             }
 
-            // Compare the size with the one we previously had, if it differ we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
+            // Compare the size with the one we previously had, if it differs we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
             if (!actualSize.equals(this._actualSize)) {
-                this._instanceDirtyFlags |= Group2D.actualSizeProperty.flagId;
+                this.onPrimitivePropertyDirty(Group2D.actualSizeProperty.flagId);
                 this._actualSize = actualSize;
                 this.handleGroupChanged(Group2D.actualSizeProperty);
             }
@@ -219,7 +217,7 @@
         }
 
         public _renderCachedCanvas() {
-            this.updateGlobalTransVis(true);
+            this.updateCachedStates(true);
             let context = new PrepareRender2DContext();
             this._prepareGroupRender(context);
             this._groupRender();
@@ -252,7 +250,7 @@
             // Update the Global Transformation and visibility status of the changed primitives
             if ((this._renderableData._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 sortedDirtyList = this._renderableData._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
-                this.updateGlobalTransVisOf(sortedDirtyList, true);
+                this.updateCachedStatesOf(sortedDirtyList, true);
             }
 
             // Setup the size of the rendering viewport
@@ -347,11 +345,13 @@
                     var curVP = engine.setDirectViewport(this._viewportPosition.x, this._viewportPosition.y, this._viewportSize.width, this._viewportSize.height);
                 }
 
+                let curAlphaTest = engine.getAlphaTesting() === true;
+                let curDepthWrite = engine.getDepthWrite() === true;
+
                 // ===================================================================
                 // First pass, update the InstancedArray and render Opaque primitives
 
-                // Disable Culling, Alpha Testing, Enable Depth Write
-                engine.setState(false);
+                // Disable Alpha Testing, Enable Depth Write
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
 
@@ -435,6 +435,10 @@
                         engine.setViewport(curVP);
                     }
                 }
+
+                // Restore saved states
+                engine.setAlphaTesting(curAlphaTest);
+                engine.setDepthWrite(curDepthWrite);
             }
         }
 
@@ -447,7 +451,7 @@
             }
 
             // Sort all the primitive from their depth, max (bottom) to min (top)
-            rd._transparentPrimitives.sort((a, b) => b._primitive.getActualZOffset() - a._primitive.getActualZOffset());
+            rd._transparentPrimitives.sort((a, b) => b._primitive.actualZOffset - a._primitive.actualZOffset);
 
             let checkAndAddPrimInSegment = (seg: TransparentSegment, tpiI: number): boolean => {
                 let tpi = rd._transparentPrimitives[tpiI];
@@ -457,7 +461,7 @@
                     return false;
                 }
 
-                let tpiZ = tpi._primitive.getActualZOffset();
+                let tpiZ = tpi._primitive.actualZOffset;
 
                 // We've made it so far, the tpi can be part of the segment, add it
                 tpi._transparentSegment = seg;
@@ -483,7 +487,7 @@
                 }
 
                 // Reset the segment, we have to create/rebuild it
-                tpi._transparentSegment = null;
+                tpi._transparentSegment = null;                
 
                 // If there's a previous valid segment, check if this prim can be part of it
                 if (prevSeg) {
@@ -495,7 +499,7 @@
                     let ts = new TransparentSegment();
                     ts.groupInsanceInfo = tpi._groupInstanceInfo;
                     let prim = tpi._primitive;
-                    ts.startZ = prim.getActualZOffset();
+                    ts.startZ = prim.actualZOffset;
                     ts.startDataIndex = prim._getFirstIndexInDataBuffer();
                     ts.endDataIndex = prim._getLastIndexInDataBuffer() + 1; // Make it exclusive, more natural to use in a for loop
                     ts.endZ = ts.startZ;
@@ -544,27 +548,27 @@
             // Render Mode specifics
             switch (context.renderMode) {
                 case Render2DContext.RenderModeOpaque:
-                    {
-                        if (!gii.hasOpaqueData) {
-                            return null;
-                        }
-                        setDirty = (dirty: boolean) => { gii.opaqueDirty = dirty; };
-                        getDirty = () => gii.opaqueDirty;
-                        context.groupInfoPartData = gii.opaqueData;
-                        gipd = gii.opaqueData;
-                        break;
+                {
+                    if (!gii.hasOpaqueData) {
+                        return null;
                     }
+                    setDirty = (dirty: boolean) => { gii.opaqueDirty = dirty; };
+                    getDirty = () => gii.opaqueDirty;
+                    context.groupInfoPartData = gii.opaqueData;
+                    gipd = gii.opaqueData;
+                    break;
+                }
                 case Render2DContext.RenderModeAlphaTest:
-                    {
-                        if (!gii.hasAlphaTestData) {
-                            return null;
-                        }
-                        setDirty = (dirty: boolean) => { gii.alphaTestDirty = dirty; };
-                        getDirty = () => gii.alphaTestDirty;
-                        context.groupInfoPartData = gii.alphaTestData;
-                        gipd = gii.alphaTestData;
-                        break;
+                {
+                    if (!gii.hasAlphaTestData) {
+                        return null;
                     }
+                    setDirty = (dirty: boolean) => { gii.alphaTestDirty = dirty; };
+                    getDirty = () => gii.alphaTestDirty;
+                    context.groupInfoPartData = gii.alphaTestData;
+                    gipd = gii.alphaTestData;
+                    break;
+                }
                 default:
                     throw new Error("_prepareContext is only for opaque or alphaTest");
             }
@@ -677,8 +681,8 @@
 
             // For now we only support these property changes
             // TODO: add more! :)
-            if (prop.id === Prim2DBase.positionProperty.id) {
-                rd._cacheRenderSprite.position = this.position.clone();
+            if (prop.id === Prim2DBase.actualPositionProperty.id) {
+                rd._cacheRenderSprite.actualPosition = this.actualPosition.clone();
             } else if (prop.id === Prim2DBase.rotationProperty.id) {
                 rd._cacheRenderSprite.rotation = this.rotation;
             } else if (prop.id === Prim2DBase.scaleProperty.id) {
@@ -686,7 +690,7 @@
             } else if (prop.id === Prim2DBase.originProperty.id) {
                 rd._cacheRenderSprite.origin = this.origin.clone();
             } else if (prop.id === Group2D.actualSizeProperty.id) {
-                rd._cacheRenderSprite.spriteSize = this.actualSize.clone();
+                rd._cacheRenderSprite.size = this.actualSize.clone();
                 //console.log(`[${this._globalTransformProcessStep}] Sync Sprite ${this.id}, width: ${this.actualSize.width}, height: ${this.actualSize.height}`);
             }
         }
@@ -744,7 +748,10 @@
 
 
             if (this._isRenderableGroup) {
-                this._renderableData = new RenderableGroupData();
+                // Yes, we do need that check, trust me, unfortunately we can call _detectGroupStates many time on the same object...
+                if (!this._renderableData) {
+                    this._renderableData = new RenderableGroupData();
+                }
             }
 
             // If the group is tagged as renderable we add it to the renderable tree
@@ -763,8 +770,6 @@
         protected _isRenderableGroup: boolean;
         protected _isCachedGroup: boolean;
         private _cacheGroupDirty: boolean;
-        private _size: Size;
-        private _actualSize: Size;
         private _cacheBehavior: number;
         private _viewportPosition: Vector2;
         private _viewportSize: Size;
@@ -840,8 +845,8 @@
 
         updateSmallestZChangedPrim(tpi: TransparentPrimitiveInfo) {
             if (tpi._primitive) {
-                let newZ = tpi._primitive.getActualZOffset();
-                let curZ = this._firstChangedPrim ? this._firstChangedPrim._primitive.getActualZOffset() : Number.MIN_VALUE;
+                let newZ = tpi._primitive.actualZOffset;
+                let curZ = this._firstChangedPrim ? this._firstChangedPrim._primitive.actualZOffset : Number.MIN_VALUE;
                 if (newZ > curZ) {
                     this._firstChangedPrim = tpi;
                 }
@@ -851,7 +856,7 @@
         _primDirtyList: Array<Prim2DBase>;
         _childrenRenderableGroups: Array<Group2D>;
         _renderGroupInstancesInfo: StringDictionary<GroupInstanceInfo>;
-
+        
         _cacheNode: PackedRect;
         _cacheTexture: MapTexture;
         _cacheRenderSprite: Sprite2D;

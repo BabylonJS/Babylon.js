@@ -120,7 +120,7 @@
         public static fontProperty: Prim2DPropInfo;
         public static defaultFontColorProperty: Prim2DPropInfo;
         public static textProperty: Prim2DPropInfo;
-        public static areaSizeProperty: Prim2DPropInfo;
+        public static sizeProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Text2D.fontProperty = pi, false, true)
         public get fontName(): string {
@@ -150,31 +150,42 @@
 
         public set text(value: string) {
             this._text = value;
-            this._actualSize = null;    // A change of text will reset the Actual Area Size which will be recomputed next time it's used
+            this._textSize = null;    // A change of text will reset the TextSize which will be recomputed next time it's used
+            this._size = null;
             this._updateCharCount();
+
+            // Trigger a textSize to for a sizeChange if necessary, which is needed for layout to recompute
+            let s = this.textSize;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.areaSizeProperty = pi)
-        public get areaSize(): Size {
-            return this._areaSize;
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.sizeProperty = pi)
+        public get size(): Size {
+            if (this._size != null) {
+                return this._size;
+            }
+            return this.textSize;
         }
 
-        public set areaSize(value: Size) {
-            this._areaSize = value;
+        public set size(value: Size) {
+            this._size = value;
         }
 
         public get actualSize(): Size {
-            if (this.areaSize) {
-                return this.areaSize;
-            }
-
             if (this._actualSize) {
                 return this._actualSize;
             }
+            return this.size;
+        }
 
-            this._actualSize = this.fontTexture.measureText(this._text, this._tabulationSize);
-
-            return this._actualSize;
+        public get textSize(): Size {
+            if (!this._textSize && this.owner) {
+                let newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                if (newSize !== this._textSize) {
+                    this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                }
+                this._textSize = newSize;
+            }
+            return this._textSize;
         }
 
         protected get fontTexture(): FontTexture {
@@ -200,18 +211,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo, this.origin);
-        }
-
-        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, tabulationSize: number, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-
-            this.fontName = fontName;
-            this.defaultFontColor = defaultFontColor;
-            this.text = text;
-            this.areaSize = areaSize;
-            this._tabulationSize = tabulationSize;
-            this.isAlphaTest = true;
+            BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
         }
 
         /**
@@ -231,35 +231,50 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, text: string, options?: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, fontName?: string, defaultFontColor?: Color4, areaSize?: Size, tabulationSize?: number, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, hAlignment?: number, vAlignment?: number}): Text2D {
-            Prim2DBase.CheckParent(parent);
+        constructor(text: string, settings?: {
 
-            let text2d = new Text2D();
-            if (!options) {
-                text2d.setupText2D(parent.owner, parent, null, Vector2.Zero(), null, "12pt Arial", text, null, new Color4(1,1,1,1), 4, true, null, null, null, null, null, null);
-            } else {
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                text2d.setupText2D
-                (
-                    parent.owner,
-                    parent,
-                    options.id || null,
-                    pos,
-                    options.origin || null,
-                    options.fontName || "12pt Arial",
-                    text,
-                    options.areaSize,
-                    options.defaultFontColor || new Color4(1, 1, 1, 1),
-                    (options.tabulationSize==null) ? 4 : options.tabulationSize,
-                    (options.isVisible==null) ? true : options.isVisible,
-                    options.marginTop || null,
-                    options.marginLeft || null,
-                    options.marginRight || null,
-                    options.marginBottom || null,
-                    options.vAlignment || null,
-                    options.hAlignment || null);
+            parent           ?: Prim2DBase, 
+            children         ?: Array<Prim2DBase>,
+            id               ?: string,
+            position         ?: Vector2,
+            x                ?: number,
+            y                ?: number,
+            origin           ?: Vector2,
+            fontName         ?: string,
+            defaultFontColor ?: Color4,
+            size             ?: Size,
+            tabulationSize   ?: number,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: number | string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+        }) {
+
+            if (!settings) {
+                settings = {};
             }
-            return text2d;
+
+            super(settings);
+
+            this.fontName         = (settings.fontName==null)         ? "12pt Arial"        : settings.fontName;
+            this.defaultFontColor = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
+            this._tabulationSize  = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
+            this._textSize        = null;
+            this.text             = text;
+            this.size             = (settings.size==null) ? null : settings.size;
+            this.isAlphaTest      = true;
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
@@ -337,7 +352,6 @@
                 let d = <Text2DInstanceData>part;
                 let texture = this.fontTexture;
                 let ts = texture.getSize();
-                let textSize = texture.measureText(this.text, this._tabulationSize);
                 let offset = Vector2.Zero();
                 let charxpos = 0;
                 d.dataElementCount = this._charCount;
@@ -364,7 +378,7 @@
                         continue;
                     }
 
-                    this.updateInstanceDataPart(d, offset, textSize);
+                    this.updateInstanceDataPart(d, offset);
 
                     let ci = texture.getChar(char);
                     offset.x += ci.charWidth;
@@ -398,10 +412,7 @@
         private _fontName: string;
         private _defaultFontColor: Color4;
         private _text: string;
-        private _areaSize: Size;
-        private _actualSize: Size;
-        private _vAlign: number;
-        private _hAlign: number;
+        private _textSize: Size;
     }
 
 
