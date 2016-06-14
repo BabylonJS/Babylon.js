@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 6, 0),
+    'version': (4, 6, 1),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -1323,25 +1323,18 @@ class SubMesh:
         file_handler.write('}')
 #===============================================================================
 class Bone:
-    def __init__(self, bone, skeleton, scene, index):
-        Main.log('processing begun of bone:  ' + bone.name + ', index:  '+ str(index), 2)
+    def __init__(self, bone, skeleton, bonesSoFar):
+        self.index = len(bonesSoFar)
+        Main.log('processing begun of bone:  ' + bone.name + ', index:  '+ str(self.index), 2)
         self.name = bone.name
         self.length = bone.length
-        self.index = index
         self.posedBone = bone # record so can be used by get_matrix, called by append_animation_pose
         self.parentBone = bone.parent
 
         self.matrix_world = skeleton.matrix_world
         self.matrix = self.get_bone_matrix(True)
 
-        parentId = -1
-        if (bone.parent):
-            for parent in skeleton.pose.bones:
-                parentId += 1
-                if parent == bone.parent:
-                    break;
-
-        self.parentBoneIndex = parentId
+        self.parentBoneIndex = Skeleton.get_bone(bone.parent.name, bonesSoFar).index if bone.parent else -1
 
         #animation
         if (skeleton.animation_data):
@@ -1399,7 +1392,7 @@ class Skeleton:
                 Main.log('Ignoring IK bone:  ' + bone.name, 2)
                 continue
 
-            self.bones.append(Bone(bone, skeleton, scene, len(self.bones)))
+            self.bones.append(Bone(bone, skeleton, self.bones))
 
         if (skeleton.animation_data):
             self.ranges = []
@@ -1441,12 +1434,16 @@ class Skeleton:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Since IK bones could be being skipped, looking up index of bone in second pass of mesh required
     def get_index_of_bone(self, boneName):
-        for bone in self.bones:
+        return Skeleton.get_bone(boneName, self.bones).index
+    
+    @staticmethod
+    def get_bone(boneName, bones):
+        for bone in bones:
             if boneName == bone.name:
-                return bone.index
+                return bone
 
         # should not happen, but if it does clearly a bug, so terminate
-        raise 'bone name "' + boneName + '" not found in skeleton'
+        raise Exception('bone name "' + boneName + '" not found in skeleton')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('{')
