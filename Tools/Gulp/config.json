@@ -159,6 +159,7 @@
       "../../src/Materials/Textures/babylon.fontTexture.js",
       "../../src/Materials/Textures/babylon.mapTexture.js",
       "../../src/Canvas2d/babylon.bounding2d.js",
+      "../../src/Canvas2d/babylon.canvas2dLayoutEngine.js",
       "../../src/Canvas2d/babylon.brushes2d.js",
       "../../src/Canvas2d/babylon.smartPropertyPrim.js",
       "../../src/Canvas2d/babylon.prim2dBase.js",
