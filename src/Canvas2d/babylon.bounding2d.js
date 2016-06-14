@@ -10,58 +10,53 @@ var BABYLON;
             this.center = BABYLON.Vector2.Zero();
             this.extent = BABYLON.Vector2.Zero();
         }
-        BoundingInfo2D.CreateFromSize = function (size, origin) {
+        BoundingInfo2D.CreateFromSize = function (size) {
             var r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromSizeToRef(size, r, origin);
+            BoundingInfo2D.CreateFromSizeToRef(size, r);
             return r;
         };
-        BoundingInfo2D.CreateFromRadius = function (radius, origin) {
+        BoundingInfo2D.CreateFromRadius = function (radius) {
             var r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromRadiusToRef(radius, r, origin);
+            BoundingInfo2D.CreateFromRadiusToRef(radius, r);
             return r;
         };
-        BoundingInfo2D.CreateFromPoints = function (points, origin) {
+        BoundingInfo2D.CreateFromPoints = function (points) {
             var r = new BoundingInfo2D();
-            BoundingInfo2D.CreateFromPointsToRef(points, r, origin);
+            BoundingInfo2D.CreateFromPointsToRef(points, r);
             return r;
         };
-        BoundingInfo2D.CreateFromSizeToRef = function (size, b, origin) {
-            b.center = new BABYLON.Vector2(size.width / 2, size.height / 2);
-            b.extent = b.center.clone();
-            if (origin) {
-                b.center.x -= size.width * origin.x;
-                b.center.y -= size.height * origin.y;
+        BoundingInfo2D.CreateFromSizeToRef = function (size, b) {
+            if (!size) {
+                size = BABYLON.Size.Zero();
             }
+            b.center.x = +size.width / 2;
+            b.center.y = +size.height / 2;
+            b.extent.x = b.center.x;
+            b.extent.y = b.center.y;
             b.radius = b.extent.length();
         };
-        BoundingInfo2D.CreateFromRadiusToRef = function (radius, b, origin) {
-            b.center = BABYLON.Vector2.Zero();
-            if (origin) {
-                b.center.x -= radius * origin.x;
-                b.center.y -= radius * origin.y;
-            }
-            b.extent = new BABYLON.Vector2(radius, radius);
-            b.radius = radius;
+        BoundingInfo2D.CreateFromRadiusToRef = function (radius, b) {
+            b.center.x = b.center.y = 0;
+            var r = +radius;
+            b.extent.x = r;
+            b.extent.y = r;
+            b.radius = r;
         };
-        BoundingInfo2D.CreateFromPointsToRef = function (points, b, origin) {
+        BoundingInfo2D.CreateFromPointsToRef = function (points, b) {
             var xmin = Number.MAX_VALUE, ymin = Number.MAX_VALUE, xmax = Number.MIN_VALUE, ymax = Number.MIN_VALUE;
-            for (var _i = 0; _i < points.length; _i++) {
-                var p = points[_i];
+            for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
+                var p = points_1[_i];
                 xmin = Math.min(p.x, xmin);
                 xmax = Math.max(p.x, xmax);
                 ymin = Math.min(p.y, ymin);
                 ymax = Math.max(p.y, ymax);
             }
-            BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, b, origin);
+            BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, b);
         };
-        BoundingInfo2D.CreateFromMinMaxToRef = function (xmin, xmax, ymin, ymax, b, origin) {
+        BoundingInfo2D.CreateFromMinMaxToRef = function (xmin, xmax, ymin, ymax, b) {
             var w = xmax - xmin;
             var h = ymax - ymin;
             b.center = new BABYLON.Vector2(xmin + w / 2, ymin + h / 2);
-            if (origin) {
-                b.center.x -= w * origin.x;
-                b.center.y -= h * origin.y;
-            }
             b.extent = new BABYLON.Vector2(xmax - b.center.x, ymax - b.center.y);
             b.radius = b.extent.length();
         };
@@ -152,6 +147,6 @@ var BABYLON;
         };
         BoundingInfo2D._transform = new Array(BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero());
         return BoundingInfo2D;
-    })();
+    }());
     BABYLON.BoundingInfo2D = BoundingInfo2D;
 })(BABYLON || (BABYLON = {}));

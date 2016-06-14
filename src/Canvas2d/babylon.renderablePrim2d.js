@@ -73,7 +73,7 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    })();
+    }());
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
         function InstancePropInfo() {
@@ -187,7 +187,7 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    })();
+    }());
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -258,13 +258,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(InstanceDataBase.prototype, "origin", {
-            get: function () {
-                return null;
-            },
-            enumerable: true,
-            configurable: true
-        });
         InstanceDataBase.prototype.getClassTreeInfo = function () {
             if (!this.typeInfo) {
                 this.typeInfo = BABYLON.ClassTreeInfo.get(Object.getPrototypeOf(this));
@@ -315,16 +308,16 @@ var BABYLON;
         __decorate([
             instanceData()
         ], InstanceDataBase.prototype, "transformY", null);
-        __decorate([
-            instanceData()
-        ], InstanceDataBase.prototype, "origin", null);
         return InstanceDataBase;
-    })();
+    }());
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
-        function RenderablePrim2D() {
-            _super.apply(this, arguments);
+        function RenderablePrim2D(settings) {
+            _super.call(this, settings);
+            this._isTransparent = false;
+            this._isAlphaTest = false;
+            this._transparentPrimitiveInfo = null;
         }
         Object.defineProperty(RenderablePrim2D.prototype, "isAlphaTest", {
             get: function () {
@@ -346,15 +339,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        RenderablePrim2D.prototype.setupRenderablePrim2D = function (owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign) {
-            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
-            this._isTransparent = false;
-            this._isAlphaTest = false;
-            this._transparentPrimitiveInfo = null;
-        };
         RenderablePrim2D.prototype.dispose = function () {
             if (!_super.prototype.dispose.call(this)) {
                 return false;
+            }
+            if (this._transparentPrimitiveInfo) {
+                this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
+                this._transparentPrimitiveInfo = null;
             }
             if (this._modelRenderInstanceID) {
                 this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
@@ -375,13 +366,13 @@ var BABYLON;
         RenderablePrim2D.prototype._prepareRenderPre = function (context) {
             _super.prototype._prepareRenderPre.call(this, context);
             // If the model changed and we have already an instance, we must remove this instance from the obsolete model
-            if (this._modelDirty && this._modelRenderInstanceID) {
+            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagModelDirty) && this._modelRenderInstanceID) {
                 this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
                 this._modelRenderInstanceID = null;
             }
             // Need to create the model?
             var setupModelRenderCache = false;
-            if (!this._modelRenderCache || this._modelDirty) {
+            if (!this._modelRenderCache || this._isFlagSet(BABYLON.SmartPropertyPrim.flagModelDirty)) {
                 setupModelRenderCache = this._createModelRenderCache();
             }
             var gii = null;
@@ -398,7 +389,9 @@ var BABYLON;
             }
             // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
-            if (this._visibilityChanged || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+                if (this.isTransparent) {
+                }
                 this._updateInstanceDataParts(gii);
             }
         };
@@ -413,7 +406,7 @@ var BABYLON;
                 setupModelRenderCache = true;
                 return mrc;
             });
-            this._modelDirty = false;
+            this._clearFlags(BABYLON.SmartPropertyPrim.flagModelDirty);
             // if this is still false it means the MRC already exists, so we add a reference to it
             if (!setupModelRenderCache) {
                 this._modelRenderCache.addRef();
@@ -466,8 +459,8 @@ var BABYLON;
         RenderablePrim2D.prototype._setupModelRenderCache = function (parts) {
             var ctiArray = new Array();
             this._modelRenderCache._partData = new Array();
-            for (var _i = 0; _i < parts.length; _i++) {
-                var dataPart = parts[_i];
+            for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
+                var dataPart = parts_1[_i];
                 var pd = new BABYLON.ModelRenderCachePartData();
                 this._modelRenderCache._partData.push(pd);
                 var cat = this.getUsedShaderCategories(dataPart);
@@ -521,7 +514,7 @@ var BABYLON;
             // Handle changes related to ZOffset
             if (this.isTransparent) {
                 // Handle visibility change, which is also triggered when the primitive just got created
-                if (this._visibilityChanged) {
+                if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagVisibilityChanged)) {
                     if (this.isVisible) {
                         if (!this._transparentPrimitiveInfo) {
                             // Add the primitive to the list of transparent ones in the group that render is
@@ -541,7 +534,7 @@ var BABYLON;
             for (var _i = 0, _a = this._instanceDataParts; _i < _a.length; _i++) {
                 var part = _a[_i];
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if (this._visibilityChanged && !part.dataElements) {
+                if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagVisibilityChanged) && !part.dataElements) {
                     part.allocElements();
                 }
                 InstanceClassInfo._CurCategories = gii.usedShaderCategories[gii.partIndexFromId.get(part.id.toString())];
@@ -564,7 +557,7 @@ var BABYLON;
             else {
                 gii.opaqueDirty = true;
             }
-            this._visibilityChanged = false; // Reset the flag as we've handled the case            
+            this._clearFlags(BABYLON.SmartPropertyPrim.flagVisibilityChanged); // Reset the flag as we've handled the case            
         };
         RenderablePrim2D.prototype._getFirstIndexInDataBuffer = function () {
             for (var _i = 0, _a = this._instanceDataParts; _i < _a.length; _i++) {
@@ -704,21 +697,19 @@ var BABYLON;
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
-         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text). You MUST also set customSize.
-         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin property.
+         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text).
          */
-        RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset, customSize) {
+        RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
             if (positionOffset === void 0) { positionOffset = null; }
-            if (customSize === void 0) { customSize = null; }
             var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
             var size = this.renderGroup.viewportSize;
-            var zBias = this.getActualZOffset();
+            var zBias = this.actualZOffset;
             var offX = 0;
             var offY = 0;
             // If there's an offset, apply the global transformation matrix on it to get a global offset
-            if (positionOffset && customSize) {
-                offX = (positionOffset.x - (customSize.width * this.origin.x)) * t.m[0] + (positionOffset.y - (customSize.height * this.origin.y)) * t.m[4];
-                offY = (positionOffset.x - (customSize.width * this.origin.x)) * t.m[1] + (positionOffset.y - (customSize.height * this.origin.y)) * t.m[5];
+            if (positionOffset) {
+                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
+                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[5];
             }
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
             // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
@@ -732,7 +723,6 @@ var BABYLON;
             var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
             part.transformX = tx;
             part.transformY = ty;
-            part.origin = this.origin;
             // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
             part.zBias = new BABYLON.Vector2(zBias, invZBias);
         };
@@ -747,6 +737,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    })(BABYLON.Prim2DBase);
+    }(BABYLON.Prim2DBase));
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));
