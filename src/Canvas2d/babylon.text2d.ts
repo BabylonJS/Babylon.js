@@ -178,13 +178,17 @@
         }
 
         public get textSize(): Size {
-            if (!this._textSize && this.owner) {
-                let newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
-                if (!newSize.equals(this._textSize)) {
-                    this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
-                    this._positioningDirty();
+            if (!this._textSize) {
+                if (this.owner) {
+                    let newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                    if (!newSize.equals(this._textSize)) {
+                        this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                        this._positioningDirty();
+                    }
+                    this._textSize = newSize;
+                } else {
+                    return Text2D.nullSize;
                 }
-                this._textSize = newSize;
             }
             
             return this._textSize;
