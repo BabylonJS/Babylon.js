@@ -83,7 +83,11 @@
                 }
 
                 if (settings.backgroundBorder != null) {
-                    this.backgroundBorder = <IBrush2D>settings.backgroundBorder;        // TOFIX
+                    if (typeof (settings.backgroundBorder) === "string") {
+                        this.backgroundBorder = Canvas2D.GetBrushFromString(<string>settings.backgroundBorder);
+                    } else {
+                        this.backgroundBorder = <IBrush2D>settings.backgroundBorder;
+                    }
                 }
 
                 if (settings.backgroundBorderThickNess != null) {
@@ -91,7 +95,11 @@
                 }
 
                 if (settings.backgroundFill != null) {
-                    this.backgroundFill = <IBrush2D>settings.backgroundFill;
+                    if (typeof (settings.backgroundFill) === "string") {
+                        this.backgroundFill = Canvas2D.GetBrushFromString(<string>settings.backgroundFill);
+                    } else {
+                        this.backgroundFill = <IBrush2D>settings.backgroundFill;
+                    }
                 }
 
                 this._background._patchHierarchy(this);
@@ -706,6 +714,10 @@
          */
         public get worldSpaceCanvasNode(): Node {
             return this._worldSpaceNode;
+        }
+
+        public set worldSpaceCanvasNode(val: Node) {
+            this._worldSpaceNode = val;
         }
 
         /**
