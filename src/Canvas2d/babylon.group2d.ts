@@ -98,15 +98,18 @@
         protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial) {
             this._bindCacheTarget();
 
-            var uv = vertexData.uvs;
-            let nodeuv = this._renderableData._cacheNode.UVs;
-            for (let i = 0; i < 4; i++) {
-                uv[i * 2 + 0] = nodeuv[i].x;
-                uv[i * 2 + 1] = nodeuv[i].y;
+            if (vertexData) {
+                var uv = vertexData.uvs;
+                let nodeuv = this._renderableData._cacheNode.UVs;
+                for (let i = 0; i < 4; i++) {
+                    uv[i * 2 + 0] = nodeuv[i].x;
+                    uv[i * 2 + 1] = nodeuv[i].y;
+                }
             }
-
-            material.diffuseTexture = this._renderableData._cacheTexture;
-            material.emissiveColor = new Color3(1, 1, 1);
+            if (material) {
+                material.diffuseTexture = this._renderableData._cacheTexture;
+                material.emissiveColor = new Color3(1, 1, 1);
+            }
             this._renderableData._cacheTexture.hasAlpha = true;
             this._unbindCacheTarget();
         }
