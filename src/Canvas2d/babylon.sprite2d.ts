@@ -121,7 +121,7 @@
         static SPRITE2D_MAINPARTID = 1;
 
         public static textureProperty: Prim2DPropInfo;
-        public static spriteSizeProperty: Prim2DPropInfo;
+        public static actualSizeProperty: Prim2DPropInfo;
         public static spriteLocationProperty: Prim2DPropInfo;
         public static spriteFrameProperty: Prim2DPropInfo;
         public static invertYProperty: Prim2DPropInfo;
@@ -136,17 +136,16 @@
             this._texture = value;
         }
 
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.actualSizeProperty = pi, false, true)
         public get actualSize(): Size {
-            return this.spriteSize;
+            if (this._actualSize) {
+                return this._actualSize;
+            }
+            return this.size;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.spriteSizeProperty = pi, false, true)
-        public get spriteSize(): Size {
-            return this._size;
-        }
-
-        public set spriteSize(value: Size) {
-            this._size = value;
+        public set actualSize(value: Size) {
+            this._actualSize = value;
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.spriteLocationProperty = pi)
@@ -185,7 +184,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo, this.origin);
+            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         }
 
         public getAnimatables(): IAnimatable[] {
@@ -200,24 +199,6 @@
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
             // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
             return true;
-        }
-
-        protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean, alignToPixel: boolean, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-            this.texture = texture;
-            this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this.spriteSize = spriteSize || null;
-            this.spriteLocation = spriteLocation || new Vector2(0,0);
-            this.spriteFrame = 0;
-            this.invertY = invertY;
-            this.alignToPixel = alignToPixel;
-            this._isTransparent = true;
-
-            if (!this.spriteSize) {
-                var s = texture.getSize();
-                this.spriteSize = new Size(s.width, s.height);
-            }
         }
 
         /**
@@ -237,43 +218,62 @@
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        public static Create(parent: Prim2DBase, texture: Texture, options: { id?: string, position?: Vector2, x?: number, y?: number, origin?: Vector2, spriteSize?: Size, spriteLocation?: Vector2, invertY?: boolean, alignToPixel?: boolean, isVisible?: boolean, marginTop?: number, marginLeft?: number, marginRight?: number, marginBottom?: number, vAlignment?: number, hAlignment?: number}): Sprite2D {
-            Prim2DBase.CheckParent(parent);
+        constructor(texture: Texture, settings?: {
 
-            let sprite = new Sprite2D();
-            if (!options) {
-                sprite.setupSprite2D(parent.owner, parent, null, Vector2.Zero(), null, texture, null, null, false, true, true, null, null, null, null, null, null);
-            } else {
-                let pos = options.position || new Vector2(options.x || 0, options.y || 0);
-                sprite.setupSprite2D
-                (
-                    parent.owner,
-                    parent,
-                    options.id || null,
-                    pos,
-                    options.origin || null,
-                    texture, options.spriteSize || null,
-                    options.spriteLocation || null,
-                    (options.invertY == null) ? false : options.invertY,
-                    (options.alignToPixel == null) ? true : options.alignToPixel,
-                    (options.isVisible == null) ? true : options.isVisible,
-                    options.marginTop || null,
-                    options.marginLeft || null,
-                    options.marginRight || null,
-                    options.marginBottom || null,
-                    options.vAlignment || null,
-                    options.hAlignment || null
-                );
+            parent           ?: Prim2DBase, 
+            children         ?: Array<Prim2DBase>,
+            id               ?: string,
+            position         ?: Vector2,
+            x                ?: number,
+            y                ?: number,
+            origin           ?: Vector2,
+            spriteSize       ?: Size,
+            spriteLocation   ?: Vector2,
+            invertY          ?: boolean,
+            alignToPixel     ?: boolean,
+            isVisible        ?: boolean,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: number | string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+        }) {
+
+            if (!settings) {
+                settings = {};
             }
 
-            return sprite;
+            super(settings);
+
+            this.texture = texture;
+            this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.size = settings.spriteSize || null;
+            this.spriteLocation = settings.spriteLocation || new Vector2(0, 0);
+            this.spriteFrame = 0;
+            this.invertY = (settings.invertY == null) ? false : settings.invertY;
+            this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
+            this._isTransparent = true;
+
+            if (!this.size) {
+                var s = texture.getSize();
+                this.size = new Size(s.width, s.height);
+            }
         }
 
         static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D {
 
-            let sprite = new Sprite2D();
-            sprite.setupSprite2D(owner, null, "__cachedCanvasSprite__", new Vector2(0, 0), null, texture, size, pos, false, true, true, null, null, null, null, null, null);
-
+            let sprite = new Sprite2D(texture, { parent: owner, id:"__cachedCanvasSprite__", position: Vector2.Zero(), origin: Vector2.Zero(), spriteSize: size, spriteLocation:pos, alignToPixel: true});
             return sprite;
         }
 
@@ -331,7 +331,7 @@
                 let d = <Sprite2DInstanceData>this._instanceDataParts[0];
                 let ts = this.texture.getBaseSize();
                 let sl = this.spriteLocation;
-                let ss = this.spriteSize;
+                let ss = this.actualSize;
                 d.topLeftUV = new Vector2(sl.x / ts.width, sl.y / ts.height);
                 let suv = new Vector2(ss.width / ts.width, ss.height / ts.height);
                 d.sizeUV = suv;
@@ -347,7 +347,6 @@
         }
 
         private _texture: Texture;
-        private _size: Size;
         private _location: Vector2;
         private _spriteFrame: number;
         private _invertY: boolean;

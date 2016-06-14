@@ -272,11 +272,6 @@
             return null;
         }
 
-        @instanceData()
-        get origin(): Vector2 {
-            return null;
-        }
-
         getClassTreeInfo(): ClassTreeInfo<InstanceClassInfo, InstancePropInfo> {
             if (!this.typeInfo) {
                 this.typeInfo = ClassTreeInfo.get<InstanceClassInfo, InstancePropInfo>(Object.getPrototypeOf(this));
@@ -353,16 +348,26 @@
             this._isTransparent = value;
         }
 
-        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, hAlign: number, vAlign: number) {
-            this.setupPrim2DBase(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlign, vAlign);
-            this._isTransparent = false;
-            this._isAlphaTest = false;
+        constructor(settings?: {
+            parent       ?: Prim2DBase, 
+            id           ?: string,
+            origin       ?: Vector2,
+            isVisible    ?: boolean,
+        }) {
+            super(settings);
+            this._isTransparent            = false;
+            this._isAlphaTest              = false;
             this._transparentPrimitiveInfo = null;
         }
 
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
+            }
+
+            if (this._transparentPrimitiveInfo) {
+                this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
+                this._transparentPrimitiveInfo = null;
             }
 
             if (this._modelRenderInstanceID) {
@@ -389,14 +394,14 @@
             super._prepareRenderPre(context);
 
             // If the model changed and we have already an instance, we must remove this instance from the obsolete model
-            if (this._modelDirty && this._modelRenderInstanceID) {
+            if (this._isFlagSet(SmartPropertyPrim.flagModelDirty) && this._modelRenderInstanceID) {
                 this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
                 this._modelRenderInstanceID = null;
             }
 
             // Need to create the model?
             let setupModelRenderCache = false;
-            if (!this._modelRenderCache || this._modelDirty) {
+            if (!this._modelRenderCache || this._isFlagSet(SmartPropertyPrim.flagModelDirty)) {
                 setupModelRenderCache = this._createModelRenderCache();
             }
 
@@ -418,7 +423,12 @@
             // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
 
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
-            if (this._visibilityChanged || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+            if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+
+                if (this.isTransparent) {
+                    //this.renderGroup._renderableData._transparentListChanged = true;
+                }
+
                 this._updateInstanceDataParts(gii);
             }
         }
@@ -434,7 +444,7 @@
                 setupModelRenderCache = true;
                 return mrc;
             });
-            this._modelDirty = false;
+            this._clearFlags(SmartPropertyPrim.flagModelDirty);
 
             // if this is still false it means the MRC already exists, so we add a reference to it
             if (!setupModelRenderCache) {
@@ -555,7 +565,7 @@
             // Handle changes related to ZOffset
             if (this.isTransparent) {
                 // Handle visibility change, which is also triggered when the primitive just got created
-                if (this._visibilityChanged) {
+                if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged)) {
                     if (this.isVisible) {
                         if (!this._transparentPrimitiveInfo) {
                             // Add the primitive to the list of transparent ones in the group that render is
@@ -574,7 +584,7 @@
             // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
             for (let part of this._instanceDataParts) {
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if (this._visibilityChanged && !part.dataElements) {
+                if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) && !part.dataElements) {
                     part.allocElements();
                 }
 
@@ -599,7 +609,7 @@
                 gii.opaqueDirty = true;
             }
 
-            this._visibilityChanged = false;    // Reset the flag as we've handled the case            
+            this._clearFlags(SmartPropertyPrim.flagVisibilityChanged);    // Reset the flag as we've handled the case            
         }
 
         public _getFirstIndexInDataBuffer(): number {
@@ -759,20 +769,19 @@
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
-         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text). You MUST also set customSize.
-         * @param customSize to use in multi part per primitive, this is the size of the overall primitive to display (the bounding rect's size of the Text, for instance). This is mandatory to compute correct transformation based on the Primitive's origin property.
+         * @param positionOffset to use in multi part per primitive (e.g. the Text2D has N parts for N letter to display), this give the offset to apply (e.g. the position of the letter from the bottom/left corner of the text).
          */
-        protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null, customSize: Size = null) {
+        protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
             let size = (<Size>this.renderGroup.viewportSize);
-            let zBias = this.getActualZOffset();
+            let zBias = this.actualZOffset;
 
             let offX = 0;
             let offY = 0;
             // If there's an offset, apply the global transformation matrix on it to get a global offset
-            if (positionOffset && customSize) {
-                offX = (positionOffset.x-(customSize.width*this.origin.x)) * t.m[0] + (positionOffset.y-(customSize.height*this.origin.y)) * t.m[4];
-                offY = (positionOffset.x-(customSize.width*this.origin.x)) * t.m[1] + (positionOffset.y-(customSize.height*this.origin.y)) * t.m[5];
+            if (positionOffset) {
+                offX = positionOffset.x * t.m[0] + positionOffset.y * t.m[4];
+                offY = positionOffset.x * t.m[1] + positionOffset.y * t.m[5];
             }
 
             // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
@@ -787,7 +796,6 @@
             let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
             part.transformX = tx;
             part.transformY = ty;
-            part.origin = this.origin;
 
             // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
             part.zBias = new Vector2(zBias, invZBias);

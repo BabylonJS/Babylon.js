@@ -44,12 +44,39 @@
             this._borderThickness = value;
         }
 
-        setupShape2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, origin: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D, borderThickness: number, marginTop: number, marginLeft: number, marginRight: number, marginBottom: number, vAlignment: number, hAlignment: number) {
+        constructor(settings?: {
+            fill           ?: IBrush2D | string,
+            border         ?: IBrush2D | string,
+            borderThickness?: number,
+        }) {
 
-            this.setupRenderablePrim2D(owner, parent, id, position, origin, isVisible, marginTop, marginLeft, marginRight, marginBottom, hAlignment || Prim2DBase.HAlignLeft, vAlignment || Prim2DBase.VAlignTop);
-            this.border = border;
-            this.fill = fill;
-            this.borderThickness = borderThickness;
+            super(settings);
+
+            if (!settings) {
+                settings = {};
+            }
+
+            let borderBrush: IBrush2D = null;
+            if (settings.border) {
+                if (typeof (settings.border) === "string") {
+                    borderBrush = Canvas2D.GetBrushFromString(<string>settings.border);
+                } else {
+                    borderBrush = <IBrush2D>settings.border;
+                }
+            }
+
+            let fillBrush: IBrush2D = null;
+            if (settings.fill) {
+                if (typeof (settings.fill) === "string") {
+                    fillBrush = Canvas2D.GetBrushFromString(<string>settings.fill);
+                } else {
+                    fillBrush = <IBrush2D>settings.fill;
+                }
+            }
+
+            this.border = borderBrush;
+            this.fill = fillBrush;
+            this.borderThickness = settings.borderThickness;
         }
 
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[] {
