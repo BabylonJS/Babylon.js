@@ -151,6 +151,6 @@ var BABYLON;
             _super.prototype.dispose.call(this, doNotRecurse);
         };
         return InstancedMesh;
-    }(BABYLON.AbstractMesh));
+    })(BABYLON.AbstractMesh);
     BABYLON.InstancedMesh = InstancedMesh;
 })(BABYLON || (BABYLON = {}));

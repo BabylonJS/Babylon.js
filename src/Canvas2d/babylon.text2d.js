@@ -84,7 +84,7 @@ var BABYLON;
             return true;
         };
         return Text2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -132,7 +132,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
         return Text2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -229,12 +229,18 @@ var BABYLON;
         });
         Object.defineProperty(Text2D.prototype, "textSize", {
             get: function () {
-                if (!this._textSize && this.owner) {
-                    var newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
-                    if (newSize !== this._textSize) {
-                        this.onPrimitivePropertyDirty(BABYLON.Prim2DBase.sizeProperty.flagId);
+                if (!this._textSize) {
+                    if (this.owner) {
+                        var newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                        if (!newSize.equals(this._textSize)) {
+                            this.onPrimitivePropertyDirty(BABYLON.Prim2DBase.sizeProperty.flagId);
+                            this._positioningDirty();
+                        }
+                        this._textSize = newSize;
                     }
-                    this._textSize = newSize;
+                    else {
+                        return Text2D.nullSize;
+                    }
                 }
                 return this._textSize;
             },
@@ -327,6 +333,8 @@ var BABYLON;
                 var texture = this.fontTexture;
                 var ts = texture.getSize();
                 var offset = BABYLON.Vector2.Zero();
+                var lh = this.fontTexture.lineHeight;
+                offset.y = ((this.textSize.height / lh) - 1) * lh; // Origin is bottom, not top, so the offset is starting with a y that is the top location of the text
                 var charxpos = 0;
                 d.dataElementCount = this._charCount;
                 d.curElement = 0;
@@ -389,6 +397,6 @@ var BABYLON;
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));
