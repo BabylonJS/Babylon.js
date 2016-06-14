@@ -44,6 +44,7 @@
             position          ?: Vector2,
             x                 ?: number,
             y                 ?: number,
+            trackNode         ?: Node,
             origin            ?: Vector2,
             size              ?: Size,
             width             ?: number,
@@ -77,6 +78,11 @@
             super(settings);
  
             let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
+
+            this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
+            if (this._trackedNode && this.owner) {
+                this.owner._registerTrackedNode(this);
+            }
 
             this._cacheBehavior = (settings.cacheBehavior==null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
             this.size = size;
@@ -133,6 +139,11 @@
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
+            }
+
+            if (this._trackedNode != null) {
+                this.owner._unregisterTrackedNode(this);
+                this._trackedNode = null;
             }
 
             if (this._renderableData) {
@@ -221,6 +232,24 @@
             let context = new PrepareRender2DContext();
             this._prepareGroupRender(context);
             this._groupRender();
+        }
+
+        public get trackedNode(): Node {
+            return this._trackedNode;
+        }
+
+        public set trackedNode(val: Node) {
+            if (val!=null) {
+                if (!this._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
+                    this.owner._registerTrackedNode(this);
+                }
+                this._trackedNode = val;
+            } else {
+                if (this._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
+                    this.owner._unregisterTrackedNode(this);
+                }
+                this._trackedNode = null;
+            }
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
@@ -767,6 +796,7 @@
             }
         }
 
+        private _trackedNode: Node;
         protected _isRenderableGroup: boolean;
         protected _isCachedGroup: boolean;
         private _cacheGroupDirty: boolean;

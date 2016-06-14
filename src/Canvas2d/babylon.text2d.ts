@@ -186,6 +186,7 @@
                 }
                 this._textSize = newSize;
             }
+            
             return this._textSize;
         }
 
