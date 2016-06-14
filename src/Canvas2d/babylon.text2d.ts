@@ -181,8 +181,9 @@
             if (!this._textSize) {
                 if (this.owner) {
                     let newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
-                    if (newSize !== this._textSize) {
+                    if (!newSize.equals(this._textSize)) {
                         this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                        this._positioningDirty();
                     }
                     this._textSize = newSize;
                 } else {
@@ -358,6 +359,8 @@
                 let texture = this.fontTexture;
                 let ts = texture.getSize();
                 let offset = Vector2.Zero();
+                let lh = this.fontTexture.lineHeight;
+                offset.y = ((this.textSize.height/lh)-1) * lh;  // Origin is bottom, not top, so the offset is starting with a y that is the top location of the text
                 let charxpos = 0;
                 d.dataElementCount = this._charCount;
                 d.curElement = 0;
