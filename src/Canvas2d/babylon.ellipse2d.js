@@ -138,7 +138,7 @@ var BABYLON;
             return true;
         };
         return Ellipse2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Ellipse2DRenderCache = Ellipse2DRenderCache;
     var Ellipse2DInstanceData = (function (_super) {
         __extends(Ellipse2DInstanceData, _super);
@@ -156,55 +156,10 @@ var BABYLON;
             BABYLON.instanceData()
         ], Ellipse2DInstanceData.prototype, "properties", null);
         return Ellipse2DInstanceData;
-    })(BABYLON.Shape2DInstanceData);
+    }(BABYLON.Shape2DInstanceData));
     BABYLON.Ellipse2DInstanceData = Ellipse2DInstanceData;
     var Ellipse2D = (function (_super) {
         __extends(Ellipse2D, _super);
-        function Ellipse2D() {
-            _super.apply(this, arguments);
-        }
-        Object.defineProperty(Ellipse2D.prototype, "actualSize", {
-            get: function () {
-                return this.size;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Ellipse2D.prototype, "size", {
-            get: function () {
-                return this._size;
-            },
-            set: function (value) {
-                this._size = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Ellipse2D.prototype, "subdivisions", {
-            get: function () {
-                return this._subdivisions;
-            },
-            set: function (value) {
-                this._subdivisions = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Ellipse2D.prototype.levelIntersect = function (intersectInfo) {
-            var x = intersectInfo._localPickPosition.x;
-            var y = intersectInfo._localPickPosition.y;
-            var w = this.size.width / 2;
-            var h = this.size.height / 2;
-            return ((x * x) / (w * w) + (y * y) / (h * h)) <= 1;
-        };
-        Ellipse2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo, this.origin);
-        };
-        Ellipse2D.prototype.setupEllipse2D = function (owner, parent, id, position, origin, size, subdivisions, fill, border, borderThickness, isVisible, marginTop, marginLeft, marginRight, marginBottom, vAlignment, hAlignment) {
-            this.setupShape2D(owner, parent, id, position, origin, isVisible, fill, border, borderThickness, marginTop, marginLeft, marginRight, marginBottom, hAlignment, vAlignment);
-            this.size = size;
-            this.subdivisions = subdivisions;
-        };
         /**
          * Create an Ellipse 2D Shape primitive
          * @param parent the parent primitive, must be a valid primitive (or the Canvas)
@@ -222,25 +177,54 @@ var BABYLON;
          *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
          */
-        Ellipse2D.Create = function (parent, options) {
-            BABYLON.Prim2DBase.CheckParent(parent);
-            var ellipse = new Ellipse2D();
-            if (!options) {
-                ellipse.setupEllipse2D(parent.owner, parent, null, BABYLON.Vector2.Zero(), null, new BABYLON.Size(10, 10), 64, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"), null, 1, true, null, null, null, null, null, null);
+        function Ellipse2D(settings) {
+            // Avoid checking every time if the object exists
+            if (settings == null) {
+                settings = {};
             }
-            else {
-                var fill;
-                if (options.fill === undefined) {
-                    fill = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
-                }
-                else {
-                    fill = options.fill;
-                }
-                var pos = options.position || new BABYLON.Vector2(options.x || 0, options.y || 0);
-                var size = options.size || (new BABYLON.Size(options.width || 10, options.height || 10));
-                ellipse.setupEllipse2D(parent.owner, parent, options.id || null, pos, options.origin || null, size, (options.subdivisions == null) ? 64 : options.subdivisions, fill, options.border || null, (options.borderThickness == null) ? 1 : options.borderThickness, (options.isVisible == null) ? true : options.isVisible, options.marginTop || null, options.marginLeft || null, options.marginRight || null, options.marginBottom || null, options.vAlignment || null, options.hAlignment || null);
+            _super.call(this, settings);
+            if (settings.size != null) {
+                this.size = settings.size;
             }
-            return ellipse;
+            else if (settings.width || settings.height) {
+                var size = new BABYLON.Size(settings.width, settings.height);
+                this.size = size;
+            }
+            var sub = (settings.subdivisions == null) ? 64 : settings.subdivisions;
+            this.subdivisions = sub;
+        }
+        Object.defineProperty(Ellipse2D.prototype, "actualSize", {
+            get: function () {
+                if (this._actualSize) {
+                    return this._actualSize;
+                }
+                return this.size;
+            },
+            set: function (value) {
+                this._actualSize = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Ellipse2D.prototype, "subdivisions", {
+            get: function () {
+                return this._subdivisions;
+            },
+            set: function (value) {
+                this._subdivisions = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Ellipse2D.prototype.levelIntersect = function (intersectInfo) {
+            var w = this.size.width / 2;
+            var h = this.size.height / 2;
+            var x = intersectInfo._localPickPosition.x - w;
+            var y = intersectInfo._localPickPosition.y - h;
+            return ((x * x) / (w * w) + (y * y) / (h * h)) <= 1;
+        };
+        Ellipse2D.prototype.updateLevelBoundingInfo = function () {
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
         };
         Ellipse2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Ellipse2DRenderCache(this.owner.engine, modelKey);
@@ -326,19 +310,19 @@ var BABYLON;
             }
             if (part.id === BABYLON.Shape2D.SHAPE2D_BORDERPARTID) {
                 var d = part;
-                var size = this.size;
+                var size = this.actualSize;
                 d.properties = new BABYLON.Vector3(size.width, size.height, this.subdivisions);
             }
             else if (part.id === BABYLON.Shape2D.SHAPE2D_FILLPARTID) {
                 var d = part;
-                var size = this.size;
+                var size = this.actualSize;
                 d.properties = new BABYLON.Vector3(size.width, size.height, this.subdivisions);
             }
             return true;
         };
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 1, function (pi) { return Ellipse2D.sizeProperty = pi; }, false, true)
-        ], Ellipse2D.prototype, "size", null);
+            BABYLON.instanceLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 1, function (pi) { return Ellipse2D.acutalSizeProperty = pi; }, false, true)
+        ], Ellipse2D.prototype, "actualSize", null);
         __decorate([
             BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 2, function (pi) { return Ellipse2D.subdivisionsProperty = pi; })
         ], Ellipse2D.prototype, "subdivisions", null);
@@ -346,6 +330,6 @@ var BABYLON;
             BABYLON.className("Ellipse2D")
         ], Ellipse2D);
         return Ellipse2D;
-    })(BABYLON.Shape2D);
+    }(BABYLON.Shape2D));
     BABYLON.Ellipse2D = Ellipse2D;
 })(BABYLON || (BABYLON = {}));
