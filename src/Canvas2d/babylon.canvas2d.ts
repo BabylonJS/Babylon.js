@@ -110,6 +110,7 @@
             this._scene                         = scene;
             this._engine                        = engine;
             this._renderingSize                 = new Size(0, 0);
+            this._trackedGroups                 = new Array<Group2D>();
 
             this._patchHierarchy(this);
 
@@ -128,7 +129,7 @@
                 this.dispose();
             });
 
-            if (this._isScreeSpace) {
+            if (this._isScreenSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
                     this._engine.clear(null, false, true);
                     this._render();
@@ -148,7 +149,7 @@
         protected _canvasPreInit(settings: any) {
             let cachingStrategy   = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
             this._cachingStrategy = cachingStrategy;
-            this._isScreeSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
+            this._isScreenSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
         }
 
         public static hierarchyLevelMaxSiblingCount: number = 10;
@@ -163,7 +164,7 @@
             this._interactionEnabled = enable;
 
             // ScreenSpace mode
-            if (this._isScreeSpace) {
+            if (this._isScreenSpace) {
                 // Disable interaction
                 if (!enable) {
                     if (this._scenePrePointerObserver) {
@@ -342,7 +343,7 @@
             var camera = this._scene.activeCamera;
             var engine = this._scene.getEngine();
 
-            if (this._isScreeSpace) {
+            if (this._isScreenSpace) {
                 var cameraViewport = camera.viewport;
                 var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
@@ -849,19 +850,44 @@
         private _scene: Scene;
         private _engine: Engine;
         private _fitRenderingDevice: boolean;
-        private _isScreeSpace: boolean;
+        private _isScreenSpace: boolean;
         private _cachedCanvasGroup: Group2D;
         private _cachingStrategy: number;
         private _hierarchyLevelMaxSiblingCount: number;
         private _groupCacheMaps: MapTexture[];
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
-        private _supprtInstancedArray : boolean;
+        private _supprtInstancedArray: boolean;
+        private _trackedGroups: Array<Group2D>;
 
         public _renderingSize: Size;
 
         protected onPrimBecomesDirty() {
             this._addPrimToDirtyList(this);
+        }
+
+        private static _v = Vector3.Zero();
+        private static _m = Matrix.Identity();
+
+        private _updateTrackedNodes() {
+            let cam = this.scene.activeCamera;
+
+            cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
+            let rh = this.engine.getRenderHeight();
+            let v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
+
+            for (let group of this._trackedGroups) {
+                if (group.isDisposed || !group.isVisible) {
+                    continue;
+                }
+
+                let node = group.trackedNode;
+                let worldMtx = node.getWorldMatrix();
+
+                let proj = Vector3.Project(Canvas2D._v, worldMtx, Canvas2D._m, v);
+                group.x = Math.round(proj.x);
+                group.y = Math.round(rh - proj.y);
+            }
         }
 
         private _updateCanvasState() {
@@ -910,6 +936,8 @@
          * Method that renders the Canvas, you should not invoke
          */
         private _render() {
+
+            this._updateTrackedNodes();
 
             this._updateCanvasState();
 
@@ -976,7 +1004,7 @@
 
             // Check if we have to create a Sprite that will display the content of the Canvas which is cached.
             // Don't do it in case of the group being a worldspace canvas (because its texture is bound to a WorldSpaceCanvas node)
-            if (group !== <any>this || this._isScreeSpace) {
+            if (group !== <any>this || this._isScreenSpace) {
                 let node: PackedRect = res.node;
 
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
@@ -1002,6 +1030,29 @@
          * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
          */
         private static _groupTextureCacheSize = 1024;
+
+
+        public _registerTrackedNode(group: Group2D) {
+            if (group._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
+                return;
+            }
+            this._trackedGroups.push(group);
+
+            group._setFlags(SmartPropertyPrim.flagTrackedGroup);
+        }
+
+        public _unregisterTrackedNode(group: Group2D) {
+            if (!group._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
+                return;
+            }
+
+            let i = this._trackedGroups.indexOf(group);
+            if (i !== -1) {
+                this._trackedGroups.splice(i, 1);
+            }
+
+            group._clearFlags(SmartPropertyPrim.flagTrackedGroup);
+        }
 
         /**
          * Get a Solid Color Brush instance matching the given color.
