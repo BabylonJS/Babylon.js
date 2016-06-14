@@ -1202,14 +1202,8 @@
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
 
-            //let enableInteraction = settings ? settings.enableInteraction : true;
             let createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
-            //let isVisible = settings ? settings.isVisible || true : true;
             let id = settings ? settings.id || null : null;
-            //let rsf = settings ? settings.renderScaleFactor || 1 : 1;
-
-            //let c = new Canvas2D();
-            //c.setupCanvas(scene, id, new Size(size.width, size.height), rsf, false, cs, enableInteraction, new Vector2(0.5, 0.5), isVisible, null, null, null, null, null, null);
 
             if (createWorldSpaceNode) {
                 let plane = new WorldSpaceCanvas2DNode(id, scene, this);
@@ -1232,8 +1226,8 @@
                 this._worldSpaceNode = plane;
             } else {
                 this._worldSpaceNode = settings.customWorldSpaceNode;
+                this.applyCachedTexture(null, null);
             }
-            //            return c;
         }
     }
 
