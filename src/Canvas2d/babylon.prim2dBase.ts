@@ -1519,7 +1519,7 @@
         }
 
         private static boundinbBoxReentrency = false;
-        private static nullSize = Size.Zero();
+        protected static nullSize = Size.Zero();
 
         /**
          * Size of the primitive or its bounding area
@@ -2408,6 +2408,9 @@
             if (this instanceof Group2D) {
                 var group: any = this;
                 group.detectGroupStates();
+                if (group._trackedNode && !group._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
+                    group.owner._registerTrackedNode(this);
+                }
             }
 
             if (this._parent) {

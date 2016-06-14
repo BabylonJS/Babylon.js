@@ -566,6 +566,7 @@
         public static flagIsVisible              = 0x0000080;    // set if the primitive is concretely visible (use the levelVisible of parents)
         public static flagVisibilityChanged      = 0x0000100;    // set if there was a transition between visible/hidden status
         public static flagPositioningDirty       = 0x0000200;    // set if the primitive positioning must be computed
+        public static flagTrackedGroup           = 0x0000400;    // set if the group2D is tracking a scene node
 
         private   _flags             : number;
         private   _externalData      : StringDictionary<Object>;
