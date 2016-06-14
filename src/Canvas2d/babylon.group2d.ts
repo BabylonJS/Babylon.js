@@ -788,7 +788,9 @@
                 let cur = this.parent;
                 while (cur) {
                     if (cur instanceof Group2D && cur._isRenderableGroup) {
-                        cur._renderableData._childrenRenderableGroups.push(this);
+                        if (cur._renderableData._childrenRenderableGroups.indexOf(this) === -1) {
+                            cur._renderableData._childrenRenderableGroups.push(this);
+                        }
                         break;
                     }
                     cur = cur.parent;
@@ -817,6 +819,9 @@
             this._transparentSegments = new Array<TransparentSegment>();
             this._firstChangedPrim = null;
             this._transparentListChanged = false;
+            this._cacheNode = null;
+            this._cacheTexture = null;
+            this._cacheRenderSprite = null;
         }
 
         dispose() {
