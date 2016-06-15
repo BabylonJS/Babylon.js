@@ -117,6 +117,9 @@
     }
 
     @className("Sprite2D")
+    /**
+     * Primitive that displays a Sprite/Picture
+     */
     export class Sprite2D extends RenderablePrim2D {
         static SPRITE2D_MAINPARTID = 1;
 
@@ -128,6 +131,9 @@
         public static alignToPixelProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Sprite2D.textureProperty = pi)
+        /**
+         * Get/set the texture that contains the sprite to display
+         */
         public get texture(): Texture {
             return this._texture;
         }
@@ -137,6 +143,9 @@
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.actualSizeProperty = pi, false, true)
+        /**
+         * Get/set the actual size of the sprite to display
+         */
         public get actualSize(): Size {
             if (this._actualSize) {
                 return this._actualSize;
@@ -149,6 +158,9 @@
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.spriteLocationProperty = pi)
+        /**
+         * Get/set the sprite location (in pixels) in the texture
+         */
         public get spriteLocation(): Vector2 {
             return this._location;
         }
@@ -158,6 +170,10 @@
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteFrameProperty = pi)
+        /**
+         * Get/set the sprite frame to display.
+         * The frame number is just an offset applied horizontally, based on the sprite's width. it does not wrap, all the frames must be on the same line.
+         */
         public get spriteFrame(): number {
             return this._spriteFrame;
         }
@@ -167,6 +183,9 @@
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Sprite2D.invertYProperty = pi)
+        /**
+         * Get/set if the sprite texture coordinates should be inverted on the Y axis
+         */
         public get invertY(): boolean {
             return this._invertY;
         }
@@ -175,6 +194,9 @@
             this._invertY = value;
         }
 
+        /**
+         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
+         */
         public get alignToPixel(): boolean {
             return this._alignToPixel;
         }
@@ -187,6 +209,9 @@
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         }
 
+        /**
+         * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
+         */
         public getAnimatables(): IAnimatable[] {
             let res = new Array<IAnimatable>();
 
@@ -203,20 +228,33 @@
 
         /**
          * Create an 2D Sprite primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * @param texture the texture that stores the sprite to render
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - spriteSize: the size of the sprite, if null the size of the given texture will be used, default is null.
-         *  - spriteLocation: the location in the texture of the top/left corner of the Sprite to display, default is null (0,0)
+         *  - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
+         *  - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
          *  - invertY: if true the texture Y will be inverted, default is false.
          *  - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          *  - isVisible: true if the sprite must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(texture: Texture, settings?: {
 
@@ -226,6 +264,8 @@
             position         ?: Vector2,
             x                ?: number,
             y                ?: number,
+            rotation         ?: number,
+            scale            ?: number,
             origin           ?: Vector2,
             spriteSize       ?: Size,
             spriteLocation   ?: Vector2,
@@ -245,8 +285,6 @@
             paddingRight     ?: number | string,
             paddingBottom    ?: number | string,
             padding          ?: string,
-            paddingHAlignment?: number,
-            paddingVAlignment?: number,
         }) {
 
             if (!settings) {
