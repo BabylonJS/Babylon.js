@@ -89,7 +89,7 @@
     }
 
     export class Animation {
-        private _keys: Array<any>;
+        private _keys: Array<{frame:number, value: any}>;
         private _offsetsCache = {};
         private _highLimitsCache = {};
         private _stopped = false;
@@ -134,9 +134,7 @@
 
             var animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
 
-            var keys = [];
-            keys.push({ frame: 0, value: from });
-            keys.push({ frame: totalFrame, value: to });
+            var keys: Array<{frame: number, value:any}> = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
             animation.setKeys(keys);
 
             if (easingFunction !== undefined) {
@@ -256,7 +254,7 @@
             return this._stopped;
         }
 
-        public getKeys(): any[] {
+        public getKeys(): Array<{ frame: number, value: any }> {
             return this._keys;
         }
 
@@ -324,7 +322,7 @@
             return clone;
         }
 
-        public setKeys(values: Array<any>): void {
+        public setKeys(values: Array<{ frame: number, value: any }>): void {
             this._keys = values.slice(0);
             this._offsetsCache = {};
             this._highLimitsCache = {};
@@ -747,7 +745,7 @@
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
             var dataType = parsedAnimation.dataType;
-            var keys = [];
+            var keys: Array<{ frame: number, value: any }> = [];
             var data;
             var index: number;
 

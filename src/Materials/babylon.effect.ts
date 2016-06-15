@@ -76,7 +76,7 @@
         private _indexParameters: any;
 
         private _program: WebGLProgram;
-        private _valueCache = [];
+        private _valueCache: { [key: string]: any } = {};
 
         constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
             this._engine = engine;
@@ -391,103 +391,164 @@
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 
-        public _cacheMatrix(uniformName, matrix) {
-            if (!this._valueCache[uniformName]) {
-                this._valueCache[uniformName] = new Matrix();
+        public _cacheMatrix(uniformName: string, matrix: Matrix): boolean {
+            var changed = false;
+            var cache: Matrix = this._valueCache[uniformName];
+            if (!cache || !(cache instanceof Matrix)) {
+                changed = true;
+                cache = new Matrix();
             }
 
+            var tm = cache.m;
+            var om = matrix.m;
             for (var index = 0; index < 16; index++) {
-                this._valueCache[uniformName].m[index] = matrix.m[index];
+                if (tm[index] !== om[index]) { 
+                    tm[index] = om[index];
+                    changed = true;
+                }
             }
+
+            this._valueCache[uniformName] = cache;
+            return changed;
         }
 
-        public _cacheFloat2(uniformName: string, x: number, y: number): void {
-            if (!this._valueCache[uniformName]) {
-                this._valueCache[uniformName] = [x, y];
-                return;
+        public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
+            var cache = this._valueCache[uniformName];
+            if (!cache) {
+                cache = [x, y];
+                this._valueCache[uniformName] = cache;
+                return true;
             }
 
-            this._valueCache[uniformName][0] = x;
-            this._valueCache[uniformName][1] = y;
+            var changed = false;
+            if (cache[0] !== x) {
+                cache[0] = x;
+                changed = true;
+            }
+            if (cache[1] !== y) {
+                cache[1] = y;
+                changed = true;
+            }
+
+            this._valueCache[uniformName] = cache;
+            return changed;
         }
 
-        public _cacheFloat3(uniformName: string, x: number, y: number, z: number): void {
-            if (!this._valueCache[uniformName]) {
-                this._valueCache[uniformName] = [x, y, z];
-                return;
+        public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
+            var cache = this._valueCache[uniformName];
+            if (!cache) {
+                cache = [x, y, z];
+                this._valueCache[uniformName] = cache;
+                return true;
             }
 
-            this._valueCache[uniformName][0] = x;
-            this._valueCache[uniformName][1] = y;
-            this._valueCache[uniformName][2] = z;
+            var changed = false;
+            if (cache[0] !== x) {
+                cache[0] = x;
+                changed = true;
+            }
+            if (cache[1] !== y) {
+                cache[1] = y;
+                changed = true;
+            }
+            if (cache[2] !== z) {
+                cache[2] = z;
+                changed = true;
+            }
+
+            this._valueCache[uniformName] = cache;
+            return changed;
         }
 
-        public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
-            if (!this._valueCache[uniformName]) {
-                this._valueCache[uniformName] = [x, y, z, w];
-                return;
+        public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
+            var cache = this._valueCache[uniformName];
+            if (!cache) {
+                cache = [x, y, z, w];
+                this._valueCache[uniformName] = cache;
+                return true;
             }
 
-            this._valueCache[uniformName][0] = x;
-            this._valueCache[uniformName][1] = y;
-            this._valueCache[uniformName][2] = z;
-            this._valueCache[uniformName][3] = w;
+            var changed = false;
+            if (cache[0] !== x) {
+                cache[0] = x;
+                changed = true;
+            }
+            if (cache[1] !== y) {
+                cache[1] = y;
+                changed = true;
+            }
+            if (cache[2] !== z) {
+                cache[2] = z;
+                changed = true;
+            }
+            if (cache[3] !== w) {
+                cache[3] = w;
+                changed = true;
+            }
+
+            this._valueCache[uniformName] = cache;
+            return changed;
         }
 
         public setArray(uniformName: string, array: number[]): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setArray(this.getUniform(uniformName), array);
 
             return this;
         }
 
         public setArray2(uniformName: string, array: number[]): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setArray2(this.getUniform(uniformName), array);
 
             return this;
         }
 
         public setArray3(uniformName: string, array: number[]): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setArray3(this.getUniform(uniformName), array);
 
             return this;
         }
 
         public setArray4(uniformName: string, array: number[]): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setArray4(this.getUniform(uniformName), array);
 
             return this;
         }
 
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
 
             return this;
         }
 
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
-            //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-            //    return this;
-
-           // this._cacheMatrix(uniformName, matrix);
-            this._engine.setMatrix(this.getUniform(uniformName), matrix);
-
+            if (this._cacheMatrix(uniformName, matrix)) {
+                this._engine.setMatrix(this.getUniform(uniformName), matrix);
+            }
             return this;
         }
 
         public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setMatrix3x3(this.getUniform(uniformName), matrix);
 
             return this;
         }
 
-        public setMatrix2x2(uniformname: string, matrix: Float32Array): Effect {
-            this._engine.setMatrix2x2(this.getUniform(uniformname), matrix);
+        public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setMatrix2x2(this.getUniform(uniformName), matrix);
 
             return this;
         }
 
         public setFloat(uniformName: string, value: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName] === value)
+            var cache = this._valueCache[uniformName];
+            if (cache && cache === value)
                 return this;
 
             this._valueCache[uniformName] = value;
@@ -498,7 +559,8 @@
         }
 
         public setBool(uniformName: string, bool: boolean): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName] === bool)
+            var cache = this._valueCache[uniformName];
+            if (cache && cache === bool)
                 return this;
 
             this._valueCache[uniformName] = bool;
@@ -509,84 +571,58 @@
         }
 
         public setVector2(uniformName: string, vector2: Vector2): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector2.x && this._valueCache[uniformName][1] === vector2.y)
-                return this;
-
-            this._cacheFloat2(uniformName, vector2.x, vector2.y);
-            this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
-
+            if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
+                this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
+            }
             return this;
         }
 
         public setFloat2(uniformName: string, x: number, y: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y)
-                return this;
-
-            this._cacheFloat2(uniformName, x, y);
-            this._engine.setFloat2(this.getUniform(uniformName), x, y);
-
+            if (this._cacheFloat2(uniformName, x, y)) {
+                this._engine.setFloat2(this.getUniform(uniformName), x, y);
+            }
             return this;
         }
 
         public setVector3(uniformName: string, vector3: Vector3): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector3.x && this._valueCache[uniformName][1] === vector3.y && this._valueCache[uniformName][2] === vector3.z)
-                return this;
-
-            this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z);
-
-            this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
-
+            if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
+                this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
+            }
             return this;
         }
 
         public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z)
-                return this;
-
-            this._cacheFloat3(uniformName, x, y, z);
-            this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
-
+            if (this._cacheFloat3(uniformName, x, y, z)) {
+                this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
+            }
             return this;
         }
 
         public setVector4(uniformName: string, vector4: Vector4): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector4.x && this._valueCache[uniformName][1] === vector4.y && this._valueCache[uniformName][2] === vector4.z && this._valueCache[uniformName][3] === vector4.w)
-                return this;
-
-            this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w);
-
-            this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
-
+            if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
+                this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
+            }
             return this;
         }
 
         public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z && this._valueCache[uniformName][3] === w)
-                return this;
-
-            this._cacheFloat4(uniformName, x, y, z, w);
-            this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
-
+            if (this._cacheFloat4(uniformName, x, y, z, w)) {
+                this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
+            }
             return this;
         }
 
         public setColor3(uniformName: string, color3: Color3): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === color3.r && this._valueCache[uniformName][1] === color3.g && this._valueCache[uniformName][2] === color3.b)
-                return this;
-
-            this._cacheFloat3(uniformName, color3.r, color3.g, color3.b);
-            this._engine.setColor3(this.getUniform(uniformName), color3);
-
+            if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
+                this._engine.setColor3(this.getUniform(uniformName), color3);
+            }
             return this;
         }
 
         public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === color3.r && this._valueCache[uniformName][1] === color3.g && this._valueCache[uniformName][2] === color3.b && this._valueCache[uniformName][3] === alpha)
-                return this;
-
-            this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha);
-            this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
-
+            if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
+                this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
+            }
             return this;
         }
 

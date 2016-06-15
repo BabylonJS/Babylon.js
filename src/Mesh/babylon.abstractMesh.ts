@@ -361,6 +361,7 @@
             return this._isWorldMatrixFrozen;
         }
 
+        private static _rotationAxisCache = new Quaternion();
         public rotate(axis: Vector3, amount: number, space?: Space): void {
             axis.normalize();
 
@@ -370,8 +371,8 @@
             }
             var rotationQuaternion: Quaternion;
             if (!space || space === Space.LOCAL) {
-                rotationQuaternion = Quaternion.RotationAxis(axis, amount);
-                this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
+                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
+                this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
             }
             else {
                 if (this.parent) {
@@ -380,8 +381,8 @@
 
                     axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
                 }
-                rotationQuaternion = Quaternion.RotationAxis(axis, amount);
-                this.rotationQuaternion = rotationQuaternion.multiply(this.rotationQuaternion);
+                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
+                rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
         }
 
@@ -744,6 +745,7 @@
             this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
         }
 
+        private static _lookAtVectorCache = new Vector3(0,0,0);
         public lookAt(targetPoint: Vector3, yawCor: number, pitchCor: number, rollCor: number): void {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
             /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
@@ -756,11 +758,12 @@
             pitchCor = pitchCor || 0;
             rollCor = rollCor || 0;
 
-            var dv = targetPoint.subtract(this.position);
+            var dv = AbstractMesh._lookAtVectorCache;
+            targetPoint.subtractToRef(this.position, dv);
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
-            this.rotationQuaternion = Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
+            Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
         }
 
         public attachToBone(bone: Bone, affectedMesh: AbstractMesh): void {
