@@ -114,6 +114,9 @@
     }
 
     @className("Text2D")
+    /**
+     * Primitive that render text using a specific font
+     */
     export class Text2D extends RenderablePrim2D {
         static TEXT2D_MAINPARTID = 1;
 
@@ -123,6 +126,10 @@
         public static sizeProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Text2D.fontProperty = pi, false, true)
+        /**
+         * Get/set the font name to use, using HTML CSS notation.
+         * Set is not supported right now.
+         */
         public get fontName(): string {
             return this._fontName;
         }
@@ -135,6 +142,9 @@
         }
 
         @dynamicLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Text2D.defaultFontColorProperty = pi)
+        /**
+         * Get/set the font default color
+         */
         public get defaultFontColor(): Color4 {
             return this._defaultFontColor;
         }
@@ -144,6 +154,10 @@
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Text2D.textProperty = pi, false, true)
+        /**
+         * Get/set the text to render.
+         * \n \t character are supported. 
+         */
         public get text(): string {
             return this._text;
         }
@@ -159,6 +173,10 @@
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.sizeProperty = pi)
+        /**
+         * Get/set the size of the area where the text is drawn.
+         * You should not set this size, the default behavior compute the size based on the actual text.
+         */
         public get size(): Size {
             if (this._size != null) {
                 return this._size;
@@ -170,6 +188,9 @@
             this._size = value;
         }
 
+        /**
+         * Get the actual size of the Text2D primitive
+         */
         public get actualSize(): Size {
             if (this._actualSize) {
                 return this._actualSize;
@@ -177,6 +198,9 @@
             return this.size;
         }
 
+        /**
+         * Get the area that bounds the text associated to the primitive
+         */
         public get textSize(): Size {
             if (!this._textSize) {
                 if (this.owner) {
@@ -203,6 +227,9 @@
             return this._fontTexture;
         }
 
+        /**
+         * Dispose the primitive, remove it from its parent
+         */
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
@@ -222,20 +249,33 @@
 
         /**
          * Create a Text primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * @param text the text to display
-         * Options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
          *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
          *  - isVisible: true if the text must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(text: string, settings?: {
 
@@ -245,6 +285,8 @@
             position         ?: Vector2,
             x                ?: number,
             y                ?: number,
+            rotation         ?: number,
+            scale            ?: number,
             origin           ?: Vector2,
             fontName         ?: string,
             defaultFontColor ?: Color4,
@@ -264,8 +306,6 @@
             paddingRight     ?: number | string,
             paddingBottom    ?: number | string,
             padding          ?: string,
-            paddingHAlignment?: number,
-            paddingVAlignment?: number,
         }) {
 
             if (!settings) {

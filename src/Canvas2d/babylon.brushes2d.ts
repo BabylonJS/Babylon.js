@@ -66,10 +66,10 @@
         }
     }
 
+    @className("SolidColorBrush2D")
     /**
      * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
      */
-    @className("SolidColorBrush2D")
     export class SolidColorBrush2D extends LockableBase implements IBrush2D {
         constructor(color: Color4, lock: boolean = false) {
             super();
@@ -81,6 +81,9 @@
             }
         }
 
+        /**
+         * Return true if the brush is transparent, false if it's totally opaque
+         */
         isTransparent(): boolean {
             return this._color && this._color.a < 1.0;
         }
@@ -111,6 +114,9 @@
     }
 
     @className("GradientColorBrush2D")
+    /**
+     * This class implements a Gradient Color Brush, the brush color will blend from a first given color to a second one.
+     */
     export class GradientColorBrush2D extends LockableBase implements IBrush2D {
         constructor(color1: Color4, color2: Color4, translation: Vector2 = Vector2.Zero(), rotation: number = 0, scale: number = 1, lock: boolean = false) {
             super();
@@ -126,11 +132,16 @@
             }
         }
 
+        /**
+         * Return true if the brush is transparent, false if it's totally opaque
+         */
         isTransparent(): boolean {
             return (this._color1 && this._color1.a < 1.0) || (this._color2 && this._color2.a < 1.0);
         }
 
-
+        /**
+         * First color, the blend will start from this color
+         */
         public get color1(): Color4 {
             return this._color1;
         }
@@ -143,6 +154,9 @@
             this._color1 = value;
         }
 
+        /**
+         * Second color, the blend will end to this color
+         */
         public get color2(): Color4 {
             return this._color2;
         }
@@ -155,6 +169,10 @@
             this._color2 = value;
         }
 
+        /**
+         * Translation vector to apply on the blend
+         * Default is [0;0]
+         */
         public get translation(): Vector2 {
             return this._translation;
         }
@@ -167,6 +185,11 @@
             this._translation = value;
         }
 
+        /**
+         * Rotation in radian to apply to the brush
+         * Default direction of the brush is vertical, you can change this using this property.
+         * Default is 0.
+         */
         public get rotation(): number {
             return this._rotation;
         }
@@ -179,6 +202,10 @@
             this._rotation = value;
         }
 
+        /**
+         * Scale factor to apply to the gradient.
+         * Default is 1: no scale.
+         */
         public get scale(): number {
             return this._scale;
         }
@@ -191,10 +218,16 @@
             this._scale = value;
         }
 
+        /**
+         * Return a string describing the brush
+         */
         public toString(): string {
             return `C1:${this._color1};C2:${this._color2};T:${this._translation.toString()};R:${this._rotation};S:${this._scale};`;
         }
 
+        /**
+         * Build a unique key string for the given parameters
+         */
         public static BuildKey(color1: Color4, color2: Color4, translation: Vector2, rotation: number, scale: number) {
             return `C1:${color1};C2:${color2};T:${translation.toString()};R:${rotation};S:${scale};`;
         }
