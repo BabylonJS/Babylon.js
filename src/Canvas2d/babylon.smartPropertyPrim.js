@@ -21,6 +21,9 @@ var BABYLON;
         return Prim2DPropInfo;
     })();
     BABYLON.Prim2DPropInfo = Prim2DPropInfo;
+    /**
+     * Custom type of the propertyChanged observable
+     */
     var PropertyChangedInfo = (function () {
         function PropertyChangedInfo() {
         }
@@ -472,23 +475,52 @@ var BABYLON;
             }
             return this._externalData.remove(key);
         };
+        /**
+         * Check if a given flag is set
+         * @param flag the flag value
+         * @return true if set, false otherwise
+         */
         SmartPropertyPrim.prototype._isFlagSet = function (flag) {
             return (this._flags & flag) !== 0;
         };
+        /**
+         * Check if all given flags are set
+         * @param flags the flags ORed
+         * @return true if all the flags are set, false otherwise
+         */
         SmartPropertyPrim.prototype._areAllFlagsSet = function (flags) {
             return (this._flags & flags) === flags;
         };
+        /**
+         * Check if at least one flag of the given flags is set
+         * @param flags the flags ORed
+         * @return true if at least one flag is set, false otherwise
+         */
         SmartPropertyPrim.prototype._areSomeFlagsSet = function (flags) {
             return (this._flags & flags) !== 0;
         };
+        /**
+         * Clear the given flags
+         * @param flags the flags to clear
+         */
         SmartPropertyPrim.prototype._clearFlags = function (flags) {
             this._flags &= ~flags;
         };
+        /**
+         * Set the given flags to true state
+         * @param flags the flags ORed to set
+         * @return the flags state before this call
+         */
         SmartPropertyPrim.prototype._setFlags = function (flags) {
             var cur = this._flags;
             this._flags |= flags;
             return cur;
         };
+        /**
+         * Change the state of the given flags
+         * @param flags the flags ORed to change
+         * @param state true to set them, false to clear them
+         */
         SmartPropertyPrim.prototype._changeFlags = function (flags, state) {
             if (state) {
                 this._flags |= flags;
