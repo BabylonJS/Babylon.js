@@ -49,6 +49,9 @@ void main(void) {
 		vUV = vec2(topLeftUV.x + sizeUV.x, topLeftUV.y + sizeUV.y);
 	}
 
+	// Align texture coordinate to texel to enhance rendering quality
+	vUV = (floor(vUV*textureSize) + vec2(0.0, 0.0)) / textureSize;
+
 	vColor = color;
 	vec4 pos;
 	pos.xy = floor(pos2.xy * sizeUV * textureSize);	// Align on target pixel to avoid bad interpolation
