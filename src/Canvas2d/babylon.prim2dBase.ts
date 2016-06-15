@@ -291,6 +291,9 @@
         }
     }
 
+    /**
+     * Defines the horizontal and vertical alignment information for a Primitive.
+     */
     export class PrimitiveAlignment {
         constructor(changeCallback: () => void) {
             this._changedCallback = changeCallback;
@@ -298,12 +301,35 @@
             this._vertical = PrimitiveAlignment.AlignBottom;
         }
 
-        public static get AlignLeft():    number { return PrimitiveAlignment._AlignLeft;   }
-        public static get AlignTop():     number { return PrimitiveAlignment._AlignTop;    }
-        public static get AlignRight():   number { return PrimitiveAlignment._AlignRight;  }
-        public static get AlignBottom():  number { return PrimitiveAlignment._AlignBottom; }
-        public static get AlignCenter():  number { return PrimitiveAlignment._AlignCenter; }
-        public static get AlignStretch(): number { return PrimitiveAlignment._AlignStretch;}
+        /**
+         * Alignment is made relative to the left edge of the Primitive. Valid for horizontal alignment only.
+         */
+        public static get AlignLeft(): number { return PrimitiveAlignment._AlignLeft; }
+
+        /**
+         * Alignment is made relative to the top edge of the Primitive. Valid for vertical alignment only.
+         */
+        public static get AlignTop(): number { return PrimitiveAlignment._AlignTop; }
+
+        /**
+         * Alignment is made relative to the right edge of the Primitive. Valid for horizontal alignment only.
+         */
+        public static get AlignRight(): number { return PrimitiveAlignment._AlignRight; }
+
+        /**
+         * Alignment is made relative to the bottom edge of the Primitive. Valid for vertical alignment only.
+         */
+        public static get AlignBottom(): number { return PrimitiveAlignment._AlignBottom; }
+
+        /**
+         * Alignment is made to center the content from equal distance to the opposite edges of the Primitive
+         */
+        public static get AlignCenter(): number { return PrimitiveAlignment._AlignCenter; }
+
+        /**
+         * The content is stretched toward the opposite edges of the Primitive
+         */
+        public static get AlignStretch(): number { return PrimitiveAlignment._AlignStretch; }
 
         private static _AlignLeft    = 1;
         private static _AlignTop     = 1;   // Same as left
@@ -312,6 +338,9 @@
         private static _AlignCenter  = 3;
         private static _AlignStretch = 4;
 
+        /**
+         * Get/set the horizontal alignment. Use one of the AlignXXX static properties of this class
+         */
         public get horizontal(): number {
             return this._horizontal;
         }
@@ -325,6 +354,9 @@
             this._changedCallback();
         }
 
+        /**
+         * Get/set the vertical alignment. Use one of the AlignXXX static properties of this class
+         */
         public get vertical(): number {
             return this._vertical;
         }
@@ -342,6 +374,10 @@
         private _horizontal: number;
         private _vertical: number;
 
+        /**
+         * Set the horizontal alignment from a string value.
+         * @param text can be either: 'left','right','center','stretch'
+         */
         setHorizontal(text: string) {
             let v = text.trim().toLocaleLowerCase();
             switch (v) {
@@ -360,6 +396,10 @@
             }
         }
 
+        /**
+         * Set the vertical alignment from a string value.
+         * @param text can be either: 'top','bottom','center','stretch'
+         */
         setVertical(text: string) {
             let v = text.trim().toLocaleLowerCase();
             switch (v) {
@@ -378,6 +418,10 @@
             }
         }
 
+        /**
+         * Set the horizontal and or vertical alignments from a string value.
+         * @param text can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
+         */
         fromString(value: string) {
             let m = value.trim().split(",");
             for (let v of m) {
@@ -419,6 +463,10 @@
         }
     }
 
+    /**
+     * Define a thickness toward every edges of a Primitive to allow margin and padding.
+     * The thickness can be expressed as pixels, percentages, inherit the value of the parent primitive or be auto.
+     */
     export class PrimitiveThickness {
         constructor(parentAccess: () => PrimitiveThickness, changedCallback: () => void) {
             this._parentAccess = parentAccess;
@@ -435,10 +483,15 @@
             this._pixels[3] = 0;
         }
 
-        public fromString(margin: string) {
+        /**
+         * Set the thickness from a string value
+         * @param thickness format is "top: <value>, left:<value>, right:<value>, bottom:<value>" each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
+        public fromString(thickness: string) {
             this._clear();
 
-            let m = margin.trim().split(",");
+            let m = thickness.trim().split(",");
 
             let res = false;
             for (let cm of m) {
@@ -459,6 +512,14 @@
 
         }
 
+        /**
+         * Set the thickness from multiple string
+         * Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         * @param top the top thickness to set
+         * @param left the left thickness to set
+         * @param right the right thickness to set
+         * @param bottom the bottom thickness to set
+         */
         public fromStrings(top: string, left: string, right: string, bottom: string): PrimitiveThickness {
             this._clear();
 
@@ -470,6 +531,13 @@
             return this;
         }
 
+        /**
+         * Set the thickness from pixel values
+         * @param top the top thickness in pixels to set
+         * @param left the left thickness in pixels to set
+         * @param right the right thickness in pixels to set
+         * @param bottom the bottom thickness in pixels to set
+         */
         public fromPixels(top: number, left: number, right: number, bottom: number): PrimitiveThickness {
             this._clear();
 
@@ -481,6 +549,10 @@
             return this;
         }
 
+        /**
+         * Apply the same pixel value to all edges
+         * @param margin the value to set, in pixels.
+         */
         public fromUniformPixels(margin: number): PrimitiveThickness {
             this._clear();
 
@@ -492,6 +564,9 @@
             return this;
         }
 
+        /**
+         * Set all edges in auto
+         */
         public auto(): PrimitiveThickness {
             this._clear();
 
@@ -714,6 +789,9 @@
             }
         }
 
+        /**
+         * Get/set the top thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
         public get top(): string {
             return this._getStringValue(0);
         }
@@ -722,6 +800,9 @@
             this._setStringValue(value, 0, true);
         }
 
+        /**
+         * Get/set the left thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
         public get left(): string {
             return this._getStringValue(1);
         }
@@ -730,6 +811,9 @@
             this._setStringValue(value, 1, true);
         }
 
+        /**
+         * Get/set the right thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
         public get right(): string {
             return this._getStringValue(2);
         }
@@ -738,6 +822,9 @@
             this._setStringValue(value, 2, true);
         }
 
+        /**
+         * Get/set the bottom thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
         public get bottom(): string {
             return this._getStringValue(3);
         }
@@ -746,6 +833,9 @@
             this._setStringValue(value, 3, true);
         }
 
+        /**
+         * Get/set the top thickness in pixel.
+         */
         public get topPixels(): number {
             return this._pixels[0];
         }
@@ -754,6 +844,10 @@
             this._setPixels(value, 0, true);
 
         }
+
+        /**
+         * Get/set the left thickness in pixel.
+         */
         public get leftPixels(): number {
             return this._pixels[1];
         }
@@ -762,6 +856,10 @@
             this._setPixels(value, 1, true);
 
         }
+
+        /**
+         * Get/set the right thickness in pixel.
+         */
         public get rightPixels(): number {
             return this._pixels[2];
         }
@@ -770,6 +868,10 @@
             this._setPixels(value, 2, true);
 
         }
+
+        /**
+         * Get/set the bottom thickness in pixel.
+         */
         public get bottomPixels(): number {
             return this._pixels[3];
         }
@@ -779,6 +881,11 @@
 
         }
 
+        /**
+         * Get/set the top thickness in percentage.
+         * The get will return a valid value only if the edge type is percentage.
+         * The Set will change the edge mode if needed
+         */
         public get topPercentage(): number {
             return this._percentages[0];
         }
@@ -787,6 +894,11 @@
             this._setPercentage(value, 0, true);
 
         }
+        /**
+         * Get/set the left thickness in percentage.
+         * The get will return a valid value only if the edge mode is percentage.
+         * The Set will change the edge mode if needed
+         */
         public get leftPercentage(): number {
             return this._percentages[1];
         }
@@ -795,6 +907,11 @@
             this._setPercentage(value, 1, true);
 
         }
+        /**
+         * Get/set the right thickness in percentage.
+         * The get will return a valid value only if the edge mode is percentage.
+         * The Set will change the edge mode if needed
+         */
         public get rightPercentage(): number {
             return this._percentages[2];
         }
@@ -803,6 +920,11 @@
             this._setPercentage(value, 2, true);
 
         }
+        /**
+         * Get/set the bottom thickness in percentage.
+         * The get will return a valid value only if the edge mode is percentage.
+         * The Set will change the edge mode if needed
+         */
         public get bottomPercentage(): number {
             return this._percentages[3];
         }
@@ -811,32 +933,45 @@
             this._setPercentage(value, 3, true);
 
         }
+
+        /**
+         * Get/set the top mode. The setter shouldn't be used, other setters with value should be preferred
+         */
         public get topMode(): number {
             return this._getType(0, false);
-        }
-
-        public get leftMode(): number {
-            return this._getType(1, false);
-        }
-
-        public get rightMode(): number {
-            return this._getType(2, false);
-        }
-
-        public get bottomMode(): number {
-            return this._getType(3, false);
         }
 
         public set topMode(mode: number) {
             this._setType(0, mode);
         }
 
+        /**
+         * Get/set the left mode. The setter shouldn't be used, other setters with value should be preferred
+         */
+        public get leftMode(): number {
+            return this._getType(1, false);
+        }
+
         public set leftMode(mode: number) {
             this._setType(1, mode);
         }
 
+        /**
+         * Get/set the right mode. The setter shouldn't be used, other setters with value should be preferred
+         */
+        public get rightMode(): number {
+            return this._getType(2, false);
+        }
+
         public set rightMode(mode: number) {
             this._setType(2, mode);
+        }
+
+        /**
+         * Get/set the bottom mode. The setter shouldn't be used, other setters with value should be preferred
+         */
+        public get bottomMode(): number {
+            return this._getType(3, false);
         }
 
         public set bottomMode(mode: number) {
@@ -874,6 +1009,14 @@
             }
         }
 
+        /**
+         * Compute the positioning/size of an area considering the thickness of this object and a given alignment
+         * @param sourceArea the source area
+         * @param contentSize the content size to position/resize
+         * @param alignment the alignment setting
+         * @param dstOffset the position of the content
+         * @param dstArea the new size of the content
+         */
         public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size) {
             // Fetch some data
             let topType      = this._getType(0, true);
@@ -1005,6 +1148,12 @@
             }
         }
 
+        /**
+         * Compute an area and its position considering this thickness properties based on a given source area
+         * @param sourceArea the source area
+         * @param dstOffset the position of the resulting area
+         * @param dstArea the size of the resulting area
+         */
         public compute(sourceArea: Size, dstOffset: Vector2, dstArea: Size) {
             this._computePixels(0, sourceArea, true);
             this._computePixels(1, sourceArea, true);
@@ -1018,6 +1167,11 @@
             dstArea.height = sourceArea.height - (dstOffset.y + this.topPixels);
         }
 
+        /**
+         * Compute an area considering this thickness properties based on a given source area
+         * @param sourceArea the source area
+         * @param result the resulting area
+         */
         computeArea(sourceArea: Size, result: Size) {
             this._computePixels(0, sourceArea, true);
             this._computePixels(1, sourceArea, true);
@@ -1451,6 +1605,7 @@
          * Position of the primitive, relative to its parent.
          * BEWARE: if you change only position.x or y it won't trigger a property change and you won't have the expected behavior.
          * Use this property to set a new Vector2 object, otherwise to change only the x/y use Prim2DBase.x or y properties.
+         * Setting this property may have no effect is specific alignment are in effect.
          */
         @dynamicLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, true)
         public get position(): Vector2 {
@@ -1655,11 +1810,6 @@
             return this._zOrder || (1 - this._hierarchyDepthOffset);
         }
 
-        @dynamicLevelProperty(5, pi => Prim2DBase.originProperty = pi, false, true)
-        public set origin(value: Vector2) {
-            this._origin = value;
-        }
-
         /**
          * Get or set the minimal size the Layout Engine should respect when computing the primitive's actualSize.
          * The Primitive's size won't be less than specified.
@@ -1697,7 +1847,7 @@
         }
 
         /**
-         * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
+         * The origin defines the normalized coordinate of the center of the primitive, from the bottom/left corner.
          * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
          * For instance:
          * 0,0 means the center is bottom/left. Which is the default for Canvas2D instances
@@ -1707,6 +1857,11 @@
          */
         public get origin(): Vector2 {
             return this._origin;
+        }
+
+        @dynamicLevelProperty(5, pi => Prim2DBase.originProperty = pi, false, true)
+        public set origin(value: Vector2) {
+            this._origin = value;
         }
 
         @dynamicLevelProperty(6, pi => Prim2DBase.levelVisibleProperty = pi)
@@ -1801,6 +1956,10 @@
             return this._marginAlignment;
         }
 
+        /**
+         * Get/set the layout engine to use for this primitive.
+         * The default layout engine is the CanvasLayoutEngine.
+         */
         public get layoutEngine(): LayoutEngineBase {
             if (!this._layoutEngine) {
                 this._layoutEngine = CanvasLayoutEngine.Singleton;
@@ -1816,6 +1975,11 @@
             this._changeLayoutEngine(value);
         }
 
+        /**
+         * Get/set the layout are of this primitive.
+         * The Layout area is the zone allocated by the Layout Engine for this particular primitive. Margins/Alignment will be computed based on this area.
+         * The setter should only be called by a Layout Engine class.
+         */
         public get layoutArea(): Size {
             return this._layoutArea;
         }
@@ -1828,6 +1992,10 @@
             this._layoutArea = val;
         }
 
+        /**
+         * Get/set the layout area position (relative to the parent primitive).
+         * The setter should only be called by a Layout Engine class.
+         */
         public get layoutAreaPos(): Vector2 {
             return this._layoutAreaPos;
         }
@@ -2095,6 +2263,9 @@
             this._children.push(child);
         }
 
+        /**
+         * Dispose the primitive, remove it from its parent.
+         */
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
@@ -2405,6 +2576,10 @@
             }
         }
 
+        /**
+         * Get the content are of this primitive, this area is computed using the padding property and also possibly the primitive type itself.
+         * Children of this primitive will be positioned relative to the bottom/left corner of this area.
+         */
         public get contentArea(): Size {
             // Check for positioning update
             if (this._isFlagSet(SmartPropertyPrim.flagPositioningDirty)) {

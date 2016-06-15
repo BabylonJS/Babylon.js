@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     /**
-     * This is the class that is used to display a World Space Canvas into a scene
+     * This is the class that is used to display a World Space Canvas into a 3D scene
      */
     export class WorldSpaceCanvas2DNode extends Mesh {
         constructor(name: string, scene: Scene, canvas: Canvas2D) {
