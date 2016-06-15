@@ -8,14 +8,14 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 Any questions? Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
 ## CDN
-- http://cdn.babylonjs.com/2-3/babylon.js 
-- http://cdn.babylonjs.com/2-3/babylon.max.js 
-- http://cdn.babylonjs.com/2-3/babylon.noworker.js 
-- http://cdn.babylonjs.com/2-3/babylon.core.js 
+- http://cdn.babylonjs.com/2-4/babylon.js 
+- http://cdn.babylonjs.com/2-4/babylon.max.js 
+- http://cdn.babylonjs.com/2-4/babylon.noworker.js 
+- http://cdn.babylonjs.com/2-4/babylon.core.js 
 
 ## Preview release
 You can help by testing or contributing to the next version.
-- **2.4-beta** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
+- **2.5-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
 - We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
 - Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
 - Need help to contribute? We have a [general purpose documentation for you](http://pixelcodr.com/tutos/contribute/contribute.html) and a [Visual Studio specific one](http://doc.babylonjs.com/generals/setup_visualStudio)
