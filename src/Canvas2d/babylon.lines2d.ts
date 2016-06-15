@@ -169,13 +169,44 @@
     }
 
     @className("Lines2D")
+    /**
+     * Primitive drawing a series of line segments
+     */
     export class Lines2D extends Shape2D {
+
+        /**
+         * No Cap to apply on the extremity
+         */
         static get NoCap() { return Lines2D._noCap; }
+
+        /**
+         * A round cap, will use the line thickness as diameter
+         */
         static get RoundCap() { return Lines2D._roundCap; }
+
+        /**
+         * Creates a triangle at the extremity.
+         */
         static get TriangleCap() { return Lines2D._triangleCap; }
+
+        /**
+         * Creates a Square anchor at the extremity, the square size is twice the thickness of the line
+         */
         static get SquareAnchorCap() { return Lines2D._squareAnchorCap; }
+
+        /**
+         * Creates a round anchor at the extremity, the diameter is twice the thickness of the line
+         */
         static get RoundAnchorCap() { return Lines2D._roundAnchorCap; }
+
+        /**
+         * Creates a diamond anchor at the extremity.
+         */
         static get DiamondAnchorCap() { return Lines2D._diamondAnchorCap; }
+
+        /**
+         * Creates an arrow anchor at the extremity. the arrow base size is twice the thickness of the line
+         */
         static get ArrowCap() { return Lines2D._arrowCap; }
 
         public static pointsProperty: Prim2DPropInfo;
@@ -185,6 +216,9 @@
         public static endCapProperty: Prim2DPropInfo;
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Lines2D.pointsProperty = pi)
+        /**
+         * Get the list of points that define the Lines2D primitive. You shouldn't try to change the list or its content. it's not supported right now.
+         */
         public get points(): Vector2[] {
             return this._points;
         }
@@ -195,6 +229,9 @@
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Lines2D.fillThicknessProperty = pi)
+        /**
+         * Get the thickness of the line. You shouldn't try to change this value, it's not supported right now.
+         */
         public get fillThickness(): number {
             return this._fillThickness;
         }
@@ -204,6 +241,10 @@
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 3, pi => Lines2D.closedProperty = pi)
+        /**
+         * Get if the Lines2D is a closed shape (true) or an opened one (false).
+         * Don't change this property, setter is for internal purpose only.
+         */
         public get closed(): boolean {
             return this._closed;
         }
@@ -213,6 +254,9 @@
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 4, pi => Lines2D.startCapProperty = pi)
+        /**
+         * Get the start cap of the line. You shouldn't try to change this value, it's not supported right now.
+         */
         public get startCap(): number {
             return this._startCap;
         }
@@ -222,6 +266,9 @@
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 5, pi => Lines2D.endCapProperty = pi)
+        /**
+         * Get the end cap of the line. You shouldn't try to change this value, it's not supported right now.
+         */
         public get endCap(): number {
             return this._endCap;
         }
@@ -332,23 +379,36 @@
 
         /**
          * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * @param points an array that describe the points to use to draw the line, must contain at least two entries.
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
          *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
-         *  - Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
-         *  - Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
-         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - startCap: Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - endCap: Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white. can be a string value (see Canvas2D.GetBrushFromString)
+         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
          *  - borderThickness: the thickness of the drawn border, default is 1.
          *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(points: Vector2[], settings?: {
 
@@ -358,6 +418,8 @@
             position         ?: Vector2,
             x                ?: number,
             y                ?: number,
+            rotation         ?: number,
+            scale            ?: number,
             origin           ?: Vector2,
             fillThickness    ?: number,
             closed           ?: boolean,
@@ -380,8 +442,6 @@
             paddingRight     ?: number | string,
             paddingBottom    ?: number | string,
             padding          ?: string,
-            paddingHAlignment?: number,
-            paddingVAlignment?: number,
         }) {
 
             if (!settings) {

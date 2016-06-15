@@ -324,13 +324,22 @@
     }
 
     @className("RenderablePrim2D")
-    export class RenderablePrim2D extends Prim2DBase {
+    /**
+     * The abstract class for primitive that render into the Canvas2D
+     */
+    export abstract class RenderablePrim2D extends Prim2DBase {
         static RENDERABLEPRIM2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
 
         public static isAlphaTestProperty: Prim2DPropInfo;
         public static isTransparentProperty: Prim2DPropInfo;
 
         @dynamicLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, pi => RenderablePrim2D.isAlphaTestProperty = pi)
+        /**
+         * Get/set if the Primitive is from the AlphaTest rendering category.
+         * The AlphaTest category is the rendering pass with alpha blend, depth compare and write activated.
+         * Primitives that render with an alpha mask should be from this category.
+         * The setter should be used only by implementers of new primitive type.
+         */
         public get isAlphaTest(): boolean {
             return this._isAlphaTest;
         }
@@ -340,6 +349,10 @@
         }
 
         @dynamicLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => RenderablePrim2D.isTransparentProperty = pi)
+        /**
+         * Get/set if the Primitive is from the Transparent rendering category.
+         * The setter should be used only by implementers of new primitive type.
+         */
         public get isTransparent(): boolean {
             return this._isTransparent;
         }
@@ -360,6 +373,9 @@
             this._transparentPrimitiveInfo = null;
         }
 
+        /**
+         * Dispose the primitive and its resources, remove it from its parent
+         */
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;

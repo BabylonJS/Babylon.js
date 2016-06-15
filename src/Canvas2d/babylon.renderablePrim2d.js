@@ -339,6 +339,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Dispose the primitive and its resources, remove it from its parent
+         */
         RenderablePrim2D.prototype.dispose = function () {
             if (!_super.prototype.dispose.call(this)) {
                 return false;

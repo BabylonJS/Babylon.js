@@ -1,5 +1,6 @@
 ﻿module BABYLON {
 
+    // This class contains data that lifetime is bounding to the Babylon Engine object
     export class Canvas2DEngineBoundData {
         public GetOrAddModelCache<TInstData>(key: string, factory: (key: string) => ModelRenderCache): ModelRenderCache {
             return this._modelCache.getOrAddWithFactory(key, factory);
@@ -19,7 +20,12 @@
     }
 
     @className("Canvas2D")
-    export class Canvas2D extends Group2D {
+    /**
+     * The Canvas2D main class.
+     * This class is extended in both ScreenSpaceCanvas2D and WorldSpaceCanvas2D which are designed only for semantic use.
+     * User creates a Screen or WorldSpace canvas which is a 2D surface area that will draw the primitives that were added as children.
+     */
+    export abstract class Canvas2D extends Group2D {
         /**
          * In this strategy only the direct children groups of the Canvas will be cached, their whole content (whatever the sub groups they have) into a single bitmap.
          * This strategy doesn't allow primitives added directly as children of the Canvas.
@@ -160,7 +166,7 @@
             this._isScreenSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
         }
 
-        public static hierarchyLevelMaxSiblingCount: number = 10;
+        public static hierarchyLevelMaxSiblingCount: number = 50;
 
         private _setupInteraction(enable: boolean) {
             // No change detection
@@ -722,7 +728,6 @@
 
         /**
          * Check if the WebGL Instanced Array extension is supported or not
-         * @returns {} 
          */
         public get supportInstancedArray() {
             return this._supprtInstancedArray;
@@ -828,6 +833,10 @@
             this._setupInteraction(enable);
         }
 
+        /**
+         * Access the babylon.js' engine bound data, do not invoke this method, it's for internal purpose only
+         * @returns {} 
+         */
         public get _engineData(): Canvas2DEngineBoundData {
             return this.__engineData;
         }
@@ -837,7 +846,6 @@
                 throw Error("Can't use Canvas Background with the caching strategy TOPLEVELGROUPS");
             }
         }
-
 
         private __engineData: Canvas2DEngineBoundData;
         private _interactionEnabled: boolean;
@@ -1043,7 +1051,11 @@
          */
         private static _groupTextureCacheSize = 1024;
 
-
+        /**
+         * Internal method used to register a Scene Node to track position for the given group
+         * Do not invoke this method, for internal purpose only.
+         * @param group the group to track its associated Scene Node
+         */
         public _registerTrackedNode(group: Group2D) {
             if (group._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
                 return;
@@ -1053,6 +1065,11 @@
             group._setFlags(SmartPropertyPrim.flagTrackedGroup);
         }
 
+        /**
+         * Internal method used to unregister a tracked Scene Node
+         * Do not invoke this method, it's for internal purpose only.
+         * @param group the group to unregister its tracked Scene Node from.
+         */
         public _unregisterTrackedNode(group: Group2D) {
             if (!group._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
                 return;
@@ -1084,10 +1101,24 @@
             return Canvas2D._solidColorBrushes.getOrAddWithFactory(hexValue, () => new SolidColorBrush2D(Color4.FromHexString(hexValue), true));
         }
 
+        /**
+         * Get a Gradient Color Brush
+         * @param color1 starting color
+         * @param color2 engine color
+         * @param translation translation vector to apply. default is [0;0]
+         * @param rotation rotation in radian to apply to the brush, initial direction is top to bottom. rotation is counter clockwise. default is 0.
+         * @param scale scaling factor to apply. default is 1.
+         */
         public static GetGradientColorBrush(color1: Color4, color2: Color4, translation: Vector2 = Vector2.Zero(), rotation: number = 0, scale: number = 1): IBrush2D {
             return Canvas2D._gradientColorBrushes.getOrAddWithFactory(GradientColorBrush2D.BuildKey(color1, color2, translation, rotation, scale), () => new GradientColorBrush2D(color1, color2, translation, rotation, scale, true));
         }
 
+        /**
+         * Create a solid or gradient brush from a string value.
+         * @param brushString should be either
+         *  - "solid: #RRGGBBAA" or "#RRGGBBAA"
+         *  - "gradient: #FF808080, #FFFFFFF[, [10:20], 180, 1]" for color1, color2, translation, rotation (degree), scale. The last three are optionals, but if specified must be is this order. "gradient:" can be omitted.
+         */
         public static GetBrushFromString(brushString: string): IBrush2D {
             // Note: yes, I hate/don't know RegEx.. Feel free to add your contribution to the cause!
 
@@ -1150,50 +1181,61 @@
         private static _solidColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
         private static _gradientColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
     }
+
     @className("WorldSpaceCanvas2D")
+    /**
+     * Class to create a WorldSpace Canvas2D.
+     */
     export class WorldSpaceCanvas2D extends Canvas2D {
         /**
          * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation information to place it in the world space.
          * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. For now only CACHESTRATEGY_CANVAS is supported, but the remaining strategies will be soon.
          * @param scene the Scene that owns the Canvas
          * @param size the dimension of the Canvas in World Space
-         * Options:
+         * @param settings a combination of settings, possible ones are
+         *  - children: an array of direct children primitives
          *  - id: a text identifier, for information purpose only, default is null.
-         *  - position the position of the Canvas in World Space, default is [0,0,0]
-         *  - rotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
+         *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
          *  - renderScaleFactor A scale factor applied to create the rendering texture that will be mapped in the Scene Rectangle. If you set 2 for instance the texture will be twice large in width and height. A greater value will allow to achieve a better rendering quality. Default value is 1.
          * BE AWARE that the Canvas true dimension will be size*renderScaleFactor, then all coordinates and size will have to be express regarding this size.
          * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
-         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
+         * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
          * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
+         * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
+         * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see Canvas2D.GetBrushFromString) or a IBrush2D instance.
+         * - backgroundBorder: the brush to use to create a background border for the canvas. can be a string value (see Canvas2D.GetBrushFromString) or a IBrush2D instance.
+         * - backgroundBorderThickness: if a backgroundBorder is specified, its thickness can be set using this property
          * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(scene: Scene, size: Size, settings?: {
 
-            children?: Array<Prim2DBase>,
-            id?: string,
-            worldPosition?: Vector3,
-            worldRotation?: Quaternion,
-            renderScaleFactor?: number,
-            sideOrientation?: number,
-            cachingStrategy?: number,
-            enableInteraction?: boolean,
-            isVisible?: boolean,
-            backgroundRoundRadius?: number,
-            backgroundFill?: IBrush2D | string,
-            backgroundBorder?: IBrush2D | string,
+            children                 ?: Array<Prim2DBase>,
+            id                       ?: string,
+            worldPosition            ?: Vector3,
+            worldRotation            ?: Quaternion,
+            renderScaleFactor        ?: number,
+            sideOrientation          ?: number,
+            cachingStrategy          ?: number,
+            enableInteraction        ?: boolean,
+            isVisible                ?: boolean,
+            backgroundRoundRadius    ?: number,
+            backgroundFill           ?: IBrush2D | string,
+            backgroundBorder         ?: IBrush2D | string,
             backgroundBorderThickNess?: number,
-            customWorldSpaceNode?: Node,
-            marginTop?: number | string,
-            marginLeft?: number | string,
-            marginRight?: number | string,
-            marginBottom?: number | string,
-            margin?: number | string,
-            marginHAlignment?: number,
-            marginVAlignment?: number,
-            marginAlignment?: string,
+            customWorldSpaceNode     ?: Node,
+            paddingTop               ?: number | string,
+            paddingLeft              ?: number | string,
+            paddingRight             ?: number | string,
+            paddingBottom            ?: number | string,
+            padding                  ?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;
@@ -1244,6 +1286,9 @@
     }
 
     @className("ScreenSpaceCanvas2D")
+    /**
+     * Class to create a ScreenSpace Canvas2D
+     */
     export class ScreenSpaceCanvas2D extends Canvas2D {
         /**
          * Create a new 2D ScreenSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a position relative to the bottom/left corner of the screen.
@@ -1251,62 +1296,56 @@
          * All caching strategies will be available.
          * PLEASE NOTE: the origin of a Screen Space Canvas is set to [0;0] (bottom/left) which is different than the default origin of a Primitive which is centered [0.5;0.5]
          * @param scene the Scene that owns the Canvas
-         * Options:
+         * @param settings a combination of settings, possible ones are
+         *  - children: an array of direct children primitives
          *  - id: a text identifier, for information purpose only
-         *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
+         *  - x: the position along the x axis (horizontal), relative to the left edge of the viewport. you can alternatively use the position setting.
+         *  - y: the position along the y axis (vertically), relative to the bottom edge of the viewport. you can alternatively use the position setting.
+         *  - position: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
+         *  - width: the width of the Canvas. you can alternatively use the size setting.
+         *  - height: the height of the Canvas. you can alternatively use the size setting.
          *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
+         * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
+         * - backgroundBorder: the brush to use to create a background border for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
+         * - backgroundBorderThickness: if a backgroundBorder is specified, its thickness can be set using this property
+         * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see BABYLON.PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see BABYLON.PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see BABYLON.PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see BABYLON.PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see BABYLON.PrimitiveThickness.fromString)
          */
         constructor(scene: Scene, settings?: {
 
-            children?: Array<Prim2DBase>,
-            id?: string,
-            x?: number,
-            y?: number,
-            position?: Vector2,
-            origin?: Vector2,
-            width?: number,
-            height?: number,
-            size?: Size,
-            cachingStrategy?: number,
-            enableInteraction?: boolean,
-            isVisible?: boolean,
-            backgroundRoundRadius?: number,
-            backgroundFill?: IBrush2D | string,
-            backgroundBorder?: IBrush2D | string,
+            children                 ?: Array<Prim2DBase>,
+            id                       ?: string,
+            x                        ?: number,
+            y                        ?: number,
+            position                 ?: Vector2,
+            origin                   ?: Vector2,
+            width                    ?: number,
+            height                   ?: number,
+            size                     ?: Size,
+            cachingStrategy          ?: number,
+            enableInteraction        ?: boolean,
+            isVisible                ?: boolean,
+            backgroundRoundRadius    ?: number,
+            backgroundFill           ?: IBrush2D | string,
+            backgroundBorder         ?: IBrush2D | string,
             backgroundBorderThickNess?: number,
-            marginTop?: number | string,
-            marginLeft?: number | string,
-            marginRight?: number | string,
-            marginBottom?: number | string,
-            margin?: string,
-            marginHAlignment?: number,
-            marginVAlignment?: number,
-            marginAlignment?: string,
+            paddingTop               ?: number | string,
+            paddingLeft              ?: number | string,
+            paddingRight             ?: number | string,
+            paddingBottom            ?: number | string,
+            padding                  ?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;
             super(scene, settings);
-
-            //let c = new Canvas2D();
-
-            //if (!settings) {
-            //    c.setupCanvas(scene, null, null, 1, true, Canvas2D.CACHESTRATEGY_DONTCACHE, true, Vector2.Zero(), true, null, null, null, null, null, null);
-            //    c.position = Vector2.Zero();
-            //} else {
-            //    let pos = settings.position || new Vector2(settings.x || 0, settings.y || 0);
-            //    let size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new Size(settings.width || 0, settings.height || 0)));
-
-            //    c.setupCanvas(scene, settings.id || null, size, 1, true, settings.cachingStrategy || Canvas2D.CACHESTRATEGY_DONTCACHE, settings.enableInteraction || true, settings.origin || Vector2.Zero(), settings.isVisible || true, settings.marginTop, settings.marginLeft, settings.marginRight, settings.marginBottom, settings.hAlignment || PrimitiveAlignment.AlignLeft, settings.vAlignment || PrimitiveAlignment.AlignTop);
-            //    c.position = pos;
-            //}
-
-            //return c;
         }
     }
 

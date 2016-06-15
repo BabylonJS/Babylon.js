@@ -1,7 +1,12 @@
 ﻿module BABYLON {
 
     @className("Shape2D")
-    export class Shape2D extends RenderablePrim2D {
+    /**
+     * The abstract class for parametric shape based Primitives types.
+     * Shape2D based primitives are composed of two parts: fill and border, both are optional but at least one must be specified.
+     * The fill part is the primitive 'body', the border is a border around this body. The border has a thickness that can be changed.
+     */
+    export abstract class Shape2D extends RenderablePrim2D {
         static SHAPE2D_BORDERPARTID            = 1;
         static SHAPE2D_FILLPARTID              = 2;
         static SHAPE2D_CATEGORY_BORDER         = "Border";
@@ -16,6 +21,9 @@
         public static borderThicknessProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Shape2D.borderProperty = pi, true)
+        /**
+         * Get/set the brush to render the Border part of the Primitive
+         */
         public get border(): IBrush2D {
             return this._border;
         }
@@ -25,6 +33,9 @@
             this._updateTransparencyStatus();
         }
 
+        /**
+         * Get/set the brush to render the Fill part of the Primitive
+         */
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Shape2D.fillProperty = pi, true)
         public get fill(): IBrush2D {
             return this._fill;
@@ -36,6 +47,9 @@
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Shape2D.borderThicknessProperty = pi)
+        /**
+         * Get/set the thickness of the border part.
+         */
         public get borderThickness(): number {
             return this._borderThickness;
         }
