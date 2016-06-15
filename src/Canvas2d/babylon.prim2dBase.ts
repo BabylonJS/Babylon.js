@@ -1873,6 +1873,24 @@
         }
 
         /**
+         * return the global position of the primitive, relative to its canvas
+         */
+        public getGlobalPosition(): Vector2 {
+            let v = new Vector2(0, 0);
+            this.getGlobalPositionByRef(v);
+            return v;
+        }
+
+        /**
+         * return the global position of the primitive, relative to its canvas
+         * @param v the valid Vector2 object where the global position will be stored
+         */
+        public getGlobalPositionByRef(v: Vector2) {
+            v.x = this.globalTransform.m[12];
+            v.y = this.globalTransform.m[13];
+        }
+
+        /**
          * Get invert of the global transformation matrix of the primitive
          */
         public get invGlobalTransform(): Matrix {
