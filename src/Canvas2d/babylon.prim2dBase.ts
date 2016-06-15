@@ -1855,11 +1855,11 @@
          * 0,1 means the center is top/left
          * @returns The normalized center.
          */
+        @dynamicLevelProperty(5, pi => Prim2DBase.originProperty = pi, false, true)
         public get origin(): Vector2 {
             return this._origin;
         }
 
-        @dynamicLevelProperty(5, pi => Prim2DBase.originProperty = pi, false, true)
         public set origin(value: Vector2) {
             this._origin = value;
         }
