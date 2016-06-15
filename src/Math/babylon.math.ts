@@ -1149,25 +1149,32 @@
             result.normalize();
         }
 
+        private static _viewportMatrixCache: Matrix;
+        private static _matrixCache: Matrix;
         public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
             var cw = viewport.width;
             var ch = viewport.height;
             var cx = viewport.x;
             var cy = viewport.y;
 
-            var viewportMatrix = Matrix.FromValues(
+            var viewportMatrix = Vector3._viewportMatrixCache ? Vector3._viewportMatrixCache : (Vector3._viewportMatrixCache = new Matrix());
+
+            Matrix.FromValuesToRef(
                 cw / 2.0, 0, 0, 0,
                 0, -ch / 2.0, 0, 0,
                 0, 0, 1, 0,
-                cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
+                cx + cw / 2.0, ch / 2.0 + cy, 0, 1, viewportMatrix);
 
-            var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(transform, matrix);
+            matrix.multiplyToRef(viewportMatrix, matrix);
 
-            return Vector3.TransformCoordinates(vector, finalMatrix);
+            return Vector3.TransformCoordinates(vector, matrix);
         }
 
         public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
-            var matrix = world.multiply(transform);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(transform, matrix);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
@@ -1182,7 +1189,9 @@
         }
 
         public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
-            var matrix = world.multiply(view).multiply(projection);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(view, matrix)
+            matrix.multiplyToRef(projection, matrix);
             matrix.invert();
             var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), source.z);
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
@@ -2011,7 +2020,10 @@
         }
 
         public static RotationAxis(axis: Vector3, angle: number): Quaternion {
-            var result = new Quaternion();
+            return Quaternion.RotationAxisToRef(axis, angle, new Quaternion());
+        }
+
+        public static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion {
             var sin = Math.sin(angle / 2);
 
             axis.normalize();
@@ -2033,14 +2045,10 @@
         }
 
         public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion {
-            var result = new Quaternion();
-
-            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, result);
-
-            return result;
+            return Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, new Quaternion());
         }
 
-        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
+        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): Quaternion {
             // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
@@ -2057,6 +2065,8 @@
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+
+            return result;
         }
 
         public static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion {

@@ -973,7 +973,7 @@
         }
 
         public _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
-            onBeforeDraw: (isInstance: boolean, world: Matrix) => void) {
+            onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material) {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
@@ -983,7 +983,7 @@
                 if (batch.renderSelf[subMesh._id]) {
                     // Draw
                     if (onBeforeDraw) {
-                        onBeforeDraw(false, this.getWorldMatrix());
+                        onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
                     }
 
                     this._draw(subMesh, fillMode, this._overridenInstanceCount);
@@ -996,7 +996,7 @@
                         // World
                         var world = instance.getWorldMatrix();
                         if (onBeforeDraw) {
-                            onBeforeDraw(true, world);
+                            onBeforeDraw(true, world, effectiveMaterial);
                         }
 
                         // Draw
@@ -1063,12 +1063,7 @@
             }
 
             // Draw
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => {
-                    if (isInstance) {
-                        effectiveMaterial.bindOnlyWorldMatrix(world);
-                    }
-                });
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw);
 
             // Unbind
             effectiveMaterial.unbind();
@@ -1090,6 +1085,12 @@
             }
 
             this.onAfterRenderObservable.notifyObservers(this);
+        }
+
+        private _onBeforeDraw(isInstance: boolean, world: Matrix, effectiveMaterial: Material): void {
+            if (isInstance) {
+                effectiveMaterial.bindOnlyWorldMatrix(world);
+            }
         }
 
         /**
@@ -1126,32 +1127,35 @@
         }
 
         public _checkDelayState(): void {
-            var that = this;
             var scene = this.getScene();
 
             if (this._geometry) {
                 this._geometry.load(scene);
             }
-            else if (that.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
-                that.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
+            else if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
+                this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
-                scene._addPendingData(that);
-
-                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
-
-                Tools.LoadFile(this.delayLoadingFile, data => {
-
-                    if (data instanceof ArrayBuffer) {
-                        this._delayLoadingFunction(data, this);
-                    }
-                    else {
-                        this._delayLoadingFunction(JSON.parse(data), this);
-                    }
-
-                    this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
-                    scene._removePendingData(this);
-                }, () => { }, scene.database, getBinaryData);
+                this._queueLoad(this, scene);
             }
+        }
+
+        private _queueLoad(mesh: Mesh, scene: Scene): void {
+            scene._addPendingData(mesh);
+
+            var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
+
+            Tools.LoadFile(this.delayLoadingFile, data => {
+
+                if (data instanceof ArrayBuffer) {
+                    this._delayLoadingFunction(data, this);
+                }
+                else {
+                    this._delayLoadingFunction(JSON.parse(data), this);
+                }
+
+                this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+                scene._removePendingData(this);
+            }, () => { }, scene.database, getBinaryData);
         }
 
         /**
