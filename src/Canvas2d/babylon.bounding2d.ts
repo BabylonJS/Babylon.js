@@ -28,18 +28,31 @@
             this.extent = Vector2.Zero();
         }
 
+        /**
+         * Create a BoundingInfo2D object from a given size
+         * @param size the size that will be used to set the extend, radius will be computed from it.
+         */
         public static CreateFromSize(size: Size): BoundingInfo2D {
             let r = new BoundingInfo2D();
             BoundingInfo2D.CreateFromSizeToRef(size, r);
             return r;
         }
 
+        /**
+         * Create a BoundingInfo2D object from a given radius
+         * @param radius the radius to use, the extent will be computed from it.
+         */
         public static CreateFromRadius(radius: number): BoundingInfo2D {
             let r = new BoundingInfo2D();
             BoundingInfo2D.CreateFromRadiusToRef(radius, r);
             return r;
         }
 
+        /**
+         * Create a BoundingInfo2D object from a list of points.
+         * The resulted object will be the smallest bounding area that includes all the given points.
+         * @param points an array of points to compute the bounding object from.
+         */
         public static CreateFromPoints(points: Vector2[]): BoundingInfo2D {
             let r = new BoundingInfo2D();
             BoundingInfo2D.CreateFromPointsToRef(points, r);
@@ -47,6 +60,11 @@
             return r;
         }
 
+        /**
+         * Update a BoundingInfo2D object using the given Size as input
+         * @param size the bounding data will be computed from this size.
+         * @param b must be a valid/allocated object, it will contain the result of the operation
+         */
         public static CreateFromSizeToRef(size: Size, b: BoundingInfo2D) {
             if (!size) {
                 size = Size.Zero();
@@ -58,6 +76,11 @@
             b.radius = b.extent.length();
         }
 
+        /**
+         * Update a BoundingInfo2D object using the given radius as input
+         * @param radius the bounding data will be computed from this radius
+         * @param b must be a valid/allocated object, it will contain the result of the operation
+         */
         public static CreateFromRadiusToRef(radius: number, b: BoundingInfo2D) {
             b.center.x = b.center.y = 0;
             let r = +radius;
@@ -66,6 +89,11 @@
             b.radius = r;
         }
 
+        /**
+         * Update a BoundingInfo2D object using the given points array as input
+         * @param points the point array to use to update the bounding data
+         * @param b must be a valid/allocated object, it will contain the result of the operation
+         */
         public static CreateFromPointsToRef(points: Vector2[], b: BoundingInfo2D) {
             let xmin = Number.MAX_VALUE, ymin = Number.MAX_VALUE, xmax = Number.MIN_VALUE, ymax = Number.MIN_VALUE;
             for (let p of points) {
@@ -77,6 +105,14 @@
             BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, b);
         }
 
+        /**
+         * Update a BoundingInfo2D object using the given min/max values as input
+         * @param xmin the smallest x coordinate
+         * @param xmax the biggest x coordinate
+         * @param ymin the smallest y coordinate
+         * @param ymax the buggest y coordinate
+         * @param b must be a valid/allocated object, it will contain the result of the operation
+         */
         public static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D) {
             let w = xmax - xmin;
             let h = ymax - ymin;
@@ -97,12 +133,19 @@
             return r;
         }
 
+        /**
+         * return the max extend of the bounding info
+         */
         public max(): Vector2 {
             let r = Vector2.Zero();
             this.maxToRef(r);
             return r;
         }
 
+        /**
+         * Update a vector2 with the max extend of the bounding info
+         * @param result must be a valid/allocated vector2 that will contain the result of the operation
+         */
         public maxToRef(result: Vector2) {
             result.x = this.center.x + this.extent.x;
             result.y = this.center.y + this.extent.y;
@@ -120,7 +163,7 @@
         }
 
         /**
-         * Compute the union of this BoundingInfo2D with a given one, return a new BoundingInfo2D as a result
+         * Compute the union of this BoundingInfo2D with a given one, returns a new BoundingInfo2D as a result
          * @param other the second BoundingInfo2D to compute the union with this one
          * @return a new instance containing the result of the union
          */
@@ -171,7 +214,13 @@
             BoundingInfo2D.CreateFromMinMaxToRef(xmin, xmax, ymin, ymax, result);
         }
 
-        doesIntersect(pickPosition: Vector2): boolean {
+        /**
+         * Check if the given point is inside the BoundingInfo.
+         * The test is first made on the radius, then inside the rectangle described by the extent
+         * @param pickPosition the position to test
+         * @return true if the point is inside, false otherwise
+         */
+        public doesIntersect(pickPosition: Vector2): boolean {
             // is it inside the radius?
             let pickLocal = pickPosition.subtract(this.center);
             if (pickLocal.lengthSquared() <= (this.radius * this.radius)) {

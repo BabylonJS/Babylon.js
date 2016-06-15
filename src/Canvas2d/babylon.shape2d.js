@@ -52,6 +52,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Shape2D.prototype, "fill", {
+            /**
+             * Get/set the brush to render the Fill part of the Primitive
+             */
             get: function () {
                 return this._fill;
             },

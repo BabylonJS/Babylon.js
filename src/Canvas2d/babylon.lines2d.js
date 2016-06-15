@@ -172,23 +172,36 @@ var BABYLON;
         __extends(Lines2D, _super);
         /**
          * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * @param points an array that describe the points to use to draw the line, must contain at least two entries.
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
          *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
-         *  - Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
-         *  - Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
-         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - startCap: Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - endCap: Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white. can be a string value (see Canvas2D.GetBrushFromString)
+         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
          *  - borderThickness: the thickness of the drawn border, default is 1.
          *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Lines2D(points, settings) {
             if (!settings) {
@@ -213,36 +226,57 @@ var BABYLON;
             this.closed = closed;
         }
         Object.defineProperty(Lines2D, "NoCap", {
+            /**
+             * No Cap to apply on the extremity
+             */
             get: function () { return Lines2D._noCap; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Lines2D, "RoundCap", {
+            /**
+             * A round cap, will use the line thickness as diameter
+             */
             get: function () { return Lines2D._roundCap; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Lines2D, "TriangleCap", {
+            /**
+             * Creates a triangle at the extremity.
+             */
             get: function () { return Lines2D._triangleCap; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Lines2D, "SquareAnchorCap", {
+            /**
+             * Creates a Square anchor at the extremity, the square size is twice the thickness of the line
+             */
             get: function () { return Lines2D._squareAnchorCap; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Lines2D, "RoundAnchorCap", {
+            /**
+             * Creates a round anchor at the extremity, the diameter is twice the thickness of the line
+             */
             get: function () { return Lines2D._roundAnchorCap; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Lines2D, "DiamondAnchorCap", {
+            /**
+             * Creates a diamond anchor at the extremity.
+             */
             get: function () { return Lines2D._diamondAnchorCap; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Lines2D, "ArrowCap", {
+            /**
+             * Creates an arrow anchor at the extremity. the arrow base size is twice the thickness of the line
+             */
             get: function () { return Lines2D._arrowCap; },
             enumerable: true,
             configurable: true

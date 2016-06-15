@@ -16,13 +16,32 @@
         typeLevelCompare: boolean;
     }
 
+    /**
+     * Custom type of the propertyChanged observable
+     */
     export class PropertyChangedInfo {
+        /**
+         * Previous value of the property
+         */
         oldValue: any;
+        /**
+         * New value of the property
+         */
         newValue: any;
+
+        /**
+         * Name of the property that changed its value
+         */
         propertyName: string;
     }
 
+    /**
+     * Property Changed interface
+     */
     export interface IPropertyChanged {
+        /**
+         * PropertyChanged observable
+         */
         propertyChanged: Observable<PropertyChangedInfo>;
     }
 
@@ -133,7 +152,10 @@
     }
 
     @className("SmartPropertyPrim")
-    export class SmartPropertyPrim implements IPropertyChanged {
+    /**
+     * Base class of the primitives, implementing core crosscutting features
+     */
+    export abstract  class SmartPropertyPrim implements IPropertyChanged {
 
         constructor() {
             this._flags = 0;
@@ -526,28 +548,57 @@
             return this._externalData.remove(key);
         }
 
+        /**
+         * Check if a given flag is set
+         * @param flag the flag value
+         * @return true if set, false otherwise
+         */
         public _isFlagSet(flag: number): boolean {
             return (this._flags & flag) !== 0;
         }
 
+        /**
+         * Check if all given flags are set
+         * @param flags the flags ORed
+         * @return true if all the flags are set, false otherwise
+         */
         public _areAllFlagsSet(flags: number): boolean {
             return (this._flags & flags) === flags;
         }
 
+        /**
+         * Check if at least one flag of the given flags is set
+         * @param flags the flags ORed
+         * @return true if at least one flag is set, false otherwise
+         */
         public _areSomeFlagsSet(flags: number): boolean {
             return (this._flags & flags) !== 0;
         }
 
+        /**
+         * Clear the given flags
+         * @param flags the flags to clear
+         */
         public _clearFlags(flags: number) {
             this._flags &= ~flags;
         }
 
+        /**
+         * Set the given flags to true state
+         * @param flags the flags ORed to set
+         * @return the flags state before this call
+         */
         public _setFlags(flags: number): number {
             let cur = this._flags;
             this._flags |= flags;
             return cur;
         }
 
+        /**
+         * Change the state of the given flags
+         * @param flags the flags ORed to change
+         * @param state true to set them, false to clear them
+         */
         public _changeFlags(flags: number, state: boolean) {
             if (state) {
                 this._flags |= flags;

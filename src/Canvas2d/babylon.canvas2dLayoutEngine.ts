@@ -3,7 +3,7 @@
     @className("LayoutEngineBase")
     /**
      * This is the base class you have to extend in order to implement your own Layout Engine.
-     * Note that for performance reason, each different Layout Engine type must be instanced only once, good practice is through a static `Singleton`property defined in the type itself.
+     * Note that for performance reason, each different Layout Engine type can be exposed as one/many singleton or must be instanced each time.
      * If data has to be associated to a given primitive you can use the SmartPropertyPrim.addExternalData API to do it.
      */
     export class LayoutEngineBase implements ILockable {
@@ -36,6 +36,10 @@
     }
 
     @className("CanvasLayoutEngine")
+    /**
+     * The default Layout Engine, primitive are positioning into a Canvas, using their x/y coordinates.
+     * This layout must be used as a Singleton through the CanvasLayoutEngine.Singleton property.
+     */
     export class CanvasLayoutEngine extends LayoutEngineBase {
         public static Singleton: CanvasLayoutEngine = new CanvasLayoutEngine();
 
@@ -79,6 +83,10 @@
 
 
     @className("StackPanelLayoutEngine")
+    /**
+     * A stack panel layout. Primitive will be stack either horizontally or vertically.
+     * This Layout type must be used as a Singleton, use the StackPanelLayoutEngine.Horizontal for an horizontal stack panel or StackPanelLayoutEngine.Vertical for a vertical one.
+     */
     export class StackPanelLayoutEngine extends LayoutEngineBase {
         constructor() {
             super();

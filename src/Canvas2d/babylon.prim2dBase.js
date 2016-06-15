@@ -234,6 +234,9 @@ var BABYLON;
         return PrimitivePointerInfo;
     })();
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
+    /**
+     * Defines the horizontal and vertical alignment information for a Primitive.
+     */
     var PrimitiveAlignment = (function () {
         function PrimitiveAlignment(changeCallback) {
             this._changedCallback = changeCallback;
@@ -241,36 +244,57 @@ var BABYLON;
             this._vertical = PrimitiveAlignment.AlignBottom;
         }
         Object.defineProperty(PrimitiveAlignment, "AlignLeft", {
+            /**
+             * Alignment is made relative to the left edge of the Primitive. Valid for horizontal alignment only.
+             */
             get: function () { return PrimitiveAlignment._AlignLeft; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PrimitiveAlignment, "AlignTop", {
+            /**
+             * Alignment is made relative to the top edge of the Primitive. Valid for vertical alignment only.
+             */
             get: function () { return PrimitiveAlignment._AlignTop; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PrimitiveAlignment, "AlignRight", {
+            /**
+             * Alignment is made relative to the right edge of the Primitive. Valid for horizontal alignment only.
+             */
             get: function () { return PrimitiveAlignment._AlignRight; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PrimitiveAlignment, "AlignBottom", {
+            /**
+             * Alignment is made relative to the bottom edge of the Primitive. Valid for vertical alignment only.
+             */
             get: function () { return PrimitiveAlignment._AlignBottom; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PrimitiveAlignment, "AlignCenter", {
+            /**
+             * Alignment is made to center the content from equal distance to the opposite edges of the Primitive
+             */
             get: function () { return PrimitiveAlignment._AlignCenter; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PrimitiveAlignment, "AlignStretch", {
+            /**
+             * The content is stretched toward the opposite edges of the Primitive
+             */
             get: function () { return PrimitiveAlignment._AlignStretch; },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(PrimitiveAlignment.prototype, "horizontal", {
+            /**
+             * Get/set the horizontal alignment. Use one of the AlignXXX static properties of this class
+             */
             get: function () {
                 return this._horizontal;
             },
@@ -285,6 +309,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveAlignment.prototype, "vertical", {
+            /**
+             * Get/set the vertical alignment. Use one of the AlignXXX static properties of this class
+             */
             get: function () {
                 return this._vertical;
             },
@@ -298,6 +325,10 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Set the horizontal alignment from a string value.
+         * @param text can be either: 'left','right','center','stretch'
+         */
         PrimitiveAlignment.prototype.setHorizontal = function (text) {
             var v = text.trim().toLocaleLowerCase();
             switch (v) {
@@ -315,6 +346,10 @@ var BABYLON;
                     return;
             }
         };
+        /**
+         * Set the vertical alignment from a string value.
+         * @param text can be either: 'top','bottom','center','stretch'
+         */
         PrimitiveAlignment.prototype.setVertical = function (text) {
             var v = text.trim().toLocaleLowerCase();
             switch (v) {
@@ -332,6 +367,10 @@ var BABYLON;
                     return;
             }
         };
+        /**
+         * Set the horizontal and or vertical alignments from a string value.
+         * @param text can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
+         */
         PrimitiveAlignment.prototype.fromString = function (value) {
             var m = value.trim().split(",");
             for (var _i = 0; _i < m.length; _i++) {
@@ -379,6 +418,10 @@ var BABYLON;
         return PrimitiveIntersectedInfo;
     })();
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
+    /**
+     * Define a thickness toward every edges of a Primitive to allow margin and padding.
+     * The thickness can be expressed as pixels, percentages, inherit the value of the parent primitive or be auto.
+     */
     var PrimitiveThickness = (function () {
         function PrimitiveThickness(parentAccess, changedCallback) {
             this._parentAccess = parentAccess;
@@ -394,9 +437,14 @@ var BABYLON;
             this._pixels[2] = 0;
             this._pixels[3] = 0;
         }
-        PrimitiveThickness.prototype.fromString = function (margin) {
+        /**
+         * Set the thickness from a string value
+         * @param thickness format is "top: <value>, left:<value>, right:<value>, bottom:<value>" each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
+        PrimitiveThickness.prototype.fromString = function (thickness) {
             this._clear();
-            var m = margin.trim().split(",");
+            var m = thickness.trim().split(",");
             var res = false;
             for (var _i = 0; _i < m.length; _i++) {
                 var cm = m[_i];
@@ -416,6 +464,14 @@ var BABYLON;
                 this._flags |= PrimitiveThickness.Pixel << 12;
             this._changedCallback();
         };
+        /**
+         * Set the thickness from multiple string
+         * Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         * @param top the top thickness to set
+         * @param left the left thickness to set
+         * @param right the right thickness to set
+         * @param bottom the bottom thickness to set
+         */
         PrimitiveThickness.prototype.fromStrings = function (top, left, right, bottom) {
             this._clear();
             this._setStringValue(top, 0, false);
@@ -425,6 +481,13 @@ var BABYLON;
             this._changedCallback();
             return this;
         };
+        /**
+         * Set the thickness from pixel values
+         * @param top the top thickness in pixels to set
+         * @param left the left thickness in pixels to set
+         * @param right the right thickness in pixels to set
+         * @param bottom the bottom thickness in pixels to set
+         */
         PrimitiveThickness.prototype.fromPixels = function (top, left, right, bottom) {
             this._clear();
             this._pixels[0] = top;
@@ -434,6 +497,10 @@ var BABYLON;
             this._changedCallback();
             return this;
         };
+        /**
+         * Apply the same pixel value to all edges
+         * @param margin the value to set, in pixels.
+         */
         PrimitiveThickness.prototype.fromUniformPixels = function (margin) {
             this._clear();
             this._pixels[0] = margin;
@@ -443,6 +510,9 @@ var BABYLON;
             this._changedCallback();
             return this;
         };
+        /**
+         * Set all edges in auto
+         */
         PrimitiveThickness.prototype.auto = function () {
             this._clear();
             this._flags = (PrimitiveThickness.Auto << 0) | (PrimitiveThickness.Auto << 4) | (PrimitiveThickness.Auto << 8) | (PrimitiveThickness.Auto << 12);
@@ -642,6 +712,9 @@ var BABYLON;
             }
         };
         Object.defineProperty(PrimitiveThickness.prototype, "top", {
+            /**
+             * Get/set the top thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+             */
             get: function () {
                 return this._getStringValue(0);
             },
@@ -652,6 +725,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "left", {
+            /**
+             * Get/set the left thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+             */
             get: function () {
                 return this._getStringValue(1);
             },
@@ -662,6 +738,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "right", {
+            /**
+             * Get/set the right thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+             */
             get: function () {
                 return this._getStringValue(2);
             },
@@ -672,6 +751,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "bottom", {
+            /**
+             * Get/set the bottom thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+             */
             get: function () {
                 return this._getStringValue(3);
             },
@@ -682,6 +764,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "topPixels", {
+            /**
+             * Get/set the top thickness in pixel.
+             */
             get: function () {
                 return this._pixels[0];
             },
@@ -692,6 +777,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "leftPixels", {
+            /**
+             * Get/set the left thickness in pixel.
+             */
             get: function () {
                 return this._pixels[1];
             },
@@ -702,6 +790,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "rightPixels", {
+            /**
+             * Get/set the right thickness in pixel.
+             */
             get: function () {
                 return this._pixels[2];
             },
@@ -712,6 +803,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "bottomPixels", {
+            /**
+             * Get/set the bottom thickness in pixel.
+             */
             get: function () {
                 return this._pixels[3];
             },
@@ -722,6 +816,11 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "topPercentage", {
+            /**
+             * Get/set the top thickness in percentage.
+             * The get will return a valid value only if the edge type is percentage.
+             * The Set will change the edge mode if needed
+             */
             get: function () {
                 return this._percentages[0];
             },
@@ -732,6 +831,11 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "leftPercentage", {
+            /**
+             * Get/set the left thickness in percentage.
+             * The get will return a valid value only if the edge mode is percentage.
+             * The Set will change the edge mode if needed
+             */
             get: function () {
                 return this._percentages[1];
             },
@@ -742,6 +846,11 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "rightPercentage", {
+            /**
+             * Get/set the right thickness in percentage.
+             * The get will return a valid value only if the edge mode is percentage.
+             * The Set will change the edge mode if needed
+             */
             get: function () {
                 return this._percentages[2];
             },
@@ -752,6 +861,11 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "bottomPercentage", {
+            /**
+             * Get/set the bottom thickness in percentage.
+             * The get will return a valid value only if the edge mode is percentage.
+             * The Set will change the edge mode if needed
+             */
             get: function () {
                 return this._percentages[3];
             },
@@ -762,6 +876,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "topMode", {
+            /**
+             * Get/set the top mode. The setter shouldn't be used, other setters with value should be preferred
+             */
             get: function () {
                 return this._getType(0, false);
             },
@@ -772,6 +889,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "leftMode", {
+            /**
+             * Get/set the left mode. The setter shouldn't be used, other setters with value should be preferred
+             */
             get: function () {
                 return this._getType(1, false);
             },
@@ -782,6 +902,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "rightMode", {
+            /**
+             * Get/set the right mode. The setter shouldn't be used, other setters with value should be preferred
+             */
             get: function () {
                 return this._getType(2, false);
             },
@@ -792,6 +915,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PrimitiveThickness.prototype, "bottomMode", {
+            /**
+             * Get/set the bottom mode. The setter shouldn't be used, other setters with value should be preferred
+             */
             get: function () {
                 return this._getType(3, false);
             },
@@ -816,6 +942,14 @@ var BABYLON;
                 this._changedCallback();
             }
         };
+        /**
+         * Compute the positioning/size of an area considering the thickness of this object and a given alignment
+         * @param sourceArea the source area
+         * @param contentSize the content size to position/resize
+         * @param alignment the alignment setting
+         * @param dstOffset the position of the content
+         * @param dstArea the new size of the content
+         */
         PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea) {
             // Fetch some data
             var topType = this._getType(0, true);
@@ -943,6 +1077,12 @@ var BABYLON;
                     }
             }
         };
+        /**
+         * Compute an area and its position considering this thickness properties based on a given source area
+         * @param sourceArea the source area
+         * @param dstOffset the position of the resulting area
+         * @param dstArea the size of the resulting area
+         */
         PrimitiveThickness.prototype.compute = function (sourceArea, dstOffset, dstArea) {
             this._computePixels(0, sourceArea, true);
             this._computePixels(1, sourceArea, true);
@@ -953,6 +1093,11 @@ var BABYLON;
             dstOffset.y = this.bottomPixels;
             dstArea.height = sourceArea.height - (dstOffset.y + this.topPixels);
         };
+        /**
+         * Compute an area considering this thickness properties based on a given source area
+         * @param sourceArea the source area
+         * @param result the resulting area
+         */
         PrimitiveThickness.prototype.computeArea = function (sourceArea, result) {
             this._computePixels(0, sourceArea, true);
             this._computePixels(1, sourceArea, true);
@@ -1274,6 +1419,7 @@ var BABYLON;
              * Position of the primitive, relative to its parent.
              * BEWARE: if you change only position.x or y it won't trigger a property change and you won't have the expected behavior.
              * Use this property to set a new Vector2 object, otherwise to change only the x/y use Prim2DBase.x or y properties.
+             * Setting this property may have no effect is specific alignment are in effect.
              */
             get: function () {
                 return this._position;
@@ -1469,25 +1615,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Prim2DBase.prototype, "origin", {
-            /**
-             * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
-             * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
-             * For instance:
-             * 0,0 means the center is bottom/left. Which is the default for Canvas2D instances
-             * 0.5,0.5 means the center is at the center of the primitive, which is default of all types of Primitives
-             * 0,1 means the center is top/left
-             * @returns The normalized center.
-             */
-            get: function () {
-                return this._origin;
-            },
-            set: function (value) {
-                this._origin = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Prim2DBase.prototype, "minSize", {
             /**
              * Get or set the minimal size the Layout Engine should respect when computing the primitive's actualSize.
@@ -1522,6 +1649,25 @@ var BABYLON;
                 }
                 this._maxSize = value;
                 this._parentLayoutDirty();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "origin", {
+            /**
+             * The origin defines the normalized coordinate of the center of the primitive, from the bottom/left corner.
+             * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
+             * For instance:
+             * 0,0 means the center is bottom/left. Which is the default for Canvas2D instances
+             * 0.5,0.5 means the center is at the center of the primitive, which is default of all types of Primitives
+             * 0,1 means the center is top/left
+             * @returns The normalized center.
+             */
+            get: function () {
+                return this._origin;
+            },
+            set: function (value) {
+                this._origin = value;
             },
             enumerable: true,
             configurable: true
@@ -1615,6 +1761,10 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Prim2DBase.prototype, "layoutEngine", {
+            /**
+             * Get/set the layout engine to use for this primitive.
+             * The default layout engine is the CanvasLayoutEngine.
+             */
             get: function () {
                 if (!this._layoutEngine) {
                     this._layoutEngine = BABYLON.CanvasLayoutEngine.Singleton;
@@ -1631,6 +1781,11 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Prim2DBase.prototype, "layoutArea", {
+            /**
+             * Get/set the layout are of this primitive.
+             * The Layout area is the zone allocated by the Layout Engine for this particular primitive. Margins/Alignment will be computed based on this area.
+             * The setter should only be called by a Layout Engine class.
+             */
             get: function () {
                 return this._layoutArea;
             },
@@ -1645,6 +1800,10 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Prim2DBase.prototype, "layoutAreaPos", {
+            /**
+             * Get/set the layout area position (relative to the parent primitive).
+             * The setter should only be called by a Layout Engine class.
+             */
             get: function () {
                 return this._layoutAreaPos;
             },
@@ -1701,6 +1860,22 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * return the global position of the primitive, relative to its canvas
+         */
+        Prim2DBase.prototype.getGlobalPosition = function () {
+            var v = new BABYLON.Vector2(0, 0);
+            this.getGlobalPositionByRef(v);
+            return v;
+        };
+        /**
+         * return the global position of the primitive, relative to its canvas
+         * @param v the valid Vector2 object where the global position will be stored
+         */
+        Prim2DBase.prototype.getGlobalPositionByRef = function (v) {
+            v.x = this.globalTransform.m[12];
+            v.y = this.globalTransform.m[13];
+        };
         Object.defineProperty(Prim2DBase.prototype, "invGlobalTransform", {
             /**
              * Get invert of the global transformation matrix of the primitive
@@ -1902,6 +2077,9 @@ var BABYLON;
             this._patchHierarchyDepth(child);
             this._children.push(child);
         };
+        /**
+         * Dispose the primitive, remove it from its parent.
+         */
         Prim2DBase.prototype.dispose = function () {
             if (!_super.prototype.dispose.call(this)) {
                 return false;
@@ -2155,6 +2333,10 @@ var BABYLON;
             }
         };
         Object.defineProperty(Prim2DBase.prototype, "contentArea", {
+            /**
+             * Get the content are of this primitive, this area is computed using the padding property and also possibly the primitive type itself.
+             * Children of this primitive will be positioned relative to the bottom/left corner of this area.
+             */
             get: function () {
                 // Check for positioning update
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty)) {
@@ -2242,9 +2424,6 @@ var BABYLON;
         __decorate([
             BABYLON.instanceLevelProperty(4, function (pi) { return Prim2DBase.scaleProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "scale", null);
-        __decorate([
-            BABYLON.dynamicLevelProperty(5, function (pi) { return Prim2DBase.originProperty = pi; }, false, true)
-        ], Prim2DBase.prototype, "origin", null);
         __decorate([
             BABYLON.dynamicLevelProperty(6, function (pi) { return Prim2DBase.levelVisibleProperty = pi; })
         ], Prim2DBase.prototype, "levelVisible", null);
