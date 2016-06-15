@@ -2411,19 +2411,62 @@ declare module BABYLON {
          */
         extent: Vector2;
         constructor();
+        /**
+         * Create a BoundingInfo2D object from a given size
+         * @param size the size that will be used to set the extend, radius will be computed from it.
+         */
         static CreateFromSize(size: Size): BoundingInfo2D;
+        /**
+         * Create a BoundingInfo2D object from a given radius
+         * @param radius the radius to use, the extent will be computed from it.
+         */
         static CreateFromRadius(radius: number): BoundingInfo2D;
+        /**
+         * Create a BoundingInfo2D object from a list of points.
+         * The resulted object will be the smallest bounding area that includes all the given points.
+         * @param points an array of points to compute the bounding object from.
+         */
         static CreateFromPoints(points: Vector2[]): BoundingInfo2D;
+        /**
+         * Update a BoundingInfo2D object using the given Size as input
+         * @param size the bounding data will be computed from this size.
+         * @param b must be a valid/allocated object, it will contain the result of the operation
+         */
         static CreateFromSizeToRef(size: Size, b: BoundingInfo2D): void;
+        /**
+         * Update a BoundingInfo2D object using the given radius as input
+         * @param radius the bounding data will be computed from this radius
+         * @param b must be a valid/allocated object, it will contain the result of the operation
+         */
         static CreateFromRadiusToRef(radius: number, b: BoundingInfo2D): void;
+        /**
+         * Update a BoundingInfo2D object using the given points array as input
+         * @param points the point array to use to update the bounding data
+         * @param b must be a valid/allocated object, it will contain the result of the operation
+         */
         static CreateFromPointsToRef(points: Vector2[], b: BoundingInfo2D): void;
+        /**
+         * Update a BoundingInfo2D object using the given min/max values as input
+         * @param xmin the smallest x coordinate
+         * @param xmax the biggest x coordinate
+         * @param ymin the smallest y coordinate
+         * @param ymax the buggest y coordinate
+         * @param b must be a valid/allocated object, it will contain the result of the operation
+         */
         static CreateFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D): void;
         /**
          * Duplicate this instance and return a new one
          * @return the duplicated instance
          */
         clone(): BoundingInfo2D;
+        /**
+         * return the max extend of the bounding info
+         */
         max(): Vector2;
+        /**
+         * Update a vector2 with the max extend of the bounding info
+         * @param result must be a valid/allocated vector2 that will contain the result of the operation
+         */
         maxToRef(result: Vector2): void;
         /**
          * Apply a transformation matrix to this BoundingInfo2D and return a new instance containing the result
@@ -2432,7 +2475,7 @@ declare module BABYLON {
          */
         transform(matrix: Matrix): BoundingInfo2D;
         /**
-         * Compute the union of this BoundingInfo2D with a given one, return a new BoundingInfo2D as a result
+         * Compute the union of this BoundingInfo2D with a given one, returns a new BoundingInfo2D as a result
          * @param other the second BoundingInfo2D to compute the union with this one
          * @return a new instance containing the result of the union
          */
@@ -2452,6 +2495,12 @@ declare module BABYLON {
          * @param result a VALID BoundingInfo2D instance (i.e. allocated) where the result will be stored
          */
         unionToRef(other: BoundingInfo2D, result: BoundingInfo2D): void;
+        /**
+         * Check if the given point is inside the BoundingInfo.
+         * The test is first made on the radius, then inside the rectangle described by the extent
+         * @param pickPosition the position to test
+         * @return true if the point is inside, false otherwise
+         */
         doesIntersect(pickPosition: Vector2): boolean;
     }
 }
@@ -2504,11 +2553,11 @@ declare module BABYLON {
          */
         protected onLock(): void;
     }
-    /**
-     * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
-     */
     class SolidColorBrush2D extends LockableBase implements IBrush2D {
         constructor(color: Color4, lock?: boolean);
+        /**
+         * Return true if the brush is transparent, false if it's totally opaque
+         */
         isTransparent(): boolean;
         /**
          * The color used by this instance to render
@@ -2523,13 +2572,41 @@ declare module BABYLON {
     }
     class GradientColorBrush2D extends LockableBase implements IBrush2D {
         constructor(color1: Color4, color2: Color4, translation?: Vector2, rotation?: number, scale?: number, lock?: boolean);
+        /**
+         * Return true if the brush is transparent, false if it's totally opaque
+         */
         isTransparent(): boolean;
+        /**
+         * First color, the blend will start from this color
+         */
         color1: Color4;
+        /**
+         * Second color, the blend will end to this color
+         */
         color2: Color4;
+        /**
+         * Translation vector to apply on the blend
+         * Default is [0;0]
+         */
         translation: Vector2;
+        /**
+         * Rotation in radian to apply to the brush
+         * Default direction of the brush is vertical, you can change this using this property.
+         * Default is 0.
+         */
         rotation: number;
+        /**
+         * Scale factor to apply to the gradient.
+         * Default is 1: no scale.
+         */
         scale: number;
+        /**
+         * Return a string describing the brush
+         */
         toString(): string;
+        /**
+         * Build a unique key string for the given parameters
+         */
         static BuildKey(color1: Color4, color2: Color4, translation: Vector2, rotation: number, scale: number): string;
         private _color1;
         private _color2;
@@ -2545,7 +2622,7 @@ declare module BABYLON {
         private _modelCache;
         DisposeModelRenderCache(modelRenderCache: ModelRenderCache): boolean;
     }
-    class Canvas2D extends Group2D {
+    abstract class Canvas2D extends Group2D {
         /**
          * In this strategy only the direct children groups of the Canvas will be cached, their whole content (whatever the sub groups they have) into a single bitmap.
          * This strategy doesn't allow primitives added directly as children of the Canvas.
@@ -2645,7 +2722,6 @@ declare module BABYLON {
         worldSpaceCanvasNode: Node;
         /**
          * Check if the WebGL Instanced Array extension is supported or not
-         * @returns {}
          */
         supportInstancedArray: boolean;
         /**
@@ -2674,6 +2750,10 @@ declare module BABYLON {
          * When enabled the Prim2DBase.pointerEventObservable property will notified when appropriate events occur
          */
         interactionEnabled: boolean;
+        /**
+         * Access the babylon.js' engine bound data, do not invoke this method, it's for internal purpose only
+         * @returns {}
+         */
         _engineData: Canvas2DEngineBoundData;
         private checkBackgroundAvailability();
         private __engineData;
@@ -2734,7 +2814,17 @@ declare module BABYLON {
          * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
          */
         private static _groupTextureCacheSize;
+        /**
+         * Internal method used to register a Scene Node to track position for the given group
+         * Do not invoke this method, for internal purpose only.
+         * @param group the group to track its associated Scene Node
+         */
         _registerTrackedNode(group: Group2D): void;
+        /**
+         * Internal method used to unregister a tracked Scene Node
+         * Do not invoke this method, it's for internal purpose only.
+         * @param group the group to unregister its tracked Scene Node from.
+         */
         _unregisterTrackedNode(group: Group2D): void;
         /**
          * Get a Solid Color Brush instance matching the given color.
@@ -2748,7 +2838,21 @@ declare module BABYLON {
          * @return A shared instance of the SolidColorBrush2D class that uses the given color
          */
         static GetSolidColorBrushFromHex(hexValue: string): IBrush2D;
+        /**
+         * Get a Gradient Color Brush
+         * @param color1 starting color
+         * @param color2 engine color
+         * @param translation translation vector to apply. default is [0;0]
+         * @param rotation rotation in radian to apply to the brush, initial direction is top to bottom. rotation is counter clockwise. default is 0.
+         * @param scale scaling factor to apply. default is 1.
+         */
         static GetGradientColorBrush(color1: Color4, color2: Color4, translation?: Vector2, rotation?: number, scale?: number): IBrush2D;
+        /**
+         * Create a solid or gradient brush from a string value.
+         * @param brushString should be either
+         *  - "solid: #RRGGBBAA" or "#RRGGBBAA"
+         *  - "gradient: #FF808080, #FFFFFFF[, [10:20], 180, 1]" for color1, color2, translation, rotation (degree), scale. The last three are optionals, but if specified must be is this order. "gradient:" can be omitted.
+         */
         static GetBrushFromString(brushString: string): IBrush2D;
         private static _solidColorBrushes;
         private static _gradientColorBrushes;
@@ -2759,18 +2863,28 @@ declare module BABYLON {
          * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. For now only CACHESTRATEGY_CANVAS is supported, but the remaining strategies will be soon.
          * @param scene the Scene that owns the Canvas
          * @param size the dimension of the Canvas in World Space
-         * Options:
+         * @param settings a combination of settings, possible ones are
+         *  - children: an array of direct children primitives
          *  - id: a text identifier, for information purpose only, default is null.
-         *  - position the position of the Canvas in World Space, default is [0,0,0]
-         *  - rotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
+         *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
          *  - renderScaleFactor A scale factor applied to create the rendering texture that will be mapped in the Scene Rectangle. If you set 2 for instance the texture will be twice large in width and height. A greater value will allow to achieve a better rendering quality. Default value is 1.
          * BE AWARE that the Canvas true dimension will be size*renderScaleFactor, then all coordinates and size will have to be express regarding this size.
          * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
-         *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
+         * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
          * - isVisible: true if the canvas must be visible, false for hidden. Default is true.
+         * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
+         * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see Canvas2D.GetBrushFromString) or a IBrush2D instance.
+         * - backgroundBorder: the brush to use to create a background border for the canvas. can be a string value (see Canvas2D.GetBrushFromString) or a IBrush2D instance.
+         * - backgroundBorderThickness: if a backgroundBorder is specified, its thickness can be set using this property
          * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(scene: Scene, size: Size, settings?: {
             children?: Array<Prim2DBase>;
@@ -2787,14 +2901,11 @@ declare module BABYLON {
             backgroundBorder?: IBrush2D | string;
             backgroundBorderThickNess?: number;
             customWorldSpaceNode?: Node;
-            marginTop?: number | string;
-            marginLeft?: number | string;
-            marginRight?: number | string;
-            marginBottom?: number | string;
-            margin?: number | string;
-            marginHAlignment?: number;
-            marginVAlignment?: number;
-            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
         });
     }
     class ScreenSpaceCanvas2D extends Canvas2D {
@@ -2804,16 +2915,28 @@ declare module BABYLON {
          * All caching strategies will be available.
          * PLEASE NOTE: the origin of a Screen Space Canvas is set to [0;0] (bottom/left) which is different than the default origin of a Primitive which is centered [0.5;0.5]
          * @param scene the Scene that owns the Canvas
-         * Options:
+         * @param settings a combination of settings, possible ones are
+         *  - children: an array of direct children primitives
          *  - id: a text identifier, for information purpose only
-         *  - pos: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
+         *  - x: the position along the x axis (horizontal), relative to the left edge of the viewport. you can alternatively use the position setting.
+         *  - y: the position along the y axis (vertically), relative to the bottom edge of the viewport. you can alternatively use the position setting.
+         *  - position: the position of the canvas, relative from the bottom/left of the scene's viewport. Alternatively you can set the x and y properties directly. Default value is [0, 0]
+         *  - width: the width of the Canvas. you can alternatively use the size setting.
+         *  - height: the height of the Canvas. you can alternatively use the size setting.
          *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
+         * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
+         * - backgroundBorder: the brush to use to create a background border for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
+         * - backgroundBorderThickness: if a backgroundBorder is specified, its thickness can be set using this property
+         * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see BABYLON.PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see BABYLON.PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see BABYLON.PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see BABYLON.PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see BABYLON.PrimitiveThickness.fromString)
          */
         constructor(scene: Scene, settings?: {
             children?: Array<Prim2DBase>;
@@ -2832,14 +2955,11 @@ declare module BABYLON {
             backgroundFill?: IBrush2D | string;
             backgroundBorder?: IBrush2D | string;
             backgroundBorderThickNess?: number;
-            marginTop?: number | string;
-            marginLeft?: number | string;
-            marginRight?: number | string;
-            marginBottom?: number | string;
-            margin?: string;
-            marginHAlignment?: number;
-            marginVAlignment?: number;
-            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
         });
     }
 }
@@ -2905,20 +3025,31 @@ declare module BABYLON {
         protected updateLevelBoundingInfo(): void;
         /**
          * Create an Ellipse 2D Shape primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id: a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
          *  - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
-         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
-         *  - borderThickness: the thickness of the drawn border, default is 1.
-         *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white. can also be a string value (see Canvas2D.GetBrushFromString)
+         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
+         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(settings?: {
             parent?: Prim2DBase;
@@ -2927,6 +3058,8 @@ declare module BABYLON {
             position?: Vector2;
             x?: number;
             y?: number;
+            rotation?: number;
+            scale?: number;
             origin?: Vector2;
             size?: Size;
             width?: number;
@@ -2949,8 +3082,6 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
-            paddingHAlignment?: number;
-            paddingVAlignment?: number;
         });
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Ellipse2DRenderCache;
@@ -2980,17 +3111,31 @@ declare module BABYLON {
         static GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP: number;
         /**
          * Create an Logical or Renderable Group.
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
          *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
+         *  - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          *  - isVisible: true if the group must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(settings?: {
             parent?: Prim2DBase;
@@ -3020,8 +3165,6 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
-            paddingHAlignment?: number;
-            paddingVAlignment?: number;
         });
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D;
         protected applyCachedTexture(vertexData: VertexData, material: StandardMaterial): void;
@@ -3061,6 +3204,9 @@ declare module BABYLON {
         cacheBehavior: number;
         _addPrimToDirtyList(prim: Prim2DBase): void;
         _renderCachedCanvas(): void;
+        /**
+         * Get/set the Scene's Node that should be tracked, the group's position will follow the projected position of the Node.
+         */
         trackedNode: Node;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
         protected updateLevelBoundingInfo(): void;
@@ -3132,12 +3278,33 @@ declare module BABYLON {
         boundingMax: Vector2;
     }
     class Lines2D extends Shape2D {
+        /**
+         * No Cap to apply on the extremity
+         */
         static NoCap: number;
+        /**
+         * A round cap, will use the line thickness as diameter
+         */
         static RoundCap: number;
+        /**
+         * Creates a triangle at the extremity.
+         */
         static TriangleCap: number;
+        /**
+         * Creates a Square anchor at the extremity, the square size is twice the thickness of the line
+         */
         static SquareAnchorCap: number;
+        /**
+         * Creates a round anchor at the extremity, the diameter is twice the thickness of the line
+         */
         static RoundAnchorCap: number;
+        /**
+         * Creates a diamond anchor at the extremity.
+         */
         static DiamondAnchorCap: number;
+        /**
+         * Creates an arrow anchor at the extremity. the arrow base size is twice the thickness of the line
+         */
         static ArrowCap: number;
         static pointsProperty: Prim2DPropInfo;
         static fillThicknessProperty: Prim2DPropInfo;
@@ -3160,23 +3327,36 @@ declare module BABYLON {
         protected updateLevelBoundingInfo(): void;
         /**
          * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * @param points an array that describe the points to use to draw the line, must contain at least two entries.
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
          *  - closed: if false the lines are said to be opened, the first point and the latest DON'T connect. if true the lines are said to be closed, the first and last point will be connected by a line. For instance you can define the 4 points of a rectangle, if you set closed to true a 4 edges rectangle will be drawn. If you set false, only three edges will be drawn, the edge formed by the first and last point won't exist. Default is false.
-         *  - Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
-         *  - Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
-         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - startCap: Draw a cap of the given type at the start of the first line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - endCap: Draw a cap of the given type at the end of the last line, you can't define a Cap if the Lines2D is closed. Default is Lines2D.NoCap.
+         *  - fill: the brush used to draw the fill content of the lines, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white. can be a string value (see Canvas2D.GetBrushFromString)
+         *  - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
          *  - borderThickness: the thickness of the drawn border, default is 1.
          *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(points: Vector2[], settings?: {
             parent?: Prim2DBase;
@@ -3185,6 +3365,8 @@ declare module BABYLON {
             position?: Vector2;
             x?: number;
             y?: number;
+            rotation?: number;
+            scale?: number;
             origin?: Vector2;
             fillThickness?: number;
             closed?: boolean;
@@ -3207,8 +3389,6 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
-            paddingHAlignment?: number;
-            paddingVAlignment?: number;
         });
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         private _perp(v, res);
@@ -3542,13 +3722,34 @@ declare module BABYLON {
         updateRelatedTarget(prim: Prim2DBase, primPointerPos: Vector2): void;
         static getEventTypeName(mask: number): string;
     }
+    /**
+     * Defines the horizontal and vertical alignment information for a Primitive.
+     */
     class PrimitiveAlignment {
         constructor(changeCallback: () => void);
+        /**
+         * Alignment is made relative to the left edge of the Primitive. Valid for horizontal alignment only.
+         */
         static AlignLeft: number;
+        /**
+         * Alignment is made relative to the top edge of the Primitive. Valid for vertical alignment only.
+         */
         static AlignTop: number;
+        /**
+         * Alignment is made relative to the right edge of the Primitive. Valid for horizontal alignment only.
+         */
         static AlignRight: number;
+        /**
+         * Alignment is made relative to the bottom edge of the Primitive. Valid for vertical alignment only.
+         */
         static AlignBottom: number;
+        /**
+         * Alignment is made to center the content from equal distance to the opposite edges of the Primitive
+         */
         static AlignCenter: number;
+        /**
+         * The content is stretched toward the opposite edges of the Primitive
+         */
         static AlignStretch: number;
         private static _AlignLeft;
         private static _AlignTop;
@@ -3556,13 +3757,31 @@ declare module BABYLON {
         private static _AlignBottom;
         private static _AlignCenter;
         private static _AlignStretch;
+        /**
+         * Get/set the horizontal alignment. Use one of the AlignXXX static properties of this class
+         */
         horizontal: number;
+        /**
+         * Get/set the vertical alignment. Use one of the AlignXXX static properties of this class
+         */
         vertical: number;
         private _changedCallback;
         private _horizontal;
         private _vertical;
+        /**
+         * Set the horizontal alignment from a string value.
+         * @param text can be either: 'left','right','center','stretch'
+         */
         setHorizontal(text: string): void;
+        /**
+         * Set the vertical alignment from a string value.
+         * @param text can be either: 'top','bottom','center','stretch'
+         */
         setVertical(text: string): void;
+        /**
+         * Set the horizontal and or vertical alignments from a string value.
+         * @param text can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
+         */
         fromString(value: string): void;
     }
     /**
@@ -3573,12 +3792,43 @@ declare module BABYLON {
         intersectionLocation: Vector2;
         constructor(prim: Prim2DBase, intersectionLocation: Vector2);
     }
+    /**
+     * Define a thickness toward every edges of a Primitive to allow margin and padding.
+     * The thickness can be expressed as pixels, percentages, inherit the value of the parent primitive or be auto.
+     */
     class PrimitiveThickness {
         constructor(parentAccess: () => PrimitiveThickness, changedCallback: () => void);
-        fromString(margin: string): void;
+        /**
+         * Set the thickness from a string value
+         * @param thickness format is "top: <value>, left:<value>, right:<value>, bottom:<value>" each are optional, auto will be set if it's omitted.
+         * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
+        fromString(thickness: string): void;
+        /**
+         * Set the thickness from multiple string
+         * Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         * @param top the top thickness to set
+         * @param left the left thickness to set
+         * @param right the right thickness to set
+         * @param bottom the bottom thickness to set
+         */
         fromStrings(top: string, left: string, right: string, bottom: string): PrimitiveThickness;
+        /**
+         * Set the thickness from pixel values
+         * @param top the top thickness in pixels to set
+         * @param left the left thickness in pixels to set
+         * @param right the right thickness in pixels to set
+         * @param bottom the bottom thickness in pixels to set
+         */
         fromPixels(top: number, left: number, right: number, bottom: number): PrimitiveThickness;
+        /**
+         * Apply the same pixel value to all edges
+         * @param margin the value to set, in pixels.
+         */
         fromUniformPixels(margin: number): PrimitiveThickness;
+        /**
+         * Set all edges in auto
+         */
         auto(): PrimitiveThickness;
         private _clear();
         private _extractString(value, emitChanged);
@@ -3593,21 +3843,77 @@ declare module BABYLON {
         setLeft(value: number | string): void;
         setRight(value: number | string): void;
         setBottom(value: number | string): void;
+        /**
+         * Get/set the top thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
         top: string;
+        /**
+         * Get/set the left thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
         left: string;
+        /**
+         * Get/set the right thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
         right: string;
+        /**
+         * Get/set the bottom thickness. Possible values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
+         */
         bottom: string;
+        /**
+         * Get/set the top thickness in pixel.
+         */
         topPixels: number;
+        /**
+         * Get/set the left thickness in pixel.
+         */
         leftPixels: number;
+        /**
+         * Get/set the right thickness in pixel.
+         */
         rightPixels: number;
+        /**
+         * Get/set the bottom thickness in pixel.
+         */
         bottomPixels: number;
+        /**
+         * Get/set the top thickness in percentage.
+         * The get will return a valid value only if the edge type is percentage.
+         * The Set will change the edge mode if needed
+         */
         topPercentage: number;
+        /**
+         * Get/set the left thickness in percentage.
+         * The get will return a valid value only if the edge mode is percentage.
+         * The Set will change the edge mode if needed
+         */
         leftPercentage: number;
+        /**
+         * Get/set the right thickness in percentage.
+         * The get will return a valid value only if the edge mode is percentage.
+         * The Set will change the edge mode if needed
+         */
         rightPercentage: number;
+        /**
+         * Get/set the bottom thickness in percentage.
+         * The get will return a valid value only if the edge mode is percentage.
+         * The Set will change the edge mode if needed
+         */
         bottomPercentage: number;
+        /**
+         * Get/set the top mode. The setter shouldn't be used, other setters with value should be preferred
+         */
         topMode: number;
+        /**
+         * Get/set the left mode. The setter shouldn't be used, other setters with value should be preferred
+         */
         leftMode: number;
+        /**
+         * Get/set the right mode. The setter shouldn't be used, other setters with value should be preferred
+         */
         rightMode: number;
+        /**
+         * Get/set the bottom mode. The setter shouldn't be used, other setters with value should be preferred
+         */
         bottomMode: number;
         private _parentAccess;
         private _changedCallback;
@@ -3619,8 +3925,27 @@ declare module BABYLON {
         static Percentage: number;
         static Pixel: number;
         private _computePixels(index, sourceArea, emitChanged);
+        /**
+         * Compute the positioning/size of an area considering the thickness of this object and a given alignment
+         * @param sourceArea the source area
+         * @param contentSize the content size to position/resize
+         * @param alignment the alignment setting
+         * @param dstOffset the position of the content
+         * @param dstArea the new size of the content
+         */
         computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size): void;
+        /**
+         * Compute an area and its position considering this thickness properties based on a given source area
+         * @param sourceArea the source area
+         * @param dstOffset the position of the resulting area
+         * @param dstArea the size of the resulting area
+         */
         compute(sourceArea: Size, dstOffset: Vector2, dstArea: Size): void;
+        /**
+         * Compute an area considering this thickness properties based on a given source area
+         * @param sourceArea the source area
+         * @param result the resulting area
+         */
         computeArea(sourceArea: Size, result: Size): void;
     }
     /**
@@ -3773,6 +4098,7 @@ declare module BABYLON {
          * Position of the primitive, relative to its parent.
          * BEWARE: if you change only position.x or y it won't trigger a property change and you won't have the expected behavior.
          * Use this property to set a new Vector2 object, otherwise to change only the x/y use Prim2DBase.x or y properties.
+         * Setting this property may have no effect is specific alignment are in effect.
          */
         position: Vector2;
         /**
@@ -3814,16 +4140,6 @@ declare module BABYLON {
         actualSize: Size;
         actualZOffset: number;
         /**
-         * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
-         * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
-         * For instance:
-         * 0,0 means the center is bottom/left. Which is the default for Canvas2D instances
-         * 0.5,0.5 means the center is at the center of the primitive, which is default of all types of Primitives
-         * 0,1 means the center is top/left
-         * @returns The normalized center.
-         */
-        origin: Vector2;
-        /**
          * Get or set the minimal size the Layout Engine should respect when computing the primitive's actualSize.
          * The Primitive's size won't be less than specified.
          * The default value depends of the Primitive type
@@ -3835,6 +4151,16 @@ declare module BABYLON {
          * The default value depends of the Primitive type
          */
         maxSize: Size;
+        /**
+         * The origin defines the normalized coordinate of the center of the primitive, from the bottom/left corner.
+         * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
+         * For instance:
+         * 0,0 means the center is bottom/left. Which is the default for Canvas2D instances
+         * 0.5,0.5 means the center is at the center of the primitive, which is default of all types of Primitives
+         * 0,1 means the center is top/left
+         * @returns The normalized center.
+         */
+        origin: Vector2;
         levelVisible: boolean;
         isVisible: boolean;
         zOrder: number;
@@ -3843,8 +4169,21 @@ declare module BABYLON {
         padding: PrimitiveThickness;
         private _hasPadding;
         marginAlignment: PrimitiveAlignment;
+        /**
+         * Get/set the layout engine to use for this primitive.
+         * The default layout engine is the CanvasLayoutEngine.
+         */
         layoutEngine: LayoutEngineBase;
+        /**
+         * Get/set the layout are of this primitive.
+         * The Layout area is the zone allocated by the Layout Engine for this particular primitive. Margins/Alignment will be computed based on this area.
+         * The setter should only be called by a Layout Engine class.
+         */
         layoutArea: Size;
+        /**
+         * Get/set the layout area position (relative to the parent primitive).
+         * The setter should only be called by a Layout Engine class.
+         */
         layoutAreaPos: Vector2;
         /**
          * Define if the Primitive can be subject to intersection test or not (default is true)
@@ -3862,6 +4201,15 @@ declare module BABYLON {
          * Get the global transformation matrix of the primitive
          */
         globalTransform: Matrix;
+        /**
+         * return the global position of the primitive, relative to its canvas
+         */
+        getGlobalPosition(): Vector2;
+        /**
+         * return the global position of the primitive, relative to its canvas
+         * @param v the valid Vector2 object where the global position will be stored
+         */
+        getGlobalPositionByRef(v: Vector2): void;
         /**
          * Get invert of the global transformation matrix of the primitive
          */
@@ -3912,6 +4260,9 @@ declare module BABYLON {
         intersect(intersectInfo: IntersectInfo2D): boolean;
         moveChild(child: Prim2DBase, previous: Prim2DBase): boolean;
         private addChild(child);
+        /**
+         * Dispose the primitive, remove it from its parent.
+         */
         dispose(): boolean;
         protected onPrimBecomesDirty(): void;
         _needPrepare(): boolean;
@@ -3937,6 +4288,10 @@ declare module BABYLON {
         private static _icArea;
         private static _size;
         private _updatePositioning();
+        /**
+         * Get the content are of this primitive, this area is computed using the padding property and also possibly the primitive type itself.
+         * Children of this primitive will be positioned relative to the bottom/left corner of this area.
+         */
         contentArea: Size;
         _patchHierarchy(owner: Canvas2D): void;
         private _patchHierarchyDepth(child);
@@ -4026,20 +4381,33 @@ declare module BABYLON {
         protected updateLevelBoundingInfo(): void;
         /**
          * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
-         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - position: the X & Y positions relative to its parent. Alternatively the x and y settings can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
-         *  - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp rectangle).
-         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white.
-         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null.
+         *  - size: the size of the group. Alternatively the width and height settings can be set. Default will be [10;10].
+         *  - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp edges rectangle).
+         *  - fill: the brush used to draw the fill content of the rectangle, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white. can also be a string value (see Canvas2D.GetBrushFromString)
+         *  - border: the brush used to draw the border of the rectangle, you can set null to draw nothing (but you will have to set a fill brush), default is null. can also be a string value (see Canvas2D.GetBrushFromString)
          *  - borderThickness: the thickness of the drawn border, default is 1.
          *  - isVisible: true if the primitive must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(settings?: {
             parent?: Prim2DBase;
@@ -4072,8 +4440,6 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
-            paddingHAlignment?: number;
-            paddingVAlignment?: number;
         });
         static roundSubdivisions: number;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
@@ -4128,7 +4494,7 @@ declare module BABYLON {
         typeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
         private _dataElementCount;
     }
-    class RenderablePrim2D extends Prim2DBase {
+    abstract class RenderablePrim2D extends Prim2DBase {
         static RENDERABLEPRIM2D_PROPCOUNT: number;
         static isAlphaTestProperty: Prim2DPropInfo;
         static isTransparentProperty: Prim2DPropInfo;
@@ -4140,6 +4506,9 @@ declare module BABYLON {
             origin?: Vector2;
             isVisible?: boolean;
         });
+        /**
+         * Dispose the primitive and its resources, remove it from its parent
+         */
         dispose(): boolean;
         _prepareRenderPre(context: PrepareRender2DContext): void;
         private _createModelRenderCache();
@@ -4195,7 +4564,7 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Shape2D extends RenderablePrim2D {
+    abstract class Shape2D extends RenderablePrim2D {
         static SHAPE2D_BORDERPARTID: number;
         static SHAPE2D_FILLPARTID: number;
         static SHAPE2D_CATEGORY_BORDER: string;
@@ -4208,6 +4577,9 @@ declare module BABYLON {
         static fillProperty: Prim2DPropInfo;
         static borderThicknessProperty: Prim2DPropInfo;
         border: IBrush2D;
+        /**
+         * Get/set the brush to render the Fill part of the Primitive
+         */
         fill: IBrush2D;
         borderThickness: number;
         constructor(settings?: {
@@ -4249,12 +4621,30 @@ declare module BABYLON {
         dirtyBoundingInfo: boolean;
         typeLevelCompare: boolean;
     }
+    /**
+     * Custom type of the propertyChanged observable
+     */
     class PropertyChangedInfo {
+        /**
+         * Previous value of the property
+         */
         oldValue: any;
+        /**
+         * New value of the property
+         */
         newValue: any;
+        /**
+         * Name of the property that changed its value
+         */
         propertyName: string;
     }
+    /**
+     * Property Changed interface
+     */
     interface IPropertyChanged {
+        /**
+         * PropertyChanged observable
+         */
         propertyChanged: Observable<PropertyChangedInfo>;
     }
     class ClassTreeInfo<TClass, TProp> {
@@ -4275,7 +4665,7 @@ declare module BABYLON {
         private _fullContent;
         private _classContentFactory;
     }
-    class SmartPropertyPrim implements IPropertyChanged {
+    abstract class SmartPropertyPrim implements IPropertyChanged {
         constructor();
         /**
          * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
@@ -4379,11 +4769,40 @@ declare module BABYLON {
          * @return true if the data was successfully removed, false if it doesn't exist
          */
         removeExternalData(key: any): boolean;
+        /**
+         * Check if a given flag is set
+         * @param flag the flag value
+         * @return true if set, false otherwise
+         */
         _isFlagSet(flag: number): boolean;
+        /**
+         * Check if all given flags are set
+         * @param flags the flags ORed
+         * @return true if all the flags are set, false otherwise
+         */
         _areAllFlagsSet(flags: number): boolean;
+        /**
+         * Check if at least one flag of the given flags is set
+         * @param flags the flags ORed
+         * @return true if at least one flag is set, false otherwise
+         */
         _areSomeFlagsSet(flags: number): boolean;
+        /**
+         * Clear the given flags
+         * @param flags the flags to clear
+         */
         _clearFlags(flags: number): void;
+        /**
+         * Set the given flags to true state
+         * @param flags the flags ORed to set
+         * @return the flags state before this call
+         */
         _setFlags(flags: number): number;
+        /**
+         * Change the state of the given flags
+         * @param flags the flags ORed to change
+         * @param state true to set them, false to clear them
+         */
         _changeFlags(flags: number, state: boolean): void;
         static flagIsDisposed: number;
         static flagLevelBoundingInfoDirty: number;
@@ -4441,26 +4860,45 @@ declare module BABYLON {
         spriteLocation: Vector2;
         spriteFrame: number;
         invertY: boolean;
+        /**
+         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
+         */
         alignToPixel: boolean;
         protected updateLevelBoundingInfo(): void;
+        /**
+         * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
+         */
         getAnimatables(): IAnimatable[];
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
         /**
          * Create an 2D Sprite primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * @param texture the texture that stores the sprite to render
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - spriteSize: the size of the sprite, if null the size of the given texture will be used, default is null.
-         *  - spriteLocation: the location in the texture of the top/left corner of the Sprite to display, default is null (0,0)
+         *  - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
+         *  - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
          *  - invertY: if true the texture Y will be inverted, default is false.
          *  - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          *  - isVisible: true if the sprite must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(texture: Texture, settings?: {
             parent?: Prim2DBase;
@@ -4469,6 +4907,8 @@ declare module BABYLON {
             position?: Vector2;
             x?: number;
             y?: number;
+            rotation?: number;
+            scale?: number;
             origin?: Vector2;
             spriteSize?: Size;
             spriteLocation?: Vector2;
@@ -4488,8 +4928,6 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
-            paddingHAlignment?: number;
-            paddingVAlignment?: number;
         });
         static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
@@ -4534,27 +4972,49 @@ declare module BABYLON {
         defaultFontColor: Color4;
         text: string;
         size: Size;
+        /**
+         * Get the actual size of the Text2D primitive
+         */
         actualSize: Size;
+        /**
+         * Get the area that bounds the text associated to the primitive
+         */
         textSize: Size;
         protected fontTexture: FontTexture;
+        /**
+         * Dispose the primitive, remove it from its parent
+         */
         dispose(): boolean;
         protected updateLevelBoundingInfo(): void;
         /**
          * Create a Text primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * @param text the text to display
-         * Options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
          *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
          *  - isVisible: true if the text must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(text: string, settings?: {
             parent?: Prim2DBase;
@@ -4563,6 +5023,8 @@ declare module BABYLON {
             position?: Vector2;
             x?: number;
             y?: number;
+            rotation?: number;
+            scale?: number;
             origin?: Vector2;
             fontName?: string;
             defaultFontColor?: Color4;
@@ -4582,8 +5044,6 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
-            paddingHAlignment?: number;
-            paddingVAlignment?: number;
         });
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
@@ -4605,7 +5065,7 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * This is the class that is used to display a World Space Canvas into a scene
+     * This is the class that is used to display a World Space Canvas into a 3D scene
      */
     class WorldSpaceCanvas2DNode extends Mesh {
         constructor(name: string, scene: Scene, canvas: Canvas2D);
@@ -4856,91 +5316,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        private _camera;
-        private _transformationMatrix;
-        private _enabled;
-        private _labelsEnabled;
-        private _displayStatistics;
-        private _displayTree;
-        private _displayLogs;
-        private _globalDiv;
-        private _statsDiv;
-        private _statsSubsetDiv;
-        private _optionsDiv;
-        private _optionsSubsetDiv;
-        private _logDiv;
-        private _logSubsetDiv;
-        private _treeDiv;
-        private _treeSubsetDiv;
-        private _drawingCanvas;
-        private _drawingContext;
-        private _rootElement;
-        private _skeletonViewers;
-        _syncPositions: () => void;
-        private _syncData;
-        private _syncUI;
-        private _onCanvasClick;
-        private _clickPosition;
-        private _ratio;
-        private _identityMatrix;
-        private _showUI;
-        private _needToRefreshMeshesTree;
-        shouldDisplayLabel: (node: Node) => boolean;
-        shouldDisplayAxis: (mesh: Mesh) => boolean;
-        axisRatio: number;
-        accentColor: string;
-        customStatsFunction: () => string;
-        constructor(scene: Scene);
-        private _refreshMeshesTreeContent();
-        private _renderSingleAxis(zero, unit, unitText, label, color);
-        private _renderAxis(projectedPosition, mesh, globalViewport);
-        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
-        private _isClickInsideRect(x, y, width, height);
-        isVisible(): boolean;
-        hide(): void;
-        private _clearSkeletonViewers();
-        show(showUI?: boolean, camera?: Camera, rootElement?: HTMLElement): void;
-        private _clearLabels();
-        private _generateheader(root, text);
-        private _generateTexBox(root, title, color);
-        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
-        private _generateCheckBox(root, title, initialState, task, tag?);
-        private _generateButton(root, title, task, tag?);
-        private _generateRadio(root, title, name, initialState, task, tag?);
-        private _generateDOMelements();
-        private _displayStats();
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        private _updateBoneMatrix(bone);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class BoundingBox {
         minimum: Vector3;
         maximum: Vector3;
@@ -5080,6 +5455,91 @@ declare module BABYLON {
         onAfterRender: () => void;
         constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
         render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        private _camera;
+        private _transformationMatrix;
+        private _enabled;
+        private _labelsEnabled;
+        private _displayStatistics;
+        private _displayTree;
+        private _displayLogs;
+        private _globalDiv;
+        private _statsDiv;
+        private _statsSubsetDiv;
+        private _optionsDiv;
+        private _optionsSubsetDiv;
+        private _logDiv;
+        private _logSubsetDiv;
+        private _treeDiv;
+        private _treeSubsetDiv;
+        private _drawingCanvas;
+        private _drawingContext;
+        private _rootElement;
+        private _skeletonViewers;
+        _syncPositions: () => void;
+        private _syncData;
+        private _syncUI;
+        private _onCanvasClick;
+        private _clickPosition;
+        private _ratio;
+        private _identityMatrix;
+        private _showUI;
+        private _needToRefreshMeshesTree;
+        shouldDisplayLabel: (node: Node) => boolean;
+        shouldDisplayAxis: (mesh: Mesh) => boolean;
+        axisRatio: number;
+        accentColor: string;
+        customStatsFunction: () => string;
+        constructor(scene: Scene);
+        private _refreshMeshesTreeContent();
+        private _renderSingleAxis(zero, unit, unitText, label, color);
+        private _renderAxis(projectedPosition, mesh, globalViewport);
+        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
+        private _isClickInsideRect(x, y, width, height);
+        isVisible(): boolean;
+        hide(): void;
+        private _clearSkeletonViewers();
+        show(showUI?: boolean, camera?: Camera, rootElement?: HTMLElement): void;
+        private _clearLabels();
+        private _generateheader(root, text);
+        private _generateTexBox(root, title, color);
+        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
+        private _generateCheckBox(root, title, initialState, task, tag?);
+        private _generateButton(root, title, task, tag?);
+        private _generateRadio(root, title, name, initialState, task, tag?);
+        private _generateDOMelements();
+        private _displayStats();
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        private _updateBoneMatrix(bone);
         dispose(): void;
     }
 }
@@ -10734,46 +11194,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON.Internals {
-    class _AlphaState {
-        private _isAlphaBlendDirty;
-        private _isBlendFunctionParametersDirty;
-        private _alphaBlend;
-        private _blendFunctionParameters;
-        isDirty: boolean;
-        alphaBlend: boolean;
-        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
-declare module BABYLON.Internals {
-    class _DepthCullingState {
-        private _isDepthTestDirty;
-        private _isDepthMaskDirty;
-        private _isDepthFuncDirty;
-        private _isCullFaceDirty;
-        private _isCullDirty;
-        private _isZOffsetDirty;
-        private _depthTest;
-        private _depthMask;
-        private _depthFunc;
-        private _cull;
-        private _cullFace;
-        private _zOffset;
-        isDirty: boolean;
-        zOffset: number;
-        cullFace: number;
-        cull: boolean;
-        depthFunc: number;
-        depthMask: boolean;
-        depthTest: boolean;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-
 declare module BABYLON {
     class Sprite {
         name: string;
@@ -10839,6 +11259,46 @@ declare module BABYLON {
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
         render(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON.Internals {
+    class _AlphaState {
+        private _isAlphaBlendDirty;
+        private _isBlendFunctionParametersDirty;
+        private _alphaBlend;
+        private _blendFunctionParameters;
+        isDirty: boolean;
+        alphaBlend: boolean;
+        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+
+declare module BABYLON.Internals {
+    class _DepthCullingState {
+        private _isDepthTestDirty;
+        private _isDepthMaskDirty;
+        private _isDepthFuncDirty;
+        private _isCullFaceDirty;
+        private _isCullDirty;
+        private _isZOffsetDirty;
+        private _depthTest;
+        private _depthMask;
+        private _depthFunc;
+        private _cull;
+        private _cullFace;
+        private _zOffset;
+        isDirty: boolean;
+        zOffset: number;
+        cullFace: number;
+        cull: boolean;
+        depthFunc: number;
+        depthMask: boolean;
+        depthTest: boolean;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
     }
 }
 
@@ -11840,6 +12300,60 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        aspectRatio: number;
+        aspectRatioFov: number;
+        leftHMatrix: Matrix;
+        rightHMatrix: Matrix;
+        leftPreViewMatrix: Matrix;
+        rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends FreeCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
+        getTypeName(): string;
+    }
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean);
+        getTypeName(): string;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var PositionSensorVRDevice: any;
+declare module BABYLON {
+    class WebVRFreeCamera extends FreeCamera {
+        _hmdDevice: any;
+        _sensorDevice: any;
+        private _cacheState;
+        _vrEnabled: boolean;
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
+        private _getWebVRDevices(devices);
+        _checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        requestVRFullscreen(requestPointerlock: boolean): void;
+        getTypeName(): string;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -12062,60 +12576,6 @@ declare module BABYLON {
         detachControl(element: HTMLElement): void;
         getTypeName(): string;
         getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        aspectRatio: number;
-        aspectRatioFov: number;
-        leftHMatrix: Matrix;
-        rightHMatrix: Matrix;
-        leftPreViewMatrix: Matrix;
-        rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
-        getTypeName(): string;
-    }
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean);
-        getTypeName(): string;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var PositionSensorVRDevice: any;
-declare module BABYLON {
-    class WebVRFreeCamera extends FreeCamera {
-        _hmdDevice: any;
-        _sensorDevice: any;
-        private _cacheState;
-        _vrEnabled: boolean;
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
-        private _getWebVRDevices(devices);
-        _checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        requestVRFullscreen(requestPointerlock: boolean): void;
-        getTypeName(): string;
     }
 }
 

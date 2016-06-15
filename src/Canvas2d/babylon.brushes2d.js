@@ -37,9 +37,6 @@ var BABYLON;
         return LockableBase;
     })();
     BABYLON.LockableBase = LockableBase;
-    /**
-     * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
-     */
     var SolidColorBrush2D = (function (_super) {
         __extends(SolidColorBrush2D, _super);
         function SolidColorBrush2D(color, lock) {
@@ -52,6 +49,9 @@ var BABYLON;
                 }
             }
         }
+        /**
+         * Return true if the brush is transparent, false if it's totally opaque
+         */
         SolidColorBrush2D.prototype.isTransparent = function () {
             return this._color && this._color.a < 1.0;
         };
@@ -101,10 +101,16 @@ var BABYLON;
                 this.lock();
             }
         }
+        /**
+         * Return true if the brush is transparent, false if it's totally opaque
+         */
         GradientColorBrush2D.prototype.isTransparent = function () {
             return (this._color1 && this._color1.a < 1.0) || (this._color2 && this._color2.a < 1.0);
         };
         Object.defineProperty(GradientColorBrush2D.prototype, "color1", {
+            /**
+             * First color, the blend will start from this color
+             */
             get: function () {
                 return this._color1;
             },
@@ -118,6 +124,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(GradientColorBrush2D.prototype, "color2", {
+            /**
+             * Second color, the blend will end to this color
+             */
             get: function () {
                 return this._color2;
             },
@@ -131,6 +140,10 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(GradientColorBrush2D.prototype, "translation", {
+            /**
+             * Translation vector to apply on the blend
+             * Default is [0;0]
+             */
             get: function () {
                 return this._translation;
             },
@@ -144,6 +157,11 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(GradientColorBrush2D.prototype, "rotation", {
+            /**
+             * Rotation in radian to apply to the brush
+             * Default direction of the brush is vertical, you can change this using this property.
+             * Default is 0.
+             */
             get: function () {
                 return this._rotation;
             },
@@ -157,6 +175,10 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(GradientColorBrush2D.prototype, "scale", {
+            /**
+             * Scale factor to apply to the gradient.
+             * Default is 1: no scale.
+             */
             get: function () {
                 return this._scale;
             },
@@ -169,9 +191,15 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Return a string describing the brush
+         */
         GradientColorBrush2D.prototype.toString = function () {
             return "C1:" + this._color1 + ";C2:" + this._color2 + ";T:" + this._translation.toString() + ";R:" + this._rotation + ";S:" + this._scale + ";";
         };
+        /**
+         * Build a unique key string for the given parameters
+         */
         GradientColorBrush2D.BuildKey = function (color1, color2, translation, rotation, scale) {
             return "C1:" + color1 + ";C2:" + color2 + ";T:" + translation.toString() + ";R:" + rotation + ";S:" + scale + ";";
         };

@@ -144,20 +144,33 @@ var BABYLON;
         __extends(Sprite2D, _super);
         /**
          * Create an 2D Sprite primitive
-         * @param parent the parent primitive, must be a valid primitive (or the Canvas)
          * @param texture the texture that stores the sprite to render
-         * options:
+         * @param settings a combination of settings, possible ones are
+         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         *  - children: an array of direct children
          *  - id a text identifier, for information purpose
          *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
+         *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - spriteSize: the size of the sprite, if null the size of the given texture will be used, default is null.
-         *  - spriteLocation: the location in the texture of the top/left corner of the Sprite to display, default is null (0,0)
+         *  - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
+         *  - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
          *  - invertY: if true the texture Y will be inverted, default is false.
          *  - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          *  - isVisible: true if the sprite must be visible, false for hidden. Default is true.
-         *  - marginTop/Left/Right/Bottom: define the margin for the corresponding edge, if all of them are null, margin is not used in layout computing. Default Value is null for each.
-         *  - hAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
-         *  - vAlighment: define horizontal alignment of the Canvas, alignment is optional, default value null: no alignment.
+         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Sprite2D(texture, settings) {
             if (!settings) {
@@ -232,6 +245,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Sprite2D.prototype, "alignToPixel", {
+            /**
+             * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
+             */
             get: function () {
                 return this._alignToPixel;
             },
@@ -244,6 +260,9 @@ var BABYLON;
         Sprite2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         };
+        /**
+         * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
+         */
         Sprite2D.prototype.getAnimatables = function () {
             var res = new Array();
             if (this.texture && this.texture.animations && this.texture.animations.length > 0) {
