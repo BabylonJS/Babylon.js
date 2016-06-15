@@ -39554,6 +39554,9 @@ var BABYLON;
             BABYLON.instanceLevelProperty(4, function (pi) { return Prim2DBase.scaleProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "scale", null);
         __decorate([
+            BABYLON.dynamicLevelProperty(5, function (pi) { return Prim2DBase.originProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "origin", null);
+        __decorate([
             BABYLON.dynamicLevelProperty(6, function (pi) { return Prim2DBase.levelVisibleProperty = pi; })
         ], Prim2DBase.prototype, "levelVisible", null);
         __decorate([
