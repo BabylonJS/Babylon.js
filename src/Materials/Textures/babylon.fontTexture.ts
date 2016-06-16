@@ -156,12 +156,12 @@
             var textureSize = this.getSize();
 
             // we reached the end of the current line?
-            var xMargin = 2;
-            var yMargin = 2;
-            let width = measure.width;
+            let width = Math.round(measure.width);
+            var xMargin = Math.ceil(this._lineHeight/20);
+            var yMargin = xMargin;
             if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeight + yMargin;      // +2 for safety margin
+                this._currentFreePosition.y += this._lineHeight + yMargin;
 
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
@@ -170,11 +170,11 @@
             }
 
             // Draw the character in the texture
-            this._context.fillText(char, this._currentFreePosition.x - 0.5, this._currentFreePosition.y - this._offset - 0.5);
+            this._context.fillText(char, this._currentFreePosition.x, this._currentFreePosition.y - this._offset);
 
             // Fill the CharInfo object
             info.topLeftUV = new Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 2) / textureSize.height));
+            info.bottomRightUV = new Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeight + 2) / textureSize.height));
             info.charWidth = width;
 
             // Add the info structure
@@ -258,7 +258,7 @@
                     }
                 }
             }
-            return { height: end - start, offset: start-1}
+            return { height: (end - start)+1, offset: start-1}
         }
 
         public get canRescale(): boolean {
