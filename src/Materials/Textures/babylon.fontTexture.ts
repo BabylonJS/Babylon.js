@@ -156,12 +156,12 @@
             var textureSize = this.getSize();
 
             // we reached the end of the current line?
-            var xMargin = 2;
-            var yMargin = 2;
             let width = Math.round(measure.width);
+            var xMargin = Math.ceil(this._lineHeight/20);
+            var yMargin = xMargin;
             if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeight + yMargin;      // +2 for safety margin
+                this._currentFreePosition.y += this._lineHeight + yMargin;
 
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
@@ -258,7 +258,7 @@
                     }
                 }
             }
-            return { height: end - start, offset: start-1}
+            return { height: (end - start)+1, offset: start-1}
         }
 
         public get canRescale(): boolean {
