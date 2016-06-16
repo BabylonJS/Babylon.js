@@ -16,6 +16,7 @@ att vec2 topLeftUV;
 att vec2 sizeUV;
 att vec2 textureSize;
 att vec4 color;
+att float superSampleFactor;
 
 // Output
 varying vec2 vUV;
@@ -54,7 +55,7 @@ void main(void) {
 
 	vColor = color;
 	vec4 pos;
-	pos.xy = floor(pos2.xy * sizeUV * textureSize);	// Align on target pixel to avoid bad interpolation
+	pos.xy = floor(pos2.xy * superSampleFactor * sizeUV * textureSize);	// Align on target pixel to avoid bad interpolation
 	pos.z = 1.0;
 	pos.w = 1.0;
 	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);
