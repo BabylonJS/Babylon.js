@@ -418,10 +418,11 @@
             return result;
         }
 
-        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData {
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
+            var invertUV: boolean = options.invertUV || false;
             var defaultOffset: number = Math.floor(pathArray[0].length / 2);
             var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
@@ -539,7 +540,11 @@
                 for (i = 0; i < minlg + closePathCorr; i++) {
                     u = us[p][i] / uTotalDistance[p];
                     v = vs[i][p] / vTotalDistance[i];
-                    uvs.push(u, v);
+                    if (invertUV) {
+                        uvs.push(v, u);
+                    } else {
+                        uvs.push(u, v);
+                    }
                 }
             }
 
