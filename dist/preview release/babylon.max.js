@@ -39394,8 +39394,8 @@ var BABYLON;
         Prim2DBase.prototype.addChild = function (child) {
             child._parent = this;
             this._boundingBoxDirty();
-            this._patchHierarchyDepth(child);
             this._children.push(child);
+            this._patchHierarchyDepth(child);
         };
         /**
          * Dispose the primitive, remove it from its parent.
@@ -39702,7 +39702,7 @@ var BABYLON;
         };
         Prim2DBase.prototype._patchHierarchyDepth = function (child) {
             child._hierarchyDepth = this._hierarchyDepth + 1;
-            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.length + 1) * this._siblingDepthOffset);
+            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.indexOf(child) + 1) * this._siblingDepthOffset);
             child._siblingDepthOffset = this._siblingDepthOffset / BABYLON.Canvas2D.hierarchyLevelMaxSiblingCount;
         };
         /**
