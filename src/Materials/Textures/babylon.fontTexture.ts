@@ -158,7 +158,7 @@
             // we reached the end of the current line?
             var xMargin = 2;
             var yMargin = 2;
-            let width = measure.width;
+            let width = Math.round(measure.width);
             if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
                 this._currentFreePosition.y += this._lineHeight + yMargin;      // +2 for safety margin
@@ -170,11 +170,11 @@
             }
 
             // Draw the character in the texture
-            this._context.fillText(char, this._currentFreePosition.x - 0.5, this._currentFreePosition.y - this._offset - 0.5);
+            this._context.fillText(char, this._currentFreePosition.x, this._currentFreePosition.y - this._offset);
 
             // Fill the CharInfo object
             info.topLeftUV = new Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 2) / textureSize.height));
+            info.bottomRightUV = new Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeight + 2) / textureSize.height));
             info.charWidth = width;
 
             // Add the info structure
