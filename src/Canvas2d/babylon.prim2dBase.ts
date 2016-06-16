@@ -75,8 +75,8 @@
             return Render2DContext._renderModeTransparent;
         }
 
-        private static _renderModeOpaque:      number = 1;
-        private static _renderModeAlphaTest:   number = 2;
+        private static _renderModeOpaque: number = 1;
+        private static _renderModeAlphaTest: number = 2;
         private static _renderModeTransparent: number = 3;
 
         private _renderMode: number;
@@ -87,15 +87,15 @@
      * The Observable is divided into many sub events (using the Mask feature of the Observable pattern): PointerOver, PointerEnter, PointerDown, PointerMouseWheel, PointerMove, PointerUp, PointerDown, PointerLeave, PointerGotCapture and PointerLostCapture.
      */
     export class PrimitivePointerInfo {
-        private static _pointerOver        = 0x0001;
-        private static _pointerEnter       = 0x0002;
-        private static _pointerDown        = 0x0004;
-        private static _pointerMouseWheel  = 0x0008;
-        private static _pointerMove        = 0x0010;
-        private static _pointerUp          = 0x0020;
-        private static _pointerOut         = 0x0040;
-        private static _pointerLeave       = 0x0080;
-        private static _pointerGotCapture  = 0x0100;
+        private static _pointerOver = 0x0001;
+        private static _pointerEnter = 0x0002;
+        private static _pointerDown = 0x0004;
+        private static _pointerMouseWheel = 0x0008;
+        private static _pointerMove = 0x0010;
+        private static _pointerUp = 0x0020;
+        private static _pointerOut = 0x0040;
+        private static _pointerLeave = 0x0080;
+        private static _pointerGotCapture = 0x0100;
         private static _pointerLostCapture = 0x0200;
 
         private static _mouseWheelPrecision = 3.0;
@@ -277,15 +277,15 @@
 
         public static getEventTypeName(mask: number): string {
             switch (mask) {
-                case PrimitivePointerInfo.PointerOver:        return "PointerOver";
-                case PrimitivePointerInfo.PointerEnter:       return "PointerEnter";
-                case PrimitivePointerInfo.PointerDown:        return "PointerDown";
-                case PrimitivePointerInfo.PointerMouseWheel:  return "PointerMouseWheel";
-                case PrimitivePointerInfo.PointerMove:        return "PointerMove";
-                case PrimitivePointerInfo.PointerUp:          return "PointerUp";
-                case PrimitivePointerInfo.PointerOut:         return "PointerOut";
-                case PrimitivePointerInfo.PointerLeave:       return "PointerLeave";
-                case PrimitivePointerInfo.PointerGotCapture:  return "PointerGotCapture";
+                case PrimitivePointerInfo.PointerOver: return "PointerOver";
+                case PrimitivePointerInfo.PointerEnter: return "PointerEnter";
+                case PrimitivePointerInfo.PointerDown: return "PointerDown";
+                case PrimitivePointerInfo.PointerMouseWheel: return "PointerMouseWheel";
+                case PrimitivePointerInfo.PointerMove: return "PointerMove";
+                case PrimitivePointerInfo.PointerUp: return "PointerUp";
+                case PrimitivePointerInfo.PointerOut: return "PointerOut";
+                case PrimitivePointerInfo.PointerLeave: return "PointerLeave";
+                case PrimitivePointerInfo.PointerGotCapture: return "PointerGotCapture";
                 case PrimitivePointerInfo.PointerLostCapture: return "PointerLostCapture";
             }
         }
@@ -331,11 +331,11 @@
          */
         public static get AlignStretch(): number { return PrimitiveAlignment._AlignStretch; }
 
-        private static _AlignLeft    = 1;
-        private static _AlignTop     = 1;   // Same as left
-        private static _AlignRight   = 2;
-        private static _AlignBottom  = 2;   // Same as right
-        private static _AlignCenter  = 3;
+        private static _AlignLeft = 1;
+        private static _AlignTop = 1;   // Same as left
+        private static _AlignRight = 2;
+        private static _AlignBottom = 2;   // Same as right
+        private static _AlignCenter = 3;
         private static _AlignStretch = 4;
 
         /**
@@ -459,7 +459,7 @@
      */
     export class PrimitiveIntersectedInfo {
         constructor(public prim: Prim2DBase, public intersectionLocation: Vector2) {
-            
+
         }
     }
 
@@ -643,7 +643,7 @@
 
                 // Check for percentage
                 if (pI !== -1) {
-                    let n = v.substr(0, pI);                   
+                    let n = v.substr(0, pI);
                     let number = Math.round(Number(n)) / 100; // Normalize the percentage to [0;1] with a 0.01 precision
                     if (this._isType(index, PrimitiveThickness.Percentage) && (this._percentages[index] === number)) {
                         return true;
@@ -707,7 +707,7 @@
             // Clip Value to bounds
             value = Math.min(1, value);
             value = Math.max(0, value);
-            value = Math.round(value*100)/100;  // 0.01 precision
+            value = Math.round(value * 100) / 100;  // 0.01 precision
 
             if (this._isType(index, PrimitiveThickness.Percentage) && this._percentages[index] === value) {
                 return;
@@ -728,7 +728,7 @@
                 case PrimitiveThickness.Pixel:
                     return `${this._pixels[index]}px`;
                 case PrimitiveThickness.Percentage:
-                    return `${this._percentages[index]*100}%`;
+                    return `${this._percentages[index] * 100}%`;
                 case PrimitiveThickness.Inherit:
                     return "inherit";
             }
@@ -984,10 +984,10 @@
         private _percentages: number[];     // Percentages are in fact stored in a normalized range [0;1] with a 0.01 precision
         private _flags: number;
 
-        public static Auto       = 0x1;
-        public static Inherit    = 0x2;
+        public static Auto = 0x1;
+        public static Inherit = 0x2;
         public static Percentage = 0x4;
-        public static Pixel      = 0x8;
+        public static Pixel = 0x8;
 
         private _computePixels(index: number, sourceArea: Size, emitChanged: boolean) {
             let type = this._getType(index, false);
@@ -1019,132 +1019,132 @@
          */
         public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size) {
             // Fetch some data
-            let topType      = this._getType(0, true);
-            let leftType     = this._getType(1, true);
-            let rightType    = this._getType(2, true);
-            let bottomType   = this._getType(3, true);
-            let hasWidth     = contentSize && (contentSize.width  != null);
-            let hasHeight    = contentSize && (contentSize.height != null);
-            let width        = hasWidth  ? contentSize.width  : 0;
-            let height       = hasHeight ? contentSize.height : 0;
-            let isTopAuto    = topType    === PrimitiveThickness.Auto;
-            let isLeftAuto   = leftType   === PrimitiveThickness.Auto;
-            let isRightAuto  = rightType  === PrimitiveThickness.Auto;
+            let topType = this._getType(0, true);
+            let leftType = this._getType(1, true);
+            let rightType = this._getType(2, true);
+            let bottomType = this._getType(3, true);
+            let hasWidth = contentSize && (contentSize.width != null);
+            let hasHeight = contentSize && (contentSize.height != null);
+            let width = hasWidth ? contentSize.width : 0;
+            let height = hasHeight ? contentSize.height : 0;
+            let isTopAuto = topType === PrimitiveThickness.Auto;
+            let isLeftAuto = leftType === PrimitiveThickness.Auto;
+            let isRightAuto = rightType === PrimitiveThickness.Auto;
             let isBottomAuto = bottomType === PrimitiveThickness.Auto;
 
             switch (alignment.horizontal) {
                 case PrimitiveAlignment.AlignLeft:
-                {
-                    if (isLeftAuto) {
-                        dstOffset.x = 0;
-                    } else {
-                        this._computePixels(1, sourceArea, true);
-                        dstOffset.x = this.leftPixels;
+                    {
+                        if (isLeftAuto) {
+                            dstOffset.x = 0;
+                        } else {
+                            this._computePixels(1, sourceArea, true);
+                            dstOffset.x = this.leftPixels;
+                        }
+                        dstArea.width = width;
+                        break;
+
                     }
-                    dstArea.width = width;
-                    break;
-                    
-                }
                 case PrimitiveAlignment.AlignRight:
-                {
-                    if (isRightAuto) {
-                        dstOffset.x = Math.round(sourceArea.width - width);
-                    } else {
-                        this._computePixels(2, sourceArea, true);
-                        dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
+                    {
+                        if (isRightAuto) {
+                            dstOffset.x = Math.round(sourceArea.width - width);
+                        } else {
+                            this._computePixels(2, sourceArea, true);
+                            dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
+                        }
+                        dstArea.width = width;
+                        break;
                     }
-                    dstArea.width = width;
-                    break;
-                }
                 case PrimitiveAlignment.AlignStretch:
-                {
-                    if (isLeftAuto) {
-                        dstOffset.x = 0;
-                    } else {
-                        this._computePixels(1, sourceArea, true);
-                        dstOffset.x = this.leftPixels;
-                    }
+                    {
+                        if (isLeftAuto) {
+                            dstOffset.x = 0;
+                        } else {
+                            this._computePixels(1, sourceArea, true);
+                            dstOffset.x = this.leftPixels;
+                        }
 
-                    let right = 0;
-                    if (!isRightAuto) {
-                        this._computePixels(2, sourceArea, true);
-                        right = this.rightPixels;
+                        let right = 0;
+                        if (!isRightAuto) {
+                            this._computePixels(2, sourceArea, true);
+                            right = this.rightPixels;
+                        }
+                        dstArea.width = sourceArea.width - (dstOffset.x + right);
+                        break;
                     }
-                    dstArea.width = sourceArea.width - (dstOffset.x + right);
-                    break;
-                }
                 case PrimitiveAlignment.AlignCenter:
-                {
-                    if (!isLeftAuto) {
-                        this._computePixels(1, sourceArea, true);
-                    }
-                    if (!isRightAuto) {
-                        this._computePixels(2, sourceArea, true);
-                    }
+                    {
+                        if (!isLeftAuto) {
+                            this._computePixels(1, sourceArea, true);
+                        }
+                        if (!isRightAuto) {
+                            this._computePixels(2, sourceArea, true);
+                        }
 
-                    let offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
-                    dstOffset.x = Math.round(((sourceArea.width-width) / 2) + offset);
-                    dstArea.width = width;
-                    break;
-                }
+                        let offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
+                        dstOffset.x = Math.round(((sourceArea.width - width) / 2) + offset);
+                        dstArea.width = width;
+                        break;
+                    }
             }
 
             switch (alignment.vertical) {
                 case PrimitiveAlignment.AlignTop:
-                {
-                    if (isTopAuto) {
-                        dstOffset.y = sourceArea.height - height;
-                    } else {
-                        this._computePixels(0, sourceArea, true);
-                        dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
+                    {
+                        if (isTopAuto) {
+                            dstOffset.y = sourceArea.height - height;
+                        } else {
+                            this._computePixels(0, sourceArea, true);
+                            dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
+                        }
+                        dstArea.height = height;
+                        break;
+
                     }
-                    dstArea.height = height;
-                    break;
-                    
-                }
                 case PrimitiveAlignment.AlignBottom:
-                {
-                    if (isBottomAuto) {
-                        dstOffset.y = 0;
-                    } else {
-                        this._computePixels(3, sourceArea, true);
-                        dstOffset.y = this.bottomPixels;
+                    {
+                        if (isBottomAuto) {
+                            dstOffset.y = 0;
+                        } else {
+                            this._computePixels(3, sourceArea, true);
+                            dstOffset.y = this.bottomPixels;
+                        }
+                        dstArea.height = height;
+                        break;
+
                     }
-                    dstArea.height = height;
-                    break;
-                    
-                }
                 case PrimitiveAlignment.AlignStretch:
-                {
-                    if (isBottomAuto) {
-                        dstOffset.y = 0;
-                    } else {
-                        this._computePixels(3, sourceArea, true);
-                        dstOffset.y = this.bottomPixels;
-                    }
+                    {
+                        if (isBottomAuto) {
+                            dstOffset.y = 0;
+                        } else {
+                            this._computePixels(3, sourceArea, true);
+                            dstOffset.y = this.bottomPixels;
+                        }
 
-                    let top = 0;
-                    if (!isTopAuto) {
-                        this._computePixels(0, sourceArea, true);
-                        top = this.topPixels;
+                        let top = 0;
+                        if (!isTopAuto) {
+                            this._computePixels(0, sourceArea, true);
+                            top = this.topPixels;
+                        }
+                        dstArea.height = sourceArea.height - (dstOffset.y + top);
+                        break;
                     }
-                    dstArea.height = sourceArea.height - (dstOffset.y + top);
-                    break;
-                }
                 case PrimitiveAlignment.AlignCenter:
-                {
-                    if (!isTopAuto) {
-                        this._computePixels(0, sourceArea, true);
-                    }
-                    if (!isBottomAuto) {
-                        this._computePixels(3, sourceArea, true);
-                    }
+                    {
+                        if (!isTopAuto) {
+                            this._computePixels(0, sourceArea, true);
+                        }
+                        if (!isBottomAuto) {
+                            this._computePixels(3, sourceArea, true);
+                        }
 
-                    let offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
-                    dstOffset.y = Math.round(((sourceArea.height-height) / 2) + offset);
-                    dstArea.height = height;
-                    break;
-                }
+                        let offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
+                        dstOffset.y = Math.round(((sourceArea.height - height) / 2) + offset);
+                        dstArea.height = height;
+                        break;
+                    }
             }
         }
 
@@ -1178,7 +1178,7 @@
             this._computePixels(2, sourceArea, true);
             this._computePixels(3, sourceArea, true);
 
-            result.width  = this.leftPixels + sourceArea.width + this.rightPixels;
+            result.width = this.leftPixels + sourceArea.width + this.rightPixels;
             result.height = this.bottomPixels + sourceArea.height + this.topPixels;
         }
     }
@@ -1258,30 +1258,30 @@
         static PRIM2DBASE_PROPCOUNT: number = 15;
 
         constructor(settings: {
-            parent              ?: Prim2DBase, 
-            id                  ?: string,
-            children            ?: Array<Prim2DBase>,
-            position            ?: Vector2,
-            x                   ?: number,
-            y                   ?: number,
-            rotation            ?: number,
-            scale               ?: number,
-            origin              ?: Vector2,
-            layoutEngine        ?: LayoutEngineBase | string,
-            isVisible           ?: boolean,
-            marginTop           ?: number | string,
-            marginLeft          ?: number | string,
-            marginRight         ?: number | string,
-            marginBottom        ?: number | string,
-            margin              ?: number | string,
-            marginHAlignment    ?: number,
-            marginVAlignment    ?: number,
-            marginAlignment     ?: string,
-            paddingTop          ?: number | string,
-            paddingLeft         ?: number | string,
-            paddingRight        ?: number | string,
-            paddingBottom       ?: number | string,
-            padding             ?: string,
+            parent?: Prim2DBase,
+            id?: string,
+            children?: Array<Prim2DBase>,
+            position?: Vector2,
+            x?: number,
+            y?: number,
+            rotation?: number,
+            scale?: number,
+            origin?: Vector2,
+            layoutEngine?: LayoutEngineBase | string,
+            isVisible?: boolean,
+            marginTop?: number | string,
+            marginLeft?: number | string,
+            marginRight?: number | string,
+            marginBottom?: number | string,
+            margin?: number | string,
+            marginHAlignment?: number,
+            marginVAlignment?: number,
+            marginAlignment?: string,
+            paddingTop?: number | string,
+            paddingLeft?: number | string,
+            paddingRight?: number | string,
+            paddingBottom?: number | string,
+            padding?: string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -1314,34 +1314,34 @@
             }
 
             // Fields initialization
-            this._layoutEngine               = CanvasLayoutEngine.Singleton;
-            this._size                       = null; //Size.Zero();
-            this._actualSize                 = null;
-            this._boundingSize               = null;
-            this._layoutArea                 = Size.Zero();
-            this._layoutAreaPos              = Vector2.Zero();
-            this._marginOffset               = Vector2.Zero();
-            this._parentMargingOffset        = Vector2.Zero();
-            this._parentContentArea          = Size.Zero();
-            this._contentArea                = new Size(null, null);
-            this._pointerEventObservable     = new Observable<PrimitivePointerInfo>();
-            this._siblingDepthOffset         = this._hierarchyDepthOffset = 0;
-            this._boundingInfo               = new BoundingInfo2D();
-            this._owner                      = owner;
-            this._parent                     = null;
-            this._margin                     = null;
-            this._padding                    = null;
-            this._marginAlignment            = null;
-            this._id                         = settings.id;
-            this.propertyChanged             = new Observable<PropertyChangedInfo>();
-            this._children                   = new Array<Prim2DBase>();
-            this._localTransform             = new Matrix();
-            this._globalTransform            = null;
-            this._invGlobalTransform         = null;
+            this._layoutEngine = CanvasLayoutEngine.Singleton;
+            this._size = null; //Size.Zero();
+            this._actualSize = null;
+            this._boundingSize = null;
+            this._layoutArea = Size.Zero();
+            this._layoutAreaPos = Vector2.Zero();
+            this._marginOffset = Vector2.Zero();
+            this._parentMargingOffset = Vector2.Zero();
+            this._parentContentArea = Size.Zero();
+            this._contentArea = new Size(null, null);
+            this._pointerEventObservable = new Observable<PrimitivePointerInfo>();
+            this._siblingDepthOffset = this._hierarchyDepthOffset = 0;
+            this._boundingInfo = new BoundingInfo2D();
+            this._owner = owner;
+            this._parent = null;
+            this._margin = null;
+            this._padding = null;
+            this._marginAlignment = null;
+            this._id = settings.id;
+            this.propertyChanged = new Observable<PropertyChangedInfo>();
+            this._children = new Array<Prim2DBase>();
+            this._localTransform = new Matrix();
+            this._globalTransform = null;
+            this._invGlobalTransform = null;
             this._globalTransformProcessStep = 0;
-            this._globalTransformStep        = 0;
-            this._hierarchyDepth             = 0;
-            this._renderGroup                = null;
+            this._globalTransformStep = 0;
+            this._hierarchyDepth = 0;
+            this._renderGroup = null;
             this._setFlags(SmartPropertyPrim.flagIsPickable | SmartPropertyPrim.flagBoundingInfoDirty);
 
             // If the parent is given, initialize the hierarchy/owner related data
@@ -1363,7 +1363,7 @@
 
                     // Good time to patch the hierarchy, it won't go very far if there's no need to
                     child._patchHierarchy(this.owner);
-                } 
+                }
             }
 
             // Set the model related properties
@@ -1376,8 +1376,8 @@
                 this._position = null;
             }
             this.rotation = (settings.rotation == null) ? 0 : settings.rotation;
-            this.scale = (settings.scale==null) ? 1 : settings.scale;
-            this.levelVisible = (settings.isVisible==null) ? true : settings.isVisible;
+            this.scale = (settings.scale == null) ? 1 : settings.scale;
+            this.levelVisible = (settings.isVisible == null) ? true : settings.isVisible;
             this.origin = settings.origin || new Vector2(0.5, 0.5);
 
             // Layout Engine
@@ -1388,7 +1388,7 @@
                         this.layoutEngine = CanvasLayoutEngine.Singleton;
                     } else if (name.indexOf("stackpanel") === 0 || name.indexOf("horizontalstackpanel") === 0) {
                         this.layoutEngine = StackPanelLayoutEngine.Horizontal;
-                    } else if (name.indexOf("verticalstackpanel")===0) {
+                    } else if (name.indexOf("verticalstackpanel") === 0) {
                         this.layoutEngine = StackPanelLayoutEngine.Vertical;
                     }
                 } else if (settings.layoutEngine instanceof LayoutEngineBase) {
@@ -1684,7 +1684,7 @@
         @dynamicLevelProperty(2, pi => Prim2DBase.sizeProperty = pi, false, true)
         public get size(): Size {
 
-            if (!this._size || this._size.width==null || this._size.height==null) {
+            if (!this._size || this._size.width == null || this._size.height == null) {
 
                 if (Prim2DBase.boundinbBoxReentrency) {
                     return Prim2DBase.nullSize;
@@ -2136,7 +2136,7 @@
         }
 
         protected onZOrderChanged() {
-            
+
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
@@ -2343,7 +2343,7 @@
         }
 
         protected _canvasPreInit(settings: any) {
-            
+
         }
 
         protected static _isCanvasInit: boolean = false;
@@ -2448,7 +2448,7 @@
             }
 
             // Check if the parent is synced
-            if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(SmartPropertyPrim.flagLayoutDirty|SmartPropertyPrim.flagPositioningDirty))) {
+            if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(SmartPropertyPrim.flagLayoutDirty | SmartPropertyPrim.flagPositioningDirty))) {
                 this._parent.updateCachedStates(false);
             }
 
@@ -2502,7 +2502,7 @@
                 let localDirty = this._updateLocalTransform();
 
                 // Check if there are changes in the parent that will force us to update the global matrix
-                let parentDirty = (this._parent!=null) ? (this._parent._globalTransformStep !== this._parentTransformStep) : false;
+                let parentDirty = (this._parent != null) ? (this._parent._globalTransformStep !== this._parentTransformStep) : false;
 
                 // Check if we have to update the globalTransform
                 if (!this._globalTransform || localDirty || parentDirty) {
@@ -2523,9 +2523,9 @@
             }
         }
 
-        private static _icPos  = Vector2.Zero();
+        private static _icPos = Vector2.Zero();
         private static _icArea = Size.Zero();
-        private static _size   = Size.Zero();
+        private static _size = Size.Zero();
 
         private _updatePositioning() {
             // From this point we assume that the primitive layoutArea is computed and up to date.
@@ -2566,7 +2566,7 @@
                 this.padding.compute(Prim2DBase._icArea, this._marginOffset, Prim2DBase._size);
                 this._marginOffset.x += Prim2DBase._icPos.x;
                 this._marginOffset.y += Prim2DBase._icPos.y;
-                this._contentArea.copyFrom(Prim2DBase._size);              
+                this._contentArea.copyFrom(Prim2DBase._size);
             } else {
                 this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
@@ -2594,7 +2594,7 @@
             this._owner = owner;
 
             // The only place we initialize the _renderGroup is this method, if it's set, we already been there, no need to execute more
-            if (this._renderGroup!=null) {
+            if (this._renderGroup != null) {
                 return;
             }
 
@@ -2630,7 +2630,7 @@
         private _patchHierarchyDepth(child: Prim2DBase) {
             child._hierarchyDepth = this._hierarchyDepth + 1;
             child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.indexOf(child) + 1) * this._siblingDepthOffset);
-            child._siblingDepthOffset = this._siblingDepthOffset / Canvas2D.hierarchyLevelMaxSiblingCount;           
+            child._siblingDepthOffset = this._siblingDepthOffset / Canvas2D.hierarchyLevelMaxSiblingCount;
         }
 
         /**
@@ -2641,43 +2641,43 @@
          * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          */
         protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size) {
-            initialContentArea.width  = primSize.width;
+            initialContentArea.width = primSize.width;
             initialContentArea.height = primSize.height;
-            initialContentPosition.x  = initialContentPosition.y = 0;
+            initialContentPosition.x = initialContentPosition.y = 0;
         }
 
-        private   _owner                 : Canvas2D;
-        private   _parent                : Prim2DBase;
-        private   _actionManager         : ActionManager;
-        protected _children              : Array<Prim2DBase>;
-        private   _renderGroup           : Group2D;
-        private   _hierarchyDepth        : number;
-        protected _hierarchyDepthOffset  : number;
-        protected _siblingDepthOffset    : number;
-        private   _zOrder                : number;
-        private   _margin                : PrimitiveThickness;
-        private   _padding               : PrimitiveThickness;
-        private   _marginAlignment       : PrimitiveAlignment;
-        public    _pointerEventObservable: Observable<PrimitivePointerInfo>;
-        private   _id                    : string;
-        private   _position              : Vector2;
-        private   _actualPosition        : Vector2;
-        protected _size                  : Size;
-        protected _actualSize            : Size;
-        public    _boundingSize          : Size;
-        protected _minSize               : Size;
-        protected _maxSize               : Size;
-        protected _desiredSize           : Size;
-        private   _layoutEngine          : LayoutEngineBase;
-        private   _marginOffset          : Vector2;
-        private   _parentMargingOffset   : Vector2;
-        private   _parentContentArea     : Size;
-        private   _layoutAreaPos         : Vector2;
-        private   _layoutArea            : Size;
-        private   _contentArea           : Size;
-        private   _rotation              : number;
-        private   _scale                 : number;
-        private   _origin                : Vector2;
+        private _owner: Canvas2D;
+        private _parent: Prim2DBase;
+        private _actionManager: ActionManager;
+        protected _children: Array<Prim2DBase>;
+        private _renderGroup: Group2D;
+        private _hierarchyDepth: number;
+        protected _hierarchyDepthOffset: number;
+        protected _siblingDepthOffset: number;
+        private _zOrder: number;
+        private _margin: PrimitiveThickness;
+        private _padding: PrimitiveThickness;
+        private _marginAlignment: PrimitiveAlignment;
+        public _pointerEventObservable: Observable<PrimitivePointerInfo>;
+        private _id: string;
+        private _position: Vector2;
+        private _actualPosition: Vector2;
+        protected _size: Size;
+        protected _actualSize: Size;
+        public _boundingSize: Size;
+        protected _minSize: Size;
+        protected _maxSize: Size;
+        protected _desiredSize: Size;
+        private _layoutEngine: LayoutEngineBase;
+        private _marginOffset: Vector2;
+        private _parentMargingOffset: Vector2;
+        private _parentContentArea: Size;
+        private _layoutAreaPos: Vector2;
+        private _layoutArea: Size;
+        private _contentArea: Size;
+        private _rotation: number;
+        private _scale: number;
+        private _origin: Vector2;
 
         // Stores the step of the parent for which the current global transform was computed
         // If the parent has a new step, it means this prim's global transform must be updated
