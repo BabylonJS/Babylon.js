@@ -2484,6 +2484,12 @@ def format_bool(bool):
     else:
         return 'false'
 
+def post_rotate_quaternion(quat, angle):
+    post = mathutils.Euler((angle, 0.0, 0.0)).to_matrix()
+    mqtn = quat.to_matrix()
+    quat = (mqtn*post).to_quaternion()
+    return quat
+    
 def scale_vector(vector, mult, xOffset = 0):
     ret = vector.copy()
     ret.x *= mult
