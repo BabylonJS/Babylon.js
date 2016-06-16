@@ -418,10 +418,11 @@
             return result;
         }
 
-        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData {
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
+            var invertUV: boolean = options.invertUV || false;
             var defaultOffset: number = Math.floor(pathArray[0].length / 2);
             var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
@@ -539,7 +540,11 @@
                 for (i = 0; i < minlg + closePathCorr; i++) {
                     u = us[p][i] / uTotalDistance[p];
                     v = vs[i][p] / vTotalDistance[i];
-                    uvs.push(u, v);
+                    if (invertUV) {
+                        uvs.push(v, u);
+                    } else {
+                        uvs.push(u, v);
+                    }
                 }
             }
 
@@ -1221,10 +1226,10 @@
         }
 
         public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
-            var xmin = options.xmin;
-            var zmin = options.zmin;
-            var xmax = options.xmax;
-            var zmax = options.zmax;
+            var xmin = options.xmin || -1.0;
+            var zmin = options.zmin || -1.0;
+            var xmax = options.xmax || 1.0;
+            var zmax = options.zmax || 1.0;
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
 
@@ -1234,7 +1239,7 @@
             var uvs = [];
             var row: number, col: number, tileRow: number, tileCol: number;
 
-            subdivisions.h = (subdivisions.w < 1) ? 1 : subdivisions.h;
+            subdivisions.h = (subdivisions.h < 1) ? 1 : subdivisions.h;
             subdivisions.w = (subdivisions.w < 1) ? 1 : subdivisions.w;
             precision.w = (precision.w < 1) ? 1 : precision.w;
             precision.h = (precision.h < 1) ? 1 : precision.h;

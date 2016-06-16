@@ -357,8 +357,8 @@ var BABYLON;
             }
             var rotationQuaternion;
             if (!space || space === BABYLON.Space.LOCAL) {
-                rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
-                this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
+                rotationQuaternion = BABYLON.Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
+                this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
             }
             else {
                 if (this.parent) {
@@ -366,8 +366,8 @@ var BABYLON;
                     invertParentWorldMatrix.invert();
                     axis = BABYLON.Vector3.TransformNormal(axis, invertParentWorldMatrix);
                 }
-                rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
-                this.rotationQuaternion = rotationQuaternion.multiply(this.rotationQuaternion);
+                rotationQuaternion = BABYLON.Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
+                rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
         };
         AbstractMesh.prototype.translate = function (axis, distance, space) {
@@ -677,11 +677,12 @@ var BABYLON;
             yawCor = yawCor || 0; // default to zero if undefined
             pitchCor = pitchCor || 0;
             rollCor = rollCor || 0;
-            var dv = targetPoint.subtract(this.position);
+            var dv = AbstractMesh._lookAtVectorCache;
+            targetPoint.subtractToRef(this.position, dv);
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
-            this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(yaw + yawCor, pitch + pitchCor, rollCor);
+            BABYLON.Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
         };
         AbstractMesh.prototype.attachToBone = function (bone, affectedMesh) {
             this._meshToBoneReferal = affectedMesh;
@@ -1045,6 +1046,8 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Y = 2;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
+        AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
+        AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;

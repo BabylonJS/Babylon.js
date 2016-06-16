@@ -1174,7 +1174,7 @@ var BABYLON;
                     if (!owner) {
                         throw new Error("Parent " + parent.id + " of " + settings.id + " doesn't have a valid owner!");
                     }
-                    if (!(this instanceof BABYLON.Group2D) && !(this instanceof BABYLON.Sprite2D && settings.id !== null && settings.id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
+                    if (!(this instanceof BABYLON.Group2D) && !(this instanceof BABYLON.Sprite2D && settings.id != null && settings.id.indexOf("__cachedSpriteOfGroup__") === 0) && (owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) && (parent === owner)) {
                         throw new Error("Can't create a primitive with the canvas as direct parent when the caching strategy is TOPLEVELGROUPS. You need to create a Group below the canvas and use it as the parent for the primitive");
                     }
                 }
