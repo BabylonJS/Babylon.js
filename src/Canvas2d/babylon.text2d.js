@@ -119,6 +119,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Text2DInstanceData.prototype, "superSampleFactor", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         __decorate([
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "topLeftUV", null);
@@ -131,6 +138,9 @@ var BABYLON;
         __decorate([
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "color", null);
+        __decorate([
+            BABYLON.instanceData()
+        ], Text2DInstanceData.prototype, "superSampleFactor", null);
         return Text2DInstanceData;
     })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
@@ -148,6 +158,7 @@ var BABYLON;
          *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
+         *  - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
          *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
          *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -172,6 +183,7 @@ var BABYLON;
             }
             _super.call(this, settings);
             this.fontName = (settings.fontName == null) ? "12pt Arial" : settings.fontName;
+            this._fontSuperSample = (settings.fontSuperSample != null && settings.fontSuperSample);
             this.defaultFontColor = (settings.defaultFontColor == null) ? new BABYLON.Color4(1, 1, 1, 1) : settings.defaultFontColor;
             this._tabulationSize = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             this._textSize = null;
@@ -271,7 +283,7 @@ var BABYLON;
                 if (this._fontTexture) {
                     return this._fontTexture;
                 }
-                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName);
+                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample);
                 return this._fontTexture;
             },
             enumerable: true,
@@ -285,7 +297,7 @@ var BABYLON;
                 return false;
             }
             if (this._fontTexture) {
-                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName);
+                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample);
                 this._fontTexture = null;
             }
             return true;
@@ -353,6 +365,7 @@ var BABYLON;
             if (part.id === Text2D.TEXT2D_MAINPARTID) {
                 var d = part;
                 var texture = this.fontTexture;
+                var superSampleFactor = texture.isSuperSampled ? 0.5 : 1;
                 var ts = texture.getSize();
                 var offset = BABYLON.Vector2.Zero();
                 var lh = this.fontTexture.lineHeight;
@@ -386,6 +399,7 @@ var BABYLON;
                     d.sizeUV = suv;
                     d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
                     d.color = this.defaultFontColor;
+                    d.superSampleFactor = superSampleFactor;
                     ++d.curElement;
                 }
             }
