@@ -111,6 +111,11 @@
         get color(): Color4 {
             return null;
         }
+
+        @instanceData()
+        get superSampleFactor(): number {
+            return null;
+        }
     }
 
     @className("Text2D")
@@ -223,7 +228,7 @@
                 return this._fontTexture;
             }
 
-            this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName);
+            this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample);
             return this._fontTexture;
         }
 
@@ -236,7 +241,7 @@
             }
 
             if (this._fontTexture) {
-                FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName);
+                FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample);
                 this._fontTexture = null;
             }
 
@@ -259,6 +264,7 @@
          *  - scale: the initial scale of the primitive. default is 1
          *  - origin: define the normalized origin point location, default [0.5;0.5]
          *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
+         *  - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
          *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
          *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -289,6 +295,7 @@
             scale            ?: number,
             origin           ?: Vector2,
             fontName         ?: string,
+            fontSuperSample  ?: boolean,
             defaultFontColor ?: Color4,
             size             ?: Size,
             tabulationSize   ?: number,
@@ -314,7 +321,8 @@
 
             super(settings);
 
-            this.fontName         = (settings.fontName==null)         ? "12pt Arial"        : settings.fontName;
+            this.fontName         = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
+            this._fontSuperSample = (settings.fontSuperSample!=null && settings.fontSuperSample);
             this.defaultFontColor = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
             this._tabulationSize  = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             this._textSize        = null;
@@ -397,6 +405,7 @@
             if (part.id === Text2D.TEXT2D_MAINPARTID) {
                 let d = <Text2DInstanceData>part;
                 let texture = this.fontTexture;
+                let superSampleFactor = texture.isSuperSampled ? 0.5 : 1;
                 let ts = texture.getSize();
                 let offset = Vector2.Zero();
                 let lh = this.fontTexture.lineHeight;
@@ -436,6 +445,7 @@
                     d.sizeUV = suv;
                     d.textureSize = new Vector2(ts.width, ts.height);
                     d.color = this.defaultFontColor;
+                    d.superSampleFactor = superSampleFactor;
 
                     ++d.curElement;
                 }
@@ -458,6 +468,7 @@
         private _tabulationSize: number;
         private _charCount: number;
         private _fontName: string;
+        private _fontSuperSample: boolean;
         private _defaultFontColor: Color4;
         private _text: string;
         private _textSize: Size;
