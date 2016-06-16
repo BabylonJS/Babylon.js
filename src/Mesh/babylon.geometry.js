@@ -324,7 +324,6 @@ var BABYLON;
             }
         };
         Geometry.prototype.load = function (scene, onLoaded) {
-            var _this = this;
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                 return;
             }
@@ -335,6 +334,10 @@ var BABYLON;
                 return;
             }
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
+            this._queueLoad(scene, onLoaded);
+        };
+        Geometry.prototype._queueLoad = function (scene, onLoaded) {
+            var _this = this;
             scene._addPendingData(this);
             BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
                 _this._delayLoadingFunction(JSON.parse(data), _this);
