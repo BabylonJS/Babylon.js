@@ -25,13 +25,20 @@
         private _canvas: HTMLCanvasElement;
         private _context: CanvasRenderingContext2D;
         private _lineHeight: number;
+        private _lineHeightSuper: number;
         private _offset: number;
         private _currentFreePosition: Vector2;
         private _charInfos: ICharInfoMap = {};
         private _curCharCount = 0;
         private _lastUpdateCharCount = -1;
         private _spaceWidth;
+        private _spaceWidthSuper;
         private _usedCounter = 1;
+        private _superSample: boolean;
+
+        public get isSuperSampled(): boolean {
+            return this._superSample;
+        }
 
         public get spaceWidth(): number {
             return this._spaceWidth;
@@ -41,7 +48,7 @@
             return this._lineHeight;
         }
 
-        public static GetCachedFontTexture(scene: Scene, fontName: string) {
+        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false) {
             let s = <any>scene;
             if (!s.__fontTextureCache__) {
                 s.__fontTextureCache__ = new StringDictionary<FontTexture>();
@@ -49,27 +56,27 @@
 
             let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
 
-            let lfn = fontName.toLocaleLowerCase();
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS");
             let ft = dic.get(lfn);
             if (ft) {
                 ++ft._usedCounter;
                 return ft;
             }
 
-            ft = new FontTexture(null, lfn, scene, 200, Texture.NEAREST_SAMPLINGMODE);
+            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, Texture.BILINEAR_SAMPLINGMODE, supersample);
             dic.add(lfn, ft);
 
             return ft;
         }
 
-        public static ReleaseCachedFontTexture(scene: Scene, fontName: string) {
+        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false) {
             let s = <any>scene;
             let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
             if (!dic) {
                 return;
             }
 
-            let lfn = fontName.toLocaleLowerCase();
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS");
             var font = dic.get(lfn);
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
@@ -84,14 +91,24 @@
          * @param scene the scene that owns the texture
          * @param maxCharCount the approximative maximum count of characters that could fit in the texture. This is an approximation because most of the fonts are proportional (each char has its own Width). The 'W' character's width is used to compute the size of the texture based on the given maxCharCount
          * @param samplingMode the texture sampling mode
+         * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
          */
-        constructor(name: string, font: string, scene: Scene, maxCharCount=200, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        constructor(name: string, font: string, scene: Scene, maxCharCount=200, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, superSample: boolean = false) {
             super(null, scene, true, false, samplingMode);
 
             this.name = name;
 
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
+
+            this._superSample = false;
+            if (superSample) {
+                let sfont = this.getSuperSampleFont(font);
+                if (sfont) {
+                    this._superSample = true;
+                    font = sfont;
+                }
+            }
 
             // First canvas creation to determine the size of the texture to create
             this._canvas = document.createElement("canvas");
@@ -100,14 +117,16 @@
             this._context.fillStyle = "white";
 
             var res = this.getFontHeight(font);
-            this._lineHeight = res.height;
+            this._lineHeightSuper = res.height;
+            this._lineHeight = this._superSample ? (this._lineHeightSuper / 2) : this._lineHeightSuper;
             this._offset = res.offset-1;
 
             var maxCharWidth = this._context.measureText("W").width;
-            this._spaceWidth = this._context.measureText(" ").width;
+            this._spaceWidthSuper = this._context.measureText(" ").width;
+            this._spaceWidth = this._superSample ? (this._spaceWidthSuper / 2) : this._spaceWidthSuper;
 
             // This is an approximate size, but should always be able to fit at least the maxCharCount
-            var totalEstSurface = this._lineHeight * maxCharWidth * maxCharCount;
+            var totalEstSurface = this._lineHeightSuper * maxCharWidth * maxCharCount;
             var edge = Math.sqrt(totalEstSurface);
             var textSize = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
 
@@ -157,11 +176,11 @@
 
             // we reached the end of the current line?
             let width = Math.round(measure.width);
-            var xMargin = Math.ceil(this._lineHeight/20);
+            var xMargin = Math.ceil(this._lineHeightSuper/20);
             var yMargin = xMargin;
             if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeight + yMargin;
+                this._currentFreePosition.y += this._lineHeightSuper + yMargin;
 
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
@@ -174,8 +193,8 @@
 
             // Fill the CharInfo object
             info.topLeftUV = new Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeight + 2) / textureSize.height));
-            info.charWidth = width;
+            info.bottomRightUV = new Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + 2) / textureSize.height));
+            info.charWidth = this._superSample ? (width/2) : width;
 
             // Add the info structure
             this._charInfos[char] = info;
@@ -224,7 +243,26 @@
             }
             maxWidth = Math.max(maxWidth, curWidth);
 
-            return new Size(maxWidth, lineCount * this._lineHeight);
+            return new Size(maxWidth, lineCount * this.lineHeight);
+        }
+
+        private getSuperSampleFont(font: string): string {
+            // Eternal thank to http://stackoverflow.com/a/10136041/802124
+            let regex = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-,\"\sa-z]+?)\s*$/;
+            let res = font.toLocaleLowerCase().match(regex);
+            if (res == null) {
+                return null;
+            }
+            let size = parseInt(res[4]);
+            res[4] = (size * 2).toString() + (res[4].match(/\D+/) || []).pop();
+
+            let newFont = "";
+            for (let j = 1; j < res.length; j++) {
+                if (res[j] != null) {
+                    newFont += res[j] + " ";
+                }
+            }
+            return newFont;
         }
 
         // More info here: https://videlais.com/2014/03/16/the-many-and-varied-problems-with-measuring-font-height-for-html5-canvas/
