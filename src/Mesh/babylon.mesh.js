@@ -895,7 +895,7 @@ var BABYLON;
             this._draw(subMesh, fillMode, instancesCount);
             engine.unbindInstanceAttributes();
         };
-        Mesh.prototype._processRendering = function (subMesh, effect, fillMode, batch, hardwareInstancedRendering, onBeforeDraw) {
+        Mesh.prototype._processRendering = function (subMesh, effect, fillMode, batch, hardwareInstancedRendering, onBeforeDraw, effectiveMaterial) {
             var scene = this.getScene();
             var engine = scene.getEngine();
             if (hardwareInstancedRendering) {
@@ -905,7 +905,7 @@ var BABYLON;
                 if (batch.renderSelf[subMesh._id]) {
                     // Draw
                     if (onBeforeDraw) {
-                        onBeforeDraw(false, this.getWorldMatrix());
+                        onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
                     }
                     this._draw(subMesh, fillMode, this._overridenInstanceCount);
                 }
@@ -915,7 +915,7 @@ var BABYLON;
                         // World
                         var world = instance.getWorldMatrix();
                         if (onBeforeDraw) {
-                            onBeforeDraw(true, world);
+                            onBeforeDraw(true, world, effectiveMaterial);
                         }
                         // Draw
                         this._draw(subMesh, fillMode);
@@ -966,11 +966,7 @@ var BABYLON;
                 engine.setAlphaMode(effectiveMaterial.alphaMode);
             }
             // Draw
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, function (isInstance, world) {
-                if (isInstance) {
-                    effectiveMaterial.bindOnlyWorldMatrix(world);
-                }
-            });
+            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw);
             // Unbind
             effectiveMaterial.unbind();
             // Outline - step 2
@@ -988,6 +984,11 @@ var BABYLON;
                 engine.setAlphaMode(currentMode);
             }
             this.onAfterRenderObservable.notifyObservers(this);
+        };
+        Mesh.prototype._onBeforeDraw = function (isInstance, world, effectiveMaterial) {
+            if (isInstance) {
+                effectiveMaterial.bindOnlyWorldMatrix(world);
+            }
         };
         /**
          * Returns an array populated with ParticleSystem objects whose the mesh is the emitter.
@@ -1018,27 +1019,29 @@ var BABYLON;
             return results;
         };
         Mesh.prototype._checkDelayState = function () {
-            var _this = this;
-            var that = this;
             var scene = this.getScene();
             if (this._geometry) {
                 this._geometry.load(scene);
             }
-            else if (that.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
-                that.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
-                scene._addPendingData(that);
-                var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
-                BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
-                    if (data instanceof ArrayBuffer) {
-                        _this._delayLoadingFunction(data, _this);
-                    }
-                    else {
-                        _this._delayLoadingFunction(JSON.parse(data), _this);
-                    }
-                    _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
-                    scene._removePendingData(_this);
-                }, function () { }, scene.database, getBinaryData);
+            else if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
+                this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
+                this._queueLoad(this, scene);
             }
+        };
+        Mesh.prototype._queueLoad = function (mesh, scene) {
+            var _this = this;
+            scene._addPendingData(mesh);
+            var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
+            BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
+                if (data instanceof ArrayBuffer) {
+                    _this._delayLoadingFunction(data, _this);
+                }
+                else {
+                    _this._delayLoadingFunction(JSON.parse(data), _this);
+                }
+                _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
+                scene._removePendingData(_this);
+            }, function () { }, scene.database, getBinaryData);
         };
         /**
          * Boolean, true is the mesh in the frustum defined by the Plane objects from the `frustumPlanes` array parameter.

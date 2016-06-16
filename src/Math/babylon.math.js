@@ -918,12 +918,16 @@ var BABYLON;
             var ch = viewport.height;
             var cx = viewport.x;
             var cy = viewport.y;
-            var viewportMatrix = Matrix.FromValues(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 1, 0, cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
-            var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
-            return Vector3.TransformCoordinates(vector, finalMatrix);
+            var viewportMatrix = Vector3._viewportMatrixCache ? Vector3._viewportMatrixCache : (Vector3._viewportMatrixCache = new Matrix());
+            Matrix.FromValuesToRef(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 1, 0, cx + cw / 2.0, ch / 2.0 + cy, 0, 1, viewportMatrix);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(transform, matrix);
+            matrix.multiplyToRef(viewportMatrix, matrix);
+            return Vector3.TransformCoordinates(vector, matrix);
         };
         Vector3.UnprojectFromTransform = function (source, viewportWidth, viewportHeight, world, transform) {
-            var matrix = world.multiply(transform);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(transform, matrix);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
@@ -935,7 +939,9 @@ var BABYLON;
             return vector;
         };
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
-            var matrix = world.multiply(view).multiply(projection);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(view, matrix);
+            matrix.multiplyToRef(projection, matrix);
             matrix.invert();
             var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), source.z);
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
@@ -1633,7 +1639,9 @@ var BABYLON;
             return new Quaternion(0, 0, 0, 1);
         };
         Quaternion.RotationAxis = function (axis, angle) {
-            var result = new Quaternion();
+            return Quaternion.RotationAxisToRef(axis, angle, new Quaternion());
+        };
+        Quaternion.RotationAxisToRef = function (axis, angle, result) {
             var sin = Math.sin(angle / 2);
             axis.normalize();
             result.w = Math.cos(angle / 2);
@@ -1649,9 +1657,7 @@ var BABYLON;
             return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         };
         Quaternion.RotationYawPitchRoll = function (yaw, pitch, roll) {
-            var result = new Quaternion();
-            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, result);
-            return result;
+            return Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, new Quaternion());
         };
         Quaternion.RotationYawPitchRollToRef = function (yaw, pitch, roll, result) {
             // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
@@ -1668,6 +1674,7 @@ var BABYLON;
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+            return result;
         };
         Quaternion.RotationAlphaBetaGamma = function (alpha, beta, gamma) {
             var result = new Quaternion();

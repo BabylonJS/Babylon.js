@@ -55,7 +55,7 @@ var BABYLON;
         var engine = scene.getEngine();
         var potWidth = BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = BABYLON.Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        engine._bindTextureDirectly(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
         texture._baseWidth = width;
         texture._baseHeight = height;
@@ -69,7 +69,7 @@ var BABYLON;
         if (!noMipmap && !isCompressed) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        engine._bindTextureDirectly(gl.TEXTURE_2D, null);
         engine.resetTextureCache();
         scene._removePendingData(texture);
         if (onLoad) {
@@ -153,6 +153,7 @@ var BABYLON;
             this._compiledEffects = {};
             this._uintIndicesCurrentlySet = false;
             this._currentBoundBuffer = new Array();
+            this._currentBufferPointers = [];
             this._currentInstanceLocations = new Array();
             this._currentInstanceBuffers = new Array();
             this._renderingCanvas = canvas;
@@ -681,7 +682,7 @@ var BABYLON;
         Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight) {
             this._currentRenderTarget = texture;
             var gl = this._gl;
-            gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
+            this.bindUnboundFramebuffer(texture._framebuffer);
             if (texture.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             }
@@ -691,23 +692,29 @@ var BABYLON;
             this._gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
             this.wipeCaches();
         };
+        Engine.prototype.bindUnboundFramebuffer = function (framebuffer) {
+            if (this._currentFramebuffer !== framebuffer) {
+                this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, framebuffer);
+                this._currentFramebuffer = framebuffer;
+            }
+        };
         Engine.prototype.unBindFramebuffer = function (texture, disableGenerateMipMaps) {
             if (disableGenerateMipMaps === void 0) { disableGenerateMipMaps = false; }
             this._currentRenderTarget = null;
             if (texture.generateMipMaps && !disableGenerateMipMaps) {
                 var gl = this._gl;
-                gl.bindTexture(gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
-                gl.bindTexture(gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(gl.TEXTURE_2D, null);
             }
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
         };
         Engine.prototype.generateMipMapsForCubemap = function (texture) {
             if (texture.generateMipMaps) {
                 var gl = this._gl;
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
             }
         };
         Engine.prototype.flushFramebuffer = function () {
@@ -715,18 +722,18 @@ var BABYLON;
         };
         Engine.prototype.restoreDefaultFramebuffer = function () {
             this._currentRenderTarget = null;
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
             this.setViewport(this._cachedViewport);
             this.wipeCaches();
         };
         // VBOs
         Engine.prototype._resetVertexBufferBinding = function () {
-            this.bindBuffer(null, this._gl.ARRAY_BUFFER);
+            this.bindArrayBuffer(null);
             this._cachedVertexBuffers = null;
         };
         Engine.prototype.createVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
-            this.bindBuffer(vbo, this._gl.ARRAY_BUFFER);
+            this.bindArrayBuffer(vbo);
             if (vertices instanceof Float32Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.STATIC_DRAW);
             }
@@ -739,7 +746,7 @@ var BABYLON;
         };
         Engine.prototype.createDynamicVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
-            this.bindBuffer(vbo, this._gl.ARRAY_BUFFER);
+            this.bindArrayBuffer(vbo);
             if (vertices instanceof Float32Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.DYNAMIC_DRAW);
             }
@@ -751,7 +758,7 @@ var BABYLON;
             return vbo;
         };
         Engine.prototype.updateDynamicVertexBuffer = function (vertexBuffer, vertices, offset, count) {
-            this.bindBuffer(vertexBuffer, this._gl.ARRAY_BUFFER);
+            this.bindArrayBuffer(vertexBuffer);
             if (offset === undefined) {
                 offset = 0;
             }
@@ -774,12 +781,12 @@ var BABYLON;
             this._resetVertexBufferBinding();
         };
         Engine.prototype._resetIndexBufferBinding = function () {
-            this.bindBuffer(null, this._gl.ELEMENT_ARRAY_BUFFER);
+            this.bindIndexBuffer(null);
             this._cachedIndexBuffer = null;
         };
         Engine.prototype.createIndexBuffer = function (indices) {
             var vbo = this._gl.createBuffer();
-            this.bindBuffer(vbo, this._gl.ELEMENT_ARRAY_BUFFER);
+            this.bindIndexBuffer(vbo);
             // Check for 32 bits indices
             var arrayBuffer;
             var need32Bits = false;
@@ -804,8 +811,8 @@ var BABYLON;
         Engine.prototype.bindArrayBuffer = function (buffer) {
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         };
-        Engine.prototype.updateArrayBuffer = function (data) {
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+        Engine.prototype.bindIndexBuffer = function (buffer) {
+            this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
         };
         Engine.prototype.bindBuffer = function (buffer, target) {
             if (this._currentBoundBuffer[target] !== buffer) {
@@ -813,23 +820,63 @@ var BABYLON;
                 this._currentBoundBuffer[target] = buffer;
             }
         };
+        Engine.prototype.updateArrayBuffer = function (data) {
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+        };
+        Engine.prototype.vertexAttribPointer = function (buffer, indx, size, type, normalized, stride, offset) {
+            var pointer = this._currentBufferPointers[indx];
+            var changed = false;
+            if (!pointer) {
+                changed = true;
+                this._currentBufferPointers[indx] = { indx: indx, size: size, type: type, normalized: normalized, stride: stride, offset: offset, buffer: buffer };
+            }
+            else {
+                if (pointer.buffer !== buffer) {
+                    pointer.buffer = buffer;
+                    changed = true;
+                }
+                if (pointer.size !== size) {
+                    pointer.size = size;
+                    changed = true;
+                }
+                if (pointer.type !== type) {
+                    pointer.type = type;
+                    changed = true;
+                }
+                if (pointer.normalized !== normalized) {
+                    pointer.normalized = normalized;
+                    changed = true;
+                }
+                if (pointer.stride !== stride) {
+                    pointer.stride = stride;
+                    changed = true;
+                }
+                if (pointer.offset !== offset) {
+                    pointer.offset = offset;
+                    changed = true;
+                }
+            }
+            if (changed) {
+                this.bindArrayBuffer(buffer);
+                this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
+            }
+        };
         Engine.prototype.bindBuffersDirectly = function (vertexBuffer, indexBuffer, vertexDeclaration, vertexStrideSize, effect) {
             if (this._cachedVertexBuffers !== vertexBuffer || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffer;
                 this._cachedEffectForVertexBuffers = effect;
-                this.bindBuffer(vertexBuffer, this._gl.ARRAY_BUFFER);
                 var offset = 0;
                 for (var index = 0; index < vertexDeclaration.length; index++) {
                     var order = effect.getAttributeLocation(index);
                     if (order >= 0) {
-                        this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+                        this.vertexAttribPointer(vertexBuffer, order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
                     }
                     offset += vertexDeclaration[index] * 4;
                 }
             }
             if (this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
-                this.bindBuffer(indexBuffer, this._gl.ELEMENT_ARRAY_BUFFER);
+                this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
             }
         };
@@ -846,8 +893,7 @@ var BABYLON;
                             continue;
                         }
                         var buffer = vertexBuffer.getBuffer();
-                        this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
-                        this._gl.vertexAttribPointer(order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
                         if (vertexBuffer.getIsInstanced()) {
                             this._caps.instancedArrays.vertexAttribDivisorANGLE(order, 1);
                             this._currentInstanceLocations.push(order);
@@ -858,7 +904,7 @@ var BABYLON;
             }
             if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
-                this.bindBuffer(indexBuffer, this._gl.ELEMENT_ARRAY_BUFFER);
+                this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
             }
         };
@@ -868,7 +914,7 @@ var BABYLON;
                 var instancesBuffer = this._currentInstanceBuffers[i];
                 if (boundBuffer != instancesBuffer) {
                     boundBuffer = instancesBuffer;
-                    this.bindBuffer(instancesBuffer, this._gl.ARRAY_BUFFER);
+                    this.bindArrayBuffer(instancesBuffer);
                 }
                 var offsetLocation = this._currentInstanceLocations[i];
                 this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
@@ -887,7 +933,7 @@ var BABYLON;
         Engine.prototype.createInstancesBuffer = function (capacity) {
             var buffer = this._gl.createBuffer();
             buffer.capacity = capacity;
-            this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+            this.bindArrayBuffer(buffer);
             this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
             return buffer;
         };
@@ -895,7 +941,7 @@ var BABYLON;
             this._gl.deleteBuffer(buffer);
         };
         Engine.prototype.updateAndBindInstancesBuffer = function (instancesBuffer, data, offsetLocations) {
-            this.bindBuffer(instancesBuffer, this._gl.ARRAY_BUFFER);
+            this.bindArrayBuffer(instancesBuffer);
             if (data) {
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
             }
@@ -908,7 +954,7 @@ var BABYLON;
                 for (var i = 0; i < offsetLocations.length; i++) {
                     var ai = offsetLocations[i];
                     this._gl.enableVertexAttribArray(ai.index);
-                    this._gl.vertexAttribPointer(ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                    this.vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
                     this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
                     this._currentInstanceLocations.push(ai.index);
                     this._currentInstanceBuffers.push(instancesBuffer);
@@ -918,7 +964,7 @@ var BABYLON;
                 for (var index = 0; index < 4; index++) {
                     var offsetLocation = offsetLocations[index];
                     this._gl.enableVertexAttribArray(offsetLocation);
-                    this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
+                    this.vertexAttribPointer(instancesBuffer, offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
                     this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
                     this._currentInstanceLocations.push(offsetLocation);
                     this._currentInstanceBuffers.push(instancesBuffer);
@@ -1039,7 +1085,7 @@ var BABYLON;
             this._vertexAttribArraysToUse = this._vertexAttribArraysToUse || [];
             this._vertexAttribArraysEnabled = this._vertexAttribArraysEnabled || [];
             // Use program
-            this._gl.useProgram(effect.getProgram());
+            this.setProgram(effect.getProgram());
             var i, ul;
             for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
                 this._vertexAttribArraysToUse[i] = false;
@@ -1238,7 +1284,7 @@ var BABYLON;
         };
         Engine.prototype.setSamplingMode = function (texture, samplingMode) {
             var gl = this._gl;
-            gl.bindTexture(gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             var magFilter = gl.NEAREST;
             var minFilter = gl.NEAREST;
             if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
@@ -1251,7 +1297,7 @@ var BABYLON;
             }
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
-            gl.bindTexture(gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(gl.TEXTURE_2D, null);
             texture.samplingMode = samplingMode;
         };
         Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
@@ -1377,7 +1423,7 @@ var BABYLON;
         Engine.prototype.updateRawTexture = function (texture, data, format, invertY, compression) {
             if (compression === void 0) { compression = null; }
             var internalFormat = this._getInternalFormat(format);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             if (texture._width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
@@ -1391,7 +1437,7 @@ var BABYLON;
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             this.resetTextureCache();
             texture.isReady = true;
         };
@@ -1404,12 +1450,12 @@ var BABYLON;
             texture._height = height;
             texture.references = 1;
             this.updateRawTexture(texture, data, format, invertY, compression);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             texture.samplingMode = samplingMode;
             this._loadedTexturesCache.push(texture);
             return texture;
@@ -1436,21 +1482,21 @@ var BABYLON;
         Engine.prototype.updateTextureSamplingMode = function (samplingMode, texture) {
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
             if (texture.isCube) {
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, texture);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture);
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             }
             else {
-                this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
                 this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
                 this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             }
         };
         Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY, premulAlpha) {
             if (premulAlpha === void 0) { premulAlpha = false; }
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
@@ -1459,7 +1505,7 @@ var BABYLON;
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             this.resetTextureCache();
             texture.isReady = true;
         };
@@ -1467,7 +1513,7 @@ var BABYLON;
             if (texture._isDisabled) {
                 return;
             }
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
             try {
                 // Testing video texture support
@@ -1497,7 +1543,7 @@ var BABYLON;
                 if (texture.generateMipMaps) {
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
                 }
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this.resetTextureCache();
                 texture.isReady = true;
             }
@@ -1529,7 +1575,7 @@ var BABYLON;
             }
             var gl = this._gl;
             var texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
             var width = size.width || size;
             var height = size.height || size;
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
@@ -1551,7 +1597,7 @@ var BABYLON;
             }
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            this.bindUnboundFramebuffer(framebuffer);
             if (generateDepthBuffer) {
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
             }
@@ -1559,9 +1605,9 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             // Unbind
-            gl.bindTexture(gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
             texture._framebuffer = framebuffer;
             if (generateDepthBuffer) {
                 texture._depthBuffer = depthBuffer;
@@ -1595,7 +1641,7 @@ var BABYLON;
             texture.references = 1;
             texture.samplingMode = samplingMode;
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
             for (var face = 0; face < 6; face++) {
                 gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
             }
@@ -1609,17 +1655,17 @@ var BABYLON;
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            this.bindUnboundFramebuffer(framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
             // Mipmaps
             if (texture.generateMipMaps) {
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
             // Unbind
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
             texture._framebuffer = framebuffer;
             texture._depthBuffer = depthBuffer;
             this.resetTextureCache();
@@ -1641,7 +1687,7 @@ var BABYLON;
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
                     BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 6);
                     if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
@@ -1651,7 +1697,7 @@ var BABYLON;
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
                     _this.resetTextureCache();
                     texture._width = info.width;
                     texture._height = info.height;
@@ -1669,7 +1715,7 @@ var BABYLON;
                         gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                         gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                     ];
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
                     for (var index = 0; index < faces.length; index++) {
                         _this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
@@ -1682,7 +1728,7 @@ var BABYLON;
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
                     _this.resetTextureCache();
                     texture._width = width;
                     texture._height = height;
@@ -1728,7 +1774,7 @@ var BABYLON;
                 width = texture._width;
                 height = texture._height;
                 isPot = (BABYLON.Tools.IsExponentOfTwo(width) && BABYLON.Tools.IsExponentOfTwo(height));
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
                 if (!noMipmap && isPot) {
                     if (mipmmapGenerator) {
@@ -1803,7 +1849,7 @@ var BABYLON;
                 }
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
                 texture.isReady = true;
                 _this.resetTextureCache();
                 scene._removePendingData(texture);
@@ -1830,8 +1876,14 @@ var BABYLON;
                 this._loadedTexturesCache.splice(index, 1);
             }
         };
+        Engine.prototype.setProgram = function (program) {
+            if (this._currentProgram !== program) {
+                this._gl.useProgram(program);
+                this._currentProgram = program;
+            }
+        };
         Engine.prototype.bindSamplers = function (effect) {
-            this._gl.useProgram(effect.getProgram());
+            this.setProgram(effect.getProgram());
             var samplers = effect.getSamplers();
             for (var index = 0; index < samplers.length; index++) {
                 var uniform = effect.getUniform(samplers[index]);
@@ -1839,23 +1891,33 @@ var BABYLON;
             }
             this._currentEffect = null;
         };
+        Engine.prototype.activateTexture = function (texture) {
+            if (this._activeTexture !== texture) {
+                this._gl.activeTexture(texture);
+                this._activeTexture = texture;
+            }
+        };
+        Engine.prototype._bindTextureDirectly = function (target, texture) {
+            if (this._activeTexturesCache[this._activeTexture] !== texture) {
+                this._gl.bindTexture(target, texture);
+                this._activeTexturesCache[this._activeTexture] = texture;
+            }
+        };
         Engine.prototype._bindTexture = function (channel, texture) {
             if (channel < 0) {
                 return;
             }
-            this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            this._activeTexturesCache[channel] = null;
+            this.activateTexture(this._gl["TEXTURE" + channel]);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         };
         Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
         };
         Engine.prototype.unbindAllTextures = function () {
             for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
-                this._activeTexturesCache[channel] = null;
+                this.activateTexture(this._gl["TEXTURE" + channel]);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             }
         };
         Engine.prototype.setTexture = function (channel, texture) {
@@ -1865,17 +1927,16 @@ var BABYLON;
             // Not ready?
             if (!texture || !texture.isReady()) {
                 if (this._activeTexturesCache[channel] != null) {
-                    this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                    this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                    this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
-                    this._activeTexturesCache[channel] = null;
+                    this.activateTexture(this._gl["TEXTURE" + channel]);
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                    this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 }
                 return;
             }
             // Video
             var alreadyActivated = false;
             if (texture instanceof BABYLON.VideoTexture) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                this.activateTexture(this._gl["TEXTURE" + channel]);
                 alreadyActivated = true;
                 texture.update();
             }
@@ -1883,16 +1944,15 @@ var BABYLON;
                 texture.delayLoad();
                 return;
             }
-            if (this._activeTexturesCache[channel] === texture) {
+            var internalTexture = texture.getInternalTexture();
+            if (this._activeTexturesCache[channel] === internalTexture) {
                 return;
             }
-            this._activeTexturesCache[channel] = texture;
-            var internalTexture = texture.getInternalTexture();
             if (!alreadyActivated) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                this.activateTexture(this._gl["TEXTURE" + channel]);
             }
             if (internalTexture.isCube) {
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture);
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
                     // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
@@ -1903,7 +1963,7 @@ var BABYLON;
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
             }
             else {
-                this._gl.bindTexture(this._gl.TEXTURE_2D, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture);
                 if (internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
                     switch (texture.wrapU) {

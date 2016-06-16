@@ -127,9 +127,7 @@ var BABYLON;
                 return null;
             }
             var animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
-            var keys = [];
-            keys.push({ frame: 0, value: from });
-            keys.push({ frame: totalFrame, value: to });
+            var keys = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
             animation.setKeys(keys);
             if (easingFunction !== undefined) {
                 animation.setEasingFunction(easingFunction);
