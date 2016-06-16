@@ -180,13 +180,13 @@ var BABYLON;
             this.texture = texture;
             this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this.size = settings.spriteSize || null;
+            this.size = settings.spriteSize;
             this.spriteLocation = settings.spriteLocation || new BABYLON.Vector2(0, 0);
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this._isTransparent = true;
-            if (!this.size) {
+            if (settings.spriteSize == null) {
                 var s = texture.getSize();
                 this.size = new BABYLON.Size(s.width, s.height);
             }
