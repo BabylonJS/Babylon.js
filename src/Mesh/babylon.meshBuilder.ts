@@ -613,11 +613,11 @@
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
         public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
-            var width = options.width || 10;
-            var height = options.height || 10;
-            var subdivisions = options.subdivisions || 1;
-            var minHeight = options.minHeight;
-            var maxHeight = options.maxHeight || 10;
+            var width = options.width || 10.0;
+            var height = options.height || 10.0;
+            var subdivisions = options.subdivisions || 1|0;
+            var minHeight = options.minHeight || 0.0;
+            var maxHeight = options.maxHeight || 10.0;
             var updatable = options.updatable;
             var onReady = options.onReady;
 
@@ -625,8 +625,8 @@
             ground._subdivisions = subdivisions;
             ground._width = width;
             ground._height = height;
-            ground._maxX = ground._width / 2;
-            ground._maxZ = ground._height / 2;
+            ground._maxX = ground._width / 2.0;
+            ground._maxZ = ground._height / 2.0;
             ground._minX = -ground._maxX;
             ground._minZ = -ground._maxZ;
 
