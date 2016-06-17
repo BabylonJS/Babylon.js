@@ -1657,7 +1657,9 @@ var BABYLON;
             return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         };
         Quaternion.RotationYawPitchRoll = function (yaw, pitch, roll) {
-            return Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, new Quaternion());
+            var q = new Quaternion();
+            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, q);
+            return q;
         };
         Quaternion.RotationYawPitchRollToRef = function (yaw, pitch, roll, result) {
             // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
@@ -1674,7 +1676,6 @@ var BABYLON;
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
-            return result;
         };
         Quaternion.RotationAlphaBetaGamma = function (alpha, beta, gamma) {
             var result = new Quaternion();
