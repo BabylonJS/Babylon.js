@@ -2045,10 +2045,12 @@
         }
 
         public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion {
-            return Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, new Quaternion());
+            var q = new Quaternion();
+            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, q);
+            return q;
         }
 
-        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): Quaternion {
+        public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
             // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
             var halfRoll = roll * 0.5;
             var halfPitch = pitch * 0.5;
@@ -2065,8 +2067,6 @@
             result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
             result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
             result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
-
-            return result;
         }
 
         public static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion {
