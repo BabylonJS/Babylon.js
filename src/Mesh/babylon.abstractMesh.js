@@ -682,6 +682,7 @@ var BABYLON;
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
+            this.rotationQuaternion = this.rotationQuaternion || new BABYLON.Quaternion();
             BABYLON.Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
         };
         AbstractMesh.prototype.attachToBone = function (bone, affectedMesh) {
