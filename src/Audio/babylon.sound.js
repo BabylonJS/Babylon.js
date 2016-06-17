@@ -305,6 +305,7 @@ var BABYLON;
         /**
         * Play the sound
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
         */
         Sound.prototype.play = function (time, offset) {
             var _this = this;
@@ -585,6 +586,6 @@ var BABYLON;
             return newSound;
         };
         return Sound;
-    }());
+    })();
     BABYLON.Sound = Sound;
 })(BABYLON || (BABYLON = {}));
