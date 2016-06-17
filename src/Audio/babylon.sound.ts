@@ -347,7 +347,7 @@
                     if (this._startOffset < 0) {
                         time = -this._startOffset;
                         this._startOffset = 0;
-                    }  
+                    }
                     var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound) {
@@ -536,7 +536,7 @@
             // Can't clone a streaming sound
             else {
                 return null;
-            } 
+            }
         }
 
         public getAudioBuffer() {
@@ -581,7 +581,7 @@
         public static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound {
             var soundName = parsedSound.name;
             var soundUrl;
-            
+
             if (parsedSound.url) {
                 soundUrl = rootUrl + parsedSound.url;
             }
@@ -637,7 +637,7 @@
                     newSound.attachToMesh(connectedMesh);
                 }
             }
-            
+
             return newSound;
         }
     }
