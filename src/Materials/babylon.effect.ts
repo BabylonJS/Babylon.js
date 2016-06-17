@@ -346,15 +346,6 @@
                     this.onCompiled(this);
                 }
             } catch (e) {
-                // Is it a problem with precision?
-                if (e.message.indexOf("highp") !== -1) {
-                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
-                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
-
-                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
-
-                    return;
-                }
                 // Let's go through fallbacks then
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Unable to compile effect with current defines. Trying next fallback.");
