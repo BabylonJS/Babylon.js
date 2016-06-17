@@ -346,7 +346,7 @@
                     this.onCompiled(this);
                 }
             } catch (e) {
-                // Let's go through fallbacks then
+                // Let's go through fallbacks
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Unable to compile effect with current defines. Trying next fallback.");
                     this._dumpShadersName();
