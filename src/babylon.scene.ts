@@ -434,8 +434,9 @@
         public  _particlesDuration            = new PerfCounter();
         private _renderDuration               = new PerfCounter();
         public  _spritesDuration              = new PerfCounter();
-        private _animationRatio               = new PerfCounter();
         public  _activeBones                  = new PerfCounter();
+
+        private _animationRatio: number;
 
         private _animationStartDate: number;
         public _cachedMaterial: Material;
@@ -672,10 +673,6 @@
         }
 
         public getAnimationRatio(): number {
-            return this._animationRatio.current;
-        }
-
-        public animationRatioPerfCounter(): PerfCounter {
             return this._animationRatio;
         }
 
@@ -2176,7 +2173,7 @@
 
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio.addCount(deltaTime * (60.0 / 1000.0), true);
+            this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 
             // Physics
