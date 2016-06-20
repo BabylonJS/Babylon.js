@@ -22,7 +22,7 @@
 
             // Particles
             var activeCamera = this._scene.activeCamera;
-            var beforeParticlesDate = Tools.Now;
+            this._scene._particlesDuration.beginMonitoring();
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
 
@@ -37,10 +37,10 @@
                 this._clearDepthBuffer();
 
                 if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
-                    this._scene._activeParticles += particleSystem.render();
+                    this._scene._activeParticles.addCount(particleSystem.render(), false);
                 }
             }
-            this._scene._particlesDuration.updateCounter(Tools.Now - beforeParticlesDate, beforeParticlesDate, false);
+            this._scene._particlesDuration.endMonitoring(false);
         }
 
         private _renderSprites(index: number): void {
@@ -50,7 +50,7 @@
 
             // Sprites       
             var activeCamera = this._scene.activeCamera;
-            var beforeSpritessDate = Tools.Now;
+            this._scene._spritesDuration.beginMonitoring();
             for (var id = 0; id < this._scene.spriteManagers.length; id++) {
                 var spriteManager = this._scene.spriteManagers[id];
 
@@ -59,7 +59,7 @@
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration.updateCounter(Tools.Now - beforeSpritessDate, beforeSpritessDate, false);
+            this._scene._spritesDuration.endMonitoring(false);
         }
 
         private _clearDepthBuffer(): void {

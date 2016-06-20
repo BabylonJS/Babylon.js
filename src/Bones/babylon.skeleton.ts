@@ -258,7 +258,7 @@
 
             this._isDirty = false;
 
-            this._scene._activeBones += this.bones.length;
+            this._scene._activeBones.addCount(this.bones.length, false);
         }
 
         public getAnimatables(): IAnimatable[] {
