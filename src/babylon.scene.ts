@@ -422,12 +422,12 @@
         private _totalVertices = 0;
         public _activeIndices = 0;
         public _activeParticles = 0;
-        private _lastFrameDuration = 0;
-        private _evaluateActiveMeshesDuration = 0;
-        private _renderTargetsDuration = 0;
-        public _particlesDuration = 0;
-        private _renderDuration = 0;
-        public _spritesDuration = 0;
+        private _lastFrameDuration = new PerfCounter();
+        private _evaluateActiveMeshesDuration = new PerfCounter();
+        private _renderTargetsDuration = new PerfCounter();
+        public _particlesDuration = new PerfCounter();
+        private _renderDuration = new PerfCounter();
+        public _spritesDuration = new PerfCounter();
         private _animationRatio = 0;
         private _animationStartDate: number;
         public _cachedMaterial: Material;
@@ -601,10 +601,18 @@
 
         // Stats
         public getLastFrameDuration(): number {
+            return this._lastFrameDuration.current;
+        }
+
+        public get lastFramePerfCounter(): PerfCounter {
             return this._lastFrameDuration;
         }
 
         public getEvaluateActiveMeshesDuration(): number {
+            return this._evaluateActiveMeshesDuration.current;
+        }
+
+        public get evaluateActiveMeshesDurationPerfCounter(): PerfCounter {
             return this._evaluateActiveMeshesDuration;
         }
 
@@ -613,18 +621,30 @@
         }
 
         public getRenderTargetsDuration(): number {
-            return this._renderTargetsDuration;
+            return this._renderTargetsDuration.current;
         }
 
         public getRenderDuration(): number {
+            return this._renderDuration.current;
+        }
+
+        public get renderDurationPerfCounter(): PerfCounter {
             return this._renderDuration;
         }
 
         public getParticlesDuration(): number {
+            return this._particlesDuration.current;
+        }
+
+        public get particlesDurationPerfCounter(): PerfCounter {
             return this._particlesDuration;
         }
 
         public getSpritesDuration(): number {
+            return this._spritesDuration.current;
+        }
+
+        public get spriteDuractionPerfCounter(): PerfCounter {
             return this._spritesDuration;
         }
 
@@ -1863,7 +1883,7 @@
                 }
                 Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
             }
-            this._particlesDuration += Tools.Now - beforeParticlesDate;
+            this._particlesDuration.updateCounter(Tools.Now - beforeParticlesDate, null, false);
         }
 
         private _activeMesh(mesh: AbstractMesh): void {
@@ -1914,6 +1934,7 @@
 
         private _renderForCamera(camera: Camera): void {
             var engine = this._engine;
+            var startTime = Tools.Now;
 
             this.activeCamera = camera;
 
@@ -1936,7 +1957,7 @@
             var beforeEvaluateActiveMeshesDate = Tools.Now;
             Tools.StartPerformanceCounter("Active meshes evaluation");
             this._evaluateActiveMeshes();
-            this._evaluateActiveMeshesDuration += Tools.Now - beforeEvaluateActiveMeshesDate;
+            this._evaluateActiveMeshesDuration.updateCounter(Tools.Now - beforeEvaluateActiveMeshesDate, startTime, false);
             Tools.EndPerformanceCounter("Active meshes evaluation");
 
             // Software skinning
@@ -1965,7 +1986,7 @@
                 this._renderId++;
                 engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
-            this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
+            this._renderTargetsDuration.updateCounter(Tools.Now - beforeRenderTargetDate, startTime, false);
 
             // Prepare Frame
             this.postProcessManager._prepareFrame();
@@ -2023,7 +2044,7 @@
                 engine.setDepthBuffer(true);
             }
 
-            this._renderDuration += Tools.Now - beforeRenderDate;
+            this._renderDuration.updateCounter(Tools.Now - beforeRenderDate, startTime, false);
 
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
@@ -2098,12 +2119,12 @@
 
         public render(): void {
             var startDate = Tools.Now;
-            this._particlesDuration = 0;
-            this._spritesDuration = 0;
+            this._particlesDuration.updateCounter(0, startDate);
+            this._spritesDuration.updateCounter(0, startDate);
             this._activeParticles = 0;
-            this._renderDuration = 0;
-            this._renderTargetsDuration = 0;
-            this._evaluateActiveMeshesDuration = 0;
+            this._renderDuration.updateCounter(0, startDate);
+            this._renderTargetsDuration.updateCounter(0, startDate);
+            this._evaluateActiveMeshesDuration.updateCounter(0, startDate);
             this._totalVertices = 0;
             this._activeIndices = 0;
             this._activeBones = 0;
@@ -2171,7 +2192,7 @@
             if (this.customRenderTargets.length > 0) { // Restore back buffer
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
+            this._renderTargetsDuration.updateCounter(Tools.Now - beforeRenderTargetDate, startDate);
             this.activeCamera = currentActiveCamera;
 
             // Procedural textures
@@ -2256,7 +2277,7 @@
             }
 
             Tools.EndPerformanceCounter("Scene rendering");
-            this._lastFrameDuration = Tools.Now - startDate;
+            this._lastFrameDuration.updateCounter(Tools.Now - startDate, startDate);
         }
 
         private _updateAudioParameters() {

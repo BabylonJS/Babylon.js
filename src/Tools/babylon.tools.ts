@@ -1020,6 +1020,119 @@
     }
 
     /**
+     * This class is used to track a performance counter which is number based.
+     * The user has access to many properties which give statistics of different nature
+     * The implementer uses the updateCounter() method to update the many statistics.
+     */
+    export class PerfCounter {
+        /**
+         * Returns the smallest value ever
+         */
+        public get min(): number {
+            return this._min;
+        }
+
+        /**
+         * Returns the biggest value ever
+         */
+        public get max(): number {
+            return this._max;
+        }
+
+        /**
+         * Returns the average value since the performance counter is running
+         */
+        public get average(): number {
+            return this._average;
+        }
+
+        /**
+         * Returns the average value of the last second the counter was monitored
+         */
+        public get lastSecAverage(): number {
+            return this._lastSecAverage;
+        }
+
+        /**
+         * Returns the current value
+         */
+        public get current(): number {
+            return this._current;
+        }
+
+        constructor() {
+            this._min                = 0;
+            this._max                = 0;
+            this._average            = 0;
+            this._lastSecAverage     = 0;
+            this._current            = 0;
+            this._totalValueCount    = 0;
+            this._totalAccumulated   = 0;
+            this._lastSecAccumulated = 0;
+            this._lastSecTime        = 0;
+            this._lastSecValueCount  = 0;
+        }
+
+        /**
+         * This method must be called by the implementer of the counter only!
+         * It's used to update the different statistics
+         * @param newValue the new value recorded
+         * @param currentTime the time at which the value was recorded
+         * @param newFrame true by default to monitor a new frame, if false 'newValue' will be added to the current frame
+         */
+        public updateCounter(newValue: number, currentTime: number, newFrame: boolean=true) {
+
+            // First time init?
+            if (this._lastSecTime === 0) {
+                this._min = this._max = this._current = this._average = this._lastSecAverage = this._totalAccumulated = this._lastSecAccumulated = newValue;
+                if (newFrame) {
+                    this._lastSecTime = currentTime;
+                }
+                this._totalValueCount = this._lastSecValueCount = 1;
+                return;
+            }
+
+            // Min/Max update
+            this._min = Math.min(this._min, newValue);
+            this._max = Math.max(this._max, newValue);
+
+            // Update average
+            if (newFrame) {
+                this._totalValueCount++;
+            }
+            this._totalAccumulated += newValue;
+            this._average = this._totalAccumulated / this._totalValueCount;
+
+            // Reset last sec?
+            if (newFrame && ((currentTime - this._lastSecTime) > 1000)) {
+                this._lastSecAverage = this._lastSecAccumulated / this._lastSecValueCount;
+                this._lastSecTime = currentTime;
+                this._lastSecAccumulated = newValue;
+                this._lastSecValueCount = 1;
+            } else {
+                this._lastSecAccumulated += newValue;
+                if (newFrame) {
+                    this._lastSecValueCount++;
+                }
+            }
+
+            // Current update
+            this._current = newValue;
+        }
+
+        private _min: number;
+        private _max: number;
+        private _average: number;
+        private _current: number;
+        private _totalValueCount: number;
+        private _totalAccumulated: number;
+        private _lastSecAverage: number;
+        private _lastSecAccumulated: number;
+        private _lastSecTime: number;
+        private _lastSecValueCount: number;
+    }
+
+    /**
      * Use this className as a decorator on a given class definition to add it a name.
      * You can then use the Tools.getClassName(obj) on an instance to retrieve its class name.
      * This method is the only way to get it done in all cases, even if the .js file declaring the class is minified
