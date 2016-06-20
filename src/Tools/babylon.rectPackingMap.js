@@ -42,20 +42,28 @@ var BABYLON;
              * @returns And array of 4 Vector2, containing UV coordinates for the four corners of the Rectangle into the map
              */
             get: function () {
-                var mainWidth = this._root._size.width;
-                var mainHeight = this._root._size.height;
-                var topLeft = new BABYLON.Vector2(this._pos.x / mainWidth, this._pos.y / mainHeight);
-                var rightBottom = new BABYLON.Vector2((this._pos.x + this._contentSize.width - 1) / mainWidth, (this._pos.y + this._contentSize.height - 1) / mainHeight);
-                var uvs = new Array();
-                uvs.push(topLeft);
-                uvs.push(new BABYLON.Vector2(rightBottom.x, topLeft.y));
-                uvs.push(rightBottom);
-                uvs.push(new BABYLON.Vector2(topLeft.x, rightBottom.y));
-                return uvs;
+                return this.getUVsForCustomSize(this._root._size);
             },
             enumerable: true,
             configurable: true
         });
+        /**
+         * You may have allocated the PackedRect using over-provisioning (you allocated more than you need in order to prevent frequent deallocations/reallocations) and then using only a part of the PackRect.
+         * This method will return the UVs for this part by given the custom size of what you really use
+         * @param customSize must be less/equal to the allocated size, UV will be compute from this
+         */
+        PackedRect.prototype.getUVsForCustomSize = function (customSize) {
+            var mainWidth = this._root._size.width;
+            var mainHeight = this._root._size.height;
+            var topLeft = new BABYLON.Vector2(this._pos.x / mainWidth, this._pos.y / mainHeight);
+            var rightBottom = new BABYLON.Vector2((this._pos.x + customSize.width - 1) / mainWidth, (this._pos.y + customSize.height - 1) / mainHeight);
+            var uvs = new Array();
+            uvs.push(topLeft);
+            uvs.push(new BABYLON.Vector2(rightBottom.x, topLeft.y));
+            uvs.push(rightBottom);
+            uvs.push(new BABYLON.Vector2(topLeft.x, rightBottom.y));
+            return uvs;
+        };
         /**
          * Free this rectangle from the map.
          * Call this method when you no longer need the rectangle to be in the map.
