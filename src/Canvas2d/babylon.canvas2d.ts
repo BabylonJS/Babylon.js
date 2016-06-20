@@ -913,13 +913,13 @@
         /**
          * Call this method change you want to have layout related data computed and up to date (layout area, primitive area, local/global transformation matrices)
          */
-        public updateCanvasLayout() {
-            this._updateCanvasState();
+        public updateCanvasLayout(forceRecompute: boolean) {
+            this._updateCanvasState(forceRecompute);
         }
 
-        private _updateCanvasState() {
+        private _updateCanvasState(forceRecompute: boolean) {
             // Check if the update has already been made for this render Frame
-            if (this.scene.getRenderId() === this._updateRenderId) {
+            if (!forceRecompute && this.scene.getRenderId() === this._updateRenderId) {
                 return;
             }
 
@@ -966,7 +966,7 @@
 
             this._updateTrackedNodes();
 
-            this._updateCanvasState();
+            this._updateCanvasState(false);
 
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
