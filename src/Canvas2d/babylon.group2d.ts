@@ -116,7 +116,7 @@
 
             if (vertexData) {
                 var uv = vertexData.uvs;
-                let nodeuv = this._renderableData._cacheNode.UVs;
+                let nodeuv = this._renderableData._cacheNodeUVs;
                 for (let i = 0; i < 4; i++) {
                     uv[i * 2 + 0] = nodeuv[i].x;
                     uv[i * 2 + 1] = nodeuv[i].y;
@@ -132,13 +132,35 @@
 
         /**
          * Allow you to access the information regarding the cached rectangle of the Group2D into the MapTexture.
-         * If the `noWorldSpaceNode` options was used at the creation of a WorldSpaceCanvas, the rendering of the canvas must be made by the caller, so typically you want to bind the cacheTexture property to some material/mesh and you must use the cachedRect.UVs property to get the UV coordinates to use for your quad that will display the Canvas.
+         * If the `noWorldSpaceNode` options was used at the creation of a WorldSpaceCanvas, the rendering of the canvas must be made by the caller, so typically you want to bind the cacheTexture property to some material/mesh and you MUST use the Group2D.cachedUVs property to get the UV coordinates to use for your quad that will display the Canvas and NOT the PackedRect.UVs property which are incorrect because the allocated surface may be bigger (due to over-provisioning or shrinking without deallocating) than what the Group is actually using.
          */
         public get cachedRect(): PackedRect {
             if (!this._renderableData) {
                 return null;
             }
             return this._renderableData._cacheNode;
+        }
+
+        /**
+         * The UVs into the MapTexture that map the cached group
+         */
+        public get cachedUVs(): Vector2[] {
+            if (!this._renderableData) {
+                return null;
+            }
+            return this._renderableData._cacheNodeUVs;
+        }
+
+        public get cachedUVsChanged(): Observable<Vector2[]> {
+            if (!this._renderableData) {
+                return null;
+            }
+
+            if (!this._renderableData._cacheNodeUVsChangedObservable) {
+                this._renderableData._cacheNodeUVsChangedObservable = new Observable<Vector2[]>();
+            }
+
+            return this._renderableData._cacheNodeUVsChangedObservable;
         }
 
         /**
@@ -672,8 +694,8 @@
             else {
                 context.partDataStartIndex = 0;
 
+                // Find the first valid object to get the count
                 if (context.groupInfoPartData.length > 0) {
-                    // Find the first valid object to get the count
                     let i = 0;
                     while (!context.groupInfoPartData[i]) {
                         i++;
@@ -685,19 +707,35 @@
             return renderCount;
         }
 
+        protected _setRenderingScale(scale: number) {
+            if (this._renderableData._renderingScale === scale) {
+                return;
+            }
+            this._renderableData._renderingScale = scale;
+        }
+
+        private static _s = Size.Zero();
         private _bindCacheTarget() {
             let curWidth: number;
             let curHeight: number;
             let rd = this._renderableData;
+            let rs = rd._renderingScale;
+
+            Group2D._s.width  = Math.ceil(this.actualSize.width * rs);
+            Group2D._s.height = Math.ceil(this.actualSize.height * rs);
+
+            let sizeChanged = !Group2D._s.equals(rd._cacheSize);
 
             if (rd._cacheNode) {
                 let size = rd._cacheNode.contentSize;
-                let groupWidth = Math.ceil(this.actualSize.width);
-                let groupHeight = Math.ceil(this.actualSize.height);
 
-                if ((size.width < groupWidth) || (size.height < groupHeight)) {
-                    curWidth = Math.floor(size.width * 1.07);    // Grow 5% more to avoid frequent resizing for few pixels...
-                    curHeight = Math.floor(size.height * 1.07);
+                // Check if we have to deallocate because the size is too small
+                if ((size.width < Group2D._s.width) || (size.height < Group2D._s.height)) {
+                    // For Screen space: over-provisioning of 7% more to avoid frequent resizing for few pixels...
+                    // For World space: no over-provisioning
+                    let overprovisioning = this.owner.isScreenSpace ? 1.07 : 1; 
+                    curWidth  = Math.floor(Group2D._s.width  * overprovisioning);    
+                    curHeight = Math.floor(Group2D._s.height * overprovisioning);
                     //console.log(`[${this._globalTransformProcessStep}] Resize group ${this.id}, width: ${curWidth}, height: ${curHeight}`);
                     rd._cacheTexture.freeRect(rd._cacheNode);
                     rd._cacheNode = null;
@@ -706,15 +744,25 @@
 
             if (!rd._cacheNode) {
                 // Check if we have to allocate a rendering zone in the global cache texture
-                var res = this.owner._allocateGroupCache(this, this.renderGroup, curWidth ? new Size(curWidth, curHeight) : null);
+                var res = this.owner._allocateGroupCache(this, this.renderGroup, curWidth ? new Size(curWidth, curHeight) : null, rd._useMipMap, rd._anisotropicLevel);
                 rd._cacheNode = res.node;
                 rd._cacheTexture = res.texture;
                 rd._cacheRenderSprite = res.sprite;
-                let size = rd._cacheNode.contentSize;
+                sizeChanged = true;
+            }
+
+            if (sizeChanged) {
+                rd._cacheSize.copyFrom(Group2D._s);
+                rd._cacheNodeUVs = rd._cacheNode.getUVsForCustomSize(rd._cacheSize);
+                this.scale = this._renderableData._renderingScale;
+                if (rd._cacheNodeUVsChangedObservable && rd._cacheNodeUVsChangedObservable.hasObservers()) {
+                    rd._cacheNodeUVsChangedObservable.notifyObservers(rd._cacheNodeUVs);
+                }
+                this._setFlags(SmartPropertyPrim.flagWorldCacheChanged);
             }
 
             let n = rd._cacheNode;
-            rd._cacheTexture.bindTextureForPosSize(n.pos, this.actualSize, true);
+            rd._cacheTexture.bindTextureForPosSize(n.pos, Group2D._s, true);
         }
 
         private _unbindCacheTarget() {
@@ -830,7 +878,6 @@
         private _viewportSize: Size;
 
         public _renderableData: RenderableGroupData;
-
     }
 
     export class RenderableGroupData {
@@ -845,6 +892,12 @@
             this._cacheNode = null;
             this._cacheTexture = null;
             this._cacheRenderSprite = null;
+            this._renderingScale = 1;
+            this._cacheNodeUVs = null;
+            this._cacheNodeUVsChangedObservable = null;
+            this._cacheSize = Size.Zero();
+            this._useMipMap = false;
+            this._anisotropicLevel = 1;
         }
 
         dispose() {
@@ -869,6 +922,11 @@
                     v.dispose();
                 });
                 this._renderGroupInstancesInfo = null;
+            }
+
+            if (this._cacheNodeUVsChangedObservable) {
+                this._cacheNodeUVsChangedObservable.clear();
+                this._cacheNodeUVsChangedObservable = null;
             }
         }
 
@@ -918,11 +976,18 @@
         _cacheNode: PackedRect;
         _cacheTexture: MapTexture;
         _cacheRenderSprite: Sprite2D;
+        _cacheNodeUVs: Vector2[];
+        _cacheNodeUVsChangedObservable: Observable<Vector2[]>;
+        _cacheSize: Size;
+        _useMipMap: boolean;
+        _anisotropicLevel: number;
 
         _transparentListChanged: boolean;
         _transparentPrimitives: Array<TransparentPrimitiveInfo>;
         _transparentSegments: Array<TransparentSegment>;
         _firstChangedPrim: TransparentPrimitiveInfo;
+        _renderingScale: number;
+
     }
 
     export class TransparentPrimitiveInfo {

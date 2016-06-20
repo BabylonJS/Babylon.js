@@ -57,7 +57,6 @@
             id?: string,
             children?: Array<Prim2DBase>,
             size?: Size,
-            renderScaleFactor?: number,
             isScreenSpace?: boolean,
             cachingStrategy?: number,
             enableInteraction?: boolean,
@@ -76,7 +75,6 @@
                 settings = {};
             }
 
-            let renderScaleFactor = (settings.renderScaleFactor == null) ? 1 : settings.renderScaleFactor;
             if (this._cachingStrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 this._background = new Rectangle2D({ parent: this, id: "###CANVAS BACKGROUND###", size: settings.size }); //TODO CHECK when size is null
                 this._background.zOrder = 1.0;
@@ -114,7 +112,6 @@
             let engine = scene.getEngine();
 
             this.__engineData = engine.getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
-            this._renderScaleFactor = renderScaleFactor;
             this._primPointerInfo = new PrimitivePointerInfo();
             this._capturedPointers = new StringDictionary<Prim2DBase>();
             this._pickStartingPosition = Vector2.Zero();
@@ -125,6 +122,8 @@
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
             this._trackedGroups = new Array<Group2D>();
+            this._maxAdaptiveWorldSpaceCanvasSize = null;
+            this._groupCacheMaps = new StringDictionary<MapTexture[]>();
 
             this._patchHierarchy(this);
 
@@ -133,9 +132,6 @@
             this._fitRenderingDevice = !settings.size;
             if (!settings.size) {
                 settings.size = new Size(engine.getRenderWidth(), engine.getRenderHeight());
-            } else {
-                settings.size.height *= renderScaleFactor;
-                settings.size.width *= renderScaleFactor;
             }
 
             // Register scene dispose to also dispose the canvas when it'll happens
@@ -155,7 +151,7 @@
             }
 
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
-            //            this._supprtInstancedArray = false; // TODO REMOVE!!!
+                        //this._supprtInstancedArray = false; // TODO REMOVE!!!
 
             this._setupInteraction(enableInteraction);
         }
@@ -225,7 +221,7 @@
 
         /**
          * If you set your own WorldSpaceNode to display the Canvas2D you have to provide your own implementation of this method which computes the local position in the Canvas based on the given 3D World one.
-         * Beware that you have to take under consideration the origin and the renderScaleFactor in your calculations! Good luck!
+         * Beware that you have to take under consideration the origin in your calculations! Good luck!
          */
         public worldSpaceToNodeLocal = (worldPos: Vector3): Vector2 => {
             let node = this._worldSpaceNode;
@@ -236,13 +232,34 @@
             let mtx = node.getWorldMatrix().clone();
             mtx.invert();
             let v = Vector3.TransformCoordinates(worldPos, mtx);
-            let rsf = this._renderScaleFactor;
-            let res = new Vector2(v.x * rsf, v.y * rsf);
+            let res = new Vector2(v.x, v.y);
             let size = this.actualSize;
-            let o = this.origin;
             res.x += size.width * 0.5;  // res is centered, make it relative to bottom/left
             res.y += size.width * 0.5;
             return res;
+        }
+
+        /**
+         * If you use a custom WorldSpaceCanvasNode you have to override this property to update the UV of your object to reflect the changes due to a resizing of the cached bitmap
+         */
+        public worldSpaceCacheChanged = () => {
+            let plane = <Mesh>this.worldSpaceCanvasNode;
+            let vd = VertexData.ExtractFromMesh(plane); //new VertexData();
+            vd.uvs = new Float32Array(8);
+
+            let material = <StandardMaterial>plane.material;
+            let tex = this._renderableData._cacheTexture;
+            if (material.diffuseTexture !== tex) {
+                material.diffuseTexture = tex;
+                tex.hasAlpha = true;
+            }
+
+            let nodeuv = this._renderableData._cacheNodeUVs;
+            for (let i = 0; i < 4; i++) {
+                vd.uvs[i * 2 + 0] = nodeuv[i].x;
+                vd.uvs[i * 2 + 1] = nodeuv[i].y;
+            }
+            vd.applyToMesh(plane);
         }
 
         /**
@@ -685,7 +702,7 @@
             }
 
             if (this._groupCacheMaps) {
-                this._groupCacheMaps.forEach(m => m.dispose());
+                this._groupCacheMaps.forEach((k, m) => m.forEach(e => e.dispose()));
                 this._groupCacheMaps = null;
             }
         }
@@ -713,6 +730,14 @@
          */
         public get cachingStrategy(): number {
             return this._cachingStrategy;
+        }
+
+        /**
+         * Return true if the Canvas is a Screen Space one, false if it's a World Space one.
+         * @returns {} 
+         */
+        public get isScreenSpace(): boolean {
+            return this._isScreenSpace;
         }
 
         /**
@@ -854,7 +879,6 @@
         private _intersectionRenderId: number;
         private _hoverStatusRenderId: number;
         private _pickStartingPosition: Vector2;
-        private _renderScaleFactor: number;
         private _pickedDownPrim: Prim2DBase;
         private _pickStartingTime: number;
         private _previousIntersectionList: Array<PrimitiveIntersectedInfo>;
@@ -874,11 +898,12 @@
         private _cachedCanvasGroup: Group2D;
         private _cachingStrategy: number;
         private _hierarchyLevelMaxSiblingCount: number;
-        private _groupCacheMaps: MapTexture[];
+        private _groupCacheMaps: StringDictionary<MapTexture[]>;
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
         private _supprtInstancedArray: boolean;
         private _trackedGroups: Array<Group2D>;
+        protected _maxAdaptiveWorldSpaceCanvasSize: number;
 
         public _renderingSize: Size;
 
@@ -886,8 +911,9 @@
             this._addPrimToDirtyList(this);
         }
 
-        private static _v = Vector3.Zero();
+        private static _v = Vector3.Zero(); // Must stay zero
         private static _m = Matrix.Identity();
+        private static _mI = Matrix.Identity(); // Must stay identity
 
         private _updateTrackedNodes() {
             let cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
@@ -915,6 +941,54 @@
          */
         public updateCanvasLayout(forceRecompute: boolean) {
             this._updateCanvasState(forceRecompute);
+        }
+
+        private _updateAdaptiveSizeWorldCanvas() {
+            if (this._globalTransformStep < 2) {
+                return;
+            }
+            let n: AbstractMesh = <AbstractMesh>this.worldSpaceCanvasNode;
+            let bi = n.getBoundingInfo().boundingBox;
+            let v = bi.vectorsWorld;
+
+            let cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
+
+            cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
+            let vp = cam.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+
+
+            let projPoints = new Array<Vector3>(4);
+            for (let i = 0; i < 4; i++) {
+                projPoints[i] = Vector3.Project(v[i], Canvas2D._mI, Canvas2D._m, vp);
+            }
+
+            let left   = projPoints[3].subtract(projPoints[0]).length();
+            let top    = projPoints[3].subtract(projPoints[1]).length();
+            let right  = projPoints[1].subtract(projPoints[2]).length();
+            let bottom = projPoints[2].subtract(projPoints[0]).length();
+
+            let w = Math.round(Math.max(top, bottom));
+            let h = Math.round(Math.max(right, left));
+
+            let isW = w > h;
+
+            // Basically if it's under 256 we use 256, otherwise we take the biggest power of 2
+            let edge = Math.max(w, h);
+            if (edge < 256) {
+                edge = 256;
+            } else {
+                edge = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
+            }
+
+            // Clip values if needed
+            edge = Math.min(edge, this._maxAdaptiveWorldSpaceCanvasSize);
+
+            let newScale = edge / ((isW) ? this.size.width : this.size.height);
+            if (newScale !== this.scale) {
+                let scale = newScale;
+//                console.log(`New adaptive scale for Canvas ${this.id}, w: ${w}, h: ${h}, scale: ${scale}, edge: ${edge}, isW: ${isW}`);
+                this._setRenderingScale(scale);
+            }
         }
 
         private _updateCanvasState(forceRecompute: boolean) {
@@ -967,6 +1041,11 @@
             this._updateTrackedNodes();
 
             this._updateCanvasState(false);
+            if (!this._isScreenSpace) {
+                this._updateAdaptiveSizeWorldCanvas();
+            }
+
+            this._updateCanvasState(false);
 
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
@@ -975,6 +1054,13 @@
 
             this.engine.setState(false);
             this._groupRender();
+
+            if (!this._isScreenSpace) {
+                if (this._isFlagSet(SmartPropertyPrim.flagWorldCacheChanged)) {
+                    this.worldSpaceCacheChanged();
+                    this._clearFlags(SmartPropertyPrim.flagWorldCacheChanged);
+                }
+            }
 
             // If the canvas is cached at canvas level, we must manually render the sprite that will display its content
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
@@ -988,7 +1074,10 @@
          * @param group The group to allocate the cache of.
          * @return custom type with the PackedRect instance giving information about the cache location into the texture and also the MapTexture instance that stores the cache.
          */
-        public _allocateGroupCache(group: Group2D, parent: Group2D, minSize?: Size): { node: PackedRect, texture: MapTexture, sprite: Sprite2D } {
+        public _allocateGroupCache(group: Group2D, parent: Group2D, minSize?: Size, useMipMap: boolean = false, anisotropicLevel: number = 1): { node: PackedRect, texture: MapTexture, sprite: Sprite2D } {
+
+            let key = `${useMipMap?"MipMap":"NoMipMap"}_${anisotropicLevel}`;
+
             // Determine size
             let size = group.actualSize;
             size = new Size(Math.ceil(size.width), Math.ceil(size.height));
@@ -997,13 +1086,13 @@
                 size.height = Math.max(minSize.height, size.height);
             }
 
-            if (!this._groupCacheMaps) {
-                this._groupCacheMaps = new Array<MapTexture>();
-            }
+            let mapArray = this._groupCacheMaps.getOrAddWithFactory(key, () => new Array<MapTexture>());
 
             // Try to find a spot in one of the cached texture
             let res = null;
-            for (var map of this._groupCacheMaps) {
+            var map: MapTexture;
+            for (var _map of mapArray) {
+                map = _map;
                 let node = map.allocateRect(size);
                 if (node) {
                     res = { node: node, texture: map }
@@ -1022,8 +1111,9 @@
                 }
 
                 let id = `groupsMapChache${this._mapCounter}forCanvas${this.id}`;
-                map = new MapTexture(id, this._scene, mapSize);
-                this._groupCacheMaps.push(map);
+                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE:Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map.anisotropicFilteringLevel = 4;
+                mapArray.splice(0, 0, map);
 
                 let node = map.allocateRect(size);
                 res = { node: node, texture: map }
@@ -1204,9 +1294,6 @@
          *  - id: a text identifier, for information purpose only, default is null.
          *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
          *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
-         *  - renderScaleFactor A scale factor applied to create the rendering texture that will be mapped in the Scene Rectangle. If you set 2 for instance the texture will be twice large in width and height. A greater value will allow to achieve a better rendering quality. Default value is 1.
-         * BE AWARE that the Canvas true dimension will be size*renderScaleFactor, then all coordinates and size will have to be express regarding this size.
-         * TIPS: if you want a renderScaleFactor independent reference of frame, create a child Group2D in the Canvas with position 0,0 and size set to null, then set its scale property to the same amount than the renderScaleFactor, put all your primitive inside using coordinates regarding the size property you pick for the Canvas and you'll be fine.
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
          * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
@@ -1216,6 +1303,7 @@
          * - backgroundBorder: the brush to use to create a background border for the canvas. can be a string value (see Canvas2D.GetBrushFromString) or a IBrush2D instance.
          * - backgroundBorderThickness: if a backgroundBorder is specified, its thickness can be set using this property
          * - customWorldSpaceNode: if specified the Canvas will be rendered in this given Node. But it's the responsibility of the caller to set the "worldSpaceToNodeLocal" property to compute the hit of the mouse ray into the node (in world coordinate system) as well as rendering the cached bitmap in the node itself. The properties cachedRect and cachedTexture of Group2D will give you what you need to do that.
+         * - maxAdaptiveCanvasSize: set the max size (width and height) of the bitmap that will contain the cached version of the WorldSpace Canvas. Default is 1024 or less if it's not supported. In any case the value you give will be clipped by the maximum that WebGL supports on the running device. You can set any size, more than 1024 if you want, but testing proved it's a good max value for non "retina" like screens.
          * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -1224,25 +1312,25 @@
          */
         constructor(scene: Scene, size: Size, settings?: {
 
-            children?: Array<Prim2DBase>,
-            id?: string,
-            worldPosition?: Vector3,
-            worldRotation?: Quaternion,
-            renderScaleFactor?: number,
-            sideOrientation?: number,
-            cachingStrategy?: number,
-            enableInteraction?: boolean,
-            isVisible?: boolean,
-            backgroundRoundRadius?: number,
-            backgroundFill?: IBrush2D | string,
-            backgroundBorder?: IBrush2D | string,
+            children                 ?: Array<Prim2DBase>,
+            id                       ?: string,
+            worldPosition            ?: Vector3,
+            worldRotation            ?: Quaternion,
+            sideOrientation          ?: number,
+            cachingStrategy          ?: number,
+            enableInteraction        ?: boolean,
+            isVisible                ?: boolean,
+            backgroundRoundRadius    ?: number,
+            backgroundFill           ?: IBrush2D | string,
+            backgroundBorder         ?: IBrush2D | string,
             backgroundBorderThickNess?: number,
-            customWorldSpaceNode?: Node,
-            paddingTop?: number | string,
-            paddingLeft?: number | string,
-            paddingRight?: number | string,
-            paddingBottom?: number | string,
-            padding?: string,
+            customWorldSpaceNode     ?: Node,
+            maxAdaptiveCanvasSize    ?: number,
+            paddingTop               ?: number | string,
+            paddingLeft              ?: number | string,
+            paddingRight             ?: number | string,
+            paddingBottom            ?: number | string,
+            padding                  ?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;
@@ -1258,6 +1346,8 @@
             super(scene, settings);
             Prim2DBase._isCanvasInit = false;
 
+            this._renderableData._useMipMap = true;
+            this._renderableData._anisotropicLevel = 8;
 
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
@@ -1265,6 +1355,16 @@
 
             let createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             let id = settings ? settings.id || null : null;
+
+            // Set the max size of texture allowed for the adaptive render of the world space canvas cached bitmap
+            let capMaxTextSize = this.engine.getCaps().maxRenderTextureSize;
+            let defaultTextSize = (Math.min(capMaxTextSize, 1024));     // Default is 4K if allowed otherwise the max allowed
+            if (settings.maxAdaptiveCanvasSize == null) {
+                this._maxAdaptiveWorldSpaceCanvasSize = defaultTextSize;
+            } else {
+                // We still clip the given value with the max allowed, the user may not be aware of these limitations
+                this._maxAdaptiveWorldSpaceCanvasSize = Math.min(settings.maxAdaptiveCanvasSize, capMaxTextSize);
+            }
 
             if (createWorldSpaceNode) {
                 let plane = new WorldSpaceCanvas2DNode(id, scene, this);
@@ -1276,7 +1376,7 @@
                 let mtl = new StandardMaterial(id + "_Material", scene);
 
                 this.applyCachedTexture(vertexData, mtl);
-                vertexData.applyToMesh(plane, false);
+                vertexData.applyToMesh(plane, true);
 
                 mtl.specularColor = new Color3(0, 0, 0);
                 mtl.disableLighting = true;

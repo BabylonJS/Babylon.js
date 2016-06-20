@@ -618,6 +618,7 @@
         public static flagVisibilityChanged      = 0x0000100;    // set if there was a transition between visible/hidden status
         public static flagPositioningDirty       = 0x0000200;    // set if the primitive positioning must be computed
         public static flagTrackedGroup           = 0x0000400;    // set if the group2D is tracking a scene node
+        public static flagWorldCacheChanged      = 0x0000800;    // set if the cached bitmap of a world space canvas changed
 
         private   _flags             : number;
         private   _externalData      : StringDictionary<Object>;

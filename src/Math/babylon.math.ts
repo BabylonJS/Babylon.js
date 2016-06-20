@@ -1722,6 +1722,15 @@
             this.height = src.height;
         }
 
+        public copyFromFloats(width: number, height: number) {
+            this.width = width;
+            this.height = height;
+        }
+
+        public multiplyByFloats(w: number, h: number): Size {
+            return new Size(this.width * w, this.height * h);
+        }
+
         public clone(): Size {
             return new Size(this.width, this.height);
         }
