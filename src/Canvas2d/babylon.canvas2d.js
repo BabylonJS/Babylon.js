@@ -751,9 +751,15 @@ var BABYLON;
                 group.y = Math.round(rh - proj.y);
             }
         };
-        Canvas2D.prototype._updateCanvasState = function () {
+        /**
+         * Call this method change you want to have layout related data computed and up to date (layout area, primitive area, local/global transformation matrices)
+         */
+        Canvas2D.prototype.updateCanvasLayout = function (forceRecompute) {
+            this._updateCanvasState(forceRecompute);
+        };
+        Canvas2D.prototype._updateCanvasState = function (forceRecompute) {
             // Check if the update has already been made for this render Frame
-            if (this.scene.getRenderId() === this._updateRenderId) {
+            if (!forceRecompute && this.scene.getRenderId() === this._updateRenderId) {
                 return;
             }
             // Detect a change of rendering size
@@ -788,7 +794,7 @@ var BABYLON;
          */
         Canvas2D.prototype._render = function () {
             this._updateTrackedNodes();
-            this._updateCanvasState();
+            this._updateCanvasState(false);
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
                 this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
