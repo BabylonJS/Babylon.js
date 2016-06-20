@@ -910,9 +910,16 @@
             }
         }
 
-        private _updateCanvasState() {
+        /**
+         * Call this method change you want to have layout related data computed and up to date (layout area, primitive area, local/global transformation matrices)
+         */
+        public updateCanvasLayout(forceRecompute: boolean) {
+            this._updateCanvasState(forceRecompute);
+        }
+
+        private _updateCanvasState(forceRecompute: boolean) {
             // Check if the update has already been made for this render Frame
-            if (this.scene.getRenderId() === this._updateRenderId) {
+            if (!forceRecompute && this.scene.getRenderId() === this._updateRenderId) {
                 return;
             }
 
@@ -959,7 +966,7 @@
 
             this._updateTrackedNodes();
 
-            this._updateCanvasState();
+            this._updateCanvasState(false);
 
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
@@ -1217,25 +1224,25 @@
          */
         constructor(scene: Scene, size: Size, settings?: {
 
-            children                 ?: Array<Prim2DBase>,
-            id                       ?: string,
-            worldPosition            ?: Vector3,
-            worldRotation            ?: Quaternion,
-            renderScaleFactor        ?: number,
-            sideOrientation          ?: number,
-            cachingStrategy          ?: number,
-            enableInteraction        ?: boolean,
-            isVisible                ?: boolean,
-            backgroundRoundRadius    ?: number,
-            backgroundFill           ?: IBrush2D | string,
-            backgroundBorder         ?: IBrush2D | string,
+            children?: Array<Prim2DBase>,
+            id?: string,
+            worldPosition?: Vector3,
+            worldRotation?: Quaternion,
+            renderScaleFactor?: number,
+            sideOrientation?: number,
+            cachingStrategy?: number,
+            enableInteraction?: boolean,
+            isVisible?: boolean,
+            backgroundRoundRadius?: number,
+            backgroundFill?: IBrush2D | string,
+            backgroundBorder?: IBrush2D | string,
             backgroundBorderThickNess?: number,
-            customWorldSpaceNode     ?: Node,
-            paddingTop               ?: number | string,
-            paddingLeft              ?: number | string,
-            paddingRight             ?: number | string,
-            paddingBottom            ?: number | string,
-            padding                  ?: string,
+            customWorldSpaceNode?: Node,
+            paddingTop?: number | string,
+            paddingLeft?: number | string,
+            paddingRight?: number | string,
+            paddingBottom?: number | string,
+            padding?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;
@@ -1321,27 +1328,27 @@
          */
         constructor(scene: Scene, settings?: {
 
-            children                 ?: Array<Prim2DBase>,
-            id                       ?: string,
-            x                        ?: number,
-            y                        ?: number,
-            position                 ?: Vector2,
-            origin                   ?: Vector2,
-            width                    ?: number,
-            height                   ?: number,
-            size                     ?: Size,
-            cachingStrategy          ?: number,
-            enableInteraction        ?: boolean,
-            isVisible                ?: boolean,
-            backgroundRoundRadius    ?: number,
-            backgroundFill           ?: IBrush2D | string,
-            backgroundBorder         ?: IBrush2D | string,
+            children?: Array<Prim2DBase>,
+            id?: string,
+            x?: number,
+            y?: number,
+            position?: Vector2,
+            origin?: Vector2,
+            width?: number,
+            height?: number,
+            size?: Size,
+            cachingStrategy?: number,
+            enableInteraction?: boolean,
+            isVisible?: boolean,
+            backgroundRoundRadius?: number,
+            backgroundFill?: IBrush2D | string,
+            backgroundBorder?: IBrush2D | string,
             backgroundBorderThickNess?: number,
-            paddingTop               ?: number | string,
-            paddingLeft              ?: number | string,
-            paddingRight             ?: number | string,
-            paddingBottom            ?: number | string,
-            padding                  ?: string,
+            paddingTop?: number | string,
+            paddingLeft?: number | string,
+            paddingRight?: number | string,
+            paddingBottom?: number | string,
+            padding?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;
