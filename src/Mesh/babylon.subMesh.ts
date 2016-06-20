@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class SubMesh {
+    export class SubMesh implements ICullable {
         public linesIndexCount: number;
 
         private _mesh: AbstractMesh;
@@ -105,6 +105,10 @@
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             return this.getBoundingInfo().isInFrustum(frustumPlanes);
+        }
+
+        public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
+            return this.getBoundingInfo().isCompletelyInFrustum(frustumPlanes);
         }
 
         public render(enableAlphaMode: boolean): void {

@@ -134,7 +134,7 @@ var BABYLON;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._webGLVersion = "1.0";
-            this._drawCalls = 0;
+            this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
             // FPS
@@ -481,15 +481,18 @@ var BABYLON;
         };
         Object.defineProperty(Engine.prototype, "drawCalls", {
             get: function () {
+                return this._drawCalls.current;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "drawCallsPerfCounter", {
+            get: function () {
                 return this._drawCalls;
             },
             enumerable: true,
             configurable: true
         });
-        // Methods
-        Engine.prototype.resetDrawCalls = function () {
-            this._drawCalls = 0;
-        };
         Engine.prototype.getDepthFunction = function () {
             return this._depthCullingState.depthFunc;
         };
@@ -978,7 +981,7 @@ var BABYLON;
         Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
             // Render
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
@@ -991,7 +994,7 @@ var BABYLON;
         Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
                 return;
@@ -1001,7 +1004,7 @@ var BABYLON;
         Engine.prototype.drawUnIndexed = function (useTriangles, verticesStart, verticesCount, instancesCount) {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
                 return;

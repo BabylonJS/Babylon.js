@@ -762,7 +762,7 @@
         /**
          * Sets the mesh indices.  
          * Expects an array populated with integers or a Int32Array.
-         * If the mesh has no geometry, a new `Geometry` object is created and set to the mesh. 
+         * If the mesh has no geometry, a new Geometry object is created and set to the mesh. 
          * This method creates a new index buffer each call.
          */
         public setIndices(indices: number[] | Int32Array, totalVertices?: number): void {
@@ -1309,7 +1309,7 @@
          * Returns a new Mesh object generated from the current mesh properties.
          * This method must not get confused with createInstance().  
          * The parameter `name` is a string, the name given to the new mesh. 
-         * The optional parameter `newParent` can be any `Node` object (default `null`).  
+         * The optional parameter `newParent` can be any Node object (default `null`).  
          * The optional parameter `doNotCloneChildren` (default `false`) allows/denies the recursive cloning of the original mesh children if any.
          * The parameter `clonePhysicsImpostor` (default `true`)  allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any. 
          */
@@ -2223,7 +2223,6 @@
          * Creates lathe mesh.  
          * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.      
          * Please consider using the same method from the MeshBuilder class instead.    
-         *
          * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be
          * rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero.    
          * The parameter `radius` (positive float, default 1) is the radius value of the lathe.        
@@ -2337,7 +2336,6 @@
         /**
          * Creates a tube mesh.    
          * The tube is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.    
-         *
          * Please consider using the same method from the MeshBuilder class instead.    
          * The parameter `path` is a required array of successive Vector3. It is the curve used as the axis of the tube.        
          * The parameter `radius` (positive float, default 1) sets the tube radius size.    
@@ -2372,7 +2370,6 @@
         }
         /**
          * Creates a polyhedron mesh.  
-         * 
          * Please consider using the same method from the MeshBuilder class instead.    
          * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial
          *  to choose the wanted type.  
@@ -2410,7 +2407,7 @@
          * Please consider using the same method from the MeshBuilder class instead.    
          * A decal is a mesh usually applied as a model onto the surface of another mesh. So don't forget the parameter `sourceMesh` depicting the decal.  
          * The parameter `position` (Vector3, default `(0, 0, 0)`) sets the position of the decal in World coordinates.  
-         * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates.  
+         * The parameter `normal` (Vector3, default Vector3.Up) sets the normal of the mesh where the decal is applied onto in World coordinates.  
          * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling.  
          * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal.  
          */
@@ -2561,7 +2558,7 @@
 
         // Tools
         /**
-         * Returns an object `{min: Vector3, max: Vector3}`
+         * Returns an object `{min:` Vector3`, max:` Vector3`}`
          * This min and max Vector3 are the minimum and maximum vectors of each mesh bounding box from the passed array, in the World system
          */
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
@@ -2585,7 +2582,7 @@
             };
         }
         /**
-         * Returns a `Vector3`, the center of the `{min: Vector3, max: Vector3}` or the center of MinMax vector3 computed from a mesh array.
+         * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         public static Center(meshesOrMinMaxVector): Vector3 {
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);

@@ -11,7 +11,7 @@ var BABYLON;
             }
             // Particles
             var activeCamera = this._scene.activeCamera;
-            var beforeParticlesDate = BABYLON.Tools.Now;
+            this._scene._particlesDuration.beginMonitoring();
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
                 if (particleSystem.renderingGroupId !== index) {
@@ -22,10 +22,10 @@ var BABYLON;
                 }
                 this._clearDepthBuffer();
                 if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
-                    this._scene._activeParticles += particleSystem.render();
+                    this._scene._activeParticles.addCount(particleSystem.render(), false);
                 }
             }
-            this._scene._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
+            this._scene._particlesDuration.endMonitoring(false);
         };
         RenderingManager.prototype._renderSprites = function (index) {
             if (!this._scene.spritesEnabled || this._scene.spriteManagers.length === 0) {
@@ -33,7 +33,7 @@ var BABYLON;
             }
             // Sprites       
             var activeCamera = this._scene.activeCamera;
-            var beforeSpritessDate = BABYLON.Tools.Now;
+            this._scene._spritesDuration.beginMonitoring();
             for (var id = 0; id < this._scene.spriteManagers.length; id++) {
                 var spriteManager = this._scene.spriteManagers[id];
                 if (spriteManager.renderingGroupId === index && ((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
@@ -41,7 +41,7 @@ var BABYLON;
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration += BABYLON.Tools.Now - beforeSpritessDate;
+            this._scene._spritesDuration.endMonitoring(false);
         };
         RenderingManager.prototype._clearDepthBuffer = function () {
             if (this._depthBufferAlreadyCleaned) {

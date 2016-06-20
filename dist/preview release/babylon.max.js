@@ -5355,6 +5355,135 @@ var BABYLON;
     })();
     BABYLON.Tools = Tools;
     /**
+     * This class is used to track a performance counter which is number based.
+     * The user has access to many properties which give statistics of different nature
+     *
+     * The implementer can track two kinds of Performance Counter: time and count
+     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
+     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
+     */
+    var PerfCounter = (function () {
+        function PerfCounter() {
+            this._startMonitoringTime = 0;
+            this._min = 0;
+            this._max = 0;
+            this._average = 0;
+            this._lastSecAverage = 0;
+            this._current = 0;
+            this._totalValueCount = 0;
+            this._totalAccumulated = 0;
+            this._lastSecAccumulated = 0;
+            this._lastSecTime = 0;
+            this._lastSecValueCount = 0;
+        }
+        Object.defineProperty(PerfCounter.prototype, "min", {
+            /**
+             * Returns the smallest value ever
+             */
+            get: function () {
+                return this._min;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerfCounter.prototype, "max", {
+            /**
+             * Returns the biggest value ever
+             */
+            get: function () {
+                return this._max;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerfCounter.prototype, "average", {
+            /**
+             * Returns the average value since the performance counter is running
+             */
+            get: function () {
+                return this._average;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerfCounter.prototype, "lastSecAverage", {
+            /**
+             * Returns the average value of the last second the counter was monitored
+             */
+            get: function () {
+                return this._lastSecAverage;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PerfCounter.prototype, "current", {
+            /**
+             * Returns the current value
+             */
+            get: function () {
+                return this._current;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Call this method to start monitoring a new frame.
+         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
+         */
+        PerfCounter.prototype.fetchNewFrame = function () {
+            this._totalValueCount++;
+            this._current = 0;
+        };
+        /**
+         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
+         * @param newCount the count value to add to the monitored count
+         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
+         */
+        PerfCounter.prototype.addCount = function (newCount, fetchResult) {
+            this._current += newCount;
+            if (fetchResult) {
+                this._fetchResult();
+            }
+        };
+        /**
+         * Start monitoring this performance counter
+         */
+        PerfCounter.prototype.beginMonitoring = function () {
+            this._startMonitoringTime = Tools.Now;
+        };
+        /**
+         * Compute the time lapsed since the previous beginMonitoring() call.
+         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
+         */
+        PerfCounter.prototype.endMonitoring = function (newFrame) {
+            if (newFrame === void 0) { newFrame = true; }
+            if (newFrame) {
+                this.fetchNewFrame();
+            }
+            var currentTime = Tools.Now;
+            this._current = currentTime - this._startMonitoringTime;
+            if (newFrame) {
+                this._fetchResult();
+            }
+        };
+        PerfCounter.prototype._fetchResult = function () {
+            this._totalAccumulated += this._current;
+            // Min/Max update
+            this._min = Math.min(this._min, this._current);
+            this._max = Math.max(this._max, this._current);
+            this._average = this._totalAccumulated / this._totalValueCount;
+            // Reset last sec?
+            if ((this._startMonitoringTime - this._lastSecTime) > 1000) {
+                this._lastSecAverage = this._lastSecAccumulated / this._lastSecValueCount;
+                this._lastSecTime = this._startMonitoringTime;
+                this._lastSecAccumulated = 0;
+                this._lastSecValueCount = 0;
+            }
+        };
+        return PerfCounter;
+    })();
+    BABYLON.PerfCounter = PerfCounter;
+    /**
      * Use this className as a decorator on a given class definition to add it a name.
      * You can then use the Tools.getClassName(obj) on an instance to retrieve its class name.
      * This method is the only way to get it done in all cases, even if the .js file declaring the class is minified
@@ -5843,7 +5972,7 @@ var BABYLON;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._webGLVersion = "1.0";
-            this._drawCalls = 0;
+            this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
             // FPS
@@ -6190,15 +6319,18 @@ var BABYLON;
         };
         Object.defineProperty(Engine.prototype, "drawCalls", {
             get: function () {
+                return this._drawCalls.current;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "drawCallsPerfCounter", {
+            get: function () {
                 return this._drawCalls;
             },
             enumerable: true,
             configurable: true
         });
-        // Methods
-        Engine.prototype.resetDrawCalls = function () {
-            this._drawCalls = 0;
-        };
         Engine.prototype.getDepthFunction = function () {
             return this._depthCullingState.depthFunc;
         };
@@ -6687,7 +6819,7 @@ var BABYLON;
         Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
             // Render
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
@@ -6700,7 +6832,7 @@ var BABYLON;
         Engine.prototype.drawPointClouds = function (verticesStart, verticesCount, instancesCount) {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
                 return;
@@ -6710,7 +6842,7 @@ var BABYLON;
         Engine.prototype.drawUnIndexed = function (useTriangles, verticesStart, verticesCount, instancesCount) {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
                 return;
@@ -9671,18 +9803,20 @@ var BABYLON;
             this.computeWorldMatrix(true);
             this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
         };
-        AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor) {
+        AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor, space) {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
             /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
             /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
             /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
             /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
             /// <returns>Mesh oriented towards targetMesh</returns>
-            yawCor = yawCor || 0; // default to zero if undefined
-            pitchCor = pitchCor || 0;
-            rollCor = rollCor || 0;
+            if (yawCor === void 0) { yawCor = 0; }
+            if (pitchCor === void 0) { pitchCor = 0; }
+            if (rollCor === void 0) { rollCor = 0; }
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
             var dv = AbstractMesh._lookAtVectorCache;
-            targetPoint.subtractToRef(this.position, dv);
+            var pos = space === BABYLON.Space.LOCAL ? this.position : this.getAbsolutePosition();
+            targetPoint.subtractToRef(pos, dv);
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
@@ -9706,15 +9840,9 @@ var BABYLON;
         AbstractMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isInFrustum(frustumPlanes);
         };
-        AbstractMesh.prototype.isCompletelyInFrustum = function (camera) {
-            if (!camera) {
-                camera = this.getScene().activeCamera;
-            }
-            var transformMatrix = camera.getViewMatrix().multiply(camera.getProjectionMatrix());
-            if (!this._boundingInfo.isCompletelyInFrustum(BABYLON.Frustum.GetPlanes(transformMatrix))) {
-                return false;
-            }
-            return true;
+        AbstractMesh.prototype.isCompletelyInFrustum = function (frustumPlanes) {
+            return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
+            ;
         };
         AbstractMesh.prototype.intersectsMesh = function (mesh, precise) {
             if (!this._boundingInfo || !mesh._boundingInfo) {
@@ -11589,8 +11717,10 @@ var BABYLON;
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
+            this._transformMatrix = BABYLON.Matrix.Zero();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._globalPosition = BABYLON.Vector3.Zero();
+            this._refreshFrustumPlanes = true;
             scene.addCamera(this);
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
@@ -11861,6 +11991,7 @@ var BABYLON;
             if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
+            this._refreshFrustumPlanes = true;
             if (!this.parent || !this.parent.getWorldMatrix) {
                 this._globalPosition.copyFrom(this.position);
             }
@@ -11889,6 +12020,7 @@ var BABYLON;
             if (!force && this._isSynchronizedProjectionMatrix()) {
                 return this._projectionMatrix;
             }
+            this._refreshFrustumPlanes = true;
             var engine = this.getEngine();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 if (this.minZ <= 0) {
@@ -11901,6 +12033,31 @@ var BABYLON;
             var halfHeight = engine.getRenderHeight() / 2.0;
             BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
             return this._projectionMatrix;
+        };
+        Camera.prototype.getTranformationMatrix = function () {
+            this._computedViewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+            return this._transformMatrix;
+        };
+        Camera.prototype.updateFrustumPlanes = function () {
+            if (!this._refreshFrustumPlanes) {
+                return;
+            }
+            this.getTranformationMatrix();
+            if (!this._frustumPlanes) {
+                this._frustumPlanes = BABYLON.Frustum.GetPlanes(this._transformMatrix);
+            }
+            else {
+                BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            }
+            this._refreshFrustumPlanes = false;
+        };
+        Camera.prototype.isInFrustum = function (target) {
+            this.updateFrustumPlanes();
+            return target.isInFrustum(this._frustumPlanes);
+        };
+        Camera.prototype.isCompletelyInFrustum = function (target) {
+            this.updateFrustumPlanes();
+            return target.isCompletelyInFrustum(this._frustumPlanes);
         };
         Camera.prototype.dispose = function () {
             // Animations
@@ -14555,7 +14712,7 @@ var BABYLON;
             }
             // Particles
             var activeCamera = this._scene.activeCamera;
-            var beforeParticlesDate = BABYLON.Tools.Now;
+            this._scene._particlesDuration.beginMonitoring();
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
                 if (particleSystem.renderingGroupId !== index) {
@@ -14566,10 +14723,10 @@ var BABYLON;
                 }
                 this._clearDepthBuffer();
                 if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
-                    this._scene._activeParticles += particleSystem.render();
+                    this._scene._activeParticles.addCount(particleSystem.render(), false);
                 }
             }
-            this._scene._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
+            this._scene._particlesDuration.endMonitoring(false);
         };
         RenderingManager.prototype._renderSprites = function (index) {
             if (!this._scene.spritesEnabled || this._scene.spriteManagers.length === 0) {
@@ -14577,7 +14734,7 @@ var BABYLON;
             }
             // Sprites       
             var activeCamera = this._scene.activeCamera;
-            var beforeSpritessDate = BABYLON.Tools.Now;
+            this._scene._spritesDuration.beginMonitoring();
             for (var id = 0; id < this._scene.spriteManagers.length; id++) {
                 var spriteManager = this._scene.spriteManagers[id];
                 if (spriteManager.renderingGroupId === index && ((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
@@ -14585,7 +14742,7 @@ var BABYLON;
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration += BABYLON.Tools.Now - beforeSpritessDate;
+            this._scene._spritesDuration.endMonitoring(false);
         };
         RenderingManager.prototype._clearDepthBuffer = function () {
             if (this._depthBufferAlreadyCleaned) {
@@ -15028,16 +15185,22 @@ var BABYLON;
             this.soundTracks = new Array();
             this._audioEnabled = true;
             this._headphone = false;
-            this._totalVertices = 0;
-            this._activeIndices = 0;
-            this._activeParticles = 0;
-            this._lastFrameDuration = 0;
-            this._evaluateActiveMeshesDuration = 0;
-            this._renderTargetsDuration = 0;
-            this._particlesDuration = 0;
-            this._renderDuration = 0;
-            this._spritesDuration = 0;
-            this._animationRatio = 0;
+            // Performance counters
+            this._totalMeshesCounter = new BABYLON.PerfCounter();
+            this._totalLightsCounter = new BABYLON.PerfCounter();
+            this._totalMaterialsCounter = new BABYLON.PerfCounter();
+            this._totalTexturesCounter = new BABYLON.PerfCounter();
+            this._totalVertices = new BABYLON.PerfCounter();
+            this._activeIndices = new BABYLON.PerfCounter();
+            this._activeParticles = new BABYLON.PerfCounter();
+            this._lastFrameDuration = new BABYLON.PerfCounter();
+            this._evaluateActiveMeshesDuration = new BABYLON.PerfCounter();
+            this._renderTargetsDuration = new BABYLON.PerfCounter();
+            this._particlesDuration = new BABYLON.PerfCounter();
+            this._renderDuration = new BABYLON.PerfCounter();
+            this._spritesDuration = new BABYLON.PerfCounter();
+            this._animationRatio = new BABYLON.PerfCounter();
+            this._activeBones = new BABYLON.PerfCounter();
             this._renderId = 0;
             this._executeWhenReadyTimeoutId = -1;
             this._intermediateRendering = false;
@@ -15049,7 +15212,6 @@ var BABYLON;
             this._activeParticleSystems = new BABYLON.SmartArray(256);
             this._activeSkeletons = new BABYLON.SmartArray(32);
             this._softwareSkinnedMeshes = new BABYLON.SmartArray(32);
-            this._activeBones = 0;
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._edgesRenderers = new BABYLON.SmartArray(16);
@@ -15239,40 +15401,106 @@ var BABYLON;
             return this._engine;
         };
         Scene.prototype.getTotalVertices = function () {
-            return this._totalVertices;
+            return this._totalVertices.current;
         };
+        Object.defineProperty(Scene.prototype, "totalVerticesPerfCounter", {
+            get: function () {
+                return this._totalVertices;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getActiveIndices = function () {
-            return this._activeIndices;
+            return this._activeIndices.current;
         };
+        Object.defineProperty(Scene.prototype, "totalActiveIndicesPerfCounter", {
+            get: function () {
+                return this._activeIndices;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getActiveParticles = function () {
-            return this._activeParticles;
+            return this._activeParticles.current;
         };
+        Object.defineProperty(Scene.prototype, "activeParticlesPerfCounter", {
+            get: function () {
+                return this._activeParticles;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getActiveBones = function () {
-            return this._activeBones;
+            return this._activeBones.current;
         };
+        Object.defineProperty(Scene.prototype, "activeBonesPerfCounter", {
+            get: function () {
+                return this._activeBones;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Stats
         Scene.prototype.getLastFrameDuration = function () {
-            return this._lastFrameDuration;
+            return this._lastFrameDuration.current;
         };
+        Object.defineProperty(Scene.prototype, "lastFramePerfCounter", {
+            get: function () {
+                return this._lastFrameDuration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getEvaluateActiveMeshesDuration = function () {
-            return this._evaluateActiveMeshesDuration;
+            return this._evaluateActiveMeshesDuration.current;
         };
+        Object.defineProperty(Scene.prototype, "evaluateActiveMeshesDurationPerfCounter", {
+            get: function () {
+                return this._evaluateActiveMeshesDuration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getActiveMeshes = function () {
             return this._activeMeshes;
         };
         Scene.prototype.getRenderTargetsDuration = function () {
-            return this._renderTargetsDuration;
+            return this._renderTargetsDuration.current;
         };
         Scene.prototype.getRenderDuration = function () {
-            return this._renderDuration;
+            return this._renderDuration.current;
         };
+        Object.defineProperty(Scene.prototype, "renderDurationPerfCounter", {
+            get: function () {
+                return this._renderDuration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getParticlesDuration = function () {
-            return this._particlesDuration;
+            return this._particlesDuration.current;
         };
+        Object.defineProperty(Scene.prototype, "particlesDurationPerfCounter", {
+            get: function () {
+                return this._particlesDuration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getSpritesDuration = function () {
-            return this._spritesDuration;
+            return this._spritesDuration.current;
         };
+        Object.defineProperty(Scene.prototype, "spriteDuractionPerfCounter", {
+            get: function () {
+                return this._spritesDuration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Scene.prototype.getAnimationRatio = function () {
+            return this._animationRatio.current;
+        };
+        Scene.prototype.animationRatioPerfCounter = function () {
             return this._animationRatio;
         };
         Scene.prototype.getRenderId = function () {
@@ -15734,6 +15962,13 @@ var BABYLON;
             this._viewMatrix = view;
             this._projectionMatrix = projection;
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+            // Update frustum
+            if (!this._frustumPlanes) {
+                this._frustumPlanes = BABYLON.Frustum.GetPlanes(this._transformMatrix);
+            }
+            else {
+                BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            }
         };
         // Methods
         Scene.prototype.addMesh = function (newMesh) {
@@ -16218,7 +16453,7 @@ var BABYLON;
                         }
                     }
                     // Dispatch
-                    this._activeIndices += subMesh.indexCount;
+                    this._activeIndices.addCount(subMesh.indexCount, false);
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -16236,12 +16471,6 @@ var BABYLON;
             this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
             this._edgesRenderers.reset();
-            if (!this._frustumPlanes) {
-                this._frustumPlanes = BABYLON.Frustum.GetPlanes(this._transformMatrix);
-            }
-            else {
-                BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
-            }
             // Meshes
             var meshes;
             var len;
@@ -16259,7 +16488,7 @@ var BABYLON;
                 if (mesh.isBlocked) {
                     continue;
                 }
-                this._totalVertices += mesh.getTotalVertices();
+                this._totalVertices.addCount(mesh.getTotalVertices(), false);
                 if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
                 }
@@ -16282,6 +16511,7 @@ var BABYLON;
                 }
             }
             // Particle systems
+            this._particlesDuration.beginMonitoring();
             var beforeParticlesDate = BABYLON.Tools.Now;
             if (this.particlesEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
@@ -16297,7 +16527,7 @@ var BABYLON;
                 }
                 BABYLON.Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
             }
-            this._particlesDuration += BABYLON.Tools.Now - beforeParticlesDate;
+            this._particlesDuration.endMonitoring(false);
         };
         Scene.prototype._activeMesh = function (mesh) {
             if (mesh.skeleton && this.skeletonsEnabled) {
@@ -16338,6 +16568,7 @@ var BABYLON;
         };
         Scene.prototype._renderForCamera = function (camera) {
             var engine = this._engine;
+            var startTime = BABYLON.Tools.Now;
             this.activeCamera = camera;
             if (!this.activeCamera)
                 throw new Error("Active camera not set");
@@ -16350,10 +16581,10 @@ var BABYLON;
             this.updateTransformMatrix();
             this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
             // Meshes
-            var beforeEvaluateActiveMeshesDate = BABYLON.Tools.Now;
+            this._evaluateActiveMeshesDuration.beginMonitoring();
             BABYLON.Tools.StartPerformanceCounter("Active meshes evaluation");
             this._evaluateActiveMeshes();
-            this._evaluateActiveMeshesDuration += BABYLON.Tools.Now - beforeEvaluateActiveMeshesDate;
+            this._evaluateActiveMeshesDuration.endMonitoring(false);
             BABYLON.Tools.EndPerformanceCounter("Active meshes evaluation");
             // Software skinning
             for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
@@ -16361,6 +16592,7 @@ var BABYLON;
                 mesh.applySkeleton(mesh.skeleton);
             }
             // Render targets
+            this._renderTargetsDuration.beginMonitoring();
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
@@ -16378,10 +16610,10 @@ var BABYLON;
                 this._renderId++;
                 engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
-            this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
+            this._renderTargetsDuration.endMonitoring(false);
             // Prepare Frame
             this.postProcessManager._prepareFrame();
-            var beforeRenderDate = BABYLON.Tools.Now;
+            this._renderDuration.beginMonitoring();
             // Backgrounds
             var layerIndex;
             var layer;
@@ -16427,7 +16659,7 @@ var BABYLON;
                 }
                 engine.setDepthBuffer(true);
             }
-            this._renderDuration += BABYLON.Tools.Now - beforeRenderDate;
+            this._renderDuration.endMonitoring(false);
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
             // Update camera
@@ -16486,17 +16718,17 @@ var BABYLON;
             }
         };
         Scene.prototype.render = function () {
-            var startDate = BABYLON.Tools.Now;
-            this._particlesDuration = 0;
-            this._spritesDuration = 0;
-            this._activeParticles = 0;
-            this._renderDuration = 0;
-            this._renderTargetsDuration = 0;
-            this._evaluateActiveMeshesDuration = 0;
-            this._totalVertices = 0;
-            this._activeIndices = 0;
-            this._activeBones = 0;
-            this.getEngine().resetDrawCalls();
+            this._lastFrameDuration.beginMonitoring();
+            this._particlesDuration.fetchNewFrame();
+            this._spritesDuration.fetchNewFrame();
+            this._activeParticles.fetchNewFrame();
+            this._renderDuration.fetchNewFrame();
+            this._renderTargetsDuration.fetchNewFrame();
+            this._evaluateActiveMeshesDuration.fetchNewFrame();
+            this._totalVertices.fetchNewFrame();
+            this._activeIndices.fetchNewFrame();
+            this._activeBones.fetchNewFrame();
+            this.getEngine().drawCallsPerfCounter.fetchNewFrame();
             this._meshesForIntersections.reset();
             this.resetCachedMaterial();
             BABYLON.Tools.StartPerformanceCounter("Scene rendering");
@@ -16510,7 +16742,7 @@ var BABYLON;
             }
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio = deltaTime * (60.0 / 1000.0);
+            this._animationRatio.addCount(deltaTime * (60.0 / 1000.0), true);
             this._animate();
             // Physics
             if (this._physicsEngine) {
@@ -16521,6 +16753,7 @@ var BABYLON;
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
             // Customs render targets
+            this._renderTargetsDuration.beginMonitoring();
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             var engine = this.getEngine();
             var currentActiveCamera = this.activeCamera;
@@ -16546,7 +16779,7 @@ var BABYLON;
             if (this.customRenderTargets.length > 0) {
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
+            this._renderTargetsDuration.endMonitoring();
             this.activeCamera = currentActiveCamera;
             // Procedural textures
             if (this.proceduralTexturesEnabled) {
@@ -16615,7 +16848,14 @@ var BABYLON;
                 this.dumpNextRenderTargets = false;
             }
             BABYLON.Tools.EndPerformanceCounter("Scene rendering");
-            this._lastFrameDuration = BABYLON.Tools.Now - startDate;
+            this._lastFrameDuration.endMonitoring();
+            this._totalMeshesCounter.addCount(this.meshes.length, true);
+            this._totalLightsCounter.addCount(this.lights.length, true);
+            this._totalMaterialsCounter.addCount(this.materials.length, true);
+            this._totalTexturesCounter.addCount(this.textures.length, true);
+            this._activeBones.addCount(0, true);
+            this._activeIndices.addCount(0, true);
+            this._activeParticles.addCount(0, true);
         };
         Scene.prototype._updateAudioParameters = function () {
             if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
@@ -18290,7 +18530,7 @@ var BABYLON;
         /**
          * Sets the mesh indices.
          * Expects an array populated with integers or a Int32Array.
-         * If the mesh has no geometry, a new `Geometry` object is created and set to the mesh.
+         * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
          * This method creates a new index buffer each call.
          */
         Mesh.prototype.setIndices = function (indices, totalVertices) {
@@ -18742,7 +18982,7 @@ var BABYLON;
          * Returns a new Mesh object generated from the current mesh properties.
          * This method must not get confused with createInstance().
          * The parameter `name` is a string, the name given to the new mesh.
-         * The optional parameter `newParent` can be any `Node` object (default `null`).
+         * The optional parameter `newParent` can be any Node object (default `null`).
          * The optional parameter `doNotCloneChildren` (default `false`) allows/denies the recursive cloning of the original mesh children if any.
          * The parameter `clonePhysicsImpostor` (default `true`)  allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any.
          */
@@ -19542,7 +19782,6 @@ var BABYLON;
          * Creates lathe mesh.
          * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.
          * Please consider using the same method from the MeshBuilder class instead.
-         *
          * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be
          * rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero.
          * The parameter `radius` (positive float, default 1) is the radius value of the lathe.
@@ -19650,7 +19889,6 @@ var BABYLON;
         /**
          * Creates a tube mesh.
          * The tube is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
-         *
          * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `path` is a required array of successive Vector3. It is the curve used as the axis of the tube.
          * The parameter `radius` (positive float, default 1) sets the tube radius size.
@@ -19685,7 +19923,6 @@ var BABYLON;
         };
         /**
          * Creates a polyhedron mesh.
-         *
          * Please consider using the same method from the MeshBuilder class instead.
          * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial
          *  to choose the wanted type.
@@ -19722,7 +19959,7 @@ var BABYLON;
          * Please consider using the same method from the MeshBuilder class instead.
          * A decal is a mesh usually applied as a model onto the surface of another mesh. So don't forget the parameter `sourceMesh` depicting the decal.
          * The parameter `position` (Vector3, default `(0, 0, 0)`) sets the position of the decal in World coordinates.
-         * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates.
+         * The parameter `normal` (Vector3, default Vector3.Up) sets the normal of the mesh where the decal is applied onto in World coordinates.
          * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling.
          * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal.
          */
@@ -19849,7 +20086,7 @@ var BABYLON;
         };
         // Tools
         /**
-         * Returns an object `{min: Vector3, max: Vector3}`
+         * Returns an object `{min:` Vector3`, max:` Vector3`}`
          * This min and max Vector3 are the minimum and maximum vectors of each mesh bounding box from the passed array, in the World system
          */
         Mesh.MinMax = function (meshes) {
@@ -19872,7 +20109,7 @@ var BABYLON;
             };
         };
         /**
-         * Returns a `Vector3`, the center of the `{min: Vector3, max: Vector3}` or the center of MinMax vector3 computed from a mesh array.
+         * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         Mesh.Center = function (meshesOrMinMaxVector) {
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);
@@ -20035,6 +20272,9 @@ var BABYLON;
         };
         SubMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this.getBoundingInfo().isInFrustum(frustumPlanes);
+        };
+        SubMesh.prototype.isCompletelyInFrustum = function (frustumPlanes) {
+            return this.getBoundingInfo().isCompletelyInFrustum(frustumPlanes);
         };
         SubMesh.prototype.render = function (enableAlphaMode) {
             this._renderingMesh.render(this, enableAlphaMode);
@@ -21932,7 +22172,7 @@ var BABYLON;
                         mesh._activate(sceneRenderId);
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeIndices += subMesh.indexCount;
+                            scene._activeIndices.addCount(subMesh.indexCount, false);
                             this._renderingManager.dispatch(subMesh);
                         }
                     }
@@ -27975,7 +28215,7 @@ var BABYLON;
                 this._computeTransformMatrices(this._transformMatrices, null);
             }
             this._isDirty = false;
-            this._scene._activeBones += this.bones.length;
+            this._scene._activeBones.addCount(this.bones.length, false);
         };
         Skeleton.prototype.getAnimatables = function () {
             if (!this._animatables || this._animatables.length !== this.bones.length) {
@@ -35880,7 +36120,9 @@ var BABYLON;
                 // Small heuristic... We don't want to allocate totalElementCount right away because it may have 50 for 3 used elements, but on the other side we don't want to allocate just 3 when we just need 2, so double this value to give us some air to breath...
                 var newCount = Math.min(this.totalElementCount, count * 2);
                 this._sortTable = new Array(newCount);
-                this._sortedTable = new Array(newCount);
+            }
+            if (!this._sortTable || this._sortTable.length !== count) {
+                this._sortedTable = new Array(count);
             }
             // Because, you know...
             this.pack();
@@ -41671,12 +41913,14 @@ var BABYLON;
             }
             else {
                 context.partDataStartIndex = 0;
-                // Find the first valid object to get the count
-                var i = 0;
-                while (!context.groupInfoPartData[i]) {
-                    i++;
+                if (context.groupInfoPartData.length > 0) {
+                    // Find the first valid object to get the count
+                    var i = 0;
+                    while (!context.groupInfoPartData[i]) {
+                        i++;
+                    }
+                    context.partDataEndIndex = context.groupInfoPartData[i]._partData.usedElementCount;
                 }
-                context.partDataEndIndex = context.groupInfoPartData[i]._partData.usedElementCount;
             }
             return renderCount;
         };
@@ -45367,9 +45611,15 @@ var BABYLON;
                 group.y = Math.round(rh - proj.y);
             }
         };
-        Canvas2D.prototype._updateCanvasState = function () {
+        /**
+         * Call this method change you want to have layout related data computed and up to date (layout area, primitive area, local/global transformation matrices)
+         */
+        Canvas2D.prototype.updateCanvasLayout = function (forceRecompute) {
+            this._updateCanvasState(forceRecompute);
+        };
+        Canvas2D.prototype._updateCanvasState = function (forceRecompute) {
             // Check if the update has already been made for this render Frame
-            if (this.scene.getRenderId() === this._updateRenderId) {
+            if (!forceRecompute && this.scene.getRenderId() === this._updateRenderId) {
                 return;
             }
             // Detect a change of rendering size
@@ -45404,7 +45654,7 @@ var BABYLON;
          */
         Canvas2D.prototype._render = function () {
             this._updateTrackedNodes();
-            this._updateCanvasState();
+            this._updateCanvasState(false);
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
                 this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!

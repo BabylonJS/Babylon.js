@@ -225,7 +225,9 @@ var BABYLON;
                 // Small heuristic... We don't want to allocate totalElementCount right away because it may have 50 for 3 used elements, but on the other side we don't want to allocate just 3 when we just need 2, so double this value to give us some air to breath...
                 var newCount = Math.min(this.totalElementCount, count * 2);
                 this._sortTable = new Array(newCount);
-                this._sortedTable = new Array(newCount);
+            }
+            if (!this._sortTable || this._sortTable.length !== count) {
+                this._sortedTable = new Array(count);
             }
             // Because, you know...
             this.pack();
