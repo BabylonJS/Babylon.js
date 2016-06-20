@@ -40,7 +40,7 @@
                     this._scene._activeParticles += particleSystem.render();
                 }
             }
-            this._scene._particlesDuration += Tools.Now - beforeParticlesDate;
+            this._scene._particlesDuration.updateCounter(Tools.Now - beforeParticlesDate, beforeParticlesDate, false);
         }
 
         private _renderSprites(index: number): void {
@@ -59,7 +59,7 @@
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration += Tools.Now - beforeSpritessDate;
+            this._scene._spritesDuration.updateCounter(Tools.Now - beforeSpritessDate, beforeSpritessDate, false);
         }
 
         private _clearDepthBuffer(): void {
