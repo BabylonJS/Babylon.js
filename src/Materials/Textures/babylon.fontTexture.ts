@@ -176,7 +176,7 @@
 
             // we reached the end of the current line?
             let width = Math.round(measure.width);
-            var xMargin = Math.ceil(this._lineHeightSuper/20);
+            var xMargin = 1 + Math.ceil(this._lineHeightSuper / 15);    // Right now this empiric formula seems to work...
             var yMargin = xMargin;
             if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
