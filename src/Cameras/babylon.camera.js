@@ -36,8 +36,10 @@ var BABYLON;
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
+            this._transformMatrix = BABYLON.Matrix.Zero();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._globalPosition = BABYLON.Vector3.Zero();
+            this._refreshFrustumPlanes = true;
             scene.addCamera(this);
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
@@ -308,6 +310,7 @@ var BABYLON;
             if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
+            this._refreshFrustumPlanes = true;
             if (!this.parent || !this.parent.getWorldMatrix) {
                 this._globalPosition.copyFrom(this.position);
             }
@@ -336,6 +339,7 @@ var BABYLON;
             if (!force && this._isSynchronizedProjectionMatrix()) {
                 return this._projectionMatrix;
             }
+            this._refreshFrustumPlanes = true;
             var engine = this.getEngine();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 if (this.minZ <= 0) {
@@ -348,6 +352,31 @@ var BABYLON;
             var halfHeight = engine.getRenderHeight() / 2.0;
             BABYLON.Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
             return this._projectionMatrix;
+        };
+        Camera.prototype.getTranformationMatrix = function () {
+            this._computedViewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+            return this._transformMatrix;
+        };
+        Camera.prototype.updateFrustumPlanes = function () {
+            if (!this._refreshFrustumPlanes) {
+                return;
+            }
+            this.getTranformationMatrix();
+            if (!this._frustumPlanes) {
+                this._frustumPlanes = BABYLON.Frustum.GetPlanes(this._transformMatrix);
+            }
+            else {
+                BABYLON.Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            }
+            this._refreshFrustumPlanes = false;
+        };
+        Camera.prototype.isInFrustum = function (target) {
+            this.updateFrustumPlanes();
+            return target.isInFrustum(this._frustumPlanes);
+        };
+        Camera.prototype.isCompletelyInFrustum = function (target) {
+            this.updateFrustumPlanes();
+            return target.isCompletelyInFrustum(this._frustumPlanes);
         };
         Camera.prototype.dispose = function () {
             // Animations
@@ -615,6 +644,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Camera.prototype, "isStereoscopicSideBySide", void 0);
         return Camera;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.Camera = Camera;
 })(BABYLON || (BABYLON = {}));

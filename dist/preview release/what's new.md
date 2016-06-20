@@ -3,6 +3,7 @@
 ### Major updates
     
 ### Updates
+- Added `camera.isInFrustum` and `camera.isCompletelyInFrustum`. Can be used with meshes, submeshes and boundingInfo ([deltakosh](https://github.com/deltakosh)) 
 - Several memory allocation reduction ([benaadams](https://github.com/benaadams)) 
 - Several GPU state change reduction ([benaadams](https://github.com/benaadams)) 
 - MapTexture: add `supersample` mode to double font quality. ([nockawa](https://github.com/nockawa))
