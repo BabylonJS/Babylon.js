@@ -910,6 +910,13 @@
             }
         }
 
+        /**
+         * Call this method change you want to have layout related data computed and up to date (layout area, primitive area, local/global transformation matrices)
+         */
+        public updateCanvasLayout() {
+            this._updateCanvasState();
+        }
+
         private _updateCanvasState() {
             // Check if the update has already been made for this render Frame
             if (this.scene.getRenderId() === this._updateRenderId) {
