@@ -22,7 +22,12 @@
         return extentsOverlap(result0.min, result0.max, result1.min, result1.max);
     }
 
-    export class BoundingInfo {
+    export interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+
+    export class BoundingInfo implements ICullable {
         public boundingBox: BoundingBox;
         public boundingSphere: BoundingSphere;
 

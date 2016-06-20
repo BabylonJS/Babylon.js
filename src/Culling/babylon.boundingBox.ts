@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class BoundingBox {
+    export class BoundingBox implements ICullable {
         public vectors: Vector3[] = new Array<Vector3>();
         public center: Vector3;
         public extendSize: Vector3;

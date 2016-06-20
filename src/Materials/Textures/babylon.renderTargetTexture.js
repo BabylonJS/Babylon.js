@@ -234,7 +234,7 @@ var BABYLON;
                         mesh._activate(sceneRenderId);
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeIndices += subMesh.indexCount;
+                            scene._activeIndices.addCount(subMesh.indexCount, false);
                             this._renderingManager.dispatch(subMesh);
                         }
                     }

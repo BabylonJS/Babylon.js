@@ -556,12 +556,14 @@ var BABYLON;
             }
             else {
                 context.partDataStartIndex = 0;
-                // Find the first valid object to get the count
-                var i = 0;
-                while (!context.groupInfoPartData[i]) {
-                    i++;
+                if (context.groupInfoPartData.length > 0) {
+                    // Find the first valid object to get the count
+                    var i = 0;
+                    while (!context.groupInfoPartData[i]) {
+                        i++;
+                    }
+                    context.partDataEndIndex = context.groupInfoPartData[i]._partData.usedElementCount;
                 }
-                context.partDataEndIndex = context.groupInfoPartData[i]._partData.usedElementCount;
             }
             return renderCount;
         };

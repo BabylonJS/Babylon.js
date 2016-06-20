@@ -120,10 +120,13 @@
         public _projectionMatrix = new Matrix();
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
+        private _transformMatrix = Matrix.Zero();
 
         public _activeMeshes = new SmartArray<Mesh>(256);
 
         private _globalPosition = Vector3.Zero();
+        private _frustumPlanes: Plane[];
+        private _refreshFrustumPlanes = true;
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
@@ -366,6 +369,8 @@
                 return this._computedViewMatrix;
             }
 
+            this._refreshFrustumPlanes = true;
+
             if (!this.parent || !this.parent.getWorldMatrix) {
                 this._globalPosition.copyFrom(this.position);
             } else {
@@ -404,6 +409,8 @@
                 return this._projectionMatrix;
             }
 
+            this._refreshFrustumPlanes = true;
+
             var engine = this.getEngine();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 if (this.minZ <= 0) {
@@ -418,6 +425,39 @@
             var halfHeight = engine.getRenderHeight() / 2.0;
             Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
             return this._projectionMatrix;
+        }
+
+        public getTranformationMatrix(): Matrix {
+            this._computedViewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+            return this._transformMatrix;
+        }
+
+        private updateFrustumPlanes(): void {
+            if (!this._refreshFrustumPlanes) {
+                return;
+            }
+
+            this.getTranformationMatrix();
+
+            if (!this._frustumPlanes) {
+                this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
+            } else {
+                Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            }
+
+            this._refreshFrustumPlanes = false;
+        }
+
+        public isInFrustum(target: ICullable): boolean {
+            this.updateFrustumPlanes();
+
+            return target.isInFrustum(this._frustumPlanes);
+        }
+
+        public isCompletelyInFrustum(target: ICullable): boolean {
+            this.updateFrustumPlanes();
+
+            return target.isCompletelyInFrustum(this._frustumPlanes);
         }
 
         public dispose(): void {
