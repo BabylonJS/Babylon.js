@@ -220,7 +220,7 @@ var BABYLON;
                 this._computeTransformMatrices(this._transformMatrices, null);
             }
             this._isDirty = false;
-            this._scene._activeBones += this.bones.length;
+            this._scene._activeBones.addCount(this.bones.length, false);
         };
         Skeleton.prototype.getAnimatables = function () {
             if (!this._animatables || this._animatables.length !== this.bones.length) {
@@ -334,6 +334,6 @@ var BABYLON;
             return skeleton;
         };
         return Skeleton;
-    }());
+    })();
     BABYLON.Skeleton = Skeleton;
 })(BABYLON || (BABYLON = {}));

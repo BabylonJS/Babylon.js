@@ -667,18 +667,20 @@ var BABYLON;
             this.computeWorldMatrix(true);
             this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
         };
-        AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor) {
+        AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor, space) {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
             /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
             /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
             /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
             /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
             /// <returns>Mesh oriented towards targetMesh</returns>
-            yawCor = yawCor || 0; // default to zero if undefined
-            pitchCor = pitchCor || 0;
-            rollCor = rollCor || 0;
+            if (yawCor === void 0) { yawCor = 0; }
+            if (pitchCor === void 0) { pitchCor = 0; }
+            if (rollCor === void 0) { rollCor = 0; }
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
             var dv = AbstractMesh._lookAtVectorCache;
-            targetPoint.subtractToRef(this.position, dv);
+            var pos = space === BABYLON.Space.LOCAL ? this.position : this.getAbsolutePosition();
+            targetPoint.subtractToRef(pos, dv);
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
@@ -1044,6 +1046,6 @@ var BABYLON;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
-    }(BABYLON.Node));
+    })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
