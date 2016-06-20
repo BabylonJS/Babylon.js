@@ -8,6 +8,7 @@
 - MapTexture: add `supersample` mode to double font quality. ([nockawa](https://github.com/nockawa))
 - new `invertUV` parameter an all ribbon based shapes : ribbon, tube, lathe, basic and custom extrusion
 - Text2D: new `fontSuperSample` setting to use high quality font.
+- PerfCounter class added to monitor time/counter and expose min/max/average/lastSecondAverage/current metrics. Updated engine/scene current counter to use this class, exposing new properties as well to access the PerfCounter object. ([nockawa](https://github.com/nockawa))
 
 ### Exporters
     
