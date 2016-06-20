@@ -419,16 +419,24 @@
 
         // Private
         private _engine: Engine;
-        private _totalVertices = 0;
-        public _activeIndices = 0;
-        public _activeParticles = 0;
-        private _lastFrameDuration = new PerfCounter();
+
+        // Performance counters
+        private _totalMeshesCounter           = new PerfCounter();
+        private _totalLightsCounter           = new PerfCounter();
+        private _totalMaterialsCounter        = new PerfCounter();
+        private _totalTexturesCounter         = new PerfCounter();
+        private _totalVertices                = new PerfCounter();
+        public  _activeIndices                = new PerfCounter();
+        public  _activeParticles              = new PerfCounter();
+        private _lastFrameDuration            = new PerfCounter();
         private _evaluateActiveMeshesDuration = new PerfCounter();
-        private _renderTargetsDuration = new PerfCounter();
-        public _particlesDuration = new PerfCounter();
-        private _renderDuration = new PerfCounter();
-        public _spritesDuration = new PerfCounter();
-        private _animationRatio = 0;
+        private _renderTargetsDuration        = new PerfCounter();
+        public  _particlesDuration            = new PerfCounter();
+        private _renderDuration               = new PerfCounter();
+        public  _spritesDuration              = new PerfCounter();
+        private _animationRatio               = new PerfCounter();
+        public  _activeBones                  = new PerfCounter();
+
         private _animationStartDate: number;
         public _cachedMaterial: Material;
 
@@ -445,7 +453,6 @@
         public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
         private _activeSkeletons = new SmartArray<Skeleton>(32);
         private _softwareSkinnedMeshes = new SmartArray<Mesh>(32);
-        public _activeBones = 0;
 
         private _renderingManager: RenderingManager;
         private _physicsEngine: PhysicsEngine;
@@ -584,18 +591,34 @@
         }
 
         public getTotalVertices(): number {
+            return this._totalVertices.current;
+        }
+
+        public get totalVerticesPerfCounter(): PerfCounter {
             return this._totalVertices;
         }
 
         public getActiveIndices(): number {
+            return this._activeIndices.current;
+        }
+
+        public get totalActiveIndicesPerfCounter(): PerfCounter {
             return this._activeIndices;
         }
 
         public getActiveParticles(): number {
+            return this._activeParticles.current;
+        }
+
+        public get activeParticlesPerfCounter(): PerfCounter {
             return this._activeParticles;
         }
 
         public getActiveBones(): number {
+            return this._activeBones.current;
+        }
+
+        public get activeBonesPerfCounter(): PerfCounter {
             return this._activeBones;
         }
 
@@ -649,6 +672,10 @@
         }
 
         public getAnimationRatio(): number {
+            return this._animationRatio.current;
+        }
+
+        public animationRatioPerfCounter(): PerfCounter {
             return this._animationRatio;
         }
 
@@ -1787,7 +1814,7 @@
                     }
 
                     // Dispatch
-                    this._activeIndices += subMesh.indexCount;
+                    this._activeIndices.addCount(subMesh.indexCount, false);
                     this._renderingManager.dispatch(subMesh);
                 }
             }
@@ -1834,7 +1861,7 @@
                     continue;
                 }
 
-                this._totalVertices += mesh.getTotalVertices();
+                this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
                 if (!mesh.isReady() || !mesh.isEnabled()) {
                     continue;
@@ -1866,6 +1893,7 @@
             }
 
             // Particle systems
+            this._particlesDuration.beginMonitoring();
             var beforeParticlesDate = Tools.Now;
             if (this.particlesEnabled) {
                 Tools.StartPerformanceCounter("Particles", this.particleSystems.length > 0);
@@ -1883,7 +1911,7 @@
                 }
                 Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
             }
-            this._particlesDuration.updateCounter(Tools.Now - beforeParticlesDate, null, false);
+            this._particlesDuration.endMonitoring(false);
         }
 
         private _activeMesh(mesh: AbstractMesh): void {
@@ -1954,10 +1982,10 @@
             this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
 
             // Meshes
-            var beforeEvaluateActiveMeshesDate = Tools.Now;
+            this._evaluateActiveMeshesDuration.beginMonitoring();
             Tools.StartPerformanceCounter("Active meshes evaluation");
             this._evaluateActiveMeshes();
-            this._evaluateActiveMeshesDuration.updateCounter(Tools.Now - beforeEvaluateActiveMeshesDate, startTime, false);
+            this._evaluateActiveMeshesDuration.endMonitoring(false);
             Tools.EndPerformanceCounter("Active meshes evaluation");
 
             // Software skinning
@@ -1968,6 +1996,7 @@
             }
 
             // Render targets
+            this._renderTargetsDuration.beginMonitoring();
             var beforeRenderTargetDate = Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
@@ -1986,12 +2015,12 @@
                 this._renderId++;
                 engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
-            this._renderTargetsDuration.updateCounter(Tools.Now - beforeRenderTargetDate, startTime, false);
+            this._renderTargetsDuration.endMonitoring(false);
 
             // Prepare Frame
             this.postProcessManager._prepareFrame();
 
-            var beforeRenderDate = Tools.Now;
+            this._renderDuration.beginMonitoring();
             // Backgrounds
             var layerIndex;
             var layer;
@@ -2044,7 +2073,7 @@
                 engine.setDepthBuffer(true);
             }
 
-            this._renderDuration.updateCounter(Tools.Now - beforeRenderDate, startTime, false);
+            this._renderDuration.endMonitoring(false);
 
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
@@ -2118,17 +2147,17 @@
         }
 
         public render(): void {
-            var startDate = Tools.Now;
-            this._particlesDuration.updateCounter(0, startDate);
-            this._spritesDuration.updateCounter(0, startDate);
-            this._activeParticles = 0;
-            this._renderDuration.updateCounter(0, startDate);
-            this._renderTargetsDuration.updateCounter(0, startDate);
-            this._evaluateActiveMeshesDuration.updateCounter(0, startDate);
-            this._totalVertices = 0;
-            this._activeIndices = 0;
-            this._activeBones = 0;
-            this.getEngine().resetDrawCalls();
+            this._lastFrameDuration.beginMonitoring();
+            this._particlesDuration.fetchNewFrame();
+            this._spritesDuration.fetchNewFrame();
+            this._activeParticles.fetchNewFrame();
+            this._renderDuration.fetchNewFrame();
+            this._renderTargetsDuration.fetchNewFrame();
+            this._evaluateActiveMeshesDuration.fetchNewFrame();
+            this._totalVertices.fetchNewFrame();
+            this._activeIndices.fetchNewFrame();
+            this._activeBones.fetchNewFrame();
+            this.getEngine()._drawCalls.fetchNewFrame();;
             this._meshesForIntersections.reset();
             this.resetCachedMaterial();
 
@@ -2146,7 +2175,7 @@
 
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio = deltaTime * (60.0 / 1000.0);
+            this._animationRatio.addCount(deltaTime * (60.0 / 1000.0), true);
             this._animate();
 
             // Physics
@@ -2160,6 +2189,7 @@
             this.onBeforeRenderObservable.notifyObservers(this);
 
             // Customs render targets
+            this._renderTargetsDuration.beginMonitoring();
             var beforeRenderTargetDate = Tools.Now;
             var engine = this.getEngine();
             var currentActiveCamera = this.activeCamera;
@@ -2192,7 +2222,7 @@
             if (this.customRenderTargets.length > 0) { // Restore back buffer
                 engine.restoreDefaultFramebuffer();
             }
-            this._renderTargetsDuration.updateCounter(Tools.Now - beforeRenderTargetDate, startDate);
+            this._renderTargetsDuration.endMonitoring();
             this.activeCamera = currentActiveCamera;
 
             // Procedural textures
@@ -2277,7 +2307,14 @@
             }
 
             Tools.EndPerformanceCounter("Scene rendering");
-            this._lastFrameDuration.updateCounter(Tools.Now - startDate, startDate);
+            this._lastFrameDuration.endMonitoring();
+            this._totalMeshesCounter.addCount(this.meshes.length, true);
+            this._totalLightsCounter.addCount(this.lights.length, true);
+            this._totalMaterialsCounter.addCount(this.materials.length, true);
+            this._totalTexturesCounter.addCount(this.textures.length, true);
+            this._activeBones.addCount(0, true);
+            this._activeIndices.addCount(0, true);
+            this._activeParticles.addCount(0, true);
         }
 
         private _updateAudioParameters() {

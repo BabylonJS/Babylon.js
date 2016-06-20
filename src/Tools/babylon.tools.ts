@@ -1022,7 +1022,10 @@
     /**
      * This class is used to track a performance counter which is number based.
      * The user has access to many properties which give statistics of different nature
-     * The implementer uses the updateCounter() method to update the many statistics.
+     * 
+     * The implementer can track two kinds of Performance Counter: time and count
+     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
+     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
      */
     export class PerfCounter {
         /**
@@ -1061,65 +1064,82 @@
         }
 
         constructor() {
-            this._min                = 0;
-            this._max                = 0;
-            this._average            = 0;
-            this._lastSecAverage     = 0;
-            this._current            = 0;
-            this._totalValueCount    = 0;
-            this._totalAccumulated   = 0;
-            this._lastSecAccumulated = 0;
-            this._lastSecTime        = 0;
-            this._lastSecValueCount  = 0;
+            this._startMonitoringTime = 0;
+            this._min                 = 0;
+            this._max                 = 0;
+            this._average             = 0;
+            this._lastSecAverage      = 0;
+            this._current             = 0;
+            this._totalValueCount     = 0;
+            this._totalAccumulated    = 0;
+            this._lastSecAccumulated  = 0;
+            this._lastSecTime         = 0;
+            this._lastSecValueCount   = 0;
         }
 
         /**
-         * This method must be called by the implementer of the counter only!
-         * It's used to update the different statistics
-         * @param newValue the new value recorded
-         * @param currentTime the time at which the value was recorded
-         * @param newFrame true by default to monitor a new frame, if false 'newValue' will be added to the current frame
+         * Call this method to start monitoring a new frame.
+         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
          */
-        public updateCounter(newValue: number, currentTime: number, newFrame: boolean=true) {
+        public fetchNewFrame() {
+            this._totalValueCount++;
+            this._current = 0;
+        }
 
-            // First time init?
-            if (this._lastSecTime === 0) {
-                this._min = this._max = this._current = this._average = this._lastSecAverage = this._totalAccumulated = this._lastSecAccumulated = newValue;
-                if (newFrame) {
-                    this._lastSecTime = currentTime;
-                }
-                this._totalValueCount = this._lastSecValueCount = 1;
-                return;
+        /**
+         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
+         * @param newCount the count value to add to the monitored count
+         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
+         */
+        public addCount(newCount: number, fetchResult: boolean) {
+            this._current += newCount;
+            if (fetchResult) {
+                this._fetchResult();
             }
+        }
+
+        /**
+         * Start monitoring this performance counter
+         */
+        public beginMonitoring() {
+            this._startMonitoringTime = Tools.Now;
+        }
+
+        /**
+         * Compute the time lapsed since the previous beginMonitoring() call.
+         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
+         */
+        public endMonitoring(newFrame: boolean = true) {
+            if (newFrame) {
+                this.fetchNewFrame();
+            }
+
+            let currentTime = Tools.Now;
+            this._current = currentTime - this._startMonitoringTime;
+
+            if (newFrame) {
+                this._fetchResult();
+            }
+        }
+
+        private _fetchResult() {
+            this._totalAccumulated += this._current;
 
             // Min/Max update
-            this._min = Math.min(this._min, newValue);
-            this._max = Math.max(this._max, newValue);
-
-            // Update average
-            if (newFrame) {
-                this._totalValueCount++;
-            }
-            this._totalAccumulated += newValue;
+            this._min = Math.min(this._min, this._current);
+            this._max = Math.max(this._max, this._current);
             this._average = this._totalAccumulated / this._totalValueCount;
 
             // Reset last sec?
-            if (newFrame && ((currentTime - this._lastSecTime) > 1000)) {
+            if ((this._startMonitoringTime - this._lastSecTime) > 1000) {
                 this._lastSecAverage = this._lastSecAccumulated / this._lastSecValueCount;
-                this._lastSecTime = currentTime;
-                this._lastSecAccumulated = newValue;
-                this._lastSecValueCount = 1;
-            } else {
-                this._lastSecAccumulated += newValue;
-                if (newFrame) {
-                    this._lastSecValueCount++;
-                }
+                this._lastSecTime = this._startMonitoringTime;
+                this._lastSecAccumulated = 0;
+                this._lastSecValueCount = 0;
             }
-
-            // Current update
-            this._current = newValue;
         }
 
+        private _startMonitoringTime: number;
         private _min: number;
         private _max: number;
         private _average: number;
