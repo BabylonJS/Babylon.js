@@ -312,7 +312,7 @@
 
         private _loadingScreen: ILoadingScreen;
 
-        private _drawCalls = 0;
+        public  _drawCalls = new PerfCounter();
 
         private _glVersion: string;
         private _glRenderer: string;
@@ -595,12 +595,11 @@
         }
 
         public get drawCalls(): number {
-            return this._drawCalls;
+            return this._drawCalls.current;
         }
 
-        // Methods
-        public resetDrawCalls(): void {
-            this._drawCalls = 0;
+        public get drawCallsPerfCounter(): PerfCounter {
+            return this._drawCalls;
         }
 
         public getDepthFunction(): number {
@@ -1165,7 +1164,7 @@
             // Apply states
             this.applyStates();
 
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
             // Render
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
@@ -1180,7 +1179,7 @@
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
 
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
@@ -1193,7 +1192,7 @@
         public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
 
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
