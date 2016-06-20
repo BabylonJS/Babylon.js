@@ -15206,7 +15206,6 @@ var BABYLON;
             this._particlesDuration = new BABYLON.PerfCounter();
             this._renderDuration = new BABYLON.PerfCounter();
             this._spritesDuration = new BABYLON.PerfCounter();
-            this._animationRatio = new BABYLON.PerfCounter();
             this._activeBones = new BABYLON.PerfCounter();
             this._renderId = 0;
             this._executeWhenReadyTimeoutId = -1;
@@ -15505,9 +15504,6 @@ var BABYLON;
             configurable: true
         });
         Scene.prototype.getAnimationRatio = function () {
-            return this._animationRatio.current;
-        };
-        Scene.prototype.animationRatioPerfCounter = function () {
             return this._animationRatio;
         };
         Scene.prototype.getRenderId = function () {
@@ -16749,7 +16745,7 @@ var BABYLON;
             }
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio.addCount(deltaTime * (60.0 / 1000.0), true);
+            this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
             // Physics
             if (this._physicsEngine) {
