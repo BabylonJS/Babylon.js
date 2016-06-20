@@ -746,7 +746,7 @@
         }
 
         private static _lookAtVectorCache = new Vector3(0,0,0);
-        public lookAt(targetPoint: Vector3, yawCor: number, pitchCor: number, rollCor: number): void {
+        public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): void {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
             /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
             /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
@@ -754,12 +754,9 @@
             /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
             /// <returns>Mesh oriented towards targetMesh</returns>
 
-            yawCor = yawCor || 0; // default to zero if undefined
-            pitchCor = pitchCor || 0;
-            rollCor = rollCor || 0;
-
             var dv = AbstractMesh._lookAtVectorCache;
-            targetPoint.subtractToRef(this.position, dv);
+            var pos = space === Space.LOCAL ? this.position : this.getAbsolutePosition();
+            targetPoint.subtractToRef(pos, dv);
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
