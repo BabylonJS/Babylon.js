@@ -1050,6 +1050,7 @@ var BABYLON;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.abstractMesh.js.map

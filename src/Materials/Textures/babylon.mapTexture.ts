@@ -6,8 +6,8 @@
 
         private _replacedViewport: Viewport;
 
-        constructor(name: string, scene: Scene, size: ISize, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
-            super(null, scene, true, false, samplingMode);
+        constructor(name: string, scene: Scene, size: ISize, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, useMipMap: boolean=false) {
+            super(null, scene, !useMipMap, false, samplingMode);
 
             this.name = name;
             this._size = size;

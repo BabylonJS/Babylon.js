@@ -31,11 +31,21 @@
          * @returns And array of 4 Vector2, containing UV coordinates for the four corners of the Rectangle into the map
          */
         public get UVs(): Vector2[] {
+            return this.getUVsForCustomSize(this._root._size);
+        }
+
+
+        /**
+         * You may have allocated the PackedRect using over-provisioning (you allocated more than you need in order to prevent frequent deallocations/reallocations) and then using only a part of the PackRect.
+         * This method will return the UVs for this part by given the custom size of what you really use
+         * @param customSize must be less/equal to the allocated size, UV will be compute from this 
+         */
+        public getUVsForCustomSize(customSize: Size): Vector2[] {
             var mainWidth = this._root._size.width;
             var mainHeight = this._root._size.height;
 
             var topLeft = new Vector2(this._pos.x / mainWidth, this._pos.y / mainHeight);
-            var rightBottom = new Vector2((this._pos.x + this._contentSize.width - 1) / mainWidth, (this._pos.y + this._contentSize.height - 1) / mainHeight);
+            var rightBottom = new Vector2((this._pos.x + customSize.width - 1) / mainWidth, (this._pos.y + customSize.height - 1) / mainHeight);
             var uvs = new Array<Vector2>();
             uvs.push(topLeft);
             uvs.push(new Vector2(rightBottom.x, topLeft.y));
