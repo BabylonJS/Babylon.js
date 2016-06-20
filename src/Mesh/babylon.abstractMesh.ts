@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class AbstractMesh extends Node implements IDisposable {
+    export class AbstractMesh extends Node implements IDisposable, ICullable {
         // Statics
         private static _BILLBOARDMODE_NONE = 0;
         private static _BILLBOARDMODE_X = 1;
@@ -789,18 +789,8 @@
             return this._boundingInfo.isInFrustum(frustumPlanes);
         }
 
-        public isCompletelyInFrustum(camera?: Camera): boolean {
-            if (!camera) {
-                camera = this.getScene().activeCamera;
-            }
-
-            var transformMatrix = camera.getViewMatrix().multiply(camera.getProjectionMatrix());
-
-            if (!this._boundingInfo.isCompletelyInFrustum(Frustum.GetPlanes(transformMatrix))) {
-                return false;
-            }
-
-            return true;
+        public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
+            return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
         }
 
         public intersectsMesh(mesh: AbstractMesh, precise?: boolean): boolean {

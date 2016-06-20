@@ -1182,6 +1182,13 @@
             this._projectionMatrix = projection;
 
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+
+            // Update frustum
+            if (!this._frustumPlanes) {
+                this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
+            } else {
+                Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            }
         }
 
         // Methods
@@ -1787,12 +1794,6 @@
             this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
             this._edgesRenderers.reset();
-
-            if (!this._frustumPlanes) {
-                this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
-            } else {
-                Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
-            }
 
             // Meshes
             var meshes: AbstractMesh[];

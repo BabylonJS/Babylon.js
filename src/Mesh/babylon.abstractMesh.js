@@ -702,15 +702,9 @@ var BABYLON;
         AbstractMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isInFrustum(frustumPlanes);
         };
-        AbstractMesh.prototype.isCompletelyInFrustum = function (camera) {
-            if (!camera) {
-                camera = this.getScene().activeCamera;
-            }
-            var transformMatrix = camera.getViewMatrix().multiply(camera.getProjectionMatrix());
-            if (!this._boundingInfo.isCompletelyInFrustum(BABYLON.Frustum.GetPlanes(transformMatrix))) {
-                return false;
-            }
-            return true;
+        AbstractMesh.prototype.isCompletelyInFrustum = function (frustumPlanes) {
+            return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
+            ;
         };
         AbstractMesh.prototype.intersectsMesh = function (mesh, precise) {
             if (!this._boundingInfo || !mesh._boundingInfo) {
@@ -1050,6 +1044,6 @@ var BABYLON;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
