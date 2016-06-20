@@ -66,7 +66,7 @@ var BABYLON;
             this._bindCacheTarget();
             if (vertexData) {
                 var uv = vertexData.uvs;
-                var nodeuv = this._renderableData._cacheNode.UVs;
+                var nodeuv = this._renderableData._cacheNodeUVs;
                 for (var i = 0; i < 4; i++) {
                     uv[i * 2 + 0] = nodeuv[i].x;
                     uv[i * 2 + 1] = nodeuv[i].y;
@@ -82,13 +82,39 @@ var BABYLON;
         Object.defineProperty(Group2D.prototype, "cachedRect", {
             /**
              * Allow you to access the information regarding the cached rectangle of the Group2D into the MapTexture.
-             * If the `noWorldSpaceNode` options was used at the creation of a WorldSpaceCanvas, the rendering of the canvas must be made by the caller, so typically you want to bind the cacheTexture property to some material/mesh and you must use the cachedRect.UVs property to get the UV coordinates to use for your quad that will display the Canvas.
+             * If the `noWorldSpaceNode` options was used at the creation of a WorldSpaceCanvas, the rendering of the canvas must be made by the caller, so typically you want to bind the cacheTexture property to some material/mesh and you MUST use the Group2D.cachedUVs property to get the UV coordinates to use for your quad that will display the Canvas and NOT the PackedRect.UVs property which are incorrect because the allocated surface may be bigger (due to over-provisioning or shrinking without deallocating) than what the Group is actually using.
              */
             get: function () {
                 if (!this._renderableData) {
                     return null;
                 }
                 return this._renderableData._cacheNode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Group2D.prototype, "cachedUVs", {
+            /**
+             * The UVs into the MapTexture that map the cached group
+             */
+            get: function () {
+                if (!this._renderableData) {
+                    return null;
+                }
+                return this._renderableData._cacheNodeUVs;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Group2D.prototype, "cachedUVsChanged", {
+            get: function () {
+                if (!this._renderableData) {
+                    return null;
+                }
+                if (!this._renderableData._cacheNodeUVsChangedObservable) {
+                    this._renderableData._cacheNodeUVsChangedObservable = new BABYLON.Observable();
+                }
+                return this._renderableData._cacheNodeUVsChangedObservable;
             },
             enumerable: true,
             configurable: true
@@ -556,8 +582,8 @@ var BABYLON;
             }
             else {
                 context.partDataStartIndex = 0;
+                // Find the first valid object to get the count
                 if (context.groupInfoPartData.length > 0) {
-                    // Find the first valid object to get the count
                     var i = 0;
                     while (!context.groupInfoPartData[i]) {
                         i++;
@@ -567,17 +593,29 @@ var BABYLON;
             }
             return renderCount;
         };
+        Group2D.prototype._setRenderingScale = function (scale) {
+            if (this._renderableData._renderingScale === scale) {
+                return;
+            }
+            this._renderableData._renderingScale = scale;
+        };
         Group2D.prototype._bindCacheTarget = function () {
             var curWidth;
             var curHeight;
             var rd = this._renderableData;
+            var rs = rd._renderingScale;
+            Group2D._s.width = Math.ceil(this.actualSize.width * rs);
+            Group2D._s.height = Math.ceil(this.actualSize.height * rs);
+            var sizeChanged = !Group2D._s.equals(rd._cacheSize);
             if (rd._cacheNode) {
                 var size = rd._cacheNode.contentSize;
-                var groupWidth = Math.ceil(this.actualSize.width);
-                var groupHeight = Math.ceil(this.actualSize.height);
-                if ((size.width < groupWidth) || (size.height < groupHeight)) {
-                    curWidth = Math.floor(size.width * 1.07); // Grow 5% more to avoid frequent resizing for few pixels...
-                    curHeight = Math.floor(size.height * 1.07);
+                // Check if we have to deallocate because the size is too small
+                if ((size.width < Group2D._s.width) || (size.height < Group2D._s.height)) {
+                    // For Screen space: over-provisioning of 7% more to avoid frequent resizing for few pixels...
+                    // For World space: no over-provisioning
+                    var overprovisioning = this.owner.isScreenSpace ? 1.07 : 1;
+                    curWidth = Math.floor(Group2D._s.width * overprovisioning);
+                    curHeight = Math.floor(Group2D._s.height * overprovisioning);
                     //console.log(`[${this._globalTransformProcessStep}] Resize group ${this.id}, width: ${curWidth}, height: ${curHeight}`);
                     rd._cacheTexture.freeRect(rd._cacheNode);
                     rd._cacheNode = null;
@@ -585,14 +623,23 @@ var BABYLON;
             }
             if (!rd._cacheNode) {
                 // Check if we have to allocate a rendering zone in the global cache texture
-                var res = this.owner._allocateGroupCache(this, this.renderGroup, curWidth ? new BABYLON.Size(curWidth, curHeight) : null);
+                var res = this.owner._allocateGroupCache(this, this.renderGroup, curWidth ? new BABYLON.Size(curWidth, curHeight) : null, rd._useMipMap, rd._anisotropicLevel);
                 rd._cacheNode = res.node;
                 rd._cacheTexture = res.texture;
                 rd._cacheRenderSprite = res.sprite;
-                var size = rd._cacheNode.contentSize;
+                sizeChanged = true;
+            }
+            if (sizeChanged) {
+                rd._cacheSize.copyFrom(Group2D._s);
+                rd._cacheNodeUVs = rd._cacheNode.getUVsForCustomSize(rd._cacheSize);
+                this.scale = this._renderableData._renderingScale;
+                if (rd._cacheNodeUVsChangedObservable && rd._cacheNodeUVsChangedObservable.hasObservers()) {
+                    rd._cacheNodeUVsChangedObservable.notifyObservers(rd._cacheNodeUVs);
+                }
+                this._setFlags(BABYLON.SmartPropertyPrim.flagWorldCacheChanged);
             }
             var n = rd._cacheNode;
-            rd._cacheTexture.bindTextureForPosSize(n.pos, this.actualSize, true);
+            rd._cacheTexture.bindTextureForPosSize(n.pos, Group2D._s, true);
         };
         Group2D.prototype._unbindCacheTarget = function () {
             if (this._renderableData._cacheTexture) {
@@ -702,6 +749,7 @@ var BABYLON;
          * When used, the group's content will be cached in the nearest cached parent group/canvas
          */
         Group2D.GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP = 2;
+        Group2D._s = BABYLON.Size.Zero();
         __decorate([
             BABYLON.instanceLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return Group2D.sizeProperty = pi; }, false, true)
         ], Group2D.prototype, "size", null);
@@ -726,6 +774,12 @@ var BABYLON;
             this._cacheNode = null;
             this._cacheTexture = null;
             this._cacheRenderSprite = null;
+            this._renderingScale = 1;
+            this._cacheNodeUVs = null;
+            this._cacheNodeUVsChangedObservable = null;
+            this._cacheSize = BABYLON.Size.Zero();
+            this._useMipMap = false;
+            this._anisotropicLevel = 1;
         }
         RenderableGroupData.prototype.dispose = function () {
             if (this._cacheRenderSprite) {
@@ -746,6 +800,10 @@ var BABYLON;
                     v.dispose();
                 });
                 this._renderGroupInstancesInfo = null;
+            }
+            if (this._cacheNodeUVsChangedObservable) {
+                this._cacheNodeUVsChangedObservable.clear();
+                this._cacheNodeUVsChangedObservable = null;
             }
         };
         RenderableGroupData.prototype.addNewTransparentPrimitiveInfo = function (prim, gii) {

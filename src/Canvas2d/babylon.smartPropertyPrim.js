@@ -541,6 +541,7 @@ var BABYLON;
         SmartPropertyPrim.flagVisibilityChanged = 0x0000100; // set if there was a transition between visible/hidden status
         SmartPropertyPrim.flagPositioningDirty = 0x0000200; // set if the primitive positioning must be computed
         SmartPropertyPrim.flagTrackedGroup = 0x0000400; // set if the group2D is tracking a scene node
+        SmartPropertyPrim.flagWorldCacheChanged = 0x0000800; // set if the cached bitmap of a world space canvas changed
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);

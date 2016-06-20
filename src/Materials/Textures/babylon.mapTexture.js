@@ -7,9 +7,10 @@ var BABYLON;
 (function (BABYLON) {
     var MapTexture = (function (_super) {
         __extends(MapTexture, _super);
-        function MapTexture(name, scene, size, samplingMode) {
+        function MapTexture(name, scene, size, samplingMode, useMipMap) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            _super.call(this, null, scene, true, false, samplingMode);
+            if (useMipMap === void 0) { useMipMap = false; }
+            _super.call(this, null, scene, !useMipMap, false, samplingMode);
             this.name = name;
             this._size = size;
             this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
