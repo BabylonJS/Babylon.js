@@ -259,7 +259,10 @@
                 let newCount = Math.min(this.totalElementCount, count * 2);
 
                 this._sortTable = new Array<SortInfo>(newCount);
-                this._sortedTable = new Array<SortInfo>(newCount);
+            }
+
+            if (!this._sortTable || this._sortTable.length !== count) {
+                this._sortedTable = new Array<SortInfo>(count);
             }
 
             // Because, you know...
