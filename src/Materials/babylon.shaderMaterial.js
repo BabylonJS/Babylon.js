@@ -53,6 +53,7 @@ var BABYLON;
             if (this._options.samplers.indexOf(name) === -1) {
                 this._options.samplers.push(name);
             }
+            this._checkUniform(name);
             this._textureArrays[name] = textures;
             return this;
         };

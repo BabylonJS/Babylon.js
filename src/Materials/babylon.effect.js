@@ -265,7 +265,8 @@ var BABYLON;
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
-                for (var index = 0; index < this._samplers.length; index++) {
+                var index;
+                for (index = 0; index < this._samplers.length; index++) {
                     var sampler = this.getUniform(this._samplers[index]);
                     if (sampler == null) {
                         this._samplers.splice(index, 1);
@@ -309,10 +310,16 @@ var BABYLON;
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         };
         Effect.prototype.setTexture = function (channel, texture) {
-            this._engine.setTexture(this._samplers.indexOf(channel), texture);
+            this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         };
         Effect.prototype.setTextureArray = function (channel, textures) {
-            this._engine.setTextureArray(this._samplers.indexOf(channel), textures);
+            if (this._samplers.indexOf(channel + "Ex") === -1) {
+                var initialPos = this._samplers.indexOf(channel);
+                for (var index = 1; index < textures.length; index++) {
+                    this._samplers.splice(initialPos + index, 0, channel + "Ex");
+                }
+            }
+            this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
         };
         Effect.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
