@@ -12501,6 +12501,7 @@ var BABYLON;
                         };
                         if (!noPreventDefault) {
                             evt.preventDefault();
+                            element.focus();
                         }
                     }
                     else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
@@ -12578,9 +12579,7 @@ var BABYLON;
         FreeCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             if (!this._onKeyDown) {
-                if (!element.tabIndex) {
-                    element.tabIndex = 1;
-                }
+                element.tabIndex = 1;
                 this._onKeyDown = function (evt) {
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         _this.keysDown.indexOf(evt.keyCode) !== -1 ||
@@ -12990,9 +12989,7 @@ var BABYLON;
         }
         ArcRotateCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            if (!element.tabIndex) {
-                element.tabIndex = 1;
-            }
+            element.tabIndex = 1;
             this._onKeyDown = function (evt) {
                 if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     _this.keysDown.indexOf(evt.keyCode) !== -1 ||
@@ -13182,6 +13179,7 @@ var BABYLON;
                     }
                     if (!noPreventDefault) {
                         evt.preventDefault();
+                        element.focus();
                     }
                 }
                 else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
@@ -13301,9 +13299,9 @@ var BABYLON;
             element.addEventListener("mousemove", this._onMouseMove, false);
             element.addEventListener("MSPointerDown", this._onGestureStart, false);
             element.addEventListener("MSGestureChange", this._onGesture, false);
+            element.addEventListener("keydown", this._onKeyDown, false);
+            element.addEventListener("keyup", this._onKeyUp, false);
             BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
@@ -13315,6 +13313,8 @@ var BABYLON;
                 element.removeEventListener("mousemove", this._onMouseMove);
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
                 this._isRightClick = false;
                 this._isCtrlPushed = false;
                 this.pinchInwards = true;
@@ -13328,8 +13328,6 @@ var BABYLON;
                 this._onContextMenu = null;
             }
             BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
@@ -15777,9 +15775,7 @@ var BABYLON;
             if (attachUp) {
                 canvas.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             }
-            if (!canvas.tabIndex) {
-                canvas.tabIndex = 1;
-            }
+            canvas.tabIndex = 1;
             canvas.addEventListener("keydown", this._onKeyDown, false);
             canvas.addEventListener("keyup", this._onKeyUp, false);
         };

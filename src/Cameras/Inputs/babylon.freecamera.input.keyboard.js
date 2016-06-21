@@ -17,9 +17,7 @@ var BABYLON;
         FreeCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             if (!this._onKeyDown) {
-                if (!element.tabIndex) {
-                    element.tabIndex = 1;
-                }
+                element.tabIndex = 1;
                 this._onKeyDown = function (evt) {
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         _this.keysDown.indexOf(evt.keyCode) !== -1 ||

@@ -856,9 +856,7 @@ var BABYLON;
             if (attachUp) {
                 canvas.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             }
-            if (!canvas.tabIndex) {
-                canvas.tabIndex = 1;
-            }
+            canvas.tabIndex = 1;
             canvas.addEventListener("keydown", this._onKeyDown, false);
             canvas.addEventListener("keyup", this._onKeyUp, false);
         };
