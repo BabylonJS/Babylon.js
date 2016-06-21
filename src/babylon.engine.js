@@ -1998,6 +1998,14 @@ var BABYLON;
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
             }
         };
+        Engine.prototype.setTextureArray = function (channel, textures) {
+            if (channel < 0) {
+                return;
+            }
+            for (var index = 0; index < textures.length; index++) {
+                this.setTexture(channel, textures[index]);
+            }
+        };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;

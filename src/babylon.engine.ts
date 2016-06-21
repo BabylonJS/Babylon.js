@@ -2414,6 +2414,16 @@
             }
         }
 
+        public setTextureArray(channel: number, textures: BaseTexture[]): void {
+            if (channel < 0) {
+                return;
+            }
+
+            for (var index = 0; index < textures.length; index++) {
+                this.setTexture(channel, textures[index]);
+            }
+        }
+
         public _setAnisotropicLevel(key: number, texture: BaseTexture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;

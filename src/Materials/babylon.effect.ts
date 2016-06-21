@@ -378,6 +378,10 @@
             this._engine.setTexture(this._samplers.indexOf(channel), texture);
         }
 
+        public setTextureArray(channel: string, textures: BaseTexture[]): void {
+            this._engine.setTextureArray(this._samplers.indexOf(channel), textures);
+        }
+
         public setTextureFromPostProcess(channel: string, postProcess: PostProcess): void {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
