@@ -14,7 +14,6 @@ module BABYLON {
         }
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-
             if (!this._pointerInput) {
                 var camera = this.camera;
                 var engine = this.camera.getEngine();
@@ -39,6 +38,7 @@ module BABYLON {
 
                         if (!noPreventDefault) {
                             evt.preventDefault();
+                            element.focus();
                         }
                     }
                     else if (p.type === PointerEventTypes.POINTERUP) {
@@ -47,6 +47,7 @@ module BABYLON {
                         } catch (e) {
                             //Nothing to do with the error.
                         }
+
                         this.previousPosition = null;
                         if (!noPreventDefault) {
                             evt.preventDefault();

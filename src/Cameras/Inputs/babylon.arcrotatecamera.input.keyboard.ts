@@ -19,9 +19,7 @@ module BABYLON {
         public keysRight = [39];
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-            if (!element.tabIndex) {
-                element.tabIndex = 1;
-            }
+            element.tabIndex = 1;
 
             this._onKeyDown = evt => {
 
