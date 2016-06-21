@@ -105,6 +105,7 @@ var BABYLON;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
+            this.hoverCursor = "pointer";
             // Events
             /**
             * An event triggered when the scene is disposed.
@@ -647,7 +648,7 @@ var BABYLON;
                     _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
                     if (_this._pointerOverMesh.actionManager && _this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        canvas.style.cursor = "pointer";
+                        canvas.style.cursor = _this.hoverCursor;
                     }
                     else {
                         canvas.style.cursor = "";
@@ -658,7 +659,7 @@ var BABYLON;
                     // Sprites
                     pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
-                        canvas.style.cursor = "pointer";
+                        canvas.style.cursor = _this.hoverCursor;
                         _this.setPointerOverSprite(pickResult.pickedSprite);
                     }
                     else {

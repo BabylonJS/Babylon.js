@@ -104,6 +104,8 @@
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
 
+        public hoverCursor = "pointer";
+
         // Events
 
         /**
@@ -745,7 +747,7 @@
                     this.setPointerOverMesh(pickResult.pickedMesh);
 
                     if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        canvas.style.cursor = "pointer";
+                        canvas.style.cursor = this.hoverCursor;
                     } else {
                         canvas.style.cursor = "";
                     }
@@ -755,7 +757,7 @@
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
-                        canvas.style.cursor = "pointer";
+                        canvas.style.cursor = this.hoverCursor;
                         this.setPointerOverSprite(pickResult.pickedSprite);
                     } else {
                         this.setPointerOverSprite(null);

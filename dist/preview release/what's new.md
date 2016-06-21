@@ -8,9 +8,10 @@
 - Several GPU state change reduction ([benaadams](https://github.com/benaadams)) 
 - MapTexture: add `supersample` mode to double font quality. ([nockawa](https://github.com/nockawa))
 - New `invertUV` parameter an all ribbon based shapes : ribbon, tube, lathe, basic and custom extrusion ([jerome](https://github.com/jbousquie))
-- Text2D: new `fontSuperSample` setting to use high quality font. ([nockawa](https://github.com/nockawa))
-- PerfCounter class added to monitor time/counter and expose min/max/average/lastSecondAverage/current metrics. Updated engine/scene current counter to use this class, exposing new properties as well to access the PerfCounter object. ([nockawa](https://github.com/nockawa))
-- Better keyboard event handling ([deltakosh](https://github.com/deltakosh)) 
+- Text2D: new `fontSuperSample` setting to use high quality font ([nockawa](https://github.com/nockawa))
+- PerfCounter class added to monitor time/counter and expose min/max/average/lastSecondAverage/current metrics. Updated engine/scene current counter to use this class, exposing new properties as well to access the PerfCounter object ([nockawa](https://github.com/nockawa))
+- Better keyboard event handling which is now done at canvas level and not at window level ([deltakosh](https://github.com/deltakosh)) 
+- New `scene.hoverCursor` property to define a custom cursor when moving mouse over meshes ([deltakosh](https://github.com/deltakosh)) 
 
 ### Exporters
     
