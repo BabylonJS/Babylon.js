@@ -7768,10 +7768,14 @@ var BABYLON;
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             }
         };
-        Engine.prototype.setTexture = function (channel, texture) {
+        Engine.prototype.setTexture = function (channel, uniform, texture) {
             if (channel < 0) {
                 return;
             }
+            this._gl.uniform1i(uniform, channel);
+            this._setTexture(channel, texture);
+        };
+        Engine.prototype._setTexture = function (channel, texture) {
             // Not ready?
             if (!texture || !texture.isReady()) {
                 if (this._activeTexturesCache[channel] != null) {
@@ -7843,12 +7847,19 @@ var BABYLON;
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
             }
         };
-        Engine.prototype.setTextureArray = function (channel, textures) {
+        Engine.prototype.setTextureArray = function (channel, uniform, textures) {
             if (channel < 0) {
                 return;
             }
+            if (!this._textureUnits || this._textureUnits.length !== textures.length) {
+                this._textureUnits = new Int32Array(textures.length);
+            }
+            for (var i = 0; i < textures.length; i++) {
+                this._textureUnits[i] = channel + i;
+            }
+            this._gl.uniform1iv(uniform, this._textureUnits);
             for (var index = 0; index < textures.length; index++) {
-                this.setTexture(channel, textures[index]);
+                this._setTexture(channel + index, textures[index]);
             }
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
@@ -23255,7 +23266,8 @@ var BABYLON;
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
-                for (var index = 0; index < this._samplers.length; index++) {
+                var index;
+                for (index = 0; index < this._samplers.length; index++) {
                     var sampler = this.getUniform(this._samplers[index]);
                     if (sampler == null) {
                         this._samplers.splice(index, 1);
@@ -23299,10 +23311,16 @@ var BABYLON;
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         };
         Effect.prototype.setTexture = function (channel, texture) {
-            this._engine.setTexture(this._samplers.indexOf(channel), texture);
+            this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         };
         Effect.prototype.setTextureArray = function (channel, textures) {
-            this._engine.setTextureArray(this._samplers.indexOf(channel), textures);
+            if (this._samplers.indexOf(channel + "Ex") === -1) {
+                var initialPos = this._samplers.indexOf(channel);
+                for (var index = 1; index < textures.length; index++) {
+                    this._samplers.splice(initialPos + index, 0, channel + "Ex");
+                }
+            }
+            this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
         };
         Effect.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
@@ -46427,6 +46445,7 @@ var BABYLON;
             if (this._options.samplers.indexOf(name) === -1) {
                 this._options.samplers.push(name);
             }
+            this._checkUniform(name);
             this._textureArrays[name] = textures;
             return this;
         };

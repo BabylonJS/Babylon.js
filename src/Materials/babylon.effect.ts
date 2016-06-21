@@ -291,7 +291,7 @@
 
                     Tools.LoadFile(includeShaderUrl, (fileContent) => {
                         Effect.IncludesShadersStore[includeFile] = fileContent;
-                        this._processIncludes(<string>returnValue, callback)
+                        this._processIncludes(<string>returnValue, callback);
                     });
                     return;
                 }
@@ -331,7 +331,8 @@
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
 
-                for (var index = 0; index < this._samplers.length; index++) {
+                var index: number;
+                for (index = 0; index < this._samplers.length; index++) {
                     var sampler = this.getUniform(this._samplers[index]);
 
                     if (sampler == null) {
@@ -339,6 +340,7 @@
                         index--;
                     }
                 }
+
                 engine.bindSamplers(this);
 
                 this._isReady = true;
@@ -375,11 +377,18 @@
         }
 
         public setTexture(channel: string, texture: BaseTexture): void {
-            this._engine.setTexture(this._samplers.indexOf(channel), texture);
+            this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         }
 
         public setTextureArray(channel: string, textures: BaseTexture[]): void {
-            this._engine.setTextureArray(this._samplers.indexOf(channel), textures);
+            if (this._samplers.indexOf(channel + "Ex") === -1) {
+                var initialPos = this._samplers.indexOf(channel);
+                for (var index = 1; index < textures.length; index++) {
+                    this._samplers.splice(initialPos + index, 0, channel + "Ex");
+                }
+            }
+
+            this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
         }
 
         public setTextureFromPostProcess(channel: string, postProcess: PostProcess): void {
