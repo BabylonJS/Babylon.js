@@ -29,7 +29,7 @@ var BABYLON;
             };
         };
         return Condition;
-    }());
+    })();
     BABYLON.Condition = Condition;
     var ValueCondition = (function (_super) {
         __extends(ValueCondition, _super);
@@ -117,7 +117,7 @@ var BABYLON;
         ValueCondition._IsGreater = 2;
         ValueCondition._IsLesser = 3;
         return ValueCondition;
-    }(Condition));
+    })(Condition);
     BABYLON.ValueCondition = ValueCondition;
     var PredicateCondition = (function (_super) {
         __extends(PredicateCondition, _super);
@@ -129,7 +129,7 @@ var BABYLON;
             return this.predicate();
         };
         return PredicateCondition;
-    }(Condition));
+    })(Condition);
     BABYLON.PredicateCondition = PredicateCondition;
     var StateCondition = (function (_super) {
         __extends(StateCondition, _super);
@@ -152,6 +152,6 @@ var BABYLON;
             });
         };
         return StateCondition;
-    }(Condition));
+    })(Condition);
     BABYLON.StateCondition = StateCondition;
 })(BABYLON || (BABYLON = {}));
