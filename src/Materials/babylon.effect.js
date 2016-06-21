@@ -311,6 +311,9 @@ var BABYLON;
         Effect.prototype.setTexture = function (channel, texture) {
             this._engine.setTexture(this._samplers.indexOf(channel), texture);
         };
+        Effect.prototype.setTextureArray = function (channel, textures) {
+            this._engine.setTextureArray(this._samplers.indexOf(channel), textures);
+        };
         Effect.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         };

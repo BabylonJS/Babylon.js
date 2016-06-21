@@ -7843,6 +7843,14 @@ var BABYLON;
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
             }
         };
+        Engine.prototype.setTextureArray = function (channel, textures) {
+            if (channel < 0) {
+                return;
+            }
+            for (var index = 0; index < textures.length; index++) {
+                this.setTexture(channel, textures[index]);
+            }
+        };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
@@ -23292,6 +23300,9 @@ var BABYLON;
         };
         Effect.prototype.setTexture = function (channel, texture) {
             this._engine.setTexture(this._samplers.indexOf(channel), texture);
+        };
+        Effect.prototype.setTextureArray = function (channel, textures) {
+            this._engine.setTextureArray(this._samplers.indexOf(channel), textures);
         };
         Effect.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
@@ -46373,6 +46384,7 @@ var BABYLON;
         function ShaderMaterial(name, scene, shaderPath, options) {
             _super.call(this, name, scene);
             this._textures = {};
+            this._textureArrays = {};
             this._floats = {};
             this._floatsArrays = {};
             this._colors3 = {};
@@ -46409,6 +46421,13 @@ var BABYLON;
                 this._options.samplers.push(name);
             }
             this._textures[name] = texture;
+            return this;
+        };
+        ShaderMaterial.prototype.setTextureArray = function (name, textures) {
+            if (this._options.samplers.indexOf(name) === -1) {
+                this._options.samplers.push(name);
+            }
+            this._textureArrays[name] = textures;
             return this;
         };
         ShaderMaterial.prototype.setFloat = function (name, value) {
@@ -46530,9 +46549,14 @@ var BABYLON;
                 if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                 }
+                var name;
                 // Texture
-                for (var name in this._textures) {
+                for (name in this._textures) {
                     this._effect.setTexture(name, this._textures[name]);
+                }
+                // Texture arrays
+                for (name in this._textureArrays) {
+                    this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
                 // Float    
                 for (name in this._floats) {
@@ -46584,8 +46608,15 @@ var BABYLON;
         };
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
             if (forceDisposeTextures) {
-                for (var name in this._textures) {
+                var name;
+                for (name in this._textures) {
                     this._textures[name].dispose();
+                }
+                for (name in this._textureArrays) {
+                    var array = this._textureArrays[name];
+                    for (var index = 0; index < array.length; index++) {
+                        array[index].dispose();
+                    }
                 }
             }
             this._textures = {};
@@ -46596,10 +46627,20 @@ var BABYLON;
             serializationObject.customType = "BABYLON.ShaderMaterial";
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;
+            var name;
             // Texture
             serializationObject.textures = {};
-            for (var name in this._textures) {
+            for (name in this._textures) {
                 serializationObject.textures[name] = this._textures[name].serialize();
+            }
+            // Texture arrays
+            serializationObject.textureArrays = {};
+            for (name in this._textureArrays) {
+                serializationObject.textureArrays[name] = [];
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    serializationObject.textureArrays[name].push(array[index].serialize());
+                }
             }
             // Float    
             serializationObject.floats = {};
@@ -46655,9 +46696,19 @@ var BABYLON;
         };
         ShaderMaterial.Parse = function (source, scene, rootUrl) {
             var material = BABYLON.SerializationHelper.Parse(function () { return new ShaderMaterial(source.name, scene, source.shaderPath, source.options); }, source, scene, rootUrl);
+            var name;
             // Texture
-            for (var name in source.textures) {
+            for (name in source.textures) {
                 material.setTexture(name, BABYLON.Texture.Parse(source.textures[name], scene, rootUrl));
+            }
+            // Texture arrays
+            for (name in source.textureArrays) {
+                var array = source.textureArrays[name];
+                var textureArray = new Array();
+                for (var index = 0; index < array.length; index++) {
+                    textureArray.push(BABYLON.Texture.Parse(array[index], scene, rootUrl));
+                }
+                material.setTextureArray(name, textureArray);
             }
             // Float    
             for (name in source.floats) {
