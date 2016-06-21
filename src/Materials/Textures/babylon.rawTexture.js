@@ -52,6 +52,6 @@ var BABYLON;
             return new RawTexture(data, width, height, BABYLON.Engine.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode);
         };
         return RawTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.RawTexture = RawTexture;
 })(BABYLON || (BABYLON = {}));
