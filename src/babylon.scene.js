@@ -49,7 +49,7 @@ var BABYLON;
         PointerEventTypes._POINTERWHEEL = 0x08;
         PointerEventTypes._POINTERPICK = 0x10;
         return PointerEventTypes;
-    })();
+    }());
     BABYLON.PointerEventTypes = PointerEventTypes;
     var PointerInfoBase = (function () {
         function PointerInfoBase(type, event) {
@@ -57,7 +57,7 @@ var BABYLON;
             this.event = event;
         }
         return PointerInfoBase;
-    })();
+    }());
     BABYLON.PointerInfoBase = PointerInfoBase;
     /**
      * This class is used to store pointer related info for the onPrePointerObservable event.
@@ -71,7 +71,7 @@ var BABYLON;
             this.localPosition = new BABYLON.Vector2(localX, localY);
         }
         return PointerInfoPre;
-    })(PointerInfoBase);
+    }(PointerInfoBase));
     BABYLON.PointerInfoPre = PointerInfoPre;
     /**
      * This type contains all the data related to a pointer event in Babylon.js.
@@ -84,7 +84,7 @@ var BABYLON;
             this.pickInfo = pickInfo;
         }
         return PointerInfo;
-    })(PointerInfoBase);
+    }(PointerInfoBase));
     BABYLON.PointerInfo = PointerInfo;
     /**
      * Represents a scene to be rendered by the engine.
@@ -843,35 +843,36 @@ var BABYLON;
                 }
             };
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+            var canvas = this._engine.getRenderingCanvas();
             if (attachMove) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
+                canvas.addEventListener(eventPrefix + "move", this._onPointerMove, false);
                 // Wheel
-                this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
-                this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+                canvas.addEventListener('mousewheel', this._onPointerMove, false);
+                canvas.addEventListener('DOMMouseScroll', this._onPointerMove, false);
             }
             if (attachDown) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+                canvas.addEventListener(eventPrefix + "down", this._onPointerDown, false);
             }
             if (attachUp) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
+                canvas.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             }
-            BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp }
-            ]);
+            if (!canvas.tabIndex) {
+                canvas.tabIndex = 1;
+            }
+            canvas.addEventListener("keydown", this._onKeyDown, false);
+            canvas.addEventListener("keyup", this._onKeyUp, false);
         };
         Scene.prototype.detachControl = function () {
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
+            var canvas = this._engine.getRenderingCanvas();
+            canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
+            canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
+            canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
             // Wheel
-            this._engine.getRenderingCanvas().removeEventListener('mousewheel', this._onPointerMove);
-            this._engine.getRenderingCanvas().removeEventListener('DOMMouseScroll', this._onPointerMove);
-            BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp }
-            ]);
+            canvas.removeEventListener('mousewheel', this._onPointerMove);
+            canvas.removeEventListener('DOMMouseScroll', this._onPointerMove);
+            canvas.removeEventListener("keydown", this._onKeyDown);
+            canvas.removeEventListener("keyup", this._onKeyUp);
         };
         // Ready
         Scene.prototype.isReady = function () {
@@ -2452,6 +2453,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    })();
+    }());
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
