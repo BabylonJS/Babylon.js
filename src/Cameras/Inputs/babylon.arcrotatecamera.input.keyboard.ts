@@ -74,8 +74,10 @@ module BABYLON {
         }
 
         public detachControl(element: HTMLElement) {
-            element.removeEventListener("keydown", this._onKeyDown);
-            element.removeEventListener("keyup", this._onKeyUp);
+            if (element) {
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
+            }
 
             Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
