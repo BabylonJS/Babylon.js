@@ -10,7 +10,7 @@
     "gulp": "^3.8.11",
     "gulp-uglify": "~1.4.2",
     "typescript": "~1.6.2",
-    "gulp-typescript": "~2.9.0",
+    "gulp-typescript": "~2.13.0",
     "through2": "~0.6.5",
     "gulp-util": "~3.0.4",
     "gulp-concat": "~2.6.0",
