@@ -234,8 +234,7 @@
       "../../src/Materials/Textures/babylon.colorGradingTexture.js",
       "../../src/Materials/babylon.colorCurves.js",
       "../../src/Materials/babylon.pbrMaterial.js",      
-      "../../src/Debug/babylon.debugLayer.js",      
-      "../../src/PostProcess/babylon.asciiArtPostProcess.js"
+      "../../src/Debug/babylon.debugLayer.js"
     ]
   }
 }
