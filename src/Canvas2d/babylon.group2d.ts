@@ -269,6 +269,7 @@
         }
 
         public _renderCachedCanvas() {
+            this.owner._addGroupRenderCount(1);
             this.updateCachedStates(true);
             let context = new PrepareRender2DContext();
             this._prepareGroupRender(context);
@@ -412,6 +413,8 @@
 
             // Render the primitives if needed: either if we don't cache the content or if the content is cached but has changed
             if (!this.isCachedGroup || this._cacheGroupDirty) {
+                this.owner._addGroupRenderCount(1);
+
                 if (this.isCachedGroup) {
                     this._bindCacheTarget();
                 } else {
@@ -516,6 +519,8 @@
         }
 
         private _updateTransparentData() {
+            this.owner._addUpdateTransparentDataCount(1);
+
             let rd = this._renderableData;
 
             // If null, there was no change of ZOrder, we have nothing to do
