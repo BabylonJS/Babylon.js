@@ -12,6 +12,7 @@
 	<script src="../dist/babylon.brickProceduralTexture.js"></script>
 	<script src="../dist/babylon.marbleProceduralTexture.js"></script>
 	<script src="../dist/babylon.starfieldProceduralTexture.js"></script>
+	<script src="../dist/babylon.asciiArtPostProcess.js"></script>
 
 	<style>
 		html, body {
@@ -54,10 +55,8 @@
     <script src="add/addBrickPT.js"></script>
     <script src="add/addMarblePT.js"></script>
     <script src="add/addStarfieldPT.js"></script>
+    <script src="add/addAsciiArtPP.js"></script>
 	<script>
-		
-		
-		
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
 			var engine = new BABYLON.Engine(canvas, true);
@@ -67,6 +66,7 @@
 
 			var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 6, 50, BABYLON.Vector3.Zero(), scene);
 			camera.attachControl(canvas, true);
+			scene.postProcessesEnabled = false;
 
 			// Lights
 			var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
@@ -192,6 +192,9 @@
 				
 				// Starfield Procedural Texture
                 var starfieldPT = addStarfieldPT();
+
+				// Ascii Art
+				var asciiPostProcess = addAsciiArtPP(camera);
 								
 				// Default to std
 				var currentTexture = diffuseTexture;
@@ -215,6 +218,7 @@
 				}
 				
 				var resetPTOptions = function(){
+					scene.postProcessesEnabled = false;
 					//empty options
 					while(PTOptions.length > 0){
 						var option = PTOptions.pop()
@@ -408,6 +412,10 @@
 				
 				gui.add(options, 'skybox').onChange(function() {
 					skybox.setEnabled(options.skybox);
+				});
+
+				gui.add(options, 'ascii').onChange(function() {
+					scene.postProcessesEnabled = !scene.postProcessesEnabled;
 				});
 			});
 		}
