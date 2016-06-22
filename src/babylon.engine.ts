@@ -355,6 +355,7 @@
         private _currentBufferPointers: Array<{ indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number, buffer: WebGLBuffer }> = [];
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
+        private _textureUnits: Int32Array;
 
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
@@ -2329,10 +2330,16 @@
             }
         }
 
-        public setTexture(channel: number, texture: BaseTexture): void {
+        public setTexture(channel: number, uniform: WebGLUniformLocation, texture: BaseTexture): void {
             if (channel < 0) {
                 return;
             }
+
+            this._gl.uniform1i(uniform, channel);
+            this._setTexture(channel, texture);
+        }
+
+        private _setTexture(channel: number, texture: BaseTexture): void {
             // Not ready?
             if (!texture || !texture.isReady()) {
                 if (this._activeTexturesCache[channel] != null) {
@@ -2411,6 +2418,24 @@
                 }
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
+            }
+        }
+
+        public setTextureArray(channel: number, uniform: WebGLUniformLocation, textures: BaseTexture[]): void {
+            if (channel < 0) {
+                return;
+            }
+
+            if (!this._textureUnits || this._textureUnits.length !== textures.length) {
+                this._textureUnits = new Int32Array(textures.length);
+            }
+            for (let i = 0; i < textures.length; i++) {
+                this._textureUnits[i] = channel + i;
+            }
+            this._gl.uniform1iv(uniform, this._textureUnits);
+
+            for (var index = 0; index < textures.length; index++) {
+                this._setTexture(channel + index, textures[index]);
             }
         }
 

@@ -3,6 +3,7 @@
         private _shaderPath: any;
         private _options: any;
         private _textures: { [name: string]: Texture } = {};
+        private _textureArrays: { [name: string]: Texture[] } = {};
         private _floats: { [name: string]: number } = {};
         private _floatsArrays: { [name: string]: number[] } = {};
         private _colors3: { [name: string]: Color3 } = {};
@@ -49,6 +50,18 @@
                 this._options.samplers.push(name);
             }
             this._textures[name] = texture;
+
+            return this;
+        }
+
+        public setTextureArray(name: string, textures: Texture[]): ShaderMaterial {
+            if (this._options.samplers.indexOf(name) === -1) {
+                this._options.samplers.push(name);
+            }
+
+            this._checkUniform(name);
+
+            this._textureArrays[name] = textures;
 
             return this;
         }
@@ -217,9 +230,15 @@
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                 }
 
+                var name: string;
                 // Texture
-                for (var name in this._textures) {
+                for (name in this._textures) {
                     this._effect.setTexture(name, this._textures[name]);
+                }
+
+                // Texture arrays
+                for (name in this._textureArrays) {
+                    this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
 
                 // Float    
@@ -286,8 +305,16 @@
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
 
             if (forceDisposeTextures) {
-                for (var name in this._textures) {
+                var name: string;
+                for (name in this._textures) {
                     this._textures[name].dispose();
+                }
+
+                for (name in this._textureArrays) {
+                    var array = this._textureArrays[name];
+                    for (var index = 0; index < array.length; index++) {
+                        array[index].dispose();
+                    }
                 }
             }
 
@@ -303,10 +330,22 @@
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;
 
+            var name: string;
+
             // Texture
             serializationObject.textures = {};
-            for (var name in this._textures) {
+            for (name in this._textures) {
                 serializationObject.textures[name] = this._textures[name].serialize();
+            }
+
+            // Texture arrays
+            serializationObject.textureArrays = {};
+            for (name in this._textureArrays) {
+                serializationObject.textureArrays[name] = [];
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    serializationObject.textureArrays[name].push(array[index].serialize());
+                }
             }
 
             // Float    
@@ -374,10 +413,23 @@
 
         public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
             var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
-			
+
+            var name: string;
+
             // Texture
-            for (var name in source.textures) {
+            for (name in source.textures) {
                 material.setTexture(name, <Texture>Texture.Parse(source.textures[name], scene, rootUrl));
+            }
+
+            // Texture arrays
+            for (name in source.textureArrays) {
+                var array = source.textureArrays[name];
+                var textureArray = new Array<Texture>();
+
+                for (var index = 0; index < array.length; index++) {
+                    textureArray.push(<Texture>Texture.Parse(array[index], scene, rootUrl));
+                }
+                material.setTextureArray(name, textureArray);
             }
 
             // Float    

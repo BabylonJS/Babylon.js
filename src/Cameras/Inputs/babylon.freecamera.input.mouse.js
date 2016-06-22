@@ -34,6 +34,7 @@ var BABYLON;
                         };
                         if (!noPreventDefault) {
                             evt.preventDefault();
+                            element.focus();
                         }
                     }
                     else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
