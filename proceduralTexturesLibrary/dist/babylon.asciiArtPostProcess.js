@@ -178,7 +178,7 @@ var BABYLON;
             this.mixToNormal = 0;
             // Default values.
             var font = "40px Monospace";
-            var caracterSet = " `-.'_:,\"=^;<+!*?/cL\\zrs7TivJtC{3F)Il(xZfY5S2eajo14[nuyE]P6V9kXpKwGhqAUbOd8#HRDB0$mgMW&Q%N@";
+            var characterSet = " `-.'_:,\"=^;<+!*?/cL\\zrs7TivJtC{3F)Il(xZfY5S2eajo14[nuyE]P6V9kXpKwGhqAUbOd8#HRDB0$mgMW&Q%N@";
             // Use options.
             if (options) {
                 if (typeof (options) === "string") {
@@ -186,16 +186,16 @@ var BABYLON;
                 }
                 else {
                     font = options.font || font;
-                    caracterSet = options.caracterSet || caracterSet;
+                    characterSet = options.characterSet || characterSet;
                     this.mixToTile = options.mixToTile || this.mixToTile;
                     this.mixToNormal = options.mixToNormal || this.mixToNormal;
                 }
             }
-            this._asciiArtFontTexture = new AsciiArtFontTexture(name, font, caracterSet, camera.getScene());
+            this._asciiArtFontTexture = new AsciiArtFontTexture(name, font, characterSet, camera.getScene());
             var textureSize = this._asciiArtFontTexture.getSize();
             this.onApply = function (effect) {
                 effect.setTexture("asciiArtFont", _this._asciiArtFontTexture);
-                effect.setFloat4("asciiArtFontInfos", _this._asciiArtFontTexture.charSize, caracterSet.length, textureSize.width, textureSize.height);
+                effect.setFloat4("asciiArtFontInfos", _this._asciiArtFontTexture.charSize, characterSet.length, textureSize.width, textureSize.height);
                 effect.setFloat4("asciiArtOptions", _this.width, _this.height, _this.mixToNormal, _this.mixToTile);
             };
         }
