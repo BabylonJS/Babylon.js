@@ -69,6 +69,20 @@
         }) {
             super(settings);
 
+            this._drawCallsOpaqueCounter       = new PerfCounter();
+            this._drawCallsAlphaTestCounter    = new PerfCounter();
+            this._drawCallsTransparentCounter  = new PerfCounter();
+            this._groupRenderCounter           = new PerfCounter();
+            this._updateTransparentDataCounter = new PerfCounter();
+            this._cachedGroupRenderCounter     = new PerfCounter();
+            this._updateCachedStateCounter     = new PerfCounter();
+            this._updateLayoutCounter          = new PerfCounter();
+            this._updatePositioningCounter     = new PerfCounter();
+            this._updateLocalTransformCounter  = new PerfCounter();
+            this._updateGlobalTransformCounter = new PerfCounter();
+
+            this._profileInfoText = null;
+
             Prim2DBase._isCanvasInit = false;
 
             if (!settings) {
@@ -154,6 +168,50 @@
                         //this._supprtInstancedArray = false; // TODO REMOVE!!!
 
             this._setupInteraction(enableInteraction);
+        }
+
+        public get drawCallsOpaqueCounter(): PerfCounter {
+            return this._drawCallsOpaqueCounter;
+        }
+
+        public get drawCallsAlphaTestCounter(): PerfCounter {
+            return this._drawCallsAlphaTestCounter;
+        }
+
+        public get drawCallsTransparentCounter(): PerfCounter {
+            return this._drawCallsTransparentCounter;
+        }
+
+        public get groupRenderCounter(): PerfCounter {
+            return this._groupRenderCounter;
+        }
+
+        public get updateTransparentDataCounter(): PerfCounter {
+            return this._updateTransparentDataCounter;
+        }
+
+        public get cachedGroupRenderCounter(): PerfCounter {
+            return this._cachedGroupRenderCounter;
+        }
+
+        public get updateCachedStateCounter(): PerfCounter {
+            return this._updateCachedStateCounter;
+        }
+
+        public get updateLayoutCounter(): PerfCounter {
+            return this._updateLayoutCounter;
+        }
+
+        public get updatePositioningCounter(): PerfCounter {
+            return this._updatePositioningCounter;
+        }
+
+        public get updateLocalTransformCounter(): PerfCounter {
+            return this._updateLocalTransformCounter;
+        }
+
+        public get updateGlobalTransformCounter(): PerfCounter {
+            return this._updateGlobalTransformCounter;
         }
 
         protected _canvasPreInit(settings: any) {
@@ -866,10 +924,125 @@
             return this.__engineData;
         }
 
+        public createCanvasProfileInfoCanvas(): Canvas2D {
+            let canvas = new ScreenSpaceCanvas2D(this.scene, {
+                id: "ProfileInfoCanvas", cachingStrategy: Canvas2D.CACHESTRATEGY_DONTCACHE, children:
+                [
+                    new Rectangle2D({
+                        id: "ProfileBorder", border: "#FFFFFFFF", borderThickness: 2, roundRadius: 5, marginAlignment: "h: left, v: top", margin: "10", padding: "10", children:
+                        [
+                            new Text2D("Stats", { id: "ProfileInfoText", marginAlignment: "h: left, v: top", fontName: "10pt Lucida Console" })
+                        ]
+                    })
+
+                ]
+            });
+
+            this._profileInfoText = <Text2D>canvas.findById("ProfileInfoText");
+
+            return canvas;
+        }
+
         private checkBackgroundAvailability() {
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 throw Error("Can't use Canvas Background with the caching strategy TOPLEVELGROUPS");
             }
+        }
+
+        private _initPerfMetrics() {
+            this._drawCallsOpaqueCounter.fetchNewFrame();
+            this._drawCallsAlphaTestCounter.fetchNewFrame();
+            this._drawCallsTransparentCounter.fetchNewFrame();
+            this._groupRenderCounter.fetchNewFrame();
+            this._updateTransparentDataCounter.fetchNewFrame();
+            this._cachedGroupRenderCounter.fetchNewFrame();
+            this._updateCachedStateCounter.fetchNewFrame();
+            this._updateLayoutCounter.fetchNewFrame();
+            this._updatePositioningCounter.fetchNewFrame();
+            this._updateLocalTransformCounter.fetchNewFrame();
+            this._updateGlobalTransformCounter.fetchNewFrame();
+        }
+
+        private _fetchPerfMetrics() {
+            this._drawCallsOpaqueCounter.addCount(0, true);
+            this._drawCallsAlphaTestCounter.addCount(0, true);
+            this._drawCallsTransparentCounter.addCount(0, true);
+            this._groupRenderCounter.addCount(0, true);
+            this._updateTransparentDataCounter.addCount(0, true);
+            this._cachedGroupRenderCounter.addCount(0, true);
+            this._updateCachedStateCounter.addCount(0, true);
+            this._updateLayoutCounter.addCount(0, true);
+            this._updatePositioningCounter.addCount(0, true);
+            this._updateLocalTransformCounter.addCount(0, true);
+            this._updateGlobalTransformCounter.addCount(0, true);
+        }
+
+        private _updateProfileCanvas() {
+            if (this._profileInfoText == null) {
+                return;
+            }
+
+            let format = (v: number) => (Math.round(v*100)/100).toString();
+
+            let p = `Draw Calls:\n` +
+                    ` - Opaque:      ${this.drawCallsOpaqueCounter.current}, (avg:${format(this.drawCallsOpaqueCounter.lastSecAverage)}, t:${format(this.drawCallsOpaqueCounter.total)})\n` +
+                    ` - AlphaTest:   ${this.drawCallsAlphaTestCounter.current}, (avg:${format(this.drawCallsAlphaTestCounter.lastSecAverage)}, t:${format(this.drawCallsAlphaTestCounter.total)})\n` +
+                    ` - Transparent: ${this.drawCallsTransparentCounter.current}, (avg:${format(this.drawCallsTransparentCounter.lastSecAverage)}, t:${format(this.drawCallsTransparentCounter.total)})\n` +
+                    `Group Render: ${this.groupRenderCounter.current}, (avg:${format(this.groupRenderCounter.lastSecAverage)}, t:${format(this.groupRenderCounter.total)})\n` + 
+                    `Update Transparent Data: ${this.updateTransparentDataCounter.current}, (avg:${format(this.updateTransparentDataCounter.lastSecAverage)}, t:${format(this.updateTransparentDataCounter.total)})\n` + 
+                    `Cached Group Render: ${this.cachedGroupRenderCounter.current}, (avg:${format(this.cachedGroupRenderCounter.lastSecAverage)}, t:${format(this.cachedGroupRenderCounter.total)})\n` + 
+                    `Update Cached States: ${this.updateCachedStateCounter.current}, (avg:${format(this.updateCachedStateCounter.lastSecAverage)}, t:${format(this.updateCachedStateCounter.total)})\n` + 
+                    ` - Update Layout: ${this.updateLayoutCounter.current}, (avg:${format(this.updateLayoutCounter.lastSecAverage)}, t:${format(this.updateLayoutCounter.total)})\n` + 
+                    ` - Update Positioning: ${this.updatePositioningCounter.current}, (avg:${format(this.updatePositioningCounter.lastSecAverage)}, t:${format(this.updatePositioningCounter.total)})\n` + 
+                    ` - Update Local  Trans: ${this.updateLocalTransformCounter.current}, (avg:${format(this.updateLocalTransformCounter.lastSecAverage)}, t:${format(this.updateLocalTransformCounter.total)})\n` + 
+                    ` - Update Global Trans: ${this.updateGlobalTransformCounter.current}, (avg:${format(this.updateGlobalTransformCounter.lastSecAverage)}, t:${format(this.updateGlobalTransformCounter.total)})\n`;
+            this._profileInfoText.text = p;
+        }
+
+        public _addDrawCallCount(count: number, renderMode: number) {
+            switch (renderMode) {
+                case Render2DContext.RenderModeOpaque:
+                    this._drawCallsOpaqueCounter.addCount(count, false);
+                    return;
+                case Render2DContext.RenderModeAlphaTest:
+                    this._drawCallsAlphaTestCounter.addCount(count, false);
+                    return;
+                case Render2DContext.RenderModeTransparent:
+                    this._drawCallsTransparentCounter.addCount(count, false);
+                    return;
+            }
+        }
+
+        public _addGroupRenderCount(count: number) {
+            this._groupRenderCounter.addCount(count, false);
+        }
+
+        public _addUpdateTransparentDataCount(count: number) {
+            this._updateTransparentDataCounter.addCount(count, false);
+        }
+
+        public addCachedGroupRenderCounter(count: number) {
+            this._cachedGroupRenderCounter.addCount(count, false);
+        }
+
+        public addUpdateCachedStateCounter(count: number) {
+            this._updateCachedStateCounter.addCount(count, false);
+        }
+
+        public addUpdateLayoutCounter(count: number) {
+            this._updateLayoutCounter.addCount(count, false);
+        }
+
+        public addUpdatePositioningCounter(count: number) {
+            this._updatePositioningCounter.addCount(count, false);
+        }
+
+        public addupdateLocalTransformCounter(count: number) {
+            this._updateLocalTransformCounter.addCount(count, false);
+        }
+
+        public addUpdateGlobalTransformCounter(count: number) {
+            this._updateGlobalTransformCounter.addCount(count, false);
         }
 
         private __engineData: Canvas2DEngineBoundData;
@@ -906,6 +1079,20 @@
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
 
         public _renderingSize: Size;
+
+        private _drawCallsOpaqueCounter      : PerfCounter;
+        private _drawCallsAlphaTestCounter   : PerfCounter;
+        private _drawCallsTransparentCounter : PerfCounter;
+        private _groupRenderCounter          : PerfCounter;
+        private _updateTransparentDataCounter: PerfCounter;
+        private _cachedGroupRenderCounter    : PerfCounter;
+        private _updateCachedStateCounter    : PerfCounter;
+        private _updateLayoutCounter         : PerfCounter;
+        private _updatePositioningCounter    : PerfCounter;
+        private _updateGlobalTransformCounter: PerfCounter;
+        private _updateLocalTransformCounter : PerfCounter;
+
+        private _profileInfoText: Text2D;
 
         protected onPrimBecomesDirty() {
             this._addPrimToDirtyList(this);
@@ -1038,6 +1225,8 @@
          */
         private _render() {
 
+            this._initPerfMetrics();
+
             this._updateTrackedNodes();
 
             this._updateCanvasState(false);
@@ -1066,6 +1255,9 @@
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
                 this._cachedCanvasGroup._renderCachedCanvas();
             }
+
+            this._fetchPerfMetrics();
+            this._updateProfileCanvas();
         }
 
         /**

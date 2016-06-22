@@ -346,6 +346,7 @@
                     curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty);
                     if (curprim.isSizeAuto) {
                         curprim.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
+                        curprim._setFlags(SmartPropertyPrim.flagPositioningDirty);
                     }
 
                     if (curprim instanceof Group2D) {
