@@ -7768,10 +7768,14 @@ var BABYLON;
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             }
         };
-        Engine.prototype.setTexture = function (channel, texture) {
+        Engine.prototype.setTexture = function (channel, uniform, texture) {
             if (channel < 0) {
                 return;
             }
+            this._gl.uniform1i(uniform, channel);
+            this._setTexture(channel, texture);
+        };
+        Engine.prototype._setTexture = function (channel, texture) {
             // Not ready?
             if (!texture || !texture.isReady()) {
                 if (this._activeTexturesCache[channel] != null) {
@@ -7841,6 +7845,21 @@ var BABYLON;
                     }
                 }
                 this._setAnisotropicLevel(this._gl.TEXTURE_2D, texture);
+            }
+        };
+        Engine.prototype.setTextureArray = function (channel, uniform, textures) {
+            if (channel < 0) {
+                return;
+            }
+            if (!this._textureUnits || this._textureUnits.length !== textures.length) {
+                this._textureUnits = new Int32Array(textures.length);
+            }
+            for (var i = 0; i < textures.length; i++) {
+                this._textureUnits[i] = channel + i;
+            }
+            this._gl.uniform1iv(uniform, this._textureUnits);
+            for (var index = 0; index < textures.length; index++) {
+                this._setTexture(channel + index, textures[index]);
             }
         };
         Engine.prototype._setAnisotropicLevel = function (key, texture) {
@@ -12501,6 +12520,7 @@ var BABYLON;
                         };
                         if (!noPreventDefault) {
                             evt.preventDefault();
+                            element.focus();
                         }
                     }
                     else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
@@ -12578,6 +12598,7 @@ var BABYLON;
         FreeCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             if (!this._onKeyDown) {
+                element.tabIndex = 1;
                 this._onKeyDown = function (evt) {
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         _this.keysDown.indexOf(evt.keyCode) !== -1 ||
@@ -12606,18 +12627,18 @@ var BABYLON;
                         }
                     }
                 };
+                element.addEventListener("keydown", this._onKeyDown, false);
+                element.addEventListener("keyup", this._onKeyUp, false);
                 BABYLON.Tools.RegisterTopRootEvents([
-                    { name: "keydown", handler: this._onKeyDown },
-                    { name: "keyup", handler: this._onKeyUp },
                     { name: "blur", handler: this._onLostFocus }
                 ]);
             }
         };
         FreeCameraKeyboardMoveInput.prototype.detachControl = function (element) {
             if (this._onKeyDown) {
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
                 BABYLON.Tools.UnregisterTopRootEvents([
-                    { name: "keydown", handler: this._onKeyDown },
-                    { name: "keyup", handler: this._onKeyUp },
                     { name: "blur", handler: this._onLostFocus }
                 ]);
                 this._keys = [];
@@ -12987,6 +13008,7 @@ var BABYLON;
         }
         ArcRotateCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
+            element.tabIndex = 1;
             this._onKeyDown = function (evt) {
                 if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     _this.keysDown.indexOf(evt.keyCode) !== -1 ||
@@ -13022,16 +13044,18 @@ var BABYLON;
             this._onLostFocus = function () {
                 _this._keys = [];
             };
+            element.addEventListener("keydown", this._onKeyDown, false);
+            element.addEventListener("keyup", this._onKeyUp, false);
             BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
         ArcRotateCameraKeyboardMoveInput.prototype.detachControl = function (element) {
+            if (element) {
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
+            }
             BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
             this._keys = [];
@@ -13176,6 +13200,7 @@ var BABYLON;
                     }
                     if (!noPreventDefault) {
                         evt.preventDefault();
+                        element.focus();
                     }
                 }
                 else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
@@ -13295,9 +13320,9 @@ var BABYLON;
             element.addEventListener("mousemove", this._onMouseMove, false);
             element.addEventListener("MSPointerDown", this._onGestureStart, false);
             element.addEventListener("MSGestureChange", this._onGesture, false);
+            element.addEventListener("keydown", this._onKeyDown, false);
+            element.addEventListener("keyup", this._onKeyUp, false);
             BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
@@ -13309,6 +13334,8 @@ var BABYLON;
                 element.removeEventListener("mousemove", this._onMouseMove);
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
                 this._isRightClick = false;
                 this._isCtrlPushed = false;
                 this.pinchInwards = true;
@@ -13322,8 +13349,6 @@ var BABYLON;
                 this._onContextMenu = null;
             }
             BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
@@ -15020,6 +15045,7 @@ var BABYLON;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
+            this.hoverCursor = "pointer";
             // Events
             /**
             * An event triggered when the scene is disposed.
@@ -15562,7 +15588,7 @@ var BABYLON;
                     _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
                     if (_this._pointerOverMesh.actionManager && _this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        canvas.style.cursor = "pointer";
+                        canvas.style.cursor = _this.hoverCursor;
                     }
                     else {
                         canvas.style.cursor = "";
@@ -15573,7 +15599,7 @@ var BABYLON;
                     // Sprites
                     pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
-                        canvas.style.cursor = "pointer";
+                        canvas.style.cursor = _this.hoverCursor;
                         _this.setPointerOverSprite(pickResult.pickedSprite);
                     }
                     else {
@@ -15758,35 +15784,34 @@ var BABYLON;
                 }
             };
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+            var canvas = this._engine.getRenderingCanvas();
             if (attachMove) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
+                canvas.addEventListener(eventPrefix + "move", this._onPointerMove, false);
                 // Wheel
-                this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
-                this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+                canvas.addEventListener('mousewheel', this._onPointerMove, false);
+                canvas.addEventListener('DOMMouseScroll', this._onPointerMove, false);
             }
             if (attachDown) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+                canvas.addEventListener(eventPrefix + "down", this._onPointerDown, false);
             }
             if (attachUp) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
+                canvas.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             }
-            BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp }
-            ]);
+            canvas.tabIndex = 1;
+            canvas.addEventListener("keydown", this._onKeyDown, false);
+            canvas.addEventListener("keyup", this._onKeyUp, false);
         };
         Scene.prototype.detachControl = function () {
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
+            var canvas = this._engine.getRenderingCanvas();
+            canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
+            canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
+            canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
             // Wheel
-            this._engine.getRenderingCanvas().removeEventListener('mousewheel', this._onPointerMove);
-            this._engine.getRenderingCanvas().removeEventListener('DOMMouseScroll', this._onPointerMove);
-            BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp }
-            ]);
+            canvas.removeEventListener('mousewheel', this._onPointerMove);
+            canvas.removeEventListener('DOMMouseScroll', this._onPointerMove);
+            canvas.removeEventListener("keydown", this._onKeyDown);
+            canvas.removeEventListener("keyup", this._onKeyUp);
         };
         // Ready
         Scene.prototype.isReady = function () {
@@ -23243,7 +23268,8 @@ var BABYLON;
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
-                for (var index = 0; index < this._samplers.length; index++) {
+                var index;
+                for (index = 0; index < this._samplers.length; index++) {
                     var sampler = this.getUniform(this._samplers[index]);
                     if (sampler == null) {
                         this._samplers.splice(index, 1);
@@ -23287,7 +23313,16 @@ var BABYLON;
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         };
         Effect.prototype.setTexture = function (channel, texture) {
-            this._engine.setTexture(this._samplers.indexOf(channel), texture);
+            this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        };
+        Effect.prototype.setTextureArray = function (channel, textures) {
+            if (this._samplers.indexOf(channel + "Ex") === -1) {
+                var initialPos = this._samplers.indexOf(channel);
+                for (var index = 1; index < textures.length; index++) {
+                    this._samplers.splice(initialPos + index, 0, channel + "Ex");
+                }
+            }
+            this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
         };
         Effect.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
@@ -34323,10 +34358,10 @@ var BABYLON;
         // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
         GroundMesh.prototype._computeHeightQuads = function () {
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var v1 = BABYLON.Tmp.Vector3[0];
-            var v2 = BABYLON.Tmp.Vector3[1];
-            var v3 = BABYLON.Tmp.Vector3[2];
-            var v4 = BABYLON.Tmp.Vector3[3];
+            var v1 = BABYLON.Tmp.Vector3[3];
+            var v2 = BABYLON.Tmp.Vector3[2];
+            var v3 = BABYLON.Tmp.Vector3[1];
+            var v4 = BABYLON.Tmp.Vector3[0];
             var v1v2 = BABYLON.Tmp.Vector3[4];
             var v1v3 = BABYLON.Tmp.Vector3[5];
             var v1v4 = BABYLON.Tmp.Vector3[6];
@@ -34367,7 +34402,7 @@ var BABYLON;
                     v2.subtractToRef(v1, v1v2);
                     v3.subtractToRef(v1, v1v3);
                     v4.subtractToRef(v1, v1v4);
-                    BABYLON.Vector3.CrossToRef(v1v4, v1v3, norm1);
+                    BABYLON.Vector3.CrossToRef(v1v4, v1v3, norm1); // caution : CrossToRef uses the Tmp class
                     BABYLON.Vector3.CrossToRef(v1v2, v1v4, norm2);
                     norm1.normalize();
                     norm2.normalize();
@@ -46369,6 +46404,7 @@ var BABYLON;
         function ShaderMaterial(name, scene, shaderPath, options) {
             _super.call(this, name, scene);
             this._textures = {};
+            this._textureArrays = {};
             this._floats = {};
             this._floatsArrays = {};
             this._colors3 = {};
@@ -46405,6 +46441,14 @@ var BABYLON;
                 this._options.samplers.push(name);
             }
             this._textures[name] = texture;
+            return this;
+        };
+        ShaderMaterial.prototype.setTextureArray = function (name, textures) {
+            if (this._options.samplers.indexOf(name) === -1) {
+                this._options.samplers.push(name);
+            }
+            this._checkUniform(name);
+            this._textureArrays[name] = textures;
             return this;
         };
         ShaderMaterial.prototype.setFloat = function (name, value) {
@@ -46526,9 +46570,14 @@ var BABYLON;
                 if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                 }
+                var name;
                 // Texture
-                for (var name in this._textures) {
+                for (name in this._textures) {
                     this._effect.setTexture(name, this._textures[name]);
+                }
+                // Texture arrays
+                for (name in this._textureArrays) {
+                    this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
                 // Float    
                 for (name in this._floats) {
@@ -46580,8 +46629,15 @@ var BABYLON;
         };
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
             if (forceDisposeTextures) {
-                for (var name in this._textures) {
+                var name;
+                for (name in this._textures) {
                     this._textures[name].dispose();
+                }
+                for (name in this._textureArrays) {
+                    var array = this._textureArrays[name];
+                    for (var index = 0; index < array.length; index++) {
+                        array[index].dispose();
+                    }
                 }
             }
             this._textures = {};
@@ -46592,10 +46648,20 @@ var BABYLON;
             serializationObject.customType = "BABYLON.ShaderMaterial";
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;
+            var name;
             // Texture
             serializationObject.textures = {};
-            for (var name in this._textures) {
+            for (name in this._textures) {
                 serializationObject.textures[name] = this._textures[name].serialize();
+            }
+            // Texture arrays
+            serializationObject.textureArrays = {};
+            for (name in this._textureArrays) {
+                serializationObject.textureArrays[name] = [];
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    serializationObject.textureArrays[name].push(array[index].serialize());
+                }
             }
             // Float    
             serializationObject.floats = {};
@@ -46651,9 +46717,19 @@ var BABYLON;
         };
         ShaderMaterial.Parse = function (source, scene, rootUrl) {
             var material = BABYLON.SerializationHelper.Parse(function () { return new ShaderMaterial(source.name, scene, source.shaderPath, source.options); }, source, scene, rootUrl);
+            var name;
             // Texture
-            for (var name in source.textures) {
+            for (name in source.textures) {
                 material.setTexture(name, BABYLON.Texture.Parse(source.textures[name], scene, rootUrl));
+            }
+            // Texture arrays
+            for (name in source.textureArrays) {
+                var array = source.textureArrays[name];
+                var textureArray = new Array();
+                for (var index = 0; index < array.length; index++) {
+                    textureArray.push(BABYLON.Texture.Parse(array[index], scene, rootUrl));
+                }
+                material.setTextureArray(name, textureArray);
             }
             // Float    
             for (name in source.floats) {
@@ -48628,6 +48704,14 @@ var BABYLON;
             // Action Manager
             if (scene.actionManager) {
                 serializationObject.actions = scene.actionManager.serialize("scene");
+            }
+            // Audio
+            serializationObject.sounds = [];
+            for (index = 0; index < scene.soundTracks.length; index++) {
+                var soundtrack = scene.soundTracks[index];
+                for (var soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
+                    serializationObject.sounds.push(soundtrack.soundCollection[soundId].serialize());
+                }
             }
             return serializationObject;
         };
