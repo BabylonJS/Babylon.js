@@ -59,8 +59,10 @@ var BABYLON;
             ]);
         };
         ArcRotateCameraKeyboardMoveInput.prototype.detachControl = function (element) {
-            element.removeEventListener("keydown", this._onKeyDown);
-            element.removeEventListener("keyup", this._onKeyUp);
+            if (element) {
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
+            }
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);

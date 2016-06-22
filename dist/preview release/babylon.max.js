@@ -13051,8 +13051,10 @@ var BABYLON;
             ]);
         };
         ArcRotateCameraKeyboardMoveInput.prototype.detachControl = function (element) {
-            element.removeEventListener("keydown", this._onKeyDown);
-            element.removeEventListener("keyup", this._onKeyUp);
+            if (element) {
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
+            }
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
@@ -48702,6 +48704,14 @@ var BABYLON;
             // Action Manager
             if (scene.actionManager) {
                 serializationObject.actions = scene.actionManager.serialize("scene");
+            }
+            // Audio
+            serializationObject.sounds = [];
+            for (index = 0; index < scene.soundTracks.length; index++) {
+                var soundtrack = scene.soundTracks[index];
+                for (var soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
+                    serializationObject.sounds.push(soundtrack.soundCollection[soundId].serialize());
+                }
             }
             return serializationObject;
         };
