@@ -163,9 +163,9 @@ module BABYLON {
         font?: string;
 
         /**
-         * The caracter set to use in the postprocess.
+         * The character set to use in the postprocess.
          */
-        caracterSet?: string;
+        characterSet?: string;
 
         /**
          * This defines the amount you want to mix the "tile" or caracter space colored in the ascii art.
@@ -227,7 +227,7 @@ module BABYLON {
 
             // Default values.
             var font = "40px Monospace";
-            var caracterSet =  " `-.'_:,\"=^;<+!*?/cL\\zrs7TivJtC{3F)Il(xZfY5S2eajo14[nuyE]P6V9kXpKwGhqAUbOd8#HRDB0$mgMW&Q%N@";
+            var characterSet =  " `-.'_:,\"=^;<+!*?/cL\\zrs7TivJtC{3F)Il(xZfY5S2eajo14[nuyE]P6V9kXpKwGhqAUbOd8#HRDB0$mgMW&Q%N@";
 
             // Use options.
             if (options) {
@@ -236,13 +236,13 @@ module BABYLON {
                 }   
                 else {
                     font = (<IAsciiArtPostProcessOptions>options).font || font;
-                    caracterSet = (<IAsciiArtPostProcessOptions>options).caracterSet || caracterSet;
+                    characterSet = (<IAsciiArtPostProcessOptions>options).characterSet || characterSet;
                     this.mixToTile = (<IAsciiArtPostProcessOptions>options).mixToTile || this.mixToTile;
                     this.mixToNormal = (<IAsciiArtPostProcessOptions>options).mixToNormal || this.mixToNormal;
                 } 
             }
 
-            this._asciiArtFontTexture = new AsciiArtFontTexture(name, font, caracterSet, camera.getScene());
+            this._asciiArtFontTexture = new AsciiArtFontTexture(name, font, characterSet, camera.getScene());
             var textureSize = this._asciiArtFontTexture.getSize();
 
             this.onApply = (effect: Effect) => {
@@ -250,7 +250,7 @@ module BABYLON {
 				
                 effect.setFloat4("asciiArtFontInfos", 
                     this._asciiArtFontTexture.charSize, 
-                    caracterSet.length, 
+                    characterSet.length, 
                     textureSize.width, 
                     textureSize.height);
 
