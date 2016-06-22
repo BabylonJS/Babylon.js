@@ -301,6 +301,7 @@ var BABYLON;
                     curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty);
                     if (curprim.isSizeAuto) {
                         curprim.onPrimitivePropertyDirty(BABYLON.Prim2DBase.sizeProperty.flagId);
+                        curprim._setFlags(SmartPropertyPrim.flagPositioningDirty);
                     }
                     if (curprim instanceof BABYLON.Group2D) {
                         if (curprim.isRenderableGroup) {

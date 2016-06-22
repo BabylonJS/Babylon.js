@@ -74,6 +74,18 @@ var BABYLON;
             };
             this._notifDebugMode = false;
             this._mapCounter = 0;
+            this._drawCallsOpaqueCounter = new BABYLON.PerfCounter();
+            this._drawCallsAlphaTestCounter = new BABYLON.PerfCounter();
+            this._drawCallsTransparentCounter = new BABYLON.PerfCounter();
+            this._groupRenderCounter = new BABYLON.PerfCounter();
+            this._updateTransparentDataCounter = new BABYLON.PerfCounter();
+            this._cachedGroupRenderCounter = new BABYLON.PerfCounter();
+            this._updateCachedStateCounter = new BABYLON.PerfCounter();
+            this._updateLayoutCounter = new BABYLON.PerfCounter();
+            this._updatePositioningCounter = new BABYLON.PerfCounter();
+            this._updateLocalTransformCounter = new BABYLON.PerfCounter();
+            this._updateGlobalTransformCounter = new BABYLON.PerfCounter();
+            this._profileInfoText = null;
             BABYLON.Prim2DBase._isCanvasInit = false;
             if (!settings) {
                 settings = {};
@@ -147,6 +159,83 @@ var BABYLON;
             //this._supprtInstancedArray = false; // TODO REMOVE!!!
             this._setupInteraction(enableInteraction);
         }
+        Object.defineProperty(Canvas2D.prototype, "drawCallsOpaqueCounter", {
+            get: function () {
+                return this._drawCallsOpaqueCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "drawCallsAlphaTestCounter", {
+            get: function () {
+                return this._drawCallsAlphaTestCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "drawCallsTransparentCounter", {
+            get: function () {
+                return this._drawCallsTransparentCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "groupRenderCounter", {
+            get: function () {
+                return this._groupRenderCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "updateTransparentDataCounter", {
+            get: function () {
+                return this._updateTransparentDataCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "cachedGroupRenderCounter", {
+            get: function () {
+                return this._cachedGroupRenderCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "updateCachedStateCounter", {
+            get: function () {
+                return this._updateCachedStateCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "updateLayoutCounter", {
+            get: function () {
+                return this._updateLayoutCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "updatePositioningCounter", {
+            get: function () {
+                return this._updatePositioningCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "updateLocalTransformCounter", {
+            get: function () {
+                return this._updateLocalTransformCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "updateGlobalTransformCounter", {
+            get: function () {
+                return this._updateGlobalTransformCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Canvas2D.prototype._canvasPreInit = function (settings) {
             var cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
             this._cachingStrategy = cachingStrategy;
@@ -751,10 +840,105 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Canvas2D.prototype.createCanvasProfileInfoCanvas = function () {
+            var canvas = new ScreenSpaceCanvas2D(this.scene, {
+                id: "ProfileInfoCanvas", cachingStrategy: Canvas2D.CACHESTRATEGY_DONTCACHE, children: [
+                    new BABYLON.Rectangle2D({
+                        id: "ProfileBorder", border: "#FFFFFFFF", borderThickness: 2, roundRadius: 5, marginAlignment: "h: left, v: top", margin: "10", padding: "10", children: [
+                            new BABYLON.Text2D("Stats", { id: "ProfileInfoText", marginAlignment: "h: left, v: top", fontName: "10pt Lucida Console" })
+                        ]
+                    })
+                ]
+            });
+            this._profileInfoText = canvas.findById("ProfileInfoText");
+            return canvas;
+        };
         Canvas2D.prototype.checkBackgroundAvailability = function () {
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 throw Error("Can't use Canvas Background with the caching strategy TOPLEVELGROUPS");
             }
+        };
+        Canvas2D.prototype._initPerfMetrics = function () {
+            this._drawCallsOpaqueCounter.fetchNewFrame();
+            this._drawCallsAlphaTestCounter.fetchNewFrame();
+            this._drawCallsTransparentCounter.fetchNewFrame();
+            this._groupRenderCounter.fetchNewFrame();
+            this._updateTransparentDataCounter.fetchNewFrame();
+            this._cachedGroupRenderCounter.fetchNewFrame();
+            this._updateCachedStateCounter.fetchNewFrame();
+            this._updateLayoutCounter.fetchNewFrame();
+            this._updatePositioningCounter.fetchNewFrame();
+            this._updateLocalTransformCounter.fetchNewFrame();
+            this._updateGlobalTransformCounter.fetchNewFrame();
+        };
+        Canvas2D.prototype._fetchPerfMetrics = function () {
+            this._drawCallsOpaqueCounter.addCount(0, true);
+            this._drawCallsAlphaTestCounter.addCount(0, true);
+            this._drawCallsTransparentCounter.addCount(0, true);
+            this._groupRenderCounter.addCount(0, true);
+            this._updateTransparentDataCounter.addCount(0, true);
+            this._cachedGroupRenderCounter.addCount(0, true);
+            this._updateCachedStateCounter.addCount(0, true);
+            this._updateLayoutCounter.addCount(0, true);
+            this._updatePositioningCounter.addCount(0, true);
+            this._updateLocalTransformCounter.addCount(0, true);
+            this._updateGlobalTransformCounter.addCount(0, true);
+        };
+        Canvas2D.prototype._updateProfileCanvas = function () {
+            if (this._profileInfoText == null) {
+                return;
+            }
+            var format = function (v) { return (Math.round(v * 100) / 100).toString(); };
+            var p = "Draw Calls:\n" +
+                (" - Opaque:      " + this.drawCallsOpaqueCounter.current + ", (avg:" + format(this.drawCallsOpaqueCounter.lastSecAverage) + ", t:" + format(this.drawCallsOpaqueCounter.total) + ")\n") +
+                (" - AlphaTest:   " + this.drawCallsAlphaTestCounter.current + ", (avg:" + format(this.drawCallsAlphaTestCounter.lastSecAverage) + ", t:" + format(this.drawCallsAlphaTestCounter.total) + ")\n") +
+                (" - Transparent: " + this.drawCallsTransparentCounter.current + ", (avg:" + format(this.drawCallsTransparentCounter.lastSecAverage) + ", t:" + format(this.drawCallsTransparentCounter.total) + ")\n") +
+                ("Group Render: " + this.groupRenderCounter.current + ", (avg:" + format(this.groupRenderCounter.lastSecAverage) + ", t:" + format(this.groupRenderCounter.total) + ")\n") +
+                ("Update Transparent Data: " + this.updateTransparentDataCounter.current + ", (avg:" + format(this.updateTransparentDataCounter.lastSecAverage) + ", t:" + format(this.updateTransparentDataCounter.total) + ")\n") +
+                ("Cached Group Render: " + this.cachedGroupRenderCounter.current + ", (avg:" + format(this.cachedGroupRenderCounter.lastSecAverage) + ", t:" + format(this.cachedGroupRenderCounter.total) + ")\n") +
+                ("Update Cached States: " + this.updateCachedStateCounter.current + ", (avg:" + format(this.updateCachedStateCounter.lastSecAverage) + ", t:" + format(this.updateCachedStateCounter.total) + ")\n") +
+                (" - Update Layout: " + this.updateLayoutCounter.current + ", (avg:" + format(this.updateLayoutCounter.lastSecAverage) + ", t:" + format(this.updateLayoutCounter.total) + ")\n") +
+                (" - Update Positioning: " + this.updatePositioningCounter.current + ", (avg:" + format(this.updatePositioningCounter.lastSecAverage) + ", t:" + format(this.updatePositioningCounter.total) + ")\n") +
+                (" - Update Local  Trans: " + this.updateLocalTransformCounter.current + ", (avg:" + format(this.updateLocalTransformCounter.lastSecAverage) + ", t:" + format(this.updateLocalTransformCounter.total) + ")\n") +
+                (" - Update Global Trans: " + this.updateGlobalTransformCounter.current + ", (avg:" + format(this.updateGlobalTransformCounter.lastSecAverage) + ", t:" + format(this.updateGlobalTransformCounter.total) + ")\n");
+            this._profileInfoText.text = p;
+        };
+        Canvas2D.prototype._addDrawCallCount = function (count, renderMode) {
+            switch (renderMode) {
+                case BABYLON.Render2DContext.RenderModeOpaque:
+                    this._drawCallsOpaqueCounter.addCount(count, false);
+                    return;
+                case BABYLON.Render2DContext.RenderModeAlphaTest:
+                    this._drawCallsAlphaTestCounter.addCount(count, false);
+                    return;
+                case BABYLON.Render2DContext.RenderModeTransparent:
+                    this._drawCallsTransparentCounter.addCount(count, false);
+                    return;
+            }
+        };
+        Canvas2D.prototype._addGroupRenderCount = function (count) {
+            this._groupRenderCounter.addCount(count, false);
+        };
+        Canvas2D.prototype._addUpdateTransparentDataCount = function (count) {
+            this._updateTransparentDataCounter.addCount(count, false);
+        };
+        Canvas2D.prototype.addCachedGroupRenderCounter = function (count) {
+            this._cachedGroupRenderCounter.addCount(count, false);
+        };
+        Canvas2D.prototype.addUpdateCachedStateCounter = function (count) {
+            this._updateCachedStateCounter.addCount(count, false);
+        };
+        Canvas2D.prototype.addUpdateLayoutCounter = function (count) {
+            this._updateLayoutCounter.addCount(count, false);
+        };
+        Canvas2D.prototype.addUpdatePositioningCounter = function (count) {
+            this._updatePositioningCounter.addCount(count, false);
+        };
+        Canvas2D.prototype.addupdateLocalTransformCounter = function (count) {
+            this._updateLocalTransformCounter.addCount(count, false);
+        };
+        Canvas2D.prototype.addUpdateGlobalTransformCounter = function (count) {
+            this._updateGlobalTransformCounter.addCount(count, false);
         };
         Canvas2D.prototype.onPrimBecomesDirty = function () {
             this._addPrimToDirtyList(this);
@@ -856,6 +1040,7 @@ var BABYLON;
          * Method that renders the Canvas, you should not invoke
          */
         Canvas2D.prototype._render = function () {
+            this._initPerfMetrics();
             this._updateTrackedNodes();
             this._updateCanvasState(false);
             if (!this._isScreenSpace) {
@@ -878,6 +1063,8 @@ var BABYLON;
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS && this._cachedCanvasGroup) {
                 this._cachedCanvasGroup._renderCachedCanvas();
             }
+            this._fetchPerfMetrics();
+            this._updateProfileCanvas();
         };
         /**
          * Internal method that allocate a cache for the given group.

@@ -439,12 +439,21 @@ var BABYLON;
         }
         /**
          * Set the thickness from a string value
-         * @param thickness format is "top: <value>, left:<value>, right:<value>, bottom:<value>" each are optional, auto will be set if it's omitted.
+         * @param thickness format is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
          * Values are: 'auto', 'inherit', 'XX%' for percentage, 'XXpx' or 'XX' for pixels.
          */
         PrimitiveThickness.prototype.fromString = function (thickness) {
             this._clear();
             var m = thickness.trim().split(",");
+            // Special case, one value to apply to all edges
+            if (m.length === 1 && thickness.indexOf(":") === -1) {
+                this._setStringValue(m[0], 0, false);
+                this._setStringValue(m[0], 1, false);
+                this._setStringValue(m[0], 2, false);
+                this._setStringValue(m[0], 3, false);
+                this._changedCallback();
+                return;
+            }
             var res = false;
             for (var _i = 0; _i < m.length; _i++) {
                 var cm = m[_i];
@@ -1106,6 +1115,16 @@ var BABYLON;
             result.width = this.leftPixels + sourceArea.width + this.rightPixels;
             result.height = this.bottomPixels + sourceArea.height + this.topPixels;
         };
+        PrimitiveThickness.prototype.enlarge = function (sourceArea, dstOffset, enlargedArea) {
+            this._computePixels(0, sourceArea, true);
+            this._computePixels(1, sourceArea, true);
+            this._computePixels(2, sourceArea, true);
+            this._computePixels(3, sourceArea, true);
+            dstOffset.x = this.leftPixels;
+            enlargedArea.width = sourceArea.width + (dstOffset.x + this.rightPixels);
+            dstOffset.y = this.bottomPixels;
+            enlargedArea.height = sourceArea.height + (dstOffset.y + this.topPixels);
+        };
         PrimitiveThickness.Auto = 0x1;
         PrimitiveThickness.Inherit = 0x2;
         PrimitiveThickness.Percentage = 0x4;
@@ -1187,8 +1206,10 @@ var BABYLON;
             this._layoutArea = BABYLON.Size.Zero();
             this._layoutAreaPos = BABYLON.Vector2.Zero();
             this._marginOffset = BABYLON.Vector2.Zero();
-            this._parentMargingOffset = BABYLON.Vector2.Zero();
+            this._paddingOffset = BABYLON.Vector2.Zero();
+            this._parentPaddingOffset = BABYLON.Vector2.Zero();
             this._parentContentArea = BABYLON.Size.Zero();
+            this._lastAutoSizeArea = BABYLON.Size.Zero();
             this._contentArea = new BABYLON.Size(null, null);
             this._pointerEventObservable = new BABYLON.Observable();
             this._siblingDepthOffset = this._hierarchyDepthOffset = 0;
@@ -1422,7 +1443,7 @@ var BABYLON;
              * Setting this property may have no effect is specific alignment are in effect.
              */
             get: function () {
-                return this._position;
+                return this._position || Prim2DBase._nullPosition;
             },
             set: function (value) {
                 if (!this._checkPositionChange()) {
@@ -1904,7 +1925,12 @@ var BABYLON;
              */
             get: function () {
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
-                    this._boundingInfo = this.levelBoundingInfo.clone();
+                    if (this.isSizedByContent) {
+                        this._boundingInfo.clear();
+                    }
+                    else {
+                        this._boundingInfo.copyFrom(this.levelBoundingInfo);
+                    }
                     var bi = this._boundingInfo;
                     var tps = new BABYLON.BoundingInfo2D();
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
@@ -1930,6 +1956,16 @@ var BABYLON;
              */
             get: function () {
                 return this._size == null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "isSizedByContent", {
+            /**
+             * Return true if this prim has an auto size which is set by the children's global bounding box
+             */
+            get: function () {
+                return (this._size == null) && (this._children.length > 0);
             },
             enumerable: true,
             configurable: true
@@ -2185,22 +2221,14 @@ var BABYLON;
             this._layoutEngine = engine;
         };
         Prim2DBase.prototype._updateLocalTransform = function () {
-            var parentMarginOffsetChanged = false;
-            var parentMarginOffset = null;
-            if (this._parent) {
-                parentMarginOffset = this._parent._marginOffset;
-                parentMarginOffsetChanged = !parentMarginOffset.equals(this._parentMargingOffset);
-                this._parentMargingOffset.copyFrom(parentMarginOffset);
-            }
-            else {
-                parentMarginOffset = Prim2DBase._v0;
-            }
             var tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.originProperty.flagId;
-            if (parentMarginOffsetChanged || this.checkPropertiesDirty(tflags)) {
+            if (this.checkPropertiesDirty(tflags)) {
+                this.owner.addupdateLocalTransformCounter(1);
                 var rot = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), this._rotation);
                 var local;
+                var pos = this.position;
                 if (this._origin.x === 0 && this._origin.y === 0) {
-                    local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale, this._scale, 1), rot, new BABYLON.Vector3(this.actualPosition.x + parentMarginOffset.x, this.actualPosition.y + parentMarginOffset.y, 0));
+                    local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale, this._scale, 1), rot, new BABYLON.Vector3(pos.x, pos.y, 0));
                     this._localTransform = local;
                 }
                 else {
@@ -2213,8 +2241,8 @@ var BABYLON;
                     // -Origin * rotation * scale
                     BABYLON.Matrix.ScalingToRef(this._scale, this._scale, 1, Prim2DBase._t0);
                     Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
-                    // -Origin * rotation * scale * (Origin + Position + Parent Margin Offset)
-                    BABYLON.Matrix.TranslationToRef((as.width * this._origin.x) + this.actualPosition.x + parentMarginOffset.x, (as.height * this._origin.y) + this.actualPosition.y + parentMarginOffset.y, 0, Prim2DBase._t2);
+                    // -Origin * rotation * scale * (Origin + Position)
+                    BABYLON.Matrix.TranslationToRef((as.width * this._origin.x) + pos.x, (as.height * this._origin.y) + pos.y, 0, Prim2DBase._t2);
                     Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, this._localTransform);
                 }
                 this.clearPropertiesDirty(tflags);
@@ -2226,6 +2254,7 @@ var BABYLON;
             if (this.isDisposed) {
                 return;
             }
+            this.owner.addCachedGroupRenderCounter(1);
             // Check if the parent is synced
             if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagLayoutDirty | BABYLON.SmartPropertyPrim.flagPositioningDirty))) {
                 this._parent.updateCachedStates(false);
@@ -2233,7 +2262,7 @@ var BABYLON;
             // Update actualSize only if there' not positioning to recompute and the size changed
             // Otherwise positioning will take care of it.
             var sizeDirty = this.checkPropertiesDirty(Prim2DBase.sizeProperty.flagId);
-            if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutDirty) && sizeDirty) {
+            if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutDirty) && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty) && sizeDirty) {
                 var size = this.size;
                 if (size) {
                     if (this.size.width != null) {
@@ -2248,14 +2277,22 @@ var BABYLON;
             // Check for layout update
             var positioningDirty = this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
             if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutDirty)) {
+                this.owner.addUpdateLayoutCounter(1);
                 this._layoutEngine.updateLayout(this);
                 this._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutDirty);
             }
             var positioningComputed = positioningDirty && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
+            var autoContentChanged = false;
+            if (this.isSizeAuto) {
+                autoContentChanged = (!this._lastAutoSizeArea.equals(this.size));
+            }
             // Check for positioning update
-            if (!positioningComputed && (sizeDirty || this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty) || (this._parent && !this._parent.contentArea.equals(this._parentContentArea)))) {
+            if (!positioningComputed && (autoContentChanged || sizeDirty || this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty) || (this._parent && !this._parent.contentArea.equals(this._parentContentArea)))) {
                 this._updatePositioning();
                 this._clearFlags(BABYLON.SmartPropertyPrim.flagPositioningDirty);
+                if (sizeDirty) {
+                    this.clearPropertiesDirty(Prim2DBase.sizeProperty.flagId);
+                }
                 positioningComputed = true;
             }
             if (positioningComputed && this._parent) {
@@ -2263,18 +2300,30 @@ var BABYLON;
             }
             // Check if we must update this prim
             if (this === this.owner || this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
+                this.owner.addUpdateGlobalTransformCounter(1);
                 var curVisibleState = this.isVisible;
                 this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
                 // Detect a change of visibility
                 this._changeFlags(BABYLON.SmartPropertyPrim.flagVisibilityChanged, curVisibleState !== this.isVisible);
                 // Get/compute the localTransform
                 var localDirty = this._updateLocalTransform();
+                var parentPaddingChanged = false;
+                var parentPaddingOffset = Prim2DBase._v0;
+                if (this._parent) {
+                    parentPaddingOffset = this._parent._paddingOffset;
+                    parentPaddingChanged = !parentPaddingOffset.equals(this._parentPaddingOffset);
+                }
                 // Check if there are changes in the parent that will force us to update the global matrix
                 var parentDirty = (this._parent != null) ? (this._parent._globalTransformStep !== this._parentTransformStep) : false;
                 // Check if we have to update the globalTransform
-                if (!this._globalTransform || localDirty || parentDirty) {
+                if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged) {
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
-                    this._globalTransform = this._parent ? this._localTransform.multiply(globalTransform) : this._localTransform;
+                    var localTransform;
+                    Prim2DBase._transMtx.copyFrom(this._localTransform);
+                    Prim2DBase._transMtx.m[12] += this._layoutAreaPos.x + this._marginOffset.x + parentPaddingOffset.x;
+                    Prim2DBase._transMtx.m[13] += this._layoutAreaPos.y + this._marginOffset.y + parentPaddingOffset.y;
+                    localTransform = Prim2DBase._transMtx;
+                    this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
                     this._invGlobalTransform = BABYLON.Matrix.Invert(this._globalTransform);
                     this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
                     this._parentTransformStep = this._parent ? this._parent._globalTransformStep : 0;
@@ -2290,6 +2339,7 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype._updatePositioning = function () {
+            this.owner.addUpdatePositioningCounter(1);
             // From this point we assume that the primitive layoutArea is computed and up to date.
             // We know have to :
             //  1. Determine the PaddingArea and the ActualPosition based on the margin/marginAlignment properties, which will also set the size property of the primitive
@@ -2306,30 +2356,43 @@ var BABYLON;
             // Apply margin
             if (this._hasMargin) {
                 this.margin.computeWithAlignment(this.layoutArea, this.size, this.marginAlignment, this._marginOffset, Prim2DBase._size);
-                this.actualPosition = this._marginOffset.add(this._layoutAreaPos);
-                if (this.size.width != null) {
-                    this.size.width = Prim2DBase._size.width;
-                }
-                if (this.size.height != null) {
-                    this.size.height = Prim2DBase._size.height;
-                }
-                this.actualSize.copyFrom(Prim2DBase._size.clone());
+                this.actualSize = Prim2DBase._size.clone();
             }
+            var isSizeAuto = this.isSizeAuto;
             if (this._hasPadding) {
-                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
-                Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
-                Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this.padding.compute(Prim2DBase._icArea, this._marginOffset, Prim2DBase._size);
-                this._marginOffset.x += Prim2DBase._icPos.x;
-                this._marginOffset.y += Prim2DBase._icPos.y;
-                this._contentArea.copyFrom(Prim2DBase._size);
+                // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so me resize the primitive itself
+                if (isSizeAuto) {
+                    var content = this.size.clone();
+                    this._getActualSizeFromContentToRef(content, Prim2DBase._icArea);
+                    this.padding.enlarge(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
+                    this._contentArea.copyFrom(content);
+                    this.actualSize = Prim2DBase._size.clone();
+                    // Changing the padding has resize the prim, which forces us to recompute margin again
+                    if (this._hasMargin) {
+                        this.margin.computeWithAlignment(this.layoutArea, Prim2DBase._size, this.marginAlignment, this._marginOffset, Prim2DBase._size);
+                    }
+                }
+                else {
+                    this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
+                    Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
+                    Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
+                    this.padding.compute(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
+                    this._paddingOffset.x += Prim2DBase._icPos.x;
+                    this._paddingOffset.y += Prim2DBase._icPos.y;
+                    this._contentArea.copyFrom(Prim2DBase._size);
+                }
             }
             else {
                 this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                 Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this._marginOffset.copyFrom(Prim2DBase._icPos);
+                this._paddingOffset.copyFrom(Prim2DBase._icPos);
                 this._contentArea.copyFrom(Prim2DBase._icArea);
+            }
+            var aPos = new BABYLON.Vector2(this._layoutAreaPos.x + this._marginOffset.x, this._layoutAreaPos.y + this._marginOffset.y);
+            this.actualPosition = aPos;
+            if (isSizeAuto) {
+                this._lastAutoSizeArea = this.size;
             }
         };
         Object.defineProperty(Prim2DBase.prototype, "contentArea", {
@@ -2393,9 +2456,17 @@ var BABYLON;
          * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          */
         Prim2DBase.prototype._getInitialContentAreaToRef = function (primSize, initialContentPosition, initialContentArea) {
-            initialContentArea.width = primSize.width;
-            initialContentArea.height = primSize.height;
+            initialContentArea.copyFrom(primSize);
             initialContentPosition.x = initialContentPosition.y = 0;
+        };
+        /**
+         * This method is used to calculate the new size of the primitive based on the content which must stay the same
+         * Check the Rectangle2D implementation for a concrete application.
+         * @param primSize the current size of the primitive
+         * @param newPrimSize the new size of the primitive. PLEASE ROUND THE values, we're talking about pixels and fraction of them are not our friends!
+         */
+        Prim2DBase.prototype._getActualSizeFromContentToRef = function (primSize, newPrimSize) {
+            newPrimSize.copyFrom(primSize);
         };
         Prim2DBase.PRIM2DBASE_PROPCOUNT = 15;
         Prim2DBase._nullPosition = BABYLON.Vector2.Zero();
@@ -2406,6 +2477,7 @@ var BABYLON;
         Prim2DBase._t1 = new BABYLON.Matrix();
         Prim2DBase._t2 = new BABYLON.Matrix();
         Prim2DBase._v0 = BABYLON.Vector2.Zero(); // Must stay with the value 0,0
+        Prim2DBase._transMtx = BABYLON.Matrix.Zero();
         Prim2DBase._icPos = BABYLON.Vector2.Zero();
         Prim2DBase._icArea = BABYLON.Size.Zero();
         Prim2DBase._size = BABYLON.Size.Zero();

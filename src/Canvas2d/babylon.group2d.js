@@ -229,6 +229,7 @@ var BABYLON;
             this._renderableData._primDirtyList.push(prim);
         };
         Group2D.prototype._renderCachedCanvas = function () {
+            this.owner._addGroupRenderCount(1);
             this.updateCachedStates(true);
             var context = new BABYLON.PrepareRender2DContext();
             this._prepareGroupRender(context);
@@ -359,6 +360,7 @@ var BABYLON;
             }
             // Render the primitives if needed: either if we don't cache the content or if the content is cached but has changed
             if (!this.isCachedGroup || this._cacheGroupDirty) {
+                this.owner._addGroupRenderCount(1);
                 if (this.isCachedGroup) {
                     this._bindCacheTarget();
                 }
@@ -442,6 +444,7 @@ var BABYLON;
             }
         };
         Group2D.prototype._updateTransparentData = function () {
+            this.owner._addUpdateTransparentDataCount(1);
             var rd = this._renderableData;
             // If null, there was no change of ZOrder, we have nothing to do
             if (rd._firstChangedPrim === null) {

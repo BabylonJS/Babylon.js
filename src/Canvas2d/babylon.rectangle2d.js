@@ -38,7 +38,8 @@ var BABYLON;
                 }
                 this.effectsReady = true;
             }
-            var engine = instanceInfo.owner.owner.engine;
+            var canvas = instanceInfo.owner.owner;
+            var engine = canvas.engine;
             var depthFunction = 0;
             if (this.effectFill && this.effectBorder) {
                 depthFunction = engine.getDepthFunction();
@@ -58,11 +59,13 @@ var BABYLON;
                     if (!this.instancingFillAttributes) {
                         this.instancingFillAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_FILLPARTID, effect);
                     }
+                    canvas._addDrawCallCount(1, context.renderMode);
                     engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
                     engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 }
                 else {
+                    canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
                     for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                         this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.fillIndicesCount);
@@ -82,11 +85,13 @@ var BABYLON;
                     if (!this.instancingBorderAttributes) {
                         this.instancingBorderAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, effect);
                     }
+                    canvas._addDrawCallCount(1, context.renderMode);
                     engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
                     engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
                     engine.unbindInstanceAttributes();
                 }
                 else {
+                    canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
                     for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                         this.setupUniforms(effect, partIndex, pid._partData, i);
                         engine.draw(true, 0, this.borderIndicesCount);
@@ -384,6 +389,18 @@ var BABYLON;
                 initialContentPosition.x = initialContentPosition.y = rr;
                 initialContentArea.width = Math.max(0, primSize.width - (rr * 2));
                 initialContentArea.height = Math.max(0, primSize.height - (rr * 2));
+            }
+        };
+        Rectangle2D.prototype._getActualSizeFromContentToRef = function (primSize, newPrimSize) {
+            // Fall back to default implementation if there's no round Radius
+            if (this._notRounded) {
+                _super.prototype._getActualSizeFromContentToRef.call(this, primSize, newPrimSize);
+            }
+            else {
+                var rr = Math.round((this.roundRadius - (this.roundRadius / Math.sqrt(2))) * 1.3);
+                newPrimSize.copyFrom(primSize);
+                newPrimSize.width += rr * 2;
+                newPrimSize.height += rr * 2;
             }
         };
         Rectangle2D.prototype.createInstanceDataParts = function () {
