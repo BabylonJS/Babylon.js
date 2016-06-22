@@ -32,7 +32,8 @@ var BABYLON;
                 this.effectsReady = true;
             }
             // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
-            var engine = instanceInfo.owner.owner.engine;
+            var canvas = instanceInfo.owner.owner;
+            var engine = canvas.engine;
             var effect = context.useInstancing ? this.effectInstanced : this.effect;
             engine.enableEffect(effect);
             effect.setTexture("diffuseSampler", this.texture);
@@ -46,11 +47,13 @@ var BABYLON;
                 if (!this.instancingAttributes) {
                     this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, effect);
                 }
+                canvas._addDrawCallCount(1, context.renderMode);
                 engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
                 engine.draw(true, 0, 6, pid._partData.usedElementCount);
                 engine.unbindInstanceAttributes();
             }
             else {
+                canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
                 for (var i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                     this.setupUniforms(effect, 0, pid._partData, i);
                     engine.draw(true, 0, 6);

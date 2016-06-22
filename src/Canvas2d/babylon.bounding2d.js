@@ -107,6 +107,16 @@ var BABYLON;
             r.extent = this.extent.clone();
             return r;
         };
+        BoundingInfo2D.prototype.clear = function () {
+            this.center.copyFromFloats(0, 0);
+            this.radius = 0;
+            this.extent.copyFromFloats(0, 0);
+        };
+        BoundingInfo2D.prototype.copyFrom = function (src) {
+            this.center.copyFrom(src.center);
+            this.radius = src.radius;
+            this.extent.copyFrom(src.extent);
+        };
         /**
          * return the max extend of the bounding info
          */
