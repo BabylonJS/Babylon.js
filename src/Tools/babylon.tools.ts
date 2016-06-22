@@ -1063,6 +1063,10 @@
             return this._current;
         }
 
+        public get total(): number {
+            return this._totalAccumulated;
+        }
+
         constructor() {
             this._startMonitoringTime = 0;
             this._min                 = 0;
@@ -1084,6 +1088,7 @@
         public fetchNewFrame() {
             this._totalValueCount++;
             this._current = 0;
+            this._lastSecValueCount++;
         }
 
         /**
@@ -1124,6 +1129,7 @@
 
         private _fetchResult() {
             this._totalAccumulated += this._current;
+            this._lastSecAccumulated += this._current;
 
             // Min/Max update
             this._min = Math.min(this._min, this._current);
@@ -1131,9 +1137,10 @@
             this._average = this._totalAccumulated / this._totalValueCount;
 
             // Reset last sec?
-            if ((this._startMonitoringTime - this._lastSecTime) > 1000) {
+            let now = Tools.Now;
+            if ((now - this._lastSecTime) > 1000) {
                 this._lastSecAverage = this._lastSecAccumulated / this._lastSecValueCount;
-                this._lastSecTime = this._startMonitoringTime;
+                this._lastSecTime = now;
                 this._lastSecAccumulated = 0;
                 this._lastSecValueCount = 0;
             }

@@ -133,6 +133,18 @@
             return r;
         }
 
+        public clear() {
+            this.center.copyFromFloats(0, 0);
+            this.radius = 0;
+            this.extent.copyFromFloats(0, 0);
+        }
+
+        public copyFrom(src: BoundingInfo2D) {
+            this.center.copyFrom(src.center);
+            this.radius = src.radius;
+            this.extent.copyFrom(src.extent);
+        }
+
         /**
          * return the max extend of the bounding info
          */

@@ -16,8 +16,8 @@
                 }
                 this.effectsReady = true;
             }
-
-            var engine = instanceInfo.owner.owner.engine;
+            let canvas = instanceInfo.owner.owner;
+            var engine = canvas.engine;
 
             this.fontTexture.update();
 
@@ -37,10 +37,12 @@
                     this.instancingAttributes = this.loadInstancingAttributes(Text2D.TEXT2D_MAINPARTID, effect);
                 }
 
+                canvas._addDrawCallCount(1, context.renderMode);
                 engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
                 engine.draw(true, 0, 6, pid._partData.usedElementCount);
                 engine.unbindInstanceAttributes();
             } else {
+                canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
                 for (let i = context.partDataStartIndex; i < context.partDataEndIndex; i++) {
                     this.setupUniforms(effect, 0, pid._partData, i);
                     engine.draw(true, 0, 6);
