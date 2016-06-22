@@ -104,6 +104,8 @@
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
 
+        public hoverCursor = "pointer";
+
         // Events
 
         /**
@@ -434,8 +436,9 @@
         public  _particlesDuration            = new PerfCounter();
         private _renderDuration               = new PerfCounter();
         public  _spritesDuration              = new PerfCounter();
-        private _animationRatio               = new PerfCounter();
         public  _activeBones                  = new PerfCounter();
+
+        private _animationRatio: number;
 
         private _animationStartDate: number;
         public _cachedMaterial: Material;
@@ -672,10 +675,6 @@
         }
 
         public getAnimationRatio(): number {
-            return this._animationRatio.current;
-        }
-
-        public animationRatioPerfCounter(): PerfCounter {
             return this._animationRatio;
         }
 
@@ -748,7 +747,7 @@
                     this.setPointerOverMesh(pickResult.pickedMesh);
 
                     if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        canvas.style.cursor = "pointer";
+                        canvas.style.cursor = this.hoverCursor;
                     } else {
                         canvas.style.cursor = "";
                     }
@@ -758,7 +757,7 @@
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
-                        canvas.style.cursor = "pointer";
+                        canvas.style.cursor = this.hoverCursor;
                         this.setPointerOverSprite(pickResult.pickedSprite);
                     } else {
                         this.setPointerOverSprite(null);
@@ -977,42 +976,42 @@
 
 
             var eventPrefix = Tools.GetPointerPrefix();
-
+            var canvas = this._engine.getRenderingCanvas();
             if (attachMove) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
+                canvas.addEventListener(eventPrefix + "move", this._onPointerMove, false);
                 // Wheel
-                this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
-                this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+                canvas.addEventListener('mousewheel', this._onPointerMove, false);
+                canvas.addEventListener('DOMMouseScroll', this._onPointerMove, false);
             }
 
             if (attachDown) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+                canvas.addEventListener(eventPrefix + "down", this._onPointerDown, false);
             }
 
             if (attachUp) {
-                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
+                canvas.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             }
 
-            Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp }
-            ]);
+            canvas.tabIndex = 1;
+
+            canvas.addEventListener("keydown", this._onKeyDown, false);
+            canvas.addEventListener("keyup", this._onKeyUp, false);
         }
 
         public detachControl() {
             var eventPrefix = Tools.GetPointerPrefix();
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
-            this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
+            var canvas = this._engine.getRenderingCanvas();
+
+            canvas.removeEventListener(eventPrefix + "move", this._onPointerMove);
+            canvas.removeEventListener(eventPrefix + "down", this._onPointerDown);
+            canvas.removeEventListener(eventPrefix + "up", this._onPointerUp);
 
             // Wheel
-            this._engine.getRenderingCanvas().removeEventListener('mousewheel', this._onPointerMove);
-            this._engine.getRenderingCanvas().removeEventListener('DOMMouseScroll', this._onPointerMove);
+            canvas.removeEventListener('mousewheel', this._onPointerMove);
+            canvas.removeEventListener('DOMMouseScroll', this._onPointerMove);
 
-            Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp }
-            ]);
+            canvas.removeEventListener("keydown", this._onKeyDown);
+            canvas.removeEventListener("keyup", this._onKeyUp);
         }
 
         // Ready
@@ -2176,7 +2175,7 @@
 
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio.addCount(deltaTime * (60.0 / 1000.0), true);
+            this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
 
             // Physics

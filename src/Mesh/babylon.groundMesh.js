@@ -130,10 +130,10 @@ var BABYLON;
         // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
         GroundMesh.prototype._computeHeightQuads = function () {
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            var v1 = BABYLON.Tmp.Vector3[0];
-            var v2 = BABYLON.Tmp.Vector3[1];
-            var v3 = BABYLON.Tmp.Vector3[2];
-            var v4 = BABYLON.Tmp.Vector3[3];
+            var v1 = BABYLON.Tmp.Vector3[3];
+            var v2 = BABYLON.Tmp.Vector3[2];
+            var v3 = BABYLON.Tmp.Vector3[1];
+            var v4 = BABYLON.Tmp.Vector3[0];
             var v1v2 = BABYLON.Tmp.Vector3[4];
             var v1v3 = BABYLON.Tmp.Vector3[5];
             var v1v4 = BABYLON.Tmp.Vector3[6];
@@ -174,7 +174,7 @@ var BABYLON;
                     v2.subtractToRef(v1, v1v2);
                     v3.subtractToRef(v1, v1v3);
                     v4.subtractToRef(v1, v1v4);
-                    BABYLON.Vector3.CrossToRef(v1v4, v1v3, norm1);
+                    BABYLON.Vector3.CrossToRef(v1v4, v1v3, norm1); // caution : CrossToRef uses the Tmp class
                     BABYLON.Vector3.CrossToRef(v1v2, v1v4, norm2);
                     norm1.normalize();
                     norm2.normalize();

@@ -136,10 +136,10 @@
         // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
         private _computeHeightQuads(): void {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
-            var v1 = Tmp.Vector3[0];
-            var v2 = Tmp.Vector3[1];
-            var v3 = Tmp.Vector3[2];
-            var v4 = Tmp.Vector3[3];
+            var v1 = Tmp.Vector3[3];
+            var v2 = Tmp.Vector3[2];
+            var v3 = Tmp.Vector3[1];
+            var v4 = Tmp.Vector3[0];
             var v1v2 = Tmp.Vector3[4];
             var v1v3 = Tmp.Vector3[5];
             var v1v4 = Tmp.Vector3[6];
@@ -183,7 +183,7 @@
                     v2.subtractToRef(v1, v1v2);
                     v3.subtractToRef(v1, v1v3);
                     v4.subtractToRef(v1, v1v4);
-                    Vector3.CrossToRef(v1v4, v1v3, norm1);
+                    Vector3.CrossToRef(v1v4, v1v3, norm1);  // caution : CrossToRef uses the Tmp class
                     Vector3.CrossToRef(v1v2, v1v4, norm2);
                     norm1.normalize();
                     norm2.normalize();
@@ -199,4 +199,3 @@
         }
     }
 }
-

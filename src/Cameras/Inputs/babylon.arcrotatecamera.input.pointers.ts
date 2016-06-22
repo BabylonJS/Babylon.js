@@ -60,6 +60,7 @@ module BABYLON {
                     }
                     if (!noPreventDefault) {
                         evt.preventDefault();
+                        element.focus();
                     }
                 } else if (p.type === PointerEventTypes.POINTERUP) {
                     try {
@@ -201,9 +202,10 @@ module BABYLON {
             element.addEventListener("MSPointerDown", this._onGestureStart, false);
             element.addEventListener("MSGestureChange", this._onGesture, false);
 
+            element.addEventListener("keydown", this._onKeyDown, false);
+            element.addEventListener("keyup", this._onKeyUp, false);
+
             Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         }
@@ -218,6 +220,9 @@ module BABYLON {
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
 
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
+
                 this._isRightClick = false;
                 this._isCtrlPushed = false;
                 this.pinchInwards = true;
@@ -230,12 +235,9 @@ module BABYLON {
                 this._MSGestureHandler = null;
                 this._onLostFocus = null;
                 this._onContextMenu = null;
-
             }
 
             Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         }

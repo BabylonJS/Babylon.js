@@ -20,7 +20,7 @@ function shadersName(filename) {
 }
 
 gulp.task('copyReference', function () {
-    return gulp.src("../dist/preview release/babylon.max.js").pipe(gulp.dest("test"));
+    return gulp.src("../dist/preview release/babylon.max.js").pipe(gulp.dest("test/refs"));
 });
 
 /*
@@ -33,7 +33,8 @@ gulp.task('default', ["copyReference"], function () {
                 noExternalResolve: false,
                 target: 'ES5',
                 declarationFiles: true,
-                typescript: require('typescript')
+                typescript: require('typescript'),
+                experimentalDecorators: true
             })).js;
 
         var shader = gulp.src(proceduralTexture.shaderFiles).pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));

@@ -19,8 +19,10 @@ module BABYLON {
         public keysRight = [39];
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
+            element.tabIndex = 1;
 
             this._onKeyDown = evt => {
+
                 if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -40,6 +42,7 @@ module BABYLON {
             };
 
             this._onKeyUp = evt => {
+
                 if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
@@ -62,17 +65,19 @@ module BABYLON {
                 this._keys = [];
             };
 
+            element.addEventListener("keydown", this._onKeyDown, false);
+            element.addEventListener("keyup", this._onKeyUp, false);
+
             Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         }
 
         public detachControl(element: HTMLElement) {
+            element.removeEventListener("keydown", this._onKeyDown);
+            element.removeEventListener("keyup", this._onKeyUp);
+
             Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
             
