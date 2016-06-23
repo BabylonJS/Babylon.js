@@ -80,6 +80,7 @@
             this._updatePositioningCounter     = new PerfCounter();
             this._updateLocalTransformCounter  = new PerfCounter();
             this._updateGlobalTransformCounter = new PerfCounter();
+            this._boundingInfoRecomputeCounter = new PerfCounter();
 
             this._profileInfoText = null;
 
@@ -212,6 +213,10 @@
 
         public get updateGlobalTransformCounter(): PerfCounter {
             return this._updateGlobalTransformCounter;
+        }
+
+        public get boundingInfoRecomputeCounter(): PerfCounter {
+            return this._boundingInfoRecomputeCounter;
         }
 
         protected _canvasPreInit(settings: any) {
@@ -961,6 +966,7 @@
             this._updatePositioningCounter.fetchNewFrame();
             this._updateLocalTransformCounter.fetchNewFrame();
             this._updateGlobalTransformCounter.fetchNewFrame();
+            this._boundingInfoRecomputeCounter.fetchNewFrame();
         }
 
         private _fetchPerfMetrics() {
@@ -975,6 +981,7 @@
             this._updatePositioningCounter.addCount(0, true);
             this._updateLocalTransformCounter.addCount(0, true);
             this._updateGlobalTransformCounter.addCount(0, true);
+            this._boundingInfoRecomputeCounter.addCount(0, true);
         }
 
         private _updateProfileCanvas() {
@@ -995,7 +1002,8 @@
                     ` - Update Layout: ${this.updateLayoutCounter.current}, (avg:${format(this.updateLayoutCounter.lastSecAverage)}, t:${format(this.updateLayoutCounter.total)})\n` + 
                     ` - Update Positioning: ${this.updatePositioningCounter.current}, (avg:${format(this.updatePositioningCounter.lastSecAverage)}, t:${format(this.updatePositioningCounter.total)})\n` + 
                     ` - Update Local  Trans: ${this.updateLocalTransformCounter.current}, (avg:${format(this.updateLocalTransformCounter.lastSecAverage)}, t:${format(this.updateLocalTransformCounter.total)})\n` + 
-                    ` - Update Global Trans: ${this.updateGlobalTransformCounter.current}, (avg:${format(this.updateGlobalTransformCounter.lastSecAverage)}, t:${format(this.updateGlobalTransformCounter.total)})\n`;
+                    ` - Update Global Trans: ${this.updateGlobalTransformCounter.current}, (avg:${format(this.updateGlobalTransformCounter.lastSecAverage)}, t:${format(this.updateGlobalTransformCounter.total)})\n` + 
+                    ` - BoundingInfo Recompute: ${this.boundingInfoRecomputeCounter.current}, (avg:${format(this.boundingInfoRecomputeCounter.lastSecAverage)}, t:${format(this.boundingInfoRecomputeCounter.total)})\n`;
             this._profileInfoText.text = p;
         }
 
@@ -1091,6 +1099,7 @@
         private _updatePositioningCounter    : PerfCounter;
         private _updateGlobalTransformCounter: PerfCounter;
         private _updateLocalTransformCounter : PerfCounter;
+        private _boundingInfoRecomputeCounter: PerfCounter;
 
         private _profileInfoText: Text2D;
 

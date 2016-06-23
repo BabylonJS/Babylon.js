@@ -1341,7 +1341,7 @@
             this._layoutEngine = CanvasLayoutEngine.Singleton;
             this._size = null; //Size.Zero();
             this._actualSize = null;
-            this._boundingSize = null;
+            this._boundingSize = Size.Zero();
             this._layoutArea = Size.Zero();
             this._layoutAreaPos = Vector2.Zero();
             this._marginOffset = Vector2.Zero();
@@ -1589,7 +1589,7 @@
          */
         public static marginAlignmentProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, true)
+        @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, false, true)
         /**
          * Return the position where the primitive is rendered in the Canvas, this position may be different than the one returned by the position property due to layout/alignment/margin/padding computing
          */
@@ -1633,7 +1633,7 @@
          * Use this property to set a new Vector2 object, otherwise to change only the x/y use Prim2DBase.x or y properties.
          * Setting this property may have no effect is specific alignment are in effect.
          */
-        @dynamicLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, true)
+        @dynamicLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, false, true)
         public get position(): Vector2 {
             return this._position || Prim2DBase._nullPosition;
         }
@@ -1716,7 +1716,7 @@
                     return Prim2DBase.nullSize;
                 }
 
-                if (this._boundingSize) {
+                if (!this._isFlagSet(SmartPropertyPrim.flagBoundingInfoDirty)) {
                     return this._boundingSize;
                 }
 
@@ -2099,13 +2099,17 @@
             return this._localTransform;
         }
 
+        private static _bMax = Vector2.Zero();
+
         /**
          * Get the boundingInfo associated to the primitive and its children.
          * The value is supposed to be always up to date
          */
         public get boundingInfo(): BoundingInfo2D {
             if (this._isFlagSet(SmartPropertyPrim.flagBoundingInfoDirty)) {
-
+                if (this.owner) {
+                    this.owner.boundingInfoRecomputeCounter.addCount(1, false);
+                }
                 if (this.isSizedByContent) {
                     this._boundingInfo.clear();
                 } else {
@@ -2119,9 +2123,10 @@
                     bi.unionToRef(tps, bi);
                 }
 
-                this._boundingSize = Size.Zero();
-                let m = this._boundingInfo.max();
-                this._boundingSize = new Size((!this._size || this._size.width == null) ? Math.ceil(m.x) : this._size.width, (!this._size || this._size.height == null) ? Math.ceil(m.y) : this._size.height);
+                this._boundingInfo.maxToRef(Prim2DBase._bMax);
+                this._boundingSize.copyFromFloats(
+                    (!this._size || this._size.width == null) ? Math.ceil(Prim2DBase._bMax.x) : this._size.width,
+                    (!this._size || this._size.height == null) ? Math.ceil(Prim2DBase._bMax.y) : this._size.height);
 
                 this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
             }
@@ -2515,7 +2520,11 @@
             let positioningComputed = positioningDirty && !this._isFlagSet(SmartPropertyPrim.flagPositioningDirty);
             let autoContentChanged = false;
             if (this.isSizeAuto) {
-                autoContentChanged = (!this._lastAutoSizeArea.equals(this.size));
+                if (!this._lastAutoSizeArea) {
+                    autoContentChanged = this.size!==null;
+                } else {
+                    autoContentChanged = (!this._lastAutoSizeArea.equals(this.size));
+                }
             }
 
             // Check for positioning update
