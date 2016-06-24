@@ -299,7 +299,7 @@
             let res = new Vector2(v.x, v.y);
             let size = this.actualSize;
             res.x += size.width * 0.5;  // res is centered, make it relative to bottom/left
-            res.y += size.width * 0.5;
+            res.y += size.height * 0.5;
             return res;
         }
 
