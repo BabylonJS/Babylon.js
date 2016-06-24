@@ -252,6 +252,7 @@
             this.id = partId;
             this.curElement = 0;
             this.dataElementCount = dataElementCount;
+            this.renderMode = 0;
         }
 
         id: number;
@@ -269,6 +270,11 @@
 
         @instanceData()
         get transformY(): Vector4 {
+            return null;
+        }
+
+        @instanceData()
+        get opacity(): number {
             return null;
         }
 
@@ -315,6 +321,7 @@
         }
 
         curElement: number;
+        renderMode: number;
         dataElements: DynamicFloatArrayElementInfo[];
         dataBuffer: DynamicFloatArray;
         typeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
@@ -345,7 +352,11 @@
         }
 
         public set isAlphaTest(value: boolean) {
+            if (this._isAlphaTest === value) {
+                return;
+            }
             this._isAlphaTest = value;
+            this._updateRenderMode();
         }
 
         @dynamicLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => RenderablePrim2D.isTransparentProperty = pi)
@@ -354,11 +365,19 @@
          * The setter should be used only by implementers of new primitive type.
          */
         public get isTransparent(): boolean {
-            return this._isTransparent;
+            return this._isTransparent || (this._opacity<1);
         }
 
         public set isTransparent(value: boolean) {
+            if (this._isTransparent === value) {
+                return;
+            }
             this._isTransparent = value;
+            this._updateRenderMode();
+        }
+
+        public get renderMode(): number {
+            return this._renderMode;
         }
 
         constructor(settings?: {
@@ -368,6 +387,7 @@
             isVisible    ?: boolean,
         }) {
             super(settings);
+
             this._isTransparent            = false;
             this._isAlphaTest              = false;
             this._transparentPrimitiveInfo = null;
@@ -441,10 +461,6 @@
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
             if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
 
-                if (this.isTransparent) {
-                    //this.renderGroup._renderableData._transparentListChanged = true;
-                }
-
                 this._updateInstanceDataParts(gii);
             }
         }
@@ -498,13 +514,17 @@
             });
 
             // Get the GroupInfoDataPart corresponding to the render category of the part
+            let rm = 0;
             let gipd: GroupInfoPartData[] = null;
             if (this.isTransparent) {
                 gipd = gii.transparentData;
+                rm = Render2DContext.RenderModeTransparent;
             } else if (this.isAlphaTest) {
                 gipd = gii.alphaTestData;
+                rm = Render2DContext.RenderModeAlphaTest;
             } else {
                 gipd = gii.opaqueData;
+                rm = Render2DContext.RenderModeOpaque;
             }
 
             // For each instance data part of the primitive, allocate the instanced element it needs for render
@@ -512,6 +532,7 @@
                 let part = parts[i];
                 part.dataBuffer = gipd[i]._partData;
                 part.allocElements();
+                part.renderMode = rm;
             }
 
             // Add the instance data parts in the ModelRenderCache they belong, track them by storing their ID in the primitive in case we need to change the model later on, so we'll have to release the allocated instance data parts because they won't fit anymore
@@ -578,11 +599,49 @@
                 gii = this.renderGroup._renderableData._renderGroupInstancesInfo.get(this.modelKey);
             }
 
+            let isTransparent = this.isTransparent;
+            let isAlphaTest = this.isAlphaTest;
+            let wereTransparent = false;
+
+            // Check a render mode change
+            let rmChanged = false;
+            if (this._instanceDataParts.length>0) {
+                let firstPart = this._instanceDataParts[0];
+                let partRM = firstPart.renderMode;
+                let curRM = this.renderMode;
+
+                if (partRM !== curRM) {
+                    wereTransparent = partRM === Render2DContext.RenderModeTransparent;
+                    rmChanged = true;
+                    let gipd: TransparentGroupInfoPartData[];
+                    switch (curRM) {
+                        case Render2DContext.RenderModeTransparent:
+                            gipd = gii.transparentData;
+                            break;
+                        case Render2DContext.RenderModeAlphaTest:
+                            gipd = gii.alphaTestData;
+                            break;
+                        default:
+                            gipd = gii.opaqueData;
+                    }
+
+                    for (let i = 0; i < this._instanceDataParts.length; i++) {
+                        let part = this._instanceDataParts[i];
+                        part.freeElements();
+                        part.dataBuffer = gipd[i]._partData;
+                        part.renderMode = curRM;
+                    }
+
+                }
+            }
+
             // Handle changes related to ZOffset
-            if (this.isTransparent) {
+            let visChanged = this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged);
+
+            if (isTransparent || wereTransparent) {
                 // Handle visibility change, which is also triggered when the primitive just got created
-                if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged)) {
-                    if (this.isVisible) {
+                if (visChanged || rmChanged) {
+                    if (this.isVisible && !wereTransparent) {
                         if (!this._transparentPrimitiveInfo) {
                             // Add the primitive to the list of transparent ones in the group that render is
                             this._transparentPrimitiveInfo = this.renderGroup._renderableData.addNewTransparentPrimitiveInfo(this, gii);
@@ -600,7 +659,7 @@
             // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
             for (let part of this._instanceDataParts) {
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) && !part.dataElements) {
+                if ((visChanged && !part.dataElements) || rmChanged) {
                     part.allocElements();
                 }
 
@@ -617,9 +676,9 @@
             this._instanceDirtyFlags = 0;
 
             // Make the appropriate data dirty
-            if (this.isTransparent) {
+            if (isTransparent) {
                 gii.transparentDirty = true;
-            } else if (this.isAlphaTest) {
+            } else if (isAlphaTest) {
                 gii.alphaTestDirty = true;
             } else {
                 gii.opaqueDirty = true;
@@ -812,9 +871,20 @@
             let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
             part.transformX = tx;
             part.transformY = ty;
+            part.opacity = this.actualOpacity;
 
             // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
             part.zBias = new Vector2(zBias, invZBias);
+        }
+
+        protected _updateRenderMode() {
+            if (this.isTransparent) {
+                this._renderMode = Render2DContext.RenderModeTransparent;
+            } else if (this.isAlphaTest) {
+                this._renderMode = Render2DContext.RenderModeAlphaTest;
+            } else {
+                this._renderMode = Render2DContext.RenderModeOpaque;
+            }
         }
 
         private _modelRenderCache: ModelRenderCache;
@@ -824,6 +894,7 @@
         protected _instanceDataParts: InstanceDataBase[];
         protected _isAlphaTest: boolean;
         protected _isTransparent: boolean;
+        private _renderMode: number;
     }
 
 

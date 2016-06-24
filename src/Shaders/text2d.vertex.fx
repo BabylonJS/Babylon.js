@@ -11,6 +11,7 @@ att vec2 zBias;
 
 att vec4 transformX;
 att vec4 transformY;
+att float opacity;
 
 att vec2 topLeftUV;
 att vec2 sizeUV;
@@ -54,6 +55,7 @@ void main(void) {
 	vUV = (floor(vUV*textureSize) + vec2(0.0, 0.0)) / textureSize;
 
 	vColor = color;
+	vColor.a *= opacity;
 	vec4 pos;
 	pos.xy = floor(pos2.xy * superSampleFactor * sizeUV * textureSize);	// Align on target pixel to avoid bad interpolation
 	pos.z = 1.0;

@@ -751,6 +751,11 @@
                 return false;
             }
 
+            if (this._profilingCanvas) {
+                this._profilingCanvas.dispose();
+                this._profilingCanvas = null;
+            }
+
             if (this.interactionEnabled) {
                 this._setupInteraction(false);
             }
@@ -931,6 +936,10 @@
         }
 
         public createCanvasProfileInfoCanvas(): Canvas2D {
+            if (this._profilingCanvas) {
+                return this._profilingCanvas;
+            }
+
             let canvas = new ScreenSpaceCanvas2D(this.scene, {
                 id: "ProfileInfoCanvas", cachingStrategy: Canvas2D.CACHESTRATEGY_DONTCACHE, children:
                 [
@@ -945,7 +954,7 @@
             });
 
             this._profileInfoText = <Text2D>canvas.findById("ProfileInfoText");
-
+            this._profilingCanvas = canvas;
             return canvas;
         }
 
@@ -1102,6 +1111,7 @@
         private _updateLocalTransformCounter : PerfCounter;
         private _boundingInfoRecomputeCounter: PerfCounter;
 
+        private _profilingCanvas: Canvas2D;
         private _profileInfoText: Text2D;
 
         protected onPrimBecomesDirty() {
