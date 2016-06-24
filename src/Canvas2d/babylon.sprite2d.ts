@@ -21,13 +21,12 @@
             let canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
 
+            var cur = engine.getAlphaMode();
             let effect = context.useInstancing ? this.effectInstanced : this.effect;
 
             engine.enableEffect(effect);
             effect.setTexture("diffuseSampler", this.texture);
             engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
-
-            var cur = engine.getAlphaMode();
 
             if (context.renderMode !== Render2DContext.RenderModeOpaque) {
                 engine.setAlphaMode(Engine.ALPHA_COMBINE);
@@ -239,6 +238,7 @@
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
@@ -270,6 +270,7 @@
             y                 ?: number,
             rotation          ?: number,
             scale             ?: number,
+            opacity           ?: number,
             origin            ?: Vector2,
             spriteSize        ?: Size,
             spriteLocation    ?: Vector2,
@@ -306,7 +307,7 @@
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
-            this._isTransparent = true;
+            this.isAlphaTest = true;
 
             if (settings.spriteSize==null) {
                 var s = texture.getSize();
