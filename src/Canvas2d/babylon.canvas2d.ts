@@ -80,6 +80,7 @@
             this._updatePositioningCounter     = new PerfCounter();
             this._updateLocalTransformCounter  = new PerfCounter();
             this._updateGlobalTransformCounter = new PerfCounter();
+            this._boundingInfoRecomputeCounter = new PerfCounter();
 
             this._profileInfoText = null;
 
@@ -130,8 +131,9 @@
             this._capturedPointers = new StringDictionary<Prim2DBase>();
             this._pickStartingPosition = Vector2.Zero();
             this._hierarchyLevelMaxSiblingCount = 50;
-            this._hierarchyDepthOffset = 0;
-            this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
+            this._hierarchyDepth = 0;
+            this._zOrder = 0;
+            this._zMax = 1;
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
@@ -214,13 +216,17 @@
             return this._updateGlobalTransformCounter;
         }
 
+        public get boundingInfoRecomputeCounter(): PerfCounter {
+            return this._boundingInfoRecomputeCounter;
+        }
+
         protected _canvasPreInit(settings: any) {
             let cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
             this._cachingStrategy = cachingStrategy;
             this._isScreenSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
         }
 
-        public static hierarchyLevelMaxSiblingCount: number = 50;
+        public static _zMinDelta: number = 1 / (Math.pow(2, 24) - 1);
 
         private _setupInteraction(enable: boolean) {
             // No change detection
@@ -961,6 +967,7 @@
             this._updatePositioningCounter.fetchNewFrame();
             this._updateLocalTransformCounter.fetchNewFrame();
             this._updateGlobalTransformCounter.fetchNewFrame();
+            this._boundingInfoRecomputeCounter.fetchNewFrame();
         }
 
         private _fetchPerfMetrics() {
@@ -975,6 +982,7 @@
             this._updatePositioningCounter.addCount(0, true);
             this._updateLocalTransformCounter.addCount(0, true);
             this._updateGlobalTransformCounter.addCount(0, true);
+            this._boundingInfoRecomputeCounter.addCount(0, true);
         }
 
         private _updateProfileCanvas() {
@@ -995,7 +1003,8 @@
                     ` - Update Layout: ${this.updateLayoutCounter.current}, (avg:${format(this.updateLayoutCounter.lastSecAverage)}, t:${format(this.updateLayoutCounter.total)})\n` + 
                     ` - Update Positioning: ${this.updatePositioningCounter.current}, (avg:${format(this.updatePositioningCounter.lastSecAverage)}, t:${format(this.updatePositioningCounter.total)})\n` + 
                     ` - Update Local  Trans: ${this.updateLocalTransformCounter.current}, (avg:${format(this.updateLocalTransformCounter.lastSecAverage)}, t:${format(this.updateLocalTransformCounter.total)})\n` + 
-                    ` - Update Global Trans: ${this.updateGlobalTransformCounter.current}, (avg:${format(this.updateGlobalTransformCounter.lastSecAverage)}, t:${format(this.updateGlobalTransformCounter.total)})\n`;
+                    ` - Update Global Trans: ${this.updateGlobalTransformCounter.current}, (avg:${format(this.updateGlobalTransformCounter.lastSecAverage)}, t:${format(this.updateGlobalTransformCounter.total)})\n` + 
+                    ` - BoundingInfo Recompute: ${this.boundingInfoRecomputeCounter.current}, (avg:${format(this.boundingInfoRecomputeCounter.lastSecAverage)}, t:${format(this.boundingInfoRecomputeCounter.total)})\n`;
             this._profileInfoText.text = p;
         }
 
@@ -1091,6 +1100,7 @@
         private _updatePositioningCounter    : PerfCounter;
         private _updateGlobalTransformCounter: PerfCounter;
         private _updateLocalTransformCounter : PerfCounter;
+        private _boundingInfoRecomputeCounter: PerfCounter;
 
         private _profileInfoText: Text2D;
 
