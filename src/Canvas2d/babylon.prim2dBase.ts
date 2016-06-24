@@ -1291,6 +1291,7 @@
             y?: number,
             rotation?: number,
             scale?: number,
+            opacity?: number,
             origin?: Vector2,
             layoutEngine?: LayoutEngineBase | string,
             isVisible?: boolean,
@@ -1373,7 +1374,13 @@
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
-            this._setFlags(SmartPropertyPrim.flagIsPickable | SmartPropertyPrim.flagBoundingInfoDirty);
+            this._setFlags(SmartPropertyPrim.flagIsPickable | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty);
+
+            if (settings.opacity != null) {
+                this._opacity = settings.opacity;
+            } else {
+                this._opacity = 1;
+            }
 
             if (settings.childrenFlatZOrder) {
                 this._setFlags(SmartPropertyPrim.flagChildrenFlatZOrder);
@@ -1598,6 +1605,12 @@
          */
         public static marginAlignmentProperty: Prim2DPropInfo;
 
+        /**
+         * Metadata of the opacity property
+         */
+        public static opacityProperty: Prim2DPropInfo;
+
+
         @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, false, true)
         /**
          * Return the position where the primitive is rendered in the Canvas, this position may be different than the one returned by the position property due to layout/alignment/margin/padding computing
@@ -1642,7 +1655,7 @@
          * Use this property to set a new Vector2 object, otherwise to change only the x/y use Prim2DBase.x or y properties.
          * Setting this property may have no effect is specific alignment are in effect.
          */
-        @dynamicLevelProperty(1, pi => Prim2DBase.positionProperty = pi, false, false, true)
+        @dynamicLevelProperty(2, pi => Prim2DBase.positionProperty = pi, false, false, true)
         public get position(): Vector2 {
             return this._position || Prim2DBase._nullPosition;
         }
@@ -1652,6 +1665,7 @@
                 return;
             }
             this._position = value;
+            this.markAsDirty("actualPosition");
         }
 
         /**
@@ -1679,6 +1693,7 @@
 
             this._position.x = value;
             this.markAsDirty("position");
+            this.markAsDirty("actualPosition");
         }
 
         /**
@@ -1706,6 +1721,7 @@
 
             this._position.y = value;
             this.markAsDirty("position");
+            this.markAsDirty("actualPosition");
         }
 
         private static boundinbBoxReentrency = false;
@@ -1716,7 +1732,7 @@
          * BEWARE: if you change only size.width or height it won't trigger a property change and you won't have the expected behavior.
          * Use this property to set a new Size object, otherwise to change only the width/height use Prim2DBase.width or height properties.
          */
-        @dynamicLevelProperty(2, pi => Prim2DBase.sizeProperty = pi, false, true)
+        @dynamicLevelProperty(3, pi => Prim2DBase.sizeProperty = pi, false, true)
         public get size(): Size {
 
             if (!this._size || this._size.width == null || this._size.height == null) {
@@ -1796,7 +1812,7 @@
             this._positioningDirty();
         }
 
-        @instanceLevelProperty(3, pi => Prim2DBase.rotationProperty = pi, false, true)
+        @instanceLevelProperty(4, pi => Prim2DBase.rotationProperty = pi, false, true)
         /**
          * Rotation of the primitive, in radian, along the Z axis
          */
@@ -1808,7 +1824,7 @@
             this._rotation = value;
         }
 
-        @instanceLevelProperty(4, pi => Prim2DBase.scaleProperty = pi, false, true)
+        @instanceLevelProperty(5, pi => Prim2DBase.scaleProperty = pi, false, true)
         /**
          * Uniform scale applied on the primitive
          */
@@ -1896,7 +1912,7 @@
          * 0,1 means the center is top/left
          * @returns The normalized center.
          */
-        @dynamicLevelProperty(5, pi => Prim2DBase.originProperty = pi, false, true)
+        @dynamicLevelProperty(6, pi => Prim2DBase.originProperty = pi, false, true)
         public get origin(): Vector2 {
             return this._origin;
         }
@@ -1905,7 +1921,7 @@
             this._origin = value;
         }
 
-        @dynamicLevelProperty(6, pi => Prim2DBase.levelVisibleProperty = pi)
+        @dynamicLevelProperty(7, pi => Prim2DBase.levelVisibleProperty = pi)
         /**
          * Let the user defines if the Primitive is hidden or not at its level. As Primitives inherit the hidden status from their parent, only the isVisible property give properly the real visible state.
          * Default is true, setting to false will hide this primitive and its children.
@@ -1918,7 +1934,7 @@
             this._changeFlags(SmartPropertyPrim.flagLevelVisible, value);
         }
 
-        @instanceLevelProperty(7, pi => Prim2DBase.isVisibleProperty = pi)
+        @instanceLevelProperty(8, pi => Prim2DBase.isVisibleProperty = pi)
         /**
          * Use ONLY THE GETTER to determine if the primitive is visible or not.
          * The Setter is for internal purpose only!
@@ -1931,7 +1947,7 @@
             this._changeFlags(SmartPropertyPrim.flagIsVisible, value);
         }
 
-        @instanceLevelProperty(8, pi => Prim2DBase.zOrderProperty = pi)
+        @instanceLevelProperty(9, pi => Prim2DBase.zOrderProperty = pi)
         /**
          * You can override the default Z Order through this property, but most of the time the default behavior is acceptable
          */
@@ -1955,7 +1971,7 @@
             return this._manualZOrder != null;
         }
 
-        @dynamicLevelProperty(9, pi => Prim2DBase.marginProperty = pi)
+        @dynamicLevelProperty(10, pi => Prim2DBase.marginProperty = pi)
         /**
          * You can get/set a margin on the primitive through this property
          * @returns the margin object, if there was none, a default one is created and returned
@@ -1976,7 +1992,7 @@
             return (this._margin !== null) || (this._marginAlignment !== null);
         }
 
-        @dynamicLevelProperty(10, pi => Prim2DBase.paddingProperty = pi)
+        @dynamicLevelProperty(11, pi => Prim2DBase.paddingProperty = pi)
         /**
          * You can get/set a margin on the primitive through this property
          * @returns the margin object, if there was none, a default one is created and returned
@@ -1997,7 +2013,7 @@
             return this._padding !== null;
         }
 
-        @dynamicLevelProperty(11, pi => Prim2DBase.marginAlignmentProperty = pi)
+        @dynamicLevelProperty(12, pi => Prim2DBase.marginAlignmentProperty = pi)
         /**
          * You can get/set the margin alignment through this property
          */
@@ -2006,6 +2022,45 @@
                 this._marginAlignment = new PrimitiveAlignment(() => this._positioningDirty());
             }
             return this._marginAlignment;
+        }
+
+        @instanceLevelProperty(13, pi => Prim2DBase.opacityProperty = pi)
+        /**
+         * Get/set the opacity of the whole primitive
+         */
+        public get opacity(): number {
+            return this._opacity;
+        }
+
+        public set opacity(value: number) {
+            if (value < 0) {
+                value = 0;
+            } else if (value > 1) {
+                value = 1;
+            }
+
+            if (this._opacity === value) {
+                return;
+            }
+
+            this._opacity = value;
+            this._updateRenderMode();
+            this._spreadActualOpacityChanged();
+        }
+
+        public get actualOpacity(): number {
+            if (this._isFlagSet(SmartPropertyPrim.flagActualOpacityDirty)) {
+                let cur = this.parent;
+                let op = this.opacity;
+                while (cur) {
+                    op *= cur.opacity;
+                    cur = cur.parent;
+                }
+
+                this._actualOpacity = op;
+                this._clearFlags(SmartPropertyPrim.flagActualOpacityDirty);
+            }
+            return this._actualOpacity;
         }
 
         /**
@@ -2467,6 +2522,13 @@
             this._setFlags(SmartPropertyPrim.flagPositioningDirty);
         }
 
+        protected _spreadActualOpacityChanged() {
+            for (let child of this._children) {
+                child._setFlags(SmartPropertyPrim.flagActualOpacityDirty);
+                child._spreadActualOpacityChanged();
+            }
+        }
+
         private _changeLayoutEngine(engine: LayoutEngineBase) {
             this._layoutEngine = engine;
         }
@@ -2916,6 +2978,9 @@
             }
         }
 
+        protected _updateRenderMode() {
+        }
+
         /**
          * This method is used to alter the contentArea of the Primitive before margin is applied.
          * In most of the case you won't need to override this method, but it can prove some usefulness, check the Rectangle2D class for a concrete application.
@@ -2975,6 +3040,8 @@
         private _rotation: number;
         private _scale: number;
         private _origin: Vector2;
+        protected _opacity: number;
+        private _actualOpacity: number;
 
         // Stores the step of the parent for which the current global transform was computed
         // If the parent has a new step, it means this prim's global transform must be updated

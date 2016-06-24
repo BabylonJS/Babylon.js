@@ -225,6 +225,7 @@
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
          * - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
@@ -257,6 +258,7 @@
             y                 ?: number,
             rotation          ?: number,
             scale             ?: number,
+            opacity           ?: number,
             origin            ?: Vector2,
             size              ?: Size,
             width             ?: number,
