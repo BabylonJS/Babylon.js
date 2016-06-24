@@ -16,7 +16,7 @@ module BABYLON {
         @serialize()
         public panningSensibility: number = 50.0;
 
-        private _isRightClick: boolean = false;
+        private _isPanClick: boolean = false;
         private _isCtrlPushed: boolean = false;
         public pinchInwards = true;
 
@@ -47,8 +47,8 @@ module BABYLON {
                     }
 
 
-                    // Manage panning with right click
-                    this._isRightClick = evt.button === 2;
+                    // Manage panning with pan button click
+                    this._isPanClick = evt.button === this.camera._panningMouseButton;
 
                     // manage pointers
                     cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
@@ -90,7 +90,7 @@ module BABYLON {
                     if (pointA && pointB === undefined) {
                         if (this.panningSensibility !== 0 &&
                             ((this._isCtrlPushed && this.camera._useCtrlForPanning) ||
-                                (!this.camera._useCtrlForPanning && this._isRightClick))) {
+                                (!this.camera._useCtrlForPanning && this._isPanClick))) {
                             this.camera
                                 .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
                             this.camera
@@ -223,7 +223,7 @@ module BABYLON {
                 element.removeEventListener("keydown", this._onKeyDown);
                 element.removeEventListener("keyup", this._onKeyUp);
 
-                this._isRightClick = false;
+                this._isPanClick = false;
                 this._isCtrlPushed = false;
                 this.pinchInwards = true;
 
