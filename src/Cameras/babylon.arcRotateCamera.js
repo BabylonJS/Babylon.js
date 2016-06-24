@@ -255,10 +255,12 @@ var BABYLON;
                 && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
         };
         // Methods
-        ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault, useCtrlForPanning) {
+        ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault, useCtrlForPanning, panningMouseButton) {
             var _this = this;
             if (useCtrlForPanning === void 0) { useCtrlForPanning = true; }
+            if (panningMouseButton === void 0) { panningMouseButton = 2; }
             this._useCtrlForPanning = useCtrlForPanning;
+            this._panningMouseButton = panningMouseButton;
             this.inputs.attachElement(element, noPreventDefault);
             this._reset = function () {
                 _this.inertialAlphaOffset = 0;
@@ -541,6 +543,6 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "allowUpsideDown", void 0);
         return ArcRotateCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));

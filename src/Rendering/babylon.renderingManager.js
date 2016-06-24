@@ -103,6 +103,6 @@ var BABYLON;
         };
         RenderingManager.MAX_RENDERINGGROUPS = 4;
         return RenderingManager;
-    })();
+    }());
     BABYLON.RenderingManager = RenderingManager;
 })(BABYLON || (BABYLON = {}));

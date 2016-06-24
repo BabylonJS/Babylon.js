@@ -13,7 +13,7 @@ var BABYLON;
             this.angularSensibilityY = 1000.0;
             this.pinchPrecision = 6.0;
             this.panningSensibility = 50.0;
-            this._isRightClick = false;
+            this._isPanClick = false;
             this._isCtrlPushed = false;
             this.pinchInwards = true;
         }
@@ -31,8 +31,8 @@ var BABYLON;
                     }
                     catch (e) {
                     }
-                    // Manage panning with right click
-                    _this._isRightClick = evt.button === 2;
+                    // Manage panning with pan button click
+                    _this._isPanClick = evt.button === _this.camera._panningMouseButton;
                     // manage pointers
                     cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
                     if (pointA === undefined) {
@@ -71,7 +71,7 @@ var BABYLON;
                     if (pointA && pointB === undefined) {
                         if (_this.panningSensibility !== 0 &&
                             ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) ||
-                                (!_this.camera._useCtrlForPanning && _this._isRightClick))) {
+                                (!_this.camera._useCtrlForPanning && _this._isPanClick))) {
                             _this.camera
                                 .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
                             _this.camera
@@ -179,7 +179,7 @@ var BABYLON;
                 element.removeEventListener("MSGestureChange", this._onGesture);
                 element.removeEventListener("keydown", this._onKeyDown);
                 element.removeEventListener("keyup", this._onKeyUp);
-                this._isRightClick = false;
+                this._isPanClick = false;
                 this._isCtrlPushed = false;
                 this.pinchInwards = true;
                 this._onKeyDown = null;
@@ -214,7 +214,7 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "panningSensibility", void 0);
         return ArcRotateCameraPointersInput;
-    })();
+    }());
     BABYLON.ArcRotateCameraPointersInput = ArcRotateCameraPointersInput;
     BABYLON.CameraInputTypes["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
 })(BABYLON || (BABYLON = {}));
