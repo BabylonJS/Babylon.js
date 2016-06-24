@@ -16,7 +16,7 @@ var BABYLON;
             this.forceRefreshPrimitive = false;
         }
         return PrepareRender2DContext;
-    }());
+    })();
     BABYLON.PrepareRender2DContext = PrepareRender2DContext;
     var Render2DContext = (function () {
         function Render2DContext(renderMode) {
@@ -72,7 +72,7 @@ var BABYLON;
         Render2DContext._renderModeAlphaTest = 2;
         Render2DContext._renderModeTransparent = 3;
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -232,7 +232,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    }());
+    })();
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     /**
      * Defines the horizontal and vertical alignment information for a Primitive.
@@ -373,8 +373,8 @@ var BABYLON;
          */
         PrimitiveAlignment.prototype.fromString = function (value) {
             var m = value.trim().split(",");
-            for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
-                var v = m_1[_i];
+            for (var _i = 0; _i < m.length; _i++) {
+                var v = m[_i];
                 v = v.toLocaleLowerCase().trim();
                 // Horizontal
                 var i = v.indexOf("h:");
@@ -405,7 +405,7 @@ var BABYLON;
         PrimitiveAlignment._AlignCenter = 3;
         PrimitiveAlignment._AlignStretch = 4;
         return PrimitiveAlignment;
-    }());
+    })();
     BABYLON.PrimitiveAlignment = PrimitiveAlignment;
     /**
      * Stores information about a Primitive that was intersected
@@ -416,7 +416,7 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    }());
+    })();
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
     /**
      * Define a thickness toward every edges of a Primitive to allow margin and padding.
@@ -455,8 +455,8 @@ var BABYLON;
                 return;
             }
             var res = false;
-            for (var _i = 0, m_2 = m; _i < m_2.length; _i++) {
-                var cm = m_2[_i];
+            for (var _i = 0; _i < m.length; _i++) {
+                var cm = m[_i];
                 res = this._extractString(cm, false) || res;
             }
             if (!res) {
@@ -606,7 +606,7 @@ var BABYLON;
                     return true;
                 }
                 // Check for pixel
-                var n = void 0;
+                var n;
                 pI = v.indexOf("px");
                 if (pI !== -1) {
                     n = v.substr(0, pI).trim();
@@ -1130,7 +1130,7 @@ var BABYLON;
         PrimitiveThickness.Percentage = 0x4;
         PrimitiveThickness.Pixel = 0x8;
         return PrimitiveThickness;
-    }());
+    })();
     BABYLON.PrimitiveThickness = PrimitiveThickness;
     /**
      * Main class used for the Primitive Intersection API
@@ -1167,7 +1167,7 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    }());
+    })();
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -1202,7 +1202,7 @@ var BABYLON;
             this._layoutEngine = BABYLON.CanvasLayoutEngine.Singleton;
             this._size = null; //Size.Zero();
             this._actualSize = null;
-            this._boundingSize = null;
+            this._boundingSize = BABYLON.Size.Zero();
             this._layoutArea = BABYLON.Size.Zero();
             this._layoutAreaPos = BABYLON.Vector2.Zero();
             this._marginOffset = BABYLON.Vector2.Zero();
@@ -1212,7 +1212,6 @@ var BABYLON;
             this._lastAutoSizeArea = BABYLON.Size.Zero();
             this._contentArea = new BABYLON.Size(null, null);
             this._pointerEventObservable = new BABYLON.Observable();
-            this._siblingDepthOffset = this._hierarchyDepthOffset = 0;
             this._boundingInfo = new BABYLON.BoundingInfo2D();
             this._owner = owner;
             this._parent = null;
@@ -1227,9 +1226,16 @@ var BABYLON;
             this._invGlobalTransform = null;
             this._globalTransformProcessStep = 0;
             this._globalTransformStep = 0;
-            this._hierarchyDepth = 0;
             this._renderGroup = null;
+            this._primLinearPosition = 0;
+            this._manualZOrder = null;
+            this._zOrder = 0;
+            this._zMax = 0;
+            this._firstZDirtyIndex = Prim2DBase._bigInt;
             this._setFlags(BABYLON.SmartPropertyPrim.flagIsPickable | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty);
+            if (settings.childrenFlatZOrder) {
+                this._setFlags(BABYLON.SmartPropertyPrim.flagChildrenFlatZOrder);
+            }
             // If the parent is given, initialize the hierarchy/owner related data
             if (parent != null) {
                 parent.addChild(this);
@@ -1519,7 +1525,7 @@ var BABYLON;
                     if (Prim2DBase.boundinbBoxReentrency) {
                         return Prim2DBase.nullSize;
                     }
-                    if (this._boundingSize) {
+                    if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
                         return this._boundingSize;
                     }
                     Prim2DBase.boundinbBoxReentrency = true;
@@ -1631,7 +1637,13 @@ var BABYLON;
         });
         Object.defineProperty(Prim2DBase.prototype, "actualZOffset", {
             get: function () {
-                return this._zOrder || (1 - this._hierarchyDepthOffset);
+                if (this._manualZOrder != null) {
+                    return this._manualZOrder;
+                }
+                if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagZOrderDirty)) {
+                    this._updateZOrder();
+                }
+                return (1 - this._zOrder);
             },
             enumerable: true,
             configurable: true
@@ -1715,11 +1727,24 @@ var BABYLON;
         });
         Object.defineProperty(Prim2DBase.prototype, "zOrder", {
             get: function () {
-                return this._zOrder;
+                return this._manualZOrder;
             },
             set: function (value) {
-                this._zOrder = value;
+                if (this._manualZOrder === value) {
+                    return;
+                }
+                this._manualZOrder = value;
                 this.onZOrderChanged();
+                if (this._actualZOrderChangedObservable && this._actualZOrderChangedObservable.hasObservers()) {
+                    this._actualZOrderChangedObservable.notifyObservers(value);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "isManualZOrder", {
+            get: function () {
+                return this._manualZOrder != null;
             },
             enumerable: true,
             configurable: true
@@ -1925,6 +1950,9 @@ var BABYLON;
              */
             get: function () {
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
+                    if (this.owner) {
+                        this.owner.boundingInfoRecomputeCounter.addCount(1, false);
+                    }
                     if (this.isSizedByContent) {
                         this._boundingInfo.clear();
                     }
@@ -1938,9 +1966,8 @@ var BABYLON;
                         curChild.boundingInfo.transformToRef(curChild.localTransform, tps);
                         bi.unionToRef(tps, bi);
                     }
-                    this._boundingSize = BABYLON.Size.Zero();
-                    var m = this._boundingInfo.max();
-                    this._boundingSize = new BABYLON.Size((!this._size || this._size.width == null) ? Math.ceil(m.x) : this._size.width, (!this._size || this._size.height == null) ? Math.ceil(m.y) : this._size.height);
+                    this._boundingInfo.maxToRef(Prim2DBase._bMax);
+                    this._boundingSize.copyFromFloats((!this._size || this._size.width == null) ? Math.ceil(Prim2DBase._bMax.x) : this._size.width, (!this._size || this._size.height == null) ? Math.ceil(Prim2DBase._bMax.y) : this._size.height);
                     this._clearFlags(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty);
                 }
                 return this._boundingInfo;
@@ -1988,6 +2015,16 @@ var BABYLON;
              */
             get: function () {
                 return this._pointerEventObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "zActualOrderChangedObservable", {
+            get: function () {
+                if (!this._actualZOrderChangedObservable) {
+                    this._actualZOrderChangedObservable = new BABYLON.Observable();
+                }
+                return this._actualZOrderChangedObservable;
             },
             enumerable: true,
             configurable: true
@@ -2092,26 +2129,28 @@ var BABYLON;
             if (child.parent !== this) {
                 return false;
             }
-            var prevOffset, nextOffset;
             var childIndex = this._children.indexOf(child);
             var prevIndex = previous ? this._children.indexOf(previous) : -1;
-            // Move to first position
-            if (!previous) {
-                prevOffset = 1;
-                nextOffset = this._children[1]._siblingDepthOffset;
+            if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagChildrenFlatZOrder)) {
+                this._setFlags(BABYLON.SmartPropertyPrim.flagZOrderDirty);
+                this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, prevIndex + 1);
             }
-            else {
-                prevOffset = this._children[prevIndex]._siblingDepthOffset;
-                nextOffset = this._children[prevIndex + 1]._siblingDepthOffset;
-            }
-            child._siblingDepthOffset = (nextOffset - prevOffset) / 2;
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
         };
         Prim2DBase.prototype.addChild = function (child) {
             child._parent = this;
             this._boundingBoxDirty();
-            this._children.push(child);
-            this._patchHierarchyDepth(child);
+            var flat = this._isFlagSet(BABYLON.SmartPropertyPrim.flagChildrenFlatZOrder);
+            if (flat) {
+                child._setFlags(BABYLON.SmartPropertyPrim.flagChildrenFlatZOrder);
+                child._setZOrder(this._zOrder, true);
+                child._zMax = this._zOrder;
+            }
+            else {
+                this._setFlags(BABYLON.SmartPropertyPrim.flagZOrderDirty);
+            }
+            var length = this._children.push(child);
+            this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, length - 1);
         };
         /**
          * Dispose the primitive, remove it from its parent.
@@ -2187,8 +2226,8 @@ var BABYLON;
             //}
         };
         Prim2DBase.prototype.updateCachedStatesOf = function (list, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
                 cur.updateCachedStates(recurse);
             }
         };
@@ -2223,7 +2262,9 @@ var BABYLON;
         Prim2DBase.prototype._updateLocalTransform = function () {
             var tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.originProperty.flagId;
             if (this.checkPropertiesDirty(tflags)) {
-                this.owner.addupdateLocalTransformCounter(1);
+                if (this.owner) {
+                    this.owner.addupdateLocalTransformCounter(1);
+                }
                 var rot = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), this._rotation);
                 var local;
                 var pos = this.position;
@@ -2256,8 +2297,12 @@ var BABYLON;
             }
             this.owner.addCachedGroupRenderCounter(1);
             // Check if the parent is synced
-            if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagLayoutDirty | BABYLON.SmartPropertyPrim.flagPositioningDirty))) {
+            if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagLayoutDirty | BABYLON.SmartPropertyPrim.flagPositioningDirty | BABYLON.SmartPropertyPrim.flagZOrderDirty))) {
                 this._parent.updateCachedStates(false);
+            }
+            // Update Z-Order if needed
+            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagZOrderDirty)) {
+                this._updateZOrder();
             }
             // Update actualSize only if there' not positioning to recompute and the size changed
             // Otherwise positioning will take care of it.
@@ -2284,7 +2329,12 @@ var BABYLON;
             var positioningComputed = positioningDirty && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
             var autoContentChanged = false;
             if (this.isSizeAuto) {
-                autoContentChanged = (!this._lastAutoSizeArea.equals(this.size));
+                if (!this._lastAutoSizeArea) {
+                    autoContentChanged = this.size !== null;
+                }
+                else {
+                    autoContentChanged = (!this._lastAutoSizeArea.equals(this.size));
+                }
             }
             // Check for positioning update
             if (!positioningComputed && (autoContentChanged || sizeDirty || this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty) || (this._parent && !this._parent.contentArea.equals(this._parentContentArea)))) {
@@ -2318,7 +2368,7 @@ var BABYLON;
                 // Check if we have to update the globalTransform
                 if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged) {
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
-                    var localTransform = void 0;
+                    var localTransform;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
                     Prim2DBase._transMtx.m[12] += this._layoutAreaPos.x + this._marginOffset.x + parentPaddingOffset.x;
                     Prim2DBase._transMtx.m[13] += this._layoutAreaPos.y + this._marginOffset.y + parentPaddingOffset.y;
@@ -2339,7 +2389,9 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype._updatePositioning = function () {
-            this.owner.addUpdatePositioningCounter(1);
+            if (this.owner) {
+                this.owner.addUpdatePositioningCounter(1);
+            }
             // From this point we assume that the primitive layoutArea is computed and up to date.
             // We know have to :
             //  1. Determine the PaddingArea and the ActualPosition based on the margin/marginAlignment properties, which will also set the size property of the primitive
@@ -2439,14 +2491,146 @@ var BABYLON;
             // Recurse
             for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                 var child = _a[_i];
-                this._patchHierarchyDepth(child);
+                child._hierarchyDepth = this._hierarchyDepth + 1;
                 child._patchHierarchy(owner);
             }
         };
-        Prim2DBase.prototype._patchHierarchyDepth = function (child) {
-            child._hierarchyDepth = this._hierarchyDepth + 1;
-            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.indexOf(child) + 1) * this._siblingDepthOffset);
-            child._siblingDepthOffset = this._siblingDepthOffset / BABYLON.Canvas2D.hierarchyLevelMaxSiblingCount;
+        Prim2DBase.prototype._updateZOrder = function () {
+            var prevLinPos = this._primLinearPosition;
+            var startI = 0;
+            var startZ = this._zOrder;
+            // We must start rebuilding Z-Order from the Prim before the first one that changed, because we know its Z-Order is correct, so are its children, but it's better to recompute everything from this point instead of finding the last valid children
+            var childrenCount = this._children.length;
+            if (this._firstZDirtyIndex > 0) {
+                if ((this._firstZDirtyIndex - 1) < childrenCount) {
+                    var prevPrim = this._children[this._firstZDirtyIndex - 1];
+                    prevLinPos = prevPrim._primLinearPosition;
+                    startI = this._firstZDirtyIndex - 1;
+                    startZ = prevPrim._zOrder;
+                }
+            }
+            var startPos = prevLinPos;
+            // Update the linear position of the primitive from the first one to the last inside this primitive, compute the total number of prim traversed
+            Prim2DBase._totalCount = 0;
+            for (var i = startI; i < childrenCount; i++) {
+                var child = this._children[i];
+                prevLinPos = child._updatePrimitiveLinearPosition(prevLinPos);
+            }
+            // Compute the new Z-Order for all the primitives
+            // Add 20% to the current total count to reserve space for future insertions, except if we're rebuilding due to a zMinDelta reached
+            var zDelta = (this._zMax - startZ) / (Prim2DBase._totalCount * (Prim2DBase._zRebuildReentrency ? 1 : 1.2));
+            // If the computed delta is less than the smallest allowed by the depth buffer, we rebuild the Z-Order from the very beginning of the primitive's children (that is, the first) to redistribute uniformly the Z.
+            if (zDelta < BABYLON.Canvas2D._zMinDelta) {
+                // Check for re-entrance, if the flag is true we already attempted a rebuild but couldn't get a better zDelta, go up in the hierarchy to rebuilt one level up, hoping to get this time a decent delta, otherwise, recurse until we got it or when no parent is reached, which would mean the canvas would have more than 16 millions of primitives...
+                if (Prim2DBase._zRebuildReentrency) {
+                    var p = this._parent;
+                    if (p == null) {
+                        // Can't find a good Z delta and we're in the canvas, which mean we're dealing with too many objects (which should never happen, but well...)
+                        console.log("Can't compute Z-Order for " + this.id + "'s children, zDelta is too small, Z-Order is now in an unstable state");
+                        Prim2DBase._zRebuildReentrency = false;
+                        return;
+                    }
+                    p._firstZDirtyIndex = 0;
+                    return p._updateZOrder();
+                }
+                Prim2DBase._zRebuildReentrency = true;
+                this._firstZDirtyIndex = 0;
+                this._updateZOrder();
+                Prim2DBase._zRebuildReentrency = false;
+            }
+            for (var i = startI; i < childrenCount; i++) {
+                var child = this._children[i];
+                child._updatePrimitiveZOrder(startPos, startZ, zDelta);
+            }
+            // Notify the Observers that we found during the Z change (we do it after to avoid any kind of re-entrance)
+            for (var _i = 0, _a = Prim2DBase._zOrderChangedNotifList; _i < _a.length; _i++) {
+                var p = _a[_i];
+                p._actualZOrderChangedObservable.notifyObservers(p.actualZOffset);
+            }
+            Prim2DBase._zOrderChangedNotifList.splice(0);
+            this._firstZDirtyIndex = Prim2DBase._bigInt;
+            this._clearFlags(BABYLON.SmartPropertyPrim.flagZOrderDirty);
+        };
+        Prim2DBase.prototype._updatePrimitiveLinearPosition = function (prevLinPos) {
+            if (this.isManualZOrder) {
+                return prevLinPos;
+            }
+            this._primLinearPosition = ++prevLinPos;
+            Prim2DBase._totalCount++;
+            // Check for the FlatZOrder, which means the children won't have a dedicated Z-Order but will all share the same (unique) one.
+            if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagChildrenFlatZOrder)) {
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    prevLinPos = child._updatePrimitiveLinearPosition(prevLinPos);
+                }
+            }
+            return prevLinPos;
+        };
+        Prim2DBase.prototype._updatePrimitiveZOrder = function (startPos, startZ, deltaZ) {
+            if (this.isManualZOrder) {
+                return null;
+            }
+            var newZ = startZ + ((this._primLinearPosition - startPos) * deltaZ);
+            var isFlat = this._isFlagSet(BABYLON.SmartPropertyPrim.flagChildrenFlatZOrder);
+            this._setZOrder(newZ, false);
+            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagZOrderDirty)) {
+                this._firstZDirtyIndex = Prim2DBase._bigInt;
+                this._clearFlags(BABYLON.SmartPropertyPrim.flagZOrderDirty);
+            }
+            var curZ = newZ;
+            // Check for the FlatZOrder, which means the children won't have a dedicated Z-Order but will all share the same (unique) one.
+            if (isFlat) {
+                if (this._children.length > 0) {
+                    //let childrenZOrder = startZ + ((this._children[0]._primLinearPosition - startPos) * deltaZ);
+                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                        var child = _a[_i];
+                        child._updatePrimitiveFlatZOrder(this._zOrder);
+                    }
+                }
+            }
+            else {
+                for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
+                    var child = _c[_b];
+                    var r = child._updatePrimitiveZOrder(startPos, startZ, deltaZ);
+                    if (r != null) {
+                        curZ = r;
+                    }
+                }
+            }
+            this._zMax = isFlat ? newZ : (curZ + deltaZ);
+            return curZ;
+        };
+        Prim2DBase.prototype._updatePrimitiveFlatZOrder = function (newZ) {
+            if (this.isManualZOrder) {
+                return;
+            }
+            this._setZOrder(newZ, false);
+            this._zMax = newZ;
+            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagZOrderDirty)) {
+                this._firstZDirtyIndex = Prim2DBase._bigInt;
+                this._clearFlags(BABYLON.SmartPropertyPrim.flagZOrderDirty);
+            }
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                child._updatePrimitiveFlatZOrder(newZ);
+            }
+        };
+        Prim2DBase.prototype._setZOrder = function (newZ, directEmit) {
+            if (newZ !== this._zOrder) {
+                this._zOrder = newZ;
+                if (!this.isDirty) {
+                    this.onPrimBecomesDirty();
+                }
+                this.onZOrderChanged();
+                if (this._actualZOrderChangedObservable && this._actualZOrderChangedObservable.hasObservers()) {
+                    if (directEmit) {
+                        this._actualZOrderChangedObservable.notifyObservers(newZ);
+                    }
+                    else {
+                        Prim2DBase._zOrderChangedNotifList.push(this);
+                    }
+                }
+            }
         };
         /**
          * This method is used to alter the contentArea of the Primitive before margin is applied.
@@ -2469,9 +2653,11 @@ var BABYLON;
             newPrimSize.copyFrom(primSize);
         };
         Prim2DBase.PRIM2DBASE_PROPCOUNT = 15;
+        Prim2DBase._bigInt = Math.pow(2, 30);
         Prim2DBase._nullPosition = BABYLON.Vector2.Zero();
         Prim2DBase.boundinbBoxReentrency = false;
         Prim2DBase.nullSize = BABYLON.Size.Zero();
+        Prim2DBase._bMax = BABYLON.Vector2.Zero();
         Prim2DBase._isCanvasInit = false;
         Prim2DBase._t0 = new BABYLON.Matrix();
         Prim2DBase._t1 = new BABYLON.Matrix();
@@ -2481,11 +2667,14 @@ var BABYLON;
         Prim2DBase._icPos = BABYLON.Vector2.Zero();
         Prim2DBase._icArea = BABYLON.Size.Zero();
         Prim2DBase._size = BABYLON.Size.Zero();
+        Prim2DBase._zOrderChangedNotifList = new Array();
+        Prim2DBase._zRebuildReentrency = false;
+        Prim2DBase._totalCount = 0;
         __decorate([
-            BABYLON.instanceLevelProperty(1, function (pi) { return Prim2DBase.actualPositionProperty = pi; }, false, true)
+            BABYLON.instanceLevelProperty(1, function (pi) { return Prim2DBase.actualPositionProperty = pi; }, false, false, true)
         ], Prim2DBase.prototype, "actualPosition", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(1, function (pi) { return Prim2DBase.positionProperty = pi; }, false, true)
+            BABYLON.dynamicLevelProperty(1, function (pi) { return Prim2DBase.positionProperty = pi; }, false, false, true)
         ], Prim2DBase.prototype, "position", null);
         __decorate([
             BABYLON.dynamicLevelProperty(2, function (pi) { return Prim2DBase.sizeProperty = pi; }, false, true)
@@ -2521,6 +2710,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

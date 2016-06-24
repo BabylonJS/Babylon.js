@@ -9,7 +9,7 @@ var BABYLON;
             this.subMeshId = 0;
         }
         return IntersectionInfo;
-    }());
+    })();
     BABYLON.IntersectionInfo = IntersectionInfo;
     var PickingInfo = (function () {
         function PickingInfo() {
@@ -71,6 +71,6 @@ var BABYLON;
             return new BABYLON.Vector2(uv0.x + uv1.x + uv2.x, uv0.y + uv1.y + uv2.y);
         };
         return PickingInfo;
-    }());
+    })();
     BABYLON.PickingInfo = PickingInfo;
 })(BABYLON || (BABYLON = {}));
