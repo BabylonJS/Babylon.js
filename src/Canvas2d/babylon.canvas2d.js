@@ -27,7 +27,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    }());
+    })();
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -85,6 +85,7 @@ var BABYLON;
             this._updatePositioningCounter = new BABYLON.PerfCounter();
             this._updateLocalTransformCounter = new BABYLON.PerfCounter();
             this._updateGlobalTransformCounter = new BABYLON.PerfCounter();
+            this._boundingInfoRecomputeCounter = new BABYLON.PerfCounter();
             this._profileInfoText = null;
             BABYLON.Prim2DBase._isCanvasInit = false;
             if (!settings) {
@@ -126,8 +127,9 @@ var BABYLON;
             this._capturedPointers = new BABYLON.StringDictionary();
             this._pickStartingPosition = BABYLON.Vector2.Zero();
             this._hierarchyLevelMaxSiblingCount = 50;
-            this._hierarchyDepthOffset = 0;
-            this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
+            this._hierarchyDepth = 0;
+            this._zOrder = 0;
+            this._zMax = 1;
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new BABYLON.Size(0, 0);
@@ -232,6 +234,13 @@ var BABYLON;
         Object.defineProperty(Canvas2D.prototype, "updateGlobalTransformCounter", {
             get: function () {
                 return this._updateGlobalTransformCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "boundingInfoRecomputeCounter", {
+            get: function () {
+                return this._boundingInfoRecomputeCounter;
             },
             enumerable: true,
             configurable: true
@@ -870,6 +879,7 @@ var BABYLON;
             this._updatePositioningCounter.fetchNewFrame();
             this._updateLocalTransformCounter.fetchNewFrame();
             this._updateGlobalTransformCounter.fetchNewFrame();
+            this._boundingInfoRecomputeCounter.fetchNewFrame();
         };
         Canvas2D.prototype._fetchPerfMetrics = function () {
             this._drawCallsOpaqueCounter.addCount(0, true);
@@ -883,6 +893,7 @@ var BABYLON;
             this._updatePositioningCounter.addCount(0, true);
             this._updateLocalTransformCounter.addCount(0, true);
             this._updateGlobalTransformCounter.addCount(0, true);
+            this._boundingInfoRecomputeCounter.addCount(0, true);
         };
         Canvas2D.prototype._updateProfileCanvas = function () {
             if (this._profileInfoText == null) {
@@ -900,7 +911,8 @@ var BABYLON;
                 (" - Update Layout: " + this.updateLayoutCounter.current + ", (avg:" + format(this.updateLayoutCounter.lastSecAverage) + ", t:" + format(this.updateLayoutCounter.total) + ")\n") +
                 (" - Update Positioning: " + this.updatePositioningCounter.current + ", (avg:" + format(this.updatePositioningCounter.lastSecAverage) + ", t:" + format(this.updatePositioningCounter.total) + ")\n") +
                 (" - Update Local  Trans: " + this.updateLocalTransformCounter.current + ", (avg:" + format(this.updateLocalTransformCounter.lastSecAverage) + ", t:" + format(this.updateLocalTransformCounter.total) + ")\n") +
-                (" - Update Global Trans: " + this.updateGlobalTransformCounter.current + ", (avg:" + format(this.updateGlobalTransformCounter.lastSecAverage) + ", t:" + format(this.updateGlobalTransformCounter.total) + ")\n");
+                (" - Update Global Trans: " + this.updateGlobalTransformCounter.current + ", (avg:" + format(this.updateGlobalTransformCounter.lastSecAverage) + ", t:" + format(this.updateGlobalTransformCounter.total) + ")\n") +
+                (" - BoundingInfo Recompute: " + this.boundingInfoRecomputeCounter.current + ", (avg:" + format(this.boundingInfoRecomputeCounter.lastSecAverage) + ", t:" + format(this.boundingInfoRecomputeCounter.total) + ")\n");
             this._profileInfoText.text = p;
         };
         Canvas2D.prototype._addDrawCallCount = function (count, renderMode) {
@@ -1087,8 +1099,8 @@ var BABYLON;
             // Try to find a spot in one of the cached texture
             var res = null;
             var map;
-            for (var _i = 0, mapArray_1 = mapArray; _i < mapArray_1.length; _i++) {
-                var _map = mapArray_1[_i];
+            for (var _i = 0; _i < mapArray.length; _i++) {
+                var _map = mapArray[_i];
                 map = _map;
                 var node = map.allocateRect(size);
                 if (node) {
@@ -1267,7 +1279,7 @@ var BABYLON;
          * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
          */
         Canvas2D.CACHESTRATEGY_DONTCACHE = 4;
-        Canvas2D.hierarchyLevelMaxSiblingCount = 50;
+        Canvas2D._zMinDelta = 1 / (Math.pow(2, 24) - 1);
         Canvas2D._interInfo = new BABYLON.IntersectInfo2D();
         Canvas2D._v = BABYLON.Vector3.Zero(); // Must stay zero
         Canvas2D._m = BABYLON.Matrix.Identity();
@@ -1283,7 +1295,7 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
     var WorldSpaceCanvas2D = (function (_super) {
         __extends(WorldSpaceCanvas2D, _super);
@@ -1368,7 +1380,7 @@ var BABYLON;
             BABYLON.className("WorldSpaceCanvas2D")
         ], WorldSpaceCanvas2D);
         return WorldSpaceCanvas2D;
-    }(Canvas2D));
+    })(Canvas2D);
     BABYLON.WorldSpaceCanvas2D = WorldSpaceCanvas2D;
     var ScreenSpaceCanvas2D = (function (_super) {
         __extends(ScreenSpaceCanvas2D, _super);
@@ -1409,6 +1421,6 @@ var BABYLON;
             BABYLON.className("ScreenSpaceCanvas2D")
         ], ScreenSpaceCanvas2D);
         return ScreenSpaceCanvas2D;
-    }(Canvas2D));
+    })(Canvas2D);
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
 })(BABYLON || (BABYLON = {}));
