@@ -29,17 +29,18 @@
         /**
          * Create an Logical or Renderable Group.
          * @param settings a combination of settings, possible ones are
-         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
-         *  - children: an array of direct children
-         *  - id a text identifier, for information purpose
-         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
-         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
-         *  - scale: the initial scale of the primitive. default is 1
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
+         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         * - children: an array of direct children
+         * - id a text identifier, for information purpose
+         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         * - rotation: the initial rotation (in radian) of the primitive. default is 0
+         * - scale: the initial scale of the primitive. default is 1
+         * - origin: define the normalized origin point location, default [0.5;0.5]
+         * - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
          *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
-         *  - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
-         *  - isVisible: true if the group must be visible, false for hidden. Default is true.
+         * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
+         * - isVisible: true if the group must be visible, false for hidden. Default is true.
+         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED! 
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -56,33 +57,34 @@
          */
         constructor(settings?: {
 
-            parent          ?: Prim2DBase,
-            children        ?: Array<Prim2DBase>,
-            id              ?: string,
-            position        ?: Vector2,
-            x               ?: number,
-            y               ?: number,
-            trackNode       ?: Node,
-            origin          ?: Vector2,
-            size            ?: Size,
-            width           ?: number,
-            height          ?: number,
-            cacheBehavior   ?: number,
-            layoutEngine    ?: LayoutEngineBase | string,
-            isVisible       ?: boolean,
-            marginTop       ?: number | string,
-            marginLeft      ?: number | string,
-            marginRight     ?: number | string,
-            marginBottom    ?: number | string,
-            margin          ?: number | string,
-            marginHAlignment?: number,
-            marginVAlignment?: number,
-            marginAlignment ?: string,
-            paddingTop      ?: number | string,
-            paddingLeft     ?: number | string,
-            paddingRight    ?: number | string,
-            paddingBottom   ?: number | string,
-            padding         ?: string,
+            parent            ?: Prim2DBase,
+            children          ?: Array<Prim2DBase>,
+            id                ?: string,
+            position          ?: Vector2,
+            x                 ?: number,
+            y                 ?: number,
+            trackNode         ?: Node,
+            origin            ?: Vector2,
+            size              ?: Size,
+            width             ?: number,
+            height            ?: number,
+            cacheBehavior     ?: number,
+            layoutEngine      ?: LayoutEngineBase | string,
+            isVisible         ?: boolean,
+            childrenFlatZOrder?: boolean,
+            marginTop         ?: number | string,
+            marginLeft        ?: number | string,
+            marginRight       ?: number | string,
+            marginBottom      ?: number | string,
+            margin            ?: number | string,
+            marginHAlignment  ?: number,
+            marginVAlignment  ?: number,
+            marginAlignment   ?: string,
+            paddingTop        ?: number | string,
+            paddingLeft       ?: number | string,
+            paddingRight      ?: number | string,
+            paddingBottom     ?: number | string,
+            padding           ?: string,
 
         }) {
             if (settings == null) {

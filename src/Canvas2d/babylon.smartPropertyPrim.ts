@@ -13,6 +13,7 @@
         kind: number;
         name: string;
         dirtyBoundingInfo: boolean;
+        dirtyParentBoundingInfo: boolean;
         typeLevelCompare: boolean;
     }
 
@@ -270,7 +271,7 @@
             return this._propInfo;
         }
 
-        private static _createPropInfo(target: Object, propName: string, propId: number, dirtyBoundingInfo: boolean, typeLevelCompare: boolean, kind: number): Prim2DPropInfo {
+        private static _createPropInfo(target: Object, propName: string, propId: number, dirtyBoundingInfo: boolean, dirtyParentBoundingBox: boolean, typeLevelCompare: boolean, kind: number): Prim2DPropInfo {
             let dic = ClassTreeInfo.getOrRegister<Prim2DClassInfo, Prim2DPropInfo>(target, () => new Prim2DClassInfo());
             var node = dic.getLevelOf(target);
 
@@ -286,6 +287,7 @@
             propInfo.kind = kind;
             propInfo.name = propName;
             propInfo.dirtyBoundingInfo = dirtyBoundingInfo;
+            propInfo.dirtyParentBoundingInfo = dirtyParentBoundingBox;
             propInfo.typeLevelCompare = typeLevelCompare;
             node.levelContent.add(propName, propInfo);
 
@@ -342,7 +344,6 @@
             if (this instanceof Prim2DBase) {
                 let curprim: Prim2DBase = (<any>this);
                 while (curprim) {
-                    curprim._boundingSize = null;
                     curprim._setFlags(SmartPropertyPrim.flagBoundingInfoDirty);
                     if (curprim.isSizeAuto) {
                         curprim.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
@@ -364,6 +365,11 @@
             // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
             if (propInfo.dirtyBoundingInfo) {
                 this._boundingBoxDirty();
+            } else if (propInfo.dirtyParentBoundingInfo) {
+                let p: SmartPropertyPrim = (<any>this)._parent;
+                if (p != null) {
+                    p._boundingBoxDirty();
+                }
             }
 
             // Trigger property changed
@@ -463,10 +469,10 @@
 
         }
 
-        static _hookProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare: boolean, dirtyBoundingInfo: boolean, kind: number): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
+        static _hookProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare: boolean, dirtyBoundingInfo: boolean, dirtyParentBoundingBox: boolean, kind: number): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
             return (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
 
-                var propInfo = SmartPropertyPrim._createPropInfo(target, <string>propName, propId, dirtyBoundingInfo, typeLevelCompare, kind);
+                var propInfo = SmartPropertyPrim._createPropInfo(target, <string>propName, propId, dirtyBoundingInfo, dirtyParentBoundingBox, typeLevelCompare, kind);
                 if (piStore) {
                     piStore(propInfo);
                 }
@@ -620,6 +626,8 @@
         public static flagPositioningDirty       = 0x0000200;    // set if the primitive positioning must be computed
         public static flagTrackedGroup           = 0x0000400;    // set if the group2D is tracking a scene node
         public static flagWorldCacheChanged      = 0x0000800;    // set if the cached bitmap of a world space canvas changed
+        public static flagChildrenFlatZOrder     = 0x0001000;    // set if all the children (direct and indirect) will share the same Z-Order
+        public static flagZOrderDirty            = 0x0002000;    // set if the Z-Order for this prim and its children must be recomputed
 
         private   _flags             : number;
         private   _externalData      : StringDictionary<Object>;
@@ -630,15 +638,15 @@
         protected _instanceDirtyFlags: number;
     }
 
-    export function modelLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare = false, dirtyBoundingInfo = false): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
-        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, Prim2DPropInfo.PROPKIND_MODEL);
+    export function modelLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare = false, dirtyBoundingInfo = false, dirtyParentBoundingBox = false): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
+        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox, Prim2DPropInfo.PROPKIND_MODEL);
     }
 
-    export function instanceLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare = false, dirtyBoundingInfo = false): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
-        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, Prim2DPropInfo.PROPKIND_INSTANCE);
+    export function instanceLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare = false, dirtyBoundingInfo = false, dirtyParentBoundingBox = false): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
+        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox, Prim2DPropInfo.PROPKIND_INSTANCE);
     }
 
-    export function dynamicLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare = false, dirtyBoundingInfo = false): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
-        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, Prim2DPropInfo.PROPKIND_DYNAMIC);
+    export function dynamicLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare = false, dirtyBoundingInfo = false, dirtyParentBoundingBox = false): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
+        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox, Prim2DPropInfo.PROPKIND_DYNAMIC);
     }
 }
