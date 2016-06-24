@@ -1280,6 +1280,7 @@
      */
     export class Prim2DBase extends SmartPropertyPrim {
         static PRIM2DBASE_PROPCOUNT: number = 15;
+        private static _bigInt = Math.pow(2, 30);
 
         constructor(settings: {
             parent?: Prim2DBase,
@@ -1293,6 +1294,7 @@
             origin?: Vector2,
             layoutEngine?: LayoutEngineBase | string,
             isVisible?: boolean,
+            childrenFlatZOrder?: boolean,
             marginTop?: number | string,
             marginLeft?: number | string,
             marginRight?: number | string,
@@ -1351,7 +1353,6 @@
             this._lastAutoSizeArea = Size.Zero();
             this._contentArea = new Size(null, null);
             this._pointerEventObservable = new Observable<PrimitivePointerInfo>();
-            this._siblingDepthOffset = this._hierarchyDepthOffset = 0;
             this._boundingInfo = new BoundingInfo2D();
             this._owner = owner;
             this._parent = null;
@@ -1366,9 +1367,17 @@
             this._invGlobalTransform = null;
             this._globalTransformProcessStep = 0;
             this._globalTransformStep = 0;
-            this._hierarchyDepth = 0;
             this._renderGroup = null;
+            this._primLinearPosition = 0;
+            this._manualZOrder = null;
+            this._zOrder = 0;
+            this._zMax = 0;
+            this._firstZDirtyIndex = Prim2DBase._bigInt;
             this._setFlags(SmartPropertyPrim.flagIsPickable | SmartPropertyPrim.flagBoundingInfoDirty);
+
+            if (settings.childrenFlatZOrder) {
+                this._setFlags(SmartPropertyPrim.flagChildrenFlatZOrder);
+            }
 
             // If the parent is given, initialize the hierarchy/owner related data
             if (parent != null) {
@@ -1833,7 +1842,13 @@
         }
 
         public get actualZOffset(): number {
-            return this._zOrder || (1 - this._hierarchyDepthOffset);
+            if (this._manualZOrder!=null) {
+                return this._manualZOrder;
+            }
+            if (this._isFlagSet(SmartPropertyPrim.flagZOrderDirty)) {
+                this._updateZOrder();
+            }
+            return (1 - this._zOrder);
         }
 
         /**
@@ -1921,12 +1936,23 @@
          * You can override the default Z Order through this property, but most of the time the default behavior is acceptable
          */
         public get zOrder(): number {
-            return this._zOrder;
+            return this._manualZOrder;
         }
 
         public set zOrder(value: number) {
-            this._zOrder = value;
+            if (this._manualZOrder === value) {
+                return;
+            }
+
+            this._manualZOrder = value;
             this.onZOrderChanged();
+            if (this._actualZOrderChangedObservable && this._actualZOrderChangedObservable.hasObservers()) {
+                this._actualZOrderChangedObservable.notifyObservers(value);
+            }
+        }
+
+        public get isManualZOrder(): boolean {
+            return this._manualZOrder != null;
         }
 
         @dynamicLevelProperty(9, pi => Prim2DBase.marginProperty = pi)
@@ -2165,6 +2191,13 @@
             return this._pointerEventObservable;
         }
 
+        public get zActualOrderChangedObservable(): Observable<number> {
+            if (!this._actualZOrderChangedObservable) {
+                this._actualZOrderChangedObservable = new Observable<number>();
+            }
+            return this._actualZOrderChangedObservable;
+        }
+
         public findById(id: string): Prim2DBase {
             if (this._id === id) {
                 return this;
@@ -2281,20 +2314,13 @@
                 return false;
             }
 
-            let prevOffset: number, nextOffset: number;
             let childIndex = this._children.indexOf(child);
             let prevIndex = previous ? this._children.indexOf(previous) : -1;
 
-            // Move to first position
-            if (!previous) {
-                prevOffset = 1;
-                nextOffset = this._children[1]._siblingDepthOffset;
-            } else {
-                prevOffset = this._children[prevIndex]._siblingDepthOffset;
-                nextOffset = this._children[prevIndex + 1]._siblingDepthOffset;
+            if (!this._isFlagSet(SmartPropertyPrim.flagChildrenFlatZOrder)) {
+                this._setFlags(SmartPropertyPrim.flagZOrderDirty);
+                this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, prevIndex+1);
             }
-
-            child._siblingDepthOffset = (nextOffset - prevOffset) / 2;
 
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
         }
@@ -2302,8 +2328,16 @@
         private addChild(child: Prim2DBase) {
             child._parent = this;
             this._boundingBoxDirty();
-            this._children.push(child);
-            this._patchHierarchyDepth(child);
+            let flat = this._isFlagSet(SmartPropertyPrim.flagChildrenFlatZOrder);
+            if (flat) {
+                child._setFlags(SmartPropertyPrim.flagChildrenFlatZOrder);
+                child._setZOrder(this._zOrder, true);
+                child._zMax = this._zOrder;
+            } else {
+                this._setFlags(SmartPropertyPrim.flagZOrderDirty);
+            }
+            let length = this._children.push(child);
+            this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, length - 1);
         }
 
         /**
@@ -2445,7 +2479,9 @@
         private _updateLocalTransform(): boolean {
             let tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.originProperty.flagId;
             if (this.checkPropertiesDirty(tflags)) {
-                this.owner.addupdateLocalTransformCounter(1);
+                if (this.owner) {
+                    this.owner.addupdateLocalTransformCounter(1);
+                }
 
                 var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
                 var local: Matrix;
@@ -2488,8 +2524,13 @@
             this.owner.addCachedGroupRenderCounter(1);
             
             // Check if the parent is synced
-            if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(SmartPropertyPrim.flagLayoutDirty | SmartPropertyPrim.flagPositioningDirty))) {
+            if (this._parent && ((this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) || this._parent._areSomeFlagsSet(SmartPropertyPrim.flagLayoutDirty | SmartPropertyPrim.flagPositioningDirty | SmartPropertyPrim.flagZOrderDirty))) {
                 this._parent.updateCachedStates(false);
+            }
+
+            // Update Z-Order if needed
+            if (this._isFlagSet(SmartPropertyPrim.flagZOrderDirty)) {
+                this._updateZOrder();
             }
 
             // Update actualSize only if there' not positioning to recompute and the size changed
@@ -2597,7 +2638,9 @@
         private static _size = Size.Zero();
 
         private _updatePositioning() {
-            this.owner.addUpdatePositioningCounter(1);
+            if (this.owner) {
+                this.owner.addUpdatePositioningCounter(1);
+            }
 
             // From this point we assume that the primitive layoutArea is computed and up to date.
             // We know have to :
@@ -2707,15 +2750,170 @@
 
             // Recurse
             for (let child of this._children) {
-                this._patchHierarchyDepth(child);
+                child._hierarchyDepth = this._hierarchyDepth + 1;
                 child._patchHierarchy(owner);
             }
         }
+        private static _zOrderChangedNotifList = new Array<Prim2DBase>();
+        private static _zRebuildReentrency = false;
 
-        private _patchHierarchyDepth(child: Prim2DBase) {
-            child._hierarchyDepth = this._hierarchyDepth + 1;
-            child._hierarchyDepthOffset = this._hierarchyDepthOffset + ((this._children.indexOf(child) + 1) * this._siblingDepthOffset);
-            child._siblingDepthOffset = this._siblingDepthOffset / Canvas2D.hierarchyLevelMaxSiblingCount;
+        private _updateZOrder() {
+            let prevLinPos = this._primLinearPosition;
+            let startI = 0;
+            let startZ = this._zOrder;
+
+            // We must start rebuilding Z-Order from the Prim before the first one that changed, because we know its Z-Order is correct, so are its children, but it's better to recompute everything from this point instead of finding the last valid children
+            let childrenCount = this._children.length;
+            if (this._firstZDirtyIndex > 0) {
+                if ((this._firstZDirtyIndex - 1) < childrenCount) {
+                    let prevPrim = this._children[this._firstZDirtyIndex - 1];
+                    prevLinPos = prevPrim._primLinearPosition;
+                    startI = this._firstZDirtyIndex - 1;
+                    startZ = prevPrim._zOrder;
+                }
+            }
+
+            let startPos = prevLinPos;
+
+            // Update the linear position of the primitive from the first one to the last inside this primitive, compute the total number of prim traversed
+            Prim2DBase._totalCount = 0;
+            for (let i = startI; i < childrenCount; i++) {
+                let child = this._children[i];
+                prevLinPos = child._updatePrimitiveLinearPosition(prevLinPos);
+            }
+
+            // Compute the new Z-Order for all the primitives
+            // Add 20% to the current total count to reserve space for future insertions, except if we're rebuilding due to a zMinDelta reached
+            let zDelta = (this._zMax - startZ) / (Prim2DBase._totalCount * (Prim2DBase._zRebuildReentrency ? 1 : 1.2));
+
+            // If the computed delta is less than the smallest allowed by the depth buffer, we rebuild the Z-Order from the very beginning of the primitive's children (that is, the first) to redistribute uniformly the Z.
+            if (zDelta < Canvas2D._zMinDelta) {
+                // Check for re-entrance, if the flag is true we already attempted a rebuild but couldn't get a better zDelta, go up in the hierarchy to rebuilt one level up, hoping to get this time a decent delta, otherwise, recurse until we got it or when no parent is reached, which would mean the canvas would have more than 16 millions of primitives...
+                if (Prim2DBase._zRebuildReentrency) {
+                    let p = this._parent;
+                    if (p == null) {
+                        // Can't find a good Z delta and we're in the canvas, which mean we're dealing with too many objects (which should never happen, but well...)
+                        console.log(`Can't compute Z-Order for ${this.id}'s children, zDelta is too small, Z-Order is now in an unstable state`);
+                        Prim2DBase._zRebuildReentrency = false;
+                        return;
+                    }
+                    p._firstZDirtyIndex = 0;
+                    return p._updateZOrder();
+                }
+                Prim2DBase._zRebuildReentrency = true;
+                this._firstZDirtyIndex = 0;
+                this._updateZOrder();
+                Prim2DBase._zRebuildReentrency = false;
+            }
+
+            for (let i = startI; i < childrenCount; i++) {
+                let child = this._children[i];
+                child._updatePrimitiveZOrder(startPos, startZ, zDelta);
+            }
+
+            // Notify the Observers that we found during the Z change (we do it after to avoid any kind of re-entrance)
+            for (let p of Prim2DBase._zOrderChangedNotifList) {
+                p._actualZOrderChangedObservable.notifyObservers(p.actualZOffset);
+            }
+            Prim2DBase._zOrderChangedNotifList.splice(0);
+
+            this._firstZDirtyIndex = Prim2DBase._bigInt;
+            this._clearFlags(SmartPropertyPrim.flagZOrderDirty);
+        }
+
+        private static _totalCount: number = 0;
+
+        private _updatePrimitiveLinearPosition(prevLinPos: number): number {
+            if (this.isManualZOrder) {
+                return prevLinPos;
+            }
+
+            this._primLinearPosition = ++prevLinPos;
+            Prim2DBase._totalCount++;
+
+            // Check for the FlatZOrder, which means the children won't have a dedicated Z-Order but will all share the same (unique) one.
+            if (!this._isFlagSet(SmartPropertyPrim.flagChildrenFlatZOrder)) {
+                for (let child of this._children) {
+                    prevLinPos = child._updatePrimitiveLinearPosition(prevLinPos);
+                }
+            }
+
+            return prevLinPos;
+        }
+
+        private _updatePrimitiveZOrder(startPos: number, startZ: number, deltaZ: number): number {
+            if (this.isManualZOrder) {
+                return null;
+            }
+
+            let newZ = startZ + ((this._primLinearPosition - startPos) * deltaZ);
+            let isFlat = this._isFlagSet(SmartPropertyPrim.flagChildrenFlatZOrder);
+            this._setZOrder(newZ, false);
+
+
+            if (this._isFlagSet(SmartPropertyPrim.flagZOrderDirty)) {
+                this._firstZDirtyIndex = Prim2DBase._bigInt;
+                this._clearFlags(SmartPropertyPrim.flagZOrderDirty);
+            }
+
+            let curZ: number = newZ;
+
+            // Check for the FlatZOrder, which means the children won't have a dedicated Z-Order but will all share the same (unique) one.
+            if (isFlat) {
+                if (this._children.length > 0) {
+                    //let childrenZOrder = startZ + ((this._children[0]._primLinearPosition - startPos) * deltaZ);
+                    for (let child of this._children) {
+                        child._updatePrimitiveFlatZOrder(this._zOrder);
+                    }
+                }
+            } else {
+                for (let child of this._children) {
+                    let r = child._updatePrimitiveZOrder(startPos, startZ, deltaZ);
+                    if (r != null) {
+                        curZ = r;
+                    }
+                }
+            }
+
+            this._zMax = isFlat ? newZ : (curZ + deltaZ);
+
+            return curZ;
+        }
+
+        private _updatePrimitiveFlatZOrder(newZ: number) {
+            if (this.isManualZOrder) {
+                return;
+            }
+
+            this._setZOrder(newZ, false);
+            this._zMax = newZ;
+
+            if (this._isFlagSet(SmartPropertyPrim.flagZOrderDirty)) {
+                this._firstZDirtyIndex = Prim2DBase._bigInt;
+                this._clearFlags(SmartPropertyPrim.flagZOrderDirty);
+            }
+
+            for (let child of this._children) {
+                child._updatePrimitiveFlatZOrder(newZ);
+            }
+
+        }
+
+        private _setZOrder(newZ: number, directEmit: boolean) {
+            if (newZ !== this._zOrder) {
+                this._zOrder = newZ;
+                if (!this.isDirty) {
+                    this.onPrimBecomesDirty();
+                }
+                this.onZOrderChanged();
+                if (this._actualZOrderChangedObservable && this._actualZOrderChangedObservable.hasObservers()) {
+                    if (directEmit) {
+                        this._actualZOrderChangedObservable.notifyObservers(newZ);
+                    } else {
+                        Prim2DBase._zOrderChangedNotifList.push(this);
+                    }
+                }
+            }
         }
 
         /**
@@ -2745,14 +2943,17 @@
         private _actionManager: ActionManager;
         protected _children: Array<Prim2DBase>;
         private _renderGroup: Group2D;
-        private _hierarchyDepth: number;
-        protected _hierarchyDepthOffset: number;
-        protected _siblingDepthOffset: number;
-        private _zOrder: number;
+        protected _hierarchyDepth: number;
+        protected _zOrder: number;
+        private _manualZOrder: number;
+        protected _zMax: number;
+        private _firstZDirtyIndex: number;
+        private _primLinearPosition: number;
         private _margin: PrimitiveThickness;
         private _padding: PrimitiveThickness;
         private _marginAlignment: PrimitiveAlignment;
         public _pointerEventObservable: Observable<PrimitivePointerInfo>;
+        private _actualZOrderChangedObservable: Observable<number>;
         private _id: string;
         private _position: Vector2;
         private _actualPosition: Vector2;

@@ -131,8 +131,9 @@
             this._capturedPointers = new StringDictionary<Prim2DBase>();
             this._pickStartingPosition = Vector2.Zero();
             this._hierarchyLevelMaxSiblingCount = 50;
-            this._hierarchyDepthOffset = 0;
-            this._siblingDepthOffset = 1 / this._hierarchyLevelMaxSiblingCount;
+            this._hierarchyDepth = 0;
+            this._zOrder = 0;
+            this._zMax = 1;
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
@@ -225,7 +226,7 @@
             this._isScreenSpace = (settings.isScreenSpace == null) ? true : settings.isScreenSpace;
         }
 
-        public static hierarchyLevelMaxSiblingCount: number = 50;
+        public static _zMinDelta: number = 1 / (Math.pow(2, 24) - 1);
 
         private _setupInteraction(enable: boolean) {
             // No change detection

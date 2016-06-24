@@ -258,63 +258,65 @@
          * Create a Text primitive
          * @param text the text to display
          * @param settings a combination of settings, possible ones are
-         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
-         *  - children: an array of direct children
-         *  - id a text identifier, for information purpose
-         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
-         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
-         *  - scale: the initial scale of the primitive. default is 1
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
-         *  - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
-         *  - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
-         *  - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
-         *  - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
-         *  - isVisible: true if the text must be visible, false for hidden. Default is true.
-         *  - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         *  - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         *  - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         *  - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         *  - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
-         *  - marginHAlignment: one value of the PrimitiveAlignment type's static properties
-         *  - marginVAlignment: one value of the PrimitiveAlignment type's static properties
-         *  - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
-         *  - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         *  - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         *  - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         *  - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         *  - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
+         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         * - children: an array of direct children
+         * - id a text identifier, for information purpose
+         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         * - rotation: the initial rotation (in radian) of the primitive. default is 0
+         * - scale: the initial scale of the primitive. default is 1
+         * - origin: define the normalized origin point location, default [0.5;0.5]
+         * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
+         * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
+         * - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
+         * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
+         * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
+         * - isVisible: true if the text must be visible, false for hidden. Default is true.
+         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         constructor(text: string, settings?: {
 
-            parent           ?: Prim2DBase, 
-            children         ?: Array<Prim2DBase>,
-            id               ?: string,
-            position         ?: Vector2,
-            x                ?: number,
-            y                ?: number,
-            rotation         ?: number,
-            scale            ?: number,
-            origin           ?: Vector2,
-            fontName         ?: string,
-            fontSuperSample  ?: boolean,
-            defaultFontColor ?: Color4,
-            size             ?: Size,
-            tabulationSize   ?: number,
-            isVisible        ?: boolean,
-            marginTop        ?: number | string,
-            marginLeft       ?: number | string,
-            marginRight      ?: number | string,
-            marginBottom     ?: number | string,
-            margin           ?: number | string,
-            marginHAlignment ?: number,
-            marginVAlignment ?: number,
-            marginAlignment  ?: string,
-            paddingTop       ?: number | string,
-            paddingLeft      ?: number | string,
-            paddingRight     ?: number | string,
-            paddingBottom    ?: number | string,
-            padding          ?: string,
+            parent            ?: Prim2DBase, 
+            children          ?: Array<Prim2DBase>,
+            id                ?: string,
+            position          ?: Vector2,
+            x                 ?: number,
+            y                 ?: number,
+            rotation          ?: number,
+            scale             ?: number,
+            origin            ?: Vector2,
+            fontName          ?: string,
+            fontSuperSample   ?: boolean,
+            defaultFontColor  ?: Color4,
+            size              ?: Size,
+            tabulationSize    ?: number,
+            isVisible         ?: boolean,
+            childrenFlatZOrder?: boolean,
+            marginTop         ?: number | string,
+            marginLeft        ?: number | string,
+            marginRight       ?: number | string,
+            marginBottom      ?: number | string,
+            margin            ?: number | string,
+            marginHAlignment  ?: number,
+            marginVAlignment  ?: number,
+            marginAlignment   ?: string,
+            paddingTop        ?: number | string,
+            paddingLeft       ?: number | string,
+            paddingRight      ?: number | string,
+            paddingBottom     ?: number | string,
+            padding           ?: string,
         }) {
 
             if (!settings) {

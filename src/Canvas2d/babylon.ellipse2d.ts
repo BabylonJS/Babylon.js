@@ -219,17 +219,20 @@
         /**
          * Create an Ellipse 2D Shape primitive
          * @param settings a combination of settings, possible ones are
-         *  - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
-         *  - children: an array of direct children 
-         *  - id: a text identifier, for information purpose
-         *  - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
-         *  - rotation: the initial rotation (in radian) of the primitive. default is 0
-         *  - scale: the initial scale of the primitive. default is 1
-         *  - origin: define the normalized origin point location, default [0.5;0.5]
-         *  - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
-         *  - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
-         *  - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white. can also be a string value (see Canvas2D.GetBrushFromString)
-         *  - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
+         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         * - children: an array of direct children 
+         * - id: a text identifier, for information purpose
+         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         * - rotation: the initial rotation (in radian) of the primitive. default is 0
+         * - scale: the initial scale of the primitive. default is 1
+         * - origin: define the normalized origin point location, default [0.5;0.5]
+         * - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
+         * - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
+         * - fill: the brush used to draw the fill content of the ellipse, you can set null to draw nothing (but you will have to set a border brush), default is a SolidColorBrush of plain white. can also be a string value (see Canvas2D.GetBrushFromString)
+         * - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
+         * - borderThickness: the thickness of the drawn border, default is 1.
+         * - isVisible: true if the group must be visible, false for hidden. Default is true.
+         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -263,6 +266,7 @@
             border            ?: IBrush2D | string,
             borderThickness   ?: number,
             isVisible         ?: boolean,
+            childrenFlatZOrder?: boolean,
             marginTop         ?: number | string,
             marginLeft        ?: number | string,
             marginRight       ?: number | string,
