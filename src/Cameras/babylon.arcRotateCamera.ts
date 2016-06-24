@@ -170,6 +170,7 @@
 
         public _viewMatrix = new Matrix();
         public _useCtrlForPanning: boolean;
+        public _panningMouseButton: number;
         public inputs: ArcRotateCameraInputsManager;
 
         public _reset: () => void;
@@ -254,8 +255,9 @@
         }
 
         // Methods
-        public attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning: boolean = true): void {
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning: boolean = true, panningMouseButton: number = 2): void {
             this._useCtrlForPanning = useCtrlForPanning;
+            this._panningMouseButton = panningMouseButton;
 
             this.inputs.attachElement(element, noPreventDefault);
 
