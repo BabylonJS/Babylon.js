@@ -27,7 +27,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    })();
+    }());
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -652,6 +652,10 @@ var BABYLON;
             if (!_super.prototype.dispose.call(this)) {
                 return false;
             }
+            if (this._profilingCanvas) {
+                this._profilingCanvas.dispose();
+                this._profilingCanvas = null;
+            }
             if (this.interactionEnabled) {
                 this._setupInteraction(false);
             }
@@ -850,16 +854,20 @@ var BABYLON;
             configurable: true
         });
         Canvas2D.prototype.createCanvasProfileInfoCanvas = function () {
+            if (this._profilingCanvas) {
+                return this._profilingCanvas;
+            }
             var canvas = new ScreenSpaceCanvas2D(this.scene, {
                 id: "ProfileInfoCanvas", cachingStrategy: Canvas2D.CACHESTRATEGY_DONTCACHE, children: [
                     new BABYLON.Rectangle2D({
-                        id: "ProfileBorder", border: "#FFFFFFFF", borderThickness: 2, roundRadius: 5, marginAlignment: "h: left, v: top", margin: "10", padding: "10", children: [
+                        id: "ProfileBorder", border: "#FFFFFFFF", borderThickness: 2, roundRadius: 5, fill: "#C04040C0", marginAlignment: "h: left, v: top", margin: "10", padding: "10", children: [
                             new BABYLON.Text2D("Stats", { id: "ProfileInfoText", marginAlignment: "h: left, v: top", fontName: "10pt Lucida Console" })
                         ]
                     })
                 ]
             });
             this._profileInfoText = canvas.findById("ProfileInfoText");
+            this._profilingCanvas = canvas;
             return canvas;
         };
         Canvas2D.prototype.checkBackgroundAvailability = function () {
@@ -901,9 +909,9 @@ var BABYLON;
             }
             var format = function (v) { return (Math.round(v * 100) / 100).toString(); };
             var p = "Draw Calls:\n" +
-                (" - Opaque:      " + this.drawCallsOpaqueCounter.current + ", (avg:" + format(this.drawCallsOpaqueCounter.lastSecAverage) + ", t:" + format(this.drawCallsOpaqueCounter.total) + ")\n") +
-                (" - AlphaTest:   " + this.drawCallsAlphaTestCounter.current + ", (avg:" + format(this.drawCallsAlphaTestCounter.lastSecAverage) + ", t:" + format(this.drawCallsAlphaTestCounter.total) + ")\n") +
-                (" - Transparent: " + this.drawCallsTransparentCounter.current + ", (avg:" + format(this.drawCallsTransparentCounter.lastSecAverage) + ", t:" + format(this.drawCallsTransparentCounter.total) + ")\n") +
+                (" - Opaque:      " + format(this.drawCallsOpaqueCounter.current) + ", (avg:" + format(this.drawCallsOpaqueCounter.lastSecAverage) + ", t:" + format(this.drawCallsOpaqueCounter.total) + ")\n") +
+                (" - AlphaTest:   " + format(this.drawCallsAlphaTestCounter.current) + ", (avg:" + format(this.drawCallsAlphaTestCounter.lastSecAverage) + ", t:" + format(this.drawCallsAlphaTestCounter.total) + ")\n") +
+                (" - Transparent: " + format(this.drawCallsTransparentCounter.current) + ", (avg:" + format(this.drawCallsTransparentCounter.lastSecAverage) + ", t:" + format(this.drawCallsTransparentCounter.total) + ")\n") +
                 ("Group Render: " + this.groupRenderCounter.current + ", (avg:" + format(this.groupRenderCounter.lastSecAverage) + ", t:" + format(this.groupRenderCounter.total) + ")\n") +
                 ("Update Transparent Data: " + this.updateTransparentDataCounter.current + ", (avg:" + format(this.updateTransparentDataCounter.lastSecAverage) + ", t:" + format(this.updateTransparentDataCounter.total) + ")\n") +
                 ("Cached Group Render: " + this.cachedGroupRenderCounter.current + ", (avg:" + format(this.cachedGroupRenderCounter.lastSecAverage) + ", t:" + format(this.cachedGroupRenderCounter.total) + ")\n") +
@@ -1099,8 +1107,8 @@ var BABYLON;
             // Try to find a spot in one of the cached texture
             var res = null;
             var map;
-            for (var _i = 0; _i < mapArray.length; _i++) {
-                var _map = mapArray[_i];
+            for (var _i = 0, mapArray_1 = mapArray; _i < mapArray_1.length; _i++) {
+                var _map = mapArray_1[_i];
                 map = _map;
                 var node = map.allocateRect(size);
                 if (node) {
@@ -1295,7 +1303,7 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    })(BABYLON.Group2D);
+    }(BABYLON.Group2D));
     BABYLON.Canvas2D = Canvas2D;
     var WorldSpaceCanvas2D = (function (_super) {
         __extends(WorldSpaceCanvas2D, _super);
@@ -1380,7 +1388,7 @@ var BABYLON;
             BABYLON.className("WorldSpaceCanvas2D")
         ], WorldSpaceCanvas2D);
         return WorldSpaceCanvas2D;
-    })(Canvas2D);
+    }(Canvas2D));
     BABYLON.WorldSpaceCanvas2D = WorldSpaceCanvas2D;
     var ScreenSpaceCanvas2D = (function (_super) {
         __extends(ScreenSpaceCanvas2D, _super);
@@ -1421,6 +1429,6 @@ var BABYLON;
             BABYLON.className("ScreenSpaceCanvas2D")
         ], ScreenSpaceCanvas2D);
         return ScreenSpaceCanvas2D;
-    })(Canvas2D);
+    }(Canvas2D));
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
 })(BABYLON || (BABYLON = {}));

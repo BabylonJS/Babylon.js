@@ -34,11 +34,11 @@ var BABYLON;
             // Compute the offset locations of the attributes in the vertex shader that will be mapped to the instance buffer data
             var canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
+            var cur = engine.getAlphaMode();
             var effect = context.useInstancing ? this.effectInstanced : this.effect;
             engine.enableEffect(effect);
             effect.setTexture("diffuseSampler", this.texture);
             engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
-            var cur = engine.getAlphaMode();
             if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
             }
@@ -47,9 +47,11 @@ var BABYLON;
                 if (!this.instancingAttributes) {
                     this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, effect);
                 }
+                var glBuffer = context.instancedBuffers ? context.instancedBuffers[0] : pid._partBuffer;
+                var count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                 canvas._addDrawCallCount(1, context.renderMode);
-                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
-                engine.draw(true, 0, 6, pid._partData.usedElementCount);
+                engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, count);
                 engine.unbindInstanceAttributes();
             }
             else {
@@ -89,7 +91,7 @@ var BABYLON;
             return true;
         };
         return Sprite2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -141,7 +143,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "properties", null);
         return Sprite2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -155,6 +157,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
@@ -189,7 +192,7 @@ var BABYLON;
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
-            this._isTransparent = true;
+            this.isAlphaTest = true;
             if (settings.spriteSize == null) {
                 var s = texture.getSize();
                 this.size = new BABYLON.Size(s.width, s.height);
@@ -356,6 +359,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));

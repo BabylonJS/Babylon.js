@@ -45,9 +45,11 @@ var BABYLON;
                 if (!this.instancingAttributes) {
                     this.instancingAttributes = this.loadInstancingAttributes(Text2D.TEXT2D_MAINPARTID, effect);
                 }
+                var glBuffer = context.instancedBuffers ? context.instancedBuffers[0] : pid._partBuffer;
+                var count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                 canvas._addDrawCallCount(1, context.renderMode);
-                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
-                engine.draw(true, 0, 6, pid._partData.usedElementCount);
+                engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, count);
                 engine.unbindInstanceAttributes();
             }
             else {
@@ -87,7 +89,7 @@ var BABYLON;
             return true;
         };
         return Text2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -145,7 +147,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "superSampleFactor", null);
         return Text2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -159,6 +161,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
@@ -193,7 +196,7 @@ var BABYLON;
             this._textSize = null;
             this.text = text;
             this.size = (settings.size == null) ? null : settings.size;
-            this.isAlphaTest = true;
+            this.isTransparent = true;
         }
         Object.defineProperty(Text2D.prototype, "fontName", {
             get: function () {
@@ -437,6 +440,6 @@ var BABYLON;
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));
