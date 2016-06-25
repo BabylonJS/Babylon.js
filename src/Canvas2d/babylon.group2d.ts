@@ -527,11 +527,6 @@
 
             let rd = this._renderableData;
 
-            // If null, there was no change of ZOrder, we have nothing to do
-            if (rd._firstChangedPrim === null) {
-                return;
-            }
-
             // Sort all the primitive from their depth, max (bottom) to min (top)
             rd._transparentPrimitives.sort((a, b) => b._primitive.actualZOffset - a._primitive.actualZOffset);
 
@@ -543,16 +538,11 @@
                     return false;
                 }
 
-                let tpiZ = tpi._primitive.actualZOffset;
+                //let tpiZ = tpi._primitive.actualZOffset;
 
                 // We've made it so far, the tpi can be part of the segment, add it
                 tpi._transparentSegment = seg;
-
-                // Check if we have to update endZ, a smaller value means one above the current one
-                if (tpiZ < seg.endZ) {
-                    seg.endZ = tpiZ;
-                    seg.endDataIndex = tpi._primitive._getLastIndexInDataBuffer() + 1; // Still exclusive
-                }
+                seg.endDataIndex = tpi._primitive._getPrimitiveLastIndex();
 
                 return true;
             }
@@ -587,8 +577,7 @@
                     ts.groupInsanceInfo = tpi._groupInstanceInfo;
                     let prim = tpi._primitive;
                     ts.startZ = prim.actualZOffset;
-                    ts.startDataIndex = prim._getFirstIndexInDataBuffer();
-                    ts.endDataIndex = prim._getLastIndexInDataBuffer() + 1; // Make it exclusive, more natural to use in a for loop
+                    prim._updateTransparentSegmentIndices(ts);
                     ts.endZ = ts.startZ;
                     tpi._transparentSegment = ts;
                     rd._transparentSegments.push(ts);
@@ -597,7 +586,7 @@
                 prevSeg = tpi._transparentSegment;
             }
 
-            rd._firstChangedPrim = null;
+            //rd._firstChangedPrim = null;
             rd._transparentListChanged = false;
         }
 
@@ -948,7 +937,6 @@
             this._renderGroupInstancesInfo = new StringDictionary<GroupInstanceInfo>();
             this._transparentPrimitives = new Array<TransparentPrimitiveInfo>();
             this._transparentSegments = new Array<TransparentSegment>();
-            this._firstChangedPrim = null;
             this._transparentListChanged = false;
             this._cacheNode = null;
             this._cacheTexture = null;
@@ -1008,8 +996,6 @@
             this._transparentPrimitives.push(tpi);
             this._transparentListChanged = true;
 
-            this.updateSmallestZChangedPrim(tpi);
-
             return tpi;
         }
 
@@ -1018,24 +1004,12 @@
             if (index !== -1) {
                 this._transparentPrimitives.splice(index, 1);
                 this._transparentListChanged = true;
-
-                this.updateSmallestZChangedPrim(tpi);
             }
         }
 
         transparentPrimitiveZChanged(tpi: TransparentPrimitiveInfo) {
             this._transparentListChanged = true;
-            this.updateSmallestZChangedPrim(tpi);
-        }
-
-        updateSmallestZChangedPrim(tpi: TransparentPrimitiveInfo) {
-            if (tpi._primitive) {
-                let newZ = tpi._primitive.actualZOffset;
-                let curZ = this._firstChangedPrim ? this._firstChangedPrim._primitive.actualZOffset : Number.MIN_VALUE;
-                if (newZ > curZ) {
-                    this._firstChangedPrim = tpi;
-                }
-            }
+            //this.updateSmallestZChangedPrim(tpi);
         }
 
         _primDirtyList: Array<Prim2DBase>;
@@ -1054,7 +1028,6 @@
         _transparentListChanged: boolean;
         _transparentPrimitives: Array<TransparentPrimitiveInfo>;
         _transparentSegments: Array<TransparentSegment>;
-        _firstChangedPrim: TransparentPrimitiveInfo;
         _renderingScale: number;
 
     }

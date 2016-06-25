@@ -253,6 +253,7 @@
             this.curElement = 0;
             this.dataElementCount = dataElementCount;
             this.renderMode = 0;
+            this.arrayLengthChanged = false;
         }
 
         id: number;
@@ -315,11 +316,12 @@
                 return;
             }
 
+            this.arrayLengthChanged = true;
             this.freeElements();
             this._dataElementCount = value;
             this.allocElements();
         }
-
+        arrayLengthChanged: boolean;
         curElement: number;
         renderMode: number;
         dataElements: DynamicFloatArrayElementInfo[];
@@ -595,8 +597,9 @@
 
         private _updateInstanceDataParts(gii: GroupInstanceInfo) {
             // Fetch the GroupInstanceInfo if we don't already have it
+            let rd = this.renderGroup._renderableData;
             if (!gii) {
-                gii = this.renderGroup._renderableData._renderGroupInstancesInfo.get(this.modelKey);
+                gii = rd._renderGroupInstancesInfo.get(this.modelKey);
             }
 
             let isTransparent = this.isTransparent;
@@ -644,17 +647,19 @@
                     if (this.isVisible && !wereTransparent) {
                         if (!this._transparentPrimitiveInfo) {
                             // Add the primitive to the list of transparent ones in the group that render is
-                            this._transparentPrimitiveInfo = this.renderGroup._renderableData.addNewTransparentPrimitiveInfo(this, gii);
+                            this._transparentPrimitiveInfo = rd.addNewTransparentPrimitiveInfo(this, gii);
                         }
                     } else {
                         if (this._transparentPrimitiveInfo) {
-                            this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
+                            rd.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
                             this._transparentPrimitiveInfo = null;
                         }
                     }
                     gii.transparentOrderDirty = true;
                 }
             }
+
+            let rebuildTrans = false;
 
             // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
             for (let part of this._instanceDataParts) {
@@ -666,18 +671,24 @@
                 InstanceClassInfo._CurCategories = gii.usedShaderCategories[gii.partIndexFromId.get(part.id.toString())];
 
                 // Will return false if the instance should not be rendered (not visible or other any reasons)
+                part.arrayLengthChanged = false;
                 if (!this.refreshInstanceDataPart(part)) {
                     // Free the data element
                     if (part.dataElements) {
                         part.freeElements();
                     }
                 }
+
+                rebuildTrans = rebuildTrans || part.arrayLengthChanged;
             }
             this._instanceDirtyFlags = 0;
 
             // Make the appropriate data dirty
             if (isTransparent) {
                 gii.transparentDirty = true;
+                if (rebuildTrans) {
+                    rd._transparentListChanged = true;
+                }
             } else if (isAlphaTest) {
                 gii.alphaTestDirty = true;
             } else {
@@ -687,22 +698,33 @@
             this._clearFlags(SmartPropertyPrim.flagVisibilityChanged);    // Reset the flag as we've handled the case            
         }
 
-        public _getFirstIndexInDataBuffer(): number {
+        _updateTransparentSegmentIndices(ts: TransparentSegment) {
+            let minOff = Prim2DBase._bigInt;
+            let maxOff = 0;
+
             for (let part of this._instanceDataParts) {
                 if (part) {
-                    return part.dataElements[0].offset / part.dataBuffer.stride;
+                    for (let el of part.dataElements) {
+                        minOff = Math.min(minOff, el.offset);
+                        maxOff = Math.max(maxOff, el.offset);
+                    }
+                    ts.startDataIndex = minOff / part.dataBuffer.stride;
+                    ts.endDataIndex = (maxOff / part.dataBuffer.stride) + 1; // +1 for exclusive
                 }
             }
-            return null;
         }
 
-        public _getLastIndexInDataBuffer(): number {
+        _getPrimitiveLastIndex(): number {
+            let maxOff = 0;
+
             for (let part of this._instanceDataParts) {
                 if (part) {
-                    return part.dataElements[part.dataElements.length-1].offset / part.dataBuffer.stride;
+                    for (let el of part.dataElements) {
+                        maxOff = Math.max(maxOff, el.offset);
+                    }
+                    return (maxOff / part.dataBuffer.stride) + 1; // +1 for exclusive
                 }
             }
-            return null;
         }
 
         // This internal method is mainly used for transparency processing

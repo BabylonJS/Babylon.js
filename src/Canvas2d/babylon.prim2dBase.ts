@@ -1291,7 +1291,7 @@
      */
     export class Prim2DBase extends SmartPropertyPrim {
         static PRIM2DBASE_PROPCOUNT: number = 15;
-        private static _bigInt = Math.pow(2, 30);
+        public  static _bigInt = Math.pow(2, 30);
 
         constructor(settings: {
             parent?: Prim2DBase,
