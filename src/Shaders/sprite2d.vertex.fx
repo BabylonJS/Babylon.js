@@ -18,12 +18,13 @@ att vec3 properties;
 att vec2 zBias;
 att vec4 transformX;
 att vec4 transformY;
+att float opacity;
 
 // Uniforms
 
 // Output
 varying vec2 vUV;
-varying vec4 vColor;
+varying float vOpacity;
 
 void main(void) {
 
@@ -72,6 +73,7 @@ void main(void) {
 		pos.xy = pos2.xy * sizeUV * textureSize;
 	}
 
+	vOpacity = opacity;
 	pos.z = 1.0;
 	pos.w = 1.0;
 	gl_Position = vec4(dot(pos, transformX), dot(pos, transformY), zBias.x, 1);

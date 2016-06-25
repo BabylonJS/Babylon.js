@@ -9,6 +9,7 @@ attribute vec2 position;
 att vec2 zBias;
 att vec4 transformX;
 att vec4 transformY;
+att float opacity;
 
 #ifdef FillSolid
 att vec4 fillSolidColor;
@@ -58,6 +59,7 @@ void main(void) {
 	vColor = mix(borderGradientColor2, borderGradientColor1, v);	// As Y is inverted, Color2 first, then Color1
 #endif
 
+	vColor.a *= opacity;
 	vec4 pos;
 	pos.xy = position.xy;
 	pos.z = 1.0;

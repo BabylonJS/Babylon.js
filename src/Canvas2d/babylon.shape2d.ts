@@ -171,7 +171,7 @@
         }
 
         private _updateTransparencyStatus() {
-            this.isTransparent = (this._border && this._border.isTransparent()) || (this._fill && this._fill.isTransparent());
+            this.isTransparent = (this._border && this._border.isTransparent()) || (this._fill && this._fill.isTransparent()) || (this.actualOpacity<1);
         }
 
         private _border: IBrush2D;

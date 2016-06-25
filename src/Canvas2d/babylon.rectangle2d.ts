@@ -57,9 +57,11 @@
                         this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, effect);
                     }
 
+                    let glBuffer = context.instancedBuffers ? context.instancedBuffers[partIndex] : pid._partBuffer;
+                    let count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                     canvas._addDrawCallCount(1, context.renderMode);
-                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
-                    engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
+                    engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, count);
                     engine.unbindInstanceAttributes();
                 } else {
                     canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
@@ -87,9 +89,11 @@
                         this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, effect);
                     }
 
+                    let glBuffer = context.instancedBuffers ? context.instancedBuffers[partIndex] : pid._partBuffer;
+                    let count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                     canvas._addDrawCallCount(1, context.renderMode);
-                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
-                    engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
+                    engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, count);
                     engine.unbindInstanceAttributes();
                 } else {
                     canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
@@ -309,6 +313,7 @@
          * - position: the X & Y positions relative to its parent. Alternatively the x and y settings can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height settings can be set. Default will be [10;10].
          * - roundRadius: if the rectangle has rounded corner, set their radius, default is 0 (to get a sharp edges rectangle).
@@ -340,6 +345,7 @@
             y                 ?: number,
             rotation          ?: number,
             scale             ?: number,
+            opacity           ?: number,
             origin            ?: Vector2,
             size              ?: Size,
             width             ?: number,
