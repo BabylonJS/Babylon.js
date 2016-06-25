@@ -19,6 +19,7 @@
             this.useInstancing = false;
             this.groupInfoPartData = null;
             this.partDataStartIndex = this.partDataEndIndex = null;
+            this.instancedBuffers = null;
         }
         /**
          * Define which render Mode should be used to render the primitive: one of Render2DContext.RenderModeXxxx property
@@ -35,6 +36,16 @@
          *  - partDataCount: the number of primitive to render
          */
         useInstancing: boolean;
+
+        /**
+         * If specified, must take precedence from the groupInfoPartData. partIndex is the same as groupInfoPardData
+         */
+        instancedBuffers: WebGLBuffer[];
+
+        /**
+         * To use when instancedBuffers is specified, gives the count of instances to draw
+         */
+        instancesCount: number;
 
         /**
          * Contains the data related to the primitives instances to render

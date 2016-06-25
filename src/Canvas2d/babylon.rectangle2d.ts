@@ -57,9 +57,11 @@
                         this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, effect);
                     }
 
+                    let glBuffer = context.instancedBuffers ? context.instancedBuffers[partIndex] : pid._partBuffer;
+                    let count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                     canvas._addDrawCallCount(1, context.renderMode);
-                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
-                    engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
+                    engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, count);
                     engine.unbindInstanceAttributes();
                 } else {
                     canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
@@ -87,9 +89,11 @@
                         this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, effect);
                     }
 
+                    let glBuffer = context.instancedBuffers ? context.instancedBuffers[partIndex] : pid._partBuffer;
+                    let count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                     canvas._addDrawCallCount(1, context.renderMode);
-                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
-                    engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
+                    engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, count);
                     engine.unbindInstanceAttributes();
                 } else {
                     canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
