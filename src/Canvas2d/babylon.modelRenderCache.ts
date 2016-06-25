@@ -123,11 +123,29 @@
     }
 
     export class TransparentSegment {
+        constructor() {
+            this.groupInsanceInfo = null;
+            this.startZ = 0;
+            this.endZ = 0;
+            this.startDataIndex = 0;
+            this.endDataIndex = 0;
+            this.partBuffers = null;
+        }
+
+        dispose(engine: Engine) {
+            if (this.partBuffers) {
+                this.partBuffers.forEach(b => engine._releaseBuffer(b));
+                this.partBuffers.splice(0);
+                this.partBuffers = null;
+            }
+        }
+
         groupInsanceInfo: GroupInstanceInfo;
         startZ: number;
         endZ: number;
         startDataIndex: number;
         endDataIndex: number;
+        partBuffers: WebGLBuffer[];
     }
 
     export class GroupInfoPartData {

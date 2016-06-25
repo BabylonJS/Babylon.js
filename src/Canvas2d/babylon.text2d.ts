@@ -37,9 +37,11 @@
                     this.instancingAttributes = this.loadInstancingAttributes(Text2D.TEXT2D_MAINPARTID, effect);
                 }
 
+                let glBuffer = context.instancedBuffers ? context.instancedBuffers[0] : pid._partBuffer;
+                let count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                 canvas._addDrawCallCount(1, context.renderMode);
-                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
-                engine.draw(true, 0, 6, pid._partData.usedElementCount);
+                engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, count);
                 engine.unbindInstanceAttributes();
             } else {
                 canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
@@ -264,6 +266,7 @@
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
@@ -296,6 +299,7 @@
             y                 ?: number,
             rotation          ?: number,
             scale             ?: number,
+            opacity           ?: number,
             origin            ?: Vector2,
             fontName          ?: string,
             fontSuperSample   ?: boolean,

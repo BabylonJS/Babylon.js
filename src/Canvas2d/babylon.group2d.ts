@@ -35,6 +35,7 @@
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
          *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
@@ -64,6 +65,7 @@
             x                 ?: number,
             y                 ?: number,
             trackNode         ?: Node,
+            opacity           ?: number,
             origin            ?: Vector2,
             size              ?: Size,
             width             ?: number,
@@ -190,7 +192,7 @@
             }
 
             if (this._renderableData) {
-                this._renderableData.dispose();
+                this._renderableData.dispose(this.owner.engine);
                 this._renderableData = null;
             }
 
@@ -555,7 +557,12 @@
                 return true;
             }
 
+            // Free the existing TransparentSegments
+            for (let ts of rd._transparentSegments) {
+                ts.dispose(this.owner.engine);
+            }
             rd._transparentSegments.splice(0);
+
             let prevSeg = null;
 
             for (let tpiI = 0; tpiI < rd._transparentPrimitives.length; tpiI++) {
@@ -599,22 +606,69 @@
             let context = new Render2DContext(Render2DContext.RenderModeTransparent);
             let rd = this._renderableData;
 
+            let useInstanced = this.owner.supportInstancedArray;
+
             let length = rd._transparentSegments.length;
             for (let i = 0; i < length; i++) {
+                context.instancedBuffers = null;
+
                 let ts = rd._transparentSegments[i];
-
-
                 let gii = ts.groupInsanceInfo;
                 let mrc = gii.modelRenderCache;
+                let engine = this.owner.engine;
+                let count = ts.endDataIndex - ts.startDataIndex;
 
-                context.useInstancing = false;
-                context.partDataStartIndex = ts.startDataIndex;
-                context.partDataEndIndex = ts.endDataIndex;
-                context.groupInfoPartData = gii.transparentData;
+                // Use Instanced Array if it's supported and if there's at least 5 prims to draw.
+                // We don't want to create an Instanced Buffer for less that 5 prims
+                if (useInstanced && count >= 5) {
 
-                let renderFailed = !mrc.render(gii, context);
+                    if (!ts.partBuffers) {
+                        let buffers = new Array<WebGLBuffer>();
 
-                failedCount += renderFailed ? 1 : 0;
+                        for (let j = 0; j < gii.transparentData.length; j++) {
+                            let gitd = gii.transparentData[j];
+                            let dfa = gitd._partData;
+                            let data = dfa.pack();
+                            let stride = dfa.stride;
+                            let neededSize = count * stride * 4;
+
+                            let buffer = engine.createInstancesBuffer(neededSize); // Create + bind
+                            let segData = data.subarray(ts.startDataIndex * stride, ts.endDataIndex * stride);
+                            engine.updateArrayBuffer(segData);
+                            buffers.push(buffer);
+                        }
+
+                        ts.partBuffers = buffers;
+                    } else if (gii.transparentDirty) {
+                        for (let j = 0; j < gii.transparentData.length; j++) {
+                            let gitd = gii.transparentData[j];
+                            let dfa = gitd._partData;
+                            let data = dfa.pack();
+                            let stride = dfa.stride;
+
+                            let buffer = ts.partBuffers[j];
+                            let segData = data.subarray(ts.startDataIndex * stride, ts.endDataIndex * stride);
+                            engine.bindArrayBuffer(buffer);
+                            engine.updateArrayBuffer(segData);
+                        }
+                    }
+
+                    context.useInstancing = true;
+                    context.instancesCount = count;
+                    context.instancedBuffers = ts.partBuffers;
+                    context.groupInfoPartData = gii.transparentData;
+
+                    let renderFailed = !mrc.render(gii, context);
+                    failedCount += renderFailed ? 1 : 0;
+                } else {
+                    context.useInstancing = false;
+                    context.partDataStartIndex = ts.startDataIndex;
+                    context.partDataEndIndex = ts.endDataIndex;
+                    context.groupInfoPartData = gii.transparentData;
+
+                    let renderFailed = !mrc.render(gii, context);
+                    failedCount += renderFailed ? 1 : 0;
+                }
             }
 
             return failedCount;
@@ -907,7 +961,7 @@
             this._anisotropicLevel = 1;
         }
 
-        dispose() {
+        dispose(engine: Engine) {
             if (this._cacheRenderSprite) {
                 this._cacheRenderSprite.dispose();
                 this._cacheRenderSprite = null;
@@ -934,6 +988,14 @@
             if (this._cacheNodeUVsChangedObservable) {
                 this._cacheNodeUVsChangedObservable.clear();
                 this._cacheNodeUVsChangedObservable = null;
+            }
+
+            if (this._transparentSegments) {
+                for (let ts of this._transparentSegments) {
+                    ts.dispose(engine);
+                }
+                this._transparentSegments.splice(0);
+                this._transparentSegments = null;
             }
         }
 
