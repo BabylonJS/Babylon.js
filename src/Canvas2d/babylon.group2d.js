@@ -22,6 +22,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
          *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
@@ -146,7 +147,7 @@ var BABYLON;
                 this._trackedNode = null;
             }
             if (this._renderableData) {
-                this._renderableData.dispose();
+                this._renderableData.dispose(this.owner.engine);
                 this._renderableData = null;
             }
             return true;
@@ -376,10 +377,10 @@ var BABYLON;
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                var context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
+                var context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context, v);
+                    var renderCount = _this._prepareContext(engine, context_1, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -387,7 +388,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context);
+                        var renderFailed = !v.modelRenderCache.render(v, context_1);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -399,10 +400,10 @@ var BABYLON;
                 engine.setAlphaTesting(true);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
+                context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context, v);
+                    var renderCount = _this._prepareContext(engine, context_1, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -410,7 +411,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context);
+                        var renderFailed = !v.modelRenderCache.render(v, context_1);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -447,10 +448,6 @@ var BABYLON;
         Group2D.prototype._updateTransparentData = function () {
             this.owner._addUpdateTransparentDataCount(1);
             var rd = this._renderableData;
-            // If null, there was no change of ZOrder, we have nothing to do
-            if (rd._firstChangedPrim === null) {
-                return;
-            }
             // Sort all the primitive from their depth, max (bottom) to min (top)
             rd._transparentPrimitives.sort(function (a, b) { return b._primitive.actualZOffset - a._primitive.actualZOffset; });
             var checkAndAddPrimInSegment = function (seg, tpiI) {
@@ -459,16 +456,17 @@ var BABYLON;
                 if (seg.groupInsanceInfo !== tpi._groupInstanceInfo) {
                     return false;
                 }
-                var tpiZ = tpi._primitive.actualZOffset;
+                //let tpiZ = tpi._primitive.actualZOffset;
                 // We've made it so far, the tpi can be part of the segment, add it
                 tpi._transparentSegment = seg;
-                // Check if we have to update endZ, a smaller value means one above the current one
-                if (tpiZ < seg.endZ) {
-                    seg.endZ = tpiZ;
-                    seg.endDataIndex = tpi._primitive._getLastIndexInDataBuffer() + 1; // Still exclusive
-                }
+                seg.endDataIndex = tpi._primitive._getPrimitiveLastIndex();
                 return true;
             };
+            // Free the existing TransparentSegments
+            for (var _i = 0, _a = rd._transparentSegments; _i < _a.length; _i++) {
+                var ts = _a[_i];
+                ts.dispose(this.owner.engine);
+            }
             rd._transparentSegments.splice(0);
             var prevSeg = null;
             for (var tpiI = 0; tpiI < rd._transparentPrimitives.length; tpiI++) {
@@ -489,8 +487,7 @@ var BABYLON;
                     ts.groupInsanceInfo = tpi._groupInstanceInfo;
                     var prim = tpi._primitive;
                     ts.startZ = prim.actualZOffset;
-                    ts.startDataIndex = prim._getFirstIndexInDataBuffer();
-                    ts.endDataIndex = prim._getLastIndexInDataBuffer() + 1; // Make it exclusive, more natural to use in a for loop
+                    prim._updateTransparentSegmentIndices(ts);
                     ts.endZ = ts.startZ;
                     tpi._transparentSegment = ts;
                     rd._transparentSegments.push(ts);
@@ -498,24 +495,67 @@ var BABYLON;
                 // Update prevSeg
                 prevSeg = tpi._transparentSegment;
             }
-            rd._firstChangedPrim = null;
+            //rd._firstChangedPrim = null;
             rd._transparentListChanged = false;
         };
         Group2D.prototype._renderTransparentData = function () {
             var failedCount = 0;
             var context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeTransparent);
             var rd = this._renderableData;
+            var useInstanced = this.owner.supportInstancedArray;
             var length = rd._transparentSegments.length;
             for (var i = 0; i < length; i++) {
+                context.instancedBuffers = null;
                 var ts = rd._transparentSegments[i];
                 var gii = ts.groupInsanceInfo;
                 var mrc = gii.modelRenderCache;
-                context.useInstancing = false;
-                context.partDataStartIndex = ts.startDataIndex;
-                context.partDataEndIndex = ts.endDataIndex;
-                context.groupInfoPartData = gii.transparentData;
-                var renderFailed = !mrc.render(gii, context);
-                failedCount += renderFailed ? 1 : 0;
+                var engine = this.owner.engine;
+                var count = ts.endDataIndex - ts.startDataIndex;
+                // Use Instanced Array if it's supported and if there's at least 5 prims to draw.
+                // We don't want to create an Instanced Buffer for less that 5 prims
+                if (useInstanced && count >= 5) {
+                    if (!ts.partBuffers) {
+                        var buffers = new Array();
+                        for (var j = 0; j < gii.transparentData.length; j++) {
+                            var gitd = gii.transparentData[j];
+                            var dfa = gitd._partData;
+                            var data = dfa.pack();
+                            var stride = dfa.stride;
+                            var neededSize = count * stride * 4;
+                            var buffer = engine.createInstancesBuffer(neededSize); // Create + bind
+                            var segData = data.subarray(ts.startDataIndex * stride, ts.endDataIndex * stride);
+                            engine.updateArrayBuffer(segData);
+                            buffers.push(buffer);
+                        }
+                        ts.partBuffers = buffers;
+                    }
+                    else if (gii.transparentDirty) {
+                        for (var j = 0; j < gii.transparentData.length; j++) {
+                            var gitd = gii.transparentData[j];
+                            var dfa = gitd._partData;
+                            var data = dfa.pack();
+                            var stride = dfa.stride;
+                            var buffer = ts.partBuffers[j];
+                            var segData = data.subarray(ts.startDataIndex * stride, ts.endDataIndex * stride);
+                            engine.bindArrayBuffer(buffer);
+                            engine.updateArrayBuffer(segData);
+                        }
+                    }
+                    context.useInstancing = true;
+                    context.instancesCount = count;
+                    context.instancedBuffers = ts.partBuffers;
+                    context.groupInfoPartData = gii.transparentData;
+                    var renderFailed = !mrc.render(gii, context);
+                    failedCount += renderFailed ? 1 : 0;
+                }
+                else {
+                    context.useInstancing = false;
+                    context.partDataStartIndex = ts.startDataIndex;
+                    context.partDataEndIndex = ts.endDataIndex;
+                    context.groupInfoPartData = gii.transparentData;
+                    var renderFailed = !mrc.render(gii, context);
+                    failedCount += renderFailed ? 1 : 0;
+                }
             }
             return failedCount;
         };
@@ -764,7 +804,7 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    })(BABYLON.Prim2DBase);
+    }(BABYLON.Prim2DBase));
     BABYLON.Group2D = Group2D;
     var RenderableGroupData = (function () {
         function RenderableGroupData() {
@@ -773,7 +813,6 @@ var BABYLON;
             this._renderGroupInstancesInfo = new BABYLON.StringDictionary();
             this._transparentPrimitives = new Array();
             this._transparentSegments = new Array();
-            this._firstChangedPrim = null;
             this._transparentListChanged = false;
             this._cacheNode = null;
             this._cacheTexture = null;
@@ -785,7 +824,7 @@ var BABYLON;
             this._useMipMap = false;
             this._anisotropicLevel = 1;
         }
-        RenderableGroupData.prototype.dispose = function () {
+        RenderableGroupData.prototype.dispose = function (engine) {
             if (this._cacheRenderSprite) {
                 this._cacheRenderSprite.dispose();
                 this._cacheRenderSprite = null;
@@ -809,6 +848,14 @@ var BABYLON;
                 this._cacheNodeUVsChangedObservable.clear();
                 this._cacheNodeUVsChangedObservable = null;
             }
+            if (this._transparentSegments) {
+                for (var _i = 0, _a = this._transparentSegments; _i < _a.length; _i++) {
+                    var ts = _a[_i];
+                    ts.dispose(engine);
+                }
+                this._transparentSegments.splice(0);
+                this._transparentSegments = null;
+            }
         };
         RenderableGroupData.prototype.addNewTransparentPrimitiveInfo = function (prim, gii) {
             var tpi = new TransparentPrimitiveInfo();
@@ -817,7 +864,6 @@ var BABYLON;
             tpi._transparentSegment = null;
             this._transparentPrimitives.push(tpi);
             this._transparentListChanged = true;
-            this.updateSmallestZChangedPrim(tpi);
             return tpi;
         };
         RenderableGroupData.prototype.removeTransparentPrimitiveInfo = function (tpi) {
@@ -825,29 +871,19 @@ var BABYLON;
             if (index !== -1) {
                 this._transparentPrimitives.splice(index, 1);
                 this._transparentListChanged = true;
-                this.updateSmallestZChangedPrim(tpi);
             }
         };
         RenderableGroupData.prototype.transparentPrimitiveZChanged = function (tpi) {
             this._transparentListChanged = true;
-            this.updateSmallestZChangedPrim(tpi);
-        };
-        RenderableGroupData.prototype.updateSmallestZChangedPrim = function (tpi) {
-            if (tpi._primitive) {
-                var newZ = tpi._primitive.actualZOffset;
-                var curZ = this._firstChangedPrim ? this._firstChangedPrim._primitive.actualZOffset : Number.MIN_VALUE;
-                if (newZ > curZ) {
-                    this._firstChangedPrim = tpi;
-                }
-            }
+            //this.updateSmallestZChangedPrim(tpi);
         };
         return RenderableGroupData;
-    })();
+    }());
     BABYLON.RenderableGroupData = RenderableGroupData;
     var TransparentPrimitiveInfo = (function () {
         function TransparentPrimitiveInfo() {
         }
         return TransparentPrimitiveInfo;
-    })();
+    }());
     BABYLON.TransparentPrimitiveInfo = TransparentPrimitiveInfo;
 })(BABYLON || (BABYLON = {}));

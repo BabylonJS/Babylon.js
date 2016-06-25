@@ -59,9 +59,11 @@ var BABYLON;
                     if (!this.instancingFillAttributes) {
                         this.instancingFillAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_FILLPARTID, effect);
                     }
+                    var glBuffer = context.instancedBuffers ? context.instancedBuffers[partIndex] : pid._partBuffer;
+                    var count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                     canvas._addDrawCallCount(1, context.renderMode);
-                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingFillAttributes);
-                    engine.draw(true, 0, this.fillIndicesCount, pid._partData.usedElementCount);
+                    engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, count);
                     engine.unbindInstanceAttributes();
                 }
                 else {
@@ -85,9 +87,11 @@ var BABYLON;
                     if (!this.instancingBorderAttributes) {
                         this.instancingBorderAttributes = this.loadInstancingAttributes(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, effect);
                     }
+                    var glBuffer = context.instancedBuffers ? context.instancedBuffers[partIndex] : pid._partBuffer;
+                    var count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                     canvas._addDrawCallCount(1, context.renderMode);
-                    engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingBorderAttributes);
-                    engine.draw(true, 0, this.borderIndicesCount, pid._partData.usedElementCount);
+                    engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, count);
                     engine.unbindInstanceAttributes();
                 }
                 else {
@@ -143,7 +147,7 @@ var BABYLON;
             return true;
         };
         return Ellipse2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Ellipse2DRenderCache = Ellipse2DRenderCache;
     var Ellipse2DInstanceData = (function (_super) {
         __extends(Ellipse2DInstanceData, _super);
@@ -161,7 +165,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Ellipse2DInstanceData.prototype, "properties", null);
         return Ellipse2DInstanceData;
-    })(BABYLON.Shape2DInstanceData);
+    }(BABYLON.Shape2DInstanceData));
     BABYLON.Ellipse2DInstanceData = Ellipse2DInstanceData;
     var Ellipse2D = (function (_super) {
         __extends(Ellipse2D, _super);
@@ -174,6 +178,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
          * - subdivision: the number of subdivision to create the ellipse perimeter, default is 64.
@@ -349,6 +354,6 @@ var BABYLON;
             BABYLON.className("Ellipse2D")
         ], Ellipse2D);
         return Ellipse2D;
-    })(BABYLON.Shape2D);
+    }(BABYLON.Shape2D));
     BABYLON.Ellipse2D = Ellipse2D;
 })(BABYLON || (BABYLON = {}));
