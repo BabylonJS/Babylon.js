@@ -751,6 +751,11 @@
                 return false;
             }
 
+            if (this._profilingCanvas) {
+                this._profilingCanvas.dispose();
+                this._profilingCanvas = null;
+            }
+
             if (this.interactionEnabled) {
                 this._setupInteraction(false);
             }
@@ -931,11 +936,15 @@
         }
 
         public createCanvasProfileInfoCanvas(): Canvas2D {
+            if (this._profilingCanvas) {
+                return this._profilingCanvas;
+            }
+
             let canvas = new ScreenSpaceCanvas2D(this.scene, {
                 id: "ProfileInfoCanvas", cachingStrategy: Canvas2D.CACHESTRATEGY_DONTCACHE, children:
                 [
                     new Rectangle2D({
-                        id: "ProfileBorder", border: "#FFFFFFFF", borderThickness: 2, roundRadius: 5, marginAlignment: "h: left, v: top", margin: "10", padding: "10", children:
+                        id: "ProfileBorder", border: "#FFFFFFFF", borderThickness: 2, roundRadius: 5, fill: "#C04040C0", marginAlignment: "h: left, v: top", margin: "10", padding: "10", children:
                         [
                             new Text2D("Stats", { id: "ProfileInfoText", marginAlignment: "h: left, v: top", fontName: "10pt Lucida Console" })
                         ]
@@ -945,7 +954,7 @@
             });
 
             this._profileInfoText = <Text2D>canvas.findById("ProfileInfoText");
-
+            this._profilingCanvas = canvas;
             return canvas;
         }
 
@@ -993,9 +1002,9 @@
             let format = (v: number) => (Math.round(v*100)/100).toString();
 
             let p = `Draw Calls:\n` +
-                    ` - Opaque:      ${this.drawCallsOpaqueCounter.current}, (avg:${format(this.drawCallsOpaqueCounter.lastSecAverage)}, t:${format(this.drawCallsOpaqueCounter.total)})\n` +
-                    ` - AlphaTest:   ${this.drawCallsAlphaTestCounter.current}, (avg:${format(this.drawCallsAlphaTestCounter.lastSecAverage)}, t:${format(this.drawCallsAlphaTestCounter.total)})\n` +
-                    ` - Transparent: ${this.drawCallsTransparentCounter.current}, (avg:${format(this.drawCallsTransparentCounter.lastSecAverage)}, t:${format(this.drawCallsTransparentCounter.total)})\n` +
+                    ` - Opaque:      ${format(this.drawCallsOpaqueCounter.current)}, (avg:${format(this.drawCallsOpaqueCounter.lastSecAverage)}, t:${format(this.drawCallsOpaqueCounter.total)})\n` +
+                    ` - AlphaTest:   ${format(this.drawCallsAlphaTestCounter.current)}, (avg:${format(this.drawCallsAlphaTestCounter.lastSecAverage)}, t:${format(this.drawCallsAlphaTestCounter.total)})\n` +
+                    ` - Transparent: ${format(this.drawCallsTransparentCounter.current)}, (avg:${format(this.drawCallsTransparentCounter.lastSecAverage)}, t:${format(this.drawCallsTransparentCounter.total)})\n` +
                     `Group Render: ${this.groupRenderCounter.current}, (avg:${format(this.groupRenderCounter.lastSecAverage)}, t:${format(this.groupRenderCounter.total)})\n` + 
                     `Update Transparent Data: ${this.updateTransparentDataCounter.current}, (avg:${format(this.updateTransparentDataCounter.lastSecAverage)}, t:${format(this.updateTransparentDataCounter.total)})\n` + 
                     `Cached Group Render: ${this.cachedGroupRenderCounter.current}, (avg:${format(this.cachedGroupRenderCounter.lastSecAverage)}, t:${format(this.cachedGroupRenderCounter.total)})\n` + 
@@ -1102,6 +1111,7 @@
         private _updateLocalTransformCounter : PerfCounter;
         private _boundingInfoRecomputeCounter: PerfCounter;
 
+        private _profilingCanvas: Canvas2D;
         private _profileInfoText: Text2D;
 
         protected onPrimBecomesDirty() {

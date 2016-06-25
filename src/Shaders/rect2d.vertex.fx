@@ -9,6 +9,7 @@ attribute float index;
 att vec2 zBias;
 att vec4 transformX;
 att vec4 transformY;
+att float opacity;
 
 #ifdef Border
 att float borderThickness;
@@ -196,6 +197,7 @@ void main(void) {
 	vColor = mix(borderGradientColor2, borderGradientColor1, v);	// As Y is inverted, Color2 first, then Color1
 #endif
 
+	vColor.a *= opacity;
 	vec4 pos;
 	pos.xy = pos2.xy * properties.xy;
 	pos.z = 1.0;
