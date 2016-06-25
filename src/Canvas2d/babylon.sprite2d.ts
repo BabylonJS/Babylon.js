@@ -37,9 +37,11 @@
                 if (!this.instancingAttributes) {
                     this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, effect);
                 }
+                let glBuffer = context.instancedBuffers ? context.instancedBuffers[0] : pid._partBuffer;
+                let count = context.instancedBuffers ? context.instancesCount : pid._partData.usedElementCount;
                 canvas._addDrawCallCount(1, context.renderMode);
-                engine.updateAndBindInstancesBuffer(pid._partBuffer, null, this.instancingAttributes);
-                engine.draw(true, 0, 6, pid._partData.usedElementCount);
+                engine.updateAndBindInstancesBuffer(glBuffer, null, this.instancingAttributes);
+                engine.draw(true, 0, 6, count);
                 engine.unbindInstanceAttributes();
             } else {
                 canvas._addDrawCallCount(context.partDataEndIndex - context.partDataStartIndex, context.renderMode);
