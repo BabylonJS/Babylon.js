@@ -336,7 +336,7 @@
             this._textSize        = null;
             this.text             = text;
             this.size             = (settings.size==null) ? null : settings.size;
-            this.isAlphaTest      = true;
+            this.isTransparent    = true;
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
