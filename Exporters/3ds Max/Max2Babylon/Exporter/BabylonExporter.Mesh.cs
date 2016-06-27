@@ -422,7 +422,7 @@ namespace Max2Babylon
                     babylonMesh.numBoneInfluencers = maxNbBones;
                     if (maxNbBones > 4)
                     {
-                        babylonMesh.matricesWeightsExtra = vertices.SelectMany(v => v.WeightsExtra.ToArray()).ToArray();
+                        babylonMesh.matricesWeightsExtra = vertices.SelectMany(v => v.WeightsExtra != null ? v.WeightsExtra.ToArray() : new[] {0.0f, 0.0f, 0.0f, 0.0f }).ToArray();
                         babylonMesh.matricesIndicesExtra = vertices.Select(v => v.BonesIndicesExtra).ToArray();
                     }
                 }
