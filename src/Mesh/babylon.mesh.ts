@@ -2131,7 +2131,8 @@
                 dashSize: dashSize,
                 gapSize: gapSize,
                 dashNb: dashNb,
-                updatable: updatable
+                updatable: updatable, 
+                instance: instance
             }
             return MeshBuilder.CreateDashedLines(name, options, scene);
         }
