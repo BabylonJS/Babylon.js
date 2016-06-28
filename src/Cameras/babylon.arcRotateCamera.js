@@ -373,7 +373,7 @@ var BABYLON;
             if (this.position.equals(position)) {
                 return;
             }
-            this.position = position;
+            this.position.copyFrom(position);
             this.rebuildAnglesAndRadius();
         };
         ArcRotateCamera.prototype.setTarget = function (target) {
