@@ -392,7 +392,7 @@
             if (this.position.equals(position)) {
                 return;
             }
-            this.position = position;
+            this.position.copyFrom(position);
 
             this.rebuildAnglesAndRadius();
         }
