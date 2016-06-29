@@ -62,6 +62,13 @@
         "proceduralTextures/asciiArt/asciiart.fragment.fx"
       ],
       "output": "babylon.asciiArtPostProcess.js"
+    },
+    {
+      "file": "proceduralTextures/digitalRain/babylon.digitalRainPostProcess.ts",
+      "shaderFiles": [
+        "proceduralTextures/digitalRain/digitalrain.fragment.fx"
+      ],
+      "output": "babylon.digitalRainPostProcess.js"
     }
   ],
   "build": {
