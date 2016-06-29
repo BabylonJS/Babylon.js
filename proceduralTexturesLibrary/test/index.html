@@ -13,6 +13,7 @@
 	<script src="../dist/babylon.marbleProceduralTexture.js"></script>
 	<script src="../dist/babylon.starfieldProceduralTexture.js"></script>
 	<script src="../dist/babylon.asciiArtPostProcess.js"></script>
+	<script src="../dist/babylon.digitalRainPostProcess.js"></script>
 
 	<style>
 		html, body {
@@ -56,6 +57,7 @@
     <script src="add/addMarblePT.js"></script>
     <script src="add/addStarfieldPT.js"></script>
     <script src="add/addAsciiArtPP.js"></script>
+    <script src="add/addDigitalRainPP.js"></script>
 	<script>
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -66,7 +68,6 @@
 
 			var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 6, 50, BABYLON.Vector3.Zero(), scene);
 			camera.attachControl(canvas, true);
-			scene.postProcessesEnabled = false;
 
 			// Lights
 			var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
@@ -194,7 +195,12 @@
                 var starfieldPT = addStarfieldPT();
 
 				// Ascii Art
-				var asciiPostProcess = addAsciiArtPP(camera);
+				var asciiArtPostProcess = addAsciiArtPP(camera);
+				camera.detachPostProcess(asciiArtPostProcess);
+
+				// Digital Rain
+				var digitalRainPostProcess = addDigitalRainPP(camera);
+				camera.detachPostProcess(digitalRainPostProcess);
 								
 				// Default to std
 				var currentTexture = diffuseTexture;
@@ -217,8 +223,10 @@
 					this.onResize();
 				}
 				
-				var resetPTOptions = function(){
-					scene.postProcessesEnabled = false;
+				var resetPTOptions = function() {
+					camera.detachPostProcess(asciiArtPostProcess);
+					camera.detachPostProcess(digitalRainPostProcess);
+					
 					//empty options
 					while(PTOptions.length > 0){
 						var option = PTOptions.pop()
@@ -415,7 +423,21 @@
 				});
 
 				gui.add(options, 'ascii').onChange(function() {
-					scene.postProcessesEnabled = !scene.postProcessesEnabled;
+					if (options.ascii) {
+						camera.attachPostProcess(asciiArtPostProcess);
+					}
+					else {
+						camera.detachPostProcess(asciiArtPostProcess);
+					}
+				});
+
+				gui.add(options, 'digitalRain').onChange(function() {
+					if (options.digitalRain) {
+						camera.attachPostProcess(digitalRainPostProcess);
+					}
+					else {
+						camera.detachPostProcess(digitalRainPostProcess);
+					}
 				});
 			});
 		}
