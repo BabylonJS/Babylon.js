@@ -105,6 +105,14 @@
                     break;
             }
 
+            if (scene.getEngine().getCaps().textureFloat) {
+                if (defines["FULLFLOAT"] === undefined) {
+                    needRebuild = true;
+                }
+
+                defines["FULLFLOAT"] = true;
+            }
+
             if (needRebuild) {
                 defines.rebuild();
             }
