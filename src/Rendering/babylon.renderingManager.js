@@ -63,7 +63,7 @@ var BABYLON;
             this._currentRenderParticles = renderParticles;
             this._currentRenderSprites = renderSprites;
             for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
-                this._depthBufferAlreadyCleaned = index == 0;
+                this._depthBufferAlreadyCleaned = index === 0;
                 var renderingGroup = this._renderingGroups[index];
                 var needToStepBack = false;
                 this._currentIndex = index;
@@ -103,6 +103,6 @@ var BABYLON;
         };
         RenderingManager.MAX_RENDERINGGROUPS = 4;
         return RenderingManager;
-    }());
+    })();
     BABYLON.RenderingManager = RenderingManager;
 })(BABYLON || (BABYLON = {}));

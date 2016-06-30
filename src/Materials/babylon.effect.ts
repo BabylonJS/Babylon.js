@@ -433,8 +433,7 @@
                 cache[1] = y;
                 changed = true;
             }
-
-            this._valueCache[uniformName] = cache;
+            
             return changed;
         }
 
@@ -459,8 +458,7 @@
                 cache[2] = z;
                 changed = true;
             }
-
-            this._valueCache[uniformName] = cache;
+            
             return changed;
         }
 
@@ -489,8 +487,7 @@
                 cache[3] = w;
                 changed = true;
             }
-
-            this._valueCache[uniformName] = cache;
+            
             return changed;
         }
 
@@ -552,7 +549,7 @@
 
         public setFloat(uniformName: string, value: number): Effect {
             var cache = this._valueCache[uniformName];
-            if (cache && cache === value)
+            if (cache !== undefined && cache === value)
                 return this;
 
             this._valueCache[uniformName] = value;
@@ -564,7 +561,7 @@
 
         public setBool(uniformName: string, bool: boolean): Effect {
             var cache = this._valueCache[uniformName];
-            if (cache && cache === bool)
+            if (cache !== undefined && cache === bool)
                 return this;
 
             this._valueCache[uniformName] = bool;

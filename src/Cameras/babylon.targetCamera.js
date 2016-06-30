@@ -83,7 +83,7 @@ var BABYLON;
         // Methods
         TargetCamera.prototype._computeLocalCameraSpeed = function () {
             var engine = this.getEngine();
-            return this.speed * ((engine.getDeltaTime() / (engine.getFps() * 10.0)));
+            return this.speed * Math.sqrt((engine.getDeltaTime() / (engine.getFps() * 100.0)));
         };
         // Target
         TargetCamera.prototype.setTarget = function (target) {
@@ -257,6 +257,6 @@ var BABYLON;
             BABYLON.serializeAsMeshReference("lockedTargetId")
         ], TargetCamera.prototype, "lockedTarget", void 0);
         return TargetCamera;
-    }(BABYLON.Camera));
+    })(BABYLON.Camera);
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));

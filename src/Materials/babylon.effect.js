@@ -46,7 +46,7 @@ var BABYLON;
             return currentDefines;
         };
         return EffectFallbacks;
-    }());
+    })();
     BABYLON.EffectFallbacks = EffectFallbacks;
     var Effect = (function () {
         function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, fallbacks, onCompiled, onError, indexParameters) {
@@ -358,7 +358,6 @@ var BABYLON;
                 cache[1] = y;
                 changed = true;
             }
-            this._valueCache[uniformName] = cache;
             return changed;
         };
         Effect.prototype._cacheFloat3 = function (uniformName, x, y, z) {
@@ -381,7 +380,6 @@ var BABYLON;
                 cache[2] = z;
                 changed = true;
             }
-            this._valueCache[uniformName] = cache;
             return changed;
         };
         Effect.prototype._cacheFloat4 = function (uniformName, x, y, z, w) {
@@ -408,7 +406,6 @@ var BABYLON;
                 cache[3] = w;
                 changed = true;
             }
-            this._valueCache[uniformName] = cache;
             return changed;
         };
         Effect.prototype.setArray = function (uniformName, array) {
@@ -454,7 +451,7 @@ var BABYLON;
         };
         Effect.prototype.setFloat = function (uniformName, value) {
             var cache = this._valueCache[uniformName];
-            if (cache && cache === value)
+            if (cache !== undefined && cache === value)
                 return this;
             this._valueCache[uniformName] = value;
             this._engine.setFloat(this.getUniform(uniformName), value);
@@ -462,7 +459,7 @@ var BABYLON;
         };
         Effect.prototype.setBool = function (uniformName, bool) {
             var cache = this._valueCache[uniformName];
-            if (cache && cache === bool)
+            if (cache !== undefined && cache === bool)
                 return this;
             this._valueCache[uniformName] = bool;
             this._engine.setBool(this.getUniform(uniformName), bool ? 1 : 0);
@@ -520,6 +517,6 @@ var BABYLON;
         Effect.ShadersStore = {};
         Effect.IncludesShadersStore = {};
         return Effect;
-    }());
+    })();
     BABYLON.Effect = Effect;
 })(BABYLON || (BABYLON = {}));
