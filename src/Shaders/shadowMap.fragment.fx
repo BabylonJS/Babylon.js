@@ -1,4 +1,5 @@
-﻿vec4 pack(float depth)
+﻿#ifndef FULLFLOAT
+vec4 pack(float depth)
 {
 	const vec4 bit_shift = vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0);
 	const vec4 bit_mask = vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
@@ -17,6 +18,7 @@ vec2 packHalf(float depth)
 
 	return color - (color.yy * bitOffset);
 }
+#endif
 
 varying vec4 vPosition;
 
@@ -52,8 +54,16 @@ void main(void)
 	float moment1 = depth;
 	float moment2 = moment1 * moment1;
 
-	gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));
+	#ifndef FULLFLOAT
+		gl_FragColor = vec4(packHalf(moment1), packHalf(moment2));
+	#else
+		gl_FragColor = vec4(moment1, moment2, 1.0, 1.0);
+	#endif
 #else
-	gl_FragColor = pack(depth);
+	#ifndef FULLFLOAT
+		gl_FragColor = pack(depth);
+	#else
+		gl_FragColor = vec4(depth, 1.0, 1.0, 1.0);
+	#endif
 #endif
 }
