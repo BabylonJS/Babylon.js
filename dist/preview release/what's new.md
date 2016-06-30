@@ -29,6 +29,8 @@
 - Fixed cross vector calculation in `_computeHeightQuads()` that affected  all the `GroundMesh.getHeightAtCoordinates()` and `GroundMesh.getNormalAtCoordinates()` methods ([jerome](https://github.com/jbousquie))
 - Fixed `Mesh.CreateDashedLines()` missing `instance` parameter on update ([jerome](https://github.com/jbousquie))
 - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
+- Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
+- Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
 - Canvas2D: ([nockawa](https://github.com/nockawa))
  - `WorldSpaceCanvas2D`:
 	- Intersection/interaction now works on non squared canvas
