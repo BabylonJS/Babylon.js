@@ -220,8 +220,9 @@ var BABYLON;
             // Prepare renderingManager
             this._renderingManager.reset();
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+            var currentRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
             var sceneRenderId = scene.getRenderId();
-            for (var meshIndex = 0; meshIndex < currentRenderList.length; meshIndex++) {
+            for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
                 var mesh = currentRenderList[meshIndex];
                 if (mesh) {
                     if (!mesh.isReady()) {
@@ -242,13 +243,13 @@ var BABYLON;
             }
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
-                    this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
+                    this.renderToTarget(face, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
             }
             else {
-                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
+                this.renderToTarget(0, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
             }
             this.onAfterUnbindObservable.notifyObservers(this);
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
@@ -256,7 +257,7 @@ var BABYLON;
             }
             scene.resetCachedMaterial();
         };
-        RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, useCameraPostProcess, dumpForDebug) {
+        RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
             var engine = scene.getEngine();
             // Bind
@@ -329,6 +330,6 @@ var BABYLON;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES = 2;
         return RenderTargetTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.RenderTargetTexture = RenderTargetTexture;
 })(BABYLON || (BABYLON = {}));

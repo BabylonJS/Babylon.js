@@ -236,8 +236,9 @@
             this._renderingManager.reset();
 
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+            var currentRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
             var sceneRenderId = scene.getRenderId();
-            for (var meshIndex = 0; meshIndex < currentRenderList.length; meshIndex++) {
+            for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
                 var mesh = currentRenderList[meshIndex];
 
                 if (mesh) {
@@ -263,12 +264,12 @@
 
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
-                    this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
+                    this.renderToTarget(face, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
             } else {
-                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
+                this.renderToTarget(0, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
             }
 
             this.onAfterUnbindObservable.notifyObservers(this);
@@ -280,7 +281,7 @@
             scene.resetCachedMaterial();
         }
 
-        renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+        renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength:number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
