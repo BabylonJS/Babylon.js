@@ -54,6 +54,7 @@
         public REFLECTIONOVERALPHA = false;
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
+        public SHADOWFULLFLOAT = false;
 
         constructor() {
             super();

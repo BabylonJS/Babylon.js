@@ -8,6 +8,7 @@ var BABYLON;
             var lightIndex = 0;
             var needNormals = false;
             var needRebuild = false;
+            var needShadows = false;
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
                 if (!light.isEnabled()) {
@@ -83,11 +84,18 @@ var BABYLON;
                             }
                             defines["SHADOWPCF" + lightIndex] = true;
                         }
+                        needShadows = true;
                     }
                 }
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
                     break;
+            }
+            if (needShadows && scene.getEngine().getCaps().textureFloat) {
+                if (defines["SHADOWFULLFLOAT"] === undefined) {
+                    needRebuild = true;
+                }
+                defines["SHADOWFULLFLOAT"] = true;
             }
             if (needRebuild) {
                 defines.rebuild();
@@ -230,6 +238,6 @@ var BABYLON;
             }
         };
         return MaterialHelper;
-    })();
+    }());
     BABYLON.MaterialHelper = MaterialHelper;
 })(BABYLON || (BABYLON = {}));

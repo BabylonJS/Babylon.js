@@ -4,6 +4,7 @@
             var lightIndex = 0;
             var needNormals = false;
             var needRebuild = false;
+            var needShadows = false;
 
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
@@ -97,6 +98,8 @@
 
                             defines["SHADOWPCF" + lightIndex] = true;
                         }
+
+                        needShadows = true;
                     }
                 }
 
@@ -105,12 +108,12 @@
                     break;
             }
 
-            if (scene.getEngine().getCaps().textureFloat) {
-                if (defines["FULLFLOAT"] === undefined) {
+            if (needShadows && scene.getEngine().getCaps().textureFloat) {
+                if (defines["SHADOWFULLFLOAT"] === undefined) {
                     needRebuild = true;
                 }
 
-                defines["FULLFLOAT"] = true;
+                defines["SHADOWFULLFLOAT"] = true;
             }
 
             if (needRebuild) {

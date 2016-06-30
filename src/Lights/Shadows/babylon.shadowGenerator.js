@@ -18,12 +18,23 @@ var BABYLON;
             this._worldViewProjection = BABYLON.Matrix.Zero();
             this._currentFaceIndex = 0;
             this._currentFaceIndexCache = 0;
+            this._useFullFloat = true;
             this._light = light;
             this._scene = light.getScene();
             this._mapSize = mapSize;
             light._shadowGenerator = this;
+            // Texture type fallback from float to int if not supported.
+            var textureType;
+            if (this._scene.getEngine().getCaps().textureFloat) {
+                this._useFullFloat = true;
+                textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+            }
+            else {
+                this._useFullFloat = false;
+                textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+            }
             // Render target
-            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
+            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, textureType, light.needCube());
             this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
@@ -233,6 +244,9 @@ var BABYLON;
         });
         ShadowGenerator.prototype.isReady = function (subMesh, useInstances) {
             var defines = [];
+            if (this._useFullFloat) {
+                defines.push("#define FULLFLOAT");
+            }
             if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
                 defines.push("#define VSM");
             }
@@ -402,6 +416,6 @@ var BABYLON;
         ShadowGenerator._FILTER_POISSONSAMPLING = 2;
         ShadowGenerator._FILTER_BLURVARIANCESHADOWMAP = 3;
         return ShadowGenerator;
-    })();
+    }());
     BABYLON.ShadowGenerator = ShadowGenerator;
 })(BABYLON || (BABYLON = {}));

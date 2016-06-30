@@ -78,10 +78,11 @@ var BABYLON;
             this.OPENGLNORMALMAP = false;
             this.INVERTNORMALMAPX = false;
             this.INVERTNORMALMAPY = false;
+            this.SHADOWFULLFLOAT = false;
             this.rebuild();
         }
         return PBRMaterialDefines;
-    })(BABYLON.MaterialDefines);
+    }(BABYLON.MaterialDefines));
     /**
      * The Physically based material of BJS.
      *
@@ -1277,6 +1278,6 @@ var BABYLON;
             BABYLON.serialize()
         ], PBRMaterial.prototype, "useLogarithmicDepth", null);
         return PBRMaterial;
-    })(BABYLON.Material);
+    }(BABYLON.Material));
     BABYLON.PBRMaterial = PBRMaterial;
 })(BABYLON || (BABYLON = {}));

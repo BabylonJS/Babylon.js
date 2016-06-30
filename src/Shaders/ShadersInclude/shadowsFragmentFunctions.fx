@@ -1,5 +1,5 @@
 ﻿#ifdef SHADOWS
-	#ifndef FULLFLOAT
+	#ifndef SHADOWFULLFLOAT
 		float unpack(vec4 color)
 		{
 			const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
@@ -19,7 +19,7 @@
 		directionToLight = normalize(directionToLight);
 		directionToLight.y = -directionToLight.y;
 		
-		#ifndef FULLFLOAT
+		#ifndef SHADOWFULLFLOAT
 			float shadow = unpack(textureCube(shadowSampler, directionToLight)) + bias;
 		#else
 			float shadow = textureCube(shadowSampler, directionToLight).x + bias;
@@ -54,7 +54,7 @@
 		// Poisson Sampling
 		float biasedDepth = depth - bias;
 
-		#ifndef FULLFLOAT
+		#ifndef SHADOWFULLFLOAT
 			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < biasedDepth) visibility -= 0.25;
 			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < biasedDepth) visibility -= 0.25;
 			if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < biasedDepth) visibility -= 0.25;
@@ -80,7 +80,7 @@
 			return 1.0;
 		}
 
-		#ifndef FULLFLOAT
+		#ifndef SHADOWFULLFLOAT
 			float shadow = unpack(texture2D(shadowSampler, uv)) + bias;
 		#else
 			float shadow = texture2D(shadowSampler, uv).x + bias;
@@ -115,7 +115,7 @@
 		// Poisson Sampling
 		float biasedDepth = depth.z - bias;
 
-		#ifndef FULLFLOAT
+		#ifndef SHADOWFULLFLOAT
 			if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < biasedDepth) visibility -= 0.25;
 			if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < biasedDepth) visibility -= 0.25;
 			if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < biasedDepth) visibility -= 0.25;
@@ -130,7 +130,7 @@
 		return  min(1.0, visibility + darkness);
 	}
 
-	#ifndef FULLFLOAT
+	#ifndef SHADOWFULLFLOAT
 		// Thanks to http://devmaster.net/
 		float unpackHalf(vec2 color)
 		{
@@ -165,7 +165,7 @@
 
 		vec4 texel = texture2D(shadowSampler, uv);
 
-		#ifndef FULLFLOAT
+		#ifndef SHADOWFULLFLOAT
 			vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
 		#else
 			vec2 moments = texel.xy;
