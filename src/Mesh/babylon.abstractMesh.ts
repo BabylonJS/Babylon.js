@@ -313,6 +313,10 @@
             return this._boundingInfo;
         }
 
+        public setBoundingInfo(boundingInfo: BoundingInfo): void {
+            this._boundingInfo = boundingInfo;
+        }
+
         public get useBones(): boolean {
             return this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind);
         }
@@ -842,7 +846,7 @@
          * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
          */
         public getPhysicsRestitution(): number {
-            return this.physicsImpostor.getParam("resitution")
+            return this.physicsImpostor.getParam("restitution")
         }
 
         public getPositionInCameraSpace(camera?: Camera): Vector3 {

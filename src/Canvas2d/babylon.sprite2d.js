@@ -322,6 +322,9 @@ var BABYLON;
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
             }
+            if (!this.texture.isReady()) {
+                return false;
+            }
             if (part.id === Sprite2D.SPRITE2D_MAINPARTID) {
                 var d = this._instanceDataParts[0];
                 var ts = this.texture.getBaseSize();
