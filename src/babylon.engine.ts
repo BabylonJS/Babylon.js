@@ -1345,6 +1345,62 @@
             }
         }
 
+        public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform1iv(uniform, array);
+        }
+
+        public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+
+            this._gl.uniform2iv(uniform, array);
+        }
+
+        public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+
+            this._gl.uniform3iv(uniform, array);
+        }
+
+        public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+
+            this._gl.uniform4iv(uniform, array);
+        }
+
+        public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform1fv(uniform, array);
+        }
+
+        public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+
+            this._gl.uniform2fv(uniform, array);
+        }
+
+        public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+
+            this._gl.uniform3fv(uniform, array);
+        }
+
+        public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+
+            this._gl.uniform4fv(uniform, array);
+        }
+
         public setArray(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform)
                 return;
