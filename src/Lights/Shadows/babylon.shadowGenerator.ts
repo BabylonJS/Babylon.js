@@ -164,7 +164,7 @@
                 }
 
                 if (!this._shadowMap2) {
-                    this._shadowMap2 = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
+                    this._shadowMap2 = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, textureType);
                     this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
