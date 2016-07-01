@@ -373,6 +373,10 @@
                 return false;
             }
 
+            if (!this.texture.isReady()) {
+                return false;
+            }
+
             if (part.id === Sprite2D.SPRITE2D_MAINPARTID) {
                 let d = <Sprite2DInstanceData>this._instanceDataParts[0];
                 let ts = this.texture.getBaseSize();
