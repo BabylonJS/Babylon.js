@@ -64,20 +64,20 @@ var BABYLON;
         };
         BaseTexture.prototype.getSize = function () {
             if (this._texture._width) {
-                return { width: this._texture._width, height: this._texture._height };
+                return new BABYLON.Size(this._texture._width, this._texture._height);
             }
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new BABYLON.Size(this._texture._size, this._texture._size);
             }
-            return { width: 0, height: 0 };
+            return BABYLON.Size.Zero();
         };
         BaseTexture.prototype.getBaseSize = function () {
             if (!this.isReady() || !this._texture)
-                return { width: 0, height: 0 };
+                return BABYLON.Size.Zero();
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new BABYLON.Size(this._texture._size, this._texture._size);
             }
-            return { width: this._texture._baseWidth, height: this._texture._baseHeight };
+            return new BABYLON.Size(this._texture._baseWidth, this._texture._baseHeight);
         };
         BaseTexture.prototype.scale = function (ratio) {
         };

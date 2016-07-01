@@ -14,6 +14,7 @@ var BABYLON;
     var Texture = (function (_super) {
         __extends(Texture, _super);
         function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
+            var _this = this;
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
@@ -38,25 +39,29 @@ var BABYLON;
                 return;
             }
             this._texture = this._getFromCache(url, noMipmap, samplingMode);
+            var load = function () {
+                if (_this._onLoadObservarble && _this._onLoadObservarble.hasObservers()) {
+                    _this.onLoadObservable.notifyObservers(true);
+                }
+                if (onLoad) {
+                    onLoad();
+                }
+            };
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
                 }
                 else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
-                    this._delayedOnLoad = onLoad;
+                    this._delayedOnLoad = load;
                     this._delayedOnError = onError;
                 }
             }
             else {
-                BABYLON.Tools.SetImmediate(function () {
-                    if (onLoad) {
-                        onLoad();
-                    }
-                });
+                BABYLON.Tools.SetImmediate(function () { return load(); });
             }
         }
         Object.defineProperty(Texture.prototype, "noMipmap", {
@@ -183,6 +188,16 @@ var BABYLON;
                 return new Texture(_this._texture.url, _this.getScene(), _this._noMipmap, _this._invertY, _this._samplingMode);
             }, this);
         };
+        Object.defineProperty(Texture.prototype, "onLoadObservable", {
+            get: function () {
+                if (!this._onLoadObservarble) {
+                    this._onLoadObservarble = new BABYLON.Observable();
+                }
+                return this._onLoadObservarble;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }

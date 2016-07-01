@@ -93,7 +93,7 @@
             return false;
         }
 
-        public getSize(): ISize  {
+        public getSize(): ISize {
             if (this._texture._width) {
                 return new Size(this._texture._width, this._texture._height);
             }
@@ -152,7 +152,7 @@
         }
 
         public delayLoad(): void {
-        }        
+        }
 
         public clone(): BaseTexture {
             return null;
@@ -199,6 +199,6 @@
             Animation.AppendSerializedAnimations(this, serializationObject);
 
             return serializationObject;
-        }     
+        }
     }
 } 
