@@ -48,7 +48,7 @@ var BABYLON;
                     return;
                 }
                 if (!_this._shadowMap2) {
-                    _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false);
+                    _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false, true, textureType);
                     _this._shadowMap2.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.updateSamplingMode(BABYLON.Texture.TRILINEAR_SAMPLINGMODE);

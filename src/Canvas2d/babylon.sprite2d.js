@@ -180,6 +180,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Sprite2D(texture, settings) {
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -194,8 +195,14 @@ var BABYLON;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.isAlphaTest = true;
             if (settings.spriteSize == null) {
-                var s = texture.getSize();
-                this.size = new BABYLON.Size(s.width, s.height);
+                if (texture.isReady()) {
+                    this.size = texture.getSize();
+                }
+                else {
+                    texture.onLoadObservable.add(function () {
+                        _this.size = texture.getSize();
+                    });
+                }
             }
         }
         Object.defineProperty(Sprite2D.prototype, "texture", {
