@@ -9468,6 +9468,9 @@ var BABYLON;
             }
             return this._boundingInfo;
         };
+        AbstractMesh.prototype.setBoundingInfo = function (boundingInfo) {
+            this._boundingInfo = boundingInfo;
+        };
         Object.defineProperty(AbstractMesh.prototype, "useBones", {
             get: function () {
                 return this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind);
@@ -21960,7 +21963,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap);
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createCubeTexture(this.url, this.getScene(), this._extensions);
+                this._texture = this.getScene().getEngine().createCubeTexture(this.url, this.getScene(), this._files, this._noMipmap);
             }
         };
         CubeTexture.prototype.getReflectionTextureMatrix = function () {
@@ -43902,6 +43905,9 @@ var BABYLON;
         };
         Sprite2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
+                return false;
+            }
+            if (!this.texture.isReady()) {
                 return false;
             }
             if (part.id === Sprite2D.SPRITE2D_MAINPARTID) {
