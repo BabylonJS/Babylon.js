@@ -70,6 +70,7 @@
         private _deleteBuffer: boolean;
         private _delayedOnLoad: () => void;
         private _delayedOnError: () => void;
+        private _onLoadObservarble: Observable<boolean>;
 
         constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false) {
             super(scene);
@@ -88,24 +89,29 @@
 
             this._texture = this._getFromCache(url, noMipmap, samplingMode);
 
+            let load = () => {
+                if (this._onLoadObservarble && this._onLoadObservarble.hasObservers()) {
+                    this.onLoadObservable.notifyObservers(true);
+                }
+                if (onLoad) {
+                    onLoad();
+                }
+            }
+
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
 
-                    this._delayedOnLoad = onLoad;
+                    this._delayedOnLoad = load;
                     this._delayedOnError = onError;
                 }
             } else {
-                Tools.SetImmediate(() => {
-                    if (onLoad) {
-                        onLoad();
-                    }
-                });
+                Tools.SetImmediate(() => load());
             }
         }
 
@@ -243,6 +249,13 @@
             return SerializationHelper.Clone(() => {
                 return new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
             }, this);       
+        }
+
+        public get onLoadObservable(): Observable<boolean> {
+            if (!this._onLoadObservarble) {
+                this._onLoadObservarble = new Observable<boolean>();
+            }
+            return this._onLoadObservarble;
         }
 
         // Statics
