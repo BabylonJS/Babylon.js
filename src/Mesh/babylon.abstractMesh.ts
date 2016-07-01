@@ -846,7 +846,7 @@
          * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
          */
         public getPhysicsRestitution(): number {
-            return this.physicsImpostor.getParam("resitution")
+            return this.physicsImpostor.getParam("restitution")
         }
 
         public getPositionInCameraSpace(camera?: Camera): Vector3 {
