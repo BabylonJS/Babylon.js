@@ -93,27 +93,27 @@
             return false;
         }
 
-        public getSize(): ISize  {
+        public getSize(): ISize {
             if (this._texture._width) {
-                return { width: this._texture._width, height: this._texture._height };
+                return new Size(this._texture._width, this._texture._height);
             }
 
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new Size(this._texture._size, this._texture._size);
             }
 
-            return { width: 0, height: 0 };
+            return Size.Zero();
         }
 
         public getBaseSize(): ISize {
             if (!this.isReady() || !this._texture)
-                return { width: 0, height: 0 };
+                return Size.Zero();
 
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new Size(this._texture._size, this._texture._size);
             }
 
-            return { width: this._texture._baseWidth, height: this._texture._baseHeight };
+            return new Size(this._texture._baseWidth, this._texture._baseHeight);
         }
 
         public scale(ratio: number): void {
@@ -152,7 +152,7 @@
         }
 
         public delayLoad(): void {
-        }        
+        }
 
         public clone(): BaseTexture {
             return null;
@@ -199,6 +199,6 @@
             Animation.AppendSerializedAnimations(this, serializationObject);
 
             return serializationObject;
-        }     
+        }
     }
 } 
