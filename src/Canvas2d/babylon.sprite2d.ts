@@ -1,12 +1,12 @@
 ﻿module BABYLON {
     export class Sprite2DRenderCache extends ModelRenderCache {
-        effectsReady: boolean                           = false;
-        vb: WebGLBuffer                                 = null;
-        ib: WebGLBuffer                                 = null;
+        effectsReady: boolean = false;
+        vb: WebGLBuffer = null;
+        ib: WebGLBuffer = null;
         instancingAttributes: InstancingAttributeInfo[] = null;
-        texture: Texture                                = null;
-        effect: Effect                                  = null;
-        effectInstanced: Effect                         = null;
+        texture: Texture = null;
+        effect: Effect = null;
+        effectInstanced: Effect = null;
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             // Do nothing if the shader is still loading/preparing 
@@ -264,35 +264,35 @@
          */
         constructor(texture: Texture, settings?: {
 
-            parent            ?: Prim2DBase, 
-            children          ?: Array<Prim2DBase>,
-            id                ?: string,
-            position          ?: Vector2,
-            x                 ?: number,
-            y                 ?: number,
-            rotation          ?: number,
-            scale             ?: number,
-            opacity           ?: number,
-            origin            ?: Vector2,
-            spriteSize        ?: Size,
-            spriteLocation    ?: Vector2,
-            invertY           ?: boolean,
-            alignToPixel      ?: boolean,
-            isVisible         ?: boolean,
+            parent?: Prim2DBase,
+            children?: Array<Prim2DBase>,
+            id?: string,
+            position?: Vector2,
+            x?: number,
+            y?: number,
+            rotation?: number,
+            scale?: number,
+            opacity?: number,
+            origin?: Vector2,
+            spriteSize?: Size,
+            spriteLocation?: Vector2,
+            invertY?: boolean,
+            alignToPixel?: boolean,
+            isVisible?: boolean,
             childrenFlatZOrder?: boolean,
-            marginTop         ?: number | string,
-            marginLeft        ?: number | string,
-            marginRight       ?: number | string,
-            marginBottom      ?: number | string,
-            margin            ?: number | string,
-            marginHAlignment  ?: number,
-            marginVAlignment  ?: number,
-            marginAlignment   ?: string,
-            paddingTop        ?: number | string,
-            paddingLeft       ?: number | string,
-            paddingRight      ?: number | string,
-            paddingBottom     ?: number | string,
-            padding           ?: string,
+            marginTop?: number | string,
+            marginLeft?: number | string,
+            marginRight?: number | string,
+            marginBottom?: number | string,
+            margin?: number | string,
+            marginHAlignment?: number,
+            marginVAlignment?: number,
+            marginAlignment?: string,
+            paddingTop?: number | string,
+            paddingLeft?: number | string,
+            paddingRight?: number | string,
+            paddingBottom?: number | string,
+            padding?: string,
         }) {
 
             if (!settings) {
@@ -324,7 +324,7 @@
 
         static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D {
 
-            let sprite = new Sprite2D(texture, { parent: owner, id:"__cachedCanvasSprite__", position: Vector2.Zero(), origin: Vector2.Zero(), spriteSize: size, spriteLocation:pos, alignToPixel: true});
+            let sprite = new Sprite2D(texture, { parent: owner, id: "__cachedCanvasSprite__", position: Vector2.Zero(), origin: Vector2.Zero(), spriteSize: size, spriteLocation: pos, alignToPixel: true });
             return sprite;
         }
 
@@ -407,6 +407,4 @@
         private _invertY: boolean;
         private _alignToPixel: boolean;
     }
-
-
 }
