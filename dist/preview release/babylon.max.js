@@ -9927,7 +9927,7 @@ var BABYLON;
          * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
          */
         AbstractMesh.prototype.getPhysicsRestitution = function () {
-            return this.physicsImpostor.getParam("resitution");
+            return this.physicsImpostor.getParam("restitution");
         };
         AbstractMesh.prototype.getPositionInCameraSpace = function (camera) {
             if (!camera) {
@@ -10814,7 +10814,7 @@ var BABYLON;
                     return;
                 }
                 if (!_this._shadowMap2) {
-                    _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false);
+                    _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false, true, textureType);
                     _this._shadowMap2.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.updateSamplingMode(BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
@@ -21516,20 +21516,20 @@ var BABYLON;
         };
         BaseTexture.prototype.getSize = function () {
             if (this._texture._width) {
-                return { width: this._texture._width, height: this._texture._height };
+                return new BABYLON.Size(this._texture._width, this._texture._height);
             }
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new BABYLON.Size(this._texture._size, this._texture._size);
             }
-            return { width: 0, height: 0 };
+            return BABYLON.Size.Zero();
         };
         BaseTexture.prototype.getBaseSize = function () {
             if (!this.isReady() || !this._texture)
-                return { width: 0, height: 0 };
+                return BABYLON.Size.Zero();
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new BABYLON.Size(this._texture._size, this._texture._size);
             }
-            return { width: this._texture._baseWidth, height: this._texture._baseHeight };
+            return new BABYLON.Size(this._texture._baseWidth, this._texture._baseHeight);
         };
         BaseTexture.prototype.scale = function (ratio) {
         };
@@ -21649,6 +21649,7 @@ var BABYLON;
     var Texture = (function (_super) {
         __extends(Texture, _super);
         function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
+            var _this = this;
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
@@ -21673,25 +21674,29 @@ var BABYLON;
                 return;
             }
             this._texture = this._getFromCache(url, noMipmap, samplingMode);
+            var load = function () {
+                if (_this._onLoadObservarble && _this._onLoadObservarble.hasObservers()) {
+                    _this.onLoadObservable.notifyObservers(true);
+                }
+                if (onLoad) {
+                    onLoad();
+                }
+            };
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
                 }
                 else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
-                    this._delayedOnLoad = onLoad;
+                    this._delayedOnLoad = load;
                     this._delayedOnError = onError;
                 }
             }
             else {
-                BABYLON.Tools.SetImmediate(function () {
-                    if (onLoad) {
-                        onLoad();
-                    }
-                });
+                BABYLON.Tools.SetImmediate(function () { return load(); });
             }
         }
         Object.defineProperty(Texture.prototype, "noMipmap", {
@@ -21818,6 +21823,16 @@ var BABYLON;
                 return new Texture(_this._texture.url, _this.getScene(), _this._noMipmap, _this._invertY, _this._samplingMode);
             }, this);
         };
+        Object.defineProperty(Texture.prototype, "onLoadObservable", {
+            get: function () {
+                if (!this._onLoadObservarble) {
+                    this._onLoadObservarble = new BABYLON.Observable();
+                }
+                return this._onLoadObservarble;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
@@ -43765,6 +43780,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Sprite2D(texture, settings) {
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -43779,8 +43795,14 @@ var BABYLON;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.isAlphaTest = true;
             if (settings.spriteSize == null) {
-                var s = texture.getSize();
-                this.size = new BABYLON.Size(s.width, s.height);
+                if (texture.isReady()) {
+                    this.size = texture.getSize();
+                }
+                else {
+                    texture.onLoadObservable.add(function () {
+                        _this.size = texture.getSize();
+                    });
+                }
             }
         }
         Object.defineProperty(Sprite2D.prototype, "texture", {

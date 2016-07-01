@@ -245,10 +245,10 @@
             return this._cachedTextureMatrix;
         }
 
-        public clone(): Texture {        
+        public clone(): Texture {
             return SerializationHelper.Clone(() => {
                 return new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
-            }, this);       
+            }, this);
         }
 
         public get onLoadObservable(): Observable<boolean> {
@@ -262,7 +262,7 @@
         public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): Texture {
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
         }
-        
+
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
             if (parsedTexture.isCube) {
                 return CubeTexture.Parse(parsedTexture, scene, rootUrl);
