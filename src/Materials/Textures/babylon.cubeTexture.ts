@@ -66,7 +66,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createCubeTexture(this.url, this.getScene(), this._extensions);
+                this._texture = this.getScene().getEngine().createCubeTexture(this.url, this.getScene(), this._files, this._noMipmap);
             }
         }
 
