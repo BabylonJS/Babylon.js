@@ -2588,6 +2588,14 @@
             this._loadingScreen.loadingUIBackgroundColor = color;
         }
 
+        public attachContextLostEvent(callback:((event: WebGLContextEvent) => void)) : void {
+            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+        }
+
+        public attachContextRestoredEvent(callback:((event: WebGLContextEvent) => void)) : void {
+            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+        }
+
         // FPS
         public getFps(): number {
             return this.fps;
