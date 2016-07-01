@@ -755,7 +755,7 @@ var BABYLON;
          * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
          */
         AbstractMesh.prototype.getPhysicsRestitution = function () {
-            return this.physicsImpostor.getParam("resitution");
+            return this.physicsImpostor.getParam("restitution");
         };
         AbstractMesh.prototype.getPositionInCameraSpace = function (camera) {
             if (!camera) {
