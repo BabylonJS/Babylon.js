@@ -317,6 +317,7 @@
                 } else {
                     texture.onLoadObservable.add(() => {
                         this.size = <Size>texture.getSize();
+                        this._positioningDirty();
                     });
                 }
             }
