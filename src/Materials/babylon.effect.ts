@@ -491,62 +491,6 @@
             return changed;
         }
 
-        public setIntArray(uniformName: string, array: Int32Array): Effect {
-            this._valueCache[uniformName] = null;
-            this._engine.setIntArray(this.getUniform(uniformName), array);
-
-            return this;
-        }
-
-        public setIntArray2(uniformName: string, array: Int32Array): Effect {
-            this._valueCache[uniformName] = null;
-            this._engine.setIntArray2(this.getUniform(uniformName), array);
-
-            return this;
-        }
-
-        public setIntArray3(uniformName: string, array: Int32Array): Effect {
-            this._valueCache[uniformName] = null;
-            this._engine.setIntArray3(this.getUniform(uniformName), array);
-
-            return this;
-        }
-
-        public setIntArray4(uniformName: string, array: Int32Array): Effect {
-            this._valueCache[uniformName] = null;
-            this._engine.setIntArray4(this.getUniform(uniformName), array);
-
-            return this;
-        }
-
-        public setFloatArray(uniformName: string, array: Float32Array): Effect {
-            this._valueCache[uniformName] = null;
-            this._engine.setFloatArray(this.getUniform(uniformName), array);
-
-            return this;
-        }
-
-        public setFloatArray2(uniformName: string, array: Float32Array): Effect {
-            this._valueCache[uniformName] = null;
-            this._engine.setFloatArray2(this.getUniform(uniformName), array);
-
-            return this;
-        }
-
-        public setFloatArray3(uniformName: string, array: Float32Array): Effect {
-            this._valueCache[uniformName] = null;
-            this._engine.setFloatArray3(this.getUniform(uniformName), array);
-
-            return this;
-        }
-
-        public setFloatArray4(uniformName: string, array: Float32Array): Effect {
-            this._valueCache[uniformName] = null;
-            this._engine.setFloatArray4(this.getUniform(uniformName), array);
-
-            return this;
-        }
-
         public setArray(uniformName: string, array: number[]): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setArray(this.getUniform(uniformName), array);

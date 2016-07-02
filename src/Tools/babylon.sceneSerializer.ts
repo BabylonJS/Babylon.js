@@ -334,10 +334,8 @@
             for (index = 0; index < scene.lights.length; index++) {
                 light = scene.lights[index];
 
-                let shadowGenerator = light.getShadowGenerator();
-                // Only support serialization for official generator so far.
-                if (shadowGenerator && shadowGenerator instanceof ShadowGenerator) {
-                    serializationObject.shadowGenerators.push(<ShadowGenerator>shadowGenerator.serialize());
+                if (light.getShadowGenerator()) {
+                    serializationObject.shadowGenerators.push(light.getShadowGenerator().serialize());
                 }
             }
 
