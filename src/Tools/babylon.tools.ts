@@ -565,7 +565,7 @@
             }
         }
 
-        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void): void {
+        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -601,7 +601,7 @@
             castData.set(data);
             context.putImageData(imageData, 0, 0);
 
-            var base64Image = screenshotCanvas.toDataURL();
+            var base64Image = screenshotCanvas.toDataURL(mimeType);
 
             if (successCallback) {
                 successCallback(base64Image);
@@ -631,7 +631,7 @@
             }
         }
 
-        public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void): void {
+        public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
             var width: number;
             var height: number;
 
@@ -680,7 +680,7 @@
             texture.renderList = scene.meshes;
 
             texture.onAfterRenderObservable.add(() => {
-                Tools.DumpFramebuffer(width, height, engine, successCallback);
+                Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
             });
 
             scene.incrementRenderId();
