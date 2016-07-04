@@ -704,6 +704,7 @@
 
             for (let part of this._instanceDataParts) {
                 if (part) {
+                    part.dataBuffer.pack();
                     for (let el of part.dataElements) {
                         minOff = Math.min(minOff, el.offset);
                         maxOff = Math.max(maxOff, el.offset);
