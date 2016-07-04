@@ -1888,7 +1888,7 @@
                     this.activeCamera._activeMeshes.push(mesh);
                     mesh._activate(this._renderId);
 
-                    this._activeMesh(meshLOD);
+                    this._activeMesh(mesh, meshLOD);
                 }
             }
 
@@ -1914,7 +1914,7 @@
             this._particlesDuration.endMonitoring(false);
         }
 
-        private _activeMesh(mesh: AbstractMesh): void {
+        private _activeMesh(sourceMesh:AbstractMesh, mesh: AbstractMesh): void {
             if (mesh.skeleton && this.skeletonsEnabled) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
@@ -1925,12 +1925,12 @@
                 }
             }
 
-            if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
-                this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
+            if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
+                this._boundingBoxRenderer.renderList.push(sourceMesh.getBoundingInfo().boundingBox);
             }
 
-            if (mesh._edgesRenderer) {
-                this._edgesRenderers.push(mesh._edgesRenderer);
+            if (sourceMesh._edgesRenderer) {
+                this._edgesRenderers.push(sourceMesh._edgesRenderer);
             }
 
             if (mesh && mesh.subMeshes) {

@@ -31,6 +31,7 @@
 - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
 - Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
 - Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
+- Fixed bug with isntances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
 - Canvas2D: ([nockawa](https://github.com/nockawa))
  - `WorldSpaceCanvas2D`:
 	- Intersection/interaction now works on non squared canvas
