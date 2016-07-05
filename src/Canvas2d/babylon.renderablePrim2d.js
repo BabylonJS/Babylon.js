@@ -638,6 +638,7 @@ var BABYLON;
             for (var _i = 0, _a = this._instanceDataParts; _i < _a.length; _i++) {
                 var part = _a[_i];
                 if (part) {
+                    part.dataBuffer.pack();
                     for (var _b = 0, _c = part.dataElements; _b < _c.length; _b++) {
                         var el = _c[_b];
                         minOff = Math.min(minOff, el.offset);
