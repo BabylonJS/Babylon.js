@@ -479,7 +479,8 @@ var BABYLON;
                 }
             }
         };
-        Tools.DumpFramebuffer = function (width, height, engine, successCallback) {
+        Tools.DumpFramebuffer = function (width, height, engine, successCallback, mimeType) {
+            if (mimeType === void 0) { mimeType = "image/png"; }
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -509,7 +510,7 @@ var BABYLON;
             var castData = imageData.data;
             castData.set(data);
             context.putImageData(imageData, 0, 0);
-            var base64Image = screenshotCanvas.toDataURL();
+            var base64Image = screenshotCanvas.toDataURL(mimeType);
             if (successCallback) {
                 successCallback(base64Image);
             }
@@ -535,7 +536,8 @@ var BABYLON;
                 }
             }
         };
-        Tools.CreateScreenshot = function (engine, camera, size, successCallback) {
+        Tools.CreateScreenshot = function (engine, camera, size, successCallback, mimeType) {
+            if (mimeType === void 0) { mimeType = "image/png"; }
             var width;
             var height;
             //If a precision value is specified
@@ -576,7 +578,7 @@ var BABYLON;
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false);
             texture.renderList = scene.meshes;
             texture.onAfterRenderObservable.add(function () {
-                Tools.DumpFramebuffer(width, height, engine, successCallback);
+                Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
             });
             scene.incrementRenderId();
             scene.resetCachedMaterial();

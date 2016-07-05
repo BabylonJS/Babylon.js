@@ -294,8 +294,12 @@
                     defines.push("#define UV1");
                 }
                 if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                    var alphaTexture = material.getAlphaTestTexture();
+
+                    if (alphaTexture.coordinatesIndex === 1) {
+                        attribs.push(VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
             }
 

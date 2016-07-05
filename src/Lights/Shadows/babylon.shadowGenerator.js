@@ -264,8 +264,11 @@ var BABYLON;
                     defines.push("#define UV1");
                 }
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                    var alphaTexture = material.getAlphaTestTexture();
+                    if (alphaTexture.coordinatesIndex === 1) {
+                        attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
             }
             // Bones
