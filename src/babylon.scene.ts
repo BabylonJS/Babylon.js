@@ -1324,7 +1324,7 @@
          * @param {Camera} newCamera - new active camera
 		 * @param {boolean} attachControl - call attachControl for the new active camera (default: true)
          */
-        public swithActiveCamera(newCamera: Camera, attachControl = true) {
+        public switchActiveCamera(newCamera: Camera, attachControl = true) {
             var canvas = this._engine.getRenderingCanvas();
             this.activeCamera.detachControl(canvas);
             this.activeCamera = newCamera;
