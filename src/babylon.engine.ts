@@ -1946,6 +1946,7 @@
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
             texture.samplingMode = samplingMode;
+            texture.type = type;
             this.resetTextureCache();
 
             this._loadedTexturesCache.push(texture);

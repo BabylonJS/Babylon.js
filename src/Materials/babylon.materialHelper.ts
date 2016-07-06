@@ -108,7 +108,7 @@
                     break;
             }
 
-            if (needShadows && scene.getEngine().getCaps().textureFloat) {
+            if (needShadows && scene.getEngine().getCaps().textureFloat && scene.getEngine().getCaps().textureFloatLinearFiltering) {
                 if (defines["SHADOWFULLFLOAT"] === undefined) {
                     needRebuild = true;
                 }

@@ -60,6 +60,7 @@ interface WebGLTexture {
     samplingMode: number;
     references: number;
     generateMipMaps: boolean;
+    type: number;
     _size: number;
     _baseWidth: number;
     _baseHeight: number;
