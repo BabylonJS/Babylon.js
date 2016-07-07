@@ -326,7 +326,7 @@
 
         private _loadingScreen: ILoadingScreen;
 
-        public  _drawCalls = new PerfCounter();
+        public _drawCalls = new PerfCounter();
 
         private _glVersion: string;
         private _glRenderer: string;
@@ -472,7 +472,7 @@
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
             this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
             this._caps.textureFloatRender = this._canRenderToFloatTexture();
-            
+
             this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = this._canRenderToHalfFloatTexture();
@@ -1262,7 +1262,7 @@
                 ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 
-        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?:WebGLRenderingContext): WebGLProgram {
+        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
             context = context || this._gl;
 
             var vertexShader = compileShader(context, vertexCode, "vertex", defines);
@@ -2331,8 +2331,7 @@
             }
         }
 
-        public _bindTextureDirectly(target: number, texture: WebGLTexture): void
-        {
+        public _bindTextureDirectly(target: number, texture: WebGLTexture): void {
             if (this._activeTexturesCache[this._activeTexture] !== texture) {
                 this._gl.bindTexture(target, texture);
                 this._activeTexturesCache[this._activeTexture] = texture;
@@ -2693,7 +2692,7 @@
             gl.useProgram(program);
 
             // look up where the vertex data needs to go.
-            var positionLocation = gl.getAttribLocation(program, "a_position"); 
+            var positionLocation = gl.getAttribLocation(program, "a_position");
             var colorLoc = gl.getUniformLocation(program, "u_color");
 
             // provide texture coordinates for the rectangle.
@@ -2702,13 +2701,13 @@
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
                 -1.0, -1.0,
                 1.0, -1.0,
-                -1.0,  1.0,
-                -1.0,  1.0,
+                -1.0, 1.0,
+                -1.0, 1.0,
                 1.0, -1.0,
-                1.0,  1.0]), gl.STATIC_DRAW);
+                1.0, 1.0]), gl.STATIC_DRAW);
             gl.enableVertexAttribArray(positionLocation);
             gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-            
+
             var whiteTex = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, whiteTex);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
@@ -2718,30 +2717,41 @@
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            
+
             var fb = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+
+            var cleanup = () => {
+                gl.deleteProgram(program);
+                gl.disableVertexAttribArray(positionLocation);
+                gl.deleteBuffer(positionBuffer);
+                gl.deleteFramebuffer(fb);
+                gl.deleteTexture(whiteTex);
+                gl.deleteTexture(tex);
+            };
+
             var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
             if (status !== gl.FRAMEBUFFER_COMPLETE) {
                 Tools.Log("GL Support: can **NOT** render to " + format + " texture");
+                cleanup();
                 return false;
             }
-            
+
             // Draw the rectangle.
             gl.bindTexture(gl.TEXTURE_2D, whiteTex);
             gl.uniform4fv(colorLoc, <any>[0, 10, 20, 1]);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
-            
+
             gl.bindTexture(gl.TEXTURE_2D, tex);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            
+
             gl.clearColor(1, 0, 0, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
-            
-            gl.uniform4fv(colorLoc, <any>[0, 1/10, 1/20, 1]);
+
+            gl.uniform4fv(colorLoc, <any>[0, 1 / 10, 1 / 20, 1]);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
-            
+
             var pixel = new Uint8Array(4);
             gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
             if (pixel[0] !== 0 ||
@@ -2749,10 +2759,12 @@
                 pixel[2] < 248 ||
                 pixel[3] < 254) {
                 BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
+                cleanup();
                 return false;
             }
-            
+
             // Succesfully rendered to "format" texture.
+            cleanup();
             return true;
         }
 
