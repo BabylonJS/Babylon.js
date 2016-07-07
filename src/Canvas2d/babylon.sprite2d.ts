@@ -373,30 +373,48 @@
 
         private static _prop: Vector3 = Vector3.Zero();
 
+        private static layoutConstructMode = false;
+        protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any {
+            Sprite2D.layoutConstructMode = true;
+        }
+
+        // if obj contains something, we restore the _text property
+        protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any) {
+            Sprite2D.layoutConstructMode = false;
+        }
+
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
             if (!super.refreshInstanceDataPart(part)) {
                 return false;
             }
 
-            if (!this.texture.isReady()) {
+            if (!this.texture.isReady() && !Sprite2D.layoutConstructMode) {
                 return false;
             }
 
             if (part.id === Sprite2D.SPRITE2D_MAINPARTID) {
                 let d = <Sprite2DInstanceData>this._instanceDataParts[0];
-                let ts = this.texture.getBaseSize();
-                let sl = this.spriteLocation;
-                let ss = this.actualSize;
-                d.topLeftUV = new Vector2(sl.x / ts.width, sl.y / ts.height);
-                let suv = new Vector2(ss.width / ts.width, ss.height / ts.height);
-                d.sizeUV = suv;
 
-                Sprite2D._prop.x = this.spriteFrame;
-                Sprite2D._prop.y = this.invertY ? 1 : 0;
-                Sprite2D._prop.z = this.alignToPixel ? 1 : 0;
-                d.properties = Sprite2D._prop;
+                if (Sprite2D.layoutConstructMode) {
+                    d.topLeftUV = Vector2.Zero();
+                    d.sizeUV = Vector2.Zero();
+                    d.properties = Vector3.Zero();
+                    d.textureSize = Vector2.Zero();
+                } else {
+                    let ts = this.texture.getBaseSize();
+                    let sl = this.spriteLocation;
+                    let ss = this.actualSize;
+                    d.topLeftUV = new Vector2(sl.x / ts.width, sl.y / ts.height);
+                    let suv = new Vector2(ss.width / ts.width, ss.height / ts.height);
+                    d.sizeUV = suv;
 
-                d.textureSize = new Vector2(ts.width, ts.height);
+                    Sprite2D._prop.x = this.spriteFrame;
+                    Sprite2D._prop.y = this.invertY ? 1 : 0;
+                    Sprite2D._prop.z = this.alignToPixel ? 1 : 0;
+                    d.properties = Sprite2D._prop;
+
+                    d.textureSize = new Vector2(ts.width, ts.height);
+                }
             }
             return true;
         }
