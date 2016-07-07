@@ -171,6 +171,7 @@
         public highPrecisionShaderSupported: boolean;
         public fragmentDepthSupported: boolean;
         public textureFloatLinearFiltering: boolean;
+        public textureFloatRender: boolean;
         public textureLOD: boolean;
         public drawBuffersExtension;
     }
@@ -457,6 +458,7 @@
             this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
             this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
+            this._caps.textureFloatRender = this._canRenderToTextureOfType(this._gl.FLOAT);
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -1243,27 +1245,29 @@
                 ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 
-        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string): WebGLProgram {
-            var vertexShader = compileShader(this._gl, vertexCode, "vertex", defines);
-            var fragmentShader = compileShader(this._gl, fragmentCode, "fragment", defines);
+        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?:WebGLRenderingContext): WebGLProgram {
+            context = context || this._gl;
 
-            var shaderProgram = this._gl.createProgram();
-            this._gl.attachShader(shaderProgram, vertexShader);
-            this._gl.attachShader(shaderProgram, fragmentShader);
+            var vertexShader = compileShader(context, vertexCode, "vertex", defines);
+            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines);
 
-            this._gl.linkProgram(shaderProgram);
+            var shaderProgram = context.createProgram();
+            context.attachShader(shaderProgram, vertexShader);
+            context.attachShader(shaderProgram, fragmentShader);
 
-            var linked = this._gl.getProgramParameter(shaderProgram, this._gl.LINK_STATUS);
+            context.linkProgram(shaderProgram);
+
+            var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
-                var error = this._gl.getProgramInfoLog(shaderProgram);
+                var error = context.getProgramInfoLog(shaderProgram);
                 if (error) {
                     throw new Error(error);
                 }
             }
 
-            this._gl.deleteShader(vertexShader);
-            this._gl.deleteShader(fragmentShader);
+            context.deleteShader(vertexShader);
+            context.deleteShader(fragmentShader);
 
             return shaderProgram;
         }
@@ -1884,9 +1888,9 @@
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
-                if (type === Engine.TEXTURETYPE_FLOAT) {
+                if (type === BABYLON.Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                     // if floating point (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
                 }
             }
             var gl = this._gl;
@@ -2621,6 +2625,96 @@
                 this.fps = 1000.0 / (sum / (length - 1));
             }
         }
+
+        // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
+        private _canRenderToTextureOfType(format: number): boolean {
+            if (!this.getCaps().textureFloat) {
+                return false;
+            }
+            
+            var tempcanvas = document.createElement("canvas");
+            tempcanvas.height = 16;
+            tempcanvas.width = 16;
+            var gl = <WebGLRenderingContext>(tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
+
+            // setup GLSL program
+            var vertexCode = `attribute vec4 a_position;
+                void main() {
+                    gl_Position = a_position;
+                }`;
+            var fragmentCode = `precision mediump float;
+                uniform vec4 u_color;
+                uniform sampler2D u_texture;
+
+                void main() {
+                    gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;
+                }`;
+            var program = this.createShaderProgram(vertexCode, fragmentCode, null, gl);
+            gl.useProgram(program);
+
+            // look up where the vertex data needs to go.
+            var positionLocation = gl.getAttribLocation(program, "a_position"); 
+            var colorLoc = gl.getUniformLocation(program, "u_color");
+
+            // provide texture coordinates for the rectangle.
+            var positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1.0, -1.0,
+                1.0, -1.0,
+                -1.0,  1.0,
+                -1.0,  1.0,
+                1.0, -1.0,
+                1.0,  1.0]), gl.STATIC_DRAW);
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+            
+            var whiteTex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, whiteTex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
+
+            var tex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, format, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            
+            var fb = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+            var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+            if (status !== gl.FRAMEBUFFER_COMPLETE) {
+                Tools.Log("can **NOT** render to " + format + " texture");
+                return false;
+            }
+            
+            // Draw the rectangle.
+            gl.bindTexture(gl.TEXTURE_2D, whiteTex);
+            gl.uniform4fv(colorLoc, <any>[0, 10, 20, 1]);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            
+            gl.clearColor(1, 0, 0, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            
+            gl.uniform4fv(colorLoc, <any>[0, 1/10, 1/20, 1]);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            
+            var pixel = new Uint8Array(4);
+            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+            if (pixel[0] !== 0 ||
+                pixel[1] < 248 ||
+                pixel[2] < 248 ||
+                pixel[3] < 254) {
+                BABYLON.Tools.Log("FAIL!!!: Was not able to actually render to " + format + " texture");
+                return false;
+            }
+            
+            // Succesfully rendered to "format" texture.
+            return true;
+        };
 
         // Statics
         public static isSupported(): boolean {
