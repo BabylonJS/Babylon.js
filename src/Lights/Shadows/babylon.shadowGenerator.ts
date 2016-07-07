@@ -138,7 +138,7 @@
             // Texture type fallback from float to int if not supported.
             var textureType: number;
             var caps = this._scene.getEngine().getCaps();
-            if (caps.textureFloat && caps.textureFloatLinearFiltering) {
+            if (caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
                 this._useFullFloat = true;
                 textureType = Engine.TEXTURETYPE_FLOAT;
             }
