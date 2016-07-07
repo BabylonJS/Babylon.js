@@ -11,13 +11,18 @@
         return shader;
     };
 
+    var HALF_FLOAT_OES = 0x8D61;
+
     var getWebGLTextureType = (gl: WebGLRenderingContext, type: number): number => {
-        var textureType = gl.UNSIGNED_BYTE;
+        if (type === Engine.TEXTURETYPE_FLOAT) {
+            return gl.FLOAT;
+        }
+        else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+            // Add Half Float Constant.
+            return HALF_FLOAT_OES;
+        }
 
-        if (type === Engine.TEXTURETYPE_FLOAT)
-            textureType = gl.FLOAT;
-
-        return textureType;
+        return gl.UNSIGNED_BYTE;
     };
 
     var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
@@ -172,6 +177,9 @@
         public fragmentDepthSupported: boolean;
         public textureFloatLinearFiltering: boolean;
         public textureFloatRender: boolean;
+        public textureHalfFloat: boolean;
+        public textureHalfFloatLinearFiltering: boolean;
+        public textureHalfFloatRender: boolean;
         public textureLOD: boolean;
         public drawBuffersExtension;
     }
@@ -202,6 +210,7 @@
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
+        private static _TEXTURETYPE_HALF_FLOAT = 2;
 
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
@@ -273,6 +282,10 @@
 
         public static get TEXTURETYPE_FLOAT(): number {
             return Engine._TEXTURETYPE_FLOAT;
+        }
+
+        public static get TEXTURETYPE_HALF_FLOAT(): number {
+            return Engine._TEXTURETYPE_HALF_FLOAT;
         }
 
         public static get Version(): string {
@@ -458,7 +471,11 @@
             this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
             this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
-            this._caps.textureFloatRender = this._canRenderToTextureOfType(this._gl.FLOAT);
+            this._caps.textureFloatRender = this._canRenderToFloatTexture();
+            
+            this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
+            this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
+            this._caps.textureHalfFloatRender = this._canRenderToHalfFloatTexture();
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -1889,7 +1906,11 @@
                     samplingMode = options.samplingMode;
                 }
                 if (type === BABYLON.Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-                    // if floating point (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                }
+                else if (type === BABYLON.Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
                     samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
                 }
             }
@@ -2234,6 +2255,10 @@
                 }
 
                 if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                }
+                else if (textureType === HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
@@ -2626,16 +2651,31 @@
             }
         }
 
-        // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
-        private _canRenderToTextureOfType(format: number): boolean {
+        private _canRenderToFloatTexture(): boolean {
             if (!this.getCaps().textureFloat) {
                 return false;
             }
-            
+
+            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+        }
+
+        private _canRenderToHalfFloatTexture(): boolean {
+            if (!this.getCaps().textureHalfFloat) {
+                return false;
+            }
+
+            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+        }
+
+        // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
+        private _canRenderToTextureOfType(format: number, extension: string): boolean {
             var tempcanvas = document.createElement("canvas");
             tempcanvas.height = 16;
             tempcanvas.width = 16;
             var gl = <WebGLRenderingContext>(tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
+
+            // extension.
+            var ext = gl.getExtension(extension);
 
             // setup GLSL program
             var vertexCode = `attribute vec4 a_position;
@@ -2675,7 +2715,7 @@
 
             var tex = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, format, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             
@@ -2684,7 +2724,7 @@
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
             var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
             if (status !== gl.FRAMEBUFFER_COMPLETE) {
-                Tools.Log("can **NOT** render to " + format + " texture");
+                Tools.Log("GL Support: can **NOT** render to " + format + " texture");
                 return false;
             }
             
@@ -2708,13 +2748,13 @@
                 pixel[1] < 248 ||
                 pixel[2] < 248 ||
                 pixel[3] < 254) {
-                BABYLON.Tools.Log("FAIL!!!: Was not able to actually render to " + format + " texture");
+                BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
                 return false;
             }
             
             // Succesfully rendered to "format" texture.
             return true;
-        };
+        }
 
         // Statics
         public static isSupported(): boolean {
