@@ -560,7 +560,9 @@
                 pd._partJoinedUsedCategories = joinCat;
                 InstanceClassInfo._CurCategories = joinCat;
                 let obj = this.beforeRefreshForLayoutConstruction(dataPart);
-                this.refreshInstanceDataPart(dataPart);
+                if (!this.refreshInstanceDataPart(dataPart)) {
+                    console.log(`Layout construction for ${Tools.getClassName(this._instanceDataParts[0])} failed because refresh returned false`);
+                }
                 this.afterRefreshForLayoutConstruction(dataPart, obj);
                 this.isVisible = curVisible;
 
@@ -664,7 +666,7 @@
             // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
             for (let part of this._instanceDataParts) {
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if ((visChanged && !part.dataElements) || rmChanged) {
+                if (visChanged || !part.dataElements || rmChanged) {
                     part.allocElements();
                 }
 
