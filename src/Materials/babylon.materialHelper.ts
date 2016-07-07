@@ -108,7 +108,8 @@
                     break;
             }
 
-            if (needShadows && scene.getEngine().getCaps().textureFloat && scene.getEngine().getCaps().textureFloatLinearFiltering) {
+            let caps = scene.getEngine().getCaps();
+            if (needShadows && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
                 if (defines["SHADOWFULLFLOAT"] === undefined) {
                     needRebuild = true;
                 }
