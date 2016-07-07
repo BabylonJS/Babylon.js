@@ -2722,9 +2722,20 @@
             var fb = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+            
+            var cleanup = function() {
+                gl.deleteProgram(program);
+                gl.disableVertexAttribArray(positionLocation);
+                gl.deleteBuffer(positionBuffer);
+                gl.deleteFramebuffer(fb);
+                gl.deleteTexture(whiteTex);
+                gl.deleteTexture(tex);
+            };
+
             var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
             if (status !== gl.FRAMEBUFFER_COMPLETE) {
                 Tools.Log("GL Support: can **NOT** render to " + format + " texture");
+                cleanup();
                 return false;
             }
             
@@ -2749,10 +2760,12 @@
                 pixel[2] < 248 ||
                 pixel[3] < 254) {
                 BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
+                cleanup();
                 return false;
             }
-            
+
             // Succesfully rendered to "format" texture.
+            cleanup();
             return true;
         }
 
