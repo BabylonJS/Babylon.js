@@ -26,7 +26,7 @@ var BABYLON;
             // Texture type fallback from float to int if not supported.
             var textureType;
             var caps = this._scene.getEngine().getCaps();
-            if (caps.textureFloat && caps.textureFloatLinearFiltering) {
+            if (caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
                 this._useFullFloat = true;
                 textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
             }
@@ -420,6 +420,6 @@ var BABYLON;
         ShadowGenerator._FILTER_POISSONSAMPLING = 2;
         ShadowGenerator._FILTER_BLURVARIANCESHADOWMAP = 3;
         return ShadowGenerator;
-    })();
+    }());
     BABYLON.ShadowGenerator = ShadowGenerator;
 })(BABYLON || (BABYLON = {}));
