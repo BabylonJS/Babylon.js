@@ -59,6 +59,7 @@
 	<script src="add/addgradient.js"></script>
 	<script src="add/addsky.js"></script>
 	<script src="add/addgrid.js"></script>
+    <script src="add/addpbr.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -198,6 +199,8 @@
 				var fire = prepareFire();
 				
 				var terrain = prepareTerrain();
+
+				var pbr = preparePBR();
 				
 				var triPlanar = prepareTriPlanar();
 				
@@ -210,7 +213,7 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'fur', 'triPlanar', 'gradient', 'sky', 'grid']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
@@ -236,6 +239,9 @@
 							break;
 						case "terrain":
 							currentMaterial = terrain;
+							break;
+						case "pbr":
+							currentMaterial = pbr;
 							break;
 						case "fur":
 							currentMaterial = fur.material;
