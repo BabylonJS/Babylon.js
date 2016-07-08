@@ -176,7 +176,6 @@
             engine.enableEffect(this._effect);
             engine.setState(false);
             engine.setDepthBuffer(false);
-            engine.setAlphaMode(Engine.ALPHA_ONEONE);
 
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
@@ -185,13 +184,15 @@
             for (var index = 0; index < this.lensFlares.length; index++) {
                 var flare = this.lensFlares[index];
 
+                engine.setAlphaMode(flare.alphaMode);
+
                 var x = centerX - (distX * flare.position);
                 var y = centerY - (distY * flare.position);
 
                 var cw = flare.size;
                 var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
-                var cx = 2 * (x / globalViewport.width) - 1.0;
-                var cy = 1.0 - 2 * (y / globalViewport.height);
+                var cx = 2 * (x / (globalViewport.width + globalViewport.x * 2)) - 1.0;
+                var cy = 1.0 - 2 * (y / (globalViewport.height + globalViewport.y * 2));
 
                 var viewportMatrix = Matrix.FromValues(
                     cw / 2, 0, 0, 0,
