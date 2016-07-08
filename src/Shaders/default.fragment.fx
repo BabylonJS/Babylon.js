@@ -142,6 +142,16 @@ uniform vec4 reflectionRightColor;
 
 #endif
 
+#ifdef CAMERACOLORGRADING
+	#include<colorGradingDefinition>	
+	#include<colorGrading>
+#endif
+
+#ifdef CAMERACOLORCURVES
+	#include<colorCurvesDefinition>
+	#include<colorCurves>
+#endif
+
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
@@ -389,6 +399,14 @@ void main(void) {
 
 #include<logDepthFragment>
 #include<fogFragment>
+
+#ifdef CAMERACOLORGRADING
+	color = colorGrades(color);
+#endif
+
+#ifdef CAMERACOLORCURVES
+	color.rgb = applyColorCurves(color.rgb);
+#endif
 
 	gl_FragColor = color;
 }
