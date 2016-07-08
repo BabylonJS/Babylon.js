@@ -55,6 +55,8 @@
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
         public SHADOWFULLFLOAT = false;
+        public CAMERACOLORGRADING = false;
+        public CAMERACOLORCURVES = false;
 
         constructor() {
             super();
@@ -179,6 +181,22 @@
          */
         @serialize()
         public invertNormalMapY = false;
+
+        /**
+         * Color Grading 2D Lookup Texture.
+         * This allows special effects like sepia, black and white to sixties rendering style. 
+         */
+        @serializeAsTexture()
+        public cameraColorGradingTexture: BaseTexture = null;
+        
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        @serializeAsColorCurves()
+        public cameraColorCurves: ColorCurves = null;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -422,6 +440,14 @@
                         this._defines.REFRACTIONMAP_3D = this.refractionTexture.isCube;
                     }
                 }
+
+                if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
+                    if (!this.cameraColorGradingTexture.isReady()) {
+                        return false;
+                    } else {
+                        this._defines.CAMERACOLORGRADING = true;
+                    }
+                }
             }
 
             // Effect
@@ -447,6 +473,10 @@
 
             if (this.useLogarithmicDepth) {
                 this._defines.LOGARITHMICDEPTH = true;
+            }
+            
+            if (this.cameraColorCurves) {
+                this._defines.CAMERACOLORCURVES = true;
             }
 
             // Point size
@@ -645,6 +675,8 @@
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
 
+                ColorCurves.PrepareUniforms(uniforms); 
+                ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers); 
                 MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
 
                 this._effect = scene.getEngine().createEffect(shaderName,
@@ -801,6 +833,10 @@
                         }
                         this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
+                    
+                    if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
+                        ColorGradingTexture.Bind(this.cameraColorGradingTexture, this._effect);
+                    }
                 }
 
                 // Clip plane
@@ -842,6 +878,11 @@
 
                 // Log. depth
                 MaterialHelper.BindLogDepth(this._defines, this._effect, scene);
+
+                // Color Curves
+                if (this.cameraColorCurves) {
+                    ColorCurves.Bind(this.cameraColorCurves, this._effect);
+                }
             }
 
             super.bind(world, mesh);
@@ -885,6 +926,10 @@
             if (this.refractionTexture && this.refractionTexture.animations && this.refractionTexture.animations.length > 0) {
                 results.push(this.refractionTexture);
             }
+            
+            if (this.cameraColorGradingTexture && this.cameraColorGradingTexture.animations && this.cameraColorGradingTexture.animations.length > 0) {
+                results.push(this.cameraColorGradingTexture);
+            }
 
             return results;
         }
@@ -926,6 +971,10 @@
                 if (this.refractionTexture) {
                     this.refractionTexture.dispose();
                 }
+                
+                if (this.cameraColorGradingTexture) {
+                    this.cameraColorGradingTexture.dispose();
+                }
             }
 
             super.dispose(forceDisposeEffect, forceDisposeTextures);
@@ -954,6 +1003,7 @@
         public static BumpTextureEnabled = true;
         public static FresnelEnabled = true;
         public static LightmapTextureEnabled = true;
-        public static RefractionTextureEnabled = true;
+        public static RefractionTextureEnabled = true;        
+        public static ColorGradingTextureEnabled = true;
     }
 } 
