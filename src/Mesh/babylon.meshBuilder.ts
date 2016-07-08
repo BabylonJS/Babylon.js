@@ -108,6 +108,8 @@
             if (instance) {   // existing ribbon instance update
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
+                Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Tmp.Vector3[0]);         // minimum
+                Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, Tmp.Vector3[1]);      // maximum
                 var positionFunction = positions => {
                     var minlg = pathArray[0].length;
                     var i = 0;
@@ -122,6 +124,24 @@
                                 positions[i] = path[j].x;
                                 positions[i + 1] = path[j].y;
                                 positions[i + 2] = path[j].z;
+                                if (path[j].x < Tmp.Vector3[0].x) {
+                                    Tmp.Vector3[0].x = path[j].x;
+                                }
+                                if (path[j].x > Tmp.Vector3[1].x) {
+                                    Tmp.Vector3[1].x = path[j].x;
+                                }
+                                if (path[j].y < Tmp.Vector3[0].y) {
+                                    Tmp.Vector3[0].y = path[j].y;
+                                }
+                                if (path[j].y > Tmp.Vector3[1].y) {
+                                    Tmp.Vector3[1].y = path[j].y;
+                                }
+                                if (path[j].z < Tmp.Vector3[0].z) {
+                                    Tmp.Vector3[0].z = path[j].z;
+                                }
+                                if (path[j].z > Tmp.Vector3[1].z) {
+                                    Tmp.Vector3[1].z = path[j].z;
+                                }
                                 j++;
                                 i += 3;
                             }
@@ -136,6 +156,8 @@
                 };
                 var positions = instance.getVerticesData(VertexBuffer.PositionKind);
                 positionFunction(positions);
+                instance._boundingInfo = new BoundingInfo(Tmp.Vector3[0], Tmp.Vector3[1]);
+                instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
                 if (!(instance.areNormalsFrozen)) {
                     var indices = instance.getIndices();
