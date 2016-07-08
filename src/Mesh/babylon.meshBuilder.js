@@ -99,6 +99,8 @@ var BABYLON;
             if (instance) {
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
+                BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, BABYLON.Tmp.Vector3[0]); // minimum
+                BABYLON.Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, BABYLON.Tmp.Vector3[1]); // maximum
                 var positionFunction = function (positions) {
                     var minlg = pathArray[0].length;
                     var i = 0;
@@ -113,6 +115,24 @@ var BABYLON;
                                 positions[i] = path[j].x;
                                 positions[i + 1] = path[j].y;
                                 positions[i + 2] = path[j].z;
+                                if (path[j].x < BABYLON.Tmp.Vector3[0].x) {
+                                    BABYLON.Tmp.Vector3[0].x = path[j].x;
+                                }
+                                if (path[j].x > BABYLON.Tmp.Vector3[1].x) {
+                                    BABYLON.Tmp.Vector3[1].x = path[j].x;
+                                }
+                                if (path[j].y < BABYLON.Tmp.Vector3[0].y) {
+                                    BABYLON.Tmp.Vector3[0].y = path[j].y;
+                                }
+                                if (path[j].y > BABYLON.Tmp.Vector3[1].y) {
+                                    BABYLON.Tmp.Vector3[1].y = path[j].y;
+                                }
+                                if (path[j].z < BABYLON.Tmp.Vector3[0].z) {
+                                    BABYLON.Tmp.Vector3[0].z = path[j].z;
+                                }
+                                if (path[j].z > BABYLON.Tmp.Vector3[1].z) {
+                                    BABYLON.Tmp.Vector3[1].z = path[j].z;
+                                }
                                 j++;
                                 i += 3;
                             }
@@ -127,6 +147,8 @@ var BABYLON;
                 };
                 var positions = instance.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                 positionFunction(positions);
+                instance._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Vector3[1]);
+                instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
                 if (!(instance.areNormalsFrozen)) {
                     var indices = instance.getIndices();
