@@ -4,6 +4,7 @@ var BABYLON;
         function LensFlare(size, position, color, imgUrl, system) {
             this.size = size;
             this.position = position;
+            this.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
             this.dispose = function () {
                 if (this.texture) {
                     this.texture.dispose();
