@@ -2,6 +2,7 @@
     export class LensFlare {
         public color: Color3;
         public texture: Texture;
+        public alphaMode: number = Engine.ALPHA_ONEONE;
 
         private _system: LensFlareSystem;
 
@@ -13,7 +14,7 @@
             system.lensFlares.push(this);
         }
 
-        public dispose = function(): void {
+        public dispose = function (): void {
             if (this.texture) {
                 this.texture.dispose();
             }
