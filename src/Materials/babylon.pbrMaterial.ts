@@ -153,9 +153,6 @@
          */
         @serializeAsTexture()
         public cameraColorGradingTexture: BaseTexture = null;
-
-        private _cameraColorGradingScaleOffset: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
-        private _cameraColorGradingInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
         
         /**
          * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
@@ -778,7 +775,7 @@
                     }
                 }
             
-                if (this.cameraColorGradingTexture) {
+                if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
                     if (!this.cameraColorGradingTexture.isReady()) {
                         return false;
                     } else {
@@ -1025,13 +1022,13 @@
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
                         "vMicrosurfaceTextureLods",
-                        "vCameraInfos", "vCameraColorGradingInfos", "vCameraColorGradingScaleOffset"
+                        "vCameraInfos"
                 ];
 
-                var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
-                    "cameraColorGrading2DSampler"];
+                var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
                 
                 ColorCurves.PrepareUniforms(uniforms); 
+                ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers); 
                 MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights); 
                 
                 this._effect = scene.getEngine().createEffect(shaderName,
@@ -1214,33 +1211,8 @@
                         this._effect.setFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                     }
                     
-                    if (this.cameraColorGradingTexture) {
-                        this._effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
-                        
-                        this._cameraColorGradingInfos.x = this.cameraColorGradingTexture.level;                     // Texture Level
-                        this._cameraColorGradingInfos.y = this.cameraColorGradingTexture.getSize().height;          // Texture Size example with 8
-                        this._cameraColorGradingInfos.z = this._cameraColorGradingInfos.y - 1.0;                    // SizeMinusOne 8 - 1
-                        this._cameraColorGradingInfos.w = 1 / this._cameraColorGradingInfos.y;                      // Space of 1 slice 1 / 8
-                        
-                        this._effect.setFloat4("vCameraColorGradingInfos", 
-                            this._cameraColorGradingInfos.x,
-                            this._cameraColorGradingInfos.y,
-                            this._cameraColorGradingInfos.z,
-                            this._cameraColorGradingInfos.w);
-                        
-                        var slicePixelSizeU = this._cameraColorGradingInfos.w / this._cameraColorGradingInfos.y;    // Space of 1 pixel in U direction, e.g. 1/64
-                        var slicePixelSizeV = 1.0 / this._cameraColorGradingInfos.y;							    // Space of 1 pixel in V direction, e.g. 1/8
-                        this._cameraColorGradingScaleOffset.x = this._cameraColorGradingInfos.z * slicePixelSizeU;  // Extent of lookup range in U for a single slice so that range corresponds to (size-1) texels, for example 7/64
-                        this._cameraColorGradingScaleOffset.y = this._cameraColorGradingInfos.z / 
-                            this._cameraColorGradingInfos.y;							                            // Extent of lookup range in V for a single slice so that range corresponds to (size-1) texels, for example 7/8
-                        this._cameraColorGradingScaleOffset.z = 0.5 * slicePixelSizeU;						        // Offset of lookup range in U to align sample position with texel centre, for example 0.5/64 
-                        this._cameraColorGradingScaleOffset.w = 0.5 * slicePixelSizeV;						        // Offset of lookup range in V to align sample position with texel centre, for example 0.5/8
-                        
-                        this._effect.setFloat4("vCameraColorGradingScaleOffset", 
-                            this._cameraColorGradingScaleOffset.x,
-                            this._cameraColorGradingScaleOffset.y,
-                            this._cameraColorGradingScaleOffset.z,
-                            this._cameraColorGradingScaleOffset.w);
+                    if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
+                        ColorGradingTexture.Bind(this.cameraColorGradingTexture, this._effect);
                     }
                 }
 
