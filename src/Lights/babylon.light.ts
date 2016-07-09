@@ -17,7 +17,7 @@
 
         getShadowDirection(faceIndex?: number): Vector3;
 
-        _shadowGenerator: ShadowGenerator;
+        _shadowGenerator: IShadowGenerator;
     }
 
     export class Light extends Node {
@@ -46,7 +46,7 @@
         @serialize()
         public radius = 0.00001;
 
-        public _shadowGenerator: ShadowGenerator;
+        public _shadowGenerator: IShadowGenerator;
         private _parentedWorldMatrix: Matrix;
         public _excludedMeshesIds = new Array<string>();
         public _includedOnlyMeshesIds = new Array<string>();
@@ -73,7 +73,7 @@
             return ret;
         } 
         
-        public getShadowGenerator(): ShadowGenerator {
+        public getShadowGenerator(): IShadowGenerator {
             return this._shadowGenerator;
         }
 
