@@ -2056,6 +2056,7 @@
 
             this._opacity = value;
             this._updateRenderMode();
+            this._setFlags(SmartPropertyPrim.flagActualOpacityDirty);
             this._spreadActualOpacityChanged();
         }
 
