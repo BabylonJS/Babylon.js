@@ -41603,9 +41603,11 @@ var BABYLON;
             // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
             for (var _i = 0, _a = this._instanceDataParts; _i < _a.length; _i++) {
                 var part = _a[_i];
+                var justAllocated = false;
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
                 if (visChanged || !part.dataElements || rmChanged) {
                     part.allocElements();
+                    justAllocated = true;
                 }
                 InstanceClassInfo._CurCategories = gii.usedShaderCategories[gii.partIndexFromId.get(part.id.toString())];
                 // Will return false if the instance should not be rendered (not visible or other any reasons)
@@ -41616,7 +41618,7 @@ var BABYLON;
                         part.freeElements();
                     }
                 }
-                rebuildTrans = rebuildTrans || part.arrayLengthChanged;
+                rebuildTrans = rebuildTrans || part.arrayLengthChanged || justAllocated;
             }
             this._instanceDirtyFlags = 0;
             // Make the appropriate data dirty
@@ -41639,7 +41641,7 @@ var BABYLON;
             var maxOff = 0;
             for (var _i = 0, _a = this._instanceDataParts; _i < _a.length; _i++) {
                 var part = _a[_i];
-                if (part) {
+                if (part && part.dataElements) {
                     part.dataBuffer.pack();
                     for (var _b = 0, _c = part.dataElements; _b < _c.length; _b++) {
                         var el = _c[_b];
