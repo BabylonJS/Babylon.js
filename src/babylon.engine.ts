@@ -391,10 +391,13 @@
             options = options || {};
             options.antialias = antialias;
 
-
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
+
+            // Checks if some of the format renders first to allow the use of webgl inspector.
+            var renderToFullFloat = this._canRenderToFloatTexture();
+            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
 
             // GL
             //try {
@@ -471,11 +474,11 @@
             this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
             this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
-            this._caps.textureFloatRender = this._canRenderToFloatTexture();
+            this._caps.textureFloatRender = renderToFullFloat;
 
             this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
-            this._caps.textureHalfFloatRender = this._canRenderToHalfFloatTexture();
+            this._caps.textureHalfFloatRender = renderToHalfFloat;
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -2715,18 +2718,10 @@
         }
 
         private _canRenderToFloatTexture(): boolean {
-            if (!this.getCaps().textureFloat) {
-                return false;
-            }
-
             return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
         }
 
         private _canRenderToHalfFloatTexture(): boolean {
-            if (!this.getCaps().textureHalfFloat) {
-                return false;
-            }
-
             return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
         }
 
@@ -2739,6 +2734,9 @@
 
             // extension.
             var ext = gl.getExtension(extension);
+            if (ext === null) {
+                return false;
+            }
 
             // setup GLSL program
             var vertexCode = `attribute vec4 a_position;
