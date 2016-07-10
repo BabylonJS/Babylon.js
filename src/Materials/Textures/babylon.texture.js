@@ -213,7 +213,11 @@ var BABYLON;
                 return null;
             }
             var texture = BABYLON.SerializationHelper.Parse(function () {
-                if (parsedTexture.mirrorPlane) {
+                if (parsedTexture.customType) {
+                    var customTexture = BABYLON.Tools.Instantiate(parsedTexture.customType);
+                    return customTexture.Parse(parsedTexture, scene, rootUrl);
+                }
+                else if (parsedTexture.mirrorPlane) {
                     var mirrorTexture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
