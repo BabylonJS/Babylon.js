@@ -1832,6 +1832,7 @@ var BABYLON;
                 }
                 this._opacity = value;
                 this._updateRenderMode();
+                this._setFlags(BABYLON.SmartPropertyPrim.flagActualOpacityDirty);
                 this._spreadActualOpacityChanged();
             },
             enumerable: true,

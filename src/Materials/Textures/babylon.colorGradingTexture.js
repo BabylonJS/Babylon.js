@@ -199,6 +199,7 @@ var BABYLON;
             var serializationObject = {};
             serializationObject.name = this.name;
             serializationObject.level = this.level;
+            serializationObject.customType = "BABYLON.ColorGradingTexture";
             return serializationObject;
         };
         /**

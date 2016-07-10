@@ -1136,6 +1136,46 @@ var BABYLON;
                 effect.onBind(effect);
             }
         };
+        Engine.prototype.setIntArray = function (uniform, array) {
+            if (!uniform)
+                return;
+            this._gl.uniform1iv(uniform, array);
+        };
+        Engine.prototype.setIntArray2 = function (uniform, array) {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+            this._gl.uniform2iv(uniform, array);
+        };
+        Engine.prototype.setIntArray3 = function (uniform, array) {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+            this._gl.uniform3iv(uniform, array);
+        };
+        Engine.prototype.setIntArray4 = function (uniform, array) {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+            this._gl.uniform4iv(uniform, array);
+        };
+        Engine.prototype.setFloatArray = function (uniform, array) {
+            if (!uniform)
+                return;
+            this._gl.uniform1fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray2 = function (uniform, array) {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+            this._gl.uniform2fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray3 = function (uniform, array) {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+            this._gl.uniform3fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray4 = function (uniform, array) {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+            this._gl.uniform4fv(uniform, array);
+        };
         Engine.prototype.setArray = function (uniform, array) {
             if (!uniform)
                 return;
@@ -2177,6 +2217,12 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Engine.prototype.attachContextLostEvent = function (callback) {
+            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+        };
+        Engine.prototype.attachContextRestoredEvent = function (callback) {
+            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+        };
         // FPS
         Engine.prototype.getFps = function () {
             return this.fps;
