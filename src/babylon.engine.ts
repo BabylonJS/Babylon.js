@@ -1964,13 +1964,13 @@
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
-                if (type === BABYLON.Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                     // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
                 }
-                else if (type === BABYLON.Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                     // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
                 }
             }
             var gl = this._gl;

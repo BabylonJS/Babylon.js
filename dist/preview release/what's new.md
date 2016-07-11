@@ -47,6 +47,7 @@
 	- Rendering above transparent surface is now blending correctly
 
 ### Breaking changes
+ - Removed legacy shaders support ([deltakosh](https://github.com/deltakosh))
  - Canvas2D: ([nockawa](https://github.com/nockawa))
   - `WorldSpaceCanvas2D`:
 	- WorldSpaceRenderScale is no longer supported (deprecated because of adaptive feature added).
