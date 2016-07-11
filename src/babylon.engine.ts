@@ -2734,7 +2734,7 @@
 
             // extension.
             var ext = gl.getExtension(extension);
-            if (ext === null) {
+            if (!ext) {
                 return false;
             }
 
