@@ -657,11 +657,8 @@
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 
-                // Legacy browser patch
                 var shaderName = "default";
-                if (!scene.getEngine().getCaps().standardDerivatives) {
-                    shaderName = "legacydefault";
-                }
+
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",

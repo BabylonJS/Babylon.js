@@ -75,7 +75,7 @@ var BABYLON;
             this.rebuild();
         }
         return StandardMaterialDefines;
-    }(BABYLON.MaterialDefines));
+    })(BABYLON.MaterialDefines);
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         function StandardMaterial(name, scene) {
@@ -500,11 +500,7 @@ var BABYLON;
                 }
                 BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
-                // Legacy browser patch
                 var shaderName = "default";
-                if (!scene.getEngine().getCaps().standardDerivatives) {
-                    shaderName = "legacydefault";
-                }
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
@@ -891,6 +887,6 @@ var BABYLON;
             BABYLON.serialize()
         ], StandardMaterial.prototype, "useLogarithmicDepth", null);
         return StandardMaterial;
-    }(BABYLON.Material));
+    })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));
