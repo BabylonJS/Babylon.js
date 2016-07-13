@@ -83,6 +83,8 @@ var BABYLON;
                             _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
                             _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                         }
+                        console.log(_this.camera.name);
+                        console.log(_this.camera.inertialAlphaOffset);
                         cacheSoloPointer.x = evt.clientX;
                         cacheSoloPointer.y = evt.clientY;
                     }

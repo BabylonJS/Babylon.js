@@ -12084,7 +12084,7 @@ var BABYLON;
         };
         Camera.prototype._updateFromScene = function () {
             this.updateCache();
-            this._update();
+            this.update();
         };
         // Synchronized
         Camera.prototype._isSynchronized = function () {
@@ -12124,7 +12124,7 @@ var BABYLON;
         };
         Camera.prototype.detachControl = function (element) {
         };
-        Camera.prototype._update = function () {
+        Camera.prototype.update = function () {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
@@ -12343,7 +12343,8 @@ var BABYLON;
                     break;
             }
             this._cascadePostProcessesToRigCams();
-            this._update();
+            this.
+                update();
         };
         Camera.prototype._getVRProjectionMatrix = function () {
             BABYLON.Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
@@ -13435,6 +13436,8 @@ var BABYLON;
                             _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
                             _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                         }
+                        console.log(_this.camera.name);
+                        console.log(_this.camera.inertialAlphaOffset);
                         cacheSoloPointer.x = evt.clientX;
                         cacheSoloPointer.y = evt.clientY;
                     }
@@ -14623,6 +14626,7 @@ var BABYLON;
                 return;
             }
             this.inputs.checkInputs();
+            console.log(this.name);
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
