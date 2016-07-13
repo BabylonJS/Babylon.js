@@ -4,7 +4,6 @@ var BABYLON;
         function SpriteManager(name, imgUrl, capacity, cellSize, scene, epsilon, samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             this.name = name;
-            this.cellSize = cellSize;
             this.sprites = new Array();
             this.renderingGroupId = 0;
             this.layerMask = 0x0FFFFFFF;
@@ -21,6 +20,14 @@ var BABYLON;
             this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
+            if (cellSize.width) {
+                this.cellWidth = cellSize.width;
+                this.cellHeight = cellSize.height;
+            }
+            else {
+                this.cellWidth = cellSize;
+                this.cellHeight = cellSize;
+            }
             this._scene = scene;
             this._scene.spriteManagers.push(this);
             var indices = [];
@@ -153,7 +160,7 @@ var BABYLON;
             // Sprites
             var deltaTime = engine.getDeltaTime();
             var max = Math.min(this._capacity, this.sprites.length);
-            var rowSize = baseSize.width / this.cellSize;
+            var rowSize = baseSize.width / this.cellWidth;
             var offset = 0;
             for (var index = 0; index < max; index++) {
                 var sprite = this.sprites[index];
@@ -177,7 +184,7 @@ var BABYLON;
             effect.setTexture("diffuseSampler", this._spriteTexture);
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
-            effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
+            effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
             // Fog
             if (this._scene.fogEnabled && this._scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 effect.setFloat4("vFogInfos", this._scene.fogMode, this._scene.fogStart, this._scene.fogEnd, this._scene.fogDensity);
