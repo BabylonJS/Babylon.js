@@ -5,6 +5,8 @@
         public layerMask: number = 0x0FFFFFFF;
         public fogEnabled = true;
         public isPickable = false;
+        public cellWidth: number;
+        public cellHeight: number;
 
         /**
         * An event triggered when the manager is disposed.
@@ -41,13 +43,21 @@
             this._spriteTexture = value;
         }
 
-        constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        constructor(public name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             this._capacity = capacity;
             this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
+
+            if (cellSize.width) {
+                this.cellWidth = cellSize.width;
+                this.cellHeight = cellSize.height;
+            } else {
+                this.cellWidth = cellSize;
+                this.cellHeight = cellSize;
+            }
 
             this._scene = scene;
             this._scene.spriteManagers.push(this);
@@ -173,7 +183,7 @@
 
                 result.hit = true;
                 result.pickedSprite = currentSprite;
-                result.distance = distance
+                result.distance = distance;
 
                 return result;
             }
@@ -192,7 +202,7 @@
             // Sprites
             var deltaTime = engine.getDeltaTime();
             var max = Math.min(this._capacity, this.sprites.length);
-            var rowSize = baseSize.width / this.cellSize;
+            var rowSize = baseSize.width / this.cellWidth;
 
             var offset = 0;
             for (var index = 0; index < max; index++) {
@@ -224,7 +234,7 @@
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
+            effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
 
             // Fog
             if (this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {

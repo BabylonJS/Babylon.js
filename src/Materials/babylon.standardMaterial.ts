@@ -672,8 +672,12 @@
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
 
-                ColorCurves.PrepareUniforms(uniforms); 
-                ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers); 
+                if (this._defines.CAMERACOLORCURVES) {
+                    ColorCurves.PrepareUniforms(uniforms);
+                }
+                if (this._defines.CAMERACOLORGRADING) {
+                    ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
+                }
                 MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
 
                 this._effect = scene.getEngine().createEffect(shaderName,
