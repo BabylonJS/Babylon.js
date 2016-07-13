@@ -282,8 +282,8 @@
                 return;
             }
 
-            this.inputs.checkInputs();            
-			
+            this.inputs.checkInputs();
+            console.log(this.name);
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
