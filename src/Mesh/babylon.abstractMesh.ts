@@ -125,7 +125,7 @@
         // Physics
         public physicsImpostor: BABYLON.PhysicsImpostor;
         //Deprecated, Legacy support
-        public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void; 
+        public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void;
 
         // Collisions
         private _checkCollisions = false;
@@ -220,8 +220,8 @@
                 ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
             }
             return ret;
-        } 
-        
+        }
+
         /**
          * Getting the rotation object. 
          * If rotation quaternion is set, this vector will (almost always) be the Zero vector!
@@ -529,10 +529,10 @@
             if (this.rotationQuaternion) {
                 if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
                     return false;
-            } else {
-                if (!this._cache.rotation.equals(this.rotation))
-                    return false;
             }
+
+            if (!this._cache.rotation.equals(this.rotation))
+                return false;
 
             if (!this._cache.scaling.equals(this.scaling))
                 return false;
@@ -602,7 +602,7 @@
             Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
 
             // Rotation
-            
+
             //rotate, if quaternion is set and rotation was used
             if (this.rotationQuaternion) {
                 var len = this.rotation.length();
@@ -749,7 +749,7 @@
             this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
         }
 
-        private static _lookAtVectorCache = new Vector3(0,0,0);
+        private static _lookAtVectorCache = new Vector3(0, 0, 0);
         public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): void {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
             /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
@@ -1204,7 +1204,7 @@
             this.onAfterWorldMatrixUpdateObservable.clear();
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
-            
+
             this._isDisposed = true;
 
             // Callback

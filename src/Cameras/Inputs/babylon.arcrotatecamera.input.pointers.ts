@@ -102,9 +102,6 @@ module BABYLON {
                             this.camera.inertialBetaOffset -= offsetY / this.angularSensibilityY;
                         }
 
-                        console.log(this.camera.name);
-                        console.log(this.camera.inertialAlphaOffset);
-
                         cacheSoloPointer.x = evt.clientX;
                         cacheSoloPointer.y = evt.clientY;
                     }
