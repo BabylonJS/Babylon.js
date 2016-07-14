@@ -493,17 +493,17 @@
             // custom beforeUpdate
             this.beforeUpdateParticles(start, end, update);
 
-            this._cam_axisX.x = 1;
-            this._cam_axisX.y = 0;
-            this._cam_axisX.z = 0;
+            this._cam_axisX.x = 1.0;
+            this._cam_axisX.y = 0.0;
+            this._cam_axisX.z = 0.0;
 
-            this._cam_axisY.x = 0;
-            this._cam_axisY.y = 1;
-            this._cam_axisY.z = 0;
+            this._cam_axisY.x = 0.0;
+            this._cam_axisY.y = 1.0;
+            this._cam_axisY.z = 0.0;
 
-            this._cam_axisZ.x = 0;
-            this._cam_axisZ.y = 0;
-            this._cam_axisZ.z = 1;
+            this._cam_axisZ.x = 0.0;
+            this._cam_axisZ.y = 0.0;
+            this._cam_axisZ.z = 1.0;
 
             // if the particles will always face the camera
             if (this.billboard) {
@@ -517,7 +517,7 @@
                 Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._fakeCamPos);
 
                 // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the cam-mesh axis (_cam_axisZ)
-                (this._fakeCamPos).subtractToRef(this.mesh.position, this._cam_axisZ);
+                (this.mesh.position).subtractToRef(this._fakeCamPos, this._cam_axisZ);
                 Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
                 Vector3.CrossToRef(this._cam_axisZ, this._cam_axisY, this._cam_axisX);
                 this._cam_axisY.normalize();
@@ -556,7 +556,7 @@
                         this._particle.rotation.x = 0.0;
                         this._particle.rotation.y = 0.0;
                     }
-                    if (this._computeParticleRotation) {
+                    if (this._computeParticleRotation || this.billboard) {
                         if (this._particle.rotationQuaternion) {
                             this._quaternion.copyFrom(this._particle.rotationQuaternion);
                         } else {
@@ -618,7 +618,7 @@
                         }
 
                         // normals : if the particles can't be morphed then just rotate the normals, what if much more faster than ComputeNormals()
-                        if (!this._computeParticleVertex && !this.billboard) {
+                        if (!this._computeParticleVertex) {
                             this._normal.x = this._fixedNormal32[idx];
                             this._normal.y = this._fixedNormal32[idx + 1];
                             this._normal.z = this._fixedNormal32[idx + 2];
@@ -688,7 +688,7 @@
                 }
                 this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
                 if (!this.mesh.areNormalsFrozen) {
-                    if (this._computeParticleVertex || this.billboard) {
+                    if (this._computeParticleVertex) {
                         // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
                         VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
                         for (var i = 0; i < this._normals32.length; i++) {
