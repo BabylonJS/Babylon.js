@@ -9831,10 +9831,8 @@ var BABYLON;
                 if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
                     return false;
             }
-            else {
-                if (!this._cache.rotation.equals(this.rotation))
-                    return false;
-            }
+            if (!this._cache.rotation.equals(this.rotation))
+                return false;
             if (!this._cache.scaling.equals(this.scaling))
                 return false;
             return true;
@@ -13436,8 +13434,6 @@ var BABYLON;
                             _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
                             _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                         }
-                        console.log(_this.camera.name);
-                        console.log(_this.camera.inertialAlphaOffset);
                         cacheSoloPointer.x = evt.clientX;
                         cacheSoloPointer.y = evt.clientY;
                     }
@@ -14626,7 +14622,6 @@ var BABYLON;
                 return;
             }
             this.inputs.checkInputs();
-            console.log(this.name);
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
