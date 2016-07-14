@@ -78,9 +78,9 @@
         private _axisX: Vector3 = Axis.X;
         private _axisY: Vector3 = Axis.Y;
         private _axisZ: Vector3 = Axis.Z;
-        private _camera: Camera;
+        private _camera: TargetCamera;
         private _particle: SolidParticle;
-        private _fakeCamPos: Vector3 = Vector3.Zero();
+        private _camDir: Vector3 = Vector3.Zero();
         private _rotMatrix: Matrix = new Matrix();
         private _invertMatrix: Matrix = new Matrix();
         private _rotated: Vector3 = Vector3.Zero();
@@ -114,7 +114,7 @@
         constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean }) {
             this.name = name;
             this._scene = scene;
-            this._camera = scene.activeCamera;
+            this._camera = <TargetCamera>scene.activeCamera;
             this._pickable = options ? options.isPickable : false;
             if (options && options.updatable) {
                 this._updatable = options.updatable;
@@ -507,17 +507,17 @@
 
             // if the particles will always face the camera
             if (this.billboard) {
-                // compute a fake camera position : un-rotate the camera position by the current mesh rotation
+                // compute the camera position and un-rotate it by the current mesh rotation
                 this._yaw = this.mesh.rotation.y;
                 this._pitch = this.mesh.rotation.x;
                 this._roll = this.mesh.rotation.z;
                 this._quaternionRotationYPR();
                 this._quaternionToRotationMatrix();
                 this._rotMatrix.invertToRef(this._invertMatrix);
-                Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._fakeCamPos);
+                this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
+                Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
 
-                // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the cam-mesh axis (_cam_axisZ)
-                (this.mesh.position).subtractToRef(this._fakeCamPos, this._cam_axisZ);
+                // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
                 Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
                 Vector3.CrossToRef(this._cam_axisZ, this._cam_axisY, this._cam_axisX);
                 this._cam_axisY.normalize();
