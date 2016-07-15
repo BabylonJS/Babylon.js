@@ -516,13 +516,13 @@
                 this._rotMatrix.invertToRef(this._invertMatrix);
                 this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
                 Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
+                this._cam_axisZ.normalize();
 
                 // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
                 Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
-                Vector3.CrossToRef(this._cam_axisZ, this._cam_axisY, this._cam_axisX);
+                Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
                 this._cam_axisY.normalize();
-                this._cam_axisX.normalize();
-                this._cam_axisZ.normalize();
+                this._cam_axisX.normalize();             
             }
 
             Matrix.IdentityToRef(this._rotMatrix);
