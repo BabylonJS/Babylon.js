@@ -8,12 +8,11 @@ module BABYLON {
         private _cacheState = null;
         public _vrEnabled = false;
 
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true) {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
             super(name, position, scene);
 
-            var metrics = VRCameraMetrics.GetDefault();
-            metrics.compensateDistortion = compensateDistortion;
-            this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
+            vrCameraMetrics.compensateDistortion = compensateDistortion;
+            this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
 
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
 
