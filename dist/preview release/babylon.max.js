@@ -51780,13 +51780,13 @@ var BABYLON;
 (function (BABYLON) {
     var VRDeviceOrientationFreeCamera = (function (_super) {
         __extends(VRDeviceOrientationFreeCamera, _super);
-        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion) {
+        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion, vrCameraMetrics) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
+            if (vrCameraMetrics === void 0) { vrCameraMetrics = BABYLON.VRCameraMetrics.GetDefault(); }
             _super.call(this, name, position, scene);
             this.rotationQuaternion = new BABYLON.Quaternion();
-            var metrics = BABYLON.VRCameraMetrics.GetDefault();
-            metrics.compensateDistortion = compensateDistortion;
-            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
+            vrCameraMetrics.compensateDistortion = compensateDistortion;
+            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
             this.inputs.addDeviceOrientation();
         }
         VRDeviceOrientationFreeCamera.prototype.getTypeName = function () {
@@ -51823,16 +51823,16 @@ var BABYLON;
 (function (BABYLON) {
     var WebVRFreeCamera = (function (_super) {
         __extends(WebVRFreeCamera, _super);
-        function WebVRFreeCamera(name, position, scene, compensateDistortion) {
+        function WebVRFreeCamera(name, position, scene, compensateDistortion, vrCameraMetrics) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
+            if (vrCameraMetrics === void 0) { vrCameraMetrics = BABYLON.VRCameraMetrics.GetDefault(); }
             _super.call(this, name, position, scene);
             this._hmdDevice = null;
             this._sensorDevice = null;
             this._cacheState = null;
             this._vrEnabled = false;
-            var metrics = BABYLON.VRCameraMetrics.GetDefault();
-            metrics.compensateDistortion = compensateDistortion;
-            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
+            vrCameraMetrics.compensateDistortion = compensateDistortion;
+            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
             this.rotationQuaternion = new BABYLON.Quaternion();
         }
