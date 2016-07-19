@@ -1418,7 +1418,7 @@
         return (_: Effect) => {
             prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
 
-            shaderMaterial.onBind = (mat: Material, mesh: Mesh) => {
+            shaderMaterial.onBind = (mesh: Mesh) => {
                 onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material);
             };
         };
@@ -1630,7 +1630,11 @@
     */
     var load = (gltfRuntime: IGLTFRuntime) => {
         // Begin with shaders
+        var atLeastOneShader = false;
+
         for (var sha in gltfRuntime.shaders) {
+            atLeastOneShader = true;
+
             var shader: IGLTFShader = gltfRuntime.shaders[sha];
             
             if (shader) {
@@ -1645,6 +1649,10 @@
             else {
                 Tools.Error("No shader file named " + shader.uri);
             }
+        }
+
+        if (!atLeastOneShader) {
+            loadBuffers(gltfRuntime);
         }
     };
 
