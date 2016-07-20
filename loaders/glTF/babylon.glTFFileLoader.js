@@ -132,7 +132,7 @@ var BABYLON;
             return this._pos >= this._maxPos;
         };
         return Tokenizer;
-    })();
+    }());
     /**
     * Values
     */
@@ -742,8 +742,14 @@ var BABYLON;
                     }
                     else if (semantic === "POSITION") {
                         tempVertexData.positions = [];
-                        for (var j = 0; j < buffer.length; j++) {
+                        var count = 3;
+                        if (GLTFFileLoader.HomogeneousCoordinates) {
+                            count = 4;
+                        }
+                        for (var j = 0; j < buffer.length; j += count) {
                             tempVertexData.positions.push(buffer[j]);
+                            tempVertexData.positions.push(buffer[j + 1]);
+                            tempVertexData.positions.push(buffer[j + 2]);
                         }
                         verticesCounts.push(tempVertexData.positions.length);
                     }
@@ -1198,7 +1204,7 @@ var BABYLON;
     var onShaderCompileSuccess = function (gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms) {
         return function (_) {
             prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
-            shaderMaterial.onBind = function (mat, mesh) {
+            shaderMaterial.onBind = function (mesh) {
                 onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material);
             };
         };
@@ -1375,7 +1381,9 @@ var BABYLON;
     */
     var load = function (gltfRuntime) {
         // Begin with shaders
+        var atLeastOnShader = false;
         for (var sha in gltfRuntime.shaders) {
+            atLeastOnShader = true;
             var shader = gltfRuntime.shaders[sha];
             if (shader) {
                 if (isBase64(shader.uri)) {
@@ -1389,6 +1397,9 @@ var BABYLON;
             else {
                 BABYLON.Tools.Error("No shader file named " + shader.uri);
             }
+        }
+        if (!atLeastOnShader) {
+            loadBuffers(gltfRuntime);
         }
     };
     /**
@@ -1552,8 +1563,9 @@ var BABYLON;
         * Static members
         */
         GLTFFileLoader.MakeYUP = false;
+        GLTFFileLoader.HomogeneousCoordinates = false;
         return GLTFFileLoader;
-    })();
+    }());
     BABYLON.GLTFFileLoader = GLTFFileLoader;
     ;
     BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
