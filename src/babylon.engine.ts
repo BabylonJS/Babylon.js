@@ -183,6 +183,10 @@
         public textureLOD: boolean;
         public drawBuffersExtension;
     }
+    
+    export interface EngineOptions extends WebGLContextAttributes{
+        limitDeviceRatio?: number;
+    }
 
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -383,13 +387,16 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean, limitDeviceRatio?: number }, adaptToDeviceRatio = true) {
+        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = true) {
             this._renderingCanvas = canvas;
 
             this._externalData = new StringDictionary<Object>();
 
             options = options || {};
-            options.antialias = antialias;
+
+            if(antialias != null){
+                options.antialias = antialias;
+            }
 
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
