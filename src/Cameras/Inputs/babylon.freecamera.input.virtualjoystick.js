@@ -48,7 +48,7 @@ var BABYLON;
             return "virtualJoystick";
         };
         return FreeCameraVirtualJoystickInput;
-    })();
+    }());
     BABYLON.FreeCameraVirtualJoystickInput = FreeCameraVirtualJoystickInput;
     BABYLON.CameraInputTypes["FreeCameraVirtualJoystickInput"] = FreeCameraVirtualJoystickInput;
 })(BABYLON || (BABYLON = {}));
