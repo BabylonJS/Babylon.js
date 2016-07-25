@@ -1132,10 +1132,10 @@
         }
 
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-            Tmp.Vector3[0].x = left.y * right.z - left.z * right.y;
-            Tmp.Vector3[0].y = left.z * right.x - left.x * right.z;
-            Tmp.Vector3[0].z = left.x * right.y - left.y * right.x;
-            result.copyFrom(Tmp.Vector3[0]);
+            var x = left.y * right.z - left.z * right.y;
+            var y = left.z * right.x - left.x * right.z;
+            var z = left.x * right.y - left.y * right.x;
+            result.copyFromFloats(x, y, z);
         }
 
         public static Normalize(vector: Vector3): Vector3 {
