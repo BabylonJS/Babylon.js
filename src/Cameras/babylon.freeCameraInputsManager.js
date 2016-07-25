@@ -27,10 +27,6 @@ var BABYLON;
             this.add(new BABYLON.FreeCameraDeviceOrientationInput());
             return this;
         };
-        FreeCameraInputsManager.prototype.addVRDeviceOrientation = function () {
-            this.add(new BABYLON.FreeCameraVRDeviceOrientationInput());
-            return this;
-        };
         FreeCameraInputsManager.prototype.addTouch = function () {
             this.add(new BABYLON.FreeCameraTouchInput());
             return this;
@@ -40,6 +36,6 @@ var BABYLON;
             return this;
         };
         return FreeCameraInputsManager;
-    })(BABYLON.CameraInputsManager);
+    }(BABYLON.CameraInputsManager));
     BABYLON.FreeCameraInputsManager = FreeCameraInputsManager;
 })(BABYLON || (BABYLON = {}));
