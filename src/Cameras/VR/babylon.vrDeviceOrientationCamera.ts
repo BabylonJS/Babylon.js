@@ -1,15 +1,11 @@
 module BABYLON {
-    export class VRDeviceOrientationFreeCamera extends FreeCamera {
+    export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
 
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
             super(name, position, scene);
 
-            this.rotationQuaternion = new Quaternion();
-
             vrCameraMetrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
-
-            this.inputs.addDeviceOrientation();
         }
 
 
