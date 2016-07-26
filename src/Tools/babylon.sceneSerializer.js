@@ -289,8 +289,10 @@ var BABYLON;
             serializationObject.shadowGenerators = [];
             for (index = 0; index < scene.lights.length; index++) {
                 light = scene.lights[index];
-                if (light.getShadowGenerator()) {
-                    serializationObject.shadowGenerators.push(light.getShadowGenerator().serialize());
+                var shadowGenerator = light.getShadowGenerator();
+                // Only support serialization for official generator so far.
+                if (shadowGenerator && shadowGenerator instanceof BABYLON.ShadowGenerator) {
+                    serializationObject.shadowGenerators.push(shadowGenerator.serialize());
                 }
             }
             // Action Manager

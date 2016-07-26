@@ -183,6 +183,10 @@
         public textureLOD: boolean;
         public drawBuffersExtension;
     }
+    
+    export interface EngineOptions extends WebGLContextAttributes{
+        limitDeviceRatio?: number;
+    }
 
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -383,18 +387,24 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean, limitDeviceRatio?: number }, adaptToDeviceRatio = true) {
+        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = true) {
             this._renderingCanvas = canvas;
 
             this._externalData = new StringDictionary<Object>();
 
             options = options || {};
-            options.antialias = antialias;
 
+            if(antialias != null){
+                options.antialias = antialias;
+            }
 
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
+
+            // Checks if some of the format renders first to allow the use of webgl inspector.
+            var renderToFullFloat = this._canRenderToFloatTexture();
+            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
 
             // GL
             //try {
@@ -471,11 +481,11 @@
             this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
             this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
-            this._caps.textureFloatRender = this._canRenderToFloatTexture();
+            this._caps.textureFloatRender = renderToFullFloat;
 
             this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
-            this._caps.textureHalfFloatRender = this._canRenderToHalfFloatTexture();
+            this._caps.textureHalfFloatRender = renderToHalfFloat;
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -1366,6 +1376,62 @@
             }
         }
 
+        public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform1iv(uniform, array);
+        }
+
+        public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+
+            this._gl.uniform2iv(uniform, array);
+        }
+
+        public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+
+            this._gl.uniform3iv(uniform, array);
+        }
+
+        public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+
+            this._gl.uniform4iv(uniform, array);
+        }
+
+        public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform1fv(uniform, array);
+        }
+
+        public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+
+            this._gl.uniform2fv(uniform, array);
+        }
+
+        public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+
+            this._gl.uniform3fv(uniform, array);
+        }
+
+        public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+
+            this._gl.uniform4fv(uniform, array);
+        }
+
         public setArray(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform)
                 return;
@@ -1905,13 +1971,13 @@
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
-                if (type === BABYLON.Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                     // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
                 }
-                else if (type === BABYLON.Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                     // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-                    samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
                 }
             }
             var gl = this._gl;
@@ -2617,6 +2683,14 @@
             this._loadingScreen.loadingUIBackgroundColor = color;
         }
 
+        public attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void {
+            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+        }
+
+        public attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void {
+            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+        }
+
         // FPS
         public getFps(): number {
             return this.fps;
@@ -2651,18 +2725,10 @@
         }
 
         private _canRenderToFloatTexture(): boolean {
-            if (!this.getCaps().textureFloat) {
-                return false;
-            }
-
             return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
         }
 
         private _canRenderToHalfFloatTexture(): boolean {
-            if (!this.getCaps().textureHalfFloat) {
-                return false;
-            }
-
             return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
         }
 
@@ -2675,6 +2741,9 @@
 
             // extension.
             var ext = gl.getExtension(extension);
+            if (!ext) {
+                return false;
+            }
 
             // setup GLSL program
             var vertexCode = `attribute vec4 a_position;

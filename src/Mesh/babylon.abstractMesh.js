@@ -495,10 +495,8 @@ var BABYLON;
                 if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
                     return false;
             }
-            else {
-                if (!this._cache.rotation.equals(this.rotation))
-                    return false;
-            }
+            if (!this._cache.rotation.equals(this.rotation))
+                return false;
             if (!this._cache.scaling.equals(this.scaling))
                 return false;
             return true;

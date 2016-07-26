@@ -410,7 +410,8 @@ module BABYLON {
             serializationObject.generateHarmonics = this._generateHarmonics;
             serializationObject.usePMREMGenerator = this._usePMREMGenerator;
             serializationObject.isBABYLONPreprocessed = this._isBABYLONPreprocessed;
-
+            serializationObject.customType = "BABYLON.HDRCubeTexture";
+            
             return serializationObject;
         }
 

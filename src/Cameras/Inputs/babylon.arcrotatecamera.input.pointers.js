@@ -14,7 +14,6 @@ var BABYLON;
             this.pinchPrecision = 6.0;
             this.panningSensibility = 50.0;
             this._isPanClick = false;
-            this._isCtrlPushed = false;
             this.pinchInwards = true;
         }
         ArcRotateCameraPointersInput.prototype.attachControl = function (element, noPreventDefault) {
@@ -70,7 +69,7 @@ var BABYLON;
                     // One button down
                     if (pointA && pointB === undefined) {
                         if (_this.panningSensibility !== 0 &&
-                            ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) ||
+                            ((evt.ctrlKey && _this.camera._useCtrlForPanning) ||
                                 (!_this.camera._useCtrlForPanning && _this._isPanClick))) {
                             _this.camera
                                 .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
@@ -123,12 +122,6 @@ var BABYLON;
                 previousPinchDistance = 0;
                 cacheSoloPointer = null;
             };
-            this._onKeyDown = function (evt) {
-                _this._isCtrlPushed = evt.ctrlKey;
-            };
-            this._onKeyUp = function (evt) {
-                _this._isCtrlPushed = evt.ctrlKey;
-            };
             this._onMouseMove = function (evt) {
                 if (!engine.isPointerLock) {
                     return;
@@ -180,7 +173,6 @@ var BABYLON;
                 element.removeEventListener("keydown", this._onKeyDown);
                 element.removeEventListener("keyup", this._onKeyUp);
                 this._isPanClick = false;
-                this._isCtrlPushed = false;
                 this.pinchInwards = true;
                 this._onKeyDown = null;
                 this._onKeyUp = null;

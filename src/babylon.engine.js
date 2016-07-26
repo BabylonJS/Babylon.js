@@ -164,10 +164,15 @@ var BABYLON;
             this._renderingCanvas = canvas;
             this._externalData = new BABYLON.StringDictionary();
             options = options || {};
-            options.antialias = antialias;
+            if (antialias != null) {
+                options.antialias = antialias;
+            }
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
+            // Checks if some of the format renders first to allow the use of webgl inspector.
+            var renderToFullFloat = this._canRenderToFloatTexture();
+            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
             // GL
             //try {
             //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
@@ -232,10 +237,10 @@ var BABYLON;
             this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
             this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
-            this._caps.textureFloatRender = this._canRenderToFloatTexture();
+            this._caps.textureFloatRender = renderToFullFloat;
             this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
-            this._caps.textureHalfFloatRender = this._canRenderToHalfFloatTexture();
+            this._caps.textureHalfFloatRender = renderToHalfFloat;
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
                 this._caps.highPrecisionShaderSupported = highp.precision !== 0;
@@ -1136,6 +1141,46 @@ var BABYLON;
                 effect.onBind(effect);
             }
         };
+        Engine.prototype.setIntArray = function (uniform, array) {
+            if (!uniform)
+                return;
+            this._gl.uniform1iv(uniform, array);
+        };
+        Engine.prototype.setIntArray2 = function (uniform, array) {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+            this._gl.uniform2iv(uniform, array);
+        };
+        Engine.prototype.setIntArray3 = function (uniform, array) {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+            this._gl.uniform3iv(uniform, array);
+        };
+        Engine.prototype.setIntArray4 = function (uniform, array) {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+            this._gl.uniform4iv(uniform, array);
+        };
+        Engine.prototype.setFloatArray = function (uniform, array) {
+            if (!uniform)
+                return;
+            this._gl.uniform1fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray2 = function (uniform, array) {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+            this._gl.uniform2fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray3 = function (uniform, array) {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+            this._gl.uniform3fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray4 = function (uniform, array) {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+            this._gl.uniform4fv(uniform, array);
+        };
         Engine.prototype.setArray = function (uniform, array) {
             if (!uniform)
                 return;
@@ -1588,11 +1633,11 @@ var BABYLON;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
-                if (type === BABYLON.Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
                     // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
                     samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
                 }
-                else if (type === BABYLON.Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
                     // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
                     samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE;
                 }
@@ -2177,6 +2222,12 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Engine.prototype.attachContextLostEvent = function (callback) {
+            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+        };
+        Engine.prototype.attachContextRestoredEvent = function (callback) {
+            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+        };
         // FPS
         Engine.prototype.getFps = function () {
             return this.fps;
@@ -2203,15 +2254,9 @@ var BABYLON;
             }
         };
         Engine.prototype._canRenderToFloatTexture = function () {
-            if (!this.getCaps().textureFloat) {
-                return false;
-            }
             return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
         };
         Engine.prototype._canRenderToHalfFloatTexture = function () {
-            if (!this.getCaps().textureHalfFloat) {
-                return false;
-            }
             return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
         };
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
@@ -2222,6 +2267,9 @@ var BABYLON;
             var gl = (tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
             // extension.
             var ext = gl.getExtension(extension);
+            if (!ext) {
+                return false;
+            }
             // setup GLSL program
             var vertexCode = "attribute vec4 a_position;\n                void main() {\n                    gl_Position = a_position;\n                }";
             var fragmentCode = "precision mediump float;\n                uniform vec4 u_color;\n                uniform sampler2D u_texture;\n\n                void main() {\n                    gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;\n                }";
