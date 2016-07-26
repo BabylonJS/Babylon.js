@@ -411,9 +411,7 @@
         }
 
         protected onPrimitivePropertyDirty(propFlagId: number) {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._instanceDirtyFlags |= propFlagId;
         }
 
@@ -442,6 +440,7 @@
 
         public _resetPropertiesDirty() {
             this._instanceDirtyFlags = 0;
+            this._clearFlags(SmartPropertyPrim.flagPrimInDirtyList);
         }
 
         /**
@@ -629,6 +628,7 @@
         public static flagChildrenFlatZOrder     = 0x0001000;    // set if all the children (direct and indirect) will share the same Z-Order
         public static flagZOrderDirty            = 0x0002000;    // set if the Z-Order for this prim and its children must be recomputed
         public static flagActualOpacityDirty     = 0x0004000;    // set if the actualOpactity should be recomputed
+        public static flagPrimInDirtyList        = 0x0008000;    // set if the primitive is in the primDirtyList
 
         private   _flags             : number;
         private   _externalData      : StringDictionary<Object>;
