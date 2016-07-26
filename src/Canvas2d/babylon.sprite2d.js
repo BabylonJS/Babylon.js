@@ -196,12 +196,12 @@ var BABYLON;
             this.isAlphaTest = true;
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
-                    this.size = texture.getSize();
+                    this.size = texture.getBaseSize();
                 }
                 else {
                     texture.onLoadObservable.add(function () {
                         if (settings.spriteSize == null) {
-                            _this.size = texture.getSize();
+                            _this.size = texture.getBaseSize();
                         }
                         _this._positioningDirty();
                     });
