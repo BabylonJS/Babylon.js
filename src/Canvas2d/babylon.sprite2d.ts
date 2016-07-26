@@ -311,12 +311,14 @@
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.isAlphaTest = true;
 
-            if (settings.spriteSize == null) {
+            if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
                     this.size = <Size>texture.getSize();
                 } else {
                     texture.onLoadObservable.add(() => {
-                        this.size = <Size>texture.getSize();
+                        if (settings.spriteSize == null) {
+                            this.size = <Size>texture.getSize();
+                        }
                         this._positioningDirty();
                     });
                 }
