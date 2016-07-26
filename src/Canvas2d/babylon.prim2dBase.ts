@@ -2440,8 +2440,9 @@
         }
 
         protected onPrimBecomesDirty() {
-            if (this._renderGroup) {
+            if (this._renderGroup && !this._isFlagSet(SmartPropertyPrim.flagPrimInDirtyList)) {
                 this._renderGroup._addPrimToDirtyList(this);
+                this._setFlags(SmartPropertyPrim.flagPrimInDirtyList);
             }
         }
 
@@ -2512,9 +2513,7 @@
         }
 
         protected _setLayoutDirty() {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._setFlags(SmartPropertyPrim.flagLayoutDirty);
 
         }
@@ -2528,9 +2527,7 @@
         }
 
         protected _positioningDirty() {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._setFlags(SmartPropertyPrim.flagPositioningDirty);
         }
 
@@ -2976,9 +2973,7 @@
         private _setZOrder(newZ: number, directEmit: boolean) {
             if (newZ !== this._zOrder) {
                 this._zOrder = newZ;
-                if (!this.isDirty) {
-                    this.onPrimBecomesDirty();
-                }
+                this.onPrimBecomesDirty();
                 this.onZOrderChanged();
                 if (this._actualZOrderChangedObservable && this._actualZOrderChangedObservable.hasObservers()) {
                     if (directEmit) {
