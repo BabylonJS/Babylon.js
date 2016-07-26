@@ -357,9 +357,7 @@ var BABYLON;
             }
         };
         SmartPropertyPrim.prototype.onPrimitivePropertyDirty = function (propFlagId) {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._instanceDirtyFlags |= propFlagId;
         };
         SmartPropertyPrim.prototype.handleGroupChanged = function (prop) {
@@ -383,6 +381,7 @@ var BABYLON;
         };
         SmartPropertyPrim.prototype._resetPropertiesDirty = function () {
             this._instanceDirtyFlags = 0;
+            this._clearFlags(SmartPropertyPrim.flagPrimInDirtyList);
         };
         Object.defineProperty(SmartPropertyPrim.prototype, "levelBoundingInfo", {
             /**
@@ -552,6 +551,7 @@ var BABYLON;
         SmartPropertyPrim.flagChildrenFlatZOrder = 0x0001000; // set if all the children (direct and indirect) will share the same Z-Order
         SmartPropertyPrim.flagZOrderDirty = 0x0002000; // set if the Z-Order for this prim and its children must be recomputed
         SmartPropertyPrim.flagActualOpacityDirty = 0x0004000; // set if the actualOpactity should be recomputed
+        SmartPropertyPrim.flagPrimInDirtyList = 0x0008000; // set if the primitive is in the primDirtyList
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);

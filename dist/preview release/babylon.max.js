@@ -38396,9 +38396,7 @@ var BABYLON;
             }
         };
         SmartPropertyPrim.prototype.onPrimitivePropertyDirty = function (propFlagId) {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._instanceDirtyFlags |= propFlagId;
         };
         SmartPropertyPrim.prototype.handleGroupChanged = function (prop) {
@@ -38422,6 +38420,7 @@ var BABYLON;
         };
         SmartPropertyPrim.prototype._resetPropertiesDirty = function () {
             this._instanceDirtyFlags = 0;
+            this._clearFlags(SmartPropertyPrim.flagPrimInDirtyList);
         };
         Object.defineProperty(SmartPropertyPrim.prototype, "levelBoundingInfo", {
             /**
@@ -38591,6 +38590,7 @@ var BABYLON;
         SmartPropertyPrim.flagChildrenFlatZOrder = 0x0001000; // set if all the children (direct and indirect) will share the same Z-Order
         SmartPropertyPrim.flagZOrderDirty = 0x0002000; // set if the Z-Order for this prim and its children must be recomputed
         SmartPropertyPrim.flagActualOpacityDirty = 0x0004000; // set if the actualOpactity should be recomputed
+        SmartPropertyPrim.flagPrimInDirtyList = 0x0008000; // set if the primitive is in the primDirtyList
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);
@@ -40846,8 +40846,9 @@ var BABYLON;
             return true;
         };
         Prim2DBase.prototype.onPrimBecomesDirty = function () {
-            if (this._renderGroup) {
+            if (this._renderGroup && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPrimInDirtyList)) {
                 this._renderGroup._addPrimToDirtyList(this);
+                this._setFlags(BABYLON.SmartPropertyPrim.flagPrimInDirtyList);
             }
         };
         Prim2DBase.prototype._needPrepare = function () {
@@ -40904,9 +40905,7 @@ var BABYLON;
             this._parent._setLayoutDirty();
         };
         Prim2DBase.prototype._setLayoutDirty = function () {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._setFlags(BABYLON.SmartPropertyPrim.flagLayoutDirty);
         };
         Prim2DBase.prototype._checkPositionChange = function () {
@@ -40917,9 +40916,7 @@ var BABYLON;
             return true;
         };
         Prim2DBase.prototype._positioningDirty = function () {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._setFlags(BABYLON.SmartPropertyPrim.flagPositioningDirty);
         };
         Prim2DBase.prototype._spreadActualOpacityChanged = function () {
@@ -41291,9 +41288,7 @@ var BABYLON;
         Prim2DBase.prototype._setZOrder = function (newZ, directEmit) {
             if (newZ !== this._zOrder) {
                 this._zOrder = newZ;
-                if (!this.isDirty) {
-                    this.onPrimBecomesDirty();
-                }
+                this.onPrimBecomesDirty();
                 this.onZOrderChanged();
                 if (this._actualZOrderChangedObservable && this._actualZOrderChangedObservable.hasObservers()) {
                     if (directEmit) {
@@ -44706,13 +44701,15 @@ var BABYLON;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.isAlphaTest = true;
-            if (settings.spriteSize == null) {
+            if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
                     this.size = texture.getSize();
                 }
                 else {
                     texture.onLoadObservable.add(function () {
-                        _this.size = texture.getSize();
+                        if (settings.spriteSize == null) {
+                            _this.size = texture.getSize();
+                        }
                         _this._positioningDirty();
                     });
                 }

@@ -194,13 +194,15 @@ var BABYLON;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.isAlphaTest = true;
-            if (settings.spriteSize == null) {
+            if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
                     this.size = texture.getSize();
                 }
                 else {
                     texture.onLoadObservable.add(function () {
-                        _this.size = texture.getSize();
+                        if (settings.spriteSize == null) {
+                            _this.size = texture.getSize();
+                        }
                         _this._positioningDirty();
                     });
                 }

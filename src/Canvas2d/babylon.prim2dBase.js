@@ -2229,8 +2229,9 @@ var BABYLON;
             return true;
         };
         Prim2DBase.prototype.onPrimBecomesDirty = function () {
-            if (this._renderGroup) {
+            if (this._renderGroup && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPrimInDirtyList)) {
                 this._renderGroup._addPrimToDirtyList(this);
+                this._setFlags(BABYLON.SmartPropertyPrim.flagPrimInDirtyList);
             }
         };
         Prim2DBase.prototype._needPrepare = function () {
@@ -2287,9 +2288,7 @@ var BABYLON;
             this._parent._setLayoutDirty();
         };
         Prim2DBase.prototype._setLayoutDirty = function () {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._setFlags(BABYLON.SmartPropertyPrim.flagLayoutDirty);
         };
         Prim2DBase.prototype._checkPositionChange = function () {
@@ -2300,9 +2299,7 @@ var BABYLON;
             return true;
         };
         Prim2DBase.prototype._positioningDirty = function () {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._setFlags(BABYLON.SmartPropertyPrim.flagPositioningDirty);
         };
         Prim2DBase.prototype._spreadActualOpacityChanged = function () {
@@ -2674,9 +2671,7 @@ var BABYLON;
         Prim2DBase.prototype._setZOrder = function (newZ, directEmit) {
             if (newZ !== this._zOrder) {
                 this._zOrder = newZ;
-                if (!this.isDirty) {
-                    this.onPrimBecomesDirty();
-                }
+                this.onPrimBecomesDirty();
                 this.onZOrderChanged();
                 if (this._actualZOrderChangedObservable && this._actualZOrderChangedObservable.hasObservers()) {
                     if (directEmit) {
