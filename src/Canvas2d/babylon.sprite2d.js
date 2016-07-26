@@ -201,6 +201,7 @@ var BABYLON;
                 else {
                     texture.onLoadObservable.add(function () {
                         _this.size = texture.getSize();
+                        _this._positioningDirty();
                     });
                 }
             }

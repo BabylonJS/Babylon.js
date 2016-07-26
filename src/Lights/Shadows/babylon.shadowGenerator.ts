@@ -1,5 +1,11 @@
 ﻿module BABYLON {
-    export class ShadowGenerator {
+    export interface IShadowGenerator {
+        getShadowMap(): RenderTargetTexture;
+ 
+        dispose(): void;
+    }
+ 
+    export class ShadowGenerator implements IShadowGenerator {
         private static _FILTER_NONE = 0;
         private static _FILTER_VARIANCESHADOWMAP = 1;
         private static _FILTER_POISSONSAMPLING = 2;

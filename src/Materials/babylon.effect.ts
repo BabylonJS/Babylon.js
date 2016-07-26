@@ -253,7 +253,7 @@
                     var includeContent = Effect.IncludesShadersStore[includeFile];
                     if (match[2]) {
                         var splits = match[3].split(",");
-                      
+
                         for (var index = 0; index < splits.length; index += 2) {
                             var source = new RegExp(splits[index], "g");
                             var dest = splits[index + 1];
@@ -325,7 +325,7 @@
                 // Precision
                 vertexSourceCode = this._processPrecision(vertexSourceCode);
                 fragmentSourceCode = this._processPrecision(fragmentSourceCode);
-                
+
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
@@ -406,7 +406,7 @@
             var tm = cache.m;
             var om = matrix.m;
             for (var index = 0; index < 16; index++) {
-                if (tm[index] !== om[index]) { 
+                if (tm[index] !== om[index]) {
                     tm[index] = om[index];
                     changed = true;
                 }
@@ -433,7 +433,7 @@
                 cache[1] = y;
                 changed = true;
             }
-            
+
             return changed;
         }
 
@@ -458,7 +458,7 @@
                 cache[2] = z;
                 changed = true;
             }
-            
+
             return changed;
         }
 
@@ -487,8 +487,64 @@
                 cache[3] = w;
                 changed = true;
             }
-            
+
             return changed;
+        }
+
+        public setIntArray(uniformName: string, array: Int32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setIntArray2(uniformName: string, array: Int32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray2(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setIntArray3(uniformName: string, array: Int32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray3(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setIntArray4(uniformName: string, array: Int32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray4(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setFloatArray(uniformName: string, array: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setFloatArray2(uniformName: string, array: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray2(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setFloatArray3(uniformName: string, array: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray3(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setFloatArray4(uniformName: string, array: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray4(this.getUniform(uniformName), array);
+
+            return this;
         }
 
         public setArray(uniformName: string, array: number[]): Effect {

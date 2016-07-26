@@ -287,7 +287,7 @@
         }
 
         allocElements() {
-            if (!this.dataBuffer) {
+            if (!this.dataBuffer || this.dataElements) {
                 return;
             }
             let res = new Array<DynamicFloatArrayElementInfo>(this.dataElementCount);

@@ -500,11 +500,7 @@ var BABYLON;
                 }
                 BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
-                // Legacy browser patch
                 var shaderName = "default";
-                if (!scene.getEngine().getCaps().standardDerivatives) {
-                    shaderName = "legacydefault";
-                }
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
@@ -516,8 +512,12 @@ var BABYLON;
                     "logarithmicDepthConstant"
                 ];
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
-                BABYLON.ColorCurves.PrepareUniforms(uniforms);
-                BABYLON.ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
+                if (this._defines.CAMERACOLORCURVES) {
+                    BABYLON.ColorCurves.PrepareUniforms(uniforms);
+                }
+                if (this._defines.CAMERACOLORGRADING) {
+                    BABYLON.ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
+                }
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
                 this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
             }
