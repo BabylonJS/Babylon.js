@@ -393,11 +393,11 @@
                             p._prepareRender(context);
                         }
                     });
-
-                    // Everything is updated, clear the dirty list
-                    this._renderableData._primDirtyList.forEach(p => p._resetPropertiesDirty());
-                    this._renderableData._primDirtyList.splice(0);
                 }
+
+                // Everything is updated, clear the dirty list
+                this._renderableData._primDirtyList.forEach(p => p._resetPropertiesDirty());
+                this._renderableData._primDirtyList.splice(0);
             }
 
             // A renderable group has a list of direct children that are also renderable groups, we recurse on them to also prepare them
