@@ -19,6 +19,7 @@ var BABYLON;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
             this.rotationQuaternion = new BABYLON.Quaternion();
+            this._quaternionCache = new BABYLON.Quaternion();
         }
         WebVRFreeCamera.prototype._getWebVRDevices = function (devices) {
             var size = devices.length;
@@ -49,6 +50,10 @@ var BABYLON;
                 //Flip in XY plane
                 this.rotationQuaternion.z *= -1;
                 this.rotationQuaternion.w *= -1;
+                if (this._initialQuaternion) {
+                    this._quaternionCache.copyFrom(this.rotationQuaternion);
+                    this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+                }
             }
             _super.prototype._checkInputs.call(this);
         };
@@ -73,6 +78,26 @@ var BABYLON;
         };
         WebVRFreeCamera.prototype.getTypeName = function () {
             return "WebVRFreeCamera";
+        };
+        WebVRFreeCamera.prototype.resetToCurrentRotation = function (axis) {
+            var _this = this;
+            if (axis === void 0) { axis = BABYLON.Axis.Y; }
+            //can only work if this camera has a rotation quaternion already.
+            if (!this.rotationQuaternion)
+                return;
+            if (!this._initialQuaternion) {
+                this._initialQuaternion = new BABYLON.Quaternion();
+            }
+            this._initialQuaternion.copyFrom(this._quaternionCache || this.rotationQuaternion);
+            ['x', 'y', 'z'].forEach(function (axisName) {
+                if (!axis[axisName]) {
+                    _this._initialQuaternion[axisName] = 0;
+                }
+                else {
+                    _this._initialQuaternion[axisName] *= -1;
+                }
+            });
+            this._initialQuaternion.normalize();
         };
         return WebVRFreeCamera;
     }(BABYLON.FreeCamera));
