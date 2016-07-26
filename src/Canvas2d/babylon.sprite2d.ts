@@ -313,11 +313,11 @@
 
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
-                    this.size = <Size>texture.getSize();
+                    this.size = <Size>texture.getBaseSize();
                 } else {
                     texture.onLoadObservable.add(() => {
                         if (settings.spriteSize == null) {
-                            this.size = <Size>texture.getSize();
+                            this.size = <Size>texture.getBaseSize();
                         }
                         this._positioningDirty();
                     });
