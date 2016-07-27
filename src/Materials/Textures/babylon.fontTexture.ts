@@ -35,6 +35,7 @@
         private _spaceWidthSuper;
         private _usedCounter = 1;
         private _superSample: boolean;
+        private _cachedFontId: string;
 
         public get isSuperSampled(): boolean {
             return this._superSample;
@@ -64,6 +65,7 @@
             }
 
             ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, Texture.BILINEAR_SAMPLINGMODE, supersample);
+            ft._cachedFontId = lfn;
             dic.add(lfn, ft);
 
             return ft;
@@ -115,6 +117,7 @@
             this._context = this._canvas.getContext("2d");
             this._context.font = font;
             this._context.fillStyle = "white";
+            this._cachedFontId = null;
 
             var res = this.getFontHeight(font);
             this._lineHeightSuper = res.height;
@@ -322,6 +325,29 @@
         // cloning should be prohibited, there's no point to duplicate this texture at all
         public clone(): FontTexture {
             return null;
+        }
+
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        public incCachedFontTextureCounter() {
+            ++this._usedCounter;
+        }
+
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        public decCachedFontTextureCounter() {
+            let s = <any>this.getScene();
+            let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
+            if (!dic) {
+                return;
+            }
+            if (--this._usedCounter === 0) {
+                dic.remove(this._cachedFontId);
+                this.dispose();
+            }         
         }
     }
 } 

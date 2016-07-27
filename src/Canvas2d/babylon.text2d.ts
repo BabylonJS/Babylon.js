@@ -72,7 +72,7 @@
             }
 
             if (this.fontTexture) {
-                this.fontTexture.dispose();
+                this.fontTexture.decCachedFontTextureCounter();
                 this.fontTexture = null;
             }
 
@@ -354,6 +354,7 @@
             let engine = this.owner.engine;
 
             renderCache.fontTexture = this.fontTexture;
+            renderCache.fontTexture.incCachedFontTextureCounter();
 
             let vb = new Float32Array(4);
             for (let i = 0; i < 4; i++) {
