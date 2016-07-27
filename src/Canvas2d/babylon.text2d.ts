@@ -51,7 +51,7 @@
                 }
             }
 
-            engine.setAlphaMode(curAlphaMode);
+            engine.setAlphaMode(curAlphaMode, true);
 
             return true;
         }

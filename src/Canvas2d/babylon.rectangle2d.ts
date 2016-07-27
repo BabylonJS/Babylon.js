@@ -45,7 +45,7 @@
                 let pid = context.groupInfoPartData[partIndex];
 
                 if (context.renderMode !== Render2DContext.RenderModeOpaque) {
-                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
                 }
 
                 let effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
@@ -77,7 +77,7 @@
                 let pid = context.groupInfoPartData[partIndex];
 
                 if (context.renderMode !== Render2DContext.RenderModeOpaque) {
-                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
                 }
 
                 let effect = context.useInstancing ? this.effectBorderInstanced : this.effectBorder;
@@ -104,7 +104,7 @@
                 }
             }
 
-            engine.setAlphaMode(curAlphaMode);
+            engine.setAlphaMode(curAlphaMode, true);
 
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
