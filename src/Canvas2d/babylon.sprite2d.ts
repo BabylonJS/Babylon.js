@@ -29,7 +29,7 @@
             engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
 
             if (context.renderMode !== Render2DContext.RenderModeOpaque) {
-                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
             }
 
             let pid = context.groupInfoPartData[0];
@@ -51,7 +51,7 @@
                 }
             }
 
-            engine.setAlphaMode(cur);
+            engine.setAlphaMode(cur, true);
 
             return true;
         }
