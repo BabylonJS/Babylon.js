@@ -191,7 +191,6 @@
             this._modelKey = modelKey;
             this._nextKey = 1;
             this._refCounter = 1;
-            this._instancesData = new StringDictionary<InstanceDataBase[]>();
             this._partData = null;
         }
 
@@ -229,22 +228,6 @@
          */
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             return true;
-        }
-
-        addInstanceDataParts(data: InstanceDataBase[]): string {
-            let key = this._nextKey.toString();
-
-            if (!this._instancesData.add(key, data)) {
-                throw Error(`Key: ${key} is already allocated`);
-            }
-
-            ++this._nextKey;
-
-            return key;
-        }
-
-        removeInstanceData(key: string) {
-            this._instancesData.remove(key);
         }
 
         protected getPartIndexFromId(partId: number) {
@@ -339,9 +322,6 @@
 
         protected _engine: Engine;
         private _modelKey: string;
-
-        _instancesData: StringDictionary<InstanceDataBase[]>;
-
         private _nextKey: number;
         private _refCounter: number;
 
