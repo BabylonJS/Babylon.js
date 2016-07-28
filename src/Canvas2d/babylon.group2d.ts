@@ -34,7 +34,7 @@
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
@@ -64,6 +64,9 @@
             position          ?: Vector2,
             x                 ?: number,
             y                 ?: number,
+            scale             ?: number,
+            scaleX            ?: number,
+            scaleY            ?: number,
             trackNode         ?: Node,
             opacity           ?: number,
             origin            ?: Vector2,
