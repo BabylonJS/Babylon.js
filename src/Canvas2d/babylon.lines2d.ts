@@ -44,7 +44,7 @@
                 let pid = context.groupInfoPartData[partIndex];
 
                 if (context.renderMode !== Render2DContext.RenderModeOpaque) {
-                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
                 }
 
                 let effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
@@ -76,7 +76,7 @@
                 let pid = context.groupInfoPartData[partIndex];
 
                 if (context.renderMode !== Render2DContext.RenderModeOpaque) {
-                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
                 }
 
                 let effect = context.useInstancing ? this.effectBorderInstanced : this.effectBorder;
@@ -103,7 +103,7 @@
                 }
             }
 
-            engine.setAlphaMode(curAlphaMode);
+            engine.setAlphaMode(curAlphaMode, true);
 
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
@@ -394,7 +394,7 @@
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
@@ -430,6 +430,8 @@
             y                 ?: number,
             rotation          ?: number,
             scale             ?: number,
+            scaleX            ?: number,
+            scaleY            ?: number,
             opacity           ?: number,
             origin            ?: Vector2,
             fillThickness     ?: number,
