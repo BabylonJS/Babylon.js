@@ -265,7 +265,7 @@
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
@@ -299,6 +299,8 @@
             y                 ?: number,
             rotation          ?: number,
             scale             ?: number,
+            scaleX            ?: number,
+            scaleY            ?: number,
             opacity           ?: number,
             origin            ?: Vector2,
             fontName          ?: string,
