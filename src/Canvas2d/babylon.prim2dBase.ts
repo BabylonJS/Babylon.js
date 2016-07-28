@@ -1290,7 +1290,7 @@
      * Base class for a Primitive of the Canvas2D feature
      */
     export class Prim2DBase extends SmartPropertyPrim {
-        static PRIM2DBASE_PROPCOUNT: number = 15;
+        static PRIM2DBASE_PROPCOUNT: number = 16;
         public  static _bigInt = Math.pow(2, 30);
 
         constructor(settings: {
@@ -1302,6 +1302,8 @@
             y?: number,
             rotation?: number,
             scale?: number,
+            scaleX?: number,
+            scaleY?: number,
             opacity?: number,
             origin?: Vector2,
             layoutEngine?: LayoutEngineBase | string,
@@ -1354,6 +1356,7 @@
             // Fields initialization
             this._layoutEngine = CanvasLayoutEngine.Singleton;
             this._size = null; //Size.Zero();
+            this._scale = new Vector2(1, 1);
             this._actualSize = null;
             this._boundingSize = Size.Zero();
             this._layoutArea = Size.Zero();
@@ -1431,7 +1434,17 @@
                 this._position = null;
             }
             this.rotation = (settings.rotation == null) ? 0 : settings.rotation;
-            this.scale = (settings.scale == null) ? 1 : settings.scale;
+
+            if (settings.scale != null) {
+                this.scale = settings.scale;
+            } else {
+                if (settings.scaleX != null) {
+                    this.scaleX = settings.scaleX;
+                }
+                if (settings.scaleY != null) {
+                    this.scaleY = settings.scaleY;
+                }
+            }
             this.levelVisible = (settings.isVisible == null) ? true : settings.isVisible;
             this.origin = settings.origin || new Vector2(0.5, 0.5);
 
@@ -1623,6 +1636,16 @@
          */
         public static opacityProperty: Prim2DPropInfo;
 
+
+        /**
+         * Metadata of the scaleX property
+         */
+        public static scaleXProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the scaleY property
+         */
+        public static scaleYProperty: Prim2DPropInfo;
 
         @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, false, true)
         /**
@@ -1839,14 +1862,14 @@
 
         @instanceLevelProperty(5, pi => Prim2DBase.scaleProperty = pi, false, true)
         /**
-         * Uniform scale applied on the primitive
+         * Uniform scale applied on the primitive. If a non-uniform scale is applied through scaleX/scaleY property the getter of this property will return scaleX.
          */
         public set scale(value: number) {
-            this._scale = value;
+            this._scale.x = this._scale.y = value;
         }
 
         public get scale(): number {
-            return this._scale;
+            return this._scale.x;
         }
 
         /**
@@ -2058,7 +2081,32 @@
 
             this._opacity = value;
             this._updateRenderMode();
+            this._setFlags(SmartPropertyPrim.flagActualOpacityDirty);
             this._spreadActualOpacityChanged();
+        }
+
+        @instanceLevelProperty(14, pi => Prim2DBase.scaleXProperty = pi, false, true)
+        /**
+         * Scale applied on the X axis of the primitive
+         */
+        public set scaleX(value: number) {
+            this._scale.x = value;
+        }
+
+        public get scaleX(): number {
+            return this._scale.x;
+        }
+
+        @instanceLevelProperty(15, pi => Prim2DBase.scaleYProperty = pi, false, true)
+        /**
+         * Scale applied on the Y axis of the primitive
+         */
+        public set scaleY(value: number) {
+            this._scale.y = value;
+        }
+
+        public get scaleY(): number {
+            return this._scale.y;
         }
 
         public get actualOpacity(): number {
@@ -2441,8 +2489,9 @@
         }
 
         protected onPrimBecomesDirty() {
-            if (this._renderGroup) {
+            if (this._renderGroup && !this._isFlagSet(SmartPropertyPrim.flagPrimInDirtyList)) {
                 this._renderGroup._addPrimToDirtyList(this);
+                this._setFlags(SmartPropertyPrim.flagPrimInDirtyList);
             }
         }
 
@@ -2513,9 +2562,7 @@
         }
 
         protected _setLayoutDirty() {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._setFlags(SmartPropertyPrim.flagLayoutDirty);
 
         }
@@ -2529,9 +2576,7 @@
         }
 
         protected _positioningDirty() {
-            if (!this.isDirty) {
-                this.onPrimBecomesDirty();
-            }
+            this.onPrimBecomesDirty();
             this._setFlags(SmartPropertyPrim.flagPositioningDirty);
         }
 
@@ -2552,7 +2597,7 @@
         private static _v0: Vector2 = Vector2.Zero();   // Must stay with the value 0,0
 
         private _updateLocalTransform(): boolean {
-            let tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.originProperty.flagId;
+            let tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.scaleXProperty.flagId | Prim2DBase.scaleYProperty.flagId | Prim2DBase.originProperty.flagId;
             if (this.checkPropertiesDirty(tflags)) {
                 if (this.owner) {
                     this.owner.addupdateLocalTransformCounter(1);
@@ -2563,7 +2608,7 @@
                 let pos = this.position;
 
                 if (this._origin.x === 0 && this._origin.y === 0) {
-                    local = Matrix.Compose(new Vector3(this._scale, this._scale, 1), rot, new Vector3(pos.x, pos.y, 0));
+                    local = Matrix.Compose(new Vector3(this._scale.x, this._scale.y, 1), rot, new Vector3(pos.x, pos.y, 0));
                     this._localTransform = local;
                 } else {
                     // -Origin offset
@@ -2575,7 +2620,7 @@
                     Prim2DBase._t0.multiplyToRef(Prim2DBase._t1, Prim2DBase._t2);
 
                     // -Origin * rotation * scale
-                    Matrix.ScalingToRef(this._scale, this._scale, 1, Prim2DBase._t0);
+                    Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase._t0);
                     Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
 
                     // -Origin * rotation * scale * (Origin + Position)
@@ -2977,9 +3022,7 @@
         private _setZOrder(newZ: number, directEmit: boolean) {
             if (newZ !== this._zOrder) {
                 this._zOrder = newZ;
-                if (!this.isDirty) {
-                    this.onPrimBecomesDirty();
-                }
+                this.onPrimBecomesDirty();
                 this.onZOrderChanged();
                 if (this._actualZOrderChangedObservable && this._actualZOrderChangedObservable.hasObservers()) {
                     if (directEmit) {
@@ -3051,7 +3094,7 @@
         private _layoutArea: Size;
         private _contentArea: Size;
         private _rotation: number;
-        private _scale: number;
+        private _scale: Vector2;
         private _origin: Vector2;
         protected _opacity: number;
         private _actualOpacity: number;

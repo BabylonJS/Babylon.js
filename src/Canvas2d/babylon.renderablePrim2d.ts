@@ -287,7 +287,7 @@
         }
 
         allocElements() {
-            if (!this.dataBuffer) {
+            if (!this.dataBuffer || this.dataElements) {
                 return;
             }
             let res = new Array<DynamicFloatArrayElementInfo>(this.dataElementCount);
@@ -690,9 +690,11 @@
 
             // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
             for (let part of this._instanceDataParts) {
+                let justAllocated = false;
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
                 if (!part.dataElements && (visChanged || rmChanged)) {
                     part.allocElements();
+                    justAllocated = true;
                 }
 
                 InstanceClassInfo._CurCategories = gii.usedShaderCategories[gii.partIndexFromId.get(part.id.toString())];
@@ -706,7 +708,7 @@
                     }
                 }
 
-                rebuildTrans = rebuildTrans || part.arrayLengthChanged;
+                rebuildTrans = rebuildTrans || part.arrayLengthChanged || justAllocated;
             }
             this._instanceDirtyFlags = 0;
 
@@ -730,7 +732,7 @@
             let maxOff = 0;
 
             for (let part of this._instanceDataParts) {
-                if (part) {
+                if (part && part.dataElements) {
                     part.dataBuffer.pack();
                     for (let el of part.dataElements) {
                         minOff = Math.min(minOff, el.offset);

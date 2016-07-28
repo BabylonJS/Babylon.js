@@ -29,7 +29,7 @@
             engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
 
             if (context.renderMode !== Render2DContext.RenderModeOpaque) {
-                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+                engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
             }
 
             let pid = context.groupInfoPartData[0];
@@ -51,7 +51,7 @@
                 }
             }
 
-            engine.setAlphaMode(cur);
+            engine.setAlphaMode(cur, true);
 
             return true;
         }
@@ -232,7 +232,7 @@
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
@@ -265,6 +265,8 @@
             y?: number,
             rotation?: number,
             scale?: number,
+            scaleX?: number,
+            scaleY?: number,
             opacity?: number,
             origin?: Vector2,
             spriteSize?: Size,
@@ -304,12 +306,15 @@
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.isAlphaTest = true;
 
-            if (settings.spriteSize == null) {
+            if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
-                    this.size = <Size>texture.getSize();
+                    this.size = <Size>texture.getBaseSize();
                 } else {
                     texture.onLoadObservable.add(() => {
-                        this.size = <Size>texture.getSize();
+                        if (settings.spriteSize == null) {
+                            this.size = <Size>texture.getBaseSize();
+                        }
+                        this._positioningDirty();
                     });
                 }
             }

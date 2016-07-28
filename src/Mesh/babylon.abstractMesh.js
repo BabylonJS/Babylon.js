@@ -495,10 +495,8 @@ var BABYLON;
                 if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
                     return false;
             }
-            else {
-                if (!this._cache.rotation.equals(this.rotation))
-                    return false;
-            }
+            if (!this._cache.rotation.equals(this.rotation))
+                return false;
             if (!this._cache.scaling.equals(this.scaling))
                 return false;
             return true;
@@ -1049,6 +1047,6 @@ var BABYLON;
         AbstractMesh._rotationAxisCache = new BABYLON.Quaternion();
         AbstractMesh._lookAtVectorCache = new BABYLON.Vector3(0, 0, 0);
         return AbstractMesh;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));

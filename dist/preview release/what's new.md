@@ -3,6 +3,7 @@
 ### Major updates
     
 ### Updates
+- Added support for non square textures for sprites ([deltakosh](https://github.com/deltakosh)) 
 - Added support for texture arrays ([deltakosh](https://github.com/deltakosh)) 
 - Added `camera.isInFrustum` and `camera.isCompletelyInFrustum`. Can be used with meshes, submeshes and boundingInfo ([deltakosh](https://github.com/deltakosh)) 
 - Several memory allocation reduction ([benaadams](https://github.com/benaadams))
@@ -28,6 +29,7 @@
 - Fixed some missing parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))
 - Fixed cross vector calculation in `_computeHeightQuads()` that affected  all the `GroundMesh.getHeightAtCoordinates()` and `GroundMesh.getNormalAtCoordinates()` methods ([jerome](https://github.com/jbousquie))
 - Fixed `Mesh.CreateDashedLines()` missing `instance` parameter on update ([jerome](https://github.com/jbousquie))
+- Added BBox update on each ribbon based shape (ribbon, tube, extrusion, etc) on dynamic updates ([jerome](https://github.com/jbousquie))
 - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
 - Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
 - Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
@@ -46,6 +48,7 @@
 	- Rendering above transparent surface is now blending correctly
 
 ### Breaking changes
+ - Removed legacy shaders support ([deltakosh](https://github.com/deltakosh))
  - Canvas2D: ([nockawa](https://github.com/nockawa))
   - `WorldSpaceCanvas2D`:
 	- WorldSpaceRenderScale is no longer supported (deprecated because of adaptive feature added).

@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class RenderingGroup {
-        private _scene: Scene
+        private _scene: Scene;
         private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
         private _transparentSubMeshes = new SmartArray<SubMesh>(256);
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);

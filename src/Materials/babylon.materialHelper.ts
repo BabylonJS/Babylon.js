@@ -74,7 +74,7 @@
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
+                    var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                     if (mesh && mesh.receiveShadows && shadowGenerator) {
                         if (defines["SHADOW" + lightIndex] === undefined) {
                             needRebuild = true;
@@ -108,7 +108,8 @@
                     break;
             }
 
-            if (needShadows && scene.getEngine().getCaps().textureFloat && scene.getEngine().getCaps().textureFloatLinearFiltering) {
+            let caps = scene.getEngine().getCaps();
+            if (needShadows && caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
                 if (defines["SHADOWFULLFLOAT"] === undefined) {
                     needRebuild = true;
                 }
@@ -191,7 +192,7 @@
 
         // Bindings
         public static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: number, effect: Effect, depthValuesAlreadySet: boolean): boolean {
-            var shadowGenerator = light.getShadowGenerator();
+            var shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
             if (mesh.receiveShadows && shadowGenerator) {
                 if (!(<any>light).needCube()) {
                     effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());

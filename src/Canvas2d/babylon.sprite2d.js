@@ -91,7 +91,7 @@ var BABYLON;
             return true;
         };
         return Sprite2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -143,7 +143,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "properties", null);
         return Sprite2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -194,13 +194,16 @@ var BABYLON;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.isAlphaTest = true;
-            if (settings.spriteSize == null) {
+            if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
-                    this.size = texture.getSize();
+                    this.size = texture.getBaseSize();
                 }
                 else {
                     texture.onLoadObservable.add(function () {
-                        _this.size = texture.getSize();
+                        if (settings.spriteSize == null) {
+                            _this.size = texture.getBaseSize();
+                        }
+                        _this._positioningDirty();
                     });
                 }
             }
@@ -325,31 +328,47 @@ var BABYLON;
         Sprite2D.prototype.createInstanceDataParts = function () {
             return [new Sprite2DInstanceData(Sprite2D.SPRITE2D_MAINPARTID)];
         };
+        Sprite2D.prototype.beforeRefreshForLayoutConstruction = function (part) {
+            Sprite2D.layoutConstructMode = true;
+        };
+        // if obj contains something, we restore the _text property
+        Sprite2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
+            Sprite2D.layoutConstructMode = false;
+        };
         Sprite2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
             }
-            if (!this.texture.isReady()) {
+            if (!this.texture.isReady() && !Sprite2D.layoutConstructMode) {
                 return false;
             }
             if (part.id === Sprite2D.SPRITE2D_MAINPARTID) {
                 var d = this._instanceDataParts[0];
-                var ts = this.texture.getBaseSize();
-                var sl = this.spriteLocation;
-                var ss = this.actualSize;
-                d.topLeftUV = new BABYLON.Vector2(sl.x / ts.width, sl.y / ts.height);
-                var suv = new BABYLON.Vector2(ss.width / ts.width, ss.height / ts.height);
-                d.sizeUV = suv;
-                Sprite2D._prop.x = this.spriteFrame;
-                Sprite2D._prop.y = this.invertY ? 1 : 0;
-                Sprite2D._prop.z = this.alignToPixel ? 1 : 0;
-                d.properties = Sprite2D._prop;
-                d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
+                if (Sprite2D.layoutConstructMode) {
+                    d.topLeftUV = BABYLON.Vector2.Zero();
+                    d.sizeUV = BABYLON.Vector2.Zero();
+                    d.properties = BABYLON.Vector3.Zero();
+                    d.textureSize = BABYLON.Vector2.Zero();
+                }
+                else {
+                    var ts = this.texture.getBaseSize();
+                    var sl = this.spriteLocation;
+                    var ss = this.actualSize;
+                    d.topLeftUV = new BABYLON.Vector2(sl.x / ts.width, sl.y / ts.height);
+                    var suv = new BABYLON.Vector2(ss.width / ts.width, ss.height / ts.height);
+                    d.sizeUV = suv;
+                    Sprite2D._prop.x = this.spriteFrame;
+                    Sprite2D._prop.y = this.invertY ? 1 : 0;
+                    Sprite2D._prop.z = this.alignToPixel ? 1 : 0;
+                    d.properties = Sprite2D._prop;
+                    d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
+                }
             }
             return true;
         };
         Sprite2D.SPRITE2D_MAINPARTID = 1;
         Sprite2D._prop = BABYLON.Vector3.Zero();
+        Sprite2D.layoutConstructMode = false;
         __decorate([
             BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Sprite2D.textureProperty = pi; })
         ], Sprite2D.prototype, "texture", null);
@@ -369,6 +388,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));

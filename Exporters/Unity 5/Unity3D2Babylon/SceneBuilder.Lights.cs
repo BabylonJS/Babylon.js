@@ -93,9 +93,12 @@ namespace Unity3D2Babylon
             ExportAnimations(light.transform, babylonLight);
 
             // Shadows
-            if ((light.type == LightType.Directional || light.type == LightType.Spot) && light.shadows != LightShadows.None)
+            if (exportationOptions.ExportShadows)
             {
-                GenerateShadowsGenerator(light);
+                if ((light.type == LightType.Directional || light.type == LightType.Spot) && light.shadows != LightShadows.None)
+                {
+                    GenerateShadowsGenerator(light);
+                }
             }
         }
     }

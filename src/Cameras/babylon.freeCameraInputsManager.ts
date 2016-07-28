@@ -24,11 +24,6 @@ module BABYLON {
             return this;
         }
 
-        addVRDeviceOrientation(): FreeCameraInputsManager {
-            this.add(new FreeCameraVRDeviceOrientationInput());
-            return this;
-        }
-
         addTouch(): FreeCameraInputsManager {
             this.add(new FreeCameraTouchInput());
             return this;

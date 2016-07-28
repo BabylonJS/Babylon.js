@@ -186,6 +186,48 @@ module BABYLON {
             }
         }
 
+         /**
+         * Binds the color grading to the shader.
+         * @param colorGrading The texture to bind
+         * @param effect The effect to bind to
+         */
+        public static Bind(colorGrading: BaseTexture, effect: Effect) : void {
+            effect.setTexture("cameraColorGrading2DSampler", colorGrading);
+                        
+     	    let x = colorGrading.level;                 // Texture Level
+            let y = colorGrading.getSize().height;      // Texture Size example with 8
+            let z = y - 1.0;                    // SizeMinusOne 8 - 1
+            let w = 1 / y;                      // Space of 1 slice 1 / 8
+            
+            effect.setFloat4("vCameraColorGradingInfos", x, y, z, w);
+            
+            let slicePixelSizeU = w / y;    // Space of 1 pixel in U direction, e.g. 1/64
+            let slicePixelSizeV = w;		// Space of 1 pixel in V direction, e.g. 1/8					    // Space of 1 pixel in V direction, e.g. 1/8
+            
+            let x2 = z * slicePixelSizeU;   // Extent of lookup range in U for a single slice so that range corresponds to (size-1) texels, for example 7/64
+            let y2 = z / y;	                // Extent of lookup range in V for a single slice so that range corresponds to (size-1) texels, for example 7/8
+            let z2 = 0.5 * slicePixelSizeU;	// Offset of lookup range in U to align sample position with texel centre, for example 0.5/64 
+            let w2 = 0.5 * slicePixelSizeV;	// Offset of lookup range in V to align sample position with texel centre, for example 0.5/8
+            
+            effect.setFloat4("vCameraColorGradingScaleOffset", x2, y2, z2, w2);
+        }
+        
+        /**
+         * Prepare the list of uniforms associated with the ColorGrading effects.
+         * @param uniformsList The list of uniforms used in the effect
+         * @param samplersList The list of samplers used in the effect
+         */
+        public static PrepareUniformsAndSamplers(uniformsList: string[], samplersList: string[]): void {
+            uniformsList.push(
+                "vCameraColorGradingInfos", 
+                "vCameraColorGradingScaleOffset"
+            );
+
+            samplersList.push(
+                "cameraColorGrading2DSampler"
+            );
+        }
+
         /**
          * Parses a color grading texture serialized by Babylon.
          * @param parsedTexture The texture information being parsedTexture
@@ -214,6 +256,7 @@ module BABYLON {
             var serializationObject: any = {};
             serializationObject.name = this.name;
             serializationObject.level = this.level;
+            serializationObject.customType = "BABYLON.ColorGradingTexture";
 
             return serializationObject;
         }
