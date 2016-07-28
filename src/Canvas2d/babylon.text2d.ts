@@ -76,15 +76,8 @@
                 this.fontTexture = null;
             }
 
-            if (this.effect) {
-                this._engine._releaseEffect(this.effect);
-                this.effect = null;
-            }
-
-            if (this.effectInstanced) {
-                this._engine._releaseEffect(this.effectInstanced);
-                this.effectInstanced = null;
-            }
+            this.effect = null;
+            this.effectInstanced = null;
 
             return true;
         }

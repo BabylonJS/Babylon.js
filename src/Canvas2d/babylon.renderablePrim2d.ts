@@ -251,7 +251,7 @@
         constructor(partId: number, dataElementCount: number) {
             this.id = partId;
             this.curElement = 0;
-            this.dataElementCount = dataElementCount;
+            this._dataElementCount = dataElementCount;
             this.renderMode = 0;
             this.arrayLengthChanged = false;
         }
@@ -321,6 +321,7 @@
             this._dataElementCount = value;
             this.allocElements();
         }
+        groupInstanceInfo: GroupInstanceInfo;
         arrayLengthChanged: boolean;
         curElement: number;
         renderMode: number;
@@ -329,7 +330,6 @@
         typeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
 
         private _dataElementCount: number;
-
     }
 
     @className("RenderablePrim2D")
@@ -408,9 +408,8 @@
                 this._transparentPrimitiveInfo = null;
             }
 
-            if (this._modelRenderInstanceID) {
-                this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
-                this._modelRenderInstanceID = null;
+            if (this._instanceDataParts) {
+                this._cleanupInstanceDataParts();
             }
 
             if (this._modelRenderCache) {
@@ -428,13 +427,41 @@
             return true;
         }
 
+        private _cleanupInstanceDataParts() {
+            let gii: GroupInstanceInfo = null;
+            for (let part of this._instanceDataParts) {
+                part.freeElements();
+                gii = part.groupInstanceInfo;
+            }
+            if (gii) {
+                let usedCount = 0;
+                if (gii.hasOpaqueData) {
+                    let od = gii.opaqueData[0];
+                    usedCount += od._partData.usedElementCount;
+                }
+                if (gii.hasAlphaTestData) {
+                    let atd = gii.alphaTestData[0];
+                    usedCount += atd._partData.usedElementCount;
+                }
+                if (gii.hasTransparentData) {
+                    let td = gii.transparentData[0];
+                    usedCount += td._partData.usedElementCount;
+                }
+
+                if (usedCount === 0) {
+                    this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
+                }
+                gii.modelRenderCache.dispose();
+            }
+            this._instanceDataParts = null;
+        }
+
         public _prepareRenderPre(context: PrepareRender2DContext) {
             super._prepareRenderPre(context);
 
             // If the model changed and we have already an instance, we must remove this instance from the obsolete model
-            if (this._isFlagSet(SmartPropertyPrim.flagModelDirty) && this._modelRenderInstanceID) {
-                this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
-                this._modelRenderInstanceID = null;
+            if (this._isFlagSet(SmartPropertyPrim.flagModelDirty) && this._instanceDataParts) {
+                this._cleanupInstanceDataParts();
             }
 
             // Need to create the model?
@@ -447,7 +474,7 @@
             let newInstance = false;
 
             // Need to create the instance data parts?
-            if (!this._modelRenderInstanceID) {
+            if (!this._instanceDataParts) {
                 // Yes, flag it for later, more processing will have to be done
                 newInstance = true;
                 gii = this._createModelDataParts();
@@ -535,10 +562,8 @@
                 part.dataBuffer = gipd[i]._partData;
                 part.allocElements();
                 part.renderMode = rm;
+                part.groupInstanceInfo = gii;
             }
-
-            // Add the instance data parts in the ModelRenderCache they belong, track them by storing their ID in the primitive in case we need to change the model later on, so we'll have to release the allocated instance data parts because they won't fit anymore
-            this._modelRenderInstanceID = this._modelRenderCache.addInstanceDataParts(this._instanceDataParts);
 
             return gii;
         }
@@ -666,7 +691,7 @@
             // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
             for (let part of this._instanceDataParts) {
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if (visChanged || !part.dataElements || rmChanged) {
+                if (!part.dataElements && (visChanged || rmChanged)) {
                     part.allocElements();
                 }
 
@@ -913,7 +938,6 @@
         }
 
         private _modelRenderCache: ModelRenderCache;
-        private _modelRenderInstanceID: string;
         private _transparentPrimitiveInfo: TransparentPrimitiveInfo;
 
         protected _instanceDataParts: InstanceDataBase[];
