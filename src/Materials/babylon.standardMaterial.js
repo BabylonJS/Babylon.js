@@ -70,10 +70,12 @@ var BABYLON;
             this.INVERTNORMALMAPX = false;
             this.INVERTNORMALMAPY = false;
             this.SHADOWFULLFLOAT = false;
+            this.CAMERACOLORGRADING = false;
+            this.CAMERACOLORCURVES = false;
             this.rebuild();
         }
         return StandardMaterialDefines;
-    })(BABYLON.MaterialDefines);
+    }(BABYLON.MaterialDefines));
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         function StandardMaterial(name, scene) {
@@ -108,6 +110,18 @@ var BABYLON;
              * If sets to true, y component of normal map value will invert (y = 1.0 - y).
              */
             this.invertNormalMapY = false;
+            /**
+             * Color Grading 2D Lookup Texture.
+             * This allows special effects like sepia, black and white to sixties rendering style.
+             */
+            this.cameraColorGradingTexture = null;
+            /**
+             * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+             * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+             * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+             * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+             */
+            this.cameraColorCurves = null;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -316,6 +330,14 @@ var BABYLON;
                         this._defines.REFRACTIONMAP_3D = this.refractionTexture.isCube;
                     }
                 }
+                if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
+                    if (!this.cameraColorGradingTexture.isReady()) {
+                        return false;
+                    }
+                    else {
+                        this._defines.CAMERACOLORGRADING = true;
+                    }
+                }
             }
             // Effect
             if (scene.clipPlane) {
@@ -335,6 +357,9 @@ var BABYLON;
             }
             if (this.useLogarithmicDepth) {
                 this._defines.LOGARITHMICDEPTH = true;
+            }
+            if (this.cameraColorCurves) {
+                this._defines.CAMERACOLORCURVES = true;
             }
             // Point size
             if (this.pointsCloud || scene.forcePointsCloud) {
@@ -475,11 +500,7 @@ var BABYLON;
                 }
                 BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
-                // Legacy browser patch
                 var shaderName = "default";
-                if (!scene.getEngine().getCaps().standardDerivatives) {
-                    shaderName = "legacydefault";
-                }
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
@@ -491,6 +512,12 @@ var BABYLON;
                     "logarithmicDepthConstant"
                 ];
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
+                if (this._defines.CAMERACOLORCURVES) {
+                    BABYLON.ColorCurves.PrepareUniforms(uniforms);
+                }
+                if (this._defines.CAMERACOLORGRADING) {
+                    BABYLON.ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
+                }
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
                 this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
             }
@@ -610,6 +637,9 @@ var BABYLON;
                         }
                         this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
+                    if (this.cameraColorGradingTexture && StandardMaterial.ColorGradingTextureEnabled) {
+                        BABYLON.ColorGradingTexture.Bind(this.cameraColorGradingTexture, this._effect);
+                    }
                 }
                 // Clip plane
                 BABYLON.MaterialHelper.BindClipPlane(this._effect, scene);
@@ -641,6 +671,10 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
                 // Log. depth
                 BABYLON.MaterialHelper.BindLogDepth(this._defines, this._effect, scene);
+                // Color Curves
+                if (this.cameraColorCurves) {
+                    BABYLON.ColorCurves.Bind(this.cameraColorCurves, this._effect);
+                }
             }
             _super.prototype.bind.call(this, world, mesh);
         };
@@ -673,6 +707,9 @@ var BABYLON;
             if (this.refractionTexture && this.refractionTexture.animations && this.refractionTexture.animations.length > 0) {
                 results.push(this.refractionTexture);
             }
+            if (this.cameraColorGradingTexture && this.cameraColorGradingTexture.animations && this.cameraColorGradingTexture.animations.length > 0) {
+                results.push(this.cameraColorGradingTexture);
+            }
             return results;
         };
         StandardMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
@@ -704,6 +741,9 @@ var BABYLON;
                 if (this.refractionTexture) {
                     this.refractionTexture.dispose();
                 }
+                if (this.cameraColorGradingTexture) {
+                    this.cameraColorGradingTexture.dispose();
+                }
             }
             _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
@@ -729,6 +769,7 @@ var BABYLON;
         StandardMaterial.FresnelEnabled = true;
         StandardMaterial.LightmapTextureEnabled = true;
         StandardMaterial.RefractionTextureEnabled = true;
+        StandardMaterial.ColorGradingTextureEnabled = true;
         __decorate([
             BABYLON.serializeAsTexture()
         ], StandardMaterial.prototype, "diffuseTexture", void 0);
@@ -841,9 +882,15 @@ var BABYLON;
             BABYLON.serialize()
         ], StandardMaterial.prototype, "invertNormalMapY", void 0);
         __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "cameraColorGradingTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsColorCurves()
+        ], StandardMaterial.prototype, "cameraColorCurves", void 0);
+        __decorate([
             BABYLON.serialize()
         ], StandardMaterial.prototype, "useLogarithmicDepth", null);
         return StandardMaterial;
-    })(BABYLON.Material);
+    }(BABYLON.Material));
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));

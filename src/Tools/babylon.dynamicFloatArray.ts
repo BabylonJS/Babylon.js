@@ -261,7 +261,7 @@
                 this._sortTable = new Array<SortInfo>(newCount);
             }
 
-            if (!this._sortTable || this._sortTable.length !== count) {
+            if (!this._sortedTable || this._sortedTable.length !== count) {
                 this._sortedTable = new Array<SortInfo>(count);
             }
 

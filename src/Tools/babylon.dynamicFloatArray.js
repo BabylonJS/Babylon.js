@@ -4,7 +4,7 @@ var BABYLON;
         function DynamicFloatArrayElementInfo() {
         }
         return DynamicFloatArrayElementInfo;
-    })();
+    }());
     BABYLON.DynamicFloatArrayElementInfo = DynamicFloatArrayElementInfo;
     /**
     * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
@@ -226,7 +226,7 @@ var BABYLON;
                 var newCount = Math.min(this.totalElementCount, count * 2);
                 this._sortTable = new Array(newCount);
             }
-            if (!this._sortTable || this._sortTable.length !== count) {
+            if (!this._sortedTable || this._sortedTable.length !== count) {
                 this._sortedTable = new Array(count);
             }
             // Because, you know...
@@ -309,12 +309,12 @@ var BABYLON;
             return true;
         };
         return DynamicFloatArray;
-    })();
+    }());
     BABYLON.DynamicFloatArray = DynamicFloatArray;
     var SortInfo = (function () {
         function SortInfo() {
             this.compareData = this.offset = this.swapedOffset = null;
         }
         return SortInfo;
-    })();
+    }());
 })(BABYLON || (BABYLON = {}));

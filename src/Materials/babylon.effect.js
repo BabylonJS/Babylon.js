@@ -46,7 +46,7 @@ var BABYLON;
             return currentDefines;
         };
         return EffectFallbacks;
-    })();
+    }());
     BABYLON.EffectFallbacks = EffectFallbacks;
     var Effect = (function () {
         function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, fallbacks, onCompiled, onError, indexParameters) {
@@ -408,6 +408,46 @@ var BABYLON;
             }
             return changed;
         };
+        Effect.prototype.setIntArray = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setIntArray2 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray2(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setIntArray3 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray3(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setIntArray4 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray4(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setFloatArray = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setFloatArray2 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray2(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setFloatArray3 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray3(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setFloatArray4 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray4(this.getUniform(uniformName), array);
+            return this;
+        };
         Effect.prototype.setArray = function (uniformName, array) {
             this._valueCache[uniformName] = null;
             this._engine.setArray(this.getUniform(uniformName), array);
@@ -517,6 +557,6 @@ var BABYLON;
         Effect.ShadersStore = {};
         Effect.IncludesShadersStore = {};
         return Effect;
-    })();
+    }());
     BABYLON.Effect = Effect;
 })(BABYLON || (BABYLON = {}));

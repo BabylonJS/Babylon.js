@@ -356,7 +356,8 @@
             StandardMaterial.OpacityTextureEnabled = true;
             StandardMaterial.ReflectionTextureEnabled = true;
             StandardMaterial.LightmapTextureEnabled = true;
-            StandardMaterial.RefractionTextureEnabled = true;
+            StandardMaterial.RefractionTextureEnabled = true;            
+            StandardMaterial.ColorGradingTextureEnabled = true;
 
             this._scene.shadowsEnabled = true;
             this._scene.particlesEnabled = true;
@@ -689,6 +690,7 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Opacity", StandardMaterial.OpacityTextureEnabled, (element) => { StandardMaterial.OpacityTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", StandardMaterial.ReflectionTextureEnabled, (element) => { StandardMaterial.ReflectionTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Refraction", StandardMaterial.RefractionTextureEnabled, (element) => { StandardMaterial.RefractionTextureEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "ColorGrading", StandardMaterial.ColorGradingTextureEnabled, (element) => { StandardMaterial.ColorGradingTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", StandardMaterial.LightmapTextureEnabled, (element) => { StandardMaterial.LightmapTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", StandardMaterial.FresnelEnabled, (element) => { StandardMaterial.FresnelEnabled = element.checked });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));

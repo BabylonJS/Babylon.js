@@ -323,6 +323,7 @@ var BABYLON;
             serializationObject.generateHarmonics = this._generateHarmonics;
             serializationObject.usePMREMGenerator = this._usePMREMGenerator;
             serializationObject.isBABYLONPreprocessed = this._isBABYLONPreprocessed;
+            serializationObject.customType = "BABYLON.HDRCubeTexture";
             return serializationObject;
         };
         /**
@@ -442,6 +443,6 @@ var BABYLON;
             "back"
         ];
         return HDRCubeTexture;
-    })(BABYLON.BaseTexture);
+    }(BABYLON.BaseTexture));
     BABYLON.HDRCubeTexture = HDRCubeTexture;
 })(BABYLON || (BABYLON = {}));

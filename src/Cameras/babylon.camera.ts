@@ -217,7 +217,7 @@
 
         public _updateFromScene(): void {
             this.updateCache();
-            this._update();
+            this.update();
         }
 
         // Synchronized
@@ -268,7 +268,7 @@
         public detachControl(element: HTMLElement): void {
         }
 
-        public _update(): void {
+        public update(): void {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
@@ -536,7 +536,8 @@
             }
 
             this._cascadePostProcessesToRigCams();
-            this._update();
+            this.
+                update();
         }
 
         private _getVRProjectionMatrix(): Matrix {

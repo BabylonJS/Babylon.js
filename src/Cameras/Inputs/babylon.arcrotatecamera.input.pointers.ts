@@ -17,7 +17,6 @@ module BABYLON {
         public panningSensibility: number = 50.0;
 
         private _isPanClick: boolean = false;
-        private _isCtrlPushed: boolean = false;
         public pinchInwards = true;
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
@@ -89,7 +88,7 @@ module BABYLON {
                     // One button down
                     if (pointA && pointB === undefined) {
                         if (this.panningSensibility !== 0 &&
-                            ((this._isCtrlPushed && this.camera._useCtrlForPanning) ||
+                            ((evt.ctrlKey && this.camera._useCtrlForPanning) ||
                                 (!this.camera._useCtrlForPanning && this._isPanClick))) {
                             this.camera
                                 .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
@@ -101,6 +100,7 @@ module BABYLON {
                             this.camera.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
                             this.camera.inertialBetaOffset -= offsetY / this.angularSensibilityY;
                         }
+
                         cacheSoloPointer.x = evt.clientX;
                         cacheSoloPointer.y = evt.clientY;
                     }
@@ -147,14 +147,6 @@ module BABYLON {
                 pointA = pointB = undefined;
                 previousPinchDistance = 0;
                 cacheSoloPointer = null;
-            };
-
-            this._onKeyDown = evt => {
-                this._isCtrlPushed = evt.ctrlKey;
-            };
-
-            this._onKeyUp = evt => {
-                this._isCtrlPushed = evt.ctrlKey;
             };
 
             this._onMouseMove = evt => {
@@ -224,7 +216,6 @@ module BABYLON {
                 element.removeEventListener("keyup", this._onKeyUp);
 
                 this._isPanClick = false;
-                this._isCtrlPushed = false;
                 this.pinchInwards = true;
 
                 this._onKeyDown = null;

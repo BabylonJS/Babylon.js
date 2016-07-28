@@ -7,20 +7,18 @@ var BABYLON;
 (function (BABYLON) {
     var VRDeviceOrientationFreeCamera = (function (_super) {
         __extends(VRDeviceOrientationFreeCamera, _super);
-        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion) {
+        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion, vrCameraMetrics) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
+            if (vrCameraMetrics === void 0) { vrCameraMetrics = BABYLON.VRCameraMetrics.GetDefault(); }
             _super.call(this, name, position, scene);
-            this.rotationQuaternion = new BABYLON.Quaternion();
-            var metrics = BABYLON.VRCameraMetrics.GetDefault();
-            metrics.compensateDistortion = compensateDistortion;
-            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
-            this.inputs.addDeviceOrientation();
+            vrCameraMetrics.compensateDistortion = compensateDistortion;
+            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
         }
         VRDeviceOrientationFreeCamera.prototype.getTypeName = function () {
             return "VRDeviceOrientationFreeCamera";
         };
         return VRDeviceOrientationFreeCamera;
-    })(BABYLON.FreeCamera);
+    }(BABYLON.DeviceOrientationCamera));
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;
     var VRDeviceOrientationArcRotateCamera = (function (_super) {
         __extends(VRDeviceOrientationArcRotateCamera, _super);
@@ -36,6 +34,6 @@ var BABYLON;
             return "VRDeviceOrientationArcRotateCamera";
         };
         return VRDeviceOrientationArcRotateCamera;
-    })(BABYLON.ArcRotateCamera);
+    }(BABYLON.ArcRotateCamera));
     BABYLON.VRDeviceOrientationArcRotateCamera = VRDeviceOrientationArcRotateCamera;
 })(BABYLON || (BABYLON = {}));

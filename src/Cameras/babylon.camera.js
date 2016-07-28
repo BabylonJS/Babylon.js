@@ -182,7 +182,7 @@ var BABYLON;
         };
         Camera.prototype._updateFromScene = function () {
             this.updateCache();
-            this._update();
+            this.update();
         };
         // Synchronized
         Camera.prototype._isSynchronized = function () {
@@ -222,7 +222,7 @@ var BABYLON;
         };
         Camera.prototype.detachControl = function (element) {
         };
-        Camera.prototype._update = function () {
+        Camera.prototype.update = function () {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
@@ -441,7 +441,8 @@ var BABYLON;
                     break;
             }
             this._cascadePostProcessesToRigCams();
-            this._update();
+            this.
+                update();
         };
         Camera.prototype._getVRProjectionMatrix = function () {
             BABYLON.Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
@@ -644,6 +645,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Camera.prototype, "isStereoscopicSideBySide", void 0);
         return Camera;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.Camera = Camera;
 })(BABYLON || (BABYLON = {}));
