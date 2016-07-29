@@ -99,6 +99,11 @@
         }
 
         @instanceData()
+        get scaleFactor(): Vector2 {
+            return null;
+        }
+
+        @instanceData()
         get textureSize(): Vector2 {
             return null;
         }
@@ -125,7 +130,7 @@
         public static spriteLocationProperty: Prim2DPropInfo;
         public static spriteFrameProperty: Prim2DPropInfo;
         public static invertYProperty: Prim2DPropInfo;
-        public static alignToPixelProperty: Prim2DPropInfo;
+        public static spriteScaleFactorProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Sprite2D.textureProperty = pi)
         /**
@@ -191,6 +196,18 @@
             this._invertY = value;
         }
 
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Sprite2D.spriteScaleFactorProperty = pi)
+        /**
+         * Get/set the sprite location (in pixels) in the texture
+         */
+        public get spriteScaleFactor(): Vector2 {
+            return this._spriteScaleFactor;
+        }
+
+        public set spriteScaleFactor(value: Vector2) {
+            this._spriteScaleFactor = value;
+        }
+
         /**
          * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
          */
@@ -237,6 +254,7 @@
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
+         * - spriteScaleFactor: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
          * - invertY: if true the texture Y will be inverted, default is false.
          * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
@@ -271,6 +289,7 @@
             origin?: Vector2,
             spriteSize?: Size,
             spriteLocation?: Vector2,
+            spriteScaleFactor?: Vector2,
             invertY?: boolean,
             alignToPixel?: boolean,
             isVisible?: boolean,
@@ -301,6 +320,7 @@
             this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
             this.size = settings.spriteSize;
             this.spriteLocation = settings.spriteLocation || new Vector2(0, 0);
+            this.spriteScaleFactor = settings.spriteScaleFactor || new Vector2(1, 1);
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
@@ -315,6 +335,7 @@
                             this.size = <Size>texture.getBaseSize();
                         }
                         this._positioningDirty();
+                        this._instanceDirtyFlags |= Sprite2D.textureProperty.flagId;  // To make sure the sprite is issued again for render
                     });
                 }
             }
@@ -398,13 +419,16 @@
                     d.sizeUV = Vector2.Zero();
                     d.properties = Vector3.Zero();
                     d.textureSize = Vector2.Zero();
+                    d.scaleFactor = Vector2.Zero();
                 } else {
                     let ts = this.texture.getBaseSize();
                     let sl = this.spriteLocation;
                     let ss = this.actualSize;
+                    let ssf = this.spriteScaleFactor;
                     d.topLeftUV = new Vector2(sl.x / ts.width, sl.y / ts.height);
                     let suv = new Vector2(ss.width / ts.width, ss.height / ts.height);
                     d.sizeUV = suv;
+                    d.scaleFactor = ssf;
 
                     Sprite2D._prop.x = this.spriteFrame;
                     Sprite2D._prop.y = this.invertY ? 1 : 0;
@@ -419,6 +443,7 @@
 
         private _texture: Texture;
         private _location: Vector2;
+        private _spriteScaleFactor: Vector2;
         private _spriteFrame: number;
         private _invertY: boolean;
         private _alignToPixel: boolean;
