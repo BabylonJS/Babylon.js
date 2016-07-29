@@ -838,8 +838,8 @@
 
             for (var index = 0; index < this.scenes.length; index++) {
                 var scene = this.scenes[index];
-                if (scene.debugLayer.isVisible()) {
-                    scene.debugLayer._syncPositions();
+                if (scene._debugLayer && scene._debugLayer.isVisible()) {
+                    scene._debugLayer._syncPositions();
                 }
             }
         }
