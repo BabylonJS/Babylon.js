@@ -73,7 +73,7 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    }());
+    })();
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
         function InstancePropInfo() {
@@ -187,7 +187,7 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    }());
+    })();
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -235,7 +235,7 @@ var BABYLON;
         function InstanceDataBase(partId, dataElementCount) {
             this.id = partId;
             this.curElement = 0;
-            this.dataElementCount = dataElementCount;
+            this._dataElementCount = dataElementCount;
             this.renderMode = 0;
             this.arrayLengthChanged = false;
         }
@@ -322,7 +322,7 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "opacity", null);
         return InstanceDataBase;
-    }());
+    })();
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
@@ -378,9 +378,8 @@ var BABYLON;
                 this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
                 this._transparentPrimitiveInfo = null;
             }
-            if (this._modelRenderInstanceID) {
-                this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
-                this._modelRenderInstanceID = null;
+            if (this._instanceDataParts) {
+                this._cleanupInstanceDataParts();
             }
             if (this._modelRenderCache) {
                 this._modelRenderCache.dispose();
@@ -394,12 +393,39 @@ var BABYLON;
             }
             return true;
         };
+        RenderablePrim2D.prototype._cleanupInstanceDataParts = function () {
+            var gii = null;
+            for (var _i = 0, _a = this._instanceDataParts; _i < _a.length; _i++) {
+                var part = _a[_i];
+                part.freeElements();
+                gii = part.groupInstanceInfo;
+            }
+            if (gii) {
+                var usedCount = 0;
+                if (gii.hasOpaqueData) {
+                    var od = gii.opaqueData[0];
+                    usedCount += od._partData.usedElementCount;
+                }
+                if (gii.hasAlphaTestData) {
+                    var atd = gii.alphaTestData[0];
+                    usedCount += atd._partData.usedElementCount;
+                }
+                if (gii.hasTransparentData) {
+                    var td = gii.transparentData[0];
+                    usedCount += td._partData.usedElementCount;
+                }
+                if (usedCount === 0) {
+                    this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
+                }
+                gii.modelRenderCache.dispose();
+            }
+            this._instanceDataParts = null;
+        };
         RenderablePrim2D.prototype._prepareRenderPre = function (context) {
             _super.prototype._prepareRenderPre.call(this, context);
             // If the model changed and we have already an instance, we must remove this instance from the obsolete model
-            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagModelDirty) && this._modelRenderInstanceID) {
-                this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
-                this._modelRenderInstanceID = null;
+            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagModelDirty) && this._instanceDataParts) {
+                this._cleanupInstanceDataParts();
             }
             // Need to create the model?
             var setupModelRenderCache = false;
@@ -409,7 +435,7 @@ var BABYLON;
             var gii = null;
             var newInstance = false;
             // Need to create the instance data parts?
-            if (!this._modelRenderInstanceID) {
+            if (!this._instanceDataParts) {
                 // Yes, flag it for later, more processing will have to be done
                 newInstance = true;
                 gii = this._createModelDataParts();
@@ -485,16 +511,15 @@ var BABYLON;
                 part.dataBuffer = gipd[i]._partData;
                 part.allocElements();
                 part.renderMode = rm;
+                part.groupInstanceInfo = gii;
             }
-            // Add the instance data parts in the ModelRenderCache they belong, track them by storing their ID in the primitive in case we need to change the model later on, so we'll have to release the allocated instance data parts because they won't fit anymore
-            this._modelRenderInstanceID = this._modelRenderCache.addInstanceDataParts(this._instanceDataParts);
             return gii;
         };
         RenderablePrim2D.prototype._setupModelRenderCache = function (parts) {
             var ctiArray = new Array();
             this._modelRenderCache._partData = new Array();
-            for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
-                var dataPart = parts_1[_i];
+            for (var _i = 0; _i < parts.length; _i++) {
+                var dataPart = parts[_i];
                 var pd = new BABYLON.ModelRenderCachePartData();
                 this._modelRenderCache._partData.push(pd);
                 var cat = this.getUsedShaderCategories(dataPart);
@@ -560,7 +585,7 @@ var BABYLON;
                 if (partRM !== curRM) {
                     wereTransparent = partRM === BABYLON.Render2DContext.RenderModeTransparent;
                     rmChanged = true;
-                    var gipd = void 0;
+                    var gipd;
                     switch (curRM) {
                         case BABYLON.Render2DContext.RenderModeTransparent:
                             gipd = gii.transparentData;
@@ -605,7 +630,7 @@ var BABYLON;
                 var part = _a[_i];
                 var justAllocated = false;
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if (visChanged || !part.dataElements || rmChanged) {
+                if (!part.dataElements && (visChanged || rmChanged)) {
                     part.allocElements();
                     justAllocated = true;
                 }
@@ -838,6 +863,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));
