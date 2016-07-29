@@ -1939,91 +1939,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Bone extends Node {
-        name: string;
-        children: Bone[];
-        animations: Animation[];
-        length: number;
-        private _skeleton;
-        _matrix: Matrix;
-        private _restPose;
-        private _baseMatrix;
-        private _worldTransform;
-        private _absoluteTransform;
-        private _invertedAbsoluteTransform;
-        private _parent;
-        constructor(name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix);
-        getParent(): Bone;
-        getLocalMatrix(): Matrix;
-        getBaseMatrix(): Matrix;
-        getRestPose(): Matrix;
-        returnToRest(): void;
-        getWorldMatrix(): Matrix;
-        getInvertedAbsoluteTransform(): Matrix;
-        getAbsoluteTransform(): Matrix;
-        updateMatrix(matrix: Matrix): void;
-        _updateDifferenceMatrix(rootMatrix?: Matrix): void;
-        markAsDirty(): void;
-        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Vector3): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Skeleton {
-        name: string;
-        id: string;
-        bones: Bone[];
-        dimensionsAtRest: Vector3;
-        needInitialSkinMatrix: boolean;
-        private _scene;
-        private _isDirty;
-        private _transformMatrices;
-        private _meshesWithPoseMatrix;
-        private _animatables;
-        private _identity;
-        private _ranges;
-        constructor(name: string, id: string, scene: Scene);
-        getTransformMatrices(mesh: AbstractMesh): Float32Array;
-        getScene(): Scene;
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-        * Get bone's index searching by name
-        * @param {string} name is bone's name to search for
-        * @return {number} Indice of the bone. Returns -1 if not found
-        */
-        getBoneIndexByName(name: string): number;
-        createAnimationRange(name: string, from: number, to: number): void;
-        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
-        getAnimationRange(name: string): AnimationRange;
-        /**
-         *  Returns as an Array, all AnimationRanges defined on this skeleton
-         */
-        getAnimationRanges(): AnimationRange[];
-        /**
-         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
-         */
-        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
-        returnToRest(): void;
-        private _getHighestAnimationFrame();
-        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable;
-        _markAsDirty(): void;
-        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Matrix): void;
-        prepare(): void;
-        getAnimatables(): IAnimatable[];
-        clone(name: string, id: string): Skeleton;
-        enableBlending(blendingSpeed?: number): void;
-        dispose(): void;
-        serialize(): any;
-        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
-    }
-}
-
-declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -2451,6 +2366,438 @@ declare module BABYLON {
 declare module BABYLON {
     class VirtualJoysticksCamera extends FreeCamera {
         constructor(name: string, position: Vector3, scene: Scene);
+    }
+}
+
+declare module BABYLON {
+    class Bone extends Node {
+        name: string;
+        children: Bone[];
+        animations: Animation[];
+        length: number;
+        private _skeleton;
+        _matrix: Matrix;
+        private _restPose;
+        private _baseMatrix;
+        private _worldTransform;
+        private _absoluteTransform;
+        private _invertedAbsoluteTransform;
+        private _parent;
+        constructor(name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix);
+        getParent(): Bone;
+        getLocalMatrix(): Matrix;
+        getBaseMatrix(): Matrix;
+        getRestPose(): Matrix;
+        returnToRest(): void;
+        getWorldMatrix(): Matrix;
+        getInvertedAbsoluteTransform(): Matrix;
+        getAbsoluteTransform(): Matrix;
+        updateMatrix(matrix: Matrix): void;
+        _updateDifferenceMatrix(rootMatrix?: Matrix): void;
+        markAsDirty(): void;
+        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Vector3): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Skeleton {
+        name: string;
+        id: string;
+        bones: Bone[];
+        dimensionsAtRest: Vector3;
+        needInitialSkinMatrix: boolean;
+        private _scene;
+        private _isDirty;
+        private _transformMatrices;
+        private _meshesWithPoseMatrix;
+        private _animatables;
+        private _identity;
+        private _ranges;
+        constructor(name: string, id: string, scene: Scene);
+        getTransformMatrices(mesh: AbstractMesh): Float32Array;
+        getScene(): Scene;
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+        * Get bone's index searching by name
+        * @param {string} name is bone's name to search for
+        * @return {number} Indice of the bone. Returns -1 if not found
+        */
+        getBoneIndexByName(name: string): number;
+        createAnimationRange(name: string, from: number, to: number): void;
+        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
+        getAnimationRange(name: string): AnimationRange;
+        /**
+         *  Returns as an Array, all AnimationRanges defined on this skeleton
+         */
+        getAnimationRanges(): AnimationRange[];
+        /**
+         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         */
+        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
+        returnToRest(): void;
+        private _getHighestAnimationFrame();
+        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable;
+        _markAsDirty(): void;
+        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Matrix): void;
+        prepare(): void;
+        getAnimatables(): IAnimatable[];
+        clone(name: string, id: string): Skeleton;
+        enableBlending(blendingSpeed?: number): void;
+        dispose(): void;
+        serialize(): any;
+        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        extendSize: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
+        intersectsPlane(plane: Plane): number;
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+    }
+}
+
+declare module BABYLON {
+    class Collider {
+        radius: Vector3;
+        retry: number;
+        velocity: Vector3;
+        basePoint: Vector3;
+        epsilon: number;
+        collisionFound: boolean;
+        velocityWorldLength: number;
+        basePointWorld: Vector3;
+        velocityWorld: Vector3;
+        normalizedVelocity: Vector3;
+        initialVelocity: Vector3;
+        initialPosition: Vector3;
+        nearestDistance: number;
+        intersectionPoint: Vector3;
+        collidedMesh: AbstractMesh;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): any;
+        onMeshUpdated(mesh: AbstractMesh): any;
+        onMeshRemoved(mesh: AbstractMesh): any;
+        onGeometryAdded(geometry: Geometry): any;
+        onGeometryUpdated(geometry: Geometry): any;
+        onGeometryDeleted(geometry: Geometry): any;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: string;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Int32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId?: number;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _runningCollisionTask;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: number;
+        bv: number;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: number, bv: number, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Vector3;
+        pickedMesh: AbstractMesh;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Sprite;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
+        getTextureCoordinates(): Vector2;
     }
 }
 
@@ -3147,7 +3494,7 @@ declare module BABYLON {
          * - id: a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
@@ -3180,6 +3527,8 @@ declare module BABYLON {
             y?: number;
             rotation?: number;
             scale?: number;
+            scaleX?: number;
+            scaleY?: number;
             opacity?: number;
             origin?: Vector2;
             size?: Size;
@@ -3239,7 +3588,7 @@ declare module BABYLON {
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
@@ -3268,6 +3617,9 @@ declare module BABYLON {
             position?: Vector2;
             x?: number;
             y?: number;
+            scale?: number;
+            scaleX?: number;
+            scaleY?: number;
             trackNode?: Node;
             opacity?: number;
             origin?: Vector2;
@@ -3471,7 +3823,7 @@ declare module BABYLON {
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
@@ -3506,6 +3858,8 @@ declare module BABYLON {
             y?: number;
             rotation?: number;
             scale?: number;
+            scaleX?: number;
+            scaleY?: number;
             opacity?: number;
             origin?: Vector2;
             fillThickness?: number;
@@ -3651,8 +4005,6 @@ declare module BABYLON {
          * @return must return true is the rendering succeed, false if the rendering couldn't be done (asset's not yet ready, like Effect)
          */
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
-        addInstanceDataParts(data: InstanceDataBase[]): string;
-        removeInstanceData(key: string): void;
         protected getPartIndexFromId(partId: number): number;
         protected loadInstancingAttributes(partId: number, effect: Effect): InstancingAttributeInfo[];
         private static v2;
@@ -3661,7 +4013,6 @@ declare module BABYLON {
         protected setupUniforms(effect: Effect, partIndex: number, data: DynamicFloatArray, elementCount: number): void;
         protected _engine: Engine;
         private _modelKey;
-        _instancesData: StringDictionary<InstanceDataBase[]>;
         private _nextKey;
         private _refCounter;
         _partData: ModelRenderCachePartData[];
@@ -4147,6 +4498,8 @@ declare module BABYLON {
             y?: number;
             rotation?: number;
             scale?: number;
+            scaleX?: number;
+            scaleY?: number;
             opacity?: number;
             origin?: Vector2;
             layoutEngine?: LayoutEngineBase | string;
@@ -4242,6 +4595,14 @@ declare module BABYLON {
          */
         static opacityProperty: Prim2DPropInfo;
         /**
+         * Metadata of the scaleX property
+         */
+        static scaleXProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the scaleY property
+         */
+        static scaleYProperty: Prim2DPropInfo;
+        /**
          * DO NOT INVOKE for internal purpose only
          */
         actualPosition: Vector2;
@@ -4331,6 +4692,8 @@ declare module BABYLON {
         private _hasPadding;
         marginAlignment: PrimitiveAlignment;
         opacity: number;
+        scaleX: number;
+        scaleY: number;
         actualOpacity: number;
         /**
          * Get/set the layout engine to use for this primitive.
@@ -4580,7 +4943,7 @@ declare module BABYLON {
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y settings can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height settings can be set. Default will be [10;10].
@@ -4613,6 +4976,8 @@ declare module BABYLON {
             y?: number;
             rotation?: number;
             scale?: number;
+            scaleX?: number;
+            scaleY?: number;
             opacity?: number;
             origin?: Vector2;
             size?: Size;
@@ -4687,6 +5052,7 @@ declare module BABYLON {
         allocElements(): void;
         freeElements(): void;
         dataElementCount: number;
+        groupInstanceInfo: GroupInstanceInfo;
         arrayLengthChanged: boolean;
         curElement: number;
         renderMode: number;
@@ -4712,6 +5078,7 @@ declare module BABYLON {
          * Dispose the primitive and its resources, remove it from its parent
          */
         dispose(): boolean;
+        private _cleanupInstanceDataParts();
         _prepareRenderPre(context: PrepareRender2DContext): void;
         private _createModelRenderCache();
         private _createModelDataParts();
@@ -4758,7 +5125,6 @@ declare module BABYLON {
         protected updateInstanceDataPart(part: InstanceDataBase, positionOffset?: Vector2): void;
         protected _updateRenderMode(): void;
         private _modelRenderCache;
-        private _modelRenderInstanceID;
         private _transparentPrimitiveInfo;
         protected _instanceDataParts: InstanceDataBase[];
         protected _isAlphaTest: boolean;
@@ -5054,6 +5420,7 @@ declare module BABYLON {
         constructor(partId: number);
         topLeftUV: Vector2;
         sizeUV: Vector2;
+        scaleFactor: Vector2;
         textureSize: Vector2;
         properties: Vector3;
     }
@@ -5064,12 +5431,13 @@ declare module BABYLON {
         static spriteLocationProperty: Prim2DPropInfo;
         static spriteFrameProperty: Prim2DPropInfo;
         static invertYProperty: Prim2DPropInfo;
-        static alignToPixelProperty: Prim2DPropInfo;
+        static spriteScaleFactorProperty: Prim2DPropInfo;
         texture: Texture;
         actualSize: Size;
         spriteLocation: Vector2;
         spriteFrame: number;
         invertY: boolean;
+        spriteScaleFactor: Vector2;
         /**
          * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
          */
@@ -5089,11 +5457,12 @@ declare module BABYLON {
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
+         * - spriteScaleFactor: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
          * - invertY: if true the texture Y will be inverted, default is false.
          * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
@@ -5121,10 +5490,13 @@ declare module BABYLON {
             y?: number;
             rotation?: number;
             scale?: number;
+            scaleX?: number;
+            scaleY?: number;
             opacity?: number;
             origin?: Vector2;
             spriteSize?: Size;
             spriteLocation?: Vector2;
+            spriteScaleFactor?: Vector2;
             invertY?: boolean;
             alignToPixel?: boolean;
             isVisible?: boolean;
@@ -5154,6 +5526,7 @@ declare module BABYLON {
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _texture;
         private _location;
+        private _spriteScaleFactor;
         private _spriteFrame;
         private _invertY;
         private _alignToPixel;
@@ -5213,7 +5586,7 @@ declare module BABYLON {
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
@@ -5246,6 +5619,8 @@ declare module BABYLON {
             y?: number;
             rotation?: number;
             scale?: number;
+            scaleX?: number;
+            scaleY?: number;
             opacity?: number;
             origin?: Vector2;
             fontName?: string;
@@ -5300,349 +5675,44 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Collider {
-        radius: Vector3;
-        retry: number;
-        velocity: Vector3;
-        basePoint: Vector3;
-        epsilon: number;
-        collisionFound: boolean;
-        velocityWorldLength: number;
-        basePointWorld: Vector3;
-        velocityWorld: Vector3;
-        normalizedVelocity: Vector3;
-        initialVelocity: Vector3;
-        initialPosition: Vector3;
-        nearestDistance: number;
-        intersectionPoint: Vector3;
-        collidedMesh: AbstractMesh;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): any;
-        onMeshUpdated(mesh: AbstractMesh): any;
-        onMeshRemoved(mesh: AbstractMesh): any;
-        onGeometryAdded(geometry: Geometry): any;
-        onGeometryUpdated(geometry: Geometry): any;
-        onGeometryDeleted(geometry: Geometry): any;
-    }
-    interface SerializedMesh {
-        id: string;
+    class Layer {
         name: string;
-        uniqueId: number;
-        geometryId: string;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    interface SerializedGeometry {
-        id: string;
-        positions: Float32Array;
-        indices: Int32Array;
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId?: number;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        texture: Texture;
+        isBackground: boolean;
+        color: Color4;
+        scale: Vector2;
+        offset: Vector2;
+        alphaBlendingMode: number;
+        alphaTest: boolean;
         private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _runningCollisionTask;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (mesh: AbstractMesh) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: number;
-        bv: number;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: number, bv: number, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Vector3;
-        pickedMesh: AbstractMesh;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Sprite;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
-        getTextureCoordinates(): Vector2;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        extendSize: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
-        intersectsPlane(plane: Plane): number;
-        private static smallnum;
-        private static rayl;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _alphaTestEffect;
         /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        * An event triggered when the layer is disposed.
+        * @type {BABYLON.Observable}
         */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
+        onDisposeObservable: Observable<Layer>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        /**
+        * An event triggered before rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        onBeforeRenderObservable: Observable<Layer>;
+        private _onBeforeRenderObserver;
+        onBeforeRender: () => void;
+        /**
+        * An event triggered after rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        onAfterRenderObservable: Observable<Layer>;
+        private _onAfterRenderObserver;
+        onAfterRender: () => void;
+        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -5727,48 +5797,6 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength(bones, meshMat);
         update(): void;
         private _updateBoneMatrix(bone);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class Layer {
-        name: string;
-        texture: Texture;
-        isBackground: boolean;
-        color: Color4;
-        scale: Vector2;
-        offset: Vector2;
-        alphaBlendingMode: number;
-        alphaTest: boolean;
-        private _scene;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _alphaTestEffect;
-        /**
-        * An event triggered when the layer is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<Layer>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        /**
-        * An event triggered before rendering the scene
-        * @type {BABYLON.Observable}
-        */
-        onBeforeRenderObservable: Observable<Layer>;
-        private _onBeforeRenderObserver;
-        onBeforeRender: () => void;
-        /**
-        * An event triggered after rendering the scene
-        * @type {BABYLON.Observable}
-        */
-        onAfterRenderObservable: Observable<Layer>;
-        private _onAfterRenderObserver;
-        onAfterRender: () => void;
-        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
-        render(): void;
         dispose(): void;
     }
 }
@@ -13206,6 +13234,7 @@ declare module BABYLON {
         private _spaceWidthSuper;
         private _usedCounter;
         private _superSample;
+        private _cachedFontId;
         isSuperSampled: boolean;
         spaceWidth: number;
         lineHeight: number;
@@ -13238,6 +13267,15 @@ declare module BABYLON {
          */
         update(): void;
         clone(): FontTexture;
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        incCachedFontTextureCounter(): void;
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        decCachedFontTextureCounter(): void;
     }
 }
 

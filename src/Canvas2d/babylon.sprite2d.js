@@ -40,7 +40,7 @@ var BABYLON;
             effect.setTexture("diffuseSampler", this.texture);
             engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
             if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
             }
             var pid = context.groupInfoPartData[0];
             if (context.useInstancing) {
@@ -61,7 +61,7 @@ var BABYLON;
                     engine.draw(true, 0, 6);
                 }
             }
-            engine.setAlphaMode(cur);
+            engine.setAlphaMode(cur, true);
             return true;
         };
         Sprite2DRenderCache.prototype.dispose = function () {
@@ -80,18 +80,12 @@ var BABYLON;
                 this.texture.dispose();
                 this.texture = null;
             }
-            if (this.effect) {
-                this._engine._releaseEffect(this.effect);
-                this.effect = null;
-            }
-            if (this.effectInstanced) {
-                this._engine._releaseEffect(this.effectInstanced);
-                this.effectInstanced = null;
-            }
+            this.effect = null;
+            this.effectInstanced = null;
             return true;
         };
         return Sprite2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -106,6 +100,13 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Sprite2DInstanceData.prototype, "sizeUV", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2DInstanceData.prototype, "scaleFactor", {
             get: function () {
                 return null;
             },
@@ -138,12 +139,15 @@ var BABYLON;
         ], Sprite2DInstanceData.prototype, "sizeUV", null);
         __decorate([
             BABYLON.instanceData()
+        ], Sprite2DInstanceData.prototype, "scaleFactor", null);
+        __decorate([
+            BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "textureSize", null);
         __decorate([
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "properties", null);
         return Sprite2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -156,11 +160,12 @@ var BABYLON;
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
+         * - spriteScaleFactor: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
          * - invertY: if true the texture Y will be inverted, default is false.
          * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
@@ -190,6 +195,7 @@ var BABYLON;
             this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this.size = settings.spriteSize;
             this.spriteLocation = settings.spriteLocation || new BABYLON.Vector2(0, 0);
+            this.spriteScaleFactor = settings.spriteScaleFactor || new BABYLON.Vector2(1, 1);
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
@@ -204,6 +210,7 @@ var BABYLON;
                             _this.size = texture.getBaseSize();
                         }
                         _this._positioningDirty();
+                        _this._instanceDirtyFlags |= Sprite2D.textureProperty.flagId; // To make sure the sprite is issued again for render
                     });
                 }
             }
@@ -257,6 +264,16 @@ var BABYLON;
             },
             set: function (value) {
                 this._invertY = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "spriteScaleFactor", {
+            get: function () {
+                return this._spriteScaleFactor;
+            },
+            set: function (value) {
+                this._spriteScaleFactor = value;
             },
             enumerable: true,
             configurable: true
@@ -349,14 +366,17 @@ var BABYLON;
                     d.sizeUV = BABYLON.Vector2.Zero();
                     d.properties = BABYLON.Vector3.Zero();
                     d.textureSize = BABYLON.Vector2.Zero();
+                    d.scaleFactor = BABYLON.Vector2.Zero();
                 }
                 else {
                     var ts = this.texture.getBaseSize();
                     var sl = this.spriteLocation;
                     var ss = this.actualSize;
+                    var ssf = this.spriteScaleFactor;
                     d.topLeftUV = new BABYLON.Vector2(sl.x / ts.width, sl.y / ts.height);
                     var suv = new BABYLON.Vector2(ss.width / ts.width, ss.height / ts.height);
                     d.sizeUV = suv;
+                    d.scaleFactor = ssf;
                     Sprite2D._prop.x = this.spriteFrame;
                     Sprite2D._prop.y = this.invertY ? 1 : 0;
                     Sprite2D._prop.z = this.alignToPixel ? 1 : 0;
@@ -384,10 +404,13 @@ var BABYLON;
         __decorate([
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Sprite2D.invertYProperty = pi; })
         ], Sprite2D.prototype, "invertY", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Sprite2D.spriteScaleFactorProperty = pi; })
+        ], Sprite2D.prototype, "spriteScaleFactor", null);
         Sprite2D = __decorate([
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));

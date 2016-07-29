@@ -16,7 +16,7 @@ var BABYLON;
             this.forceRefreshPrimitive = false;
         }
         return PrepareRender2DContext;
-    }());
+    })();
     BABYLON.PrepareRender2DContext = PrepareRender2DContext;
     var Render2DContext = (function () {
         function Render2DContext(renderMode) {
@@ -73,7 +73,7 @@ var BABYLON;
         Render2DContext._renderModeAlphaTest = 2;
         Render2DContext._renderModeTransparent = 3;
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -233,7 +233,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    }());
+    })();
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     /**
      * Defines the horizontal and vertical alignment information for a Primitive.
@@ -374,8 +374,8 @@ var BABYLON;
          */
         PrimitiveAlignment.prototype.fromString = function (value) {
             var m = value.trim().split(",");
-            for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
-                var v = m_1[_i];
+            for (var _i = 0; _i < m.length; _i++) {
+                var v = m[_i];
                 v = v.toLocaleLowerCase().trim();
                 // Horizontal
                 var i = v.indexOf("h:");
@@ -406,7 +406,7 @@ var BABYLON;
         PrimitiveAlignment._AlignCenter = 3;
         PrimitiveAlignment._AlignStretch = 4;
         return PrimitiveAlignment;
-    }());
+    })();
     BABYLON.PrimitiveAlignment = PrimitiveAlignment;
     /**
      * Stores information about a Primitive that was intersected
@@ -417,7 +417,7 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    }());
+    })();
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
     /**
      * Define a thickness toward every edges of a Primitive to allow margin and padding.
@@ -456,8 +456,8 @@ var BABYLON;
                 return;
             }
             var res = false;
-            for (var _i = 0, m_2 = m; _i < m_2.length; _i++) {
-                var cm = m_2[_i];
+            for (var _i = 0; _i < m.length; _i++) {
+                var cm = m[_i];
                 res = this._extractString(cm, false) || res;
             }
             if (!res) {
@@ -607,7 +607,7 @@ var BABYLON;
                     return true;
                 }
                 // Check for pixel
-                var n = void 0;
+                var n;
                 pI = v.indexOf("px");
                 if (pI !== -1) {
                     n = v.substr(0, pI).trim();
@@ -1131,7 +1131,7 @@ var BABYLON;
         PrimitiveThickness.Percentage = 0x4;
         PrimitiveThickness.Pixel = 0x8;
         return PrimitiveThickness;
-    }());
+    })();
     BABYLON.PrimitiveThickness = PrimitiveThickness;
     /**
      * Main class used for the Primitive Intersection API
@@ -1168,7 +1168,7 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    }());
+    })();
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -1202,6 +1202,7 @@ var BABYLON;
             // Fields initialization
             this._layoutEngine = BABYLON.CanvasLayoutEngine.Singleton;
             this._size = null; //Size.Zero();
+            this._scale = new BABYLON.Vector2(1, 1);
             this._actualSize = null;
             this._boundingSize = BABYLON.Size.Zero();
             this._layoutArea = BABYLON.Size.Zero();
@@ -1240,6 +1241,7 @@ var BABYLON;
             else {
                 this._opacity = 1;
             }
+            this._updateRenderMode();
             if (settings.childrenFlatZOrder) {
                 this._setFlags(BABYLON.SmartPropertyPrim.flagChildrenFlatZOrder);
             }
@@ -1273,7 +1275,17 @@ var BABYLON;
                 this._position = null;
             }
             this.rotation = (settings.rotation == null) ? 0 : settings.rotation;
-            this.scale = (settings.scale == null) ? 1 : settings.scale;
+            if (settings.scale != null) {
+                this.scale = settings.scale;
+            }
+            else {
+                if (settings.scaleX != null) {
+                    this.scaleX = settings.scaleX;
+                }
+                if (settings.scaleY != null) {
+                    this.scaleY = settings.scaleY;
+                }
+            }
             this.levelVisible = (settings.isVisible == null) ? true : settings.isVisible;
             this.origin = settings.origin || new BABYLON.Vector2(0.5, 0.5);
             // Layout Engine
@@ -1615,10 +1627,10 @@ var BABYLON;
         });
         Object.defineProperty(Prim2DBase.prototype, "scale", {
             get: function () {
-                return this._scale;
+                return this._scale.x;
             },
             set: function (value) {
-                this._scale = value;
+                this._scale.x = this._scale.y = value;
             },
             enumerable: true,
             configurable: true
@@ -1834,6 +1846,26 @@ var BABYLON;
                 this._updateRenderMode();
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualOpacityDirty);
                 this._spreadActualOpacityChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "scaleX", {
+            get: function () {
+                return this._scale.x;
+            },
+            set: function (value) {
+                this._scale.x = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "scaleY", {
+            get: function () {
+                return this._scale.y;
+            },
+            set: function (value) {
+                this._scale.y = value;
             },
             enumerable: true,
             configurable: true
@@ -2276,8 +2308,8 @@ var BABYLON;
             //}
         };
         Prim2DBase.prototype.updateCachedStatesOf = function (list, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
                 cur.updateCachedStates(recurse);
             }
         };
@@ -2313,7 +2345,7 @@ var BABYLON;
             this._layoutEngine = engine;
         };
         Prim2DBase.prototype._updateLocalTransform = function () {
-            var tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.originProperty.flagId;
+            var tflags = Prim2DBase.actualPositionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId | Prim2DBase.scaleXProperty.flagId | Prim2DBase.scaleYProperty.flagId | Prim2DBase.originProperty.flagId;
             if (this.checkPropertiesDirty(tflags)) {
                 if (this.owner) {
                     this.owner.addupdateLocalTransformCounter(1);
@@ -2322,7 +2354,7 @@ var BABYLON;
                 var local;
                 var pos = this.position;
                 if (this._origin.x === 0 && this._origin.y === 0) {
-                    local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale, this._scale, 1), rot, new BABYLON.Vector3(pos.x, pos.y, 0));
+                    local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale.x, this._scale.y, 1), rot, new BABYLON.Vector3(pos.x, pos.y, 0));
                     this._localTransform = local;
                 }
                 else {
@@ -2333,7 +2365,7 @@ var BABYLON;
                     rot.toRotationMatrix(Prim2DBase._t1);
                     Prim2DBase._t0.multiplyToRef(Prim2DBase._t1, Prim2DBase._t2);
                     // -Origin * rotation * scale
-                    BABYLON.Matrix.ScalingToRef(this._scale, this._scale, 1, Prim2DBase._t0);
+                    BABYLON.Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase._t0);
                     Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
                     // -Origin * rotation * scale * (Origin + Position)
                     BABYLON.Matrix.TranslationToRef((as.width * this._origin.x) + pos.x, (as.height * this._origin.y) + pos.y, 0, Prim2DBase._t2);
@@ -2421,7 +2453,7 @@ var BABYLON;
                 // Check if we have to update the globalTransform
                 if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged) {
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
-                    var localTransform = void 0;
+                    var localTransform;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
                     Prim2DBase._transMtx.m[12] += this._layoutAreaPos.x + this._marginOffset.x + parentPaddingOffset.x;
                     Prim2DBase._transMtx.m[13] += this._layoutAreaPos.y + this._marginOffset.y + parentPaddingOffset.y;
@@ -2705,7 +2737,7 @@ var BABYLON;
         Prim2DBase.prototype._getActualSizeFromContentToRef = function (primSize, newPrimSize) {
             newPrimSize.copyFrom(primSize);
         };
-        Prim2DBase.PRIM2DBASE_PROPCOUNT = 15;
+        Prim2DBase.PRIM2DBASE_PROPCOUNT = 16;
         Prim2DBase._bigInt = Math.pow(2, 30);
         Prim2DBase._nullPosition = BABYLON.Vector2.Zero();
         Prim2DBase.boundinbBoxReentrency = false;
@@ -2762,10 +2794,16 @@ var BABYLON;
         __decorate([
             BABYLON.instanceLevelProperty(13, function (pi) { return Prim2DBase.opacityProperty = pi; })
         ], Prim2DBase.prototype, "opacity", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(14, function (pi) { return Prim2DBase.scaleXProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "scaleX", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(15, function (pi) { return Prim2DBase.scaleYProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "scaleY", null);
         Prim2DBase = __decorate([
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));
