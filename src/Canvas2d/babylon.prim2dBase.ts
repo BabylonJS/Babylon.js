@@ -1396,6 +1396,8 @@
                 this._opacity = 1;
             }
 
+            this._updateRenderMode();
+
             if (settings.childrenFlatZOrder) {
                 this._setFlags(SmartPropertyPrim.flagChildrenFlatZOrder);
             }

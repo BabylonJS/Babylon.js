@@ -127,15 +127,10 @@
                 this.fillIB = null;
             }
 
-            if (this.effectFill) {
-                this._engine._releaseEffect(this.effectFill);
-                this.effectFill = null;
-            }
-
-            if (this.effectFillInstanced) {
-                this._engine._releaseEffect(this.effectFillInstanced);
-                this.effectFillInstanced = null;
-            }
+            this.effectFill = null;
+            this.effectFillInstanced = null;
+            this.effectBorder = null;
+            this.effectBorderInstanced = null;
 
             if (this.borderVB) {
                 this._engine._releaseBuffer(this.borderVB);
@@ -145,16 +140,6 @@
             if (this.borderIB) {
                 this._engine._releaseBuffer(this.borderIB);
                 this.borderIB = null;
-            }
-
-            if (this.effectBorder) {
-                this._engine._releaseEffect(this.effectBorder);
-                this.effectBorder = null;
-            }
-
-            if (this.effectBorderInstanced) {
-                this._engine._releaseEffect(this.effectBorderInstanced);
-                this.effectBorderInstanced = null;
             }
 
             return true;
