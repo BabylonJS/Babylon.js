@@ -525,6 +525,10 @@
             }
         }
 
+        public _setCacheGroupDirty() {
+            this._cacheGroupDirty = true;
+        }
+
         private _updateTransparentData() {
             this.owner._addUpdateTransparentDataCount(1);
 
