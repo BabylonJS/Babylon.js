@@ -1114,10 +1114,6 @@
         private _profilingCanvas: Canvas2D;
         private _profileInfoText: Text2D;
 
-        protected onPrimBecomesDirty() {
-            this._addPrimToDirtyList(this);
-        }
-
         private static _v = Vector3.Zero(); // Must stay zero
         private static _m = Matrix.Identity();
         private static _mI = Matrix.Identity(); // Must stay identity
