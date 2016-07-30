@@ -59,7 +59,7 @@ var BABYLON;
                     engine.draw(true, 0, 6);
                 }
             }
-            engine.setAlphaMode(curAlphaMode);
+            engine.setAlphaMode(curAlphaMode, true);
             return true;
         };
         Text2DRenderCache.prototype.dispose = function () {
@@ -75,21 +75,15 @@ var BABYLON;
                 this.ib = null;
             }
             if (this.fontTexture) {
-                this.fontTexture.dispose();
+                this.fontTexture.decCachedFontTextureCounter();
                 this.fontTexture = null;
             }
-            if (this.effect) {
-                this._engine._releaseEffect(this.effect);
-                this.effect = null;
-            }
-            if (this.effectInstanced) {
-                this._engine._releaseEffect(this.effectInstanced);
-                this.effectInstanced = null;
-            }
+            this.effect = null;
+            this.effectInstanced = null;
             return true;
         };
         return Text2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Text2DRenderCache = Text2DRenderCache;
     var Text2DInstanceData = (function (_super) {
         __extends(Text2DInstanceData, _super);
@@ -147,7 +141,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Text2DInstanceData.prototype, "superSampleFactor", null);
         return Text2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Text2DInstanceData = Text2DInstanceData;
     var Text2D = (function (_super) {
         __extends(Text2D, _super);
@@ -160,7 +154,7 @@ var BABYLON;
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
@@ -324,6 +318,7 @@ var BABYLON;
             var renderCache = modelRenderCache;
             var engine = this.owner.engine;
             renderCache.fontTexture = this.fontTexture;
+            renderCache.fontTexture.incCachedFontTextureCounter();
             var vb = new Float32Array(4);
             for (var i = 0; i < 4; i++) {
                 vb[i] = i;
@@ -440,6 +435,6 @@ var BABYLON;
             BABYLON.className("Text2D")
         ], Text2D);
         return Text2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));

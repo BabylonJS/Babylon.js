@@ -100,6 +100,6 @@ var BABYLON;
             this._initialQuaternion.normalize();
         };
         return WebVRFreeCamera;
-    }(BABYLON.FreeCamera));
+    })(BABYLON.FreeCamera);
     BABYLON.WebVRFreeCamera = WebVRFreeCamera;
 })(BABYLON || (BABYLON = {}));
