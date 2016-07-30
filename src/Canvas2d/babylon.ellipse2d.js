@@ -50,7 +50,7 @@ var BABYLON;
                 var partIndex = instanceInfo.partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_FILLPARTID.toString());
                 var pid = context.groupInfoPartData[partIndex];
                 if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
-                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
                 }
                 var effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
                 engine.enableEffect(effect);
@@ -78,7 +78,7 @@ var BABYLON;
                 var partIndex = instanceInfo.partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_BORDERPARTID.toString());
                 var pid = context.groupInfoPartData[partIndex];
                 if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
-                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
                 }
                 var effect = context.useInstancing ? this.effectBorderInstanced : this.effectBorder;
                 engine.enableEffect(effect);
@@ -102,7 +102,7 @@ var BABYLON;
                     }
                 }
             }
-            engine.setAlphaMode(curAlphaMode);
+            engine.setAlphaMode(curAlphaMode, true);
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
             }
@@ -120,14 +120,10 @@ var BABYLON;
                 this._engine._releaseBuffer(this.fillIB);
                 this.fillIB = null;
             }
-            if (this.effectFill) {
-                this._engine._releaseEffect(this.effectFill);
-                this.effectFill = null;
-            }
-            if (this.effectFillInstanced) {
-                this._engine._releaseEffect(this.effectFillInstanced);
-                this.effectFillInstanced = null;
-            }
+            this.effectFill = null;
+            this.effectFillInstanced = null;
+            this.effectBorder = null;
+            this.effectBorderInstanced = null;
             if (this.borderVB) {
                 this._engine._releaseBuffer(this.borderVB);
                 this.borderVB = null;
@@ -136,18 +132,10 @@ var BABYLON;
                 this._engine._releaseBuffer(this.borderIB);
                 this.borderIB = null;
             }
-            if (this.effectBorder) {
-                this._engine._releaseEffect(this.effectBorder);
-                this.effectBorder = null;
-            }
-            if (this.effectBorderInstanced) {
-                this._engine._releaseEffect(this.effectBorderInstanced);
-                this.effectBorderInstanced = null;
-            }
             return true;
         };
         return Ellipse2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Ellipse2DRenderCache = Ellipse2DRenderCache;
     var Ellipse2DInstanceData = (function (_super) {
         __extends(Ellipse2DInstanceData, _super);
@@ -165,7 +153,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Ellipse2DInstanceData.prototype, "properties", null);
         return Ellipse2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Ellipse2DInstanceData = Ellipse2DInstanceData;
     var Ellipse2D = (function (_super) {
         __extends(Ellipse2D, _super);
@@ -177,7 +165,7 @@ var BABYLON;
          * - id: a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. Default will be [10;10].
@@ -354,6 +342,6 @@ var BABYLON;
             BABYLON.className("Ellipse2D")
         ], Ellipse2D);
         return Ellipse2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Ellipse2D = Ellipse2D;
 })(BABYLON || (BABYLON = {}));

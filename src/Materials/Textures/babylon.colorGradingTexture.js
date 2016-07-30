@@ -207,6 +207,6 @@ var BABYLON;
          */
         ColorGradingTexture._noneEmptyLineRegex = /\S+/;
         return ColorGradingTexture;
-    }(BABYLON.BaseTexture));
+    })(BABYLON.BaseTexture);
     BABYLON.ColorGradingTexture = ColorGradingTexture;
 })(BABYLON || (BABYLON = {}));
