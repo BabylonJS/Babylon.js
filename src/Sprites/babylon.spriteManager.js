@@ -224,6 +224,6 @@ var BABYLON;
             this.onDisposeObservable.clear();
         };
         return SpriteManager;
-    }());
+    })();
     BABYLON.SpriteManager = SpriteManager;
 })(BABYLON || (BABYLON = {}));

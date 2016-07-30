@@ -97,6 +97,6 @@ var BABYLON;
             return BABYLON.Internals.AndOrNotEvaluator.Eval(tagsQuery, function (r) { return Tags.HasTags(obj) && obj._tags[r]; });
         };
         return Tags;
-    }());
+    })();
     BABYLON.Tags = Tags;
 })(BABYLON || (BABYLON = {}));

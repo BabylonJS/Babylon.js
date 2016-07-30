@@ -12,7 +12,7 @@ var BABYLON;
         function CharInfo() {
         }
         return CharInfo;
-    }());
+    })();
     BABYLON.CharInfo = CharInfo;
     var FontTexture = (function (_super) {
         __extends(FontTexture, _super);
@@ -50,6 +50,7 @@ var BABYLON;
             this._context = this._canvas.getContext("2d");
             this._context.font = font;
             this._context.fillStyle = "white";
+            this._cachedFontId = null;
             var res = this.getFontHeight(font);
             this._lineHeightSuper = res.height;
             this._lineHeight = this._superSample ? (this._lineHeightSuper / 2) : this._lineHeightSuper;
@@ -116,6 +117,7 @@ var BABYLON;
                 return ft;
             }
             ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, BABYLON.Texture.BILINEAR_SAMPLINGMODE, supersample);
+            ft._cachedFontId = lfn;
             dic.add(lfn, ft);
             return ft;
         };
@@ -181,8 +183,8 @@ var BABYLON;
             var lineCount = 1;
             var charxpos = 0;
             // Parse each char of the string
-            for (var _i = 0, text_1 = text; _i < text_1.length; _i++) {
-                var char = text_1[_i];
+            for (var _i = 0; _i < text.length; _i++) {
+                var char = text[_i];
                 // Next line feed?
                 if (char === "\n") {
                     maxWidth = Math.max(maxWidth, curWidth);
@@ -283,7 +285,28 @@ var BABYLON;
         FontTexture.prototype.clone = function () {
             return null;
         };
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        FontTexture.prototype.incCachedFontTextureCounter = function () {
+            ++this._usedCounter;
+        };
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        FontTexture.prototype.decCachedFontTextureCounter = function () {
+            var s = this.getScene();
+            var dic = s.__fontTextureCache__;
+            if (!dic) {
+                return;
+            }
+            if (--this._usedCounter === 0) {
+                dic.remove(this._cachedFontId);
+                this.dispose();
+            }
+        };
         return FontTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.FontTexture = FontTexture;
 })(BABYLON || (BABYLON = {}));

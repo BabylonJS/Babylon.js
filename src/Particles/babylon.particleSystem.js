@@ -449,6 +449,6 @@ var BABYLON;
         ParticleSystem.BLENDMODE_ONEONE = 0;
         ParticleSystem.BLENDMODE_STANDARD = 1;
         return ParticleSystem;
-    }());
+    })();
     BABYLON.ParticleSystem = ParticleSystem;
 })(BABYLON || (BABYLON = {}));

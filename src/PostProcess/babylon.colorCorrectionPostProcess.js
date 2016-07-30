@@ -32,6 +32,6 @@ var BABYLON;
             };
         }
         return ColorCorrectionPostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.ColorCorrectionPostProcess = ColorCorrectionPostProcess;
 })(BABYLON || (BABYLON = {}));
