@@ -692,7 +692,7 @@
             for (let part of this._instanceDataParts) {
                 let justAllocated = false;
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if (!part.dataElements && (visChanged || rmChanged)) {
+                if (!part.dataElements && (visChanged || rmChanged || this.isVisible)) {
                     part.allocElements();
                     justAllocated = true;
                 }
