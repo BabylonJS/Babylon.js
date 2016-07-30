@@ -50,7 +50,7 @@ var BABYLON;
             return new ActionEvent(prim, pointerPos.x, pointerPos.y, null, evt, additionalData);
         };
         return ActionEvent;
-    }());
+    })();
     BABYLON.ActionEvent = ActionEvent;
     /**
      * Action Manager manages all events to be triggered on a given mesh or the global scene.
@@ -522,6 +522,6 @@ var BABYLON;
         ActionManager.DragMovementThreshold = 10; // in pixels
         ActionManager.LongPressDelay = 500; // in milliseconds
         return ActionManager;
-    }());
+    })();
     BABYLON.ActionManager = ActionManager;
 })(BABYLON || (BABYLON = {}));

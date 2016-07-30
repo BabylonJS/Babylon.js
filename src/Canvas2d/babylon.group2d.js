@@ -21,7 +21,7 @@ var BABYLON;
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - size: the size of the group. Alternatively the width and height properties can be set. If null the size will be computed from its content, default is null.
@@ -377,10 +377,10 @@ var BABYLON;
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                var context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
+                var context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context_1, v);
+                    var renderCount = _this._prepareContext(engine, context, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -388,7 +388,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context_1);
+                        var renderFailed = !v.modelRenderCache.render(v, context);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -400,10 +400,10 @@ var BABYLON;
                 engine.setAlphaTesting(true);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
+                context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context_1, v);
+                    var renderCount = _this._prepareContext(engine, context, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -411,7 +411,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context_1);
+                        var renderFailed = !v.modelRenderCache.render(v, context);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -804,7 +804,7 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.Group2D = Group2D;
     var RenderableGroupData = (function () {
         function RenderableGroupData() {
@@ -878,12 +878,12 @@ var BABYLON;
             //this.updateSmallestZChangedPrim(tpi);
         };
         return RenderableGroupData;
-    }());
+    })();
     BABYLON.RenderableGroupData = RenderableGroupData;
     var TransparentPrimitiveInfo = (function () {
         function TransparentPrimitiveInfo() {
         }
         return TransparentPrimitiveInfo;
-    }());
+    })();
     BABYLON.TransparentPrimitiveInfo = TransparentPrimitiveInfo;
 })(BABYLON || (BABYLON = {}));

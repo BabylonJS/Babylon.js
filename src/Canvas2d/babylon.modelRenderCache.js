@@ -121,7 +121,7 @@ var BABYLON;
             configurable: true
         });
         return GroupInstanceInfo;
-    }());
+    })();
     BABYLON.GroupInstanceInfo = GroupInstanceInfo;
     var TransparentSegment = (function () {
         function TransparentSegment() {
@@ -140,7 +140,7 @@ var BABYLON;
             }
         };
         return TransparentSegment;
-    }());
+    })();
     BABYLON.TransparentSegment = TransparentSegment;
     var GroupInfoPartData = (function () {
         function GroupInfoPartData(stride) {
@@ -162,7 +162,7 @@ var BABYLON;
             this._isDisposed = true;
         };
         return GroupInfoPartData;
-    }());
+    })();
     BABYLON.GroupInfoPartData = GroupInfoPartData;
     var TransparentGroupInfoPartData = (function (_super) {
         __extends(TransparentGroupInfoPartData, _super);
@@ -172,7 +172,7 @@ var BABYLON;
             this._partData.sortingAscending = false;
         }
         return TransparentGroupInfoPartData;
-    }(GroupInfoPartData));
+    })(GroupInfoPartData);
     BABYLON.TransparentGroupInfoPartData = TransparentGroupInfoPartData;
     var ModelRenderCache = (function () {
         function ModelRenderCache(engine, modelKey) {
@@ -180,7 +180,6 @@ var BABYLON;
             this._modelKey = modelKey;
             this._nextKey = 1;
             this._refCounter = 1;
-            this._instancesData = new BABYLON.StringDictionary();
             this._partData = null;
         }
         ModelRenderCache.prototype.dispose = function () {
@@ -219,17 +218,6 @@ var BABYLON;
          */
         ModelRenderCache.prototype.render = function (instanceInfo, context) {
             return true;
-        };
-        ModelRenderCache.prototype.addInstanceDataParts = function (data) {
-            var key = this._nextKey.toString();
-            if (!this._instancesData.add(key, data)) {
-                throw Error("Key: " + key + " is already allocated");
-            }
-            ++this._nextKey;
-            return key;
-        };
-        ModelRenderCache.prototype.removeInstanceData = function (key) {
-            this._instancesData.remove(key);
         };
         ModelRenderCache.prototype.getPartIndexFromId = function (partId) {
             for (var i = 0; i < this._partData.length; i++) {
@@ -313,12 +301,12 @@ var BABYLON;
         ModelRenderCache.v3 = BABYLON.Vector3.Zero();
         ModelRenderCache.v4 = BABYLON.Vector4.Zero();
         return ModelRenderCache;
-    }());
+    })();
     BABYLON.ModelRenderCache = ModelRenderCache;
     var ModelRenderCachePartData = (function () {
         function ModelRenderCachePartData() {
         }
         return ModelRenderCachePartData;
-    }());
+    })();
     BABYLON.ModelRenderCachePartData = ModelRenderCachePartData;
 })(BABYLON || (BABYLON = {}));

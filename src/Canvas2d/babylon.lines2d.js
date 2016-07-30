@@ -50,7 +50,7 @@ var BABYLON;
                 var partIndex = instanceInfo.partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_FILLPARTID.toString());
                 var pid = context.groupInfoPartData[partIndex];
                 if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
-                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
                 }
                 var effect = context.useInstancing ? this.effectFillInstanced : this.effectFill;
                 engine.enableEffect(effect);
@@ -78,7 +78,7 @@ var BABYLON;
                 var partIndex = instanceInfo.partIndexFromId.get(BABYLON.Shape2D.SHAPE2D_BORDERPARTID.toString());
                 var pid = context.groupInfoPartData[partIndex];
                 if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
-                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
                 }
                 var effect = context.useInstancing ? this.effectBorderInstanced : this.effectBorder;
                 engine.enableEffect(effect);
@@ -102,7 +102,7 @@ var BABYLON;
                     }
                 }
             }
-            engine.setAlphaMode(curAlphaMode);
+            engine.setAlphaMode(curAlphaMode, true);
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
             }
@@ -120,14 +120,10 @@ var BABYLON;
                 this._engine._releaseBuffer(this.fillIB);
                 this.fillIB = null;
             }
-            if (this.effectFill) {
-                this._engine._releaseEffect(this.effectFill);
-                this.effectFill = null;
-            }
-            if (this.effectFillInstanced) {
-                this._engine._releaseEffect(this.effectFillInstanced);
-                this.effectFillInstanced = null;
-            }
+            this.effectFill = null;
+            this.effectFillInstanced = null;
+            this.effectBorder = null;
+            this.effectBorderInstanced = null;
             if (this.borderVB) {
                 this._engine._releaseBuffer(this.borderVB);
                 this.borderVB = null;
@@ -136,18 +132,10 @@ var BABYLON;
                 this._engine._releaseBuffer(this.borderIB);
                 this.borderIB = null;
             }
-            if (this.effectBorder) {
-                this._engine._releaseEffect(this.effectBorder);
-                this.effectBorder = null;
-            }
-            if (this.effectBorderInstanced) {
-                this._engine._releaseEffect(this.effectBorderInstanced);
-                this.effectBorderInstanced = null;
-            }
             return true;
         };
         return Lines2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Lines2DRenderCache = Lines2DRenderCache;
     var Lines2DInstanceData = (function (_super) {
         __extends(Lines2DInstanceData, _super);
@@ -175,7 +163,7 @@ var BABYLON;
             BABYLON.instanceData(BABYLON.Shape2D.SHAPE2D_CATEGORY_FILLGRADIENT)
         ], Lines2DInstanceData.prototype, "boundingMax", null);
         return Lines2DInstanceData;
-    }(BABYLON.Shape2DInstanceData));
+    })(BABYLON.Shape2DInstanceData);
     BABYLON.Lines2DInstanceData = Lines2DInstanceData;
     var Lines2D = (function (_super) {
         __extends(Lines2D, _super);
@@ -188,7 +176,7 @@ var BABYLON;
          * - id a text identifier, for information purpose
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fillThickness: the thickness of the fill part of the line, can be null to draw nothing (but a border brush must be given), default is 1.
@@ -298,6 +286,7 @@ var BABYLON;
             },
             set: function (value) {
                 this._points = value;
+                this._contour = null;
                 this._boundingBoxDirty();
             },
             enumerable: true,
@@ -386,10 +375,10 @@ var BABYLON;
                 return false;
             };
             if (this._startCapTriIndices) {
-                if (capIntersect(this._startCapTriIndices, this._startCapContour)) {
+                if (this._startCapTriIndices && capIntersect(this._startCapTriIndices, this._startCapContour)) {
                     return true;
                 }
-                if (capIntersect(this._endCapTriIndices, this._endCapContour)) {
+                if (this._endCapTriIndices && capIntersect(this._endCapTriIndices, this._endCapContour)) {
                     return true;
                 }
             }
@@ -1083,10 +1072,18 @@ var BABYLON;
                 this._startCapTriIndices = startCapTri;
                 this._startCapContour = startCapContour;
             }
+            else {
+                this._startCapTriIndices = null;
+                this._startCapContour = null;
+            }
             if (endCapContour.length > 0) {
                 var endCapTri = Earcut.earcut(endCapContour, null, 2);
                 this._endCapContour = endCapContour;
                 this._endCapTriIndices = endCapTri;
+            }
+            else {
+                this._endCapContour = null;
+                this._endCapTriIndices = null;
             }
             var bs = this._boundingMax.subtract(this._boundingMin);
             this._size.width = bs.x;
@@ -1167,6 +1164,6 @@ var BABYLON;
             BABYLON.className("Lines2D")
         ], Lines2D);
         return Lines2D;
-    }(BABYLON.Shape2D));
+    })(BABYLON.Shape2D);
     BABYLON.Lines2D = Lines2D;
 })(BABYLON || (BABYLON = {}));

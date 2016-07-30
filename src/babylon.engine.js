@@ -108,13 +108,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    }());
+    })();
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    }());
+    })();
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -682,7 +682,7 @@ var BABYLON;
             this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
             for (var index = 0; index < this.scenes.length; index++) {
                 var scene = this.scenes[index];
-                if (scene.debugLayer.isVisible()) {
+                if (BABYLON.DebugLayer && scene.debugLayer.isVisible()) {
                     scene.debugLayer._syncPositions();
                 }
             }
@@ -2379,6 +2379,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    }());
+    })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
