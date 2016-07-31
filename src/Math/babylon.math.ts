@@ -3512,7 +3512,7 @@
             if (!this._raw) {
                 this._binormals[0].normalize();
             }
-            this._distances[0] = 0;
+            this._distances[0] = 0.0;
 
             // normals and binormals : next points
             var prev: Vector3;        // previous vector (segment)
@@ -3575,17 +3575,21 @@
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
         private _normalVector(v0: Vector3, vt: Vector3, va: Vector3): Vector3 {
             var normal0: Vector3;
+            var tgl = vt.length();
+            if (tgl === 0.0) {
+                tgl = 1.0;
+            }
 
             if (va === undefined || va === null) {
                 var point: Vector3;
-                if (!MathTools.WithinEpsilon(vt.y, 1, Epsilon)) {     // search for a point in the plane
-                    point = new Vector3(0, -1, 0);
+                if (!MathTools.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, Epsilon)) {     // search for a point in the plane
+                    point = new Vector3(0.0, -1.0, 0.0);
                 }
-                else if (!MathTools.WithinEpsilon(vt.x, 1, Epsilon)) {
-                    point = new Vector3(1, 0, 0);
+                else if (!MathTools.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, Epsilon)) {
+                    point = new Vector3(1.0, 0.0, 0.0);
                 }
-                else if (!MathTools.WithinEpsilon(vt.z, 1, Epsilon)) {
-                    point = new Vector3(0, 0, 1);
+                else if (!MathTools.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
+                    point = new Vector3(0.0, 0.0, 1.0);
                 }
                 normal0 = Vector3.Cross(vt, point);
             }
@@ -3600,7 +3604,7 @@
 
     export class Curve3 {
         private _points: Vector3[];
-        private _length: number = 0;
+        private _length: number = 0.0;
 
         /**
          * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve  
@@ -3613,7 +3617,7 @@
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array<Vector3>();
             var equation = (t: number, val0: number, val1: number, val2: number) => {
-                var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
+                var res = (1.0 - t) * (1.0 - t) * val0 + 2.0 * t * (1.0 - t) * val1 + t * t * val2;
                 return res;
             }
             for (var i = 0; i <= nbPoints; i++) {
@@ -3634,7 +3638,7 @@
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array<Vector3>();
             var equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
-                var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
+                var res = (1.0 - t) * (1.0 - t) * (1.0 - t) * val0 + 3.0 * t * (1.0 - t) * (1.0 - t) * val1 + 3.0 * t * t * (1.0 - t) * val2 + t * t * t * val3;
                 return res;
             }
             for (var i = 0; i <= nbPoints; i++) {
@@ -3653,7 +3657,7 @@
          */
         public static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3 {
             var hermite = new Array<Vector3>();
-            var step = 1 / nbPoints;
+            var step = 1.0 / nbPoints;
             for (var i = 0; i <= nbPoints; i++) {
                 hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
             }
