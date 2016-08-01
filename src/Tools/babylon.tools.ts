@@ -288,6 +288,23 @@
             }
         }
 
+        public static SetCorsBehavior(url: string, img: HTMLImageElement): string {
+            if (Tools.CorsBehavior) {
+                switch (typeof (Tools.CorsBehavior)) {
+                    case "function":
+                        var result = Tools.CorsBehavior(url);
+                        if (result) {
+                            return result;
+                        }
+                        break;
+                    case "string":
+                    default:
+                        img.crossOrigin = Tools.CorsBehavior;
+                        break;
+                }
+            }
+        }
+
         // External files
         public static CleanUrl(url: string): string {
             url = url.replace(/#/mg, "%23");
@@ -304,20 +321,7 @@
             var img = new Image();
 
             if (url.substr(0, 5) !== "data:") {
-                if (Tools.CorsBehavior) {
-                    switch (typeof (Tools.CorsBehavior)) {
-                        case "function":
-                            var result = Tools.CorsBehavior(url);
-                            if (result) {
-                                img.crossOrigin = result;
-                            }
-                            break;
-                        case "string":
-                        default:
-                            img.crossOrigin = Tools.CorsBehavior;
-                            break;
-                    }
-                }
+                Tools.SetCorsBehavior(url, img);
             }
 
             img.onload = () => {

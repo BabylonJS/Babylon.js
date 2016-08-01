@@ -120,6 +120,8 @@
         public run(scene: Scene, onSuccess: () => void, onError: () => void) {
             var img = new Image();
 
+            Tools.SetCorsBehavior(this.url, img);
+
             img.onload = () => {
                 this.image = img;
                 this.isCompleted = true;
