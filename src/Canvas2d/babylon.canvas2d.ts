@@ -495,7 +495,7 @@
             ii.findFirstOnly = false;
 
             // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
-            if (!isCapture && !this.boundingInfo.doesIntersect(ii.pickPosition)) {
+            if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
                 this._previousIntersectionList = this._actualIntersectionList;
                 this._actualIntersectionList = null;
                 this._previousOverPrimitive = this._actualOverPrimitive;
