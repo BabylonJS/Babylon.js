@@ -2816,9 +2816,10 @@
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
 
-            let aPos = new Vector2(this._layoutAreaPos.x + this._marginOffset.x, this._layoutAreaPos.y + this._marginOffset.y);
-            this.actualPosition = aPos;
-
+            if (!this._position) {
+                let aPos = new Vector2(this._layoutAreaPos.x + this._marginOffset.x, this._layoutAreaPos.y + this._marginOffset.y);
+                this.actualPosition = aPos;
+            }
             if (isSizeAuto) {
                 this._lastAutoSizeArea = this.size;                
             }
