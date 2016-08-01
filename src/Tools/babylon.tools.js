@@ -235,6 +235,22 @@ var BABYLON;
                 document.msCancelFullScreen();
             }
         };
+        Tools.SetCorsBehavior = function (url, img) {
+            if (Tools.CorsBehavior) {
+                switch (typeof (Tools.CorsBehavior)) {
+                    case "function":
+                        var result = Tools.CorsBehavior(url);
+                        if (result) {
+                            return result;
+                        }
+                        break;
+                    case "string":
+                    default:
+                        img.crossOrigin = Tools.CorsBehavior;
+                        break;
+                }
+            }
+        };
         // External files
         Tools.CleanUrl = function (url) {
             url = url.replace(/#/mg, "%23");
@@ -247,20 +263,7 @@ var BABYLON;
             url = Tools.CleanUrl(url);
             var img = new Image();
             if (url.substr(0, 5) !== "data:") {
-                if (Tools.CorsBehavior) {
-                    switch (typeof (Tools.CorsBehavior)) {
-                        case "function":
-                            var result = Tools.CorsBehavior(url);
-                            if (result) {
-                                img.crossOrigin = result;
-                            }
-                            break;
-                        case "string":
-                        default:
-                            img.crossOrigin = Tools.CorsBehavior;
-                            break;
-                    }
-                }
+                Tools.SetCorsBehavior(url, img);
             }
             img.onload = function () {
                 onload(img);

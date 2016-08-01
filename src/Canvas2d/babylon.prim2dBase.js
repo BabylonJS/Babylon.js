@@ -2526,8 +2526,10 @@ var BABYLON;
                 this._paddingOffset.copyFrom(Prim2DBase._icPos);
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
-            var aPos = new BABYLON.Vector2(this._layoutAreaPos.x + this._marginOffset.x, this._layoutAreaPos.y + this._marginOffset.y);
-            this.actualPosition = aPos;
+            if (!this._position) {
+                var aPos = new BABYLON.Vector2(this._layoutAreaPos.x + this._marginOffset.x, this._layoutAreaPos.y + this._marginOffset.y);
+                this.actualPosition = aPos;
+            }
             if (isSizeAuto) {
                 this._lastAutoSizeArea = this.size;
             }

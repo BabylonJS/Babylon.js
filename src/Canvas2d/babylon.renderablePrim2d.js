@@ -374,6 +374,9 @@ var BABYLON;
             if (!_super.prototype.dispose.call(this)) {
                 return false;
             }
+            if (this.renderGroup) {
+                this.renderGroup._setCacheGroupDirty();
+            }
             if (this._transparentPrimitiveInfo) {
                 this.renderGroup._renderableData.removeTransparentPrimitiveInfo(this._transparentPrimitiveInfo);
                 this._transparentPrimitiveInfo = null;
@@ -630,7 +633,7 @@ var BABYLON;
                 var part = _a[_i];
                 var justAllocated = false;
                 // Check if we need to allocate data elements (hidden prim which becomes visible again)
-                if (!part.dataElements && (visChanged || rmChanged)) {
+                if (!part.dataElements && (visChanged || rmChanged || this.isVisible)) {
                     part.allocElements();
                     justAllocated = true;
                 }

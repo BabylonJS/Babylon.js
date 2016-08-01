@@ -88,6 +88,7 @@ var BABYLON;
         ImageAssetTask.prototype.run = function (scene, onSuccess, onError) {
             var _this = this;
             var img = new Image();
+            BABYLON.Tools.SetCorsBehavior(this.url, img);
             img.onload = function () {
                 _this.image = img;
                 _this.isCompleted = true;

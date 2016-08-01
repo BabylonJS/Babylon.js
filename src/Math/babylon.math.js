@@ -2833,7 +2833,7 @@ var BABYLON;
             if (!this._raw) {
                 this._binormals[0].normalize();
             }
-            this._distances[0] = 0;
+            this._distances[0] = 0.0;
             // normals and binormals : next points
             var prev; // previous vector (segment)
             var cur; // current vector (segment)
@@ -2890,16 +2890,20 @@ var BABYLON;
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
         Path3D.prototype._normalVector = function (v0, vt, va) {
             var normal0;
+            var tgl = vt.length();
+            if (tgl === 0.0) {
+                tgl = 1.0;
+            }
             if (va === undefined || va === null) {
                 var point;
-                if (!MathTools.WithinEpsilon(vt.y, 1, BABYLON.Epsilon)) {
-                    point = new Vector3(0, -1, 0);
+                if (!MathTools.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, BABYLON.Epsilon)) {
+                    point = new Vector3(0.0, -1.0, 0.0);
                 }
-                else if (!MathTools.WithinEpsilon(vt.x, 1, BABYLON.Epsilon)) {
-                    point = new Vector3(1, 0, 0);
+                else if (!MathTools.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, BABYLON.Epsilon)) {
+                    point = new Vector3(1.0, 0.0, 0.0);
                 }
-                else if (!MathTools.WithinEpsilon(vt.z, 1, BABYLON.Epsilon)) {
-                    point = new Vector3(0, 0, 1);
+                else if (!MathTools.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, BABYLON.Epsilon)) {
+                    point = new Vector3(0.0, 0.0, 1.0);
                 }
                 normal0 = Vector3.Cross(vt, point);
             }
@@ -2920,7 +2924,7 @@ var BABYLON;
          * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
          */
         function Curve3(points) {
-            this._length = 0;
+            this._length = 0.0;
             this._points = points;
             this._length = this._computeLength(points);
         }
@@ -2935,7 +2939,7 @@ var BABYLON;
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array();
             var equation = function (t, val0, val1, val2) {
-                var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
+                var res = (1.0 - t) * (1.0 - t) * val0 + 2.0 * t * (1.0 - t) * val1 + t * t * val2;
                 return res;
             };
             for (var i = 0; i <= nbPoints; i++) {
@@ -2955,7 +2959,7 @@ var BABYLON;
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array();
             var equation = function (t, val0, val1, val2, val3) {
-                var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
+                var res = (1.0 - t) * (1.0 - t) * (1.0 - t) * val0 + 3.0 * t * (1.0 - t) * (1.0 - t) * val1 + 3.0 * t * t * (1.0 - t) * val2 + t * t * t * val3;
                 return res;
             };
             for (var i = 0; i <= nbPoints; i++) {
@@ -2973,7 +2977,7 @@ var BABYLON;
          */
         Curve3.CreateHermiteSpline = function (p1, t1, p2, t2, nbPoints) {
             var hermite = new Array();
-            var step = 1 / nbPoints;
+            var step = 1.0 / nbPoints;
             for (var i = 0; i <= nbPoints; i++) {
                 hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
             }
