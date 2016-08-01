@@ -441,7 +441,7 @@ var BABYLON;
             ii.pickPosition.y = mouseLocalPos.y;
             ii.findFirstOnly = false;
             // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
-            if (!isCapture && !this.boundingInfo.doesIntersect(ii.pickPosition)) {
+            if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
                 this._previousIntersectionList = this._actualIntersectionList;
                 this._actualIntersectionList = null;
                 this._previousOverPrimitive = this._actualOverPrimitive;
@@ -959,9 +959,6 @@ var BABYLON;
         };
         Canvas2D.prototype.addUpdateGlobalTransformCounter = function (count) {
             this._updateGlobalTransformCounter.addCount(count, false);
-        };
-        Canvas2D.prototype.onPrimBecomesDirty = function () {
-            this._addPrimToDirtyList(this);
         };
         Canvas2D.prototype._updateTrackedNodes = function () {
             var cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;

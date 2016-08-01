@@ -445,6 +445,9 @@ var BABYLON;
                 engine.setDepthWrite(curDepthWrite);
             }
         };
+        Group2D.prototype._setCacheGroupDirty = function () {
+            this._cacheGroupDirty = true;
+        };
         Group2D.prototype._updateTransparentData = function () {
             this.owner._addUpdateTransparentDataCount(1);
             var rd = this._renderableData;
