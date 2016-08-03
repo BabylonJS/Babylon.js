@@ -25,6 +25,7 @@
       "../../src/Tools/babylon.tools.js",
       "../../src/States/babylon.alphaCullingState.js",
       "../../src/States/babylon.depthCullingState.js",
+      "../../src/States/babylon.stencilState.js",
       "../../src/babylon.engine.js",
       "../../src/babylon.node.js",
       "../../src/Tools/babylon.filesInput.js",
