@@ -300,7 +300,7 @@
             if (this.onClearObservable.hasObservers()) {
                 this.onClearObservable.notifyObservers(engine);
             } else {
-                engine.clear(scene.clearColor, true, true);
+                engine.clear(scene.clearColor, true, true, true);
             }
 
             if (!this._doNotChangeAspectRatio) {
@@ -336,6 +336,21 @@
 
                 engine.unBindFramebuffer(this._texture, this.isCube);
             }
+        }
+
+        public setRenderingOrder(renderingGroupId: number,
+            opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
+            alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
+            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null) {
+            
+            this._renderingManager.setRenderingOrder(renderingGroupId,
+                opaqueSortCompareFn,
+                alphaTestSortCompareFn,
+                transparentSortCompareFn);
+        }
+
+        public setRenderingAutoClear(renderingGroupId: number, autoClear: boolean) {            
+            this._renderingManager.setRenderingAutoClear(renderingGroupId, autoClear);
         }
 
         public clone(): RenderTargetTexture {
