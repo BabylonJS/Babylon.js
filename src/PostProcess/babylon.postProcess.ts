@@ -196,9 +196,9 @@
 
             // Clear
             if (this.clearColor) {
-                this._engine.clear(this.clearColor, true, true);
+                this._engine.clear(this.clearColor, true, true, true);
             } else {
-                this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true);
+                this._engine.clear(scene.clearColor, scene.autoClear || scene.forceWireframe, true, true);
             }
 
             if (this._reusable) {

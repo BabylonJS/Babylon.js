@@ -2238,7 +2238,7 @@
             }
 
             // Clear
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true);
+            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true, true);
 
             // Shadows
             if (this.shadowsEnabled) {
@@ -2266,7 +2266,7 @@
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     this._renderId = currentRenderId;
                     if (cameraIndex > 0) {
-                        this._engine.clear(0, false, true);
+                        this._engine.clear(0, false, true, true);
                     }
 
                     this._processSubCameras(this.activeCameras[cameraIndex]);
@@ -2920,6 +2920,21 @@
 
         public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+        }
+
+        public setRenderingOrder(renderingGroupId: number,
+            opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
+            alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
+            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null) {
+            
+            this._renderingManager.setRenderingOrder(renderingGroupId,
+                opaqueSortCompareFn,
+                alphaTestSortCompareFn,
+                transparentSortCompareFn);
+        }
+
+        public setRenderingAutoClear(renderingGroupId: number, autoClear: boolean) {            
+            this._renderingManager.setRenderingAutoClear(renderingGroupId, autoClear);
         }
     }
 }

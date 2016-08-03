@@ -157,7 +157,7 @@
 
             if (this._isScreenSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
-                    this._engine.clear(null, false, true);
+                    this._engine.clear(null, false, true, true);
                     this._render();
                 });
             } else {

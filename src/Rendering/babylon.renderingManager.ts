@@ -1,18 +1,28 @@
 ﻿module BABYLON {
     export class RenderingManager {
         public static MAX_RENDERINGGROUPS = 4;
+        public static MIN_RENDERINGGROUPS = 0;
 
         private _scene: Scene;
         private _renderingGroups = new Array<RenderingGroup>();
-        private _depthBufferAlreadyCleaned: boolean;
+        private _depthStencilBufferAlreadyCleaned: boolean;
 
         private _currentIndex: number;
         private _currentActiveMeshes: AbstractMesh[];
         private _currentRenderParticles: boolean;
         private _currentRenderSprites: boolean;
 
+        private _autoClear: { [id:number]: boolean } = {};
+        private _customOpaqueSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
+        private _customAlphaTestSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
+        private _customTransparentSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
+
         constructor(scene: Scene) {
             this._scene = scene;
+
+            for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
+                this._autoClear[i] = true;
+            }
         }
 
         private _renderParticles(index: number, activeMeshes: AbstractMesh[]): void {
@@ -34,7 +44,7 @@
                     continue;
                 }
 
-                this._clearDepthBuffer();
+                this._clearDepthStencilBuffer();
 
                 if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
                     this._scene._activeParticles.addCount(particleSystem.render(), false);
@@ -55,20 +65,20 @@
                 var spriteManager = this._scene.spriteManagers[id];
 
                 if (spriteManager.renderingGroupId === index && ((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
-                    this._clearDepthBuffer();
+                    this._clearDepthStencilBuffer();
                     spriteManager.render();
                 }
             }
             this._scene._spritesDuration.endMonitoring(false);
         }
 
-        private _clearDepthBuffer(): void {
-            if (this._depthBufferAlreadyCleaned) {
+        private _clearDepthStencilBuffer(): void {
+            if (this._depthStencilBufferAlreadyCleaned) {
                 return;
             }
 
-            this._scene.getEngine().clear(0, false, true);
-            this._depthBufferAlreadyCleaned = true;
+            this._scene.getEngine().clear(0, false, true, true);
+            this._depthStencilBufferAlreadyCleaned = true;
         }
 
         private _renderSpritesAndParticles() {
@@ -88,15 +98,17 @@
             this._currentRenderParticles = renderParticles;
             this._currentRenderSprites = renderSprites;
 
-            for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
-                this._depthBufferAlreadyCleaned = index === 0;
+            for (var index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
+                this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
                 var needToStepBack = false;
 
                 this._currentIndex = index;
 
                 if (renderingGroup) {
-                    this._clearDepthBuffer();
+                    if (this._autoClear[index]) {
+                        this._clearDepthStencilBuffer();
+                    }
 
                     if (!renderingGroup.onBeforeTransparentRendering) {
                         renderingGroup.onBeforeTransparentRendering = this._renderSpritesAndParticles.bind(this);
@@ -130,11 +142,35 @@
             var renderingGroupId = mesh.renderingGroupId || 0;
 
             if (!this._renderingGroups[renderingGroupId]) {
-                this._renderingGroups[renderingGroupId] = new RenderingGroup(renderingGroupId, this._scene);
+                this._renderingGroups[renderingGroupId] = new RenderingGroup(renderingGroupId, this._scene,
+                    this._customOpaqueSortCompareFn[renderingGroupId],
+                    this._customAlphaTestSortCompareFn[renderingGroupId],
+                    this._customTransparentSortCompareFn[renderingGroupId]
+                );
             }
 
             this._renderingGroups[renderingGroupId].dispatch(subMesh);
         }
 
+        public setRenderingOrder(renderingGroupId: number,
+            opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
+            alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
+            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null) {
+            
+            if (this._renderingGroups[renderingGroupId]) {
+                var group = this._renderingGroups[renderingGroupId];
+                group.opaqueSortCompareFn = this._customOpaqueSortCompareFn[renderingGroupId];
+                group.alphaTestSortCompareFn = this._customAlphaTestSortCompareFn[renderingGroupId];
+                group.transparentSortCompareFn = this._customTransparentSortCompareFn[renderingGroupId];
+            }
+
+            this._customOpaqueSortCompareFn[renderingGroupId] = opaqueSortCompareFn;
+            this._customAlphaTestSortCompareFn[renderingGroupId] = alphaTestSortCompareFn;
+            this._customTransparentSortCompareFn[renderingGroupId] = transparentSortCompareFn;
+        }
+
+        public setRenderingAutoClear(renderingGroupId: number, autoClear: boolean) {            
+            this._autoClear[renderingGroupId] = autoClear;
+        }
     }
 } 

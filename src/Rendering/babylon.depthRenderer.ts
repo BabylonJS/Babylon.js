@@ -25,7 +25,7 @@
             
             // set default depth value to 1.0 (far away)
             this._depthMap.onClearObservable.add((engine: Engine) => {
-                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true);
+                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
             });
 
             // Custom render function
