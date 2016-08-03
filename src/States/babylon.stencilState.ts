@@ -18,7 +18,7 @@
         private _stencilOpStencilDepthPass: number;
 
         public get isDirty(): boolean {
-            return this._isStencilTestDirty || this._isStencilMaskDirty || this._isStencilFuncDirty;
+            return this._isStencilTestDirty || this._isStencilMaskDirty || this._isStencilFuncDirty || this._isStencilOpDirty;
         }
 
         public get stencilFunc(): number {
@@ -125,22 +125,26 @@
             this._isStencilTestDirty = true;
         }
 
-        public reset() {
-            this._stencilMask = 0xFF;
-            this._stencilTest = false;
+        public constructor() {
+            this.reset();
+        }
 
-            this._stencilFunc = null;
+        public reset() {
+            this._stencilTest = false;
+            this._stencilMask = 0xFF;
+
+            this._stencilFunc = WebGLRenderingContext.ALWAYS;
             this._stencilFuncRef = 1;
             this._stencilFuncMask = 0xFF;
 
-            this._stencilOpStencilFail = 0x1E00; // KEEP
-            this._stencilOpDepthFail = 0x1E00; // KEEP
-            this._stencilOpStencilDepthPass = 0x1E01; // REPLACE
+            this._stencilOpStencilFail = WebGLRenderingContext.KEEP;
+            this._stencilOpDepthFail = WebGLRenderingContext.KEEP;
+            this._stencilOpStencilDepthPass = WebGLRenderingContext.REPLACE;
 
             this._isStencilTestDirty = true;
             this._isStencilMaskDirty = true;
-            this._isStencilFuncDirty = false;
-            this._isStencilOpDirty = false;
+            this._isStencilFuncDirty = true;
+            this._isStencilOpDirty = true;
         }
 
         public apply(gl: WebGLRenderingContext) {
