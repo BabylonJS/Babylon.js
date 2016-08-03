@@ -709,6 +709,12 @@
             return (x * x) + (y * y);
         }
 
+        public static Center(value1: Vector2, value2: Vector2): Vector2 {
+            var center = value1.add(value2);
+            center.scaleInPlace(0.5);
+            return center;
+        }
+
         public static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number {
             let l2 = Vector2.DistanceSquared(segA, segB);
             if (l2 === 0.0) {
