@@ -394,8 +394,10 @@
                 request.onprogress = progressCallBack;
 
                 request.onreadystatechange = () => {
-                    if (request.readyState === 4) {
-                        if (request.status === 200 || Tools.ValidateXHRData(request, !useArrayBuffer ? 1 : 6)) {
+                    if (request.readyState === XMLHttpRequest.DONE) {
+                        request.onreadystatechange = null;//some browsers have issues where onreadystatechange can be called multiple times with the same value
+
+                        if (request.status >= 200 && request.status < 300) {
                             callback(!useArrayBuffer ? request.responseText : request.response);
                         } else { // Failed
                             if (onError) {
