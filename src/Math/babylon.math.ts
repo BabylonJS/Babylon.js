@@ -483,6 +483,13 @@
             return this;
         }
 
+        public addInPlace(otherVector: Vector2): Vector2 {
+            this.x += otherVector.x;
+            this.y += otherVector.y;
+
+            return this;
+        }
+
         public addVector3(otherVector: Vector3): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
