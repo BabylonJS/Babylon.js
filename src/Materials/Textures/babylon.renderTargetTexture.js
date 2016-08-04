@@ -7,11 +7,13 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube, samplingMode) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube, samplingMode, generateDepthBuffer, generateStencilBuffer) {
             if (doNotChangeAspectRatio === void 0) { doNotChangeAspectRatio = true; }
             if (type === void 0) { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             if (isCube === void 0) { isCube = false; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            if (generateDepthBuffer === void 0) { generateDepthBuffer = true; }
+            if (generateStencilBuffer === void 0) { generateStencilBuffer = false; }
             _super.call(this, null, scene, !generateMipMaps);
             this.isCube = isCube;
             /**
@@ -54,12 +56,23 @@ var BABYLON;
                 this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             }
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, samplingMode: samplingMode });
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, {
+                    generateMipMaps: generateMipMaps,
+                    samplingMode: samplingMode,
+                    generateDepthBuffer: generateDepthBuffer,
+                    generateStencilBuffer: generateStencilBuffer
+                });
                 this.coordinatesMode = BABYLON.Texture.INVCUBIC_MODE;
                 this._textureMatrix = BABYLON.Matrix.Identity();
             }
             else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type, samplingMode: samplingMode });
+                this._texture = scene.getEngine().createRenderTargetTexture(size, {
+                    generateMipMaps: generateMipMaps,
+                    type: type,
+                    samplingMode: samplingMode,
+                    generateDepthBuffer: generateDepthBuffer,
+                    generateStencilBuffer: generateStencilBuffer
+                });
             }
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
