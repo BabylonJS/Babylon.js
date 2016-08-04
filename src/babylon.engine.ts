@@ -558,6 +558,9 @@
             return this._webGLVersion;
         }
 
+        /**
+         * Returns true if the stencil buffer has been enabled through the creation option of the context.
+         */
         public get isStencilEnable(): boolean {
             return this._isStencilEnable;
         }

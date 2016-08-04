@@ -1,6 +1,13 @@
 ﻿module BABYLON {
     export class RenderingManager {
+        /**
+         * The max id used for rendering groups (not included)
+         */
         public static MAX_RENDERINGGROUPS = 4;
+
+        /**
+         * The min id used for rendering groups (included)
+         */
         public static MIN_RENDERINGGROUPS = 0;
 
         private _scene: Scene;
@@ -153,6 +160,15 @@
             this._renderingGroups[renderingGroupId].dispatch(subMesh);
         }
 
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         * 
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
         public setRenderingOrder(renderingGroupId: number,
             opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
@@ -170,8 +186,14 @@
             this._customTransparentSortCompareFn[renderingGroupId] = transparentSortCompareFn;
         }
 
-        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClear: boolean) {            
-            this._autoClearDepthStencil[renderingGroupId] = autoClear;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         * 
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {            
+            this._autoClearDepthStencil[renderingGroupId] = autoClearDepthStencil;
         }
     }
 } 
