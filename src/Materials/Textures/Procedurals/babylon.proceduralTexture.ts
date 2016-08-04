@@ -299,7 +299,7 @@
                     this._effect.setFloat("face", face);
 
                     // Clear
-                    engine.clear(scene.clearColor, true, true);
+                    engine.clear(scene.clearColor, true, true, true);
 
                     // Draw order
                     engine.draw(true, 0, 6);
@@ -313,7 +313,7 @@
                 engine.bindFramebuffer(this._texture);
 
                 // Clear
-                engine.clear(scene.clearColor, true, true);
+                engine.clear(scene.clearColor, true, true, true);
 
                 // Draw order
                 engine.draw(true, 0, 6);

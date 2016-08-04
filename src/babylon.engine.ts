@@ -327,6 +327,7 @@
         private _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
+        private _isStencilEnable: boolean; 
 
         private _loadingScreen: ILoadingScreen;
 
@@ -349,6 +350,7 @@
 
         // States
         private _depthCullingState = new Internals._DepthCullingState();
+        private _stencilState = new Internals._StencilState();
         private _alphaState = new Internals._AlphaState();
         private _alphaMode = Engine.ALPHA_DISABLE;
 
@@ -380,7 +382,7 @@
 
         private _externalData: StringDictionary<Object>;
         private _bindedRenderFunction: any;
-
+        
         /**
          * @constructor
          * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
@@ -445,6 +447,7 @@
             this.resize();
 
             // Caps
+            this._isStencilEnable = options.stencil;
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
@@ -555,6 +558,13 @@
             return this._webGLVersion;
         }
 
+        /**
+         * Returns true if the stencil buffer has been enabled through the creation option of the context.
+         */
+        public get isStencilEnable(): boolean {
+            return this._isStencilEnable;
+        }
+
         private _prepareWorkingCanvas(): void {
             if (this._workingCanvas) {
                 return;
@@ -656,6 +666,70 @@
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         }
 
+        public getStencilBuffer(): boolean {
+            return this._stencilState.stencilTest;
+        }
+
+        public setStencilBuffer(enable: boolean): void {
+            this._stencilState.stencilTest = enable;
+        }
+
+        public getStencilMask(): number {
+            return this._stencilState.stencilMask;
+        }
+
+        public setStencilMask(mask: number): void {
+            this._stencilState.stencilMask = mask;
+        }
+
+        public getStencilFunction(): number {
+            return this._stencilState.stencilFunc;
+        }
+
+        public getStencilFunctionReference(): number {
+            return this._stencilState.stencilFuncRef;
+        }
+
+        public getStencilFunctionMask(): number {
+            return this._stencilState.stencilFuncMask;
+        }
+
+        public setStencilFunction(stencilFunc: number) {
+            this._stencilState.stencilFunc = stencilFunc;
+        }
+        
+        public setStencilFunctionReference(reference: number) {
+            this._stencilState.stencilFuncRef = reference;
+        }
+        
+        public setStencilFunctionMask(mask: number) {
+            this._stencilState.stencilFuncMask = mask;
+        }
+
+        public getStencilOperationFail(): number {
+            return this._stencilState.stencilOpStencilFail;
+        }
+
+        public getStencilOperationDepthFail(): number {
+            return this._stencilState.stencilOpDepthFail;
+        }
+
+        public getStencilOperationPass(): number {
+            return this._stencilState.stencilOpStencilDepthPass;
+        }
+
+        public setStencilOperationFail(operation: number): void {
+            this._stencilState.stencilOpStencilFail = operation;
+        }
+
+        public setStencilOperationDepthFail(operation: number): void {
+            this._stencilState.stencilOpDepthFail = operation;
+        }
+
+        public setStencilOperationPass(operation: number): void {
+            this._stencilState.stencilOpStencilDepthPass = operation;
+        }
+
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -737,26 +811,22 @@
             }
         }
 
-        public clear(color: any, backBuffer: boolean, depthStencil: boolean): void {
+        public clear(color: any, backBuffer: boolean, depth: boolean, stencil:boolean = false): void {
             this.applyStates();
 
+            var mode = 0;            
             if (backBuffer) {
                 this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            }
-
-            if (depthStencil && this._depthCullingState.depthMask) {
-                this._gl.clearDepth(1.0);
-            }
-            var mode = 0;
-
-            if (backBuffer) {
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
-
-            if (depthStencil && this._depthCullingState.depthMask) {
+            if (depth) {
+                this._gl.clearDepth(1.0);
                 mode |= this._gl.DEPTH_BUFFER_BIT;
             }
-
+            if (stencil) {
+                this._gl.clearStencil(0);
+                mode |= this._gl.STENCIL_BUFFER_BIT;
+            }
             this._gl.clear(mode);
         }
 
@@ -772,7 +842,7 @@
             gl.scissor(x, y, width, height);
 
             // Clear
-            this.clear(clearColor, true, true);
+            this.clear(clearColor, true, true, true);
 
             // Restore state
             gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
@@ -866,17 +936,14 @@
 
         public bindFramebuffer(texture: WebGLTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number): void {
             this._currentRenderTarget = texture;
-
-            var gl = this._gl;
             this.bindUnboundFramebuffer(texture._framebuffer);
-
+            var gl = this._gl;
             if (texture.isCube) {
+                
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
-            } else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-            }
+            } 
 
-            this._gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
+            gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
 
             this.wipeCaches();
         }
@@ -1187,6 +1254,7 @@
 
         public applyStates() {
             this._depthCullingState.apply(this._gl);
+            this._stencilState.apply(this._gl);
             this._alphaState.apply(this._gl);
         }
 
@@ -1630,6 +1698,7 @@
             this.resetTextureCache();
             this._currentEffect = null;
 
+            this._stencilState.reset();
             this._depthCullingState.reset();
             this.setDepthFunctionToLessOrEqual();
             this._alphaState.reset();
@@ -1962,11 +2031,15 @@
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
+            var generateStencilBuffer = false;
+
             var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
+
                 type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
@@ -2002,19 +2075,32 @@
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
 
-            var depthBuffer: WebGLRenderbuffer;
-            // Create the depth buffer
-            if (generateDepthBuffer) {
-                depthBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+            var depthStencilBuffer: WebGLRenderbuffer;
+
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
                 gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
             }
+
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-            if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+            // Manage attachments
+            if (generateStencilBuffer) {                
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
             }
+            else if (generateDepthBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
             if (generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -2027,7 +2113,7 @@
 
             texture._framebuffer = framebuffer;
             if (generateDepthBuffer) {
-                texture._depthBuffer = depthBuffer;
+                texture._depthBuffer = depthStencilBuffer;
             }
             texture._baseWidth = width;
             texture._baseHeight = height;
@@ -2038,6 +2124,7 @@
             texture.references = 1;
             texture.samplingMode = samplingMode;
             texture.type = type;
+            
             this.resetTextureCache();
 
             this._loadedTexturesCache.push(texture);
@@ -2051,9 +2138,15 @@
             var texture = gl.createTexture();
 
             var generateMipMaps = true;
+            var generateDepthBuffer = true;
+            var generateStencilBuffer = false;
+
             var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
+                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
+
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
@@ -2079,14 +2172,31 @@
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
             // Create the depth buffer
-            var depthBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+            var depthStencilBuffer: WebGLRenderbuffer;
+
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, size, size);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+            }
 
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+            // Manage attachments
+            if (generateStencilBuffer) {                
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            else if (generateDepthBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
 
             // Mipmaps
             if (texture.generateMipMaps) {
@@ -2100,13 +2210,16 @@
             this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
-            texture._depthBuffer = depthBuffer;
-
-            this.resetTextureCache();
-
+            if (generateDepthBuffer) {
+                texture._depthBuffer = depthStencilBuffer;
+            }
             texture._width = size;
             texture._height = size;
             texture.isReady = true;
+
+            this.resetTextureCache();
+
+            this._loadedTexturesCache.push(texture);
 
             return texture;
         }
