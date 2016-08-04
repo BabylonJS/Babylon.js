@@ -100,6 +100,7 @@ var BABYLON;
             }
             // Transparent
             this._renderTransparent(this._transparentSubMeshes);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             return true;
         };
         /**
