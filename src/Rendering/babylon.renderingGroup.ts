@@ -109,6 +109,8 @@
 
             // Transparent
             this._renderTransparent(this._transparentSubMeshes);
+            engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            
             return true;
         }
 
