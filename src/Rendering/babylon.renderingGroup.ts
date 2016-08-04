@@ -6,11 +6,45 @@
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
         private _activeVertices: number;
 
-        public opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        public alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        public transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        private _opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        private _alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        private _transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        
+        private _renderOpaque: (subMeshes: SmartArray<SubMesh>) => void;
+        private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
+        private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
         public onBeforeTransparentRendering: () => void;
+
+        public set opaqueSortCompareFn(value: (a: SubMesh, b: SubMesh) => number) {
+            this._opaqueSortCompareFn = value;
+            if (value) {
+                this._renderOpaque = this.renderOpaqueSorted;
+            }
+            else {
+                this._renderOpaque = RenderingGroup.renderUnsorted;
+            }
+        }
+
+        public set alphaTestSortCompareFn(value: (a: SubMesh, b: SubMesh) => number) {
+            this._alphaTestSortCompareFn = value;
+            if (value) {
+                this._renderAlphaTest = this.renderAlphaTestSorted;
+            }
+            else {
+                this._renderAlphaTest = RenderingGroup.renderUnsorted;
+            }
+        }
+
+        public set transparentSortCompareFn(value: (a: SubMesh, b: SubMesh) => number) {
+            this._transparentSortCompareFn = value;
+            if (value) {
+                this._renderTransparent = this.renderTransparentSorted;
+            }
+            else {
+                this._renderTransparent = RenderingGroup.renderUnsorted;
+            }
+        }
 
         constructor(public index: number, scene: Scene,
             opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
@@ -36,56 +70,13 @@
                 return false;
             }
             var engine = this._scene.getEngine();
+            
             // Opaque
-            var subIndex: number;
-            var submesh: SubMesh;
-            var sortedArray: SubMesh[];
-
-            if (this.opaqueSortCompareFn) {
-                for (subIndex = 0; subIndex < this._opaqueSubMeshes.length; subIndex++) {
-                    submesh = this._opaqueSubMeshes.data[subIndex];
-                    submesh._alphaIndex = submesh.getMesh().alphaIndex;
-                    submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.globalPosition).length();
-                }
-
-                sortedArray = this._opaqueSubMeshes.data.slice(0, this._opaqueSubMeshes.length);
-                sortedArray.sort(this.opaqueSortCompareFn);
-
-                for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
-                    submesh = sortedArray[subIndex];
-                    submesh.render(false);
-                }
-            }
-            else {
-                for (subIndex = 0; subIndex < this._opaqueSubMeshes.length; subIndex++) {
-                    submesh = this._opaqueSubMeshes.data[subIndex];
-                    submesh.render(false);
-                }
-            }
+            this._renderOpaque(this._opaqueSubMeshes);
 
             // Alpha test
             engine.setAlphaTesting(true);
-            if (this.alphaTestSortCompareFn) {
-                for (subIndex = 0; subIndex < this._alphaTestSubMeshes.length; subIndex++) {
-                    submesh = this._alphaTestSubMeshes.data[subIndex];
-                    submesh._alphaIndex = submesh.getMesh().alphaIndex;
-                    submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.globalPosition).length();
-                }
-
-                sortedArray = this._alphaTestSubMeshes.data.slice(0, this._alphaTestSubMeshes.length);
-                sortedArray.sort(this.alphaTestSortCompareFn);
-
-                for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
-                    submesh = sortedArray[subIndex];
-                    submesh.render(false);
-                }
-            }
-            else {
-                for (subIndex = 0; subIndex < this._alphaTestSubMeshes.length; subIndex++) {
-                    submesh = this._alphaTestSubMeshes.data[subIndex];
-                    submesh.render(false);
-                }
-            }
+            this._renderAlphaTest(this._alphaTestSubMeshes);
             engine.setAlphaTesting(false);
 
             if (this.onBeforeTransparentRendering) {
@@ -93,26 +84,45 @@
             }
 
             // Transparent
-            if (this._transparentSubMeshes.length) {
-                // Sorting
-                for (subIndex = 0; subIndex < this._transparentSubMeshes.length; subIndex++) {
-                    submesh = this._transparentSubMeshes.data[subIndex];
-                    submesh._alphaIndex = submesh.getMesh().alphaIndex;
-                    submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(this._scene.activeCamera.globalPosition).length();
-                }
-
-                var sortedArray = this._transparentSubMeshes.data.slice(0, this._transparentSubMeshes.length);
-                sortedArray.sort(this.transparentSortCompareFn);
-
-                // Rendering                
-                for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
-                    submesh = sortedArray[subIndex];
-
-                    submesh.render(true);
-                }
-                engine.setAlphaMode(Engine.ALPHA_DISABLE);
-            }
+            this._renderTransparent(this._transparentSubMeshes);
             return true;
+        }
+
+        private renderOpaqueSorted(subMeshes: SmartArray<SubMesh>): void {
+            return RenderingGroup.renderSorted(subMeshes, this.opaqueSortCompareFn, this._scene.activeCamera.globalPosition);
+        }
+
+        private renderAlphaTestSorted(subMeshes: SmartArray<SubMesh>): void {
+            return RenderingGroup.renderSorted(subMeshes, this.alphaTestSortCompareFn, this._scene.activeCamera.globalPosition);
+        }
+
+        private renderTransparentSorted(subMeshes: SmartArray<SubMesh>): void {
+            return RenderingGroup.renderSorted(subMeshes, this.transparentSortCompareFn, this._scene.activeCamera.globalPosition);
+        }
+
+        private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: (a: SubMesh, b: SubMesh) => number, cameraPosition: Vector3): void {
+            let subIndex = 0;
+            let subMesh;
+            for (; subIndex < subMeshes.length; subIndex++) {
+                subMesh = subMeshes.data[subIndex];
+                subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
+                subMesh._distanceToCamera = subMesh.getBoundingInfo().boundingSphere.centerWorld.subtract(cameraPosition).length();
+            }
+
+            let sortedArray = subMeshes.data.slice(0, subMeshes.length);
+            sortedArray.sort(sortCompareFn);
+
+            for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
+                subMesh = sortedArray[subIndex];
+                subMesh.render(false);
+            }
+        }
+
+        private static renderUnsorted(subMeshes: SmartArray<SubMesh>): void {
+            for (var subIndex = 0; subIndex < subMeshes.length; subIndex++) {
+                let submesh = subMeshes.data[subIndex];
+                submesh.render(false);
+            }
         }
 
         public static defaultTransparentSortCompare(a: SubMesh, b:SubMesh) : number {

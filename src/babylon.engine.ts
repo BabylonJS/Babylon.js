@@ -327,6 +327,7 @@
         private _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
+        private _isStencilEnable: boolean; 
 
         private _loadingScreen: ILoadingScreen;
 
@@ -381,7 +382,7 @@
 
         private _externalData: StringDictionary<Object>;
         private _bindedRenderFunction: any;
-
+        
         /**
          * @constructor
          * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
@@ -446,6 +447,7 @@
             this.resize();
 
             // Caps
+            this._isStencilEnable = options.stencil;
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
@@ -554,6 +556,10 @@
 
         public get webGLVersion(): string {
             return this._webGLVersion;
+        }
+
+        public get isStencilEnable(): boolean {
+            return this._isStencilEnable;
         }
 
         private _prepareWorkingCanvas(): void {

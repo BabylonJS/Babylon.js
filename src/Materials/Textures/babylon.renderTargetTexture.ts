@@ -349,8 +349,8 @@
                 transparentSortCompareFn);
         }
 
-        public setRenderingAutoClear(renderingGroupId: number, autoClear: boolean) {            
-            this._renderingManager.setRenderingAutoClear(renderingGroupId, autoClear);
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClear: boolean) {            
+            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClear);
         }
 
         public clone(): RenderTargetTexture {
