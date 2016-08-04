@@ -12,7 +12,7 @@
         private _currentRenderParticles: boolean;
         private _currentRenderSprites: boolean;
 
-        private _autoClear: { [id:number]: boolean } = {};
+        private _autoClearDepthStencil: { [id:number]: boolean } = {};
         private _customOpaqueSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
         private _customAlphaTestSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
         private _customTransparentSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
@@ -21,7 +21,7 @@
             this._scene = scene;
 
             for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
-                this._autoClear[i] = true;
+                this._autoClearDepthStencil[i] = true;
             }
         }
 
@@ -106,7 +106,7 @@
                 this._currentIndex = index;
 
                 if (renderingGroup) {
-                    if (this._autoClear[index]) {
+                    if (this._autoClearDepthStencil[index]) {
                         this._clearDepthStencilBuffer();
                     }
 
@@ -130,11 +130,12 @@
         }
 
         public reset(): void {
-            this._renderingGroups.forEach((renderingGroup, index, array) => {
+            for (var index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
+                var renderingGroup = this._renderingGroups[index];
                 if (renderingGroup) {
                     renderingGroup.prepare();
                 }
-            });
+            }
         }
 
         public dispatch(subMesh: SubMesh): void {
@@ -169,8 +170,8 @@
             this._customTransparentSortCompareFn[renderingGroupId] = transparentSortCompareFn;
         }
 
-        public setRenderingAutoClear(renderingGroupId: number, autoClear: boolean) {            
-            this._autoClear[renderingGroupId] = autoClear;
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClear: boolean) {            
+            this._autoClearDepthStencil[renderingGroupId] = autoClear;
         }
     }
 } 

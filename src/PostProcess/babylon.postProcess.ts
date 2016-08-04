@@ -174,10 +174,20 @@
                 }         
                 this.width = desiredWidth;
                 this.height = desiredHeight;
-                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
+
+                let textureSize = { width: this.width, height: this.height };
+                let textureOptions = { 
+                    generateMipMaps: false, 
+                    generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, 
+                    generateStencilBuffer: camera._postProcesses.indexOf(this) === 0 && this._engine.isStencilEnable,
+                    samplingMode: this.renderTargetSamplingMode, 
+                    type: this._textureType 
+                };
+
+                this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
 
                 if (this._reusable) {
-                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
+                    this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
                 }
 
                 this.onSizeChangedObservable.notifyObservers(this);
