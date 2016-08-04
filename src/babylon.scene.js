@@ -1881,7 +1881,7 @@ var BABYLON;
                 BABYLON.Tools.EndPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
             }
             // Clear
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true);
+            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, true, true);
             // Shadows
             if (this.shadowsEnabled) {
                 for (var lightIndex = 0; lightIndex < this.lights.length; lightIndex++) {
@@ -1904,7 +1904,7 @@ var BABYLON;
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     this._renderId = currentRenderId;
                     if (cameraIndex > 0) {
-                        this._engine.clear(0, false, true);
+                        this._engine.clear(0, false, true, true);
                     }
                     this._processSubCameras(this.activeCameras[cameraIndex]);
                 }
@@ -2443,6 +2443,30 @@ var BABYLON;
         };
         Scene.prototype.getMaterialByTags = function (tagsQuery, forEach) {
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+        };
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        Scene.prototype.setRenderingOrder = function (renderingGroupId, opaqueSortCompareFn, alphaTestSortCompareFn, transparentSortCompareFn) {
+            if (opaqueSortCompareFn === void 0) { opaqueSortCompareFn = null; }
+            if (alphaTestSortCompareFn === void 0) { alphaTestSortCompareFn = null; }
+            if (transparentSortCompareFn === void 0) { transparentSortCompareFn = null; }
+            this._renderingManager.setRenderingOrder(renderingGroupId, opaqueSortCompareFn, alphaTestSortCompareFn, transparentSortCompareFn);
+        };
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        Scene.prototype.setRenderingAutoClearDepthStencil = function (renderingGroupId, autoClearDepthStencil) {
+            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
         };
         // Statics
         Scene._FOGMODE_NONE = 0;
