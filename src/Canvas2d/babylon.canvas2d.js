@@ -148,7 +148,7 @@ var BABYLON;
             });
             if (this._isScreenSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add(function (d, s) {
-                    _this._engine.clear(null, false, true);
+                    _this._engine.clear(null, false, true, true);
                     _this._render();
                 });
             }

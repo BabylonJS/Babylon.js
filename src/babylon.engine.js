@@ -149,6 +149,7 @@ var BABYLON;
             this.deltaTime = 0;
             // States
             this._depthCullingState = new BABYLON.Internals._DepthCullingState();
+            this._stencilState = new BABYLON.Internals._StencilState();
             this._alphaState = new BABYLON.Internals._AlphaState();
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
@@ -206,6 +207,7 @@ var BABYLON;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
             // Caps
+            this._isStencilEnable = options.stencil;
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
@@ -443,6 +445,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine.prototype, "isStencilEnable", {
+            /**
+             * Returns true if the stencil buffer has been enabled through the creation option of the context.
+             */
+            get: function () {
+                return this._isStencilEnable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Engine.prototype._prepareWorkingCanvas = function () {
             if (this._workingCanvas) {
                 return;
@@ -532,6 +544,54 @@ var BABYLON;
         Engine.prototype.setDepthFunctionToLessOrEqual = function () {
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         };
+        Engine.prototype.getStencilBuffer = function () {
+            return this._stencilState.stencilTest;
+        };
+        Engine.prototype.setStencilBuffer = function (enable) {
+            this._stencilState.stencilTest = enable;
+        };
+        Engine.prototype.getStencilMask = function () {
+            return this._stencilState.stencilMask;
+        };
+        Engine.prototype.setStencilMask = function (mask) {
+            this._stencilState.stencilMask = mask;
+        };
+        Engine.prototype.getStencilFunction = function () {
+            return this._stencilState.stencilFunc;
+        };
+        Engine.prototype.getStencilFunctionReference = function () {
+            return this._stencilState.stencilFuncRef;
+        };
+        Engine.prototype.getStencilFunctionMask = function () {
+            return this._stencilState.stencilFuncMask;
+        };
+        Engine.prototype.setStencilFunction = function (stencilFunc) {
+            this._stencilState.stencilFunc = stencilFunc;
+        };
+        Engine.prototype.setStencilFunctionReference = function (reference) {
+            this._stencilState.stencilFuncRef = reference;
+        };
+        Engine.prototype.setStencilFunctionMask = function (mask) {
+            this._stencilState.stencilFuncMask = mask;
+        };
+        Engine.prototype.getStencilOperationFail = function () {
+            return this._stencilState.stencilOpStencilFail;
+        };
+        Engine.prototype.getStencilOperationDepthFail = function () {
+            return this._stencilState.stencilOpDepthFail;
+        };
+        Engine.prototype.getStencilOperationPass = function () {
+            return this._stencilState.stencilOpStencilDepthPass;
+        };
+        Engine.prototype.setStencilOperationFail = function (operation) {
+            this._stencilState.stencilOpStencilFail = operation;
+        };
+        Engine.prototype.setStencilOperationDepthFail = function (operation) {
+            this._stencilState.stencilOpDepthFail = operation;
+        };
+        Engine.prototype.setStencilOperationPass = function (operation) {
+            this._stencilState.stencilOpStencilDepthPass = operation;
+        };
         /**
          * stop executing a render loop function and remove it from the execution array
          * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
@@ -602,20 +662,21 @@ var BABYLON;
                 BABYLON.Tools.RequestFullscreen(this._renderingCanvas, options);
             }
         };
-        Engine.prototype.clear = function (color, backBuffer, depthStencil) {
+        Engine.prototype.clear = function (color, backBuffer, depth, stencil) {
+            if (stencil === void 0) { stencil = false; }
             this.applyStates();
-            if (backBuffer) {
-                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            }
-            if (depthStencil && this._depthCullingState.depthMask) {
-                this._gl.clearDepth(1.0);
-            }
             var mode = 0;
             if (backBuffer) {
+                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
-            if (depthStencil && this._depthCullingState.depthMask) {
+            if (depth) {
+                this._gl.clearDepth(1.0);
                 mode |= this._gl.DEPTH_BUFFER_BIT;
+            }
+            if (stencil) {
+                this._gl.clearStencil(0);
+                mode |= this._gl.STENCIL_BUFFER_BIT;
             }
             this._gl.clear(mode);
         };
@@ -628,7 +689,7 @@ var BABYLON;
             gl.enable(gl.SCISSOR_TEST);
             gl.scissor(x, y, width, height);
             // Clear
-            this.clear(clearColor, true, true);
+            this.clear(clearColor, true, true, true);
             // Restore state
             gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
             if (curScissor === true) {
@@ -705,15 +766,12 @@ var BABYLON;
         };
         Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight) {
             this._currentRenderTarget = texture;
-            var gl = this._gl;
             this.bindUnboundFramebuffer(texture._framebuffer);
+            var gl = this._gl;
             if (texture.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
             }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-            }
-            this._gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
+            gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
             this.wipeCaches();
         };
         Engine.prototype.bindUnboundFramebuffer = function (framebuffer) {
@@ -997,6 +1055,7 @@ var BABYLON;
         };
         Engine.prototype.applyStates = function () {
             this._depthCullingState.apply(this._gl);
+            this._stencilState.apply(this._gl);
             this._alphaState.apply(this._gl);
         };
         Engine.prototype.draw = function (useTriangles, indexStart, indexCount, instancesCount) {
@@ -1340,6 +1399,7 @@ var BABYLON;
         Engine.prototype.wipeCaches = function () {
             this.resetTextureCache();
             this._currentEffect = null;
+            this._stencilState.reset();
             this._depthCullingState.reset();
             this.setDepthFunctionToLessOrEqual();
             this._alphaState.reset();
@@ -1624,11 +1684,13 @@ var BABYLON;
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
+            var generateStencilBuffer = false;
             var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
                 type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
@@ -1657,19 +1719,29 @@ var BABYLON;
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
-            var depthBuffer;
-            // Create the depth buffer
-            if (generateDepthBuffer) {
-                depthBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+            var depthStencilBuffer;
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
                 gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
             }
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-            if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            // Manage attachments
+            if (generateStencilBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
             }
+            else if (generateDepthBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             if (generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
@@ -1679,7 +1751,7 @@ var BABYLON;
             this.bindUnboundFramebuffer(null);
             texture._framebuffer = framebuffer;
             if (generateDepthBuffer) {
-                texture._depthBuffer = depthBuffer;
+                texture._depthBuffer = depthStencilBuffer;
             }
             texture._baseWidth = width;
             texture._baseHeight = height;
@@ -1698,9 +1770,13 @@ var BABYLON;
             var gl = this._gl;
             var texture = gl.createTexture();
             var generateMipMaps = true;
+            var generateDepthBuffer = true;
+            var generateStencilBuffer = false;
             var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
+                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
@@ -1720,13 +1796,28 @@ var BABYLON;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             // Create the depth buffer
-            var depthBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+            var depthStencilBuffer;
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, size, size);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+            }
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            // Manage attachments
+            if (generateStencilBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            else if (generateDepthBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
             // Mipmaps
             if (texture.generateMipMaps) {
                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
@@ -1737,11 +1828,14 @@ var BABYLON;
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             this.bindUnboundFramebuffer(null);
             texture._framebuffer = framebuffer;
-            texture._depthBuffer = depthBuffer;
-            this.resetTextureCache();
+            if (generateDepthBuffer) {
+                texture._depthBuffer = depthStencilBuffer;
+            }
             texture._width = size;
             texture._height = size;
             texture.isReady = true;
+            this.resetTextureCache();
+            this._loadedTexturesCache.push(texture);
             return texture;
         };
         Engine.prototype.createCubeTexture = function (rootUrl, scene, files, noMipmap) {

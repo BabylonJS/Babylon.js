@@ -396,6 +396,11 @@ var BABYLON;
             result.y = this.y + otherVector.y;
             return this;
         };
+        Vector2.prototype.addInPlace = function (otherVector) {
+            this.x += otherVector.x;
+            this.y += otherVector.y;
+            return this;
+        };
         Vector2.prototype.addVector3 = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
@@ -565,6 +570,11 @@ var BABYLON;
             var x = value1.x - value2.x;
             var y = value1.y - value2.y;
             return (x * x) + (y * y);
+        };
+        Vector2.Center = function (value1, value2) {
+            var center = value1.add(value2);
+            center.scaleInPlace(0.5);
+            return center;
         };
         Vector2.DistanceOfPointFromSegment = function (p, segA, segB) {
             var l2 = Vector2.DistanceSquared(segA, segB);

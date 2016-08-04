@@ -123,10 +123,10 @@ var BABYLON;
             };
             this._shadowMap.onClearObservable.add(function (engine) {
                 if (_this.useBlurVarianceShadowMap || _this.useVarianceShadowMap) {
-                    engine.clear(new BABYLON.Color4(0, 0, 0, 0), true, true);
+                    engine.clear(new BABYLON.Color4(0, 0, 0, 0), true, true, true);
                 }
                 else {
-                    engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true);
+                    engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
                 }
             });
         }

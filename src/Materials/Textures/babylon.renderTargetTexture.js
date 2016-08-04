@@ -275,7 +275,7 @@ var BABYLON;
                 this.onClearObservable.notifyObservers(engine);
             }
             else {
-                engine.clear(scene.clearColor, true, true);
+                engine.clear(scene.clearColor, true, true, true);
             }
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
@@ -302,6 +302,30 @@ var BABYLON;
                 }
                 engine.unBindFramebuffer(this._texture, this.isCube);
             }
+        };
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        RenderTargetTexture.prototype.setRenderingOrder = function (renderingGroupId, opaqueSortCompareFn, alphaTestSortCompareFn, transparentSortCompareFn) {
+            if (opaqueSortCompareFn === void 0) { opaqueSortCompareFn = null; }
+            if (alphaTestSortCompareFn === void 0) { alphaTestSortCompareFn = null; }
+            if (transparentSortCompareFn === void 0) { transparentSortCompareFn = null; }
+            this._renderingManager.setRenderingOrder(renderingGroupId, opaqueSortCompareFn, alphaTestSortCompareFn, transparentSortCompareFn);
+        };
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        RenderTargetTexture.prototype.setRenderingAutoClearDepthStencil = function (renderingGroupId, autoClearDepthStencil) {
+            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
         };
         RenderTargetTexture.prototype.clone = function () {
             var textureSize = this.getSize();

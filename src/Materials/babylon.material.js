@@ -78,10 +78,15 @@ var BABYLON;
             */
             this.onDisposeObservable = new BABYLON.Observable();
             /**
-            * An event triggered when the material is compiled.
+            * An event triggered when the material is bound.
             * @type {BABYLON.Observable}
             */
             this.onBindObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the material is unbound.
+            * @type {BABYLON.Observable}
+            */
+            this.onUnBindObservable = new BABYLON.Observable();
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this.disableDepthWrite = false;
             this.fogEnabled = true;
@@ -241,6 +246,7 @@ var BABYLON;
         Material.prototype.bindOnlyWorldMatrix = function (world) {
         };
         Material.prototype.unbind = function () {
+            this.onUnBindObservable.notifyObservers(this);
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
                 engine.setDepthWrite(this._cachedDepthWriteState);
