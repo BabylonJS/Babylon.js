@@ -135,7 +135,7 @@
         }
 
         /**
-        * An event triggered when the material is compiled.
+        * An event triggered when the material is bound.
         * @type {BABYLON.Observable}
         */
         public onBindObservable = new Observable<AbstractMesh>();
@@ -148,6 +148,11 @@
             this._onBindObserver = this.onBindObservable.add(callback);
         }
 
+        /**
+        * An event triggered when the material is unbound.
+        * @type {BABYLON.Observable}
+        */
+        public onUnBindObservable = new Observable<Material>();
 
 
         @serialize()
@@ -283,6 +288,9 @@
         }
 
         public unbind(): void {
+
+            this.onUnBindObservable.notifyObservers(this);
+
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
                 engine.setDepthWrite(this._cachedDepthWriteState);
