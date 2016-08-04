@@ -2922,10 +2922,19 @@
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         }
 
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         * 
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
         public setRenderingOrder(renderingGroupId: number,
             opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
-            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null) {
+            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null): void {
             
             this._renderingManager.setRenderingOrder(renderingGroupId,
                 opaqueSortCompareFn,
@@ -2933,8 +2942,14 @@
                 transparentSortCompareFn);
         }
 
-        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClear: boolean) {            
-            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClear);
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         * 
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {            
+            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
         }
     }
 }
