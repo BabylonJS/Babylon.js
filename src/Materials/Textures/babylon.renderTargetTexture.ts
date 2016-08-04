@@ -100,7 +100,8 @@
         private _refreshRate = 1;
         private _textureMatrix: Matrix;
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, 
+            generateDepthBuffer = true, generateStencilBuffer = false) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
@@ -115,11 +116,22 @@
             }
 
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, samplingMode: samplingMode });
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { 
+                    generateMipMaps: generateMipMaps, 
+                    samplingMode: samplingMode,
+                    generateDepthBuffer: generateDepthBuffer,
+                    generateStencilBuffer: generateStencilBuffer 
+                });
                 this.coordinatesMode = Texture.INVCUBIC_MODE;
                 this._textureMatrix = Matrix.Identity();
             } else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type, samplingMode: samplingMode });
+                this._texture = scene.getEngine().createRenderTargetTexture(size, { 
+                    generateMipMaps: generateMipMaps, 
+                    type: type, 
+                    samplingMode: samplingMode,
+                    generateDepthBuffer: generateDepthBuffer,
+                    generateStencilBuffer: generateStencilBuffer 
+                });
             }
 
             // Rendering groups
