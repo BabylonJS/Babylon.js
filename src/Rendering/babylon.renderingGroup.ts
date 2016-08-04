@@ -49,13 +49,13 @@
          * If null the sub meshes will be render in the order they were created 
          */
         public set transparentSortCompareFn(value: (a: SubMesh, b: SubMesh) => number) {
-            this._transparentSortCompareFn = value;
             if (value) {
-                this._renderTransparent = this.renderTransparentSorted;
+                this._transparentSortCompareFn = value;
             }
             else {
-                this._renderTransparent = RenderingGroup.renderUnsorted;
+                this._transparentSortCompareFn = RenderingGroup.defaultTransparentSortCompare;
             }
+            this._renderTransparent = this.renderTransparentSorted;
         }
 
         /**
@@ -68,7 +68,7 @@
         constructor(public index: number, scene: Scene,
             opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
-            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = RenderingGroup.defaultTransparentSortCompare) {
+            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null) {
             this._scene = scene;
 
             this.opaqueSortCompareFn = opaqueSortCompareFn;
@@ -117,7 +117,7 @@
          * @param subMeshes The submeshes to render
          */
         private renderOpaqueSorted(subMeshes: SmartArray<SubMesh>): void {
-            return RenderingGroup.renderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera.globalPosition);
+            return RenderingGroup.renderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera.globalPosition, false);
         }
 
         /**
@@ -125,7 +125,7 @@
          * @param subMeshes The submeshes to render
          */
         private renderAlphaTestSorted(subMeshes: SmartArray<SubMesh>): void {
-            return RenderingGroup.renderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera.globalPosition);
+            return RenderingGroup.renderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera.globalPosition, false);
         }
 
         /**
@@ -133,7 +133,7 @@
          * @param subMeshes The submeshes to render
          */
         private renderTransparentSorted(subMeshes: SmartArray<SubMesh>): void {
-            return RenderingGroup.renderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera.globalPosition);
+            return RenderingGroup.renderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera.globalPosition, true);
         }
 
         /**
@@ -141,8 +141,9 @@
          * @param subMeshes The submeshes to sort before render
          * @param sortCompareFn The comparison function use to sort
          * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
+         * @param transparent Specifies to activate blending if true
          */
-        private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: (a: SubMesh, b: SubMesh) => number, cameraPosition: Vector3): void {
+        private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: (a: SubMesh, b: SubMesh) => number, cameraPosition: Vector3, transparent: boolean): void {
             let subIndex = 0;
             let subMesh;
             for (; subIndex < subMeshes.length; subIndex++) {
@@ -156,7 +157,7 @@
 
             for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                 subMesh = sortedArray[subIndex];
-                subMesh.render(false);
+                subMesh.render(transparent);
             }
         }
 
