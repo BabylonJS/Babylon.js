@@ -2855,8 +2855,8 @@
                 }
             }
 
+            this._renderGroup = <Group2D>this.traverseUp(p => p instanceof Group2D && p.isRenderableGroup);
             if (this._parent) {
-                this._renderGroup = <Group2D>this.parent.traverseUp(p => p instanceof Group2D && p.isRenderableGroup);
                 this._parentLayoutDirty();
             }
 
