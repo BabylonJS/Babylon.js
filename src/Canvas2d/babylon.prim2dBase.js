@@ -1264,6 +1264,9 @@ var BABYLON;
                     child._patchHierarchy(this.owner);
                 }
             }
+            if (settings.zOrder != null) {
+                this.zOrder = settings.zOrder;
+            }
             // Set the model related properties
             if (settings.position != null) {
                 this.position = settings.position;

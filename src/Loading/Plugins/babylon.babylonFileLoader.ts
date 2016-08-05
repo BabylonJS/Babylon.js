@@ -194,13 +194,13 @@
                 return true;
 
             } catch (err) {
-                Tools.Log(logOperation("importMesh", parsedData.producer) + log);
+                Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log);
                 log = null;
                 throw err;
 
             } finally {
                 if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                    Tools.Log(logOperation("importMesh", parsedData.producer) + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                    Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
         },
@@ -506,13 +506,13 @@
                 return true;
 
             } catch (err) {
-                Tools.Log(logOperation("importScene", parsedData.producer) + log);
+                Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + log);
                 log = null;
                 throw err;
 
             } finally {
                 if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                    Tools.Log(logOperation("importScene", parsedData.producer) + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                    Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
         }
