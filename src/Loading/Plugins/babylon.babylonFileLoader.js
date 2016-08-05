@@ -185,13 +185,13 @@ var BABYLON;
                     return true;
                 }
                 catch (err) {
-                    BABYLON.Tools.Log(logOperation("importMesh", parsedData.producer) + log);
+                    BABYLON.Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log);
                     log = null;
                     throw err;
                 }
                 finally {
                     if (log !== null && BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.NO_LOGGING) {
-                        BABYLON.Tools.Log(logOperation("importMesh", parsedData.producer) + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
+                        BABYLON.Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
                     }
                 }
             },
@@ -476,13 +476,13 @@ var BABYLON;
                     return true;
                 }
                 catch (err) {
-                    BABYLON.Tools.Log(logOperation("importScene", parsedData.producer) + log);
+                    BABYLON.Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + log);
                     log = null;
                     throw err;
                 }
                 finally {
                     if (log !== null && BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.NO_LOGGING) {
-                        BABYLON.Tools.Log(logOperation("importScene", parsedData.producer) + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
+                        BABYLON.Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
                     }
                 }
             }
