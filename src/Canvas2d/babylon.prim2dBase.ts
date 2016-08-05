@@ -1294,34 +1294,35 @@
         public  static _bigInt = Math.pow(2, 30);
 
         constructor(settings: {
-            parent?: Prim2DBase,
-            id?: string,
-            children?: Array<Prim2DBase>,
-            position?: Vector2,
-            x?: number,
-            y?: number,
-            rotation?: number,
-            scale?: number,
-            scaleX?: number,
-            scaleY?: number,
-            opacity?: number,
-            origin?: Vector2,
-            layoutEngine?: LayoutEngineBase | string,
-            isVisible?: boolean,
+            parent            ?: Prim2DBase,
+            id                ?: string,
+            children          ?: Array<Prim2DBase>,
+            position          ?: Vector2,
+            x                 ?: number,
+            y                 ?: number,
+            rotation          ?: number,
+            scale             ?: number,
+            scaleX            ?: number,
+            scaleY            ?: number,
+            opacity           ?: number,
+            zOrder            ?: number, 
+            origin            ?: Vector2,
+            layoutEngine      ?: LayoutEngineBase | string,
+            isVisible         ?: boolean,
             childrenFlatZOrder?: boolean,
-            marginTop?: number | string,
-            marginLeft?: number | string,
-            marginRight?: number | string,
-            marginBottom?: number | string,
-            margin?: number | string,
-            marginHAlignment?: number,
-            marginVAlignment?: number,
-            marginAlignment?: string,
-            paddingTop?: number | string,
-            paddingLeft?: number | string,
-            paddingRight?: number | string,
-            paddingBottom?: number | string,
-            padding?: string,
+            marginTop         ?: number | string,
+            marginLeft        ?: number | string,
+            marginRight       ?: number | string,
+            marginBottom      ?: number | string,
+            margin            ?: number | string,
+            marginHAlignment  ?: number,
+            marginVAlignment  ?: number,
+            marginAlignment   ?: string,
+            paddingTop        ?: number | string,
+            paddingLeft       ?: number | string,
+            paddingRight      ?: number | string,
+            paddingBottom     ?: number | string,
+            padding           ?: string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -1422,6 +1423,10 @@
                     // Good time to patch the hierarchy, it won't go very far if there's no need to
                     child._patchHierarchy(this.owner);
                 }
+            }
+
+            if (settings.zOrder != null) {
+                this.zOrder = settings.zOrder;
             }
 
             // Set the model related properties
