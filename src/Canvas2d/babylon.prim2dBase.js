@@ -2563,8 +2563,8 @@ var BABYLON;
                     group.owner._registerTrackedNode(this);
                 }
             }
+            this._renderGroup = this.traverseUp(function (p) { return p instanceof BABYLON.Group2D && p.isRenderableGroup; });
             if (this._parent) {
-                this._renderGroup = this.parent.traverseUp(function (p) { return p instanceof BABYLON.Group2D && p.isRenderableGroup; });
                 this._parentLayoutDirty();
             }
             // Make sure the prim is in the dirtyList if it should be
