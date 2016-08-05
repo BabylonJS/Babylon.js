@@ -251,6 +251,7 @@
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
+         * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
@@ -275,38 +276,39 @@
          */
         constructor(texture: Texture, settings?: {
 
-            parent?: Prim2DBase,
-            children?: Array<Prim2DBase>,
-            id?: string,
-            position?: Vector2,
-            x?: number,
-            y?: number,
-            rotation?: number,
-            scale?: number,
-            scaleX?: number,
-            scaleY?: number,
-            opacity?: number,
-            origin?: Vector2,
-            spriteSize?: Size,
-            spriteLocation?: Vector2,
-            spriteScaleFactor?: Vector2,
-            invertY?: boolean,
-            alignToPixel?: boolean,
-            isVisible?: boolean,
+            parent            ?: Prim2DBase,
+            children          ?: Array<Prim2DBase>,
+            id                ?: string,
+            position          ?: Vector2,
+            x                 ?: number,
+            y                 ?: number,
+            rotation          ?: number,
+            scale             ?: number,
+            scaleX            ?: number,
+            scaleY            ?: number,
+            opacity           ?: number,
+            zOrder            ?: number, 
+            origin            ?: Vector2,
+            spriteSize        ?: Size,
+            spriteLocation    ?: Vector2,
+            spriteScaleFactor ?: Vector2,
+            invertY           ?: boolean,
+            alignToPixel      ?: boolean,
+            isVisible         ?: boolean,
             childrenFlatZOrder?: boolean,
-            marginTop?: number | string,
-            marginLeft?: number | string,
-            marginRight?: number | string,
-            marginBottom?: number | string,
-            margin?: number | string,
-            marginHAlignment?: number,
-            marginVAlignment?: number,
-            marginAlignment?: string,
-            paddingTop?: number | string,
-            paddingLeft?: number | string,
-            paddingRight?: number | string,
-            paddingBottom?: number | string,
-            padding?: string,
+            marginTop         ?: number | string,
+            marginLeft        ?: number | string,
+            marginRight       ?: number | string,
+            marginBottom      ?: number | string,
+            margin            ?: number | string,
+            marginHAlignment  ?: number,
+            marginVAlignment  ?: number,
+            marginAlignment   ?: string,
+            paddingTop        ?: number | string,
+            paddingLeft       ?: number | string,
+            paddingRight      ?: number | string,
+            paddingBottom     ?: number | string,
+            padding           ?: string,
         }) {
 
             if (!settings) {
@@ -324,7 +326,7 @@
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
-            this.isAlphaTest = true;
+            this.isTransparent = true;
 
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
