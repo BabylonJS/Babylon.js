@@ -127,7 +127,7 @@
             this.groupInsanceInfo = null;
             this.startZ = 0;
             this.endZ = 0;
-            this.startDataIndex = 0;
+            this.startDataIndex = Prim2DBase._bigInt;
             this.endDataIndex = 0;
             this.partBuffers = null;
         }
