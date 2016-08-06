@@ -742,24 +742,12 @@
                         minOff = Math.min(minOff, el.offset);
                         maxOff = Math.max(maxOff, el.offset);
                     }
-                    ts.startDataIndex = minOff / part.dataBuffer.stride;
-                    ts.endDataIndex = (maxOff / part.dataBuffer.stride) + 1; // +1 for exclusive
+                    ts.startDataIndex = Math.min(ts.startDataIndex, minOff / part.dataBuffer.stride);
+                    ts.endDataIndex = Math.max(ts.endDataIndex, (maxOff / part.dataBuffer.stride) + 1); // +1 for exclusive
                 }
             }
         }
 
-        _getPrimitiveLastIndex(): number {
-            let maxOff = 0;
-
-            for (let part of this._instanceDataParts) {
-                if (part) {
-                    for (let el of part.dataElements) {
-                        maxOff = Math.max(maxOff, el.offset);
-                    }
-                    return (maxOff / part.dataBuffer.stride) + 1; // +1 for exclusive
-                }
-            }
-        }
 
         // This internal method is mainly used for transparency processing
         public _getNextPrimZOrder(): number {
