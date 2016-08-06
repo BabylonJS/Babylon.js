@@ -85,6 +85,7 @@ var BABYLON;
                         else {
                             this._htmlAudioElement = new Audio(urlOrArrayBuffer);
                             this._htmlAudioElement.controls = false;
+                            this._htmlAudioElement.crossOrigin = "anonymous";
                             this._htmlAudioElement.loop = this.loop;
                             this._htmlAudioElement.crossOrigin = "anonymous";
                             this._htmlAudioElement.preload = "auto";
