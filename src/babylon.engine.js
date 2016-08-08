@@ -157,6 +157,7 @@ var BABYLON;
             this._maxTextureChannels = 16;
             this._activeTexturesCache = new Array(this._maxTextureChannels);
             this._compiledEffects = {};
+            this._vertexAttribArraysEnabled = [];
             this._uintIndicesCurrentlySet = false;
             this._currentBoundBuffer = new Array();
             this._currentBufferPointers = [];
@@ -213,6 +214,7 @@ var BABYLON;
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
+            this._caps.maxVertexAttribs = this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS);
             // Infos
             this._glVersion = this._gl.getParameter(this._gl.VERSION);
             var rendererInfo = this._gl.getExtension("WEBGL_debug_renderer_info");
@@ -947,13 +949,28 @@ var BABYLON;
             if (this._cachedVertexBuffers !== vertexBuffer || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffer;
                 this._cachedEffectForVertexBuffers = effect;
+                var attributesCount = effect.getAttributesCount();
                 var offset = 0;
-                for (var index = 0; index < vertexDeclaration.length; index++) {
-                    var order = effect.getAttributeLocation(index);
-                    if (order >= 0) {
-                        this.vertexAttribPointer(vertexBuffer, order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+                for (var index = 0; index < attributesCount; index++) {
+                    if (index < vertexDeclaration.length) {
+                        var order = effect.getAttributeLocation(index);
+                        if (order >= 0) {
+                            if (!this._vertexAttribArraysEnabled[order]) {
+                                this._gl.enableVertexAttribArray(order);
+                                this._vertexAttribArraysEnabled[order] = true;
+                            }
+                            this.vertexAttribPointer(vertexBuffer, order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+                        }
+                        offset += vertexDeclaration[index] * 4;
                     }
-                    offset += vertexDeclaration[index] * 4;
+                    else {
+                        //disable effect attributes that have no data
+                        var order = effect.getAttributeLocation(index);
+                        if (this._vertexAttribArraysEnabled[order]) {
+                            this._gl.disableVertexAttribArray(order);
+                            this._vertexAttribArraysEnabled[order] = false;
+                        }
+                    }
                 }
             }
             if (this._cachedIndexBuffer !== indexBuffer) {
@@ -972,7 +989,15 @@ var BABYLON;
                     if (order >= 0) {
                         var vertexBuffer = vertexBuffers[attributes[index]];
                         if (!vertexBuffer) {
+                            if (this._vertexAttribArraysEnabled[order]) {
+                                this._gl.disableVertexAttribArray(order);
+                                this._vertexAttribArraysEnabled[order] = false;
+                            }
                             continue;
+                        }
+                        if (!this._vertexAttribArraysEnabled[order]) {
+                            this._gl.enableVertexAttribArray(order);
+                            this._vertexAttribArraysEnabled[order] = true;
                         }
                         var buffer = vertexBuffer.getBuffer();
                         this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
@@ -1035,7 +1060,10 @@ var BABYLON;
                 }
                 for (var i = 0; i < offsetLocations.length; i++) {
                     var ai = offsetLocations[i];
-                    this._gl.enableVertexAttribArray(ai.index);
+                    if (!this._vertexAttribArraysEnabled[ai.index]) {
+                        this._gl.enableVertexAttribArray(ai.index);
+                        this._vertexAttribArraysEnabled[ai.index] = true;
+                    }
                     this.vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
                     this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
                     this._currentInstanceLocations.push(ai.index);
@@ -1045,7 +1073,10 @@ var BABYLON;
             else {
                 for (var index = 0; index < 4; index++) {
                     var offsetLocation = offsetLocations[index];
-                    this._gl.enableVertexAttribArray(offsetLocation);
+                    if (!this._vertexAttribArraysEnabled[offsetLocation]) {
+                        this._gl.enableVertexAttribArray(offsetLocation);
+                        this._vertexAttribArraysEnabled[offsetLocation] = true;
+                    }
                     this.vertexAttribPointer(instancesBuffer, offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
                     this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
                     this._currentInstanceLocations.push(offsetLocation);
@@ -1166,35 +1197,8 @@ var BABYLON;
                 }
                 return;
             }
-            this._vertexAttribArraysToUse = this._vertexAttribArraysToUse || [];
-            this._vertexAttribArraysEnabled = this._vertexAttribArraysEnabled || [];
             // Use program
             this.setProgram(effect.getProgram());
-            var i, ul;
-            for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
-                this._vertexAttribArraysToUse[i] = false;
-            }
-            var attributesCount = effect.getAttributesCount();
-            for (i = 0; i < attributesCount; i++) {
-                // Attributes
-                var order = effect.getAttributeLocation(i);
-                if (order >= 0) {
-                    this._vertexAttribArraysToUse[order] = true;
-                }
-            }
-            for (i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArraysEnabled[i] || this._vertexAttribArraysToUse[i]) {
-                    continue;
-                }
-                this._vertexAttribArraysEnabled[i] = false;
-                this._gl.disableVertexAttribArray(i);
-            }
-            for (i = 0, ul = this._vertexAttribArraysToUse.length; i < ul; i++) {
-                if (this._vertexAttribArraysToUse[i] && !this._vertexAttribArraysEnabled[i]) {
-                    this._vertexAttribArraysEnabled[i] = true;
-                    this._gl.enableVertexAttribArray(i);
-                }
-            }
             this._currentEffect = effect;
             if (effect.onBind) {
                 effect.onBind(effect);
@@ -2264,13 +2268,11 @@ var BABYLON;
                 this._gl.deleteProgram(this._compiledEffects[name]._program);
             }
             // Unbind
-            if (this._vertexAttribArraysEnabled) {
-                for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
-                    if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArraysEnabled[i]) {
-                        continue;
-                    }
-                    this._gl.disableVertexAttribArray(i);
+            for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+                if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
+                    continue;
                 }
+                this._gl.disableVertexAttribArray(i);
             }
             this._gl = null;
             // Events
