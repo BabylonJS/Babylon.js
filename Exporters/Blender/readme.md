@@ -27,6 +27,7 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Energy
  * Diffuse color
  * Specular color
+ * Include only meshes in same Blender layer
  * Shadow maps, all types (For directional lights)
  * Actions exported as AnimationRanges
 * **Materials**
@@ -48,6 +49,7 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Procedural Texture Baking
  * Cycles Render Baking
  * Check Ready Only Once
+ * Maximum Simultaneous Lights
 * **Multi-materials**
  * Name
  * Child materials
