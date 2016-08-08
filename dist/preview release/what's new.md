@@ -3,6 +3,7 @@
 ### Major updates
     
 ### Updates
+- Added onAnimationEnd callback for `sprite.playAnimation` ([deltakosh](https://github.com/deltakosh)) 
 - Added support for non square textures for sprites ([deltakosh](https://github.com/deltakosh)) 
 - Added support for texture arrays ([deltakosh](https://github.com/deltakosh)) 
 - Added `camera.isInFrustum` and `camera.isCompletelyInFrustum`. Can be used with meshes, submeshes and boundingInfo ([deltakosh](https://github.com/deltakosh)) 

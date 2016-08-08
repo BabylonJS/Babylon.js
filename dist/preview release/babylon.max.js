@@ -26926,7 +26926,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Sprite.prototype.playAnimation = function (from, to, loop, delay) {
+        Sprite.prototype.playAnimation = function (from, to, loop, delay, onAnimationEnd) {
             this._fromIndex = from;
             this._toIndex = to;
             this._loopAnimation = loop;
@@ -26935,6 +26935,7 @@ var BABYLON;
             this._direction = from < to ? 1 : -1;
             this.cellIndex = from;
             this._time = 0;
+            this._onAnimationEnd = onAnimationEnd;
         };
         Sprite.prototype.stopAnimation = function () {
             this._animationStarted = false;
@@ -26946,12 +26947,15 @@ var BABYLON;
             if (this._time > this._delay) {
                 this._time = this._time % this._delay;
                 this.cellIndex += this._direction;
-                if (this.cellIndex == this._toIndex) {
+                if (this.cellIndex === this._toIndex) {
                     if (this._loopAnimation) {
                         this.cellIndex = this._fromIndex;
                     }
                     else {
                         this._animationStarted = false;
+                        if (this._onAnimationEnd) {
+                            this._onAnimationEnd();
+                        }
                         if (this.disposeWhenFinishedAnimating) {
                             this.dispose();
                         }
