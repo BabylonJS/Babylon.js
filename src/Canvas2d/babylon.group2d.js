@@ -463,7 +463,7 @@ var BABYLON;
                 //let tpiZ = tpi._primitive.actualZOffset;
                 // We've made it so far, the tpi can be part of the segment, add it
                 tpi._transparentSegment = seg;
-                seg.endDataIndex = tpi._primitive._getPrimitiveLastIndex();
+                tpi._primitive._updateTransparentSegmentIndices(seg);
                 return true;
             };
             // Free the existing TransparentSegments

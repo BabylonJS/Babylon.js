@@ -676,21 +676,8 @@ var BABYLON;
                         minOff = Math.min(minOff, el.offset);
                         maxOff = Math.max(maxOff, el.offset);
                     }
-                    ts.startDataIndex = minOff / part.dataBuffer.stride;
-                    ts.endDataIndex = (maxOff / part.dataBuffer.stride) + 1; // +1 for exclusive
-                }
-            }
-        };
-        RenderablePrim2D.prototype._getPrimitiveLastIndex = function () {
-            var maxOff = 0;
-            for (var _i = 0, _a = this._instanceDataParts; _i < _a.length; _i++) {
-                var part = _a[_i];
-                if (part) {
-                    for (var _b = 0, _c = part.dataElements; _b < _c.length; _b++) {
-                        var el = _c[_b];
-                        maxOff = Math.max(maxOff, el.offset);
-                    }
-                    return (maxOff / part.dataBuffer.stride) + 1; // +1 for exclusive
+                    ts.startDataIndex = Math.min(ts.startDataIndex, minOff / part.dataBuffer.stride);
+                    ts.endDataIndex = Math.max(ts.endDataIndex, (maxOff / part.dataBuffer.stride) + 1); // +1 for exclusive
                 }
             }
         };
