@@ -2758,7 +2758,7 @@
 
             // Unbind
             for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
-                if (i > this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
+                if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
                     continue;
                 }
                 this._gl.disableVertexAttribArray(i);
