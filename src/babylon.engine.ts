@@ -2314,6 +2314,8 @@
                 }, files);
             }
 
+            this._loadedTexturesCache.push(texture);
+
             return texture;
         }
 
