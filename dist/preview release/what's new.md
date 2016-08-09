@@ -3,6 +3,7 @@
 ### Major updates
     
 ### Updates
+- Cube textures are now cached by texture cache ([deltakosh](https://github.com/deltakosh)) 
 - Added onAnimationEnd callback for `sprite.playAnimation` ([deltakosh](https://github.com/deltakosh)) 
 - Added support for non square textures for sprites ([deltakosh](https://github.com/deltakosh)) 
 - Added support for texture arrays ([deltakosh](https://github.com/deltakosh)) 

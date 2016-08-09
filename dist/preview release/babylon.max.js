@@ -7959,6 +7959,7 @@ var BABYLON;
                     texture.isReady = true;
                 }, files);
             }
+            this._loadedTexturesCache.push(texture);
             return texture;
         };
         Engine.prototype.updateTextureSize = function (texture, width, height) {
