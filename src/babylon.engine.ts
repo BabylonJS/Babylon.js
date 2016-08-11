@@ -1791,7 +1791,7 @@
                 if (!(fromData instanceof Array))
                     Tools.LoadFile(url, arrayBuffer => {
                         callback(arrayBuffer);
-                    }, onerror, scene.database, true);
+                    }, null, scene.database, true, onerror);
                 else
                     callback(buffer);
 
@@ -1809,7 +1809,7 @@
                 if (!(fromData instanceof Array))
                     Tools.LoadFile(url, data => {
                         callback(data);
-                    }, onerror, scene.database, true);
+                    }, null, scene.database, true, onerror);
                 else
                     callback(buffer);
 
