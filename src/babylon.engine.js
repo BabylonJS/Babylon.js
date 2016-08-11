@@ -1475,7 +1475,7 @@ var BABYLON;
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
                         callback(arrayBuffer);
-                    }, onerror, scene.database, true);
+                    }, null, scene.database, true, onerror);
                 else
                     callback(buffer);
             }
@@ -1490,7 +1490,7 @@ var BABYLON;
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (data) {
                         callback(data);
-                    }, onerror, scene.database, true);
+                    }, null, scene.database, true, onerror);
                 else
                     callback(buffer);
             }

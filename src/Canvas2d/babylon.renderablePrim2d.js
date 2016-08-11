@@ -419,8 +419,12 @@ var BABYLON;
                 }
                 if (usedCount === 0) {
                     this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
+                    gii.dispose();
                 }
-                gii.modelRenderCache.dispose();
+                if (this._modelRenderCache) {
+                    this._modelRenderCache.dispose();
+                    this._modelRenderCache = null;
+                }
             }
             this._instanceDataParts = null;
         };
