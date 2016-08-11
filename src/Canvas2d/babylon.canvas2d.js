@@ -271,6 +271,9 @@ var BABYLON;
                 // Enable Interaction
                 // Register the observable
                 this._scenePrePointerObserver = this.scene.onPrePointerObservable.add(function (e, s) {
+                    if (_this.isVisible === false) {
+                        return;
+                    }
                     var hs = 1 / _this.engine.getHardwareScalingLevel();
                     var localPos = e.localPosition.multiplyByFloats(hs, hs);
                     _this._handlePointerEventForInteraction(e, localPos, s);
@@ -281,6 +284,9 @@ var BABYLON;
                 if (enable) {
                     scene.constantlyUpdateMeshUnderPointer = true;
                     this._scenePointerObserver = scene.onPointerObservable.add(function (e, s) {
+                        if (_this.isVisible === false) {
+                            return;
+                        }
                         if (e.pickInfo.hit && e.pickInfo.pickedMesh === _this._worldSpaceNode && _this.worldSpaceToNodeLocal) {
                             var localPos = _this.worldSpaceToNodeLocal(e.pickInfo.pickedPoint);
                             _this._handlePointerEventForInteraction(e, localPos, s);

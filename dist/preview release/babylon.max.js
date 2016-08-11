@@ -7531,7 +7531,7 @@ var BABYLON;
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
                         callback(arrayBuffer);
-                    }, onerror, scene.database, true);
+                    }, null, scene.database, true, onerror);
                 else
                     callback(buffer);
             }
@@ -7546,7 +7546,7 @@ var BABYLON;
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (data) {
                         callback(data);
-                    }, onerror, scene.database, true);
+                    }, null, scene.database, true, onerror);
                 else
                     callback(buffer);
             }
@@ -42053,11 +42053,20 @@ var BABYLON;
             }
             if (this.modelRenderCache) {
                 this.modelRenderCache.dispose();
+                this.modelRenderCache = null;
             }
             var engine = this.owner.owner.engine;
-            if (this.opaqueData) {
-                this.opaqueData.forEach(function (d) { return d.dispose(engine); });
-                this.opaqueData = null;
+            if (this._opaqueData) {
+                this._opaqueData.forEach(function (d) { return d.dispose(engine); });
+                this._opaqueData = null;
+            }
+            if (this._alphaTestData) {
+                this._alphaTestData.forEach(function (d) { return d.dispose(engine); });
+                this._alphaTestData = null;
+            }
+            if (this._transparentData) {
+                this._transparentData.forEach(function (d) { return d.dispose(engine); });
+                this._transparentData = null;
             }
             this.partIndexFromId = null;
             this._isDisposed = true;
@@ -42755,8 +42764,12 @@ var BABYLON;
                 }
                 if (usedCount === 0) {
                     this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
+                    gii.dispose();
                 }
-                gii.modelRenderCache.dispose();
+                if (this._modelRenderCache) {
+                    this._modelRenderCache.dispose();
+                    this._modelRenderCache = null;
+                }
             }
             this._instanceDataParts = null;
         };
@@ -47417,6 +47430,9 @@ var BABYLON;
                 // Enable Interaction
                 // Register the observable
                 this._scenePrePointerObserver = this.scene.onPrePointerObservable.add(function (e, s) {
+                    if (_this.isVisible === false) {
+                        return;
+                    }
                     var hs = 1 / _this.engine.getHardwareScalingLevel();
                     var localPos = e.localPosition.multiplyByFloats(hs, hs);
                     _this._handlePointerEventForInteraction(e, localPos, s);
@@ -47427,6 +47443,9 @@ var BABYLON;
                 if (enable) {
                     scene.constantlyUpdateMeshUnderPointer = true;
                     this._scenePointerObserver = scene.onPointerObservable.add(function (e, s) {
+                        if (_this.isVisible === false) {
+                            return;
+                        }
                         if (e.pickInfo.hit && e.pickInfo.pickedMesh === _this._worldSpaceNode && _this.worldSpaceToNodeLocal) {
                             var localPos = _this.worldSpaceToNodeLocal(e.pickInfo.pickedPoint);
                             _this._handlePointerEventForInteraction(e, localPos, s);
