@@ -25,13 +25,24 @@
 
             if (this.modelRenderCache) {
                 this.modelRenderCache.dispose();
+                this.modelRenderCache = null;
             }
 
             let engine = this.owner.owner.engine;
 
-            if (this.opaqueData) {
-                this.opaqueData.forEach(d => d.dispose(engine));
-                this.opaqueData = null;
+            if (this._opaqueData) {
+                this._opaqueData.forEach(d => d.dispose(engine));
+                this._opaqueData = null;
+            }
+
+            if (this._alphaTestData) {
+                this._alphaTestData.forEach(d => d.dispose(engine));
+                this._alphaTestData = null;
+            }
+
+            if (this._transparentData) {
+                this._transparentData.forEach(d => d.dispose(engine));
+                this._transparentData = null;
             }
 
             this.partIndexFromId = null;
