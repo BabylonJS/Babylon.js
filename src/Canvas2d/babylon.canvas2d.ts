@@ -253,6 +253,9 @@
 
                 // Register the observable
                 this._scenePrePointerObserver = this.scene.onPrePointerObservable.add((e, s) => {
+                    if (this.isVisible === false) {
+                        return;
+                    }
                     let hs = 1 / this.engine.getHardwareScalingLevel();
                     let localPos = e.localPosition.multiplyByFloats(hs, hs);
                     this._handlePointerEventForInteraction(e, localPos, s);
@@ -265,6 +268,10 @@
                 if (enable) {
                     scene.constantlyUpdateMeshUnderPointer = true;
                     this._scenePointerObserver = scene.onPointerObservable.add((e, s) => {
+
+                        if (this.isVisible === false) {
+                            return;
+                        }
 
                         if (e.pickInfo.hit && e.pickInfo.pickedMesh === this._worldSpaceNode && this.worldSpaceToNodeLocal) {
                             let localPos = this.worldSpaceToNodeLocal(e.pickInfo.pickedPoint);
