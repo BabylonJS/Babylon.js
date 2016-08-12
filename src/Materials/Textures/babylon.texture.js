@@ -15,6 +15,8 @@ var BABYLON;
         __extends(Texture, _super);
         function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
             var _this = this;
+            if (noMipmap === void 0) { noMipmap = false; }
+            if (invertY === void 0) { invertY = false; }
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
