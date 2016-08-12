@@ -2,7 +2,12 @@
     /**
     * Interfaces
     */
-    export interface IGLTFChildRootProperty {
+    export interface IGLTFProperty {
+        extensions?: Object;
+        extras?: Object;
+    }
+
+    export interface IGLTFChildRootProperty extends IGLTFProperty {
         name?: string;
     }
 
@@ -91,7 +96,7 @@
         values: string[];
     }
 
-    export interface IGLTFMeshPrimitive {
+    export interface IGLTFMeshPrimitive extends IGLTFProperty {
         attributes: Object;
         indices: string;
         material: string;
@@ -252,6 +257,7 @@
         animations: Object;
         skins: Object;
         currentScene: Object;
+        extensionsUsed: string[];
 
         buffersCount: number;
         shaderscount: number;
@@ -280,5 +286,29 @@
     export interface IJointNode {
         node: IGLTFNode;
         id: string;
+    }
+
+    /**
+    * Extensions
+    */
+    export interface IGLTFExtension {
+        /**
+        * The name of the extension (example: "KHR_materials_pbr" cf. https://github.com/tsturm/glTF/tree/master/extensions/Vendor/FRAUNHOFER_materials_pbr)
+        */
+        extensionName: string;
+    }
+
+    export interface IGLTFLoaderExtension<ExtensionType extends Object, ExtensionObject extends Object> extends IGLTFExtension {
+        /**
+        * If the extensions needs the loader to skip its default behavior
+        * Example, when loading materials, if the loader should use only the extension
+        * or load the shader material and call the extension to customize the shader material
+        */
+        needToSkipDefaultLoaderBehavior(id: string, extension: ExtensionType): boolean;
+
+        /**
+        * Apply extension method
+        */
+        apply(gltfRuntime: IGLTFRuntime, id: string, name: string, extension: ExtensionType, object: ExtensionObject): ExtensionObject;
     }
 }
