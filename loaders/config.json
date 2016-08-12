@@ -1,0 +1,29 @@
+{
+  "loaders": {
+    "stl": {
+      "files": ["STL/babylon.stlFileLoader.ts"],
+      "output": "./STL",
+      "filename": "babylon.stlFileLoader.js"
+    },
+
+    "obj": {
+      "files": ["OBJ/babylon.objFileLoader.ts"],
+      "output": "./OBJ",
+      "filename": "babylon.objFileLoader.js"
+    },
+
+    "gltf": {
+      "files": [
+        "glTF/babylon.glTFFileLoaderInterfaces.ts",
+        "glTF/babylon.glTFFileLoader.ts",
+        "glTF/babylon.glTFFileLoaderUtils.ts"
+      ],
+      "output": "./glTF",
+      "filename": "babylon.glTFFileLoader.js"
+    }
+  },
+
+  "defines": [
+    "../dist/*.d.ts"
+  ]
+}

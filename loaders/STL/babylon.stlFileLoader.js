@@ -74,8 +74,7 @@ var BABYLON;
             mesh.computeWorldMatrix(true);
         };
         return STLFileLoader;
-    })();
+    }());
     BABYLON.STLFileLoader = STLFileLoader;
     BABYLON.SceneLoader.RegisterPlugin(new STLFileLoader());
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.stlFileLoader.js.map
