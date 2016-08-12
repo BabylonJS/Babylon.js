@@ -1,3 +1,5 @@
+
+
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -166,121 +168,6 @@ var BABYLON;
     /**
     * Utils
     */
-    var getByteStrideFromType = function (accessor) {
-        // Needs this function since "byteStride" isn't requiered in glTF format
-        var type = accessor.type;
-        switch (type) {
-            case "VEC2": return 2;
-            case "VEC3": return 3;
-            case "VEC4": return 4;
-            case "MAT2": return 4;
-            case "MAT3": return 9;
-            case "MAT4": return 16;
-            default: return 1;
-        }
-    };
-    var setMatrix = function (scene, source, parameter, uniformName, shaderMaterial) {
-        var mat = null;
-        if (parameter.semantic === "MODEL") {
-            mat = source.getWorldMatrix();
-        }
-        else if (parameter.semantic === "PROJECTION") {
-            mat = scene.getProjectionMatrix();
-        }
-        else if (parameter.semantic === "VIEW") {
-            mat = scene.getViewMatrix();
-        }
-        else if (parameter.semantic === "MODELVIEWINVERSETRANSPOSE") {
-            mat = BABYLON.Matrix.Transpose(source.getWorldMatrix().multiply(scene.getViewMatrix()).invert());
-        }
-        else if (parameter.semantic === "MODELVIEW") {
-            mat = source.getWorldMatrix().multiply(scene.getViewMatrix());
-        }
-        else if (parameter.semantic === "MODELVIEWPROJECTION") {
-            mat = source.getWorldMatrix().multiply(scene.getTransformMatrix());
-        }
-        else if (parameter.semantic === "MODELINVERSE") {
-            mat = source.getWorldMatrix().invert();
-        }
-        else if (parameter.semantic === "VIEWINVERSE") {
-            mat = scene.getViewMatrix().invert();
-        }
-        else if (parameter.semantic === "PROJECTIONINVERSE") {
-            mat = scene.getProjectionMatrix().invert();
-        }
-        else if (parameter.semantic === "MODELVIEWINVERSE") {
-            mat = source.getWorldMatrix().multiply(scene.getViewMatrix()).invert();
-        }
-        else if (parameter.semantic === "MODELVIEWPROJECTIONINVERSE") {
-            mat = source.getWorldMatrix().multiply(scene.getTransformMatrix()).invert();
-        }
-        else if (parameter.semantic === "MODELINVERSETRANSPOSE") {
-            mat = BABYLON.Matrix.Transpose(source.getWorldMatrix().invert());
-        }
-        else {
-            debugger;
-        }
-        switch (parameter.type) {
-            case EParameterType.FLOAT_MAT2:
-                shaderMaterial.setMatrix2x2(uniformName, BABYLON.Matrix.GetAsMatrix2x2(mat));
-                break;
-            case EParameterType.FLOAT_MAT3:
-                shaderMaterial.setMatrix3x3(uniformName, BABYLON.Matrix.GetAsMatrix3x3(mat));
-                break;
-            case EParameterType.FLOAT_MAT4:
-                shaderMaterial.setMatrix(uniformName, mat);
-                break;
-            default: break;
-        }
-    };
-    var setUniform = function (shaderMaterial, uniform, value, type) {
-        switch (type) {
-            case EParameterType.FLOAT:
-                shaderMaterial.setFloat(uniform, value);
-                return true;
-            case EParameterType.FLOAT_VEC2:
-                shaderMaterial.setVector2(uniform, BABYLON.Vector2.FromArray(value));
-                return true;
-            case EParameterType.FLOAT_VEC3:
-                shaderMaterial.setVector3(uniform, BABYLON.Vector3.FromArray(value));
-                return true;
-            case EParameterType.FLOAT_VEC4:
-                shaderMaterial.setVector4(uniform, BABYLON.Vector4.FromArray(value));
-                return true;
-            default: return false;
-        }
-    };
-    var getWrapMode = function (mode) {
-        switch (mode) {
-            case ETextureWrapMode.CLAMP_TO_EDGE: return BABYLON.Texture.CLAMP_ADDRESSMODE;
-            case ETextureWrapMode.MIRRORED_REPEAT: return BABYLON.Texture.MIRROR_ADDRESSMODE;
-            case ETextureWrapMode.REPEAT: return BABYLON.Texture.WRAP_ADDRESSMODE;
-            default: return BABYLON.Texture.WRAP_ADDRESSMODE;
-        }
-    };
-    var getTextureFilterMode = function (mode) {
-        switch (mode) {
-            case ETextureFilterType.LINEAR:
-            case ETextureFilterType.LINEAR_MIPMAP_NEAREST:
-            case ETextureFilterType.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
-            case ETextureFilterType.NEAREST:
-            case ETextureFilterType.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_SAMPLINGMODE;
-            default: return BABYLON.Texture.BILINEAR_SAMPLINGMODE;
-        }
-    };
-    var getBufferFromAccessor = function (gltfRuntime, accessor) {
-        var bufferView = gltfRuntime.bufferViews[accessor.bufferView];
-        var arrayBuffer = gltfRuntime.arrayBuffers[bufferView.buffer];
-        var byteOffset = accessor.byteOffset + bufferView.byteOffset;
-        var count = accessor.count * getByteStrideFromType(accessor);
-        switch (accessor.componentType) {
-            case EComponentType.BYTE: return new Int8Array(arrayBuffer, byteOffset, count);
-            case EComponentType.UNSIGNED_BYTE: return new Uint8Array(arrayBuffer, byteOffset, count);
-            case EComponentType.SHORT: return new Int16Array(arrayBuffer, byteOffset, count);
-            case EComponentType.UNSIGNED_SHORT: return new Uint16Array(arrayBuffer, byteOffset, count);
-            default: return new Float32Array(arrayBuffer, byteOffset, count);
-        }
-    };
     var normalizeUVs = function (buffer) {
         if (!buffer) {
             return;
@@ -316,8 +203,47 @@ var BABYLON;
             return "uv" + (channel === 0 ? "" : channel + 1);
         }
     };
-    var isBase64 = function (uri) {
-        return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+    // Returns if at least one extension needs the loader to skip its behavior
+    var extensionNeedToSkipDefaultBehavior = function (gltfRuntime, id, name, extensionsObject, object) {
+        if (!extensionsObject) {
+            return false;
+        }
+        for (var i = 0; i < GLTFFileLoader.Extensions.length; i++) {
+            var loaderExtension = GLTFFileLoader.Extensions[i];
+            for (var extensionName in extensionsObject) {
+                var extension = extensionsObject[extensionName];
+                if (loaderExtension.extensionName == extensionName && loaderExtension.needToSkipDefaultLoaderBehavior(id, extension)) {
+                    loaderExtension.apply(gltfRuntime, id, name, extension, null);
+                    // If the extensions is defined but not set in top-root "extensionUsed" string array
+                    if (gltfRuntime.extensionsUsed.indexOf(extensionName) === -1) {
+                        BABYLON.Tools.Warn("Extension \"" + extensionName + "\" is used but not declared in \"extensionsUsed\"");
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    // Call an extension giving a specific extension object
+    var callExtension = function (gltfRuntime, id, name, extensionsObject, object) {
+        if (!extensionsObject) {
+            return;
+        }
+        var foundAtLeastOneExtension = false;
+        for (var i = 0; i < GLTFFileLoader.Extensions.length; i++) {
+            var loaderExtension = GLTFFileLoader.Extensions[i];
+            for (var extensionName in extensionsObject) {
+                if (loaderExtension.extensionName == extensionName) {
+                    loaderExtension.apply(gltfRuntime, id, name, extensionsObject[extensionName], object);
+                    foundAtLeastOneExtension = true;
+                    // If the extensions is defined but not set in top-root "extensionUsed" string array
+                    if (gltfRuntime.extensionsUsed.indexOf(extensionName) === -1) {
+                        BABYLON.Tools.Warn("Extension \"" + extensionName + "\" is used but not declared in \"extensionsUsed\"");
+                    }
+                }
+            }
+        }
+        return foundAtLeastOneExtension;
     };
     /**
     * Returns the animation path (glTF -> Babylon)
@@ -335,6 +261,9 @@ var BABYLON;
     var loadAnimations = function (gltfRuntime) {
         for (var anim in gltfRuntime.animations) {
             var animation = gltfRuntime.animations[anim];
+            if (extensionNeedToSkipDefaultBehavior(gltfRuntime, anim, animation.name, animation.extensions)) {
+                continue;
+            }
             var lastAnimation = null;
             for (var i = 0; i < animation.channels.length; i++) {
                 // Get parameters and load buffers
@@ -345,8 +274,8 @@ var BABYLON;
                 }
                 var inputData = animation.parameters[sampler.input];
                 var outputData = animation.parameters[sampler.output];
-                var bufferInput = getBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
-                var bufferOutput = getBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
+                var bufferInput = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
+                var bufferOutput = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
                 var targetID = channel.target.id;
                 var targetNode = gltfRuntime.scene.getNodeByID(targetID);
                 if (targetNode === null) {
@@ -436,6 +365,8 @@ var BABYLON;
                     targetNode.animations.push(babylonAnimation);
                 }
                 lastAnimation = babylonAnimation;
+                // If extension for animations, call it
+                callExtension(gltfRuntime, anim, animation.name, animation.extensions, lastAnimation);
                 gltfRuntime.scene.stopAnimation(targetNode);
                 gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
             }
@@ -588,16 +519,19 @@ var BABYLON;
     /**
     * Imports a skeleton
     */
-    var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton) {
+    var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton, id) {
         if (!newSkeleton) {
             newSkeleton = new BABYLON.Skeleton(skins.name, "", gltfRuntime.scene);
         }
         if (!skins.babylonSkeleton) {
             return newSkeleton;
         }
+        if (extensionNeedToSkipDefaultBehavior(gltfRuntime, id, skins.name, skins.extensions, newSkeleton)) {
+            return newSkeleton;
+        }
         // Matrices
         var accessor = gltfRuntime.accessors[skins.inverseBindMatrices];
-        var buffer = getBufferFromAccessor(gltfRuntime, accessor);
+        var buffer = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
         var bindShapeMatrix = BABYLON.Matrix.FromArray(skins.bindShapeMatrix);
         // Find the root bones
         var nodesToRoot = [];
@@ -671,7 +605,11 @@ var BABYLON;
             }
             var bone = new BABYLON.Bone(node.name, newSkeleton, parentBone, mat);
             bone.id = id;
+            // If there is an extension for bones, call it
+            callExtension(gltfRuntime, id, node.name, node.extensions, bone);
         }
+        // If there is an extension for skinning, call it
+        callExtension(gltfRuntime, id, skins.name, skins.extensions, newSkeleton);
         // Polish
         var bones = newSkeleton.bones;
         newSkeleton.bones = [];
@@ -733,63 +671,46 @@ var BABYLON;
                 for (var semantic in attributes) {
                     // Link accessor and buffer view
                     accessor = gltfRuntime.accessors[attributes[semantic]];
-                    buffer = getBufferFromAccessor(gltfRuntime, accessor);
+                    buffer = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
                     if (semantic === "NORMAL") {
-                        tempVertexData.normals = [];
-                        for (var j = 0; j < buffer.length; j++) {
-                            tempVertexData.normals.push(buffer[j]);
-                        }
+                        tempVertexData.normals = Float32Array.from(buffer);
                     }
                     else if (semantic === "POSITION") {
-                        tempVertexData.positions = [];
-                        var count = 3;
                         if (GLTFFileLoader.HomogeneousCoordinates) {
-                            count = 4;
+                            tempVertexData.positions = new Float32Array(buffer.length - buffer.length / 4);
+                            for (var j = 0; j < buffer.length; j += 4) {
+                                tempVertexData.positions[j] = buffer[j];
+                                tempVertexData.positions[j + 1] = buffer[j + 1];
+                                tempVertexData.positions[j + 2] = buffer[j + 2];
+                            }
                         }
-                        for (var j = 0; j < buffer.length; j += count) {
-                            tempVertexData.positions.push(buffer[j]);
-                            tempVertexData.positions.push(buffer[j + 1]);
-                            tempVertexData.positions.push(buffer[j + 2]);
+                        else {
+                            tempVertexData.positions = Float32Array.from(buffer);
                         }
                         verticesCounts.push(tempVertexData.positions.length);
                     }
                     else if (semantic.indexOf("TEXCOORD_") !== -1) {
                         var channel = Number(semantic.split("_")[1]);
                         var uvKind = BABYLON.VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
-                        var uvs = [];
-                        for (var j = 0; j < buffer.length; j++) {
-                            uvs.push(buffer[j]);
-                        }
+                        var uvs = Float32Array.from(buffer);
                         normalizeUVs(uvs);
                         tempVertexData.set(uvs, uvKind);
                     }
                     else if (semantic === "JOINT") {
-                        tempVertexData.matricesIndices = [];
-                        for (var j = 0; j < buffer.length; j++) {
-                            tempVertexData.matricesIndices.push(buffer[j]);
-                        }
+                        tempVertexData.matricesIndices = Float32Array.from(buffer);
                     }
                     else if (semantic === "WEIGHT") {
-                        tempVertexData.matricesWeights = [];
-                        for (var j = 0; j < buffer.length; j++) {
-                            tempVertexData.matricesWeights.push(buffer[j]);
-                        }
+                        tempVertexData.matricesWeights = Float32Array.from(buffer);
                     }
                     else if (semantic === "COLOR") {
-                        tempVertexData.colors = [];
-                        for (var j = 0; j < buffer.length; j++) {
-                            tempVertexData.colors.push(buffer[j]);
-                        }
+                        tempVertexData.colors = Float32Array.from(buffer);
                     }
                 }
                 // Indices
                 accessor = gltfRuntime.accessors[primitive.indices];
-                buffer = getBufferFromAccessor(gltfRuntime, accessor);
-                tempVertexData.indices = [];
-                for (var j = 0; j < buffer.length; j++) {
-                    tempVertexData.indices.push(buffer[j]);
-                }
-                indexCounts.push(buffer.length);
+                buffer = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
+                tempVertexData.indices = Int32Array.from(buffer);
+                indexCounts.push(tempVertexData.indices.length);
                 vertexData.merge(tempVertexData);
                 tempVertexData = undefined;
                 // Sub material
@@ -819,6 +740,8 @@ var BABYLON;
                 var subMesh = new BABYLON.SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
                 index++;
             }
+            // If there is an extension for mesh, call it
+            callExtension(gltfRuntime, id, mesh.name, mesh.extensions, newMesh);
         }
         // Finish
         return newMesh;
@@ -877,7 +800,7 @@ var BABYLON;
                 var newMesh = importMesh(gltfRuntime, node, node.meshes, id, node.babylonNode);
                 newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
                 if (newMesh.skeleton === null) {
-                    newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton);
+                    newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton, node.skin);
                     if (!skin.babylonSkeleton) {
                         skin.babylonSkeleton = newMesh.skeleton;
                     }
@@ -886,6 +809,8 @@ var BABYLON;
                     newMesh.useBones = true;
                 }
                 lastNode = newMesh;
+                // If extension
+                callExtension(gltfRuntime, node.skin, node.name, node.extensions, newMesh);
             }
         }
         else if (node.meshes) {
@@ -940,6 +865,8 @@ var BABYLON;
                     }
                     lastNode = spLight;
                 }
+                // If there is an extension for light, call it
+                callExtension(gltfRuntime, node.light, light.name, light.extensions, lastNode);
             }
         }
         else if (node.camera && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
@@ -967,6 +894,8 @@ var BABYLON;
                     }
                     lastNode = persCamera;
                 }
+                // If there is an extension for camera, call it
+                callExtension(gltfRuntime, node.camera, camera.name, camera.extensions, lastNode);
             }
         }
         // Empty node
@@ -990,6 +919,8 @@ var BABYLON;
             lastNode.updateCache(true);
             node.babylonNode = lastNode;
         }
+        // If there is an extension for the current node, call it
+        callExtension(gltfRuntime, id, node.name, node.extensions, lastNode);
         return lastNode;
     };
     /**
@@ -1081,7 +1012,7 @@ var BABYLON;
         for (var buf in gltfRuntime.buffers) {
             var buffer = gltfRuntime.buffers[buf];
             if (buffer) {
-                if (isBase64(buffer.uri)) {
+                if (BABYLON.GLTFUtils.IsBase64(buffer.uri)) {
                     var arrayBuffer = decodeArrayBuffer(buffer.uri.split(",")[1]);
                     onLoadBuffer(gltfRuntime, buf)(arrayBuffer);
                 }
@@ -1103,7 +1034,7 @@ var BABYLON;
             var type = uniform.type;
             if (type === EParameterType.FLOAT_MAT2 || type === EParameterType.FLOAT_MAT3 || type === EParameterType.FLOAT_MAT4) {
                 if (uniform.semantic && !uniform.source && !uniform.node) {
-                    setMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial.getEffect());
+                    BABYLON.GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial.getEffect());
                 }
                 else if (uniform.semantic && (uniform.source || uniform.node)) {
                     var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node);
@@ -1113,7 +1044,7 @@ var BABYLON;
                     if (source === null) {
                         continue;
                     }
-                    setMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial.getEffect());
+                    BABYLON.GLTFUtils.SetMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial.getEffect());
                 }
             }
             else {
@@ -1129,7 +1060,7 @@ var BABYLON;
                     shaderMaterial.getEffect().setTexture(unif, texture);
                 }
                 else {
-                    setUniform(shaderMaterial.getEffect(), unif, value, type);
+                    BABYLON.GLTFUtils.SetUniform(shaderMaterial.getEffect(), unif, value, type);
                 }
             }
         }
@@ -1165,16 +1096,20 @@ var BABYLON;
                     (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
                     (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR);
                 var samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
-                if (isBase64(source.uri)) {
+                if (BABYLON.GLTFUtils.IsBase64(source.uri)) {
                     newTexture = new BABYLON.Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, null, null, source.uri, true);
                 }
                 else {
                     newTexture = new BABYLON.Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode);
                 }
-                newTexture.wrapU = getWrapMode(sampler.wrapS);
-                newTexture.wrapV = getWrapMode(sampler.wrapT);
+                newTexture.wrapU = BABYLON.GLTFUtils.GetWrapMode(sampler.wrapS);
+                newTexture.wrapV = BABYLON.GLTFUtils.GetWrapMode(sampler.wrapT);
                 newTexture.name = value;
                 texture.babylonTexture = newTexture;
+                // If there is an extension for texture, sampler or image, call it
+                callExtension(gltfRuntime, value, texture.name, texture.extensions, newTexture);
+                callExtension(gltfRuntime, texture.sampler, sampler.name, sampler.extensions, newTexture);
+                callExtension(gltfRuntime, texture.source, source.name, source.extensions, newTexture);
                 if (uniform.value) {
                     // Static uniform
                     shaderMaterial.setTexture(unif, newTexture);
@@ -1182,12 +1117,14 @@ var BABYLON;
                 }
             }
             else {
-                if (uniform.value && setUniform(shaderMaterial, unif, value, type)) {
+                if (uniform.value && BABYLON.GLTFUtils.SetUniform(shaderMaterial, unif, value, type)) {
                     // Static uniform
                     delete unTreatedUniforms[unif];
                 }
             }
         }
+        // If there is an extension, call it
+        callExtension(gltfRuntime, material.name, material.name, material.extensions, shaderMaterial);
     };
     /**
     * Shader compilation failed
@@ -1235,6 +1172,9 @@ var BABYLON;
         // Create materials
         for (var mat in gltfRuntime.materials) {
             var material = gltfRuntime.materials[mat];
+            if (extensionNeedToSkipDefaultBehavior(gltfRuntime, mat, material.name, material.extensions)) {
+                continue;
+            }
             var technique = gltfRuntime.techniques[material.technique];
             var program = gltfRuntime.programs[technique.program];
             var states = technique.states;
@@ -1381,12 +1321,12 @@ var BABYLON;
     */
     var load = function (gltfRuntime) {
         // Begin with shaders
-        var atLeastOnShader = false;
+        var atLeastOneShader = false;
         for (var sha in gltfRuntime.shaders) {
-            atLeastOnShader = true;
+            atLeastOneShader = true;
             var shader = gltfRuntime.shaders[sha];
             if (shader) {
-                if (isBase64(shader.uri)) {
+                if (BABYLON.GLTFUtils.IsBase64(shader.uri)) {
                     var shaderString = atob(shader.uri.split(",")[1]);
                     onLoadShader(gltfRuntime, sha)(shaderString);
                 }
@@ -1398,7 +1338,7 @@ var BABYLON;
                 BABYLON.Tools.Error("No shader file named " + shader.uri);
             }
         }
-        if (!atLeastOnShader) {
+        if (!atLeastOneShader) {
             loadBuffers(gltfRuntime);
         }
     };
@@ -1412,6 +1352,13 @@ var BABYLON;
             */
             this.extensions = ".gltf";
         }
+        GLTFFileLoader.RegisterExtension = function (extension) {
+            if (GLTFFileLoader.Extensions.indexOf(extension) !== -1) {
+                return false;
+            }
+            GLTFFileLoader.Extensions.push(extension);
+            return true;
+        };
         /**
         * Import meshes
         */
@@ -1470,6 +1417,8 @@ var BABYLON;
             for (var i = 0; i < currentScene.nodes.length; i++) {
                 traverseNodes(gltfRuntime, currentScene.nodes[i], null);
             }
+            // If there is an extension for scene, call it
+            callExtension(gltfRuntime, currentScene.name, currentScene.name, currentScene.extensions, gltfRuntime.scene);
         };
         // Creates the gltfRuntime
         GLTFFileLoader.prototype._createGlTFRuntime = function (parsedData, scene, rootUrl) {
@@ -1491,6 +1440,7 @@ var BABYLON;
                 animations: {},
                 skins: {},
                 currentScene: {},
+                extensionsUsed: [],
                 buffersCount: 0,
                 shaderscount: 0,
                 scene: scene,
@@ -1502,6 +1452,9 @@ var BABYLON;
                 arrayBuffers: []
             };
             // Parse
+            if (parsedData.extensionsUsed) {
+                parseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
+            }
             if (parsedData.buffers) {
                 parseBuffers(parsedData.buffers, gltfRuntime);
             }
@@ -1564,10 +1517,210 @@ var BABYLON;
         */
         GLTFFileLoader.MakeYUP = false;
         GLTFFileLoader.HomogeneousCoordinates = false;
+        GLTFFileLoader.Extensions = [];
         return GLTFFileLoader;
     }());
     BABYLON.GLTFFileLoader = GLTFFileLoader;
     ;
     BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.glTFFileLoader.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+    * Utils functions for GLTF
+    */
+    var GLTFUtils = (function () {
+        function GLTFUtils() {
+        }
+        /**
+         * Sets the given "parameter" matrix
+         * @param scene: the {BABYLON.Scene} object
+         * @param source: the source node where to pick the matrix
+         * @param parameter: the GLTF technique parameter
+         * @param uniformName: the name of the shader's uniform
+         * @param shaderMaterial: the shader material
+         */
+        GLTFUtils.SetMatrix = function (scene, source, parameter, uniformName, shaderMaterial) {
+            var mat = null;
+            if (parameter.semantic === "MODEL") {
+                mat = source.getWorldMatrix();
+            }
+            else if (parameter.semantic === "PROJECTION") {
+                mat = scene.getProjectionMatrix();
+            }
+            else if (parameter.semantic === "VIEW") {
+                mat = scene.getViewMatrix();
+            }
+            else if (parameter.semantic === "MODELVIEWINVERSETRANSPOSE") {
+                mat = BABYLON.Matrix.Transpose(source.getWorldMatrix().multiply(scene.getViewMatrix()).invert());
+            }
+            else if (parameter.semantic === "MODELVIEW") {
+                mat = source.getWorldMatrix().multiply(scene.getViewMatrix());
+            }
+            else if (parameter.semantic === "MODELVIEWPROJECTION") {
+                mat = source.getWorldMatrix().multiply(scene.getTransformMatrix());
+            }
+            else if (parameter.semantic === "MODELINVERSE") {
+                mat = source.getWorldMatrix().invert();
+            }
+            else if (parameter.semantic === "VIEWINVERSE") {
+                mat = scene.getViewMatrix().invert();
+            }
+            else if (parameter.semantic === "PROJECTIONINVERSE") {
+                mat = scene.getProjectionMatrix().invert();
+            }
+            else if (parameter.semantic === "MODELVIEWINVERSE") {
+                mat = source.getWorldMatrix().multiply(scene.getViewMatrix()).invert();
+            }
+            else if (parameter.semantic === "MODELVIEWPROJECTIONINVERSE") {
+                mat = source.getWorldMatrix().multiply(scene.getTransformMatrix()).invert();
+            }
+            else if (parameter.semantic === "MODELINVERSETRANSPOSE") {
+                mat = BABYLON.Matrix.Transpose(source.getWorldMatrix().invert());
+            }
+            else {
+                debugger;
+            }
+            switch (parameter.type) {
+                case BABYLON.EParameterType.FLOAT_MAT2:
+                    shaderMaterial.setMatrix2x2(uniformName, BABYLON.Matrix.GetAsMatrix2x2(mat));
+                    break;
+                case BABYLON.EParameterType.FLOAT_MAT3:
+                    shaderMaterial.setMatrix3x3(uniformName, BABYLON.Matrix.GetAsMatrix3x3(mat));
+                    break;
+                case BABYLON.EParameterType.FLOAT_MAT4:
+                    shaderMaterial.setMatrix(uniformName, mat);
+                    break;
+                default: break;
+            }
+        };
+        /**
+         * Sets the given "parameter" matrix
+         * @param shaderMaterial: the shader material
+         * @param uniform: the name of the shader's uniform
+         * @param value: the value of the uniform
+         * @param type: the uniform's type (EParameterType FLOAT, VEC2, VEC3 or VEC4)
+         */
+        GLTFUtils.SetUniform = function (shaderMaterial, uniform, value, type) {
+            switch (type) {
+                case BABYLON.EParameterType.FLOAT:
+                    shaderMaterial.setFloat(uniform, value);
+                    return true;
+                case BABYLON.EParameterType.FLOAT_VEC2:
+                    shaderMaterial.setVector2(uniform, BABYLON.Vector2.FromArray(value));
+                    return true;
+                case BABYLON.EParameterType.FLOAT_VEC3:
+                    shaderMaterial.setVector3(uniform, BABYLON.Vector3.FromArray(value));
+                    return true;
+                case BABYLON.EParameterType.FLOAT_VEC4:
+                    shaderMaterial.setVector4(uniform, BABYLON.Vector4.FromArray(value));
+                    return true;
+                default: return false;
+            }
+        };
+        /**
+        * If the uri is a base64 string
+        * @param uri: the uri to test
+        */
+        GLTFUtils.IsBase64 = function (uri) {
+            return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+        };
+        /**
+        * Returns the wrap mode of the texture
+        * @param mode: the mode value
+        */
+        GLTFUtils.GetWrapMode = function (mode) {
+            switch (mode) {
+                case BABYLON.ETextureWrapMode.CLAMP_TO_EDGE: return BABYLON.Texture.CLAMP_ADDRESSMODE;
+                case BABYLON.ETextureWrapMode.MIRRORED_REPEAT: return BABYLON.Texture.MIRROR_ADDRESSMODE;
+                case BABYLON.ETextureWrapMode.REPEAT: return BABYLON.Texture.WRAP_ADDRESSMODE;
+                default: return BABYLON.Texture.WRAP_ADDRESSMODE;
+            }
+        };
+        /**
+         * Loads a texture from its name
+         * @param gltfRuntime: the gltf runtime
+         * @param name: the name of the texture
+         */
+        GLTFUtils.LoadTexture = function (gltfRuntime, name) {
+            var texture = gltfRuntime.textures[name];
+            if (!texture || !texture.source) {
+                return null;
+            }
+            if (texture.babylonTexture) {
+                return texture.babylonTexture;
+            }
+            var sampler = gltfRuntime.samplers[texture.sampler];
+            var source = gltfRuntime.images[texture.source];
+            var newTexture = null;
+            var createMipMaps = (sampler.minFilter === BABYLON.ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
+                (sampler.minFilter === BABYLON.ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
+                (sampler.minFilter === BABYLON.ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
+                (sampler.minFilter === BABYLON.ETextureFilterType.LINEAR_MIPMAP_LINEAR);
+            var samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
+            if (GLTFUtils.IsBase64(source.uri)) {
+                newTexture = new BABYLON.Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, null, null, source.uri, true);
+            }
+            else {
+                newTexture = new BABYLON.Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode);
+            }
+            newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
+            newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
+            newTexture.name = name;
+            texture.babylonTexture = newTexture;
+            return newTexture;
+        };
+        /**
+         * Returns the byte stride giving an accessor
+         * @param accessor: the GLTF accessor objet
+         */
+        GLTFUtils.GetByteStrideFromType = function (accessor) {
+            // Needs this function since "byteStride" isn't requiered in glTF format
+            var type = accessor.type;
+            switch (type) {
+                case "VEC2": return 2;
+                case "VEC3": return 3;
+                case "VEC4": return 4;
+                case "MAT2": return 4;
+                case "MAT3": return 9;
+                case "MAT4": return 16;
+                default: return 1;
+            }
+        };
+        /**
+         * Returns the texture filter mode giving a mode value
+         * @param mode: the filter mode value
+         */
+        GLTFUtils.GetTextureFilterMode = function (mode) {
+            switch (mode) {
+                case BABYLON.ETextureFilterType.LINEAR:
+                case BABYLON.ETextureFilterType.LINEAR_MIPMAP_NEAREST:
+                case BABYLON.ETextureFilterType.LINEAR_MIPMAP_LINEAR: return BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
+                case BABYLON.ETextureFilterType.NEAREST:
+                case BABYLON.ETextureFilterType.NEAREST_MIPMAP_NEAREST: return BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                default: return BABYLON.Texture.BILINEAR_SAMPLINGMODE;
+            }
+        };
+        /**
+         * Returns a buffer from its accessor
+         * @param gltfRuntime: the GLTF runtime
+         * @param accessor: the GLTF accessor
+         */
+        GLTFUtils.GetBufferFromAccessor = function (gltfRuntime, accessor) {
+            var bufferView = gltfRuntime.bufferViews[accessor.bufferView];
+            var arrayBuffer = gltfRuntime.arrayBuffers[bufferView.buffer];
+            var byteOffset = accessor.byteOffset + bufferView.byteOffset;
+            var count = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
+            switch (accessor.componentType) {
+                case BABYLON.EComponentType.BYTE: return new Int8Array(arrayBuffer, byteOffset, count);
+                case BABYLON.EComponentType.UNSIGNED_BYTE: return new Uint8Array(arrayBuffer, byteOffset, count);
+                case BABYLON.EComponentType.SHORT: return new Int16Array(arrayBuffer, byteOffset, count);
+                case BABYLON.EComponentType.UNSIGNED_SHORT: return new Uint16Array(arrayBuffer, byteOffset, count);
+                default: return new Float32Array(arrayBuffer, byteOffset, count);
+            }
+        };
+        return GLTFUtils;
+    }());
+    BABYLON.GLTFUtils = GLTFUtils;
+})(BABYLON || (BABYLON = {}));
