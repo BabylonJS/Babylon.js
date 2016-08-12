@@ -1,0 +1,24 @@
+{
+  "name": "BabylonJSLoaders",
+  "version": "0.8.0",
+  "description": "Babylon.js file loaders",
+  "repository": { "url": "https://github.com/BabylonJS/BabylonJS/" },
+  "readme": "https://github.com/BabylonJS/BabylonJS/blob/master/README.md",
+  "license": "(Apache-2.0)",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-uglify": "~1.2.0",
+    "gulp-sourcemaps": "~1.5.2",
+    "typescript": "^1.8.10",
+    "gulp-typescript": "~2.13.6",
+    "gulp-util": "~3.0.4",
+    "gulp-concat": "~2.5.2",
+    "merge2": "~0.3.5",
+    "gulp-replace": "~0.5.3",
+    "gulp-rename": "~1.2.2",
+    "gulp-if": "^2.0.1",
+    "through2": "~0.6.5",
+    "run-sequence": "~1.1.0",
+    "gulp-clean-ts-extends": "~0.1.1"
+  }
+}

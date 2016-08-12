@@ -1769,7 +1769,7 @@
 
             // Parse
             if (parsedData.extensionsUsed) {
-                gltfRuntime.extensionsUsed = parsedData.extensionsUsed;
+                parseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
             }
 
             if (parsedData.buffers) {
