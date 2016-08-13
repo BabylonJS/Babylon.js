@@ -88,8 +88,11 @@
                 }
             }
 
+            this._isTransparent = false;
+            this._oldTransparent = false;
             this.border = borderBrush;
             this.fill = fillBrush;
+            this._updateTransparencyStatus();
             this.borderThickness = settings.borderThickness;
         }
 
@@ -171,9 +174,28 @@
         }
 
         private _updateTransparencyStatus() {
-            this.isTransparent = (this._border && this._border.isTransparent()) || (this._fill && this._fill.isTransparent()) || (this.actualOpacity<1);
+            this._isTransparent = (this._border && this._border.isTransparent()) || (this._fill && this._fill.isTransparent()) || (this.actualOpacity < 1);
+            if (this._isTransparent !== this._oldTransparent) {
+                this._oldTransparent = this._isTransparent;
+                this._updateRenderMode();
+            }
         }
 
+        protected _mustUpdateInstance(): boolean {
+            let res = this._oldTransparent !== this._isTransparent;
+            if (res) {
+                this._updateRenderMode();
+                this._oldTransparent = this._isTransparent;
+            }
+            return res;
+        }
+
+        protected _isPrimTransparent(): boolean {
+            return this._isTransparent;
+        }
+
+        private _oldTransparent: boolean;
+        private _isTransparent: boolean;
         private _border: IBrush2D;
         private _borderThickness: number;
         private _fill: IBrush2D;
