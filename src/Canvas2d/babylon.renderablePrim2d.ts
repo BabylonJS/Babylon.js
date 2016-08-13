@@ -350,15 +350,7 @@
          * The setter should be used only by implementers of new primitive type.
          */
         public get isAlphaTest(): boolean {
-            return this._isAlphaTest;
-        }
-
-        public set isAlphaTest(value: boolean) {
-            if (this._isAlphaTest === value) {
-                return;
-            }
-            this._isAlphaTest = value;
-            this._updateRenderMode();
+            return this._useTextureAlpha() || this._isPrimAlphaTest();
         }
 
         @dynamicLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => RenderablePrim2D.isTransparentProperty = pi)
@@ -367,15 +359,7 @@
          * The setter should be used only by implementers of new primitive type.
          */
         public get isTransparent(): boolean {
-            return this._isTransparent || (this._opacity<1);
-        }
-
-        public set isTransparent(value: boolean) {
-            if (this._isTransparent === value) {
-                return;
-            }
-            this._isTransparent = value;
-            this._updateRenderMode();
+            return (this._opacity<1) || this._shouldUseAlphaFromTexture() || this._isPrimTransparent();
         }
 
         public get renderMode(): number {
@@ -390,8 +374,6 @@
         }) {
             super(settings);
 
-            this._isTransparent            = false;
-            this._isAlphaTest              = false;
             this._transparentPrimitiveInfo = null;
         }
 
@@ -498,7 +480,7 @@
             // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
 
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
-            if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+            if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep) || this._mustUpdateInstance()) {
 
                 this._updateInstanceDataParts(gii);
             }
@@ -630,6 +612,26 @@
                 // Flag the transparentData dirty has will have to sort it again
                 gii.transparentOrderDirty = true;
             }
+        }
+
+        protected _mustUpdateInstance(): boolean {
+            return false;
+        }
+
+        protected _useTextureAlpha(): boolean {
+            return false;
+        }
+
+        protected _shouldUseAlphaFromTexture(): boolean {
+            return false;
+        }
+
+        protected _isPrimAlphaTest(): boolean {
+            return false;
+        }
+
+        protected _isPrimTransparent(): boolean {
+            return false;
         }
 
         private _updateInstanceDataParts(gii: GroupInstanceInfo) {
@@ -819,9 +821,10 @@
          * Get the info for a given effect based on the dataPart metadata
          * @param dataPartId partId in part list to get the info
          * @param vertexBufferAttributes vertex buffer attributes to manually add
+         * @param uniforms uniforms to manually add
          * @param useInstanced specified if Instanced Array should be used, if null the engine caps will be used (so true if WebGL supports it, false otherwise), but you have the possibility to override the engine capability. However, if you manually set true but the engine does not support Instanced Array, this method will return null
          */
-        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[], useInstanced: boolean = null): { attributes: string[], uniforms: string[], defines: string } {
+        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[], uniforms: string[] = null, useInstanced: boolean = null): { attributes: string[], uniforms: string[], defines: string } {
             let dataPart = Tools.first(this._instanceDataParts, i => i.id === dataPartId);
             if (!dataPart) {
                 return null;
@@ -847,7 +850,11 @@
                 defines += "#define Instanced\n";
             }
 
-            return { attributes: instancedArray ? vertexBufferAttributes.concat(att) : vertexBufferAttributes, uniforms: instancedArray ? [] : att, defines: defines };
+            return {
+                attributes: instancedArray ? vertexBufferAttributes.concat(att) : vertexBufferAttributes,
+                uniforms: instancedArray ? (uniforms != null ? uniforms : []) : ((uniforms != null) ? att.concat(uniforms) : (att!=null ? att : [])),
+                defines: defines
+            };
         }
 
         protected get modelRenderCache(): ModelRenderCache {
@@ -941,8 +948,6 @@
         private _transparentPrimitiveInfo: TransparentPrimitiveInfo;
 
         protected _instanceDataParts: InstanceDataBase[];
-        protected _isAlphaTest: boolean;
-        protected _isTransparent: boolean;
         private _renderMode: number;
     }
 

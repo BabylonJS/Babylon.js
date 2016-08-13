@@ -32,6 +32,8 @@
                 engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
             }
 
+            effect.setBool("alphaTest", context.renderMode === Render2DContext.RenderModeAlphaTest);
+
             let pid = context.groupInfoPartData[0];
             if (context.useInstancing) {
                 if (!this.instancingAttributes) {
@@ -126,6 +128,7 @@
         static SPRITE2D_MAINPARTID = 1;
 
         public static textureProperty: Prim2DPropInfo;
+        public static useAlphaFromTextureProperty: Prim2DPropInfo;
         public static actualSizeProperty: Prim2DPropInfo;
         public static spriteLocationProperty: Prim2DPropInfo;
         public static spriteFrameProperty: Prim2DPropInfo;
@@ -142,9 +145,26 @@
 
         public set texture(value: Texture) {
             this._texture = value;
+            this._oldTextureHasAlpha = this._texture && this.texture.hasAlpha;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.actualSizeProperty = pi, false, true)
+        @dynamicLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.useAlphaFromTextureProperty = pi)
+        /**
+         * If true and the texture has an Alpha Channel which is used (BaseTexture.hasAlpha = true) the Sprite2d will be rendered as a Transparent Primitive, if false and the texture has an Alpha Channel which is used (BaseTexture.hasAlpha = true) the Sprite2d will be rendered as Alpha Test. If false or if the Texture has no alpha or it's not used (BaseTexture.hasAlpha = false) the Sprite2d will be rendered as an Opaque Primitive
+         */
+        public get useAlphaFromTexture(): boolean {
+            return this._useAlphaFromTexture;
+        }
+
+        public set useAlphaFromTexture(value: boolean) {
+            if (this._useAlphaFromTexture === value) {
+                return;
+            }
+            this._useAlphaFromTexture = value;
+            this._updateRenderMode();
+        }
+
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.actualSizeProperty = pi, false, true)
         /**
          * Get/set the actual size of the sprite to display
          */
@@ -159,7 +179,7 @@
             this._actualSize = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.spriteLocationProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteLocationProperty = pi)
         /**
          * Get/set the sprite location (in pixels) in the texture
          */
@@ -171,7 +191,7 @@
             this._location = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteFrameProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Sprite2D.spriteFrameProperty = pi)
         /**
          * Get/set the sprite frame to display.
          * The frame number is just an offset applied horizontally, based on the sprite's width. it does not wrap, all the frames must be on the same line.
@@ -184,7 +204,7 @@
             this._spriteFrame = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Sprite2D.invertYProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Sprite2D.invertYProperty = pi)
         /**
          * Get/set if the sprite texture coordinates should be inverted on the Y axis
          */
@@ -196,7 +216,7 @@
             this._invertY = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Sprite2D.spriteScaleFactorProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, pi => Sprite2D.spriteScaleFactorProperty = pi)
         /**
          * Get/set the sprite location (in pixels) in the texture
          */
@@ -326,7 +346,7 @@
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
-            this.isTransparent = true;
+            this.useAlphaFromTexture = true;
 
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
@@ -377,12 +397,12 @@
             renderCache.texture = this.texture;
 
             // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-            let ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], true);
+            let ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], ["alphaTest"], true);
             if (ei) {
                 renderCache.effectInstanced = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             }
 
-            ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], false);
+            ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], ["alphaTest"], false);
             renderCache.effect = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
 
             return renderCache;
@@ -443,7 +463,26 @@
             return true;
         }
 
+        protected _mustUpdateInstance(): boolean {
+            let res = this._oldTextureHasAlpha !== (this.texture != null && this.texture.hasAlpha);
+            this._oldTextureHasAlpha = this.texture != null && this.texture.hasAlpha;
+            if (res) {
+                this._updateRenderMode();
+            }
+            return res;
+        }
+
+        protected _useTextureAlpha(): boolean {
+            return this.texture!=null && this.texture.hasAlpha;
+        }
+
+        protected _shouldUseAlphaFromTexture(): boolean {
+            return this.texture!=null && this.texture.hasAlpha && this.useAlphaFromTexture;
+        }
+
         private _texture: Texture;
+        private _oldTextureHasAlpha: boolean;
+        private _useAlphaFromTexture: boolean;
         private _location: Vector2;
         private _spriteScaleFactor: Vector2;
         private _spriteFrame: number;
