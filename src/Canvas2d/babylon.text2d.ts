@@ -225,6 +225,10 @@
                 return this._fontTexture;
             }
 
+            if (this.fontName == null || this.owner == null || this.owner.scene == null) {
+                return null;
+            }
+
             this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample);
             return this._fontTexture;
         }
@@ -326,14 +330,15 @@
 
             super(settings);
 
-            this.fontName         = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
-            this._fontSuperSample = (settings.fontSuperSample!=null && settings.fontSuperSample);
-            this.defaultFontColor = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
-            this._tabulationSize  = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
-            this._textSize        = null;
-            this.text             = text;
-            this.size             = (settings.size==null) ? null : settings.size;
-            this.isTransparent    = true;
+            this.fontName            = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
+            this._fontSuperSample    = (settings.fontSuperSample!=null && settings.fontSuperSample);
+            this.defaultFontColor    = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
+            this._tabulationSize     = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
+            this._textSize           = null;
+            this.text                = text;
+            this.size                = (settings.size==null) ? null : settings.size;
+
+            this._updateRenderMode();
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
@@ -370,12 +375,12 @@
             renderCache.ib = engine.createIndexBuffer(ib);
 
             // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-            let ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], true);
+            let ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], null, true);
             if (ei) {
                 renderCache.effectInstanced = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             }
 
-            ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], false);
+            ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], null, false);
             renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
 
             return renderCache;
@@ -468,6 +473,14 @@
                 ++count;
             }
             this._charCount = count;
+        }
+
+        protected _useTextureAlpha(): boolean {
+            return this.fontTexture != null && this.fontTexture.hasAlpha;
+        }
+
+        protected _shouldUseAlphaFromTexture(): boolean {
+            return true;
         }
 
         private _fontTexture: FontTexture;

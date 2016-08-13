@@ -1421,7 +1421,9 @@
                     this.addChild(child);
 
                     // Good time to patch the hierarchy, it won't go very far if there's no need to
-                    child._patchHierarchy(this.owner);
+                    if (this.owner != null) {
+                        child._patchHierarchy(this.owner);
+                    }
                 }
             }
 
