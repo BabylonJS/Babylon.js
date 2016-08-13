@@ -1037,13 +1037,13 @@
                 renderCache.fillIndicesCount = this._fillIB.length;
 
                 // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"], true);
+                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"], null, true);
                 if (ei) {
                     renderCache.effectFillInstanced = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
                 }
 
                 // Get the non instanced version
-                ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"], false);
+                ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["position"], null, false);
                 renderCache.effectFill = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             }
 
@@ -1054,13 +1054,13 @@
                 renderCache.borderIndicesCount = this._borderIB.length;
 
                 // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"], true);
+                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"], null, true);
                 if (ei) {
                     renderCache.effectBorderInstanced = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
                 }
 
                 // Get the non instanced version
-                ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"], false);
+                ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["position"], null, false);
                 renderCache.effectBorder = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
             }
 
