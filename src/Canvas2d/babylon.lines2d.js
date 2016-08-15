@@ -973,12 +973,12 @@ var BABYLON;
                 renderCache.fillIB = engine.createIndexBuffer(this._fillIB);
                 renderCache.fillIndicesCount = this._fillIB.length;
                 // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["position"], true);
+                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["position"], null, true);
                 if (ei) {
                     renderCache.effectFillInstanced = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
                 }
                 // Get the non instanced version
-                ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["position"], false);
+                ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_FILLPARTID, ["position"], null, false);
                 renderCache.effectFill = engine.createEffect("lines2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             }
             // Need to create WebGL resources for border part?
@@ -987,12 +987,12 @@ var BABYLON;
                 renderCache.borderIB = engine.createIndexBuffer(this._borderIB);
                 renderCache.borderIndicesCount = this._borderIB.length;
                 // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["position"], true);
+                var ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["position"], null, true);
                 if (ei) {
                     renderCache.effectBorderInstanced = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
                 }
                 // Get the non instanced version
-                ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["position"], false);
+                ei = this.getDataPartEffectInfo(BABYLON.Shape2D.SHAPE2D_BORDERPARTID, ["position"], null, false);
                 renderCache.effectBorder = engine.createEffect({ vertex: "lines2d", fragment: "lines2d" }, ei.attributes, ei.uniforms, [], ei.defines, null);
             }
             this._fillVB = null;
