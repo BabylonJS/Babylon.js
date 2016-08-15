@@ -160,7 +160,7 @@ var BABYLON;
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
-         * - defaultColor: the color by default to apply on each letter of the text to display, default is plain white.
+         * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
          * - isVisible: true if the text must be visible, false for hidden. Default is true.
@@ -191,7 +191,7 @@ var BABYLON;
             this._textSize = null;
             this.text = text;
             this.size = (settings.size == null) ? null : settings.size;
-            this.isTransparent = true;
+            this._updateRenderMode();
         }
         Object.defineProperty(Text2D.prototype, "fontName", {
             get: function () {
@@ -285,6 +285,9 @@ var BABYLON;
                 if (this._fontTexture) {
                     return this._fontTexture;
                 }
+                if (this.fontName == null || this.owner == null || this.owner.scene == null) {
+                    return null;
+                }
                 this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample);
                 return this._fontTexture;
             },
@@ -334,11 +337,11 @@ var BABYLON;
             ib[5] = 2;
             renderCache.ib = engine.createIndexBuffer(ib);
             // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-            var ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], true);
+            var ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], null, true);
             if (ei) {
                 renderCache.effectInstanced = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             }
-            ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], false);
+            ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"], null, false);
             renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             return renderCache;
         };
@@ -418,6 +421,12 @@ var BABYLON;
                 ++count;
             }
             this._charCount = count;
+        };
+        Text2D.prototype._useTextureAlpha = function () {
+            return this.fontTexture != null && this.fontTexture.hasAlpha;
+        };
+        Text2D.prototype._shouldUseAlphaFromTexture = function () {
+            return true;
         };
         Text2D.TEXT2D_MAINPARTID = 1;
         __decorate([

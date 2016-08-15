@@ -65,6 +65,7 @@ var BABYLON;
             // Create the texture that will store the font characters
             this._texture = scene.getEngine().createDynamicTexture(textSize, textSize, false, samplingMode);
             var textureSize = this.getSize();
+            this.hasAlpha = true;
             // Recreate a new canvas with the final size: the one matching the texture (resizing the previous one doesn't work as one would expect...)
             this._canvas = document.createElement("canvas");
             this._canvas.width = textureSize.width;

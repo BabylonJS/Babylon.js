@@ -42,6 +42,7 @@ var BABYLON;
             if (context.renderMode !== BABYLON.Render2DContext.RenderModeOpaque) {
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE, true);
             }
+            effect.setBool("alphaTest", context.renderMode === BABYLON.Render2DContext.RenderModeAlphaTest);
             var pid = context.groupInfoPartData[0];
             if (context.useInstancing) {
                 if (!this.instancingAttributes) {
@@ -200,7 +201,7 @@ var BABYLON;
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
-            this.isTransparent = true;
+            this.useAlphaFromTexture = true;
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
                     this.size = texture.getBaseSize();
@@ -222,6 +223,21 @@ var BABYLON;
             },
             set: function (value) {
                 this._texture = value;
+                this._oldTextureHasAlpha = this._texture && this.texture.hasAlpha;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "useAlphaFromTexture", {
+            get: function () {
+                return this._useAlphaFromTexture;
+            },
+            set: function (value) {
+                if (this._useAlphaFromTexture === value) {
+                    return;
+                }
+                this._useAlphaFromTexture = value;
+                this._updateRenderMode();
             },
             enumerable: true,
             configurable: true
@@ -335,11 +351,11 @@ var BABYLON;
             renderCache.ib = engine.createIndexBuffer(ib);
             renderCache.texture = this.texture;
             // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-            var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], true);
+            var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], ["alphaTest"], true);
             if (ei) {
                 renderCache.effectInstanced = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             }
-            ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], false);
+            ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"], ["alphaTest"], false);
             renderCache.effect = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
             return renderCache;
         };
@@ -387,6 +403,20 @@ var BABYLON;
             }
             return true;
         };
+        Sprite2D.prototype._mustUpdateInstance = function () {
+            var res = this._oldTextureHasAlpha !== (this.texture != null && this.texture.hasAlpha);
+            this._oldTextureHasAlpha = this.texture != null && this.texture.hasAlpha;
+            if (res) {
+                this._updateRenderMode();
+            }
+            return res;
+        };
+        Sprite2D.prototype._useTextureAlpha = function () {
+            return this.texture != null && this.texture.hasAlpha;
+        };
+        Sprite2D.prototype._shouldUseAlphaFromTexture = function () {
+            return this.texture != null && this.texture.hasAlpha && this.useAlphaFromTexture;
+        };
         Sprite2D.SPRITE2D_MAINPARTID = 1;
         Sprite2D._prop = BABYLON.Vector3.Zero();
         Sprite2D.layoutConstructMode = false;
@@ -394,19 +424,22 @@ var BABYLON;
             BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Sprite2D.textureProperty = pi; })
         ], Sprite2D.prototype, "texture", null);
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Sprite2D.actualSizeProperty = pi; }, false, true)
+            BABYLON.dynamicLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Sprite2D.useAlphaFromTextureProperty = pi; })
+        ], Sprite2D.prototype, "useAlphaFromTexture", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Sprite2D.actualSizeProperty = pi; }, false, true)
         ], Sprite2D.prototype, "actualSize", null);
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Sprite2D.spriteLocationProperty = pi; })
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Sprite2D.spriteLocationProperty = pi; })
         ], Sprite2D.prototype, "spriteLocation", null);
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Sprite2D.spriteFrameProperty = pi; })
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Sprite2D.spriteFrameProperty = pi; })
         ], Sprite2D.prototype, "spriteFrame", null);
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Sprite2D.invertYProperty = pi; })
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Sprite2D.invertYProperty = pi; })
         ], Sprite2D.prototype, "invertY", null);
         __decorate([
-            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Sprite2D.spriteScaleFactorProperty = pi; })
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Sprite2D.spriteScaleFactorProperty = pi; })
         ], Sprite2D.prototype, "spriteScaleFactor", null);
         Sprite2D = __decorate([
             BABYLON.className("Sprite2D")

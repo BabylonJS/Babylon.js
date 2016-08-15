@@ -328,34 +328,18 @@ var BABYLON;
         __extends(RenderablePrim2D, _super);
         function RenderablePrim2D(settings) {
             _super.call(this, settings);
-            this._isTransparent = false;
-            this._isAlphaTest = false;
             this._transparentPrimitiveInfo = null;
         }
         Object.defineProperty(RenderablePrim2D.prototype, "isAlphaTest", {
             get: function () {
-                return this._isAlphaTest;
-            },
-            set: function (value) {
-                if (this._isAlphaTest === value) {
-                    return;
-                }
-                this._isAlphaTest = value;
-                this._updateRenderMode();
+                return this._useTextureAlpha() || this._isPrimAlphaTest();
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(RenderablePrim2D.prototype, "isTransparent", {
             get: function () {
-                return this._isTransparent || (this._opacity < 1);
-            },
-            set: function (value) {
-                if (this._isTransparent === value) {
-                    return;
-                }
-                this._isTransparent = value;
-                this._updateRenderMode();
+                return (this._opacity < 1) || this._shouldUseAlphaFromTexture() || this._isPrimTransparent();
             },
             enumerable: true,
             configurable: true
@@ -453,7 +437,7 @@ var BABYLON;
             }
             // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
-            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+            if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep) || this._mustUpdateInstance()) {
                 this._updateInstanceDataParts(gii);
             }
         };
@@ -573,6 +557,21 @@ var BABYLON;
                 // Flag the transparentData dirty has will have to sort it again
                 gii.transparentOrderDirty = true;
             }
+        };
+        RenderablePrim2D.prototype._mustUpdateInstance = function () {
+            return false;
+        };
+        RenderablePrim2D.prototype._useTextureAlpha = function () {
+            return false;
+        };
+        RenderablePrim2D.prototype._shouldUseAlphaFromTexture = function () {
+            return false;
+        };
+        RenderablePrim2D.prototype._isPrimAlphaTest = function () {
+            return false;
+        };
+        RenderablePrim2D.prototype._isPrimTransparent = function () {
+            return false;
         };
         RenderablePrim2D.prototype._updateInstanceDataParts = function (gii) {
             // Fetch the GroupInstanceInfo if we don't already have it
@@ -741,9 +740,11 @@ var BABYLON;
          * Get the info for a given effect based on the dataPart metadata
          * @param dataPartId partId in part list to get the info
          * @param vertexBufferAttributes vertex buffer attributes to manually add
+         * @param uniforms uniforms to manually add
          * @param useInstanced specified if Instanced Array should be used, if null the engine caps will be used (so true if WebGL supports it, false otherwise), but you have the possibility to override the engine capability. However, if you manually set true but the engine does not support Instanced Array, this method will return null
          */
-        RenderablePrim2D.prototype.getDataPartEffectInfo = function (dataPartId, vertexBufferAttributes, useInstanced) {
+        RenderablePrim2D.prototype.getDataPartEffectInfo = function (dataPartId, vertexBufferAttributes, uniforms, useInstanced) {
+            if (uniforms === void 0) { uniforms = null; }
             if (useInstanced === void 0) { useInstanced = null; }
             var dataPart = BABYLON.Tools.first(this._instanceDataParts, function (i) { return i.id === dataPartId; });
             if (!dataPart) {
@@ -766,7 +767,11 @@ var BABYLON;
             if (instancedArray) {
                 defines += "#define Instanced\n";
             }
-            return { attributes: instancedArray ? vertexBufferAttributes.concat(att) : vertexBufferAttributes, uniforms: instancedArray ? [] : att, defines: defines };
+            return {
+                attributes: instancedArray ? vertexBufferAttributes.concat(att) : vertexBufferAttributes,
+                uniforms: instancedArray ? (uniforms != null ? uniforms : []) : ((uniforms != null) ? att.concat(uniforms) : (att != null ? att : [])),
+                defines: defines
+            };
         };
         Object.defineProperty(RenderablePrim2D.prototype, "modelRenderCache", {
             get: function () {

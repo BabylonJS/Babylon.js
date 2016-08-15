@@ -36,8 +36,11 @@ var BABYLON;
                     fillBrush = settings.fill;
                 }
             }
+            this._isTransparent = false;
+            this._oldTransparent = false;
             this.border = borderBrush;
             this.fill = fillBrush;
+            this._updateTransparencyStatus();
             this.borderThickness = settings.borderThickness;
         }
         Object.defineProperty(Shape2D.prototype, "border", {
@@ -141,7 +144,22 @@ var BABYLON;
             return true;
         };
         Shape2D.prototype._updateTransparencyStatus = function () {
-            this.isTransparent = (this._border && this._border.isTransparent()) || (this._fill && this._fill.isTransparent()) || (this.actualOpacity < 1);
+            this._isTransparent = (this._border && this._border.isTransparent()) || (this._fill && this._fill.isTransparent()) || (this.actualOpacity < 1);
+            if (this._isTransparent !== this._oldTransparent) {
+                this._oldTransparent = this._isTransparent;
+                this._updateRenderMode();
+            }
+        };
+        Shape2D.prototype._mustUpdateInstance = function () {
+            var res = this._oldTransparent !== this._isTransparent;
+            if (res) {
+                this._updateRenderMode();
+                this._oldTransparent = this._isTransparent;
+            }
+            return res;
+        };
+        Shape2D.prototype._isPrimTransparent = function () {
+            return this._isTransparent;
         };
         Shape2D.SHAPE2D_BORDERPARTID = 1;
         Shape2D.SHAPE2D_FILLPARTID = 2;
