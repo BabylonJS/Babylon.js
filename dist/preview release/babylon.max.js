@@ -40463,6 +40463,7 @@ var BABYLON;
             // If the parent is given, initialize the hierarchy/owner related data
             if (parent != null) {
                 parent.addChild(this);
+                this._hierarchyDepth = parent._hierarchyDepth + 1;
                 this._patchHierarchy(parent.owner);
             }
             // If it's a group, detect its own states
@@ -44167,7 +44168,7 @@ var BABYLON;
             }
             if (!rd._cacheNode) {
                 // Check if we have to allocate a rendering zone in the global cache texture
-                var res = this.owner._allocateGroupCache(this, this.renderGroup, curWidth ? new BABYLON.Size(curWidth, curHeight) : null, rd._useMipMap, rd._anisotropicLevel);
+                var res = this.owner._allocateGroupCache(this, this.parent.renderGroup, curWidth ? new BABYLON.Size(curWidth, curHeight) : null, rd._useMipMap, rd._anisotropicLevel);
                 rd._cacheNode = res.node;
                 rd._cacheTexture = res.texture;
                 rd._cacheRenderSprite = res.sprite;
