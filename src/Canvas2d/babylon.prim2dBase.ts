@@ -1406,6 +1406,7 @@
             // If the parent is given, initialize the hierarchy/owner related data
             if (parent != null) {
                 parent.addChild(this);
+                this._hierarchyDepth = parent._hierarchyDepth + 1;
                 this._patchHierarchy(parent.owner);
             }
 
