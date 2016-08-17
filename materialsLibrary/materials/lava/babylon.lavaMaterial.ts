@@ -1,8 +1,6 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-    var maxSimultaneousLights = 4;
-
     class LavaMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public CLIPPLANE = false;
@@ -86,6 +84,9 @@ module BABYLON {
         
         @serialize()
         public disableLighting = false;
+
+        @serialize()
+        public maxSimultaneousLights = 4;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3();
@@ -182,9 +183,8 @@ module BABYLON {
                 this._defines.FOG = true;
             }
 
-            var lightIndex = 0;
             if (scene.lightsEnabled && !this.disableLighting) {
-                MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
+                MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
 
             // Attribs
