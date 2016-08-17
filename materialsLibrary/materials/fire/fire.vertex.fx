@@ -38,7 +38,6 @@ varying vec4 vColor;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<shadowsVertexDeclaration>
 
 // Fire
 uniform float time;

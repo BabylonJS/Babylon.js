@@ -1,8 +1,6 @@
 ﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-    var maxSimultaneousLights = 4;
-
     class SimpleMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public CLIPPLANE = false;

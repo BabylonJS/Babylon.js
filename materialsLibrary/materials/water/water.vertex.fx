@@ -46,7 +46,7 @@ varying vec4 vColor;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<shadowsVertexDeclaration>
+#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
 
 // Water uniforms
 uniform mat4 worldReflectionViewProjection;
@@ -100,7 +100,7 @@ void main(void) {
     #include<fogVertex>
 	
 	// Shadows
-    #include<shadowsVertex>
+    #include<shadowsVertex>[0..maxSimultaneousLights]
     
 	// Vertex color
 #ifdef VERTEXCOLOR
