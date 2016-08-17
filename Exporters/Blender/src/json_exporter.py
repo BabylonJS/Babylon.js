@@ -122,7 +122,7 @@ class JsonExporter:
                         nameID = nameID + 1
 
                 elif object.type == 'EMPTY':
-                    self.meshesAndNodes.append(Node(object, scene.includeMeshFactory))
+                    self.meshesAndNodes.append(Node(object))
 
                 elif object.type != 'LAMP' and object.type != 'ARMATURE':
                     Logger.warn('The following object (type - ' +  object.type + ') is not currently exportable thus ignored: ' + object.name)
