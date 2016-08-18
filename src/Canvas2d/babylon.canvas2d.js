@@ -1129,6 +1129,7 @@ var BABYLON;
                 }
                 var id = "groupsMapChache" + this._mapCounter + "forCanvas" + this.id;
                 map = new BABYLON.MapTexture(id, this._scene, mapSize, useMipMap ? BABYLON.Texture.TRILINEAR_SAMPLINGMODE : BABYLON.Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
                 mapArray.splice(0, 0, map);
                 var node = map.allocateRect(size);
