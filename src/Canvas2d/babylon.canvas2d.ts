@@ -1326,7 +1326,8 @@
                 }
 
                 let id = `groupsMapChache${this._mapCounter}forCanvas${this.id}`;
-                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE:Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
                 mapArray.splice(0, 0, map);
 
