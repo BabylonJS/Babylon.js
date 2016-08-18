@@ -2457,6 +2457,12 @@
             return intersectInfo.isIntersected;
         }
 
+        /**
+         * Move a child object into a new position regarding its siblings to change its rendering order.
+         * You can also use the shortcut methods to move top/bottom: moveChildToTop, moveChildToBottom, moveToTop, moveToBottom.
+         * @param child the object to move
+         * @param previous the object which will be before "child", if child has to be the first among sibling, set "previous" to null.
+         */
         public moveChild(child: Prim2DBase, previous: Prim2DBase): boolean {
             if (child.parent !== this) {
                 return false;
@@ -2471,6 +2477,43 @@
             }
 
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
+            return true;
+        }
+
+        /**
+         * Move the given child so it's displayed on the top of all its siblings
+         * @param child the primitive to move to the top
+         */
+        public moveChildToTop(child: Prim2DBase): boolean {
+            return this.moveChild(child, this._children[this._children.length - 1]);
+        }
+
+        /**
+         * Move the given child so it's displayed on the bottom of all its siblings
+         * @param child the primitive to move to the top
+         */
+        public moveChildToBottom(child: Prim2DBase): boolean {
+            return this.moveChild(child, null);
+        }
+
+        /**
+         * Move this primitive to be at the top among all its sibling
+         */
+        public moveToTop(): boolean {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToTop(this);
+        }
+
+        /**
+         * Move this primitive to be at the bottom among all its sibling
+         */
+        public moveToBottom() {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToBottom(this);
         }
 
         private addChild(child: Prim2DBase) {
