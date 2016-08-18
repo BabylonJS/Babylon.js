@@ -1234,7 +1234,15 @@ var BABYLON;
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
-            this._setFlags(BABYLON.SmartPropertyPrim.flagIsPickable | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty);
+            var isPickable = true;
+            var isContainer = true;
+            if (settings.isPickable !== undefined) {
+                isPickable = settings.isPickable;
+            }
+            if (settings.isContainer !== undefined) {
+                isContainer = settings.isContainer;
+            }
+            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0));
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
             }
@@ -1963,6 +1971,22 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Prim2DBase.prototype, "isContainer", {
+            /**
+             * Define if the Primitive acts as a container or not
+             * A container will encapsulate its children for interaction event.
+             * If it's not a container events will be process down to children if the primitive is not pickable.
+             * Default value is true
+             */
+            get: function () {
+                return this._isFlagSet(BABYLON.SmartPropertyPrim.flagIsContainer);
+            },
+            set: function (value) {
+                this._changeFlags(BABYLON.SmartPropertyPrim.flagIsContainer, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Prim2DBase.prototype, "hierarchyDepth", {
             /**
              * Return the depth level of the Primitive into the Canvas' Graph. A Canvas will be 0, its direct children 1, and so on.
@@ -2197,7 +2221,7 @@ var BABYLON;
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var curChild = _a[_i];
                     // Don't test primitive not pick able or if it's hidden and we don't test hidden ones
-                    if (!curChild.isPickable || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
+                    if ((!curChild.isPickable && curChild.isContainer) || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
                         continue;
                     }
                     // Must compute the localPickLocation for the children level
@@ -2212,6 +2236,12 @@ var BABYLON;
             intersectInfo._exit(firstLevel);
             return intersectInfo.isIntersected;
         };
+        /**
+         * Move a child object into a new position regarding its siblings to change its rendering order.
+         * You can also use the shortcut methods to move top/bottom: moveChildToTop, moveChildToBottom, moveToTop, moveToBottom.
+         * @param child the object to move
+         * @param previous the object which will be before "child", if child has to be the first among sibling, set "previous" to null.
+         */
         Prim2DBase.prototype.moveChild = function (child, previous) {
             if (child.parent !== this) {
                 return false;
@@ -2223,6 +2253,39 @@ var BABYLON;
                 this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, prevIndex + 1);
             }
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
+            return true;
+        };
+        /**
+         * Move the given child so it's displayed on the top of all its siblings
+         * @param child the primitive to move to the top
+         */
+        Prim2DBase.prototype.moveChildToTop = function (child) {
+            return this.moveChild(child, this._children[this._children.length - 1]);
+        };
+        /**
+         * Move the given child so it's displayed on the bottom of all its siblings
+         * @param child the primitive to move to the top
+         */
+        Prim2DBase.prototype.moveChildToBottom = function (child) {
+            return this.moveChild(child, null);
+        };
+        /**
+         * Move this primitive to be at the top among all its sibling
+         */
+        Prim2DBase.prototype.moveToTop = function () {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToTop(this);
+        };
+        /**
+         * Move this primitive to be at the bottom among all its sibling
+         */
+        Prim2DBase.prototype.moveToBottom = function () {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToBottom(this);
         };
         Prim2DBase.prototype.addChild = function (child) {
             child._parent = this;

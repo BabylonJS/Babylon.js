@@ -39189,6 +39189,7 @@ var BABYLON;
         SmartPropertyPrim.flagZOrderDirty = 0x0002000; // set if the Z-Order for this prim and its children must be recomputed
         SmartPropertyPrim.flagActualOpacityDirty = 0x0004000; // set if the actualOpactity should be recomputed
         SmartPropertyPrim.flagPrimInDirtyList = 0x0008000; // set if the primitive is in the primDirtyList
+        SmartPropertyPrim.flagIsContainer = 0x0010000; // set if the primitive is a container
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);
@@ -40449,7 +40450,15 @@ var BABYLON;
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
-            this._setFlags(BABYLON.SmartPropertyPrim.flagIsPickable | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty);
+            var isPickable = true;
+            var isContainer = true;
+            if (settings.isPickable !== undefined) {
+                isPickable = settings.isPickable;
+            }
+            if (settings.isContainer !== undefined) {
+                isContainer = settings.isContainer;
+            }
+            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0));
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
             }
@@ -41178,6 +41187,22 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Prim2DBase.prototype, "isContainer", {
+            /**
+             * Define if the Primitive acts as a container or not
+             * A container will encapsulate its children for interaction event.
+             * If it's not a container events will be process down to children if the primitive is not pickable.
+             * Default value is true
+             */
+            get: function () {
+                return this._isFlagSet(BABYLON.SmartPropertyPrim.flagIsContainer);
+            },
+            set: function (value) {
+                this._changeFlags(BABYLON.SmartPropertyPrim.flagIsContainer, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Prim2DBase.prototype, "hierarchyDepth", {
             /**
              * Return the depth level of the Primitive into the Canvas' Graph. A Canvas will be 0, its direct children 1, and so on.
@@ -41412,7 +41437,7 @@ var BABYLON;
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var curChild = _a[_i];
                     // Don't test primitive not pick able or if it's hidden and we don't test hidden ones
-                    if (!curChild.isPickable || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
+                    if ((!curChild.isPickable && curChild.isContainer) || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
                         continue;
                     }
                     // Must compute the localPickLocation for the children level
@@ -41427,6 +41452,12 @@ var BABYLON;
             intersectInfo._exit(firstLevel);
             return intersectInfo.isIntersected;
         };
+        /**
+         * Move a child object into a new position regarding its siblings to change its rendering order.
+         * You can also use the shortcut methods to move top/bottom: moveChildToTop, moveChildToBottom, moveToTop, moveToBottom.
+         * @param child the object to move
+         * @param previous the object which will be before "child", if child has to be the first among sibling, set "previous" to null.
+         */
         Prim2DBase.prototype.moveChild = function (child, previous) {
             if (child.parent !== this) {
                 return false;
@@ -41438,6 +41469,39 @@ var BABYLON;
                 this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, prevIndex + 1);
             }
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
+            return true;
+        };
+        /**
+         * Move the given child so it's displayed on the top of all its siblings
+         * @param child the primitive to move to the top
+         */
+        Prim2DBase.prototype.moveChildToTop = function (child) {
+            return this.moveChild(child, this._children[this._children.length - 1]);
+        };
+        /**
+         * Move the given child so it's displayed on the bottom of all its siblings
+         * @param child the primitive to move to the top
+         */
+        Prim2DBase.prototype.moveChildToBottom = function (child) {
+            return this.moveChild(child, null);
+        };
+        /**
+         * Move this primitive to be at the top among all its sibling
+         */
+        Prim2DBase.prototype.moveToTop = function () {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToTop(this);
+        };
+        /**
+         * Move this primitive to be at the bottom among all its sibling
+         */
+        Prim2DBase.prototype.moveToBottom = function () {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToBottom(this);
         };
         Prim2DBase.prototype.addChild = function (child) {
             child._parent = this;
@@ -43526,6 +43590,8 @@ var BABYLON;
          *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
          * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -44561,6 +44627,8 @@ var BABYLON;
          * - border: the brush used to draw the border of the rectangle, you can set null to draw nothing (but you will have to set a fill brush), default is null. can also be a string value (see Canvas2D.GetBrushFromString)
          * - borderThickness: the thickness of the drawn border, default is 1.
          * - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -45003,6 +45071,8 @@ var BABYLON;
          * - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
          * - borderThickness: the thickness of the drawn border, default is 1.
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -45343,6 +45413,8 @@ var BABYLON;
          * - invertY: if true the texture Y will be inverted, default is false.
          * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -45782,6 +45854,8 @@ var BABYLON;
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
          * - isVisible: true if the text must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -46252,6 +46326,8 @@ var BABYLON;
          * - border: the brush used to draw the border of the lines, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
          * - borderThickness: the thickness of the drawn border, default is 1.
          * - isVisible: true if the primitive must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -48359,6 +48435,7 @@ var BABYLON;
                 }
                 var id = "groupsMapChache" + this._mapCounter + "forCanvas" + this.id;
                 map = new BABYLON.MapTexture(id, this._scene, mapSize, useMipMap ? BABYLON.Texture.TRILINEAR_SAMPLINGMODE : BABYLON.Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
                 mapArray.splice(0, 0, map);
                 var node = map.allocateRect(size);

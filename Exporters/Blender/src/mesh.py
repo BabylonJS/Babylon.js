@@ -113,7 +113,7 @@ class Mesh(FCurveAnimatable):
                 instRot = scale_vector(rot.to_euler('XYZ'), -1)
                 instRotq = None
 
-            instance = MeshInstance(self.name, self.position, instRot, instRotq, self.scaling, self.freezeWorldMatrix)
+            instance = MeshInstance(self, instRot, instRotq)
             sourceMesh.instances.append(instance)
             Logger.log('mesh is an instance of :  ' + sourceMesh.name + '.  Processing halted.', 2)
             return
@@ -600,19 +600,21 @@ class Mesh(FCurveAnimatable):
         self.alreadyExported = True
 #===============================================================================
 class MeshInstance:
-     def __init__(self, name, position, rotation, rotationQuaternion, scaling, freezeWorldMatrix):
-        self.name = name
-        self.position = position
+     def __init__(self, instancedMesh, rotation, rotationQuaternion):
+        self.name = instancedMesh.name
+        if hasattr(instancedMesh, 'parentId'): self.parentId = instancedMesh.parentId
+        self.position = instancedMesh.position
         if rotation is not None:
             self.rotation = rotation
         if rotationQuaternion is not None:
             self.rotationQuaternion = rotationQuaternion
-        self.scaling = scaling
-        self.freezeWorldMatrix = freezeWorldMatrix
+        self.scaling = instancedMesh.scaling
+        self.freezeWorldMatrix = instancedMesh.freezeWorldMatrix
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      def to_scene_file(self, file_handler):
         file_handler.write('{')
         write_string(file_handler, 'name', self.name, True)
+        if hasattr(self, 'parentId'): write_string(file_handler, 'parentId', self.parentId)
         write_vector(file_handler, 'position', self.position)
         if hasattr(self, 'rotation'):
             write_vector(file_handler, 'rotation', self.rotation)
@@ -647,7 +649,7 @@ class Node(FCurveAnimatable):
         self.billboardMode = BILLBOARDMODE_NONE
         self.castShadows = False
         self.receiveShadows = False
-        self.layer = getLayer(object) # used only for lights with 'This Layer Only' checked, not exported
+        self.layer = -1 # nodes do not have layers attribute
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('{')
