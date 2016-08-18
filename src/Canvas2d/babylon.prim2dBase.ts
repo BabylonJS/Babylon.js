@@ -1309,6 +1309,8 @@
             origin            ?: Vector2,
             layoutEngine      ?: LayoutEngineBase | string,
             isVisible         ?: boolean,
+            isPickable        ?: boolean,
+            isContainer       ?: boolean,
             childrenFlatZOrder?: boolean,
             marginTop         ?: number | string,
             marginLeft        ?: number | string,
@@ -1389,7 +1391,15 @@
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
-            this._setFlags(SmartPropertyPrim.flagIsPickable | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty | SmartPropertyPrim.flagIsContainer);
+            let isPickable = true;
+            let isContainer = true;
+            if (settings.isPickable !== undefined) {
+                isPickable = settings.isPickable;
+            }
+            if (settings.isContainer !== undefined) {
+                isContainer = settings.isContainer;
+            }
+            this._setFlags((isPickable ? SmartPropertyPrim.flagIsPickable : 0) | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? SmartPropertyPrim.flagIsContainer : 0));
 
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
