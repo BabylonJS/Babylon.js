@@ -271,23 +271,14 @@
             }
         }
 
-        public static RequestFullscreen(element, vrDisplay?): void {
-            //WebVR?
-            if (vrDisplay) {
-                vrDisplay.requestPresent([{ source: element }]);
-            } else {
-                var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
-                if (!requestFunction) return;
-                requestFunction.call(element);
-            }
+        public static RequestFullscreen(element): void {
+            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+            if (!requestFunction) return;
+            requestFunction.call(element);
         }
 
-        public static ExitFullscreen(vrDisplay?): void {
-            //WebVR?
-            if (vrDisplay) {
-                vrDisplay.exitPresent();
-            }
-            else if (document.exitFullscreen) {
+        public static ExitFullscreen(): void {
+            if (document.exitFullscreen) {
                 document.exitFullscreen();
             }
             else if (document.mozCancelFullScreen) {

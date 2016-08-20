@@ -784,7 +784,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                Tools.QueueNewFrame(this._bindedRenderFunction, this._getFrameRequester());
+                Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
             } else {
                 this._renderingQueueLaunched = false;
             }
@@ -819,10 +819,10 @@
          */
         public switchFullscreen(requestPointerLock: boolean): void {
             if (this.isFullscreen) {
-                Tools.ExitFullscreen(this._vrDisplayEnabled);
+                Tools.ExitFullscreen();
             } else {
                 this._pointerLockRequested = requestPointerLock;
-                Tools.RequestFullscreen(this._renderingCanvas, this._vrDisplayEnabled);
+                Tools.RequestFullscreen(this._renderingCanvas);
             }
         }
 
@@ -959,13 +959,14 @@
 
         public enableVR(vrDevice) {
             this._vrDisplayEnabled = vrDevice;
-            window.addEventListener('vrdisplaypresentchange', this._onVRFullScreenTriggered, false);
+            this._vrDisplayEnabled.requestPresent([{ source: this.getRenderingCanvas() }]).then(this._onVRFullScreenTriggered);
         }
 
         public disableVR() {
             if (this._vrDisplayEnabled) {
+                this._vrDisplayEnabled.exitPresent();
                 this._vrDisplayEnabled = null;
-                window.removeEventListener('vrdisplaypresentchange', this._onVRFullScreenTriggered, false);
+                this._onVRFullScreenTriggered()
             }
         }
 
@@ -984,14 +985,6 @@
             } else {
                 this.setHardwareScalingLevel(this._oldHardwareScaleFactor);
                 this.setSize(this._oldSize.width, this._oldSize.height);
-            }
-        }
-
-        private _getFrameRequester() {
-            if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
-                return this._vrDisplayEnabled;
-            } else {
-                return window;
             }
         }
 
