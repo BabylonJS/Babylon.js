@@ -67,7 +67,7 @@ module BABYLON {
                     if (this.webVROptions.displayName) {
                         devices.some(device => {
                             if (device.displayName === this.webVROptions.displayName) {
-                                this.getEngine().enableVR(device);
+                                this._vrDevice = device;
                                 return true;
                             } else {
                                 return false;
@@ -75,8 +75,11 @@ module BABYLON {
                         })
                     } else {
                         //choose the first one
-                        this.getEngine().enableVR(devices[0]);
+                        this._vrDevice = devices[0];
                     }
+                    this.getEngine().enableVR(this._vrDevice)
+                } else {
+                    Tools.Error("No WebVR devices found!");
                 }
             })
         }
