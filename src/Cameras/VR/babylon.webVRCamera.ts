@@ -5,6 +5,7 @@ module BABYLON {
 
     export interface WebVROptions {
         trackPosition?: boolean; //update the camera's position
+        positionScale?: number;
         displayName?: string; //if there are more than one VRDisplays.
     }
 
@@ -28,6 +29,28 @@ module BABYLON {
             //this._getWebVRDevices = this._getWebVRDevices.bind(this);
             if (!this.getEngine().vrDisplaysPromise) {
                 Tools.Error("WebVR is not enabled on your browser");
+            } else {
+                //TODO get the metrics updated using the device's eye parameters!
+                this.getEngine().vrDisplaysPromise.then((devices) => {
+                    if (devices.length > 0) {
+                        this._vrEnabled = true;
+                        if (this.webVROptions.displayName) {
+                            devices.some(device => {
+                                if (device.displayName === this.webVROptions.displayName) {
+                                    this._vrDevice = device;
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            })
+                        } else {
+                            //choose the first one
+                            this._vrDevice = devices[0];
+                        }
+                    } else {
+                        Tools.Error("No WebVR devices found!");
+                    }
+                })
             }
 
             this.rotationQuaternion = new Quaternion();
@@ -40,6 +63,7 @@ module BABYLON {
                 this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], this._cacheState.orientation[2], this._cacheState.orientation[3]);
                 if (this.webVROptions.trackPosition) {
                     this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
+                    this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale)
                 }
                 //Flip in XY plane
                 this.rotationQuaternion.z *= -1;
@@ -58,30 +82,9 @@ module BABYLON {
 
             noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
-            //TODO get the metrics updated using the device's eye parameters!
-
-            //sanity check. if no WebVR enabled.
-            this.getEngine().vrDisplaysPromise && this.getEngine().vrDisplaysPromise.then((devices) => {
-                if (devices.length > 0) {
-                    this._vrEnabled = true;
-                    if (this.webVROptions.displayName) {
-                        devices.some(device => {
-                            if (device.displayName === this.webVROptions.displayName) {
-                                this._vrDevice = device;
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        })
-                    } else {
-                        //choose the first one
-                        this._vrDevice = devices[0];
-                    }
-                    this.getEngine().enableVR(this._vrDevice)
-                } else {
-                    Tools.Error("No WebVR devices found!");
-                }
-            })
+            if (this._vrEnabled) {
+                this.getEngine().enableVR(this._vrDevice)
+            }
         }
 
         public detachControl(element: HTMLElement): void {
