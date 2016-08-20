@@ -1,60 +1,46 @@
 declare var HMDVRDevice;
-declare var PositionSensorVRDevice;
+declare var VRDisplay;
 
 module BABYLON {
+
+    export interface WebVROptions {
+        trackPosition?: boolean; //update the camera's position
+        displayName?: string; //if there are more than one VRDisplays.
+    }
+
     export class WebVRFreeCamera extends FreeCamera {
-        public _hmdDevice = null;
-        public _sensorDevice = null;
+        public _vrDevice = null;
         private _cacheState = null;
-        public _vrEnabled = false;
+        private _vrEnabled = false;
+
+        private _oldSize: BABYLON.Size;
+        private _oldHardwareScaleFactor: number;
 
         private _initialQuaternion: Quaternion;
         private _quaternionCache: Quaternion;
 
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault(), private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
 
             vrCameraMetrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
 
-            this._getWebVRDevices = this._getWebVRDevices.bind(this);
+            //this._getWebVRDevices = this._getWebVRDevices.bind(this);
+            if (!this.getEngine().vrDisplaysPromise) {
+                Tools.Error("WebVR is not enabled on your browser");
+            }
 
             this.rotationQuaternion = new Quaternion();
             this._quaternionCache = new Quaternion();
         }
 
-        private _getWebVRDevices(devices: Array<any>): void {
-            var size = devices.length;
-            var i = 0;
-
-            // Reset devices.
-            this._sensorDevice = null;
-            this._hmdDevice = null;
-
-            // Search for a HmdDevice.
-            while (i < size && this._hmdDevice === null) {
-                if (devices[i] instanceof HMDVRDevice) {
-                    this._hmdDevice = devices[i];
-                }
-                i++;
-            }
-
-            i = 0;
-
-            while (i < size && this._sensorDevice === null) {
-                if (devices[i] instanceof PositionSensorVRDevice && (!this._hmdDevice || devices[i].hardwareUnitId === this._hmdDevice.hardwareUnitId)) {
-                    this._sensorDevice = devices[i];
-                }
-                i++;
-            }
-
-            this._vrEnabled = this._sensorDevice && this._hmdDevice ? true : false;
-        }
-
         public _checkInputs(): void {
             if (this._vrEnabled) {
-                this._cacheState = this._sensorDevice.getState();
-                this.rotationQuaternion.copyFrom(this._cacheState.orientation);
+                this._cacheState = this._vrDevice.getPose();
+                this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], this._cacheState.orientation[2], this._cacheState.orientation[3]);
+                if (this.webVROptions.trackPosition) {
+                    this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
+                }
                 //Flip in XY plane
                 this.rotationQuaternion.z *= -1;
                 this.rotationQuaternion.w *= -1;
@@ -72,22 +58,39 @@ module BABYLON {
 
             noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
-            if (navigator.getVRDevices) {
-                navigator.getVRDevices().then(this._getWebVRDevices);
-            }
-            else if (navigator.mozGetVRDevices) {
-                navigator.mozGetVRDevices(this._getWebVRDevices);
-            }
+            //TODO get the metrics updated using the device's eye parameters!
+
+            //sanity check. if no WebVR enabled.
+            this.getEngine().vrDisplaysPromise && this.getEngine().vrDisplaysPromise.then((devices) => {
+                if (devices.length > 0) {
+                    this._vrEnabled = true;
+                    if (this.webVROptions.displayName) {
+                        devices.some(device => {
+                            if (device.displayName === this.webVROptions.displayName) {
+                                this.getEngine().enableVR(device);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        })
+                    } else {
+                        //choose the first one
+                        this.getEngine().enableVR(devices[0]);
+                    }
+                }
+            })
         }
 
         public detachControl(element: HTMLElement): void {
             super.detachControl(element);
             this._vrEnabled = false;
+            this.getEngine().disableVR();
         }
 
         public requestVRFullscreen(requestPointerlock: boolean) {
-            if (!this._hmdDevice) return;
-            this.getEngine().switchFullscreen(requestPointerlock, { vrDisplay: this._hmdDevice })
+            //Backwards comp.
+            Tools.Warn("requestVRFullscreen is deprecated. Use engine.switchFullscreen() instead")
+            this.getEngine().switchFullscreen(requestPointerlock);
         }
 
         public getTypeName(): string {

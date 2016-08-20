@@ -251,30 +251,43 @@
             return eventPrefix;
         }
 
-        public static QueueNewFrame(func): void {
-            if (window.requestAnimationFrame)
-                window.requestAnimationFrame(func);
-            else if (window.msRequestAnimationFrame)
-                window.msRequestAnimationFrame(func);
-            else if (window.webkitRequestAnimationFrame)
-                window.webkitRequestAnimationFrame(func);
-            else if (window.mozRequestAnimationFrame)
-                window.mozRequestAnimationFrame(func);
-            else if (window.oRequestAnimationFrame)
-                window.oRequestAnimationFrame(func);
+        /**
+         * @param func - the function to be called
+         * @param requester - the object that will request the next frame. Falls back to window.
+         */
+        public static QueueNewFrame(func, requester: any = window): void {
+            if (requester.requestAnimationFrame)
+                requester.requestAnimationFrame(func);
+            else if (requester.msRequestAnimationFrame)
+                requester.msRequestAnimationFrame(func);
+            else if (requester.webkitRequestAnimationFrame)
+                requester.webkitRequestAnimationFrame(func);
+            else if (requester.mozRequestAnimationFrame)
+                requester.mozRequestAnimationFrame(func);
+            else if (requester.oRequestAnimationFrame)
+                requester.oRequestAnimationFrame(func);
             else {
                 window.setTimeout(func, 16);
             }
         }
 
-        public static RequestFullscreen(element, options?: any): void {
-            var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
-            if (!requestFunction) return;
-            requestFunction.call(element, options);
+        public static RequestFullscreen(element, vrDisplay?): void {
+            //WebVR?
+            if (vrDisplay) {
+                vrDisplay.requestPresent([{ source: element }]);
+            } else {
+                var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
+                if (!requestFunction) return;
+                requestFunction.call(element);
+            }
         }
 
-        public static ExitFullscreen(): void {
-            if (document.exitFullscreen) {
+        public static ExitFullscreen(vrDisplay?): void {
+            //WebVR?
+            if (vrDisplay) {
+                vrDisplay.exitPresent();
+            }
+            else if (document.exitFullscreen) {
                 document.exitFullscreen();
             }
             else if (document.mozCancelFullScreen) {
