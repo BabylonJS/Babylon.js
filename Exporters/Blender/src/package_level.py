@@ -56,6 +56,8 @@ def getNameSpace(filepathMinusExtension):
         return legal_js_identifier(filepathMinusExtension.rpartition('/')[2])
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def getLayer(obj):
+    # empties / nodes do not have layers
+    if not hasattr(object, 'layers') : return -1;
     for idx, layer in enumerate(obj.layers):
         if layer:
             return idx
