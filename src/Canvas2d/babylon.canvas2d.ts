@@ -510,7 +510,22 @@
                 return;
             }
 
-            this.intersect(ii);
+            // Special case __cachedCanvasSprite__ (WIP)
+            if (this.id.indexOf("__cachedCanvasSprite__") === 0) {
+                
+            }
+
+
+            // Special case __cachedSpriteOfGroup__
+            else if (this.id.indexOf("__cachedSpriteOfGroup__") === 0) {
+                let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
+                ownerGroup.intersect(ii);
+            }
+
+            // Common case
+            else {
+                this.intersect(ii);
+            }
 
             this._previousIntersectionList = this._actualIntersectionList;
             this._actualIntersectionList = ii.intersectedPrimitives;
@@ -1326,7 +1341,8 @@
                 }
 
                 let id = `groupsMapChache${this._mapCounter}forCanvas${this.id}`;
-                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE:Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE, useMipMap);
+                map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
                 mapArray.splice(0, 0, map);
 
@@ -1351,6 +1367,12 @@
                 else {
                     let sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.origin = group.origin.clone();
+                    sprite.addExternalData("__cachedGroup__", group);
+                    sprite.pointerEventObservable.add((e, s) => {
+                        if (group.pointerEventObservable !== null) {
+                            group.pointerEventObservable.notifyObservers(e, s.mask);
+                        }
+                    });
                     res.sprite = sprite;
                 }
             }
