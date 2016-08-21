@@ -256,7 +256,10 @@
          * @param requester - the object that will request the next frame. Falls back to window.
          */
         public static QueueNewFrame(func, requester: any = window): void {
-            if (requester.requestAnimationFrame)
+            //if WebVR is enabled AND presenting, requestAnimationFrame is triggered when enabled.
+            if(requester.isPresenting) {
+                return;
+            } else if (requester.requestAnimationFrame)
                 requester.requestAnimationFrame(func);
             else if (requester.msRequestAnimationFrame)
                 requester.msRequestAnimationFrame(func);
