@@ -238,7 +238,7 @@
         public createRigCamera(name: string, cameraIndex: number): Camera {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
-                if (this.cameraRigMode === Camera.RIG_MODE_VR) {
+                if (this.cameraRigMode === Camera.RIG_MODE_VR || this.cameraRigMode === Camera.RIG_MODE_WEBVR) {
                     if (!this.rotationQuaternion) {
                         this.rotationQuaternion = new Quaternion();
                     }
@@ -274,6 +274,7 @@
                     break;
 
                 case Camera.RIG_MODE_VR:
+                case Camera.RIG_MODE_WEBVR:
                     camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
                     camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
                     camLeft.position.copyFrom(this.position);

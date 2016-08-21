@@ -566,7 +566,7 @@
             this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
 
             //Load WebVR Devices
-            if(options.autoEnableWebVR) {
+            if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
 
@@ -985,7 +985,8 @@
                 this._oldHardwareScaleFactor = this.getHardwareScalingLevel();
 
                 //according to the WebVR specs, requestAnimationFrame should be triggered only once.
-                this._vrAnimationFrameHandler = this._vrDisplayEnabled.requestAnimationFrame(this._bindedRenderFunction);
+                //But actually, no browser follow the specs...
+                //this._vrAnimationFrameHandler = this._vrDisplayEnabled.requestAnimationFrame(this._bindedRenderFunction);
 
                 //get the width and height, change the render size
                 var leftEye = this._vrDisplayEnabled.getEyeParameters('left');
@@ -993,10 +994,11 @@
                 this.setHardwareScalingLevel(1);
                 this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
             } else {
-                this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
-                this._vrDisplayEnabled = null;
+                //When the specs are implemented, need to uncomment this.
+                //this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
                 this.setHardwareScalingLevel(this._oldHardwareScaleFactor);
                 this.setSize(this._oldSize.width, this._oldSize.height);
+                this._vrDisplayEnabled = undefined;
             }
         }
 

@@ -257,9 +257,9 @@
          */
         public static QueueNewFrame(func, requester: any = window): void {
             //if WebVR is enabled AND presenting, requestAnimationFrame is triggered when enabled.
-            if(requester.isPresenting) {
+            /*if(requester.isPresenting) {
                 return;
-            } else if (requester.requestAnimationFrame)
+            } else*/ if (requester.requestAnimationFrame)
                 requester.requestAnimationFrame(func);
             else if (requester.msRequestAnimationFrame)
                 requester.msRequestAnimationFrame(func);
