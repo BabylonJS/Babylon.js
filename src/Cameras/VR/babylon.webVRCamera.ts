@@ -107,8 +107,8 @@ module BABYLON {
 
         public requestVRFullscreen(requestPointerlock: boolean) {
             //Backwards comp.
-            Tools.Warn("requestVRFullscreen is deprecated. Use engine.switchFullscreen() instead")
-            this.getEngine().switchFullscreen(requestPointerlock);
+            Tools.Warn("requestVRFullscreen is deprecated. call attachControl() to start sending frames to the VR display.")
+            //this.getEngine().switchFullscreen(requestPointerlock);
         }
 
         public getTypeName(): string {
