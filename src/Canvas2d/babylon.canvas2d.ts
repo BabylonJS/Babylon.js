@@ -510,22 +510,7 @@
                 return;
             }
 
-            // Special case __cachedCanvasSprite__ (WIP)
-            if (this.id.indexOf("__cachedCanvasSprite__") === 0) {
-                
-            }
-
-
-            // Special case __cachedSpriteOfGroup__
-            else if (this.id.indexOf("__cachedSpriteOfGroup__") === 0) {
-                let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
-                ownerGroup.intersect(ii);
-            }
-
-            // Common case
-            else {
-                this.intersect(ii);
-            }
+            this.intersect(ii);
 
             this._previousIntersectionList = this._actualIntersectionList;
             this._actualIntersectionList = ii.intersectedPrimitives;
