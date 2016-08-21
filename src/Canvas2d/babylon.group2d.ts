@@ -119,7 +119,7 @@
         }
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
-            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size: null, isVisible: true });
+            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size: null, isVisible: true, isPickable: false });
             return g;
 
         }
@@ -837,23 +837,30 @@
         protected handleGroupChanged(prop: Prim2DPropInfo) {
             // This method is only for cachedGroup
             let rd = this._renderableData;
+            if (!rd) {
+                return;
+            }
 
-            if (!this.isCachedGroup || !rd._cacheRenderSprite) {
+            let cachedSprite = rd._cacheRenderSprite;
+            if (!this.isCachedGroup || !cachedSprite) {
                 return;
             }
 
             // For now we only support these property changes
             // TODO: add more! :)
             if (prop.id === Prim2DBase.actualPositionProperty.id) {
-                rd._cacheRenderSprite.actualPosition = this.actualPosition.clone();
+                cachedSprite.actualPosition = this.actualPosition.clone();
+                if (cachedSprite.position != null) {
+                    cachedSprite.position = cachedSprite.actualPosition.clone();
+                }
             } else if (prop.id === Prim2DBase.rotationProperty.id) {
-                rd._cacheRenderSprite.rotation = this.rotation;
+                cachedSprite.rotation = this.rotation;
             } else if (prop.id === Prim2DBase.scaleProperty.id) {
-                rd._cacheRenderSprite.scale = this.scale;
+                cachedSprite.scale = this.scale;
             } else if (prop.id === Prim2DBase.originProperty.id) {
-                rd._cacheRenderSprite.origin = this.origin.clone();
+                cachedSprite.origin = this.origin.clone();
             } else if (prop.id === Group2D.actualSizeProperty.id) {
-                rd._cacheRenderSprite.size = this.actualSize.clone();
+                cachedSprite.size = this.actualSize.clone();
                 //console.log(`[${this._globalTransformProcessStep}] Sync Sprite ${this.id}, width: ${this.actualSize.width}, height: ${this.actualSize.height}`);
             }
         }
