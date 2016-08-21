@@ -2213,6 +2213,7 @@
          * Get the global transformation matrix of the primitive
          */
         public get globalTransform(): Matrix {
+            this._updateLocalTransform();
             return this._globalTransform;
         }
 
@@ -2238,6 +2239,7 @@
          * Get invert of the global transformation matrix of the primitive
          */
         public get invGlobalTransform(): Matrix {
+            this._updateLocalTransform();
             return this._invGlobalTransform;
         }
 
@@ -2383,6 +2385,12 @@
 
             if (!intersectInfo.intersectHidden && !this.isVisible) {
                 return false;
+            }
+
+            let id = this.id;
+            if (id!=null && id.indexOf("__cachedSpriteOfGroup__") === 0) {
+                let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
+                return ownerGroup.intersect(intersectInfo);
             }
 
             // Fast rejection test with boundingInfo
