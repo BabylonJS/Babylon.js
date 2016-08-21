@@ -19,11 +19,8 @@ module BABYLON {
 
         private _quaternionCache: Quaternion;
 
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault(), private webVROptions: WebVROptions = {}) {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
-
-            vrCameraMetrics.compensateDistortion = compensateDistortion;
-            this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
 
             //enable VR
             this.getEngine().initWebVR();
@@ -53,6 +50,9 @@ module BABYLON {
                             //choose the first one
                             this._vrDevice = devices[0];
                         }
+
+                        //reset the rig parameters.
+                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { vrDisplay: this._vrDevice });
                     } else {
                         Tools.Error("No WebVR devices found!");
                     }
