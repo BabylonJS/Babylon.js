@@ -135,7 +135,7 @@ var BABYLON;
             return true;
         };
         return Ellipse2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Ellipse2DRenderCache = Ellipse2DRenderCache;
     var Ellipse2DInstanceData = (function (_super) {
         __extends(Ellipse2DInstanceData, _super);
@@ -153,7 +153,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Ellipse2DInstanceData.prototype, "properties", null);
         return Ellipse2DInstanceData;
-    })(BABYLON.Shape2DInstanceData);
+    }(BABYLON.Shape2DInstanceData));
     BABYLON.Ellipse2DInstanceData = Ellipse2DInstanceData;
     var Ellipse2D = (function (_super) {
         __extends(Ellipse2D, _super);
@@ -175,6 +175,8 @@ var BABYLON;
          * - border: the brush used to draw the border of the ellipse, you can set null to draw nothing (but you will have to set a fill brush), default is null. can be a string value (see Canvas2D.GetBrushFromString)
          * - borderThickness: the thickness of the drawn border, default is 1.
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -343,6 +345,6 @@ var BABYLON;
             BABYLON.className("Ellipse2D")
         ], Ellipse2D);
         return Ellipse2D;
-    })(BABYLON.Shape2D);
+    }(BABYLON.Shape2D));
     BABYLON.Ellipse2D = Ellipse2D;
 })(BABYLON || (BABYLON = {}));

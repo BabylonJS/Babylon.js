@@ -62,7 +62,7 @@ varying vec4 vColor;
 
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
-#include<shadowsVertexDeclaration>
+#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
 
 float Rand(vec3 rv) {
 	float x = dot(rv, vec3(12.9898,78.233, 24.65487));
@@ -158,7 +158,7 @@ float r = Rand(position);
 	#include<fogVertex>
 
 	// Shadows
-	#include<shadowsVertex>
+	#include<shadowsVertex>[0..maxSimultaneousLights]
 
 	// Vertex color
 #ifdef VERTEXCOLOR

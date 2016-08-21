@@ -108,13 +108,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    })();
+    }());
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    })();
+    }());
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -163,6 +163,22 @@ var BABYLON;
             this._currentBufferPointers = [];
             this._currentInstanceLocations = new Array();
             this._currentInstanceBuffers = new Array();
+            this._onVRFullScreenTriggered = function () {
+                if (_this._vrDisplayEnabled && _this._vrDisplayEnabled.isPresenting) {
+                    //get the old size before we change
+                    _this._oldSize = new BABYLON.Size(_this.getRenderWidth(), _this.getRenderHeight());
+                    _this._oldHardwareScaleFactor = _this.getHardwareScalingLevel();
+                    //get the width and height, change the render size
+                    var leftEye = _this._vrDisplayEnabled.getEyeParameters('left');
+                    var width, height;
+                    _this.setHardwareScalingLevel(1);
+                    _this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
+                }
+                else {
+                    _this.setHardwareScalingLevel(_this._oldHardwareScaleFactor);
+                    _this.setSize(_this._oldSize.width, _this._oldSize.height);
+                }
+            };
             this._renderingCanvas = canvas;
             this._externalData = new BABYLON.StringDictionary();
             options = options || {};
@@ -298,6 +314,8 @@ var BABYLON;
             }
             //default loading screen
             this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
+            //Load WebVR Devices
+            this._getVRDisplays();
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
@@ -625,7 +643,7 @@ var BABYLON;
             }
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction);
+                BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
             }
             else {
                 this._renderingQueueLaunched = false;
@@ -655,13 +673,13 @@ var BABYLON;
          * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
          * @param {any} options - an options object to be sent to the requestFullscreen function
          */
-        Engine.prototype.switchFullscreen = function (requestPointerLock, options) {
+        Engine.prototype.switchFullscreen = function (requestPointerLock) {
             if (this.isFullscreen) {
                 BABYLON.Tools.ExitFullscreen();
             }
             else {
                 this._pointerLockRequested = requestPointerLock;
-                BABYLON.Tools.RequestFullscreen(this._renderingCanvas, options);
+                BABYLON.Tools.RequestFullscreen(this._renderingCanvas);
             }
         };
         Engine.prototype.clear = function (color, backBuffer, depth, stencil) {
@@ -731,6 +749,10 @@ var BABYLON;
         };
         Engine.prototype.endFrame = function () {
             //this.flushFramebuffer();
+            //submit frame to the vr device, if enabled
+            if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
+                this._vrDisplayEnabled.submitFrame();
+            }
         };
         /**
          * resize the view according to the canvas' size.
@@ -764,6 +786,33 @@ var BABYLON;
                     var cam = scene.cameras[camIndex];
                     cam._currentRenderId = 0;
                 }
+            }
+        };
+        //WebVR functions
+        Engine.prototype.enableVR = function (vrDevice) {
+            this._vrDisplayEnabled = vrDevice;
+            this._vrDisplayEnabled.requestPresent([{ source: this.getRenderingCanvas() }]).then(this._onVRFullScreenTriggered);
+        };
+        Engine.prototype.disableVR = function () {
+            if (this._vrDisplayEnabled) {
+                this._vrDisplayEnabled.exitPresent();
+                this._vrDisplayEnabled = null;
+                this._onVRFullScreenTriggered();
+            }
+        };
+        Engine.prototype._getVRDisplays = function () {
+            var _this = this;
+            var getWebVRDevices = function (devices) {
+                var size = devices.length;
+                var i = 0;
+                _this._vrDisplays = devices.filter(function (device) {
+                    return devices[i] instanceof VRDisplay;
+                });
+                return _this._vrDisplays;
+            };
+            //using a key due to typescript
+            if (navigator.getVRDisplays) {
+                this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
             }
         };
         Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight) {
@@ -2276,6 +2325,8 @@ var BABYLON;
                 this._gl.disableVertexAttribArray(i);
             }
             this._gl = null;
+            //WebVR
+            this.disableVR();
             // Events
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
@@ -2476,6 +2527,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    })();
+    }());
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));

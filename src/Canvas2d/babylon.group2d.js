@@ -29,6 +29,8 @@ var BABYLON;
          *  - cacheBehavior: Define how the group should behave regarding the Canvas's cache strategy, default is Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY
          * - layoutEngine: either an instance of a layout engine based class (StackPanel.Vertical, StackPanel.Horizontal) or a string ('canvas' for Canvas layout, 'StackPanel' or 'HorizontalStackPanel' for horizontal Stack Panel layout, 'VerticalStackPanel' for vertical Stack Panel layout).
          * - isVisible: true if the group must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -378,10 +380,10 @@ var BABYLON;
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                var context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
+                var context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context, v);
+                    var renderCount = _this._prepareContext(engine, context_1, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -389,7 +391,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context);
+                        var renderFailed = !v.modelRenderCache.render(v, context_1);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -401,10 +403,10 @@ var BABYLON;
                 engine.setAlphaTesting(true);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
+                context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context, v);
+                    var renderCount = _this._prepareContext(engine, context_1, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -412,7 +414,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context);
+                        var renderFailed = !v.modelRenderCache.render(v, context_1);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -671,7 +673,7 @@ var BABYLON;
             }
             if (!rd._cacheNode) {
                 // Check if we have to allocate a rendering zone in the global cache texture
-                var res = this.owner._allocateGroupCache(this, this.renderGroup, curWidth ? new BABYLON.Size(curWidth, curHeight) : null, rd._useMipMap, rd._anisotropicLevel);
+                var res = this.owner._allocateGroupCache(this, this.parent && this.parent.renderGroup, curWidth ? new BABYLON.Size(curWidth, curHeight) : null, rd._useMipMap, rd._anisotropicLevel);
                 rd._cacheNode = res.node;
                 rd._cacheTexture = res.texture;
                 rd._cacheRenderSprite = res.sprite;
@@ -808,7 +810,7 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    })(BABYLON.Prim2DBase);
+    }(BABYLON.Prim2DBase));
     BABYLON.Group2D = Group2D;
     var RenderableGroupData = (function () {
         function RenderableGroupData() {
@@ -882,12 +884,12 @@ var BABYLON;
             //this.updateSmallestZChangedPrim(tpi);
         };
         return RenderableGroupData;
-    })();
+    }());
     BABYLON.RenderableGroupData = RenderableGroupData;
     var TransparentPrimitiveInfo = (function () {
         function TransparentPrimitiveInfo() {
         }
         return TransparentPrimitiveInfo;
-    })();
+    }());
     BABYLON.TransparentPrimitiveInfo = TransparentPrimitiveInfo;
 })(BABYLON || (BABYLON = {}));

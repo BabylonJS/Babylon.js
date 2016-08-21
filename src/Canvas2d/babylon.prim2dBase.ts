@@ -1309,6 +1309,8 @@
             origin            ?: Vector2,
             layoutEngine      ?: LayoutEngineBase | string,
             isVisible         ?: boolean,
+            isPickable        ?: boolean,
+            isContainer       ?: boolean,
             childrenFlatZOrder?: boolean,
             marginTop         ?: number | string,
             marginLeft        ?: number | string,
@@ -1389,7 +1391,15 @@
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
-            this._setFlags(SmartPropertyPrim.flagIsPickable | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty);
+            let isPickable = true;
+            let isContainer = true;
+            if (settings.isPickable !== undefined) {
+                isPickable = settings.isPickable;
+            }
+            if (settings.isContainer !== undefined) {
+                isContainer = settings.isContainer;
+            }
+            this._setFlags((isPickable ? SmartPropertyPrim.flagIsPickable : 0) | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? SmartPropertyPrim.flagIsContainer : 0));
 
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
@@ -2196,6 +2206,20 @@
         }
 
         /**
+         * Define if the Primitive acts as a container or not
+         * A container will encapsulate its children for interaction event.
+         * If it's not a container events will be process down to children if the primitive is not pickable.
+         * Default value is true
+         */
+        public get isContainer(): boolean {
+            return this._isFlagSet(SmartPropertyPrim.flagIsContainer);
+        }
+
+        public set isContainer(value: boolean) {
+            this._changeFlags(SmartPropertyPrim.flagIsContainer, value);
+        }
+
+        /**
          * Return the depth level of the Primitive into the Canvas' Graph. A Canvas will be 0, its direct children 1, and so on.
          */
         public get hierarchyDepth(): number {
@@ -2422,7 +2446,7 @@
             if (!levelIntersectRes || !intersectInfo.findFirstOnly) {
                 for (let curChild of this._children) {
                     // Don't test primitive not pick able or if it's hidden and we don't test hidden ones
-                    if (!curChild.isPickable || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
+                    if ((!curChild.isPickable && curChild.isContainer) || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
                         continue;
                     }
 
@@ -2441,6 +2465,12 @@
             return intersectInfo.isIntersected;
         }
 
+        /**
+         * Move a child object into a new position regarding its siblings to change its rendering order.
+         * You can also use the shortcut methods to move top/bottom: moveChildToTop, moveChildToBottom, moveToTop, moveToBottom.
+         * @param child the object to move
+         * @param previous the object which will be before "child", if child has to be the first among sibling, set "previous" to null.
+         */
         public moveChild(child: Prim2DBase, previous: Prim2DBase): boolean {
             if (child.parent !== this) {
                 return false;
@@ -2455,6 +2485,43 @@
             }
 
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
+            return true;
+        }
+
+        /**
+         * Move the given child so it's displayed on the top of all its siblings
+         * @param child the primitive to move to the top
+         */
+        public moveChildToTop(child: Prim2DBase): boolean {
+            return this.moveChild(child, this._children[this._children.length - 1]);
+        }
+
+        /**
+         * Move the given child so it's displayed on the bottom of all its siblings
+         * @param child the primitive to move to the top
+         */
+        public moveChildToBottom(child: Prim2DBase): boolean {
+            return this.moveChild(child, null);
+        }
+
+        /**
+         * Move this primitive to be at the top among all its sibling
+         */
+        public moveToTop(): boolean {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToTop(this);
+        }
+
+        /**
+         * Move this primitive to be at the bottom among all its sibling
+         */
+        public moveToBottom() {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToBottom(this);
         }
 
         private addChild(child: Prim2DBase) {
