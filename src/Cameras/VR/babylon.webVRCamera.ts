@@ -26,23 +26,30 @@ module BABYLON {
             vrCameraMetrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
 
-            //this._getWebVRDevices = this._getWebVRDevices.bind(this);
+            //enable VR
+            this.getEngine().initWebVR();
+
             if (!this.getEngine().vrDisplaysPromise) {
                 Tools.Error("WebVR is not enabled on your browser");
             } else {
                 //TODO get the metrics updated using the device's eye parameters!
+                //TODO also check that the device has the right capabilities!
                 this.getEngine().vrDisplaysPromise.then((devices) => {
                     if (devices.length > 0) {
                         this._vrEnabled = true;
                         if (this.webVROptions.displayName) {
-                            devices.some(device => {
+                            var found = devices.some(device => {
                                 if (device.displayName === this.webVROptions.displayName) {
                                     this._vrDevice = device;
                                     return true;
                                 } else {
                                     return false;
                                 }
-                            })
+                            });
+                            if (!found) {
+                                this._vrDevice = devices[0];
+                                Tools.Warn("Display " + this.webVROptions.displayName + " was not found. Using " + this._vrDevice.displayName);
+                            }
                         } else {
                             //choose the first one
                             this._vrDevice = devices[0];
@@ -59,19 +66,24 @@ module BABYLON {
 
         public _checkInputs(): void {
             if (this._vrEnabled) {
-                this._cacheState = this._vrDevice.getPose();
-                this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], this._cacheState.orientation[2], this._cacheState.orientation[3]);
-                if (this.webVROptions.trackPosition) {
-                    this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
-                    this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale)
+                var currentPost = this._vrDevice.getPose();
+                //make sure we have data
+                if (currentPost && currentPost.orientation) {
+                    this._cacheState = currentPost;
+                    this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], this._cacheState.orientation[2], this._cacheState.orientation[3]);
+                    if (this.webVROptions.trackPosition && this._cacheState.position) {
+                        this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
+                        this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale)
+                    }
+                    //Flip in XY plane
+                    this.rotationQuaternion.z *= -1;
+                    this.rotationQuaternion.w *= -1;
+                    if (this._initialQuaternion) {
+                        this._quaternionCache.copyFrom(this.rotationQuaternion);
+                        this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+                    }
                 }
-                //Flip in XY plane
-                this.rotationQuaternion.z *= -1;
-                this.rotationQuaternion.w *= -1;
-                if (this._initialQuaternion) {
-                    this._quaternionCache.copyFrom(this.rotationQuaternion);
-                    this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
-                }
+
             }
 
             super._checkInputs();

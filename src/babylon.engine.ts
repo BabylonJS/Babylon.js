@@ -187,6 +187,7 @@
 
     export interface EngineOptions extends WebGLContextAttributes {
         limitDeviceRatio?: number;
+        autoEnableWebVR?: boolean;
     }
 
     /**
@@ -321,6 +322,7 @@
         private _vrDisplayEnabled;
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
+        private _vrAnimationFrameHandler: number;
 
         // Private Members
         public _gl: WebGLRenderingContext;
@@ -564,7 +566,9 @@
             this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
 
             //Load WebVR Devices
-            this._getVRDisplays();
+            if(options.autoEnableWebVR) {
+                this.initWebVR();
+            }
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
@@ -908,7 +912,7 @@
             //this.flushFramebuffer();
 
             //submit frame to the vr device, if enabled
-            if(this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
+            if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
                 this._vrDisplayEnabled.submitFrame()
             }
         }
@@ -957,6 +961,12 @@
 
         //WebVR functions
 
+        public initWebVR() {
+            if (!this.vrDisplaysPromise) {
+                this._getVRDisplays();
+            }
+        }
+
         public enableVR(vrDevice) {
             this._vrDisplayEnabled = vrDevice;
             this._vrDisplayEnabled.requestPresent([{ source: this.getRenderingCanvas() }]).then(this._onVRFullScreenTriggered);
@@ -964,9 +974,7 @@
 
         public disableVR() {
             if (this._vrDisplayEnabled) {
-                this._vrDisplayEnabled.exitPresent();
-                this._vrDisplayEnabled = null;
-                this._onVRFullScreenTriggered()
+                this._vrDisplayEnabled.exitPresent().then(this._onVRFullScreenTriggered);
             }
         }
 
@@ -976,13 +984,17 @@
                 this._oldSize = new BABYLON.Size(this.getRenderWidth(), this.getRenderHeight());
                 this._oldHardwareScaleFactor = this.getHardwareScalingLevel();
 
+                //according to the WebVR specs, requestAnimationFrame should be triggered only once.
+                this._vrAnimationFrameHandler = this._vrDisplayEnabled.requestAnimationFrame(this._bindedRenderFunction);
+
                 //get the width and height, change the render size
                 var leftEye = this._vrDisplayEnabled.getEyeParameters('left');
                 var width, height;
                 this.setHardwareScalingLevel(1);
                 this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
-
             } else {
+                this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
+                this._vrDisplayEnabled = null;
                 this.setHardwareScalingLevel(this._oldHardwareScaleFactor);
                 this.setSize(this._oldSize.width, this._oldSize.height);
             }
