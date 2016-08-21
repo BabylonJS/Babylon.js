@@ -2417,6 +2417,18 @@
                 return ownerGroup.intersect(intersectInfo);
             }
 
+            // If we're testing a cachedGroup, we must reject pointer outside its levelBoundingInfo because children primitives could be partially clipped outside so we must not accept them as intersected when it's the case (because they're not visually visible).
+            let isIntersectionTest = false;
+            if (this instanceof Group2D) {
+                let g = <Group2D><any>this;
+                isIntersectionTest = g.isCachedGroup;
+            }
+            if (isIntersectionTest && !this.levelBoundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
+                return false;
+            }
+
             // Fast rejection test with boundingInfo
             if (this.isPickable && !this.boundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
                 // Important to call this before each return to allow a good recursion next time this intersectInfo is reused

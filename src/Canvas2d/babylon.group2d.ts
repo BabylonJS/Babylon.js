@@ -119,7 +119,7 @@
         }
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
-            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size: null, isVisible: true });
+            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size: null, isVisible: true, isPickable: false });
             return g;
 
         }
