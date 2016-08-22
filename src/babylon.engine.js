@@ -55,7 +55,7 @@ var BABYLON;
             mag: magFilter
         };
     };
-    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, onLoad, samplingMode) {
+    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
         if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
         var potWidth = BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
@@ -77,9 +77,10 @@ var BABYLON;
         engine._bindTextureDirectly(gl.TEXTURE_2D, null);
         engine.resetTextureCache();
         scene._removePendingData(texture);
-        if (onLoad) {
-            onLoad();
-        }
+        texture.onLoadedCallbacks.forEach(function (callback) {
+            callback();
+        });
+        texture.onLoadedCallbacks = [];
     };
     var partialLoad = function (url, index, loadedImages, scene, onfinish) {
         var img;
@@ -1516,6 +1517,7 @@ var BABYLON;
             texture.noMipmap = noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
+            texture.onLoadedCallbacks = [onLoad];
             this._loadedTexturesCache.push(texture);
             var onerror = function () {
                 scene._removePendingData(texture);
@@ -1530,7 +1532,7 @@ var BABYLON;
                     var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
                     prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
                         BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
@@ -1545,7 +1547,7 @@ var BABYLON;
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                     prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
                         BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (data) {
@@ -1579,7 +1581,7 @@ var BABYLON;
                             }
                         }
                         _this._gl.texImage2D(_this._gl.TEXTURE_2D, 0, _this._gl.RGBA, _this._gl.RGBA, _this._gl.UNSIGNED_BYTE, isPot ? img : _this._workingCanvas);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
