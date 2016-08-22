@@ -176,7 +176,7 @@ namespace Unity3D2Babylon
                 return DumpPBRMaterial(renderer.sharedMaterial, renderer, false);
             }
 
-            return DumpStandardMaterial(renderer.sharedMaterial, renderer);
+            return DumpStandardMaterial(material, renderer);
         }
 
         private BabylonMaterial DumpStandardMaterial(Material material, Renderer renderer)

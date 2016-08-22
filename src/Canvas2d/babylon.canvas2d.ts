@@ -1352,6 +1352,12 @@
                 else {
                     let sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.origin = group.origin.clone();
+                    sprite.addExternalData("__cachedGroup__", group);
+                    sprite.pointerEventObservable.add((e, s) => {
+                        if (group.pointerEventObservable !== null) {
+                            group.pointerEventObservable.notifyObservers(e, s.mask);
+                        }
+                    });
                     res.sprite = sprite;
                 }
             }
