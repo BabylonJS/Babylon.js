@@ -91,6 +91,7 @@
         texture.onLoadedCallbacks.forEach(function (callback) {
             callback();
         });
+        texture.onLoadedCallbacks = [];
     };
 
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
