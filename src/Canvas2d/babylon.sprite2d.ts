@@ -361,7 +361,7 @@
                             this.size = <Size>texture.getBaseSize();
                         }
                         this._positioningDirty();
-                        this._instanceDirtyFlags |= Sprite2D.textureProperty.flagId;  // To make sure the sprite is issued again for render
+                        this._instanceDirtyFlags |= Prim2DBase.originProperty.flagId | Sprite2D.textureProperty.flagId;  // To make sure the sprite is issued again for render
                     });
                 }
             }
