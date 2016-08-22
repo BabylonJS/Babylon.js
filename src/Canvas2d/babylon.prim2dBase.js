@@ -16,7 +16,7 @@ var BABYLON;
             this.forceRefreshPrimitive = false;
         }
         return PrepareRender2DContext;
-    })();
+    }());
     BABYLON.PrepareRender2DContext = PrepareRender2DContext;
     var Render2DContext = (function () {
         function Render2DContext(renderMode) {
@@ -73,7 +73,7 @@ var BABYLON;
         Render2DContext._renderModeAlphaTest = 2;
         Render2DContext._renderModeTransparent = 3;
         return Render2DContext;
-    })();
+    }());
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -233,7 +233,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    })();
+    }());
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     /**
      * Defines the horizontal and vertical alignment information for a Primitive.
@@ -374,8 +374,8 @@ var BABYLON;
          */
         PrimitiveAlignment.prototype.fromString = function (value) {
             var m = value.trim().split(",");
-            for (var _i = 0; _i < m.length; _i++) {
-                var v = m[_i];
+            for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
+                var v = m_1[_i];
                 v = v.toLocaleLowerCase().trim();
                 // Horizontal
                 var i = v.indexOf("h:");
@@ -406,7 +406,7 @@ var BABYLON;
         PrimitiveAlignment._AlignCenter = 3;
         PrimitiveAlignment._AlignStretch = 4;
         return PrimitiveAlignment;
-    })();
+    }());
     BABYLON.PrimitiveAlignment = PrimitiveAlignment;
     /**
      * Stores information about a Primitive that was intersected
@@ -417,7 +417,7 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    })();
+    }());
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
     /**
      * Define a thickness toward every edges of a Primitive to allow margin and padding.
@@ -456,8 +456,8 @@ var BABYLON;
                 return;
             }
             var res = false;
-            for (var _i = 0; _i < m.length; _i++) {
-                var cm = m[_i];
+            for (var _i = 0, m_2 = m; _i < m_2.length; _i++) {
+                var cm = m_2[_i];
                 res = this._extractString(cm, false) || res;
             }
             if (!res) {
@@ -607,7 +607,7 @@ var BABYLON;
                     return true;
                 }
                 // Check for pixel
-                var n;
+                var n = void 0;
                 pI = v.indexOf("px");
                 if (pI !== -1) {
                     n = v.substr(0, pI).trim();
@@ -1131,7 +1131,7 @@ var BABYLON;
         PrimitiveThickness.Percentage = 0x4;
         PrimitiveThickness.Pixel = 0x8;
         return PrimitiveThickness;
-    })();
+    }());
     BABYLON.PrimitiveThickness = PrimitiveThickness;
     /**
      * Main class used for the Primitive Intersection API
@@ -1168,7 +1168,7 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    })();
+    }());
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -1234,7 +1234,15 @@ var BABYLON;
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
-            this._setFlags(BABYLON.SmartPropertyPrim.flagIsPickable | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty);
+            var isPickable = true;
+            var isContainer = true;
+            if (settings.isPickable !== undefined) {
+                isPickable = settings.isPickable;
+            }
+            if (settings.isContainer !== undefined) {
+                isContainer = settings.isContainer;
+            }
+            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0));
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
             }
@@ -1963,6 +1971,22 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Prim2DBase.prototype, "isContainer", {
+            /**
+             * Define if the Primitive acts as a container or not
+             * A container will encapsulate its children for interaction event.
+             * If it's not a container events will be process down to children if the primitive is not pickable.
+             * Default value is true
+             */
+            get: function () {
+                return this._isFlagSet(BABYLON.SmartPropertyPrim.flagIsContainer);
+            },
+            set: function (value) {
+                this._changeFlags(BABYLON.SmartPropertyPrim.flagIsContainer, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Prim2DBase.prototype, "hierarchyDepth", {
             /**
              * Return the depth level of the Primitive into the Canvas' Graph. A Canvas will be 0, its direct children 1, and so on.
@@ -2197,7 +2221,7 @@ var BABYLON;
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var curChild = _a[_i];
                     // Don't test primitive not pick able or if it's hidden and we don't test hidden ones
-                    if (!curChild.isPickable || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
+                    if ((!curChild.isPickable && curChild.isContainer) || (!intersectInfo.intersectHidden && !curChild.isVisible)) {
                         continue;
                     }
                     // Must compute the localPickLocation for the children level
@@ -2212,6 +2236,12 @@ var BABYLON;
             intersectInfo._exit(firstLevel);
             return intersectInfo.isIntersected;
         };
+        /**
+         * Move a child object into a new position regarding its siblings to change its rendering order.
+         * You can also use the shortcut methods to move top/bottom: moveChildToTop, moveChildToBottom, moveToTop, moveToBottom.
+         * @param child the object to move
+         * @param previous the object which will be before "child", if child has to be the first among sibling, set "previous" to null.
+         */
         Prim2DBase.prototype.moveChild = function (child, previous) {
             if (child.parent !== this) {
                 return false;
@@ -2223,6 +2253,39 @@ var BABYLON;
                 this._firstZDirtyIndex = Math.min(this._firstZDirtyIndex, prevIndex + 1);
             }
             this._children.splice(prevIndex + 1, 0, this._children.splice(childIndex, 1)[0]);
+            return true;
+        };
+        /**
+         * Move the given child so it's displayed on the top of all its siblings
+         * @param child the primitive to move to the top
+         */
+        Prim2DBase.prototype.moveChildToTop = function (child) {
+            return this.moveChild(child, this._children[this._children.length - 1]);
+        };
+        /**
+         * Move the given child so it's displayed on the bottom of all its siblings
+         * @param child the primitive to move to the top
+         */
+        Prim2DBase.prototype.moveChildToBottom = function (child) {
+            return this.moveChild(child, null);
+        };
+        /**
+         * Move this primitive to be at the top among all its sibling
+         */
+        Prim2DBase.prototype.moveToTop = function () {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToTop(this);
+        };
+        /**
+         * Move this primitive to be at the bottom among all its sibling
+         */
+        Prim2DBase.prototype.moveToBottom = function () {
+            if (this.parent == null) {
+                return false;
+            }
+            return this.parent.moveChildToBottom(this);
         };
         Prim2DBase.prototype.addChild = function (child) {
             child._parent = this;
@@ -2314,8 +2377,8 @@ var BABYLON;
             //}
         };
         Prim2DBase.prototype.updateCachedStatesOf = function (list, recurse) {
-            for (var _i = 0; _i < list.length; _i++) {
-                var cur = list[_i];
+            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+                var cur = list_1[_i];
                 cur.updateCachedStates(recurse);
             }
         };
@@ -2459,7 +2522,7 @@ var BABYLON;
                 // Check if we have to update the globalTransform
                 if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged) {
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
-                    var localTransform;
+                    var localTransform = void 0;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
                     Prim2DBase._transMtx.m[12] += this._layoutAreaPos.x + this._marginOffset.x + parentPaddingOffset.x;
                     Prim2DBase._transMtx.m[13] += this._layoutAreaPos.y + this._marginOffset.y + parentPaddingOffset.y;
@@ -2812,6 +2875,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    })(BABYLON.SmartPropertyPrim);
+    }(BABYLON.SmartPropertyPrim));
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

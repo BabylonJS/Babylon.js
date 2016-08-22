@@ -200,26 +200,31 @@ var BABYLON;
             }
             return eventPrefix;
         };
-        Tools.QueueNewFrame = function (func) {
-            if (window.requestAnimationFrame)
-                window.requestAnimationFrame(func);
-            else if (window.msRequestAnimationFrame)
-                window.msRequestAnimationFrame(func);
-            else if (window.webkitRequestAnimationFrame)
-                window.webkitRequestAnimationFrame(func);
-            else if (window.mozRequestAnimationFrame)
-                window.mozRequestAnimationFrame(func);
-            else if (window.oRequestAnimationFrame)
-                window.oRequestAnimationFrame(func);
+        /**
+         * @param func - the function to be called
+         * @param requester - the object that will request the next frame. Falls back to window.
+         */
+        Tools.QueueNewFrame = function (func, requester) {
+            if (requester === void 0) { requester = window; }
+            if (requester.requestAnimationFrame)
+                requester.requestAnimationFrame(func);
+            else if (requester.msRequestAnimationFrame)
+                requester.msRequestAnimationFrame(func);
+            else if (requester.webkitRequestAnimationFrame)
+                requester.webkitRequestAnimationFrame(func);
+            else if (requester.mozRequestAnimationFrame)
+                requester.mozRequestAnimationFrame(func);
+            else if (requester.oRequestAnimationFrame)
+                requester.oRequestAnimationFrame(func);
             else {
                 window.setTimeout(func, 16);
             }
         };
-        Tools.RequestFullscreen = function (element, options) {
+        Tools.RequestFullscreen = function (element) {
             var requestFunction = element.requestFullscreen || element.msRequestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen;
             if (!requestFunction)
                 return;
-            requestFunction.call(element, options);
+            requestFunction.call(element);
         };
         Tools.ExitFullscreen = function () {
             if (document.exitFullscreen) {
@@ -852,8 +857,8 @@ var BABYLON;
             return name;
         };
         Tools.first = function (array, predicate) {
-            for (var _i = 0; _i < array.length; _i++) {
-                var el = array[_i];
+            for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
+                var el = array_1[_i];
                 if (predicate(el)) {
                     return el;
                 }
@@ -917,7 +922,7 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    })();
+    }());
     BABYLON.Tools = Tools;
     /**
      * This class is used to track a performance counter which is number based.
@@ -1056,7 +1061,7 @@ var BABYLON;
             }
         };
         return PerfCounter;
-    })();
+    }());
     BABYLON.PerfCounter = PerfCounter;
     /**
      * Use this className as a decorator on a given class definition to add it a name.
@@ -1152,6 +1157,6 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    })();
+    }());
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));

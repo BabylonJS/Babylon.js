@@ -2237,6 +2237,7 @@
          * Get the global transformation matrix of the primitive
          */
         public get globalTransform(): Matrix {
+            this._updateLocalTransform();
             return this._globalTransform;
         }
 
@@ -2262,6 +2263,7 @@
          * Get invert of the global transformation matrix of the primitive
          */
         public get invGlobalTransform(): Matrix {
+            this._updateLocalTransform();
             return this._invGlobalTransform;
         }
 
@@ -2406,6 +2408,24 @@
             }
 
             if (!intersectInfo.intersectHidden && !this.isVisible) {
+                return false;
+            }
+
+            let id = this.id;
+            if (id!=null && id.indexOf("__cachedSpriteOfGroup__") === 0) {
+                let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
+                return ownerGroup.intersect(intersectInfo);
+            }
+
+            // If we're testing a cachedGroup, we must reject pointer outside its levelBoundingInfo because children primitives could be partially clipped outside so we must not accept them as intersected when it's the case (because they're not visually visible).
+            let isIntersectionTest = false;
+            if (this instanceof Group2D) {
+                let g = <Group2D><any>this;
+                isIntersectionTest = g.isCachedGroup;
+            }
+            if (isIntersectionTest && !this.levelBoundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
                 return false;
             }
 

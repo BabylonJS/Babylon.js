@@ -15,6 +15,7 @@
         private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
         private static _RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
         private static _RIG_MODE_VR = 20;
+        private static _RIG_MODE_WEBVR = 21;
 
         public static get PERSPECTIVE_CAMERA(): number {
             return Camera._PERSPECTIVE_CAMERA;
@@ -54,6 +55,10 @@
 
         public static get RIG_MODE_VR(): number {
             return Camera._RIG_MODE_VR;
+        }
+
+        public static get RIG_MODE_WEBVR(): number {
+            return Camera._RIG_MODE_WEBVR;
         }
 
         public static ForceAttachControlToAlwaysPreventDefault = false;
@@ -533,6 +538,23 @@
                         this._rigCameras[1]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics);
                     }
                     break;
+                case Camera.RIG_MODE_WEBVR:
+                    if (rigParams.vrDisplay) {
+                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
+                        this._rigCameras[0].setCameraRigParameter("vrFieldOfView", leftEye.fieldOfView);
+                        this._rigCameras[0].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-leftEye.offset[0], leftEye.offset[1], -leftEye.offset[2]));
+                        this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
+                        this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
+                        this._rigCameras[1].setCameraRigParameter("vrFieldOfView", rightEye.fieldOfView);
+                        this._rigCameras[1].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-rightEye.offset[0], rightEye.offset[1], -rightEye.offset[2]));
+                        this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
+                        this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                    }
+                    break;
+
             }
 
             this._cascadePostProcessesToRigCams();
@@ -543,6 +565,12 @@
         private _getVRProjectionMatrix(): Matrix {
             Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
             this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
+            return this._projectionMatrix;
+        }
+
+        private _getWebVRProjectionMatrix(): Matrix {
+            Matrix.PerspectiveFovWebVRToRef(this._cameraRigParams['vrFieldOfView'], this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams['vrOffsetMatrix'], this._projectionMatrix);
             return this._projectionMatrix;
         }
 
