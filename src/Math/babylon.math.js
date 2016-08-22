@@ -2328,6 +2328,27 @@ var BABYLON;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
             result.m[14] = (znear * zfar) / (znear - zfar);
         };
+        Matrix.PerspectiveFovWebVRToRef = function (fov, znear, zfar, result, isVerticalFovFixed) {
+            if (isVerticalFovFixed === void 0) { isVerticalFovFixed = true; }
+            var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
+            var downTan = Math.tan(fov.downDegrees * Math.PI / 180.0);
+            var leftTan = Math.tan(fov.leftDegrees * Math.PI / 180.0);
+            var rightTan = Math.tan(fov.rightDegrees * Math.PI / 180.0);
+            var xScale = 2.0 / (leftTan + rightTan);
+            var yScale = 2.0 / (upTan + downTan);
+            result.m[0] = xScale;
+            result.m[1] = result.m[2] = result.m[3] = result.m[4] = 0.0;
+            result.m[5] = yScale;
+            result.m[6] = result.m[7] = 0.0;
+            result.m[8] = ((leftTan - rightTan) * xScale * 0.5);
+            result.m[9] = -((upTan - downTan) * yScale * 0.5);
+            //result.m[10] = -(znear + zfar) / (zfar - znear);
+            result.m[10] = -zfar / (znear - zfar);
+            result.m[11] = 1.0;
+            result.m[12] = result.m[13] = result.m[15] = 0.0;
+            //result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
+            result.m[14] = (znear * zfar) / (znear - zfar);
+        };
         Matrix.GetFinalMatrix = function (viewport, world, view, projection, zmin, zmax) {
             var cw = viewport.width;
             var ch = viewport.height;

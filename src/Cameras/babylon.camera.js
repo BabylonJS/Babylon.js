@@ -116,6 +116,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Camera, "RIG_MODE_WEBVR", {
+            get: function () {
+                return Camera._RIG_MODE_WEBVR;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
@@ -439,6 +446,22 @@ var BABYLON;
                         this._rigCameras[1]._rigPostProcess = new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics);
                     }
                     break;
+                case Camera.RIG_MODE_WEBVR:
+                    if (rigParams.vrDisplay) {
+                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        this._rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
+                        this._rigCameras[0].setCameraRigParameter("vrFieldOfView", leftEye.fieldOfView);
+                        this._rigCameras[0].setCameraRigParameter("vrOffsetMatrix", BABYLON.Matrix.Translation(-leftEye.offset[0], leftEye.offset[1], -leftEye.offset[2]));
+                        this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
+                        this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        this._rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
+                        this._rigCameras[1].setCameraRigParameter("vrFieldOfView", rightEye.fieldOfView);
+                        this._rigCameras[1].setCameraRigParameter("vrOffsetMatrix", BABYLON.Matrix.Translation(-rightEye.offset[0], rightEye.offset[1], -rightEye.offset[2]));
+                        this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
+                        this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                    }
+                    break;
             }
             this._cascadePostProcessesToRigCams();
             this.
@@ -447,6 +470,11 @@ var BABYLON;
         Camera.prototype._getVRProjectionMatrix = function () {
             BABYLON.Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
             this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
+            return this._projectionMatrix;
+        };
+        Camera.prototype._getWebVRProjectionMatrix = function () {
+            BABYLON.Matrix.PerspectiveFovWebVRToRef(this._cameraRigParams['vrFieldOfView'], this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams['vrOffsetMatrix'], this._projectionMatrix);
             return this._projectionMatrix;
         };
         Camera.prototype.setCameraRigParameter = function (name, value) {
@@ -595,6 +623,7 @@ var BABYLON;
         Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
         Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
         Camera._RIG_MODE_VR = 20;
+        Camera._RIG_MODE_WEBVR = 21;
         Camera.ForceAttachControlToAlwaysPreventDefault = false;
         __decorate([
             BABYLON.serializeAsVector3()

@@ -206,7 +206,10 @@ var BABYLON;
          */
         Tools.QueueNewFrame = function (func, requester) {
             if (requester === void 0) { requester = window; }
-            if (requester.requestAnimationFrame)
+            //if WebVR is enabled AND presenting, requestAnimationFrame is triggered when enabled.
+            /*if(requester.isPresenting) {
+                return;
+            } else*/ if (requester.requestAnimationFrame)
                 requester.requestAnimationFrame(func);
             else if (requester.msRequestAnimationFrame)
                 requester.msRequestAnimationFrame(func);

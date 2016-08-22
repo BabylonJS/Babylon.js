@@ -168,6 +168,9 @@ var BABYLON;
                     //get the old size before we change
                     _this._oldSize = new BABYLON.Size(_this.getRenderWidth(), _this.getRenderHeight());
                     _this._oldHardwareScaleFactor = _this.getHardwareScalingLevel();
+                    //according to the WebVR specs, requestAnimationFrame should be triggered only once.
+                    //But actually, no browser follow the specs...
+                    //this._vrAnimationFrameHandler = this._vrDisplayEnabled.requestAnimationFrame(this._bindedRenderFunction);
                     //get the width and height, change the render size
                     var leftEye = _this._vrDisplayEnabled.getEyeParameters('left');
                     var width, height;
@@ -175,8 +178,11 @@ var BABYLON;
                     _this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
                 }
                 else {
+                    //When the specs are implemented, need to uncomment this.
+                    //this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
                     _this.setHardwareScalingLevel(_this._oldHardwareScaleFactor);
                     _this.setSize(_this._oldSize.width, _this._oldSize.height);
+                    _this._vrDisplayEnabled = undefined;
                 }
             };
             this._renderingCanvas = canvas;
@@ -315,7 +321,9 @@ var BABYLON;
             //default loading screen
             this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
             //Load WebVR Devices
-            this._getVRDisplays();
+            if (options.autoEnableWebVR) {
+                this.initWebVR();
+            }
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
@@ -789,15 +797,18 @@ var BABYLON;
             }
         };
         //WebVR functions
+        Engine.prototype.initWebVR = function () {
+            if (!this.vrDisplaysPromise) {
+                this._getVRDisplays();
+            }
+        };
         Engine.prototype.enableVR = function (vrDevice) {
             this._vrDisplayEnabled = vrDevice;
             this._vrDisplayEnabled.requestPresent([{ source: this.getRenderingCanvas() }]).then(this._onVRFullScreenTriggered);
         };
         Engine.prototype.disableVR = function () {
             if (this._vrDisplayEnabled) {
-                this._vrDisplayEnabled.exitPresent();
-                this._vrDisplayEnabled = null;
-                this._onVRFullScreenTriggered();
+                this._vrDisplayEnabled.exitPresent().then(this._onVRFullScreenTriggered);
             }
         };
         Engine.prototype._getVRDisplays = function () {

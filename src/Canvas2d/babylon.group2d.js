@@ -64,7 +64,7 @@ var BABYLON;
             this._viewportPosition = BABYLON.Vector2.Zero();
         }
         Group2D._createCachedCanvasGroup = function (owner) {
-            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: BABYLON.Vector2.Zero(), origin: BABYLON.Vector2.Zero(), size: null, isVisible: true });
+            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: BABYLON.Vector2.Zero(), origin: BABYLON.Vector2.Zero(), size: null, isVisible: true, isPickable: false });
             return g;
         };
         Group2D.prototype.applyCachedTexture = function (vertexData, material) {
@@ -699,25 +699,32 @@ var BABYLON;
         Group2D.prototype.handleGroupChanged = function (prop) {
             // This method is only for cachedGroup
             var rd = this._renderableData;
-            if (!this.isCachedGroup || !rd._cacheRenderSprite) {
+            if (!rd) {
+                return;
+            }
+            var cachedSprite = rd._cacheRenderSprite;
+            if (!this.isCachedGroup || !cachedSprite) {
                 return;
             }
             // For now we only support these property changes
             // TODO: add more! :)
             if (prop.id === BABYLON.Prim2DBase.actualPositionProperty.id) {
-                rd._cacheRenderSprite.actualPosition = this.actualPosition.clone();
+                cachedSprite.actualPosition = this.actualPosition.clone();
+                if (cachedSprite.position != null) {
+                    cachedSprite.position = cachedSprite.actualPosition.clone();
+                }
             }
             else if (prop.id === BABYLON.Prim2DBase.rotationProperty.id) {
-                rd._cacheRenderSprite.rotation = this.rotation;
+                cachedSprite.rotation = this.rotation;
             }
             else if (prop.id === BABYLON.Prim2DBase.scaleProperty.id) {
-                rd._cacheRenderSprite.scale = this.scale;
+                cachedSprite.scale = this.scale;
             }
             else if (prop.id === BABYLON.Prim2DBase.originProperty.id) {
-                rd._cacheRenderSprite.origin = this.origin.clone();
+                cachedSprite.origin = this.origin.clone();
             }
             else if (prop.id === Group2D.actualSizeProperty.id) {
-                rd._cacheRenderSprite.size = this.actualSize.clone();
+                cachedSprite.size = this.actualSize.clone();
             }
         };
         Group2D.prototype.detectGroupStates = function () {
