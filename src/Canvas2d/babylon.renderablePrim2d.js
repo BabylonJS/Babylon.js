@@ -401,7 +401,7 @@ var BABYLON;
                     var td = gii.transparentData[0];
                     usedCount += td._partData.usedElementCount;
                 }
-                if (usedCount === 0) {
+                if (usedCount === 0 && gii.modelRenderCache != null) {
                     this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
                     gii.dispose();
                 }

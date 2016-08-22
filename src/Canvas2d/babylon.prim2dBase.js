@@ -2012,6 +2012,7 @@ var BABYLON;
              * Get the global transformation matrix of the primitive
              */
             get: function () {
+                this._updateLocalTransform();
                 return this._globalTransform;
             },
             enumerable: true,
@@ -2038,6 +2039,7 @@ var BABYLON;
              * Get invert of the global transformation matrix of the primitive
              */
             get: function () {
+                this._updateLocalTransform();
                 return this._invGlobalTransform;
             },
             enumerable: true,
@@ -2191,6 +2193,22 @@ var BABYLON;
                 intersectInfo.topMostIntersectedPrimitive = null;
             }
             if (!intersectInfo.intersectHidden && !this.isVisible) {
+                return false;
+            }
+            var id = this.id;
+            if (id != null && id.indexOf("__cachedSpriteOfGroup__") === 0) {
+                var ownerGroup = this.getExternalData("__cachedGroup__");
+                return ownerGroup.intersect(intersectInfo);
+            }
+            // If we're testing a cachedGroup, we must reject pointer outside its levelBoundingInfo because children primitives could be partially clipped outside so we must not accept them as intersected when it's the case (because they're not visually visible).
+            var isIntersectionTest = false;
+            if (this instanceof BABYLON.Group2D) {
+                var g = this;
+                isIntersectionTest = g.isCachedGroup;
+            }
+            if (isIntersectionTest && !this.levelBoundingInfo.doesIntersect(intersectInfo._localPickPosition)) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
                 return false;
             }
             // Fast rejection test with boundingInfo
