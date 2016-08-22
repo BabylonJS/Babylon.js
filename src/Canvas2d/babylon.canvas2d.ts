@@ -1325,7 +1325,7 @@
                     mapSize.height = Math.pow(2, Math.ceil(Math.log(size.height) / Math.log(2)));
                 }
 
-                let id = `groupsMapChache${this._mapCounter}forCanvas${this.id}`;
+                let id = `groupsMapChache${this._mapCounter++}forCanvas${this.id}`;
                 map = new MapTexture(id, this._scene, mapSize, useMipMap ? Texture.TRILINEAR_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE, useMipMap);
                 map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
