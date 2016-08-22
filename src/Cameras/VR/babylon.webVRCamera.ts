@@ -17,36 +17,42 @@ module BABYLON {
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
 
-        private _initialQuaternion: Quaternion;
         private _quaternionCache: Quaternion;
 
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault(), private webVROptions: WebVROptions = {}) {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = false, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
 
-            vrCameraMetrics.compensateDistortion = compensateDistortion;
-            this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
+            //enable VR
+            this.getEngine().initWebVR();
 
-            //this._getWebVRDevices = this._getWebVRDevices.bind(this);
             if (!this.getEngine().vrDisplaysPromise) {
                 Tools.Error("WebVR is not enabled on your browser");
             } else {
                 //TODO get the metrics updated using the device's eye parameters!
+                //TODO also check that the device has the right capabilities!
                 this.getEngine().vrDisplaysPromise.then((devices) => {
                     if (devices.length > 0) {
                         this._vrEnabled = true;
                         if (this.webVROptions.displayName) {
-                            devices.some(device => {
+                            var found = devices.some(device => {
                                 if (device.displayName === this.webVROptions.displayName) {
                                     this._vrDevice = device;
                                     return true;
                                 } else {
                                     return false;
                                 }
-                            })
+                            });
+                            if (!found) {
+                                this._vrDevice = devices[0];
+                                Tools.Warn("Display " + this.webVROptions.displayName + " was not found. Using " + this._vrDevice.displayName);
+                            }
                         } else {
                             //choose the first one
                             this._vrDevice = devices[0];
                         }
+
+                        //reset the rig parameters.
+                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { vrDisplay: this._vrDevice });
                     } else {
                         Tools.Error("No WebVR devices found!");
                     }
@@ -59,19 +65,20 @@ module BABYLON {
 
         public _checkInputs(): void {
             if (this._vrEnabled) {
-                this._cacheState = this._vrDevice.getPose();
-                this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], this._cacheState.orientation[2], this._cacheState.orientation[3]);
-                if (this.webVROptions.trackPosition) {
-                    this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
-                    this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale)
+                var currentPost = this._vrDevice.getPose();
+                //make sure we have data
+                if (currentPost && currentPost.orientation) {
+                    this._cacheState = currentPost;
+                    this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], this._cacheState.orientation[2], this._cacheState.orientation[3]);
+                    if (this.webVROptions.trackPosition && this._cacheState.position) {
+                        this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
+                        this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale)
+                    }
+                    //Flip in XY plane
+                    this.rotationQuaternion.z *= -1;
+                    this.rotationQuaternion.w *= -1;
                 }
-                //Flip in XY plane
-                this.rotationQuaternion.z *= -1;
-                this.rotationQuaternion.w *= -1;
-                if (this._initialQuaternion) {
-                    this._quaternionCache.copyFrom(this.rotationQuaternion);
-                    this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
-                }
+
             }
 
             super._checkInputs();
@@ -95,32 +102,18 @@ module BABYLON {
 
         public requestVRFullscreen(requestPointerlock: boolean) {
             //Backwards comp.
-            Tools.Warn("requestVRFullscreen is deprecated. Use engine.switchFullscreen() instead")
-            this.getEngine().switchFullscreen(requestPointerlock);
+            Tools.Warn("requestVRFullscreen is deprecated. call attachControl() to start sending frames to the VR display.")
+            //this.getEngine().switchFullscreen(requestPointerlock);
         }
 
         public getTypeName(): string {
             return "WebVRFreeCamera";
         }
 
-        public resetToCurrentRotation(axis: BABYLON.Axis = BABYLON.Axis.Y) {
-            //can only work if this camera has a rotation quaternion already.
-            if (!this.rotationQuaternion) return;
-
-            if (!this._initialQuaternion) {
-                this._initialQuaternion = new BABYLON.Quaternion();
-            }
-
-            this._initialQuaternion.copyFrom(this._quaternionCache || this.rotationQuaternion);
-
-            ['x', 'y', 'z'].forEach((axisName) => {
-                if (!axis[axisName]) {
-                    this._initialQuaternion[axisName] = 0;
-                } else {
-                    this._initialQuaternion[axisName] *= -1;
-                }
-            });
-            this._initialQuaternion.normalize();
+        public resetToCurrentRotation() {
+            //uses the vrDisplay's "resetPose()".
+            //pitch and roll won't be affected.
+            this._vrDevice.resetPose();
         }
     }
 }
