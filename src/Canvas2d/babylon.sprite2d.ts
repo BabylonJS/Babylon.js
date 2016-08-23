@@ -73,10 +73,10 @@
                 this.ib = null;
             }
 
-            if (this.texture) {
-                this.texture.dispose();
-                this.texture = null;
-            }
+            //if (this.texture) {
+            //    this.texture.dispose();
+            //    this.texture = null;
+            //}
 
             this.effect = null;
             this.effectInstanced = null;
