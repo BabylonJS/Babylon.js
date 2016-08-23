@@ -459,6 +459,7 @@
                 pii.canvasPointerPos.x = localPosition.x;
                 pii.canvasPointerPos.y = localPosition.y;
             }
+            //console.log(`UpdatePointerInfo for ${this.id}, X:${pii.canvasPointerPos.x}, Y:${pii.canvasPointerPos.y}`);
             pii.mouseWheelDelta = 0;
 
             if (eventData.type === PointerEventTypes.POINTERWHEEL) {
@@ -1253,6 +1254,12 @@
             this._updateTrackedNodes();
 
             this._updateCanvasState(false);
+
+            // Nothing to do is the Canvas is not visible
+            if (this.isVisible === false) {
+                return;
+            }
+
             if (!this._isScreenSpace) {
                 this._updateAdaptiveSizeWorldCanvas();
             }
