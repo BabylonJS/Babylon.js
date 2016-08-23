@@ -2566,6 +2566,20 @@
 
             // If there's a parent, remove this object from its parent list
             if (this._parent) {
+                if (this instanceof Group2D) {
+                    let g = <Group2D><any>this;
+                    if (g.isRenderableGroup) {
+                        let parentRenderable = <Group2D>this.parent.traverseUp(p => (p instanceof Group2D && p.isRenderableGroup));
+                        if (parentRenderable != null) {
+                            let l = parentRenderable._renderableData._childrenRenderableGroups;
+                            let i = l.indexOf(g);
+                            if (i !== -1) {
+                                l.splice(i, 1);
+                            }
+                        }
+                    }
+                }
+
                 let i = this._parent._children.indexOf(this);
                 if (i !== undefined) {
                     this._parent._children.splice(i, 1);
