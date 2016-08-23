@@ -195,7 +195,7 @@ var BABYLON;
         TargetCamera.prototype.createRigCamera = function (name, cameraIndex) {
             if (this.cameraRigMode !== BABYLON.Camera.RIG_MODE_NONE) {
                 var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
-                if (this.cameraRigMode === BABYLON.Camera.RIG_MODE_VR) {
+                if (this.cameraRigMode === BABYLON.Camera.RIG_MODE_VR || this.cameraRigMode === BABYLON.Camera.RIG_MODE_WEBVR) {
                     if (!this.rotationQuaternion) {
                         this.rotationQuaternion = new BABYLON.Quaternion();
                     }
@@ -227,6 +227,7 @@ var BABYLON;
                     camRight.setTarget(this.getTarget());
                     break;
                 case BABYLON.Camera.RIG_MODE_VR:
+                case BABYLON.Camera.RIG_MODE_WEBVR:
                     camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
                     camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
                     camLeft.position.copyFrom(this.position);

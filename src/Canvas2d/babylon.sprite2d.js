@@ -214,7 +214,7 @@ var BABYLON;
                             _this.size = texture.getBaseSize();
                         }
                         _this._positioningDirty();
-                        _this._instanceDirtyFlags |= Sprite2D.textureProperty.flagId; // To make sure the sprite is issued again for render
+                        _this._instanceDirtyFlags |= BABYLON.Prim2DBase.originProperty.flagId | Sprite2D.textureProperty.flagId; // To make sure the sprite is issued again for render
                     });
                 }
             }
