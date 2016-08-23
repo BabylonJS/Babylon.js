@@ -63,7 +63,12 @@ var BABYLON;
                 }
             }
             else {
-                BABYLON.Tools.SetImmediate(function () { return load(); });
+                if (this._texture.isReady) {
+                    BABYLON.Tools.SetImmediate(function () { return load(); });
+                }
+                else {
+                    this._texture.onLoadedCallbacks.push(load);
+                }
             }
         }
         Object.defineProperty(Texture.prototype, "noMipmap", {

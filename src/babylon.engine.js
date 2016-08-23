@@ -55,7 +55,7 @@ var BABYLON;
             mag: magFilter
         };
     };
-    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, onLoad, samplingMode) {
+    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
         if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
         var potWidth = BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
@@ -77,9 +77,10 @@ var BABYLON;
         engine._bindTextureDirectly(gl.TEXTURE_2D, null);
         engine.resetTextureCache();
         scene._removePendingData(texture);
-        if (onLoad) {
-            onLoad();
-        }
+        texture.onLoadedCallbacks.forEach(function (callback) {
+            callback();
+        });
+        texture.onLoadedCallbacks = [];
     };
     var partialLoad = function (url, index, loadedImages, scene, onfinish) {
         var img;
@@ -168,6 +169,9 @@ var BABYLON;
                     //get the old size before we change
                     _this._oldSize = new BABYLON.Size(_this.getRenderWidth(), _this.getRenderHeight());
                     _this._oldHardwareScaleFactor = _this.getHardwareScalingLevel();
+                    //according to the WebVR specs, requestAnimationFrame should be triggered only once.
+                    //But actually, no browser follow the specs...
+                    //this._vrAnimationFrameHandler = this._vrDisplayEnabled.requestAnimationFrame(this._bindedRenderFunction);
                     //get the width and height, change the render size
                     var leftEye = _this._vrDisplayEnabled.getEyeParameters('left');
                     var width, height;
@@ -175,8 +179,11 @@ var BABYLON;
                     _this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
                 }
                 else {
+                    //When the specs are implemented, need to uncomment this.
+                    //this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
                     _this.setHardwareScalingLevel(_this._oldHardwareScaleFactor);
                     _this.setSize(_this._oldSize.width, _this._oldSize.height);
+                    _this._vrDisplayEnabled = undefined;
                 }
             };
             this._renderingCanvas = canvas;
@@ -315,7 +322,9 @@ var BABYLON;
             //default loading screen
             this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
             //Load WebVR Devices
-            this._getVRDisplays();
+            if (options.autoEnableWebVR) {
+                this.initWebVR();
+            }
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
@@ -789,15 +798,18 @@ var BABYLON;
             }
         };
         //WebVR functions
+        Engine.prototype.initWebVR = function () {
+            if (!this.vrDisplaysPromise) {
+                this._getVRDisplays();
+            }
+        };
         Engine.prototype.enableVR = function (vrDevice) {
             this._vrDisplayEnabled = vrDevice;
             this._vrDisplayEnabled.requestPresent([{ source: this.getRenderingCanvas() }]).then(this._onVRFullScreenTriggered);
         };
         Engine.prototype.disableVR = function () {
             if (this._vrDisplayEnabled) {
-                this._vrDisplayEnabled.exitPresent();
-                this._vrDisplayEnabled = null;
-                this._onVRFullScreenTriggered();
+                this._vrDisplayEnabled.exitPresent().then(this._onVRFullScreenTriggered);
             }
         };
         Engine.prototype._getVRDisplays = function () {
@@ -1505,6 +1517,7 @@ var BABYLON;
             texture.noMipmap = noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
+            texture.onLoadedCallbacks = [onLoad];
             this._loadedTexturesCache.push(texture);
             var onerror = function () {
                 scene._removePendingData(texture);
@@ -1519,7 +1532,7 @@ var BABYLON;
                     var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
                     prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
                         BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
@@ -1534,7 +1547,7 @@ var BABYLON;
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                     prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
                         BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (data) {
@@ -1568,7 +1581,7 @@ var BABYLON;
                             }
                         }
                         _this._gl.texImage2D(_this._gl.TEXTURE_2D, 0, _this._gl.RGBA, _this._gl.RGBA, _this._gl.UNSIGNED_BYTE, isPot ? img : _this._workingCanvas);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);

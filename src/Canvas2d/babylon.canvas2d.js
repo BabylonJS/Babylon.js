@@ -1127,7 +1127,7 @@ var BABYLON;
                     mapSize.width = Math.pow(2, Math.ceil(Math.log(size.width) / Math.log(2)));
                     mapSize.height = Math.pow(2, Math.ceil(Math.log(size.height) / Math.log(2)));
                 }
-                var id = "groupsMapChache" + this._mapCounter + "forCanvas" + this.id;
+                var id = "groupsMapChache" + this._mapCounter++ + "forCanvas" + this.id;
                 map = new BABYLON.MapTexture(id, this._scene, mapSize, useMipMap ? BABYLON.Texture.TRILINEAR_SAMPLINGMODE : BABYLON.Texture.BILINEAR_SAMPLINGMODE, useMipMap);
                 map.hasAlpha = true;
                 map.anisotropicFilteringLevel = 4;
@@ -1149,6 +1149,12 @@ var BABYLON;
                 else {
                     var sprite = new BABYLON.Sprite2D(map, { parent: parent, id: "__cachedSpriteOfGroup__" + group.id, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.origin = group.origin.clone();
+                    sprite.addExternalData("__cachedGroup__", group);
+                    sprite.pointerEventObservable.add(function (e, s) {
+                        if (group.pointerEventObservable !== null) {
+                            group.pointerEventObservable.notifyObservers(e, s.mask);
+                        }
+                    });
                     res.sprite = sprite;
                 }
             }

@@ -58,7 +58,7 @@
     }
 
     var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
-        processFunction: (width: number, height: number) => void, onLoad: () => void, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) => {
+        processFunction: (width: number, height: number) => void, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) => {
         var engine = scene.getEngine();
         var potWidth = Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
@@ -88,9 +88,10 @@
         engine.resetTextureCache();
         scene._removePendingData(texture);
 
-        if (onLoad) {
-            onLoad();
-        }
+        texture.onLoadedCallbacks.forEach(function (callback) {
+            callback();
+        });
+        texture.onLoadedCallbacks = [];
     };
 
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
@@ -1853,6 +1854,7 @@
             texture.noMipmap = noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
+            texture.onLoadedCallbacks = [onLoad];
             this._loadedTexturesCache.push(texture);
 
             var onerror = () => {
@@ -1871,7 +1873,7 @@
 
                     prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     Tools.LoadFile(url, arrayBuffer => {
@@ -1888,7 +1890,7 @@
                     prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
 
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
 
                 if (!(fromData instanceof Array))
@@ -1927,7 +1929,7 @@
                         }
 
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
-                    }, onLoad, samplingMode);
+                    }, samplingMode);
                 };
 
 

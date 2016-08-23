@@ -61,6 +61,7 @@ interface WebGLTexture {
     references: number;
     generateMipMaps: boolean;
     type: number;
+    onLoadedCallbacks: Array<Function>;
     _size: number;
     _baseWidth: number;
     _baseHeight: number;
