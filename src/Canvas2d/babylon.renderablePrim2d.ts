@@ -480,7 +480,7 @@
             // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
 
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
-            if (this._isFlagSet(SmartPropertyPrim.flagVisibilityChanged) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep) || this._mustUpdateInstance()) {
+            if (this._areSomeFlagsSet(SmartPropertyPrim.flagVisibilityChanged | SmartPropertyPrim.flagNeedRefresh) || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep) || this._mustUpdateInstance()) {
 
                 this._updateInstanceDataParts(gii);
             }
@@ -717,6 +717,11 @@
                     // Free the data element
                     if (part.dataElements) {
                         part.freeElements();
+                    }
+
+                    // The refresh couldn't succeed, push the primitive to be dirty again for the next render
+                    if (this.isVisible) {
+                        rd._primNewDirtyList.push(this);
                     }
                 }
 

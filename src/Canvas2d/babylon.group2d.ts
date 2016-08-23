@@ -335,8 +335,9 @@
             let sortedDirtyList: Prim2DBase[] = null;
 
             // Update the Global Transformation and visibility status of the changed primitives
-            if ((this._renderableData._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
-                sortedDirtyList = this._renderableData._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
+            let rd = this._renderableData;
+            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
+                sortedDirtyList = rd._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
                 this.updateCachedStatesOf(sortedDirtyList, true);
             }
 
@@ -378,9 +379,11 @@
                 this._viewportSize = newSize;
             }
 
-            if ((this._renderableData._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
+            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 // If the group is cached, set the dirty flag to true because of the incoming changes
                 this._cacheGroupDirty = this._isCachedGroup;
+
+                rd._primNewDirtyList.splice(0);
 
                 // If it's a force refresh, prepare all the children
                 if (context.forceRefreshPrimitive) {
@@ -391,7 +394,7 @@
                     // Each primitive that changed at least once was added into the primDirtyList, we have to sort this level using
                     //  the hierarchyDepth in order to prepare primitives from top to bottom
                     if (!sortedDirtyList) {
-                        sortedDirtyList = this._renderableData._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
+                        sortedDirtyList = rd._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
                     }
 
                     sortedDirtyList.forEach(p => {
@@ -405,12 +408,19 @@
                 }
 
                 // Everything is updated, clear the dirty list
-                this._renderableData._primDirtyList.forEach(p => p._resetPropertiesDirty());
-                this._renderableData._primDirtyList.splice(0);
+                rd._primDirtyList.forEach(p => {
+                    if (rd._primNewDirtyList.indexOf(p) === -1) {
+                        p._resetPropertiesDirty();
+                    } else {
+                        p._setFlags(SmartPropertyPrim.flagNeedRefresh);
+                    }
+                });
+                rd._primDirtyList.splice(0);
+                rd._primDirtyList = rd._primDirtyList.concat(rd._primNewDirtyList);
             }
 
             // A renderable group has a list of direct children that are also renderable groups, we recurse on them to also prepare them
-            this._renderableData._childrenRenderableGroups.forEach(g => {
+            rd._childrenRenderableGroups.forEach(g => {
                 g._prepareGroupRender(context);
             });
         }
@@ -953,6 +963,7 @@
     export class RenderableGroupData {
         constructor() {
             this._primDirtyList = new Array<Prim2DBase>();
+            this._primNewDirtyList = new Array<Prim2DBase>();
             this._childrenRenderableGroups = new Array<Group2D>();
             this._renderGroupInstancesInfo = new StringDictionary<GroupInstanceInfo>();
             this._transparentPrimitives = new Array<TransparentPrimitiveInfo>();
@@ -1033,6 +1044,7 @@
         }
 
         _primDirtyList: Array<Prim2DBase>;
+        _primNewDirtyList: Array<Prim2DBase>;
         _childrenRenderableGroups: Array<Group2D>;
         _renderGroupInstancesInfo: StringDictionary<GroupInstanceInfo>;
 

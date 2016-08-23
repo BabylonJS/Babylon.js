@@ -442,7 +442,7 @@
 
         public _resetPropertiesDirty() {
             this._instanceDirtyFlags = 0;
-            this._clearFlags(SmartPropertyPrim.flagPrimInDirtyList);
+            this._clearFlags(SmartPropertyPrim.flagPrimInDirtyList | SmartPropertyPrim.flagNeedRefresh);
         }
 
         /**
@@ -632,6 +632,7 @@
         public static flagActualOpacityDirty     = 0x0004000;    // set if the actualOpactity should be recomputed
         public static flagPrimInDirtyList        = 0x0008000;    // set if the primitive is in the primDirtyList
         public static flagIsContainer            = 0x0010000;    // set if the primitive is a container
+        public static flagNeedRefresh            = 0x0020000;    // set if the primitive wasn't successful at refresh
 
         private   _flags             : number;
         private   _externalData      : StringDictionary<Object>;
