@@ -1,5 +1,6 @@
 from sys import modules
 from math import floor
+from mathutils import Euler, Matrix
 
 from bpy import app
 from time import strftime
@@ -181,7 +182,7 @@ def format_bool(bool):
         return 'false'
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def post_rotate_quaternion(quat, angle):
-    post = mathutils.Euler((angle, 0.0, 0.0)).to_matrix()
+    post = Euler((angle, 0.0, 0.0)).to_matrix()
     mqtn = quat.to_matrix()
     quat = (mqtn*post).to_quaternion()
     return quat
