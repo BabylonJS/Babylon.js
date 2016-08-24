@@ -28,6 +28,9 @@ module BABYLON {
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             window.addEventListener("orientationchange", this._orientationChanged);
             window.addEventListener("deviceorientation", this._deviceOrientation);
+            //In certain cases, the attach control is called AFTER orientation was changed,
+            //So this is needed.
+            this._orientationChanged();
         }
 
         private _orientationChanged = () => {
