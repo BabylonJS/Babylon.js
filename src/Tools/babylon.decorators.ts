@@ -5,7 +5,9 @@
                 target.__serializableMembers = {};
             }
 
-            target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            if (!target.__serializableMembers[propertyKey]) {
+                target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            }
         }
     }
 
