@@ -178,7 +178,7 @@ var BABYLON;
                 }
             };
             return DDSTools;
-        }());
+        })();
         Internals.DDSTools = DDSTools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));

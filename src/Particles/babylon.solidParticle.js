@@ -39,7 +39,7 @@ var BABYLON;
             configurable: true
         });
         return SolidParticle;
-    }());
+    })();
     BABYLON.SolidParticle = SolidParticle;
     var ModelShape = (function () {
         function ModelShape(id, shape, shapeUV, posFunction, vtxFunction) {
@@ -50,6 +50,6 @@ var BABYLON;
             this._vertexFunction = vtxFunction;
         }
         return ModelShape;
-    }());
+    })();
     BABYLON.ModelShape = ModelShape;
 })(BABYLON || (BABYLON = {}));

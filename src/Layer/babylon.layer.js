@@ -135,6 +135,6 @@ var BABYLON;
             this.onBeforeRenderObservable.clear();
         };
         return Layer;
-    }());
+    })();
     BABYLON.Layer = Layer;
 })(BABYLON || (BABYLON = {}));

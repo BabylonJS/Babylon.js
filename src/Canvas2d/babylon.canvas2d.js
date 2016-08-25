@@ -27,7 +27,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    }());
+    })();
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -407,6 +407,7 @@ var BABYLON;
                 pii.canvasPointerPos.x = localPosition.x;
                 pii.canvasPointerPos.y = localPosition.y;
             }
+            //console.log(`UpdatePointerInfo for ${this.id}, X:${pii.canvasPointerPos.x}, Y:${pii.canvasPointerPos.y}`);
             pii.mouseWheelDelta = 0;
             if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
                 var event = eventData.event;
@@ -1066,6 +1067,10 @@ var BABYLON;
             this._initPerfMetrics();
             this._updateTrackedNodes();
             this._updateCanvasState(false);
+            // Nothing to do is the Canvas is not visible
+            if (this.isVisible === false) {
+                return;
+            }
             if (!this._isScreenSpace) {
                 this._updateAdaptiveSizeWorldCanvas();
             }
@@ -1110,8 +1115,8 @@ var BABYLON;
             // Try to find a spot in one of the cached texture
             var res = null;
             var map;
-            for (var _i = 0, mapArray_1 = mapArray; _i < mapArray_1.length; _i++) {
-                var _map = mapArray_1[_i];
+            for (var _i = 0; _i < mapArray.length; _i++) {
+                var _map = mapArray[_i];
                 map = _map;
                 var node = map.allocateRect(size);
                 if (node) {
@@ -1313,7 +1318,7 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
     var WorldSpaceCanvas2D = (function (_super) {
         __extends(WorldSpaceCanvas2D, _super);
@@ -1398,7 +1403,7 @@ var BABYLON;
             BABYLON.className("WorldSpaceCanvas2D")
         ], WorldSpaceCanvas2D);
         return WorldSpaceCanvas2D;
-    }(Canvas2D));
+    })(Canvas2D);
     BABYLON.WorldSpaceCanvas2D = WorldSpaceCanvas2D;
     var ScreenSpaceCanvas2D = (function (_super) {
         __extends(ScreenSpaceCanvas2D, _super);
@@ -1439,6 +1444,6 @@ var BABYLON;
             BABYLON.className("ScreenSpaceCanvas2D")
         ], ScreenSpaceCanvas2D);
         return ScreenSpaceCanvas2D;
-    }(Canvas2D));
+    })(Canvas2D);
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
 })(BABYLON || (BABYLON = {}));

@@ -5,7 +5,9 @@ var BABYLON;
             if (!target.__serializableMembers) {
                 target.__serializableMembers = {};
             }
-            target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            if (!target.__serializableMembers[propertyKey]) {
+                target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            }
         };
     }
     function serialize(sourceName) {
@@ -155,6 +157,6 @@ var BABYLON;
             return destination;
         };
         return SerializationHelper;
-    }());
+    })();
     BABYLON.SerializationHelper = SerializationHelper;
 })(BABYLON || (BABYLON = {}));
