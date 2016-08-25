@@ -45,9 +45,13 @@
      * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
      */
     export class Observable<T> {
-        private static _pooledEventState: EventState = null;
-
         _observers = new Array<Observer<T>>();
+
+        private _eventState: EventState;
+
+        constructor() {
+            this._eventState = new EventState(0);
+        }
 
         /**
          * Create a new Observer with the specified callback
@@ -106,23 +110,24 @@
 
         /**
          * Notify all Observers by calling their respective callback with the given data
+         * Will return true if all observers were executed, false if an observer set skipNextObservers to true, then prevent the subsequent ones to execute
          * @param eventData
          * @param mask
          */
-        public notifyObservers(eventData: T, mask: number = -1): void {
-            var state = Observable._pooledEventState ? Observable._pooledEventState.initalize(mask) : new EventState(mask);
-            Observable._pooledEventState = null;
+        public notifyObservers(eventData: T, mask: number = -1): boolean {
+            let state = this._eventState;
+            state.mask = mask;
+            state.skipNextObservers = false;
 
             for (var obs of this._observers) {
                 if (obs.mask & mask) {
                     obs.callback(eventData, state);
                 }
                 if (state.skipNextObservers) {
-                    break;
+                    return false;
                 }
             }
-
-            Observable._pooledEventState = state;
+            return true;
         }
 
         /**
