@@ -61,7 +61,7 @@ var BABYLON;
             return result;
         };
         return MaterialDefines;
-    }());
+    })();
     BABYLON.MaterialDefines = MaterialDefines;
     var Material = (function () {
         function Material(name, scene, doNotAdd) {
@@ -367,6 +367,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Material.prototype, "fillMode", null);
         return Material;
-    }());
+    })();
     BABYLON.Material = Material;
 })(BABYLON || (BABYLON = {}));

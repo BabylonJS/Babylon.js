@@ -36,6 +36,9 @@ var BABYLON;
         FreeCameraDeviceOrientationInput.prototype.attachControl = function (element, noPreventDefault) {
             window.addEventListener("orientationchange", this._orientationChanged);
             window.addEventListener("deviceorientation", this._deviceOrientation);
+            //In certain cases, the attach control is called AFTER orientation was changed,
+            //So this is needed.
+            this._orientationChanged();
         };
         FreeCameraDeviceOrientationInput.prototype.detachControl = function (element) {
             window.removeEventListener("orientationchange", this._orientationChanged);
@@ -56,7 +59,7 @@ var BABYLON;
             return "deviceOrientation";
         };
         return FreeCameraDeviceOrientationInput;
-    }());
+    })();
     BABYLON.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
     BABYLON.CameraInputTypes["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
 })(BABYLON || (BABYLON = {}));

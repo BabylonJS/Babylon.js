@@ -38,7 +38,7 @@ var BABYLON;
             BABYLON.className("LayoutEngineBase")
         ], LayoutEngineBase);
         return LayoutEngineBase;
-    }());
+    })();
     BABYLON.LayoutEngineBase = LayoutEngineBase;
     var CanvasLayoutEngine = (function (_super) {
         __extends(CanvasLayoutEngine, _super);
@@ -82,7 +82,7 @@ var BABYLON;
             BABYLON.className("CanvasLayoutEngine")
         ], CanvasLayoutEngine);
         return CanvasLayoutEngine;
-    }(LayoutEngineBase));
+    })(LayoutEngineBase);
     BABYLON.CanvasLayoutEngine = CanvasLayoutEngine;
     var StackPanelLayoutEngine = (function (_super) {
         __extends(StackPanelLayoutEngine, _super);
@@ -169,6 +169,6 @@ var BABYLON;
             BABYLON.className("StackPanelLayoutEngine")
         ], StackPanelLayoutEngine);
         return StackPanelLayoutEngine;
-    }(LayoutEngineBase));
+    })(LayoutEngineBase);
     BABYLON.StackPanelLayoutEngine = StackPanelLayoutEngine;
 })(BABYLON || (BABYLON = {}));

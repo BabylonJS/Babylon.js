@@ -283,8 +283,9 @@ var BABYLON;
         Group2D.prototype._prepareGroupRender = function (context) {
             var sortedDirtyList = null;
             // Update the Global Transformation and visibility status of the changed primitives
-            if ((this._renderableData._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
-                sortedDirtyList = this._renderableData._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
+            var rd = this._renderableData;
+            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
+                sortedDirtyList = rd._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
                 this.updateCachedStatesOf(sortedDirtyList, true);
             }
             // Setup the size of the rendering viewport
@@ -321,9 +322,10 @@ var BABYLON;
                 }
                 this._viewportSize = newSize;
             }
-            if ((this._renderableData._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
+            if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 // If the group is cached, set the dirty flag to true because of the incoming changes
                 this._cacheGroupDirty = this._isCachedGroup;
+                rd._primNewDirtyList.splice(0);
                 // If it's a force refresh, prepare all the children
                 if (context.forceRefreshPrimitive) {
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
@@ -335,7 +337,7 @@ var BABYLON;
                     // Each primitive that changed at least once was added into the primDirtyList, we have to sort this level using
                     //  the hierarchyDepth in order to prepare primitives from top to bottom
                     if (!sortedDirtyList) {
-                        sortedDirtyList = this._renderableData._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
+                        sortedDirtyList = rd._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
                     }
                     sortedDirtyList.forEach(function (p) {
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
@@ -346,11 +348,19 @@ var BABYLON;
                     });
                 }
                 // Everything is updated, clear the dirty list
-                this._renderableData._primDirtyList.forEach(function (p) { return p._resetPropertiesDirty(); });
-                this._renderableData._primDirtyList.splice(0);
+                rd._primDirtyList.forEach(function (p) {
+                    if (rd._primNewDirtyList.indexOf(p) === -1) {
+                        p._resetPropertiesDirty();
+                    }
+                    else {
+                        p._setFlags(BABYLON.SmartPropertyPrim.flagNeedRefresh);
+                    }
+                });
+                rd._primDirtyList.splice(0);
+                rd._primDirtyList = rd._primDirtyList.concat(rd._primNewDirtyList);
             }
             // A renderable group has a list of direct children that are also renderable groups, we recurse on them to also prepare them
-            this._renderableData._childrenRenderableGroups.forEach(function (g) {
+            rd._childrenRenderableGroups.forEach(function (g) {
                 g._prepareGroupRender(context);
             });
         };
@@ -380,10 +390,10 @@ var BABYLON;
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                var context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
+                var context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context_1, v);
+                    var renderCount = _this._prepareContext(engine, context, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -391,7 +401,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context_1);
+                        var renderFailed = !v.modelRenderCache.render(v, context);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -403,10 +413,10 @@ var BABYLON;
                 engine.setAlphaTesting(true);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
+                context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context_1, v);
+                    var renderCount = _this._prepareContext(engine, context, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -414,7 +424,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context_1);
+                        var renderFailed = !v.modelRenderCache.render(v, context);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -817,11 +827,12 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.Group2D = Group2D;
     var RenderableGroupData = (function () {
         function RenderableGroupData() {
             this._primDirtyList = new Array();
+            this._primNewDirtyList = new Array();
             this._childrenRenderableGroups = new Array();
             this._renderGroupInstancesInfo = new BABYLON.StringDictionary();
             this._transparentPrimitives = new Array();
@@ -891,12 +902,12 @@ var BABYLON;
             //this.updateSmallestZChangedPrim(tpi);
         };
         return RenderableGroupData;
-    }());
+    })();
     BABYLON.RenderableGroupData = RenderableGroupData;
     var TransparentPrimitiveInfo = (function () {
         function TransparentPrimitiveInfo() {
         }
         return TransparentPrimitiveInfo;
-    }());
+    })();
     BABYLON.TransparentPrimitiveInfo = TransparentPrimitiveInfo;
 })(BABYLON || (BABYLON = {}));

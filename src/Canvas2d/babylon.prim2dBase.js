@@ -16,7 +16,7 @@ var BABYLON;
             this.forceRefreshPrimitive = false;
         }
         return PrepareRender2DContext;
-    }());
+    })();
     BABYLON.PrepareRender2DContext = PrepareRender2DContext;
     var Render2DContext = (function () {
         function Render2DContext(renderMode) {
@@ -73,7 +73,7 @@ var BABYLON;
         Render2DContext._renderModeAlphaTest = 2;
         Render2DContext._renderModeTransparent = 3;
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     /**
      * This class store information for the pointerEventObservable Observable.
@@ -233,7 +233,7 @@ var BABYLON;
         PrimitivePointerInfo._pointerLostCapture = 0x0200;
         PrimitivePointerInfo._mouseWheelPrecision = 3.0;
         return PrimitivePointerInfo;
-    }());
+    })();
     BABYLON.PrimitivePointerInfo = PrimitivePointerInfo;
     /**
      * Defines the horizontal and vertical alignment information for a Primitive.
@@ -374,8 +374,8 @@ var BABYLON;
          */
         PrimitiveAlignment.prototype.fromString = function (value) {
             var m = value.trim().split(",");
-            for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
-                var v = m_1[_i];
+            for (var _i = 0; _i < m.length; _i++) {
+                var v = m[_i];
                 v = v.toLocaleLowerCase().trim();
                 // Horizontal
                 var i = v.indexOf("h:");
@@ -406,7 +406,7 @@ var BABYLON;
         PrimitiveAlignment._AlignCenter = 3;
         PrimitiveAlignment._AlignStretch = 4;
         return PrimitiveAlignment;
-    }());
+    })();
     BABYLON.PrimitiveAlignment = PrimitiveAlignment;
     /**
      * Stores information about a Primitive that was intersected
@@ -417,7 +417,7 @@ var BABYLON;
             this.intersectionLocation = intersectionLocation;
         }
         return PrimitiveIntersectedInfo;
-    }());
+    })();
     BABYLON.PrimitiveIntersectedInfo = PrimitiveIntersectedInfo;
     /**
      * Define a thickness toward every edges of a Primitive to allow margin and padding.
@@ -456,8 +456,8 @@ var BABYLON;
                 return;
             }
             var res = false;
-            for (var _i = 0, m_2 = m; _i < m_2.length; _i++) {
-                var cm = m_2[_i];
+            for (var _i = 0; _i < m.length; _i++) {
+                var cm = m[_i];
                 res = this._extractString(cm, false) || res;
             }
             if (!res) {
@@ -607,7 +607,7 @@ var BABYLON;
                     return true;
                 }
                 // Check for pixel
-                var n = void 0;
+                var n;
                 pI = v.indexOf("px");
                 if (pI !== -1) {
                     n = v.substr(0, pI).trim();
@@ -1131,7 +1131,7 @@ var BABYLON;
         PrimitiveThickness.Percentage = 0x4;
         PrimitiveThickness.Pixel = 0x8;
         return PrimitiveThickness;
-    }());
+    })();
     BABYLON.PrimitiveThickness = PrimitiveThickness;
     /**
      * Main class used for the Primitive Intersection API
@@ -1168,7 +1168,7 @@ var BABYLON;
             }
         };
         return IntersectInfo2D;
-    }());
+    })();
     BABYLON.IntersectInfo2D = IntersectInfo2D;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -2333,6 +2333,19 @@ var BABYLON;
             }
             // If there's a parent, remove this object from its parent list
             if (this._parent) {
+                if (this instanceof BABYLON.Group2D) {
+                    var g = this;
+                    if (g.isRenderableGroup) {
+                        var parentRenderable = this.parent.traverseUp(function (p) { return (p instanceof BABYLON.Group2D && p.isRenderableGroup); });
+                        if (parentRenderable != null) {
+                            var l = parentRenderable._renderableData._childrenRenderableGroups;
+                            var i_1 = l.indexOf(g);
+                            if (i_1 !== -1) {
+                                l.splice(i_1, 1);
+                            }
+                        }
+                    }
+                }
                 var i = this._parent._children.indexOf(this);
                 if (i !== undefined) {
                     this._parent._children.splice(i, 1);
@@ -2354,7 +2367,7 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype._needPrepare = function () {
-            return this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagVisibilityChanged | BABYLON.SmartPropertyPrim.flagModelDirty) || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
+            return this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagVisibilityChanged | BABYLON.SmartPropertyPrim.flagModelDirty | BABYLON.SmartPropertyPrim.flagNeedRefresh) || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         };
         Prim2DBase.prototype._prepareRender = function (context) {
             this._prepareRenderPre(context);
@@ -2395,8 +2408,8 @@ var BABYLON;
             //}
         };
         Prim2DBase.prototype.updateCachedStatesOf = function (list, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
                 cur.updateCachedStates(recurse);
             }
         };
@@ -2540,7 +2553,7 @@ var BABYLON;
                 // Check if we have to update the globalTransform
                 if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged) {
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
-                    var localTransform = void 0;
+                    var localTransform;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
                     Prim2DBase._transMtx.m[12] += this._layoutAreaPos.x + this._marginOffset.x + parentPaddingOffset.x;
                     Prim2DBase._transMtx.m[13] += this._layoutAreaPos.y + this._marginOffset.y + parentPaddingOffset.y;
@@ -2893,6 +2906,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));
