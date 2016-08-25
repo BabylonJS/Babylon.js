@@ -374,18 +374,20 @@ var BABYLON;
             var targetPointerPos = capturedPrim ? this._primPointerInfo.canvasPointerPos.subtract(new BABYLON.Vector2(targetPrim.globalTransform.m[12], targetPrim.globalTransform.m[13])) : this._actualOverPrimitive.intersectionLocation;
             this._primPointerInfo.updateRelatedTarget(targetPrim, targetPointerPos);
             // Analyze the pointer event type and fire proper events on the primitive
+            var skip = false;
             if (eventData.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMouseWheel, eventData.event);
+                skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMouseWheel, eventData);
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMove, eventData.event);
+                skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerMove, eventData);
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerDown, eventData.event);
+                skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerDown, eventData);
             }
             else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerUp, eventData.event);
+                skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerUp, eventData);
             }
+            eventState.skipNextObservers = skip;
         };
         Canvas2D.prototype._updatePointerInfo = function (eventData, localPosition) {
             var pii = this._primPointerInfo;
@@ -514,6 +516,7 @@ var BABYLON;
         };
         Canvas2D.prototype._bubbleNotifyPrimPointerObserver = function (prim, mask, eventData) {
             var ppi = this._primPointerInfo;
+            var event = eventData ? eventData.event : null;
             // In case of PointerOver/Out we will first notify the parent with PointerEnter/Leave
             if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) !== 0) {
                 this._notifParents(prim, mask);
@@ -526,13 +529,16 @@ var BABYLON;
                     this._updatePrimPointerPos(cur);
                     // Exec the observers
                     this._debugExecObserver(cur, mask);
-                    cur._pointerEventObservable.notifyObservers(ppi, mask);
-                    this._triggerActionManager(cur, ppi, mask, eventData);
+                    if (!cur._pointerEventObservable.notifyObservers(ppi, mask) && eventData instanceof BABYLON.PointerInfoPre) {
+                        eventData.skipOnPointerObservable = true;
+                        return false;
+                    }
+                    this._triggerActionManager(cur, ppi, mask, event);
                     // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
                     // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
                     if (ppi.cancelBubble) {
                         if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) === 0) {
-                            return;
+                            return false;
                         }
                         // We're dealing with PointerOver/Out, let's keep looping to fire PointerEnter/Leave, but not Over/Out anymore
                         bubbleCancelled = true;
@@ -554,6 +560,7 @@ var BABYLON;
                 // Loop to the parent
                 cur = cur.parent;
             }
+            return true;
         };
         Canvas2D.prototype._triggerActionManager = function (prim, ppi, mask, eventData) {
             var _this = this;
