@@ -41,6 +41,7 @@ var BABYLON;
     var Observable = (function () {
         function Observable() {
             this._observers = new Array();
+            this._eventState = new EventState(0);
         }
         /**
          * Create a new Observer with the specified callback
@@ -90,23 +91,25 @@ var BABYLON;
         };
         /**
          * Notify all Observers by calling their respective callback with the given data
+         * Will return true if all observers were executed, false if an observer set skipNextObservers to true, then prevent the subsequent ones to execute
          * @param eventData
          * @param mask
          */
         Observable.prototype.notifyObservers = function (eventData, mask) {
             if (mask === void 0) { mask = -1; }
-            var state = Observable._pooledEventState ? Observable._pooledEventState.initalize(mask) : new EventState(mask);
-            Observable._pooledEventState = null;
+            var state = this._eventState;
+            state.mask = mask;
+            state.skipNextObservers = false;
             for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
                 var obs = _a[_i];
                 if (obs.mask & mask) {
                     obs.callback(eventData, state);
                 }
                 if (state.skipNextObservers) {
-                    break;
+                    return false;
                 }
             }
-            Observable._pooledEventState = state;
+            return true;
         };
         /**
          * return true is the Observable has at least one Observer registered
@@ -128,7 +131,6 @@ var BABYLON;
             result._observers = this._observers.slice(0);
             return result;
         };
-        Observable._pooledEventState = null;
         return Observable;
     })();
     BABYLON.Observable = Observable;
