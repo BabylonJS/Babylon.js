@@ -426,15 +426,18 @@
 
             // Analyze the pointer event type and fire proper events on the primitive
 
+            let skip = false;
             if (eventData.type === PointerEventTypes.POINTERWHEEL) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMouseWheel, <MouseWheelEvent>eventData.event);
+                skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMouseWheel, eventData);
             } else if (eventData.type === PointerEventTypes.POINTERMOVE) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMove, <PointerEvent>eventData.event);
+                skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerMove, eventData);
             } else if (eventData.type === PointerEventTypes.POINTERDOWN) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerDown, <PointerEvent>eventData.event);
+                skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerDown, eventData);
             } else if (eventData.type === PointerEventTypes.POINTERUP) {
-                this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerUp, <PointerEvent>eventData.event);
+                skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, PrimitivePointerInfo.PointerUp, eventData);
             }
+
+            eventState.skipNextObservers = skip;
         }
 
         private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2) {
@@ -580,8 +583,9 @@
             console.log(debug);
         }
 
-        private _bubbleNotifyPrimPointerObserver(prim: Prim2DBase, mask: number, eventData: any) {
+        private _bubbleNotifyPrimPointerObserver(prim: Prim2DBase, mask: number, eventData: PointerInfoBase): boolean {
             let ppi = this._primPointerInfo;
+            let event = eventData ? eventData.event : null;
 
             // In case of PointerOver/Out we will first notify the parent with PointerEnter/Leave
             if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) !== 0) {
@@ -597,14 +601,18 @@
 
                     // Exec the observers
                     this._debugExecObserver(cur, mask);
-                    cur._pointerEventObservable.notifyObservers(ppi, mask);
-                    this._triggerActionManager(cur, ppi, mask, eventData);
+                    if (!cur._pointerEventObservable.notifyObservers(ppi, mask) && eventData instanceof PointerInfoPre) {
+                        eventData.skipOnPointerObservable = true;
+                        return false;
+                    }
+
+                    this._triggerActionManager(cur, ppi, mask, event);
 
                     // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
                     // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
                     if (ppi.cancelBubble) {
                         if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) === 0) {
-                            return;
+                            return false;
                         }
 
                         // We're dealing with PointerOver/Out, let's keep looping to fire PointerEnter/Leave, but not Over/Out anymore
@@ -632,6 +640,7 @@
                 // Loop to the parent
                 cur = cur.parent;
             }
+            return true;
         }
 
         private _triggerActionManager(prim: Prim2DBase, ppi: PrimitivePointerInfo, mask: number, eventData) {
