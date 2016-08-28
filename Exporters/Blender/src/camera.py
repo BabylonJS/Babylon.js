@@ -91,7 +91,7 @@ class Camera(FCurveAnimatable):
 
         elif self.CameraType == self.CameraType == ARC_ROTATE_CAM:
             self.arcRotAlpha  = alpha
-            self.arcRotBeta   = beta
+            self.arcRotBeta   = abs(beta)
             self.arcRotRadius = distance3D
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
