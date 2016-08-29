@@ -1,5 +1,3 @@
-
-
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -89,6 +87,10 @@ var BABYLON;
         EBlendingFunction[EBlendingFunction["SRC_ALPHA_SATURATE"] = 776] = "SRC_ALPHA_SATURATE";
     })(BABYLON.EBlendingFunction || (BABYLON.EBlendingFunction = {}));
     var EBlendingFunction = BABYLON.EBlendingFunction;
+})(BABYLON || (BABYLON = {}));
+
+var BABYLON;
+(function (BABYLON) {
     /**
     * Tokenizer. Used for shaders compatibility
     * Automatically map world, view, projection, worldViewProjection, attributes and so on
@@ -673,7 +675,8 @@ var BABYLON;
                     accessor = gltfRuntime.accessors[attributes[semantic]];
                     buffer = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
                     if (semantic === "NORMAL") {
-                        tempVertexData.normals = Float32Array.from(buffer);
+                        tempVertexData.normals = new Float32Array(buffer.length);
+                        tempVertexData.normals.set(buffer);
                     }
                     else if (semantic === "POSITION") {
                         if (GLTFFileLoader.HomogeneousCoordinates) {
@@ -685,31 +688,37 @@ var BABYLON;
                             }
                         }
                         else {
-                            tempVertexData.positions = Float32Array.from(buffer);
+                            tempVertexData.positions = new Float32Array(buffer.length);
+                            tempVertexData.positions.set(buffer);
                         }
                         verticesCounts.push(tempVertexData.positions.length);
                     }
                     else if (semantic.indexOf("TEXCOORD_") !== -1) {
                         var channel = Number(semantic.split("_")[1]);
                         var uvKind = BABYLON.VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
-                        var uvs = Float32Array.from(buffer);
+                        var uvs = new Float32Array(buffer.length);
+                        uvs.set(buffer);
                         normalizeUVs(uvs);
                         tempVertexData.set(uvs, uvKind);
                     }
                     else if (semantic === "JOINT") {
-                        tempVertexData.matricesIndices = Float32Array.from(buffer);
+                        tempVertexData.matricesIndices = new Float32Array(buffer.length);
+                        tempVertexData.matricesIndices.set(buffer);
                     }
                     else if (semantic === "WEIGHT") {
-                        tempVertexData.matricesWeights = Float32Array.from(buffer);
+                        tempVertexData.matricesWeights = new Float32Array(buffer.length);
+                        tempVertexData.matricesWeights.set(buffer);
                     }
                     else if (semantic === "COLOR") {
-                        tempVertexData.colors = Float32Array.from(buffer);
+                        tempVertexData.colors = new Float32Array(buffer.length);
+                        tempVertexData.colors.set(buffer);
                     }
                 }
                 // Indices
                 accessor = gltfRuntime.accessors[primitive.indices];
                 buffer = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
-                tempVertexData.indices = Int32Array.from(buffer);
+                tempVertexData.indices = new Int32Array(buffer.length);
+                tempVertexData.indices.set(buffer);
                 indexCounts.push(tempVertexData.indices.length);
                 vertexData.merge(tempVertexData);
                 tempVertexData = undefined;
@@ -1032,7 +1041,7 @@ var BABYLON;
         for (var unif in unTreatedUniforms) {
             var uniform = unTreatedUniforms[unif];
             var type = uniform.type;
-            if (type === EParameterType.FLOAT_MAT2 || type === EParameterType.FLOAT_MAT3 || type === EParameterType.FLOAT_MAT4) {
+            if (type === BABYLON.EParameterType.FLOAT_MAT2 || type === BABYLON.EParameterType.FLOAT_MAT3 || type === BABYLON.EParameterType.FLOAT_MAT4) {
                 if (uniform.semantic && !uniform.source && !uniform.node) {
                     BABYLON.GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial.getEffect());
                 }
@@ -1052,7 +1061,7 @@ var BABYLON;
                 if (!value) {
                     continue;
                 }
-                if (type === EParameterType.SAMPLER_2D) {
+                if (type === BABYLON.EParameterType.SAMPLER_2D) {
                     var texture = gltfRuntime.textures[value].babylonTexture;
                     if (texture === null) {
                         continue;
@@ -1083,7 +1092,7 @@ var BABYLON;
                 continue;
             }
             // Texture (sampler2D)
-            if (type === EParameterType.SAMPLER_2D) {
+            if (type === BABYLON.EParameterType.SAMPLER_2D) {
                 var texture = gltfRuntime.textures[value];
                 var sampler = gltfRuntime.samplers[texture.sampler];
                 if (!texture || !texture.source) {
@@ -1091,10 +1100,10 @@ var BABYLON;
                 }
                 var source = gltfRuntime.images[texture.source];
                 var newTexture = null;
-                var createMipMaps = (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
-                    (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
-                    (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
-                    (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR);
+                var createMipMaps = (sampler.minFilter === BABYLON.ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
+                    (sampler.minFilter === BABYLON.ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
+                    (sampler.minFilter === BABYLON.ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
+                    (sampler.minFilter === BABYLON.ETextureFilterType.LINEAR_MIPMAP_LINEAR);
                 var samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
                 if (BABYLON.GLTFUtils.IsBase64(source.uri)) {
                     newTexture = new BABYLON.Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, null, null, source.uri, true);
@@ -1203,7 +1212,7 @@ var BABYLON;
                         uniforms.push(unif);
                     }
                 }
-                else if (uniformParameter.type === EParameterType.SAMPLER_2D) {
+                else if (uniformParameter.type === BABYLON.EParameterType.SAMPLER_2D) {
                     samplers.push(unif);
                 }
                 else {
@@ -1267,27 +1276,27 @@ var BABYLON;
             shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
             if (states.functions) {
                 var functions = states.functions;
-                if (functions.cullFace && functions.cullFace[0] !== ECullingType.BACK) {
+                if (functions.cullFace && functions.cullFace[0] !== BABYLON.ECullingType.BACK) {
                     shaderMaterial.backFaceCulling = false;
                 }
                 var blendFunc = functions.blendFuncSeparate;
                 if (blendFunc) {
-                    if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_ALPHA && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
+                    if (blendFunc[0] === BABYLON.EBlendingFunction.SRC_ALPHA && blendFunc[1] === BABYLON.EBlendingFunction.ONE_MINUS_SRC_ALPHA && blendFunc[2] === BABYLON.EBlendingFunction.ONE && blendFunc[3] === BABYLON.EBlendingFunction.ONE) {
                         shaderMaterial.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
                     }
-                    else if (blendFunc[0] === EBlendingFunction.ONE && blendFunc[1] === EBlendingFunction.ONE && blendFunc[2] === EBlendingFunction.ZERO && blendFunc[3] === EBlendingFunction.ONE) {
+                    else if (blendFunc[0] === BABYLON.EBlendingFunction.ONE && blendFunc[1] === BABYLON.EBlendingFunction.ONE && blendFunc[2] === BABYLON.EBlendingFunction.ZERO && blendFunc[3] === BABYLON.EBlendingFunction.ONE) {
                         shaderMaterial.alphaMode = BABYLON.Engine.ALPHA_ONEONE;
                     }
-                    else if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE && blendFunc[2] === EBlendingFunction.ZERO && blendFunc[3] === EBlendingFunction.ONE) {
+                    else if (blendFunc[0] === BABYLON.EBlendingFunction.SRC_ALPHA && blendFunc[1] === BABYLON.EBlendingFunction.ONE && blendFunc[2] === BABYLON.EBlendingFunction.ZERO && blendFunc[3] === BABYLON.EBlendingFunction.ONE) {
                         shaderMaterial.alphaMode = BABYLON.Engine.ALPHA_ADD;
                     }
-                    else if (blendFunc[0] === EBlendingFunction.ZERO && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_COLOR && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
+                    else if (blendFunc[0] === BABYLON.EBlendingFunction.ZERO && blendFunc[1] === BABYLON.EBlendingFunction.ONE_MINUS_SRC_COLOR && blendFunc[2] === BABYLON.EBlendingFunction.ONE && blendFunc[3] === BABYLON.EBlendingFunction.ONE) {
                         shaderMaterial.alphaMode = BABYLON.Engine.ALPHA_SUBTRACT;
                     }
-                    else if (blendFunc[0] === EBlendingFunction.DST_COLOR && blendFunc[1] === EBlendingFunction.ZERO && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
+                    else if (blendFunc[0] === BABYLON.EBlendingFunction.DST_COLOR && blendFunc[1] === BABYLON.EBlendingFunction.ZERO && blendFunc[2] === BABYLON.EBlendingFunction.ONE && blendFunc[3] === BABYLON.EBlendingFunction.ONE) {
                         shaderMaterial.alphaMode = BABYLON.Engine.ALPHA_MULTIPLY;
                     }
-                    else if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_COLOR && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
+                    else if (blendFunc[0] === BABYLON.EBlendingFunction.SRC_ALPHA && blendFunc[1] === BABYLON.EBlendingFunction.ONE_MINUS_SRC_COLOR && blendFunc[2] === BABYLON.EBlendingFunction.ONE && blendFunc[3] === BABYLON.EBlendingFunction.ONE) {
                         shaderMaterial.alphaMode = BABYLON.Engine.ALPHA_MAXIMIZED;
                     }
                 }
@@ -1302,7 +1311,7 @@ var BABYLON;
     var onLoadShader = function (gltfRuntime, sha) {
         return function (data) {
             gltfRuntime.loadedShaders++;
-            BABYLON.Effect.ShadersStore[sha + (gltfRuntime.shaders[sha].type === EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = data;
+            BABYLON.Effect.ShadersStore[sha + (gltfRuntime.shaders[sha].type === BABYLON.EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = data;
             if (gltfRuntime.loadedShaders === gltfRuntime.shaderscount) {
                 onShadersLoaded(gltfRuntime);
             }

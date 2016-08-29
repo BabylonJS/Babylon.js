@@ -1,92 +1,5 @@
 ﻿module BABYLON {
     /**
-    * Enums
-    */
-    export enum EComponentType {
-        BYTE = 5120,
-        UNSIGNED_BYTE = 5121,
-        SHORT = 5122,
-        UNSIGNED_SHORT = 5123,
-        FLOAT = 5126
-    }
-
-    export enum EShaderType {
-        FRAGMENT = 35632,
-        VERTEX = 35633
-    }
-
-    export enum EParameterType {
-        BYTE = 5120,
-        UNSIGNED_BYTE = 5121,
-        SHORT = 5122,
-        UNSIGNED_SHORT = 5123,
-        INT = 5124,
-        UNSIGNED_INT = 5125,
-        FLOAT = 5126,
-        FLOAT_VEC2 = 35664,
-        FLOAT_VEC3 = 35665,
-        FLOAT_VEC4 = 35666,
-        INT_VEC2 = 35667,
-        INT_VEC3 = 35668,
-        INT_VEC4 = 35669,
-        BOOL = 35670,
-        BOOL_VEC2 = 35671,
-        BOOL_VEC3 = 35672,
-        BOOL_VEC4 = 35673,
-        FLOAT_MAT2 = 35674,
-        FLOAT_MAT3 = 35675,
-        FLOAT_MAT4 = 35676,
-        SAMPLER_2D = 35678
-    }
-
-    export enum ETextureWrapMode {
-        CLAMP_TO_EDGE = 33071,
-        MIRRORED_REPEAT = 33648,
-        REPEAT = 10497
-    }
-
-    export enum ETextureFilterType {
-        NEAREST = 9728,
-        LINEAR = 9728,
-        NEAREST_MIPMAP_NEAREST = 9984,
-        LINEAR_MIPMAP_NEAREST = 9985,
-        NEAREST_MIPMAP_LINEAR = 9986,
-        LINEAR_MIPMAP_LINEAR = 9987
-    }
-
-    export enum ETextureFormat {
-        ALPHA = 6406,
-        RGB = 6407,
-        RGBA = 6408,
-        LUMINANCE = 6409,
-        LUMINANCE_ALPHA = 6410 
-    }
-
-    export enum ECullingType {
-        FRONT = 1028,
-        BACK = 1029,
-        FRONT_AND_BACK = 1032
-    }
-
-    export enum EBlendingFunction {
-        ZERO = 0,
-        ONE = 1,
-        SRC_COLOR = 768,
-        ONE_MINUS_SRC_COLOR = 769,
-        DST_COLOR = 774,
-        ONE_MINUS_DST_COLOR = 775,
-        SRC_ALPHA = 770,
-        ONE_MINUS_SRC_ALPHA = 771,
-        DST_ALPHA = 772,
-        ONE_MINUS_DST_ALPHA = 773,
-        CONSTANT_COLOR = 32769,
-        ONE_MINUS_CONSTANT_COLOR = 32770,
-        CONSTANT_ALPHA = 32771,
-        ONE_MINUS_CONSTANT_ALPHA = 32772,
-        SRC_ALPHA_SATURATE = 776
-    }
-
-    /**
     * Tokenizer. Used for shaders compatibility
     * Automatically map world, view, projection, worldViewProjection, attributes and so on
     */
@@ -809,7 +722,8 @@
                     buffer = GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
 
                     if (semantic === "NORMAL") {
-                        tempVertexData.normals = Float32Array.from(buffer);
+                        tempVertexData.normals = new Float32Array(buffer.length);
+                        (<Float32Array>tempVertexData.normals).set(buffer);
                     }
                     else if (semantic === "POSITION") {
                         if (GLTFFileLoader.HomogeneousCoordinates) {
@@ -822,7 +736,8 @@
                             }
                         }
                         else {
-                            tempVertexData.positions = Float32Array.from(buffer);
+                            tempVertexData.positions = new Float32Array(buffer.length);
+                            (<Float32Array>tempVertexData.positions).set(buffer);
                         }
 
                         verticesCounts.push(tempVertexData.positions.length);
@@ -830,26 +745,31 @@
                     else if (semantic.indexOf("TEXCOORD_") !== -1) {
                         var channel = Number(semantic.split("_")[1]);
                         var uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
-                        var uvs = Float32Array.from(buffer);
+                        var uvs = new Float32Array(buffer.length);
+                        (<Float32Array>uvs).set(buffer);
                         normalizeUVs(uvs);
                         tempVertexData.set(uvs, uvKind);
                     }
                     else if (semantic === "JOINT") {
-                        tempVertexData.matricesIndices = Float32Array.from(buffer);
+                        tempVertexData.matricesIndices = new Float32Array(buffer.length);
+                        (<Float32Array>tempVertexData.matricesIndices).set(buffer);
                     }
                     else if (semantic === "WEIGHT") {
-                        tempVertexData.matricesWeights = Float32Array.from(buffer);
+                        tempVertexData.matricesWeights = new Float32Array(buffer.length);
+                        (<Float32Array>tempVertexData.matricesWeights).set(buffer);
                     }
                     else if (semantic === "COLOR") {
-                        tempVertexData.colors = Float32Array.from(buffer);
+                        tempVertexData.colors = new Float32Array(buffer.length);
+                        (<Float32Array>tempVertexData.colors).set(buffer);
                     }
                 }
 
                 // Indices
                 accessor = gltfRuntime.accessors[primitive.indices];
                 buffer = GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
-                
-                tempVertexData.indices = Int32Array.from(buffer);
+
+                tempVertexData.indices = new Int32Array(buffer.length);
+                (<Float32Array>tempVertexData.indices).set(buffer);
                 indexCounts.push(tempVertexData.indices.length);
 
                 vertexData.merge(tempVertexData);
