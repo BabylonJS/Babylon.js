@@ -1901,6 +1901,10 @@
 
                     instance.position = Vector3.FromArray(parsedInstance.position);
 
+                    if (parsedInstance.parentId) {
+                        instance._waitingParentId = parsedInstance.parentId;
+                    }
+
                     if (parsedInstance.rotationQuaternion) {
                         instance.rotationQuaternion = Quaternion.FromArray(parsedInstance.rotationQuaternion);
                     } else if (parsedInstance.rotation) {
