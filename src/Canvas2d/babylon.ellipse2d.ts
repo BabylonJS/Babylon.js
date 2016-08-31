@@ -214,6 +214,7 @@
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -242,43 +243,44 @@
          */
         constructor(settings?: {
 
-            parent            ?: Prim2DBase, 
-            children          ?: Array<Prim2DBase>,
-            id                ?: string,
-            position          ?: Vector2,
-            x                 ?: number,
-            y                 ?: number,
-            rotation          ?: number,
-            scale             ?: number,
-            scaleX            ?: number,
-            scaleY            ?: number,
-            opacity           ?: number,
-            zOrder            ?: number, 
-            origin            ?: Vector2,
-            size              ?: Size,
-            width             ?: number,
-            height            ?: number,
-            subdivisions      ?: number,
-            fill              ?: IBrush2D | string,
-            border            ?: IBrush2D | string,
-            borderThickness   ?: number,
-            isVisible         ?: boolean,
-            isPickable        ?: boolean,
-            isContainer       ?: boolean,
-            childrenFlatZOrder?: boolean,
-            marginTop         ?: number | string,
-            marginLeft        ?: number | string,
-            marginRight       ?: number | string,
-            marginBottom      ?: number | string,
-            margin            ?: number | string,
-            marginHAlignment  ?: number,
-            marginVAlignment  ?: number,
-            marginAlignment   ?: string,
-            paddingTop        ?: number | string,
-            paddingLeft       ?: number | string,
-            paddingRight      ?: number | string,
-            paddingBottom     ?: number | string,
-            padding           ?: string,
+            parent                ?: Prim2DBase, 
+            children              ?: Array<Prim2DBase>,
+            id                    ?: string,
+            position              ?: Vector2,
+            x                     ?: number,
+            y                     ?: number,
+            rotation              ?: number,
+            scale                 ?: number,
+            scaleX                ?: number,
+            scaleY                ?: number,
+            dontInheritParentScale?: boolean,
+            opacity               ?: number,
+            zOrder                ?: number, 
+            origin                ?: Vector2,
+            size                  ?: Size,
+            width                 ?: number,
+            height                ?: number,
+            subdivisions          ?: number,
+            fill                  ?: IBrush2D | string,
+            border                ?: IBrush2D | string,
+            borderThickness       ?: number,
+            isVisible             ?: boolean,
+            isPickable            ?: boolean,
+            isContainer           ?: boolean,
+            childrenFlatZOrder    ?: boolean,
+            marginTop             ?: number | string,
+            marginLeft            ?: number | string,
+            marginRight           ?: number | string,
+            marginBottom          ?: number | string,
+            margin                ?: number | string,
+            marginHAlignment      ?: number,
+            marginVAlignment      ?: number,
+            marginAlignment       ?: string,
+            paddingTop            ?: number | string,
+            paddingLeft           ?: number | string,
+            paddingRight          ?: number | string,
+            paddingBottom         ?: number | string,
+            padding               ?: string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -383,7 +385,6 @@
             return renderCache;
         }
 
-
         protected createInstanceDataParts(): InstanceDataBase[] {
             var res = new Array<InstanceDataBase>();
             if (this.border) {
@@ -402,12 +403,14 @@
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
                 let d = <Ellipse2DInstanceData>part;
                 let size = this.actualSize;
-                d.properties = new Vector3(size.width, size.height, this.subdivisions);
+                let s = this.actualScale;
+                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
             }
             else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Ellipse2DInstanceData>part;
                 let size = this.actualSize;
-                d.properties = new Vector3(size.width, size.height, this.subdivisions);
+                let s = this.actualScale;
+                d.properties = new Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
             }
             return true;
         }
