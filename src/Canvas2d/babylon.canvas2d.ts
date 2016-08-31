@@ -57,6 +57,8 @@
             id?: string,
             children?: Array<Prim2DBase>,
             size?: Size,
+            designSize?: Size,
+            designUseHorizAxis?: boolean,
             isScreenSpace?: boolean,
             cachingStrategy?: number,
             enableInteraction?: boolean,
@@ -81,6 +83,8 @@
             this._updateLocalTransformCounter  = new PerfCounter();
             this._updateGlobalTransformCounter = new PerfCounter();
             this._boundingInfoRecomputeCounter = new PerfCounter();
+
+            this._cachedCanvasGroup = null;
 
             this._profileInfoText = null;
 
@@ -137,6 +141,8 @@
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new Size(0, 0);
+            this._designSize = settings.designSize || null;
+            this._designUseHorizAxis = settings.designUseHorizAxis === true;
             this._trackedGroups = new Array<Group2D>();
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new StringDictionary<MapTexture[]>();
@@ -1112,6 +1118,8 @@
         private _supprtInstancedArray: boolean;
         private _trackedGroups: Array<Group2D>;
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
+        private _designSize: Size;
+        private _designUseHorizAxis: boolean;
 
         public _renderingSize: Size;
 
@@ -1231,7 +1239,6 @@
             }
             this._renderingSize.height = newHeight;
 
-
             // If the canvas fit the rendering size and it changed, update
             if (renderingSizeChanged && this._fitRenderingDevice) {
                 this.size = this._renderingSize;
@@ -1241,6 +1248,17 @@
 
                 // Dirty the Layout at the Canvas level to recompute as the size changed
                 this._setLayoutDirty();
+            }
+
+            // If there's a design size, update the scale according to the renderingSize
+            if (this._designSize) {
+                let scale: number;
+                if (this._designUseHorizAxis) {
+                    scale = this._renderingSize.width / this._designSize.width;
+                } else {
+                    scale = this._renderingSize.height / this._designSize.height;
+                }
+                this.scale = scale;
             }
 
             var context = new PrepareRender2DContext();
@@ -1299,6 +1317,8 @@
             this._updateProfileCanvas();
         }
 
+        private static _unS = new Vector2(1, 1);
+
         /**
          * Internal method that allocate a cache for the given group.
          * Caching is made using a collection of MapTexture where many groups have their bitmap cache stored inside.
@@ -1307,11 +1327,21 @@
          */
         public _allocateGroupCache(group: Group2D, parent: Group2D, minSize?: Size, useMipMap: boolean = false, anisotropicLevel: number = 1): { node: PackedRect, texture: MapTexture, sprite: Sprite2D } {
 
-            let key = `${useMipMap?"MipMap":"NoMipMap"}_${anisotropicLevel}`;
+            let key = `${useMipMap ? "MipMap" : "NoMipMap"}_${anisotropicLevel}`;
+
+            let rd = group._renderableData;
+            let noResizeScale = rd._noResizeOnScale;
+            let isCanvas = parent == null;
+            let scale: Vector2;
+            if (noResizeScale) {
+                scale = isCanvas ? Canvas2D._unS : group.parent.actualScale;
+            } else {
+                scale = group.actualScale;
+            }
 
             // Determine size
             let size = group.actualSize;
-            size = new Size(Math.ceil(size.width), Math.ceil(size.height));
+            size = new Size(Math.ceil(size.width * scale.x), Math.ceil(size.height * scale.y));
             if (minSize) {
                 size.width = Math.max(minSize.width, size.width);
                 size.height = Math.max(minSize.height, size.height);
@@ -1357,16 +1387,18 @@
                 let node: PackedRect = res.node;
 
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
+
+                let sprite: Sprite2D;
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    let sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
+                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    let sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos });
+                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add((e, s) => {
@@ -1375,6 +1407,11 @@
                         }
                     });
                     res.sprite = sprite;
+                }
+                if (sprite && noResizeScale) {
+                    let relScale = isCanvas ? group.actualScale : group.actualScale.divide(group.parent.actualScale);
+                    sprite.scaleX = relScale.x;
+                    sprite.scaleY = relScale.y;
                 }
             }
             return res;
@@ -1650,6 +1687,8 @@
          *  - width: the width of the Canvas. you can alternatively use the size setting.
          *  - height: the height of the Canvas. you can alternatively use the size setting.
          *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
+         *  - designSize: if you want to set the canvas content based on fixed coordinates whatever the final canvas dimension would be, set this. For instance a designSize of 360*640 will give you the possibility to specify all the children element in this frame. The Canvas' true size will be the HTMLCanvas' size: for instance it could be 720*1280, then a uniform scale of 2 will be applied on the Canvas to keep the absolute coordinates working as expecting. If the ratios of the designSize and the true Canvas size are not the same, then the scale is computed following the designUseHorizAxis member by using either the size of the horizontal axis or the vertical axis.
+         *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
@@ -1675,7 +1714,10 @@
             width?: number,
             height?: number,
             size?: Size,
+            designSize?: Size,
+            designUseHorizAxis?: boolean,
             cachingStrategy?: number,
+            cacheBehavior?: number,
             enableInteraction?: boolean,
             isVisible?: boolean,
             backgroundRoundRadius?: number,
