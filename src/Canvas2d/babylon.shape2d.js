@@ -103,6 +103,9 @@ var BABYLON;
             }
             return cat;
         };
+        Shape2D.prototype.applyActualScaleOnTransform = function () {
+            return false;
+        };
         Shape2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;

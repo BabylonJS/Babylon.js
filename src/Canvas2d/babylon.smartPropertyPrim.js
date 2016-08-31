@@ -556,6 +556,8 @@ var BABYLON;
         SmartPropertyPrim.flagPrimInDirtyList = 0x0008000; // set if the primitive is in the primDirtyList
         SmartPropertyPrim.flagIsContainer = 0x0010000; // set if the primitive is a container
         SmartPropertyPrim.flagNeedRefresh = 0x0020000; // set if the primitive wasn't successful at refresh
+        SmartPropertyPrim.flagActualScaleDirty = 0x0040000; // set if the actualScale property needs to be recomputed
+        SmartPropertyPrim.flagDontInheritParentScale = 0x0080000; // set if the actualScale must not use its parent's scale to be computed
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);
