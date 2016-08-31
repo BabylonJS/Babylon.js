@@ -799,6 +799,9 @@ var BABYLON;
         };
         RenderablePrim2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
         };
+        RenderablePrim2D.prototype.applyActualScaleOnTransform = function () {
+            return true;
+        };
         RenderablePrim2D.prototype.refreshInstanceDataPart = function (part) {
             if (!this.isVisible) {
                 return false;
@@ -818,7 +821,8 @@ var BABYLON;
          */
         RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
             if (positionOffset === void 0) { positionOffset = null; }
-            var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
+            var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform); // Compute the transformation into the renderGroup's space
+            var rgScale = this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
@@ -833,11 +837,17 @@ var BABYLON;
             // So for X: 
             //  - tx.x = value * 2 / width: is to switch from [0, renderGroup.width] to [0, 2]
             //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1].
+            // At last we don't forget to apply the actualScale of the Render Group to tx[0] and ty[1] to propagate scaling correctly
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
+            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            if (!this.applyActualScaleOnTransform()) {
+                var las = this.actualScale;
+                tx.x /= las.x;
+                ty.y /= las.y;
+            }
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
@@ -856,6 +866,7 @@ var BABYLON;
             }
         };
         RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
+        RenderablePrim2D._uV = new BABYLON.Vector2(1, 1);
         __decorate([
             BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, function (pi) { return RenderablePrim2D.isAlphaTestProperty = pi; })
         ], RenderablePrim2D.prototype, "isAlphaTest", null);

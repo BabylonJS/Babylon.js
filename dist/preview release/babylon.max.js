@@ -20285,6 +20285,9 @@ var BABYLON;
                     var instance = mesh.createInstance(parsedInstance.name);
                     BABYLON.Tags.AddTagsTo(instance, parsedInstance.tags);
                     instance.position = BABYLON.Vector3.FromArray(parsedInstance.position);
+                    if (parsedInstance.parentId) {
+                        instance._waitingParentId = parsedInstance.parentId;
+                    }
                     if (parsedInstance.rotationQuaternion) {
                         instance.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedInstance.rotationQuaternion);
                     }
@@ -39326,6 +39329,8 @@ var BABYLON;
         SmartPropertyPrim.flagPrimInDirtyList = 0x0008000; // set if the primitive is in the primDirtyList
         SmartPropertyPrim.flagIsContainer = 0x0010000; // set if the primitive is a container
         SmartPropertyPrim.flagNeedRefresh = 0x0020000; // set if the primitive wasn't successful at refresh
+        SmartPropertyPrim.flagActualScaleDirty = 0x0040000; // set if the actualScale property needs to be recomputed
+        SmartPropertyPrim.flagDontInheritParentScale = 0x0080000; // set if the actualScale must not use its parent's scale to be computed
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);
@@ -40586,6 +40591,8 @@ var BABYLON;
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
+            this._actualOpacity = 0;
+            this._actualScale = BABYLON.Vector2.Zero();
             var isPickable = true;
             var isContainer = true;
             if (settings.isPickable !== undefined) {
@@ -40594,7 +40601,10 @@ var BABYLON;
             if (settings.isContainer !== undefined) {
                 isContainer = settings.isContainer;
             }
-            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0));
+            if (settings.dontInheritParentScale) {
+                this._setFlags(BABYLON.SmartPropertyPrim.flagDontInheritParentScale);
+            }
+            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0) | BABYLON.SmartPropertyPrim.flagActualScaleDirty);
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
             }
@@ -40997,6 +41007,8 @@ var BABYLON;
             },
             set: function (value) {
                 this._scale.x = this._scale.y = value;
+                this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                this._spreadActualScaleDirty();
             },
             enumerable: true,
             configurable: true
@@ -41222,6 +41234,8 @@ var BABYLON;
             },
             set: function (value) {
                 this._scale.x = value;
+                this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                this._spreadActualScaleDirty();
             },
             enumerable: true,
             configurable: true
@@ -41232,11 +41246,65 @@ var BABYLON;
             },
             set: function (value) {
                 this._scale.y = value;
+                this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                this._spreadActualScaleDirty();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Prim2DBase.prototype._spreadActualScaleDirty = function () {
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                child._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                child._spreadActualScaleDirty();
+            }
+        };
+        Object.defineProperty(Prim2DBase.prototype, "actualScale", {
+            /**
+             * Returns the actual scale of this Primitive, the value is computed from the scale property of this primitive, multiplied by the actualScale of its parent one (if any). The Vector2 object returned contains the scale for both X and Y axis
+             */
+            get: function () {
+                if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagActualScaleDirty)) {
+                    var cur = this._isFlagSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? null : this.parent;
+                    var sx = this.scaleX;
+                    var sy = this.scaleY;
+                    while (cur) {
+                        sx *= cur.scaleX;
+                        sy *= cur.scaleY;
+                        cur = cur._isFlagSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? null : cur.parent;
+                    }
+                    this._actualScale.copyFromFloats(sx, sy);
+                    this._clearFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                }
+                return this._actualScale;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "actualScaleX", {
+            /**
+             * Get the actual Scale of the X axis, shortcut for this.actualScale.x
+             */
+            get: function () {
+                return this.actualScale.x;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "actualScaleY", {
+            /**
+             * Get the actual Scale of the Y axis, shortcut for this.actualScale.y
+             */
+            get: function () {
+                return this.actualScale.y;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Prim2DBase.prototype, "actualOpacity", {
+            /**
+             * Get the actual opacity level, this property is computed from the opacity property, multiplied by the actualOpacity of its parent (if any)
+             */
             get: function () {
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagActualOpacityDirty)) {
                     var cur = this.parent;
@@ -43381,6 +43449,9 @@ var BABYLON;
         };
         RenderablePrim2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
         };
+        RenderablePrim2D.prototype.applyActualScaleOnTransform = function () {
+            return true;
+        };
         RenderablePrim2D.prototype.refreshInstanceDataPart = function (part) {
             if (!this.isVisible) {
                 return false;
@@ -43400,7 +43471,8 @@ var BABYLON;
          */
         RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
             if (positionOffset === void 0) { positionOffset = null; }
-            var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);
+            var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform); // Compute the transformation into the renderGroup's space
+            var rgScale = this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
@@ -43415,11 +43487,17 @@ var BABYLON;
             // So for X: 
             //  - tx.x = value * 2 / width: is to switch from [0, renderGroup.width] to [0, 2]
             //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1].
+            // At last we don't forget to apply the actualScale of the Render Group to tx[0] and ty[1] to propagate scaling correctly
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
+            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            if (!this.applyActualScaleOnTransform()) {
+                var las = this.actualScale;
+                tx.x /= las.x;
+                ty.y /= las.y;
+            }
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
@@ -43438,6 +43516,7 @@ var BABYLON;
             }
         };
         RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
+        RenderablePrim2D._uV = new BABYLON.Vector2(1, 1);
         __decorate([
             BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, function (pi) { return RenderablePrim2D.isAlphaTestProperty = pi; })
         ], RenderablePrim2D.prototype, "isAlphaTest", null);
@@ -43551,6 +43630,9 @@ var BABYLON;
                 }
             }
             return cat;
+        };
+        Shape2D.prototype.applyActualScaleOnTransform = function () {
+            return false;
         };
         Shape2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
@@ -43754,6 +43836,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -43792,11 +43875,16 @@ var BABYLON;
                 this.owner._registerTrackedNode(this);
             }
             this._cacheBehavior = (settings.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
+            var rd = this._renderableData;
+            if (rd) {
+                rd._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;
+            }
             this.size = size;
             this._viewportPosition = BABYLON.Vector2.Zero();
+            this._viewportSize = BABYLON.Size.Zero();
         }
         Group2D._createCachedCanvasGroup = function (owner) {
-            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: BABYLON.Vector2.Zero(), origin: BABYLON.Vector2.Zero(), size: null, isVisible: true, isPickable: false });
+            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: BABYLON.Vector2.Zero(), origin: BABYLON.Vector2.Zero(), size: null, isVisible: true, isPickable: false, dontInheritParentScale: true });
             return g;
         };
         Group2D.prototype.applyCachedTexture = function (vertexData, material) {
@@ -43882,7 +43970,7 @@ var BABYLON;
                 this._trackedNode = null;
             }
             if (this._renderableData) {
-                this._renderableData.dispose(this.owner.engine);
+                this._renderableData.dispose(this.owner);
                 this._renderableData = null;
             }
             return true;
@@ -43954,6 +44042,7 @@ var BABYLON;
         Object.defineProperty(Group2D.prototype, "cacheBehavior", {
             /**
              * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.
+             * GROUPCACHEBEHAVIOR_NORESIZEONSCALE can also be set if you set it at creation time.
              * It is critical to understand than you HAVE TO play with this behavior in order to achieve a good performance/memory ratio. Caching all groups would certainly be the worst strategy of all.
              */
             get: function () {
@@ -44020,39 +44109,29 @@ var BABYLON;
                 sortedDirtyList = rd._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
                 this.updateCachedStatesOf(sortedDirtyList, true);
             }
+            var s = this.actualSize;
+            var a = this.actualScale;
+            var sw = Math.ceil(s.width * a.x);
+            var sh = Math.ceil(s.height * a.y);
             // Setup the size of the rendering viewport
             // In non cache mode, we're rendering directly to the rendering canvas, in this case we have to detect if the canvas size changed since the previous iteration, if it's the case all primitives must be prepared again because their transformation must be recompute
             if (!this._isCachedGroup) {
                 // Compute the WebGL viewport's location/size
                 var t = this._globalTransform.getTranslation();
-                var s = this.actualSize.clone();
                 var rs = this.owner._renderingSize;
-                s.height = Math.min(s.height, rs.height - t.y);
-                s.width = Math.min(s.width, rs.width - t.x);
+                sh = Math.min(sh, rs.height - t.y);
+                sw = Math.min(sw, rs.width - t.x);
                 var x = t.x;
                 var y = t.y;
                 // The viewport where we're rendering must be the size of the canvas if this one fit in the rendering screen or clipped to the screen dimensions if needed
                 this._viewportPosition.x = x;
                 this._viewportPosition.y = y;
-                var vw = s.width;
-                var vh = s.height;
-                if (!this._viewportSize) {
-                    this._viewportSize = new BABYLON.Size(vw, vh);
-                }
-                else {
-                    if (this._viewportSize.width !== vw || this._viewportSize.height !== vh) {
-                        context.forceRefreshPrimitive = true;
-                    }
-                    this._viewportSize.width = vw;
-                    this._viewportSize.height = vh;
-                }
             }
-            else {
-                var newSize = this.actualSize.clone();
-                if (!newSize.equals(this._viewportSize)) {
-                    context.forceRefreshPrimitive = true;
-                }
-                this._viewportSize = newSize;
+            // For a cachedGroup we also check of the group's actualSize is changing, if it's the case then the rendering zone will be change so we also have to dirty all primitives to prepare them again.
+            if (this._viewportSize.width !== sw || this._viewportSize.height !== sh) {
+                context.forceRefreshPrimitive = true;
+                this._viewportSize.width = sw;
+                this._viewportSize.height = sh;
             }
             if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 // If the group is cached, set the dirty flag to true because of the incoming changes
@@ -44396,8 +44475,17 @@ var BABYLON;
             var curHeight;
             var rd = this._renderableData;
             var rs = rd._renderingScale;
-            Group2D._s.width = Math.ceil(this.actualSize.width * rs);
-            Group2D._s.height = Math.ceil(this.actualSize.height * rs);
+            var noResizeScale = rd._noResizeOnScale;
+            var isCanvas = this.parent == null;
+            var scale;
+            if (noResizeScale) {
+                scale = isCanvas ? Group2D._uV : this.parent.actualScale;
+            }
+            else {
+                scale = this.actualScale;
+            }
+            Group2D._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
+            Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
             var sizeChanged = !Group2D._s.equals(rd._cacheSize);
             if (rd._cacheNode) {
                 var size = rd._cacheNode.contentSize;
@@ -44424,7 +44512,6 @@ var BABYLON;
             if (sizeChanged) {
                 rd._cacheSize.copyFrom(Group2D._s);
                 rd._cacheNodeUVs = rd._cacheNode.getUVsForCustomSize(rd._cacheSize);
-                this.scale = this._renderableData._renderingScale;
                 if (rd._cacheNodeUVsChangedObservable && rd._cacheNodeUVsChangedObservable.hasObservers()) {
                     rd._cacheNodeUVsChangedObservable.notifyObservers(rd._cacheNodeUVs);
                 }
@@ -44504,7 +44591,7 @@ var BABYLON;
                 }
             }
             else if (canvasStrat === BABYLON.Canvas2D.CACHESTRATEGY_ALLGROUPS) {
-                var gcb = this.cacheBehavior;
+                var gcb = this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK;
                 if ((gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE) || (gcb === Group2D.GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP)) {
                     this._isRenderableGroup = gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE;
                     this._isCachedGroup = false;
@@ -44522,6 +44609,7 @@ var BABYLON;
             }
             // If the group is tagged as renderable we add it to the renderable tree
             if (this._isCachedGroup) {
+                this._renderableData._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;
                 var cur = this.parent;
                 while (cur) {
                     if (cur instanceof Group2D && cur._isRenderableGroup) {
@@ -44548,6 +44636,12 @@ var BABYLON;
          * When used, the group's content will be cached in the nearest cached parent group/canvas
          */
         Group2D.GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP = 2;
+        /**
+         * You can specify this behavior to any cached Group2D to indicate that you don't want the cached content to be resized when the Group's actualScale is changing. It will draw the content stretched or shrink which is faster than a resize. This setting is obviously for performance consideration, don't use it if you want the best rendering quality
+         */
+        Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE = 0x100;
+        Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK = 0xFF;
+        Group2D._uV = new BABYLON.Vector2(1, 1);
         Group2D._s = BABYLON.Size.Zero();
         __decorate([
             BABYLON.instanceLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return Group2D.sizeProperty = pi; }, false, true)
@@ -44579,8 +44673,10 @@ var BABYLON;
             this._cacheSize = BABYLON.Size.Zero();
             this._useMipMap = false;
             this._anisotropicLevel = 1;
+            this._noResizeOnScale = false;
         }
-        RenderableGroupData.prototype.dispose = function (engine) {
+        RenderableGroupData.prototype.dispose = function (owner) {
+            var engine = owner.engine;
             if (this._cacheRenderSprite) {
                 this._cacheRenderSprite.dispose();
                 this._cacheRenderSprite = null;
@@ -44807,6 +44903,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y settings can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -45058,12 +45155,14 @@ var BABYLON;
             if (part.id === BABYLON.Shape2D.SHAPE2D_BORDERPARTID) {
                 var d = part;
                 var size = this.actualSize;
-                d.properties = new BABYLON.Vector3(size.width, size.height, this.roundRadius || 0);
+                var s = this.actualScale;
+                d.properties = new BABYLON.Vector3(size.width * s.x, size.height * s.y, this.roundRadius || 0);
             }
             else if (part.id === BABYLON.Shape2D.SHAPE2D_FILLPARTID) {
                 var d = part;
                 var size = this.actualSize;
-                d.properties = new BABYLON.Vector3(size.width, size.height, this.roundRadius || 0);
+                var s = this.actualScale;
+                d.properties = new BABYLON.Vector3(size.width * s.x, size.height * s.y, this.roundRadius || 0);
             }
             return true;
         };
@@ -45251,6 +45350,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -45411,12 +45511,14 @@ var BABYLON;
             if (part.id === BABYLON.Shape2D.SHAPE2D_BORDERPARTID) {
                 var d = part;
                 var size = this.actualSize;
-                d.properties = new BABYLON.Vector3(size.width, size.height, this.subdivisions);
+                var s = this.actualScale;
+                d.properties = new BABYLON.Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
             }
             else if (part.id === BABYLON.Shape2D.SHAPE2D_FILLPARTID) {
                 var d = part;
                 var size = this.actualSize;
-                d.properties = new BABYLON.Vector3(size.width, size.height, this.subdivisions);
+                var s = this.actualScale;
+                d.properties = new BABYLON.Vector3(size.width * s.x, size.height * s.y, this.subdivisions);
             }
             return true;
         };
@@ -45593,6 +45695,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -46034,6 +46137,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -46504,6 +46608,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -47439,6 +47544,9 @@ var BABYLON;
             }
             return res;
         };
+        Lines2D.prototype.applyActualScaleOnTransform = function () {
+            return true;
+        };
         Lines2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
                 return false;
@@ -47581,6 +47689,7 @@ var BABYLON;
             this._updateLocalTransformCounter = new BABYLON.PerfCounter();
             this._updateGlobalTransformCounter = new BABYLON.PerfCounter();
             this._boundingInfoRecomputeCounter = new BABYLON.PerfCounter();
+            this._cachedCanvasGroup = null;
             this._profileInfoText = null;
             BABYLON.Prim2DBase._isCanvasInit = false;
             if (!settings) {
@@ -47628,6 +47737,8 @@ var BABYLON;
             this._scene = scene;
             this._engine = engine;
             this._renderingSize = new BABYLON.Size(0, 0);
+            this._designSize = settings.designSize || null;
+            this._designUseHorizAxis = settings.designUseHorizAxis === true;
             this._trackedGroups = new Array();
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new BABYLON.StringDictionary();
@@ -48556,6 +48667,17 @@ var BABYLON;
                 // Dirty the Layout at the Canvas level to recompute as the size changed
                 this._setLayoutDirty();
             }
+            // If there's a design size, update the scale according to the renderingSize
+            if (this._designSize) {
+                var scale;
+                if (this._designUseHorizAxis) {
+                    scale = this._renderingSize.width / this._designSize.width;
+                }
+                else {
+                    scale = this._renderingSize.height / this._designSize.height;
+                }
+                this.scale = scale;
+            }
             var context = new BABYLON.PrepareRender2DContext();
             ++this._globalTransformProcessStep;
             this.updateCachedStates(false);
@@ -48606,9 +48728,19 @@ var BABYLON;
             if (useMipMap === void 0) { useMipMap = false; }
             if (anisotropicLevel === void 0) { anisotropicLevel = 1; }
             var key = (useMipMap ? "MipMap" : "NoMipMap") + "_" + anisotropicLevel;
+            var rd = group._renderableData;
+            var noResizeScale = rd._noResizeOnScale;
+            var isCanvas = parent == null;
+            var scale;
+            if (noResizeScale) {
+                scale = isCanvas ? Canvas2D._unS : group.parent.actualScale;
+            }
+            else {
+                scale = group.actualScale;
+            }
             // Determine size
             var size = group.actualSize;
-            size = new BABYLON.Size(Math.ceil(size.width), Math.ceil(size.height));
+            size = new BABYLON.Size(Math.ceil(size.width * scale.x), Math.ceil(size.height * scale.y));
             if (minSize) {
                 size.width = Math.max(minSize.width, size.width);
                 size.height = Math.max(minSize.height, size.height);
@@ -48647,14 +48779,15 @@ var BABYLON;
             if (group !== this || this._isScreenSpace) {
                 var node = res.node;
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
+                var sprite;
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
                     this._cachedCanvasGroup = BABYLON.Group2D._createCachedCanvasGroup(this);
-                    var sprite = new BABYLON.Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
+                    sprite = new BABYLON.Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
                     sprite.zOrder = 1;
                     sprite.origin = BABYLON.Vector2.Zero();
                 }
                 else {
-                    var sprite = new BABYLON.Sprite2D(map, { parent: parent, id: "__cachedSpriteOfGroup__" + group.id, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos });
+                    sprite = new BABYLON.Sprite2D(map, { parent: parent, id: "__cachedSpriteOfGroup__" + group.id, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add(function (e, s) {
@@ -48663,6 +48796,11 @@ var BABYLON;
                         }
                     });
                     res.sprite = sprite;
+                }
+                if (sprite && noResizeScale) {
+                    var relScale = isCanvas ? group.actualScale : group.actualScale.divide(group.parent.actualScale);
+                    sprite.scaleX = relScale.x;
+                    sprite.scaleY = relScale.y;
                 }
             }
             return res;
@@ -48809,6 +48947,7 @@ var BABYLON;
         Canvas2D._v = BABYLON.Vector3.Zero(); // Must stay zero
         Canvas2D._m = BABYLON.Matrix.Identity();
         Canvas2D._mI = BABYLON.Matrix.Identity(); // Must stay identity
+        Canvas2D._unS = new BABYLON.Vector2(1, 1);
         /**
          * Define the default size used for both the width and height of a MapTexture to allocate.
          * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
@@ -48924,6 +49063,8 @@ var BABYLON;
          *  - width: the width of the Canvas. you can alternatively use the size setting.
          *  - height: the height of the Canvas. you can alternatively use the size setting.
          *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
+         *  - designSize: if you want to set the canvas content based on fixed coordinates whatever the final canvas dimension would be, set this. For instance a designSize of 360*640 will give you the possibility to specify all the children element in this frame. The Canvas' true size will be the HTMLCanvas' size: for instance it could be 720*1280, then a uniform scale of 2 will be applied on the Canvas to keep the absolute coordinates working as expecting. If the ratios of the designSize and the true Canvas size are not the same, then the scale is computed following the designUseHorizAxis member by using either the size of the horizontal axis or the vertical axis.
+         *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.

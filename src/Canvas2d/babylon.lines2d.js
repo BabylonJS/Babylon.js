@@ -177,6 +177,7 @@ var BABYLON;
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -1111,6 +1112,9 @@ var BABYLON;
                 res.push(new Lines2DInstanceData(BABYLON.Shape2D.SHAPE2D_FILLPARTID));
             }
             return res;
+        };
+        Lines2D.prototype.applyActualScaleOnTransform = function () {
+            return true;
         };
         Lines2D.prototype.refreshInstanceDataPart = function (part) {
             if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {

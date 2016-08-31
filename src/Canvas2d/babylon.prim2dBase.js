@@ -1234,6 +1234,8 @@ var BABYLON;
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
+            this._actualOpacity = 0;
+            this._actualScale = BABYLON.Vector2.Zero();
             var isPickable = true;
             var isContainer = true;
             if (settings.isPickable !== undefined) {
@@ -1242,7 +1244,10 @@ var BABYLON;
             if (settings.isContainer !== undefined) {
                 isContainer = settings.isContainer;
             }
-            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0));
+            if (settings.dontInheritParentScale) {
+                this._setFlags(BABYLON.SmartPropertyPrim.flagDontInheritParentScale);
+            }
+            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0) | BABYLON.SmartPropertyPrim.flagActualScaleDirty);
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
             }
@@ -1645,6 +1650,8 @@ var BABYLON;
             },
             set: function (value) {
                 this._scale.x = this._scale.y = value;
+                this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                this._spreadActualScaleDirty();
             },
             enumerable: true,
             configurable: true
@@ -1870,6 +1877,8 @@ var BABYLON;
             },
             set: function (value) {
                 this._scale.x = value;
+                this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                this._spreadActualScaleDirty();
             },
             enumerable: true,
             configurable: true
@@ -1880,11 +1889,65 @@ var BABYLON;
             },
             set: function (value) {
                 this._scale.y = value;
+                this._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                this._spreadActualScaleDirty();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Prim2DBase.prototype._spreadActualScaleDirty = function () {
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                child._setFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                child._spreadActualScaleDirty();
+            }
+        };
+        Object.defineProperty(Prim2DBase.prototype, "actualScale", {
+            /**
+             * Returns the actual scale of this Primitive, the value is computed from the scale property of this primitive, multiplied by the actualScale of its parent one (if any). The Vector2 object returned contains the scale for both X and Y axis
+             */
+            get: function () {
+                if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagActualScaleDirty)) {
+                    var cur = this._isFlagSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? null : this.parent;
+                    var sx = this.scaleX;
+                    var sy = this.scaleY;
+                    while (cur) {
+                        sx *= cur.scaleX;
+                        sy *= cur.scaleY;
+                        cur = cur._isFlagSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? null : cur.parent;
+                    }
+                    this._actualScale.copyFromFloats(sx, sy);
+                    this._clearFlags(BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+                }
+                return this._actualScale;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "actualScaleX", {
+            /**
+             * Get the actual Scale of the X axis, shortcut for this.actualScale.x
+             */
+            get: function () {
+                return this.actualScale.x;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "actualScaleY", {
+            /**
+             * Get the actual Scale of the Y axis, shortcut for this.actualScale.y
+             */
+            get: function () {
+                return this.actualScale.y;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Prim2DBase.prototype, "actualOpacity", {
+            /**
+             * Get the actual opacity level, this property is computed from the opacity property, multiplied by the actualOpacity of its parent (if any)
+             */
             get: function () {
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagActualOpacityDirty)) {
                     var cur = this.parent;

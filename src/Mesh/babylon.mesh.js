@@ -1668,6 +1668,9 @@ var BABYLON;
                     var instance = mesh.createInstance(parsedInstance.name);
                     BABYLON.Tags.AddTagsTo(instance, parsedInstance.tags);
                     instance.position = BABYLON.Vector3.FromArray(parsedInstance.position);
+                    if (parsedInstance.parentId) {
+                        instance._waitingParentId = parsedInstance.parentId;
+                    }
                     if (parsedInstance.rotationQuaternion) {
                         instance.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedInstance.rotationQuaternion);
                     }
