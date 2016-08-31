@@ -126,6 +126,10 @@
             return cat;
         }
 
+        protected applyActualScaleOnTransform(): boolean {
+            return false;
+        }
+
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
             if (!super.refreshInstanceDataPart(part)) {
                 return false;

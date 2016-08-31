@@ -633,6 +633,8 @@
         public static flagPrimInDirtyList        = 0x0008000;    // set if the primitive is in the primDirtyList
         public static flagIsContainer            = 0x0010000;    // set if the primitive is a container
         public static flagNeedRefresh            = 0x0020000;    // set if the primitive wasn't successful at refresh
+        public static flagActualScaleDirty       = 0x0040000;    // set if the actualScale property needs to be recomputed
+        public static flagDontInheritParentScale = 0x0080000;    // set if the actualScale must not use its parent's scale to be computed
 
         private   _flags             : number;
         private   _externalData      : StringDictionary<Object>;
