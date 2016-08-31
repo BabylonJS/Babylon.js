@@ -1294,37 +1294,38 @@
         public  static _bigInt = Math.pow(2, 30);
 
         constructor(settings: {
-            parent            ?: Prim2DBase,
-            id                ?: string,
-            children          ?: Array<Prim2DBase>,
-            position          ?: Vector2,
-            x                 ?: number,
-            y                 ?: number,
-            rotation          ?: number,
-            scale             ?: number,
-            scaleX            ?: number,
-            scaleY            ?: number,
-            opacity           ?: number,
-            zOrder            ?: number, 
-            origin            ?: Vector2,
-            layoutEngine      ?: LayoutEngineBase | string,
-            isVisible         ?: boolean,
-            isPickable        ?: boolean,
-            isContainer       ?: boolean,
-            childrenFlatZOrder?: boolean,
-            marginTop         ?: number | string,
-            marginLeft        ?: number | string,
-            marginRight       ?: number | string,
-            marginBottom      ?: number | string,
-            margin            ?: number | string,
-            marginHAlignment  ?: number,
-            marginVAlignment  ?: number,
-            marginAlignment   ?: string,
-            paddingTop        ?: number | string,
-            paddingLeft       ?: number | string,
-            paddingRight      ?: number | string,
-            paddingBottom     ?: number | string,
-            padding           ?: string,
+            parent                  ?: Prim2DBase,
+            id                      ?: string,
+            children                ?: Array<Prim2DBase>,
+            position                ?: Vector2,
+            x                       ?: number,
+            y                       ?: number,
+            rotation                ?: number,
+            scale                   ?: number,
+            scaleX                  ?: number,
+            scaleY                  ?: number,
+            dontInheritParentScale  ?: boolean,
+            opacity                 ?: number,
+            zOrder                  ?: number, 
+            origin                  ?: Vector2,
+            layoutEngine            ?: LayoutEngineBase | string,
+            isVisible               ?: boolean,
+            isPickable              ?: boolean,
+            isContainer             ?: boolean,
+            childrenFlatZOrder      ?: boolean,
+            marginTop               ?: number | string,
+            marginLeft              ?: number | string,
+            marginRight             ?: number | string,
+            marginBottom            ?: number | string,
+            margin                  ?: number | string,
+            marginHAlignment        ?: number,
+            marginVAlignment        ?: number,
+            marginAlignment         ?: string,
+            paddingTop              ?: number | string,
+            paddingLeft             ?: number | string,
+            paddingRight            ?: number | string,
+            paddingBottom           ?: number | string,
+            padding                 ?: string,
         }) {
 
             // Avoid checking every time if the object exists
@@ -1391,6 +1392,8 @@
             this._zOrder = 0;
             this._zMax = 0;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
+            this._actualOpacity = 0;
+            this._actualScale = Vector2.Zero();
             let isPickable = true;
             let isContainer = true;
             if (settings.isPickable !== undefined) {
@@ -1399,7 +1402,10 @@
             if (settings.isContainer !== undefined) {
                 isContainer = settings.isContainer;
             }
-            this._setFlags((isPickable ? SmartPropertyPrim.flagIsPickable : 0) | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? SmartPropertyPrim.flagIsContainer : 0));
+            if (settings.dontInheritParentScale) {
+                this._setFlags(SmartPropertyPrim.flagDontInheritParentScale);
+            }
+            this._setFlags((isPickable ? SmartPropertyPrim.flagIsPickable : 0) | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? SmartPropertyPrim.flagIsContainer : 0) | SmartPropertyPrim.flagActualScaleDirty);
 
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
@@ -1884,6 +1890,8 @@
          */
         public set scale(value: number) {
             this._scale.x = this._scale.y = value;
+            this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
+            this._spreadActualScaleDirty();
         }
 
         public get scale(): number {
@@ -2109,6 +2117,8 @@
          */
         public set scaleX(value: number) {
             this._scale.x = value;
+            this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
+            this._spreadActualScaleDirty();
         }
 
         public get scaleX(): number {
@@ -2121,12 +2131,58 @@
          */
         public set scaleY(value: number) {
             this._scale.y = value;
+            this._setFlags(SmartPropertyPrim.flagActualScaleDirty);
+            this._spreadActualScaleDirty();
         }
 
         public get scaleY(): number {
             return this._scale.y;
         }
 
+        private _spreadActualScaleDirty() {
+            for (let child of this._children) {
+                child._setFlags(SmartPropertyPrim.flagActualScaleDirty);
+                child._spreadActualScaleDirty();
+            }
+        }
+
+        /**
+         * Returns the actual scale of this Primitive, the value is computed from the scale property of this primitive, multiplied by the actualScale of its parent one (if any). The Vector2 object returned contains the scale for both X and Y axis
+         */
+        public get actualScale(): Vector2 {
+            if (this._isFlagSet(SmartPropertyPrim.flagActualScaleDirty)) {
+                let cur = this._isFlagSet(SmartPropertyPrim.flagDontInheritParentScale) ? null : this.parent;
+                let sx = this.scaleX;
+                let sy = this.scaleY;
+                while (cur) {
+                    sx *= cur.scaleX;
+                    sy *= cur.scaleY;
+                    cur = cur._isFlagSet(SmartPropertyPrim.flagDontInheritParentScale) ? null : cur.parent;
+                }
+
+                this._actualScale.copyFromFloats(sx, sy);
+                this._clearFlags(SmartPropertyPrim.flagActualScaleDirty);
+            }
+            return this._actualScale;
+        }
+
+        /**
+         * Get the actual Scale of the X axis, shortcut for this.actualScale.x
+         */
+        public get actualScaleX(): number {
+            return this.actualScale.x;
+        }
+
+        /**
+         * Get the actual Scale of the Y axis, shortcut for this.actualScale.y
+         */
+        public get actualScaleY(): number {
+            return this.actualScale.y;
+        }
+
+        /**
+         * Get the actual opacity level, this property is computed from the opacity property, multiplied by the actualOpacity of its parent (if any)
+         */
         public get actualOpacity(): number {
             if (this._isFlagSet(SmartPropertyPrim.flagActualOpacityDirty)) {
                 let cur = this.parent;
@@ -3208,6 +3264,7 @@
         private _origin: Vector2;
         protected _opacity: number;
         private _actualOpacity: number;
+        private _actualScale : Vector2;
 
         // Stores the step of the parent for which the current global transform was computed
         // If the parent has a new step, it means this prim's global transform must be updated

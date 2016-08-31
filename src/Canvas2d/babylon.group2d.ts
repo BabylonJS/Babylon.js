@@ -27,6 +27,13 @@
         public static GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP = 2;
 
         /**
+         * You can specify this behavior to any cached Group2D to indicate that you don't want the cached content to be resized when the Group's actualScale is changing. It will draw the content stretched or shrink which is faster than a resize. This setting is obviously for performance consideration, don't use it if you want the best rendering quality
+         */
+        public static GROUPCACHEBEHAVIOR_NORESIZEONSCALE = 0x100;
+
+        private static GROUPCACHEBEHAVIOR_OPTIONMASK = 0xFF;
+
+        /**
          * Create an Logical or Renderable Group.
          * @param settings a combination of settings, possible ones are
          * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
@@ -35,6 +42,7 @@
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
@@ -61,41 +69,42 @@
          */
         constructor(settings?: {
 
-            parent            ?: Prim2DBase,
-            children          ?: Array<Prim2DBase>,
-            id                ?: string,
-            position          ?: Vector2,
-            x                 ?: number,
-            y                 ?: number,
-            scale             ?: number,
-            scaleX            ?: number,
-            scaleY            ?: number,
-            trackNode         ?: Node,
-            opacity           ?: number,
-            zOrder            ?: number, 
-            origin            ?: Vector2,
-            size              ?: Size,
-            width             ?: number,
-            height            ?: number,
-            cacheBehavior     ?: number,
-            layoutEngine      ?: LayoutEngineBase | string,
-            isVisible         ?: boolean,
-            isPickable        ?: boolean,
-            isContainer       ?: boolean,
-            childrenFlatZOrder?: boolean,
-            marginTop         ?: number | string,
-            marginLeft        ?: number | string,
-            marginRight       ?: number | string,
-            marginBottom      ?: number | string,
-            margin            ?: number | string,
-            marginHAlignment  ?: number,
-            marginVAlignment  ?: number,
-            marginAlignment   ?: string,
-            paddingTop        ?: number | string,
-            paddingLeft       ?: number | string,
-            paddingRight      ?: number | string,
-            paddingBottom     ?: number | string,
-            padding           ?: string,
+            parent                  ?: Prim2DBase,
+            children                ?: Array<Prim2DBase>,
+            id                      ?: string,
+            position                ?: Vector2,
+            x                       ?: number,
+            y                       ?: number,
+            scale                   ?: number,
+            scaleX                  ?: number,
+            scaleY                  ?: number,
+            dontInheritParentScale  ?: boolean,
+            trackNode               ?: Node,
+            opacity                 ?: number,
+            zOrder                  ?: number, 
+            origin                  ?: Vector2,
+            size                    ?: Size,
+            width                   ?: number,
+            height                  ?: number,
+            cacheBehavior           ?: number,
+            layoutEngine            ?: LayoutEngineBase | string,
+            isVisible               ?: boolean,
+            isPickable              ?: boolean,
+            isContainer             ?: boolean,
+            childrenFlatZOrder      ?: boolean,
+            marginTop               ?: number | string,
+            marginLeft              ?: number | string,
+            marginRight             ?: number | string,
+            marginBottom            ?: number | string,
+            margin                  ?: number | string,
+            marginHAlignment        ?: number,
+            marginVAlignment        ?: number,
+            marginAlignment         ?: string,
+            paddingTop              ?: number | string,
+            paddingLeft             ?: number | string,
+            paddingRight            ?: number | string,
+            paddingBottom           ?: number | string,
+            padding                 ?: string,
 
         }) {
             if (settings == null) {
@@ -114,12 +123,17 @@
             }
 
             this._cacheBehavior = (settings.cacheBehavior == null) ? Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY : settings.cacheBehavior;
+            let rd = this._renderableData;
+            if (rd) {
+                rd._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;                
+            }
             this.size = size;
             this._viewportPosition = Vector2.Zero();
+            this._viewportSize = Size.Zero();
         }
 
         static _createCachedCanvasGroup(owner: Canvas2D): Group2D {
-            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size: null, isVisible: true, isPickable: false });
+            var g = new Group2D({ parent: owner, id: "__cachedCanvasGroup__", position: Vector2.Zero(), origin: Vector2.Zero(), size: null, isVisible: true, isPickable: false, dontInheritParentScale: true });
             return g;
 
         }
@@ -201,7 +215,7 @@
             }
 
             if (this._renderableData) {
-                this._renderableData.dispose(this.owner.engine);
+                this._renderableData.dispose(this.owner);
                 this._renderableData = null;
             }
 
@@ -271,6 +285,7 @@
 
         /**
          * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.
+         * GROUPCACHEBEHAVIOR_NORESIZEONSCALE can also be set if you set it at creation time.
          * It is critical to understand than you HAVE TO play with this behavior in order to achieve a good performance/memory ratio. Caching all groups would certainly be the worst strategy of all.
          */
         public get cacheBehavior(): number {
@@ -341,42 +356,32 @@
                 this.updateCachedStatesOf(sortedDirtyList, true);
             }
 
+            let s = this.actualSize;
+            let a = this.actualScale;
+            let sw = Math.ceil(s.width * a.x);
+            let sh = Math.ceil(s.height * a.y);
+
             // Setup the size of the rendering viewport
             // In non cache mode, we're rendering directly to the rendering canvas, in this case we have to detect if the canvas size changed since the previous iteration, if it's the case all primitives must be prepared again because their transformation must be recompute
             if (!this._isCachedGroup) {
                 // Compute the WebGL viewport's location/size
                 let t = this._globalTransform.getTranslation();
-                let s = this.actualSize.clone();
                 let rs = this.owner._renderingSize;
-                s.height = Math.min(s.height, rs.height - t.y);
-                s.width = Math.min(s.width, rs.width - t.x);
+                sh = Math.min(sh, rs.height - t.y);
+                sw = Math.min(sw, rs.width - t.x);
                 let x = t.x;
                 let y = t.y;
 
                 // The viewport where we're rendering must be the size of the canvas if this one fit in the rendering screen or clipped to the screen dimensions if needed
                 this._viewportPosition.x = x;
                 this._viewportPosition.y = y;
-                let vw = s.width;
-                let vh = s.height;
-
-                if (!this._viewportSize) {
-                    this._viewportSize = new Size(vw, vh);
-                } else {
-                    if (this._viewportSize.width !== vw || this._viewportSize.height !== vh) {
-                        context.forceRefreshPrimitive = true;
-                    }
-                    this._viewportSize.width = vw;
-                    this._viewportSize.height = vh;
-                }
             }
 
             // For a cachedGroup we also check of the group's actualSize is changing, if it's the case then the rendering zone will be change so we also have to dirty all primitives to prepare them again.
-            else {
-                let newSize = this.actualSize.clone();
-                if (!newSize.equals(this._viewportSize)) {
-                    context.forceRefreshPrimitive = true;
-                }
-                this._viewportSize = newSize;
+            if (this._viewportSize.width !== sw || this._viewportSize.height !== sh) {
+                context.forceRefreshPrimitive = true;
+                this._viewportSize.width = sw;
+                this._viewportSize.height = sh;
             }
 
             if ((rd._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
@@ -787,6 +792,7 @@
             this._renderableData._renderingScale = scale;
         }
 
+        private static _uV = new Vector2(1, 1);
         private static _s = Size.Zero();
         private _bindCacheTarget() {
             let curWidth: number;
@@ -794,8 +800,17 @@
             let rd = this._renderableData;
             let rs = rd._renderingScale;
 
-            Group2D._s.width  = Math.ceil(this.actualSize.width * rs);
-            Group2D._s.height = Math.ceil(this.actualSize.height * rs);
+            let noResizeScale = rd._noResizeOnScale;
+            let isCanvas = this.parent == null;
+            let scale: Vector2;
+            if (noResizeScale) {
+                scale = isCanvas ? Group2D._uV: this.parent.actualScale;
+            } else {
+                scale = this.actualScale;
+            }
+
+            Group2D._s.width  = Math.ceil(this.actualSize.width * scale.x * rs);
+            Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
 
             let sizeChanged = !Group2D._s.equals(rd._cacheSize);
 
@@ -827,7 +842,7 @@
             if (sizeChanged) {
                 rd._cacheSize.copyFrom(Group2D._s);
                 rd._cacheNodeUVs = rd._cacheNode.getUVsForCustomSize(rd._cacheSize);
-                this.scale = this._renderableData._renderingScale;
+
                 if (rd._cacheNodeUVsChangedObservable && rd._cacheNodeUVsChangedObservable.hasObservers()) {
                     rd._cacheNodeUVsChangedObservable.notifyObservers(rd._cacheNodeUVs);
                 }
@@ -914,7 +929,7 @@
 
             // All Group cached mode, all groups are renderable/cached, including the Canvas, groups with the behavior DONTCACHE are renderable/not cached, groups with CACHEINPARENT are logical ones
             else if (canvasStrat === Canvas2D.CACHESTRATEGY_ALLGROUPS) {
-                var gcb = this.cacheBehavior;
+                var gcb = this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK;
                 if ((gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE) || (gcb === Group2D.GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP)) {
                     this._isRenderableGroup = gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE;
                     this._isCachedGroup = false;
@@ -936,6 +951,7 @@
 
             // If the group is tagged as renderable we add it to the renderable tree
             if (this._isCachedGroup) {
+                this._renderableData._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;
                 let cur = this.parent;
                 while (cur) {
                     if (cur instanceof Group2D && cur._isRenderableGroup) {
@@ -978,9 +994,12 @@
             this._cacheSize = Size.Zero();
             this._useMipMap = false;
             this._anisotropicLevel = 1;
+            this._noResizeOnScale = false;
         }
 
-        dispose(engine: Engine) {
+        dispose(owner: Canvas2D) {
+            let engine = owner.engine;
+
             if (this._cacheRenderSprite) {
                 this._cacheRenderSprite.dispose();
                 this._cacheRenderSprite = null;
@@ -1056,6 +1075,7 @@
         _cacheSize: Size;
         _useMipMap: boolean;
         _anisotropicLevel: number;
+        _noResizeOnScale: boolean;
 
         _transparentListChanged: boolean;
         _transparentPrimitives: Array<TransparentPrimitiveInfo>;
