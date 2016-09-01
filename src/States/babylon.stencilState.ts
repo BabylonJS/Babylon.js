@@ -133,13 +133,13 @@
             this._stencilTest = false;
             this._stencilMask = 0xFF;
 
-            this._stencilFunc = WebGLRenderingContext.ALWAYS;
+            this._stencilFunc = 0x0207; //WebGLRenderingContext.ALWAYS;
             this._stencilFuncRef = 1;
             this._stencilFuncMask = 0xFF;
 
-            this._stencilOpStencilFail = WebGLRenderingContext.KEEP;
-            this._stencilOpDepthFail = WebGLRenderingContext.KEEP;
-            this._stencilOpStencilDepthPass = WebGLRenderingContext.REPLACE;
+            this._stencilOpStencilFail = 0x1E00; //WebGLRenderingContext.KEEP;
+            this._stencilOpDepthFail = 0x1E00; //WebGLRenderingContext.KEEP;
+            this._stencilOpStencilDepthPass = 0x1E01; //WebGLRenderingContext.REPLACE;
 
             this._isStencilTestDirty = true;
             this._isStencilMaskDirty = true;
