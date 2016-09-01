@@ -635,6 +635,7 @@
         public static flagNeedRefresh            = 0x0020000;    // set if the primitive wasn't successful at refresh
         public static flagActualScaleDirty       = 0x0040000;    // set if the actualScale property needs to be recomputed
         public static flagDontInheritParentScale = 0x0080000;    // set if the actualScale must not use its parent's scale to be computed
+        public static flagGlobalTransformDirty   = 0x0100000;    // set if the global transform must be recomputed due to a local transform change
 
         private   _flags             : number;
         private   _externalData      : StringDictionary<Object>;

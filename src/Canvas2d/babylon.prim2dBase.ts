@@ -2794,6 +2794,7 @@
                 }
 
                 this.clearPropertiesDirty(tflags);
+                this._setFlags(SmartPropertyPrim.flagGlobalTransformDirty);
                 return true;
             }
             return false;
@@ -2892,7 +2893,7 @@
                 let parentDirty = (this._parent != null) ? (this._parent._globalTransformStep !== this._parentTransformStep) : false;
 
                 // Check if we have to update the globalTransform
-                if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged) {
+                if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged || this._areSomeFlagsSet(SmartPropertyPrim.flagGlobalTransformDirty)) {
                     let globalTransform = this._parent ? this._parent._globalTransform : null;
 
                     let localTransform: Matrix;
@@ -2907,6 +2908,7 @@
 
                     this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
                     this._parentTransformStep = this._parent ? this._parent._globalTransformStep : 0;
+                    this._clearFlags(SmartPropertyPrim.flagGlobalTransformDirty);
                 }
                 this._globalTransformProcessStep = this.owner._globalTransformProcessStep;
             }
