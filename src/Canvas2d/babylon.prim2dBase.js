@@ -2535,6 +2535,7 @@ var BABYLON;
                     Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, this._localTransform);
                 }
                 this.clearPropertiesDirty(tflags);
+                this._setFlags(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
                 return true;
             }
             return false;
@@ -2614,7 +2615,7 @@ var BABYLON;
                 // Check if there are changes in the parent that will force us to update the global matrix
                 var parentDirty = (this._parent != null) ? (this._parent._globalTransformStep !== this._parentTransformStep) : false;
                 // Check if we have to update the globalTransform
-                if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged) {
+                if (!this._globalTransform || localDirty || parentDirty || parentPaddingChanged || this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty)) {
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
                     var localTransform;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
@@ -2625,6 +2626,7 @@ var BABYLON;
                     this._invGlobalTransform = BABYLON.Matrix.Invert(this._globalTransform);
                     this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
                     this._parentTransformStep = this._parent ? this._parent._globalTransformStep : 0;
+                    this._clearFlags(BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
                 }
                 this._globalTransformProcessStep = this.owner._globalTransformProcessStep;
             }
