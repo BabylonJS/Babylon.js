@@ -170,7 +170,7 @@ class BakingRecipe:
         self.bakeQuality = mesh.data.bakeQuality # for lossy compression formats
         self.forceBaking = mesh.data.forceBaking # in mesh, but not currently exposed
         self.usePNG      = mesh.data.usePNG      # in mesh, but not currently exposed
-        
+
         # initialize all members
         self.needsBaking      = self.forceBaking
         self.diffuseBaking    = self.forceBaking
@@ -410,7 +410,7 @@ class BakedMaterial(Material):
 
         # changes to cycles & smart_project occurred in 2.77; need to know what we are running
         bVersion = blenderMajorMinorVersion()
-        
+
         # any baking already took in the values. Do not want to apply them again, but want shadows to show.
         # These are the default values from StandardMaterials
         self.ambient = Color((0, 0, 0))
@@ -451,18 +451,17 @@ class BakedMaterial(Material):
                 bpy.ops.uv.smart_project(angle_limit = 66.0, island_margin = 0.0, user_area_weight = 1.0, use_aspect = True)
             else:
                 bpy.ops.uv.smart_project(angle_limit = 66.0, island_margin = 0.0, user_area_weight = 1.0, use_aspect = True, stretch_to_bounds = True)
-            
-            # syntax for using unwrap enstead of smar project    
-#            bpy.ops.uv.unwrap(margin = 1.0) # defaulting on all 
+
+            # syntax for using unwrap enstead of smart project
+#            bpy.ops.uv.unwrap(margin = 1.0) # defaulting on all
             uvName = 'BakingUV'  # issues with cycles when not done this way
         else:
             uvName = uv.name
 
         format = 'PNG' if recipe.usePNG else 'JPEG'
-        
+
         # create a temporary image & link it to the UV/Image Editor so bake_image works
-        bpy.data.images.new(name = mesh.name + '_BJS_BAKE', width = recipe.bakeSize, height = recipe.bakeSize, alpha = False, float_buffer = False)
-        image = bpy.data.images[mesh.name + '_BJS_BAKE']
+        image = bpy.data.images.new(name = mesh.name + '_BJS_BAKE', width = recipe.bakeSize, height = recipe.bakeSize, alpha = recipe.usePNG, float_buffer = False)
         image.file_format = format
         image.mapping = 'UV' # default value
 
