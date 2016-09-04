@@ -1,0 +1,53 @@
+{
+  "author": {
+    "name": "David CATUHE"
+  },
+  "bugs": {
+    "url": "https://github.com/BabylonJS/Babylon.js/issues"
+  },
+  "contributors": [
+    {
+      "name": "Enrico Stara"
+    }
+  ],
+  "description": "Babylon.js is a JavaScript 3D engine based on webgl (+typings)",
+  "directories": {},
+  "engines": {
+    "node": "*"
+  },
+  "files": [
+    "dist/babylon.2.4.d.ts",
+    "dist/babylon.2.4.js",
+    "dist/babylon.2.4.max.js",
+    "dist/babylon.2.4.noworker.js",
+    "dist/babylon.2.4.core.js",
+    "dist/Oimo.js",
+    "package.json"
+  ],
+  "homepage": "https://github.com/BabylonJS/Babylon.js#readme",
+  "keywords": [
+    "3D",
+    "javascript",
+    "html5",
+    "webgl",
+    "typescript"
+  ],
+  "license": "Apache-2.0",
+  "main": "dist/babylon.2.4.js",
+  "maintainers": [
+    {
+      "name": "babylonjs",
+      "email": "contact@babylonjs.com"
+    }
+  ],
+  "name": "babylonjs",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BabylonJS/Babylon.js.git"
+  },
+  "scripts": {},
+  "version": "2.4.1",
+  "typings": "dist/babylon.2.4.d.ts"
+}
