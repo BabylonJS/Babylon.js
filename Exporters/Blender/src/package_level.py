@@ -58,7 +58,7 @@ def getNameSpace(filepathMinusExtension):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def getLayer(obj):
     # empties / nodes do not have layers
-    if not hasattr(object, 'layers') : return -1;
+    if not hasattr(obj, 'layers') : return -1;
     for idx, layer in enumerate(obj.layers):
         if layer:
             return idx
