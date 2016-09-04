@@ -728,7 +728,7 @@ bpy.types.Mesh.usePNG = bpy.props.BoolProperty(
 )
 bpy.types.Mesh.bakeSize = bpy.props.IntProperty(
     name='Texture Size',
-    description='',
+    description='Final dimensions of texture(s).  Not required to be a power of 2, but recommended.',
     default = 1024
 )
 bpy.types.Mesh.bakeQuality = bpy.props.IntProperty(
