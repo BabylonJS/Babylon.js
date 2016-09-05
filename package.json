@@ -5,12 +5,7 @@
   "bugs": {
     "url": "https://github.com/BabylonJS/Babylon.js/issues"
   },
-  "contributors": [
-    {
-      "name": "Enrico Stara"
-    }
-  ],
-  "description": "Babylon.js is a JavaScript 3D engine based on webgl (+typings)",
+  "description": "Babylon.js is a JavaScript 3D engine based on webgl",
   "directories": {},
   "engines": {
     "node": "*"
