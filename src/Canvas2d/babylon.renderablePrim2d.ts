@@ -359,7 +359,7 @@
          * The setter should be used only by implementers of new primitive type.
          */
         public get isTransparent(): boolean {
-            return (this._opacity<1) || this._shouldUseAlphaFromTexture() || this._isPrimTransparent();
+            return (this.actualOpacity<1) || this._shouldUseAlphaFromTexture() || this._isPrimTransparent();
         }
 
         public get renderMode(): number {
