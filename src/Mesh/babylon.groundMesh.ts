@@ -4,7 +4,7 @@
 
         private _worldInverse = new Matrix();
         private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
-        public _subdivisions: number;
+        
         public _subdivisionsX: number;
         public _subdivisionsY: number;
         public _width: number;
@@ -19,7 +19,7 @@
         }
 
         public get subdivisions(): number {
-            return this._subdivisions;
+            return Math.min(this._subdivisionsX, this._subdivisionsY);
         }
 
         public get subdivisionsX(): number {
@@ -31,8 +31,9 @@
         }
 
         public optimize(chunksCount: number, octreeBlocksSize = 32): void {
-            this._subdivisions = chunksCount;
-            this.subdivide(this._subdivisions);
+            this._subdivisionsX = chunksCount;
+            this._subdivisionsY = chunksCount;
+            this.subdivide(chunksCount);
             this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
         }
 
@@ -113,8 +114,8 @@
         // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
         private _getFacetAt(x: number, z: number): Vector4 {
             // retrieve col and row from x, z coordinates in the ground local system
-            var subdivisionsX = this._subdivisionsX || this._subdivisions;
-            var subdivisionsY = this._subdivisionsY || this._subdivisions;
+            var subdivisionsX = this._subdivisionsX;
+            var subdivisionsY = this._subdivisionsY;
             var col = Math.floor((x + this._maxX) * this._subdivisionsX / this._width);
             var row = Math.floor(-(z + this._maxZ) * this._subdivisionsY / this._height + this._subdivisionsY);
             var quad = this._heightQuads[row * this._subdivisionsX + col];
@@ -133,8 +134,8 @@
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
         // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
         private _initHeightQuads(): void {
-            var subdivisionsX = this._subdivisionsX || this._subdivisions;
-            var subdivisionsY = this._subdivisionsY || this._subdivisions;
+            var subdivisionsX = this._subdivisionsX;
+            var subdivisionsY = this._subdivisionsY;
             this._heightQuads = new Array();
             for (var row = 0; row < subdivisionsY; row++) {
                 for (var col = 0; col < subdivisionsX; col++) {
@@ -167,8 +168,8 @@
             var d1 = 0;     // facet plane equation : ax + by + cz + d = 0
             var d2 = 0;
 
-            var subdivisionsX = this._subdivisionsX || this._subdivisions;
-            var subdivisionsY = this._subdivisionsY || this._subdivisions;
+            var subdivisionsX = this._subdivisionsX;
+            var subdivisionsY = this._subdivisionsY;
 
             for (var row = 0; row < subdivisionsY; row++) {
                 for (var col = 0; col < subdivisionsX; col++) {
