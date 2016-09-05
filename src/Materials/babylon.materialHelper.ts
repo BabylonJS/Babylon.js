@@ -5,6 +5,7 @@
             var needNormals = false;
             var needRebuild = false;
             var needShadows = false;
+            var lightmapExcluded = false;
 
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
@@ -103,6 +104,22 @@
                     }
                 }
 
+                //lightmapExcluded
+                if (defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
+                    needRebuild = true;
+                }
+                defines["LIGHTMAPEXCLUDED" + lightIndex] = light.lightmapExcluded;
+                if (light.lightmapExcluded) {
+                    lightmapExcluded = true;
+                }
+
+                //lightmapNoSpecular
+                if (defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
+                    needRebuild = true;
+                }
+                defines["LIGHTMAPNOSPECULAR" + lightIndex] = light.lightmapNoSpecular;
+
+
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
                     break;
@@ -115,6 +132,13 @@
                 }
 
                 defines["SHADOWFULLFLOAT"] = true;
+            }
+
+            if (defines["LIGHTMAPEXCLUDED"] === undefined) {
+                needRebuild = true;
+            }
+            if (lightmapExcluded) {
+                defines["LIGHTMAPEXCLUDED"] = true;
             }
 
             if (needRebuild) {
