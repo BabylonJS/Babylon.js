@@ -42,6 +42,12 @@
         @serialize()
         public excludeWithLayerMask = 0;
 
+        @serialize()
+        public lightmapExcluded = false;
+
+        @serialize()
+        public lightmapNoSpecular = false;
+
         // PBR Properties.
         @serialize()
         public radius = 0.00001;

@@ -232,6 +232,10 @@ void main(void) {
 #endif
 	float shadow = 1.;
 
+#ifdef LIGHTMAP
+	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
+#endif
+
 #include<lightFragment>[0..maxSimultaneousLights]
 
 	// Refraction
@@ -387,14 +391,15 @@ void main(void) {
 	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + refractionColor, alpha);
 #endif
 
+//Old lightmap calculation method
 #ifdef LIGHTMAP
-	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
-
-#ifdef USELIGHTMAPASSHADOWMAP
-	color.rgb *= lightmapColor;
-#else
-	color.rgb += lightmapColor;
-#endif
+    #ifndef LIGHTMAPEXCLUDED
+        #ifdef USELIGHTMAPASSHADOWMAP
+            color.rgb *= lightmapColor;
+        #else
+            color.rgb += lightmapColor;
+        #endif
+    #endif
 #endif
 
 #include<logDepthFragment>
