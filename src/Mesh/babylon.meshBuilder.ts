@@ -586,7 +586,6 @@
         public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number, updatable?: boolean }, scene: any): Mesh {
             var ground = new GroundMesh(name, scene);
             ground._setReady(false);
-            ground._subdivisions = options.subdivisions || 1;
             ground._subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
             ground._subdivisionsY = options.subdivisionsY || options.subdivisions || 1;
             ground._width = options.width || 1;
@@ -653,7 +652,8 @@
             var onReady = options.onReady;
 
             var ground = new GroundMesh(name, scene);
-            ground._subdivisions = subdivisions;
+            ground._subdivisionsX = subdivisions;
+            ground._subdivisionsY = subdivisions;
             ground._width = width;
             ground._height = height;
             ground._maxX = ground._width / 2.0;
