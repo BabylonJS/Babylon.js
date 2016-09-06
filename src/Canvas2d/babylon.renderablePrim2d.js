@@ -339,7 +339,7 @@ var BABYLON;
         });
         Object.defineProperty(RenderablePrim2D.prototype, "isTransparent", {
             get: function () {
-                return (this._opacity < 1) || this._shouldUseAlphaFromTexture() || this._isPrimTransparent();
+                return (this.actualOpacity < 1) || this._shouldUseAlphaFromTexture() || this._isPrimTransparent();
             },
             enumerable: true,
             configurable: true
