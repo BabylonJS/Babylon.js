@@ -48,8 +48,6 @@ varying vec4 vColor;
 #include<fogVertexDeclaration>
 #include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
 
-#include<logDepthDeclaration>
-
 // Water uniforms
 uniform mat4 worldReflectionViewProjection;
 uniform vec2 windDirection;
@@ -63,8 +61,6 @@ uniform float waveSpeed;
 varying vec3 vPosition;
 varying vec3 vRefractionMapTexCoord;
 varying vec3 vReflectionMapTexCoord;
-
-
 
 void main(void) {
 
@@ -138,7 +134,4 @@ void main(void) {
 	vReflectionMapTexCoord.y = 0.5 * (worldPos.w + worldPos.y);
 	vReflectionMapTexCoord.z = worldPos.w;
 #endif
-
-#include<logDepthVertex>
-
 }

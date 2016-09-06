@@ -18,8 +18,6 @@ module BABYLON {
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public SPECULARTERM = false;
-        public LOGARITHMICDEPTH = false;
-
 
         constructor() {
             super();
@@ -108,10 +106,8 @@ module BABYLON {
 
         private _defines = new WaterMaterialDefines();
         private _cachedDefines = new WaterMaterialDefines();
-
-        private _useLogarithmicDepth: boolean;
-
-        /**
+		
+		/**
 		* Constructor
 		*/
 		constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
@@ -120,16 +116,7 @@ module BABYLON {
 			// Create render targets
 			this._createRenderTargets(scene, renderTargetSize);
         }
-
-        @serialize()
-        public get useLogarithmicDepth(): boolean {
-            return this._useLogarithmicDepth;
-        }
-
-        public set useLogarithmicDepth(value: boolean) {
-            this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
-        }
-
+		
         // Get / Set
         public get refractionTexture(): RenderTargetTexture {
             return this._refractionRTT;
@@ -241,10 +228,6 @@ module BABYLON {
                 this._defines.POINTSIZE = true;
             }
 
-            if (this.useLogarithmicDepth) {
-                this._defines.LOGARITHMICDEPTH = true;
-            }
-
             // Fog
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
@@ -301,10 +284,6 @@ module BABYLON {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                if (this._defines.LOGARITHMICDEPTH) {
-                    fallbacks.addFallback(0, "LOGARITHMICDEPTH");
-                }
-
                 MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
              
                 if (this._defines.NUM_BONE_INFLUENCERS > 0) {
@@ -341,8 +320,6 @@ module BABYLON {
                     "vNormalInfos", 
                     "mBones",
                     "vClipPlane", "normalMatrix",
-                    "logarithmicDepthConstant",
-
                     // Water
                     "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
                     "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "colorBlendFactor", "waveSpeed"
@@ -426,10 +403,7 @@ module BABYLON {
 
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-
-            // Log. depth
-            MaterialHelper.BindLogDepth(this._defines, this._effect, scene);
-
+            
             // Water
             if (StandardMaterial.ReflectionTextureEnabled) {
                 this._effect.setTexture("refractionSampler", this._refractionRTT);

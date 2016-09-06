@@ -1,7 +1,3 @@
-#ifdef LOGARITHMICDEPTH
-#extension GL_EXT_frag_depth : enable
-#endif
-
 precision highp float;
 
 // Constants
@@ -55,7 +51,6 @@ varying vec3 vReflectionMapTexCoord;
 varying vec3 vPosition;
 
 #include<clipPlaneFragmentDeclaration>
-#include<logDepthDeclaration>
 
 // Fog
 #include<fogFragmentDeclaration>
@@ -156,7 +151,6 @@ void main(void) {
 	// Composition
 	vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
 
-#include<logDepthFragment>
 #include<fogFragment>
 	
 	gl_FragColor = color;
