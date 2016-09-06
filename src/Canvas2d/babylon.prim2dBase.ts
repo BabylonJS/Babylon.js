@@ -2748,6 +2748,8 @@
         protected _spreadActualOpacityChanged() {
             for (let child of this._children) {
                 child._setFlags(SmartPropertyPrim.flagActualOpacityDirty);
+                child._updateRenderMode();
+                child.onPrimBecomesDirty();
                 child._spreadActualOpacityChanged();
             }
         }
