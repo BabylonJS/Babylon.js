@@ -2501,6 +2501,8 @@ var BABYLON;
             for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                 var child = _a[_i];
                 child._setFlags(BABYLON.SmartPropertyPrim.flagActualOpacityDirty);
+                child._updateRenderMode();
+                child.onPrimBecomesDirty();
                 child._spreadActualOpacityChanged();
             }
         };
