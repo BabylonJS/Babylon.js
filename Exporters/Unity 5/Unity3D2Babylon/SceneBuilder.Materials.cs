@@ -88,7 +88,6 @@ namespace Unity3D2Babylon
         private void CopyTexture(string texturePath, Texture2D texture2D, BabylonTexture babylonTexture, bool isLightmap = false)
         {
             bool needToDelete = false;
-            var useJPG = !texture2D.alphaIsTransparency;
 
             // Convert unsupported file extensions
             if (texturePath.EndsWith(".psd") || texturePath.EndsWith(".tif") || texturePath.EndsWith(".exr"))
@@ -112,11 +111,8 @@ namespace Unity3D2Babylon
                     textureImporter.grayscaleToAlpha = false;
 
                     AssetDatabase.ImportAsset(texturePath);
-
-                    texturePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(texturePath));
-                    var extension = useJPG ? ".jpg" : ".png";
-                    texturePath = texturePath.Replace(".psd", extension).Replace(".tif", extension).Replace(".exr", extension);
-
+                    
+                    var usePNG = texture2D.alphaIsTransparency;
                     var tempTexture = new Texture2D(texture2D.width, texture2D.height, TextureFormat.ARGB32, false);
 
                     if (isLightmap)
@@ -130,12 +126,22 @@ namespace Unity3D2Babylon
                         }
                         tempTexture.SetPixels(pixels);
                     }
-                    else {
+                    else
+                    {
+                        Color[] pixels = texture2D.GetPixels(0, 0, texture2D.width, texture2D.height);
+                        for (int index = 0; index < pixels.Length; index++)
+                        {
+                            usePNG |= pixels[index].a <= 0.99999f;
+                        }
+                        
                         tempTexture.SetPixels32(texture2D.GetPixels32());
                     }
                     tempTexture.Apply();
 
-                    File.WriteAllBytes(texturePath, useJPG ? tempTexture.EncodeToJPG() : tempTexture.EncodeToPNG());
+                    texturePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(texturePath));
+                    var extension = usePNG ? ".png": ".jpg";
+                    texturePath = texturePath.Replace(".psd", extension).Replace(".tif", extension).Replace(".exr", extension);
+                    File.WriteAllBytes(texturePath, usePNG ? tempTexture.EncodeToPNG() : tempTexture.EncodeToJPG());
 
                     needToDelete = true;
 
@@ -153,6 +159,14 @@ namespace Unity3D2Babylon
                 {
                     Debug.LogException(ex);
                 }
+            }
+            else if (texture2D.alphaIsTransparency || texturePath.EndsWith(".png"))
+            {
+                babylonTexture.hasAlpha = true;
+            }
+            else
+            {
+                babylonTexture.hasAlpha = false;
             }
 
             var textureName = Path.GetFileName(texturePath);
@@ -594,8 +608,6 @@ namespace Unity3D2Babylon
             var texture2D = texture as Texture2D;
             if (texture2D)
             {
-                babylonTexture.hasAlpha = texture2D.alphaIsTransparency;
-
                 CopyTexture(texturePath, texture2D, babylonTexture, isLightmap);
             }
             else
