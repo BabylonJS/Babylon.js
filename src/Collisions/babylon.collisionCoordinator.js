@@ -271,3 +271,4 @@ var BABYLON;
     }());
     BABYLON.CollisionCoordinatorLegacy = CollisionCoordinatorLegacy;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.collisionCoordinator.js.map

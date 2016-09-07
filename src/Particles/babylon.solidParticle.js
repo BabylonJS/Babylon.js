@@ -53,3 +53,4 @@ var BABYLON;
     }());
     BABYLON.ModelShape = ModelShape;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.solidParticle.js.map

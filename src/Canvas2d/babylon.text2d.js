@@ -451,3 +451,4 @@ var BABYLON;
     }(BABYLON.RenderablePrim2D));
     BABYLON.Text2D = Text2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.text2d.js.map

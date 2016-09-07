@@ -131,3 +131,4 @@ var BABYLON;
     }());
     BABYLON.CameraInputsManager = CameraInputsManager;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.cameraInputsManager.js.map

@@ -232,3 +232,4 @@ var BABYLON;
     }(BABYLON.PostProcessRenderPipeline));
     BABYLON.StandardRenderingPipeline = StandardRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.standardRenderingPipeline.js.map

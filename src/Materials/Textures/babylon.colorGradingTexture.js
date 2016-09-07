@@ -210,3 +210,4 @@ var BABYLON;
     }(BABYLON.BaseTexture));
     BABYLON.ColorGradingTexture = ColorGradingTexture;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.colorGradingTexture.js.map

@@ -37,3 +37,4 @@ var BABYLON;
     }(BABYLON.ArcRotateCamera));
     BABYLON.VRDeviceOrientationArcRotateCamera = VRDeviceOrientationArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.vrDeviceOrientationCamera.js.map

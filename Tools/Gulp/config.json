@@ -11,11 +11,11 @@
   "core": {
     "typescript": [
       "../../src/**/*.ts",
-      "!../../src/**/*.d.ts",
-      "../../lib.d.ts"
+      "!../../src/**/*.d.ts"
     ],
     "files": [
       "../../src/Math/babylon.math.js",
+      "../../src/babylon.mixins.js",
       "../../src/Tools/babylon.decorators.js",
       "../../src/Tools/babylon.observable.js",
       "../../src/Tools/babylon.database.js",

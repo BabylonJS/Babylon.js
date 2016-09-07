@@ -80,3 +80,4 @@ var BABYLON;
     }());
     BABYLON.Buffer = Buffer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.buffer.js.map

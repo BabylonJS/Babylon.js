@@ -295,3 +295,4 @@ var BABYLON;
     }());
     BABYLON.VirtualJoystick = VirtualJoystick;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.virtualJoystick.js.map

@@ -880,3 +880,4 @@ var BABYLON;
     }(BABYLON.Prim2DBase));
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.renderablePrim2d.js.map

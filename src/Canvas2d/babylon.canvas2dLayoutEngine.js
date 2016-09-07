@@ -172,3 +172,4 @@ var BABYLON;
     }(LayoutEngineBase));
     BABYLON.StackPanelLayoutEngine = StackPanelLayoutEngine;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.canvas2dLayoutEngine.js.map

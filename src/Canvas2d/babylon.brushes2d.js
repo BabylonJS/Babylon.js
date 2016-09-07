@@ -210,3 +210,4 @@ var BABYLON;
     }(LockableBase));
     BABYLON.GradientColorBrush2D = GradientColorBrush2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.brushes2d.js.map

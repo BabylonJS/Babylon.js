@@ -209,3 +209,4 @@ var BABYLON;
     }());
     BABYLON.BoundingInfo2D = BoundingInfo2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.bounding2d.js.map

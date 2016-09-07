@@ -165,3 +165,4 @@ var BABYLON;
     }(MotorEnabledJoint));
     BABYLON.Hinge2Joint = Hinge2Joint;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.physicsJoint.js.map

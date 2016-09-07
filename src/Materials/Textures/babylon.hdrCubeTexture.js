@@ -446,3 +446,4 @@ var BABYLON;
     }(BABYLON.BaseTexture));
     BABYLON.HDRCubeTexture = HDRCubeTexture;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.hdrCubeTexture.js.map

@@ -49,3 +49,4 @@ var BABYLON;
     }(BABYLON.Light));
     BABYLON.HemisphericLight = HemisphericLight;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.hemisphericLight.js.map

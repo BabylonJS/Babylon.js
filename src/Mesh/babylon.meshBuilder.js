@@ -1043,3 +1043,4 @@ var BABYLON;
     }());
     BABYLON.MeshBuilder = MeshBuilder;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.meshBuilder.js.map
