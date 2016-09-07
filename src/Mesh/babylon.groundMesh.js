@@ -14,15 +14,30 @@ var BABYLON;
         }
         Object.defineProperty(GroundMesh.prototype, "subdivisions", {
             get: function () {
-                return this._subdivisions;
+                return Math.min(this._subdivisionsX, this._subdivisionsY);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GroundMesh.prototype, "subdivisionsX", {
+            get: function () {
+                return this._subdivisionsX;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GroundMesh.prototype, "subdivisionsY", {
+            get: function () {
+                return this._subdivisionsY;
             },
             enumerable: true,
             configurable: true
         });
         GroundMesh.prototype.optimize = function (chunksCount, octreeBlocksSize) {
             if (octreeBlocksSize === void 0) { octreeBlocksSize = 32; }
-            this._subdivisions = chunksCount;
-            this.subdivide(this._subdivisions);
+            this._subdivisionsX = chunksCount;
+            this._subdivisionsY = chunksCount;
+            this.subdivide(chunksCount);
             this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
         };
         /**
@@ -98,9 +113,11 @@ var BABYLON;
         // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
         GroundMesh.prototype._getFacetAt = function (x, z) {
             // retrieve col and row from x, z coordinates in the ground local system
-            var col = Math.floor((x + this._maxX) * this._subdivisions / this._width);
-            var row = Math.floor(-(z + this._maxZ) * this._subdivisions / this._height + this._subdivisions);
-            var quad = this._heightQuads[row * this._subdivisions + col];
+            var subdivisionsX = this._subdivisionsX;
+            var subdivisionsY = this._subdivisionsY;
+            var col = Math.floor((x + this._maxX) * this._subdivisionsX / this._width);
+            var row = Math.floor(-(z + this._maxZ) * this._subdivisionsY / this._height + this._subdivisionsY);
+            var quad = this._heightQuads[row * this._subdivisionsX + col];
             var facet;
             if (z < quad.slope.x * x + quad.slope.y) {
                 facet = quad.facet1;
@@ -116,11 +133,13 @@ var BABYLON;
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
         // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
         GroundMesh.prototype._initHeightQuads = function () {
+            var subdivisionsX = this._subdivisionsX;
+            var subdivisionsY = this._subdivisionsY;
             this._heightQuads = new Array();
-            for (var row = 0; row < this._subdivisions; row++) {
-                for (var col = 0; col < this._subdivisions; col++) {
+            for (var row = 0; row < subdivisionsY; row++) {
+                for (var col = 0; col < subdivisionsX; col++) {
                     var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0, 0, 0, 0), facet2: new BABYLON.Vector4(0, 0, 0, 0) };
-                    this._heightQuads[row * this._subdivisions + col] = quad;
+                    this._heightQuads[row * subdivisionsX + col] = quad;
                 }
             }
         };
@@ -146,11 +165,13 @@ var BABYLON;
             var h = 0;
             var d1 = 0; // facet plane equation : ax + by + cz + d = 0
             var d2 = 0;
-            for (var row = 0; row < this._subdivisions; row++) {
-                for (var col = 0; col < this._subdivisions; col++) {
+            var subdivisionsX = this._subdivisionsX;
+            var subdivisionsY = this._subdivisionsY;
+            for (var row = 0; row < subdivisionsY; row++) {
+                for (var col = 0; col < subdivisionsX; col++) {
                     i = col * 3;
-                    j = row * (this._subdivisions + 1) * 3;
-                    k = (row + 1) * (this._subdivisions + 1) * 3;
+                    j = row * (subdivisionsX + 1) * 3;
+                    k = (row + 1) * (subdivisionsX + 1) * 3;
                     v1.x = positions[j + i];
                     v1.y = positions[j + i + 1];
                     v1.z = positions[j + i + 2];
@@ -180,7 +201,7 @@ var BABYLON;
                     norm2.normalize();
                     d1 = -(norm1.x * v1.x + norm1.y * v1.y + norm1.z * v1.z);
                     d2 = -(norm2.x * v2.x + norm2.y * v2.y + norm2.z * v2.z);
-                    var quad = this._heightQuads[row * this._subdivisions + col];
+                    var quad = this._heightQuads[row * subdivisionsX + col];
                     quad.slope.copyFromFloats(cd, h);
                     quad.facet1.copyFromFloats(norm1.x, norm1.y, norm1.z, d1);
                     quad.facet2.copyFromFloats(norm2.x, norm2.y, norm2.z, d2);
@@ -188,6 +209,6 @@ var BABYLON;
             }
         };
         return GroundMesh;
-    })(BABYLON.Mesh);
+    }(BABYLON.Mesh));
     BABYLON.GroundMesh = GroundMesh;
 })(BABYLON || (BABYLON = {}));
