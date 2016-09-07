@@ -228,8 +228,14 @@ var BABYLON;
                     break;
                 case BABYLON.Camera.RIG_MODE_VR:
                 case BABYLON.Camera.RIG_MODE_WEBVR:
-                    camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
-                    camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                    if (camLeft.rotationQuaternion) {
+                        camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                        camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
+                    }
+                    else {
+                        camLeft.rotation.copyFrom(this.rotation);
+                        camRight.rotation.copyFrom(this.rotation);
+                    }
                     camLeft.position.copyFrom(this.position);
                     camRight.position.copyFrom(this.position);
                     break;
@@ -258,6 +264,6 @@ var BABYLON;
             BABYLON.serializeAsMeshReference("lockedTargetId")
         ], TargetCamera.prototype, "lockedTarget", void 0);
         return TargetCamera;
-    })(BABYLON.Camera);
+    }(BABYLON.Camera));
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));
