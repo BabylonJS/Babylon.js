@@ -12,7 +12,7 @@
     "typescript": [
       "../../src/**/*.ts",
       "!../../src/**/*.d.ts",
-      "../../external references/**/*.d.ts"
+      "../../lib.d.ts"
     ],
     "files": [
       "../../src/Math/babylon.math.js",
