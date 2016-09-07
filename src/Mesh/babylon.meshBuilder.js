@@ -1040,7 +1040,6 @@ var BABYLON;
             return extrudedGeneric;
         };
         return MeshBuilder;
-    }());
+    })();
     BABYLON.MeshBuilder = MeshBuilder;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.meshBuilder.js.map

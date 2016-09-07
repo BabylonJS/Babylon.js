@@ -77,7 +77,6 @@ var BABYLON;
             }
         };
         return Buffer;
-    }());
+    })();
     BABYLON.Buffer = Buffer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.buffer.js.map

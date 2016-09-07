@@ -135,7 +135,6 @@ var BABYLON;
             this.onBeforeRenderObservable.clear();
         };
         return Layer;
-    }());
+    })();
     BABYLON.Layer = Layer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.layer.js.map

@@ -72,7 +72,6 @@ var BABYLON;
             }, parent);
         };
         return InterpolateValueAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.InterpolateValueAction = InterpolateValueAction;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.interpolateValueAction.js.map

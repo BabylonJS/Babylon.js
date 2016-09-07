@@ -152,7 +152,6 @@ var BABYLON;
          */
         RenderingManager.MIN_RENDERINGGROUPS = 0;
         return RenderingManager;
-    }());
+    })();
     BABYLON.RenderingManager = RenderingManager;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.renderingManager.js.map

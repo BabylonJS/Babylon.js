@@ -271,7 +271,6 @@ var BABYLON;
             this._destinationPoint.subtractToRef(this.intersectionPoint, vel);
         };
         return Collider;
-    }());
+    })();
     BABYLON.Collider = Collider;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.collider.js.map

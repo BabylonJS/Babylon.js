@@ -19,7 +19,6 @@ var BABYLON;
             system.lensFlares.push(this);
         }
         return LensFlare;
-    }());
+    })();
     BABYLON.LensFlare = LensFlare;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.lensFlare.js.map

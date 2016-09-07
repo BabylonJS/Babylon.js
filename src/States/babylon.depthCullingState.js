@@ -168,8 +168,7 @@ var BABYLON;
                 }
             };
             return _DepthCullingState;
-        }());
+        })();
         Internals._DepthCullingState = _DepthCullingState;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.depthCullingState.js.map

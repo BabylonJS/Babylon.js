@@ -32,7 +32,7 @@ var BABYLON;
             delete this._geometries[id];
         };
         return CollisionCache;
-    }());
+    })();
     BABYLON.CollisionCache = CollisionCache;
     var CollideWorker = (function () {
         function CollideWorker(collider, _collisionCache, finalPosition) {
@@ -144,7 +144,7 @@ var BABYLON;
             return this.collider._canDoCollision(BABYLON.Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, BABYLON.Vector3.FromArray(subMesh.boxMinimum), BABYLON.Vector3.FromArray(subMesh.boxMaximum));
         };
         return CollideWorker;
-    }());
+    })();
     BABYLON.CollideWorker = CollideWorker;
     var CollisionDetectorTransferable = (function () {
         function CollisionDetectorTransferable() {
@@ -206,7 +206,7 @@ var BABYLON;
             postMessage(reply, undefined);
         };
         return CollisionDetectorTransferable;
-    }());
+    })();
     BABYLON.CollisionDetectorTransferable = CollisionDetectorTransferable;
     //check if we are in a web worker, as this code should NOT run on the main UI thread
     try {
@@ -241,4 +241,3 @@ var BABYLON;
         console.log("single worker init");
     }
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.collisionWorker.js.map
