@@ -36,6 +36,7 @@ var BABYLON;
             return this;
         };
         return FreeCameraInputsManager;
-    })(BABYLON.CameraInputsManager);
+    }(BABYLON.CameraInputsManager));
     BABYLON.FreeCameraInputsManager = FreeCameraInputsManager;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.freeCameraInputsManager.js.map

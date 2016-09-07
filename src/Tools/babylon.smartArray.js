@@ -64,6 +64,7 @@ var BABYLON;
         // Statics
         SmartArray._GlobalId = 0;
         return SmartArray;
-    })();
+    }());
     BABYLON.SmartArray = SmartArray;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.smartArray.js.map

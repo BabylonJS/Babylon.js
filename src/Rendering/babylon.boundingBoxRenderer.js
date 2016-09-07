@@ -81,6 +81,7 @@ var BABYLON;
             this._scene.getEngine()._releaseBuffer(this._indexBuffer);
         };
         return BoundingBoxRenderer;
-    })();
+    }());
     BABYLON.BoundingBoxRenderer = BoundingBoxRenderer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.boundingBoxRenderer.js.map

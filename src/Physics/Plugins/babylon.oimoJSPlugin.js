@@ -330,6 +330,7 @@ var BABYLON;
             this.world.clear();
         };
         return OimoJSPlugin;
-    })();
+    }());
     BABYLON.OimoJSPlugin = OimoJSPlugin;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.oimoJSPlugin.js.map

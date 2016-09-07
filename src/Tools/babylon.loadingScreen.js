@@ -123,6 +123,7 @@ var BABYLON;
             configurable: true
         });
         return DefaultLoadingScreen;
-    })();
+    }());
     BABYLON.DefaultLoadingScreen = DefaultLoadingScreen;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.loadingScreen.js.map

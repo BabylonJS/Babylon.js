@@ -80,6 +80,7 @@ var BABYLON;
             return this._effect.isReady();
         };
         return OutlineRenderer;
-    })();
+    }());
     BABYLON.OutlineRenderer = OutlineRenderer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.outlineRenderer.js.map

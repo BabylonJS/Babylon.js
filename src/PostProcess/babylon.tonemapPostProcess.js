@@ -38,6 +38,7 @@ var BABYLON;
             };
         }
         return TonemapPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.TonemapPostProcess = TonemapPostProcess;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tonemapPostProcess.js.map

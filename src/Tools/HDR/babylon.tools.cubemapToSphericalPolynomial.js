@@ -10,7 +10,7 @@ var BABYLON;
                 this.worldAxisForFileY = worldAxisForFileY;
             }
             return FileFaceOrientation;
-        })();
+        }());
         ;
         /**
          * Helper class dealing with the extraction of spherical polynomial dataArray
@@ -111,7 +111,8 @@ var BABYLON;
                 new FileFaceOrientation("back", new BABYLON.Vector3(0, 0, -1), new BABYLON.Vector3(-1, 0, 0), new BABYLON.Vector3(0, -1, 0)) // -Z bottom
             ];
             return CubeMapToSphericalPolynomialTools;
-        })();
+        }());
         Internals.CubeMapToSphericalPolynomialTools = CubeMapToSphericalPolynomialTools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tools.cubemapToSphericalPolynomial.js.map

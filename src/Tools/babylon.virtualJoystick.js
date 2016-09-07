@@ -292,6 +292,7 @@ var BABYLON;
         // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
         VirtualJoystick._globalJoystickIndex = 0;
         return VirtualJoystick;
-    })();
+    }());
     BABYLON.VirtualJoystick = VirtualJoystick;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.virtualJoystick.js.map

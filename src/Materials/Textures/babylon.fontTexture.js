@@ -12,7 +12,7 @@ var BABYLON;
         function CharInfo() {
         }
         return CharInfo;
-    })();
+    }());
     BABYLON.CharInfo = CharInfo;
     var FontTexture = (function (_super) {
         __extends(FontTexture, _super);
@@ -184,8 +184,8 @@ var BABYLON;
             var lineCount = 1;
             var charxpos = 0;
             // Parse each char of the string
-            for (var _i = 0; _i < text.length; _i++) {
-                var char = text[_i];
+            for (var _i = 0, text_1 = text; _i < text_1.length; _i++) {
+                var char = text_1[_i];
                 // Next line feed?
                 if (char === "\n") {
                     maxWidth = Math.max(maxWidth, curWidth);
@@ -308,6 +308,7 @@ var BABYLON;
             }
         };
         return FontTexture;
-    })(BABYLON.Texture);
+    }(BABYLON.Texture));
     BABYLON.FontTexture = FontTexture;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.fontTexture.js.map

@@ -19,6 +19,7 @@ var BABYLON;
             });
         }
         return FxaaPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.FxaaPostProcess = FxaaPostProcess;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.fxaaPostProcess.js.map

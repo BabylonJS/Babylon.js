@@ -264,6 +264,7 @@ var BABYLON;
             BABYLON.serializeAsMeshReference("lockedTargetId")
         ], TargetCamera.prototype, "lockedTarget", void 0);
         return TargetCamera;
-    })(BABYLON.Camera);
+    }(BABYLON.Camera));
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.targetCamera.js.map
