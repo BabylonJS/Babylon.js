@@ -277,20 +277,14 @@ var BABYLON;
             }
             return false;
         };
-        SmartPropertyPrim.prototype.markAsDirty = function (propertyName) {
+        SmartPropertyPrim.prototype._triggerPropertyChanged = function (propInfo, newValue) {
             if (this.isDisposed) {
                 return;
             }
-            var i = propertyName.indexOf(".");
-            if (i !== -1) {
-                propertyName = propertyName.substr(0, i);
-            }
-            var propInfo = this.propDic.get(propertyName);
             if (!propInfo) {
                 return;
             }
-            var newValue = this[propertyName];
-            this._handlePropChanged(undefined, newValue, propertyName, propInfo, propInfo.typeLevelCompare);
+            this._handlePropChanged(undefined, newValue, propInfo.name, propInfo, propInfo.typeLevelCompare);
         };
         SmartPropertyPrim.prototype._boundingBoxDirty = function () {
             this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
