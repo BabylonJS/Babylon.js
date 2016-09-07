@@ -70,15 +70,25 @@ module BABYLON {
         @serialize()
 		public bumpHeight: number = 0.4;
         /**
-        * @param {number}: The water color blended with the reflection and refraction samplers
+        * @param {number}: The water color blended with the refraction (near)
         */
         @serializeAsColor3()
 		public waterColor: Color3 = new Color3(0.1, 0.1, 0.6);
         /**
-        * @param {number}: The blend factor related to the water color
+        * @param {number}: The blend factor related to the water color (refraction, near)
         */
         @serialize()
 		public colorBlendFactor: number = 0.2;
+        /**
+         * @param {number}: The water color blended with the reflection (far)
+         */
+        @serializeAsColor3()
+        public waterColor2: Color3 = new Color3(0.1, 0.1, 0.6);
+        /**
+         * @param {number}: The blend factor related to the water color (reflection, far)
+         */
+        @serialize()
+        public colorBlendFactor2: number = 0.2;
         /**
         * @param {number}: Represents the maximum length of a wave
         */
@@ -345,7 +355,7 @@ module BABYLON {
 
                     // Water
                     "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
-                    "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "colorBlendFactor", "waveSpeed"
+                    "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed"
                 ]
                 var samplers = ["normalSampler",
                     // Water
@@ -448,6 +458,8 @@ module BABYLON {
             this._effect.setFloat("bumpHeight", this.bumpHeight);
 			this._effect.setColor4("waterColor", this.waterColor, 1.0);
 			this._effect.setFloat("colorBlendFactor", this.colorBlendFactor);
+            this._effect.setColor4("waterColor2", this.waterColor2, 1.0);
+            this._effect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
             this._effect.setFloat("waveSpeed", this.waveSpeed);
 
             super.bind(world, mesh);
