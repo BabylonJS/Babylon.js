@@ -78,7 +78,7 @@ void main(void) {
 
 #ifdef BUMP
     //smaller bumps superimposed (better moving waves, no "conveyor belt" look):
-	baseColor = (texture2D(normalSampler, vNormalUV) + texture2D(normalSampler,vec2(-vNormalUV.y*0.33,vNormalUV.x*0.33)))/2.0;
+	baseColor = (texture2D(normalSampler, vNormalUV) + texture2D(normalSampler,vec2(vNormalUV.y*0.33,vNormalUV.x*0.33)))/2.0;
 	vec3 bumpColor = baseColor.rgb;
 
 #ifdef ALPHATEST
