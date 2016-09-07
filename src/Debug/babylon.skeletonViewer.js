@@ -131,7 +131,8 @@ var BABYLON;
                 }
             };
             return SkeletonViewer;
-        })();
+        }());
         Debug.SkeletonViewer = SkeletonViewer;
     })(Debug = BABYLON.Debug || (BABYLON.Debug = {}));
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.skeletonViewer.js.map

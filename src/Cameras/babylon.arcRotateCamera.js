@@ -543,6 +543,7 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "allowUpsideDown", void 0);
         return ArcRotateCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.arcRotateCamera.js.map

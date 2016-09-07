@@ -147,6 +147,7 @@ var BABYLON;
             }
         };
         return PostProcessRenderEffect;
-    })();
+    }());
     BABYLON.PostProcessRenderEffect = PostProcessRenderEffect;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.postProcessRenderEffect.js.map

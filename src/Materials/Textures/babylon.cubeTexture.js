@@ -77,6 +77,7 @@ var BABYLON;
             }, this);
         };
         return CubeTexture;
-    })(BABYLON.BaseTexture);
+    }(BABYLON.BaseTexture));
     BABYLON.CubeTexture = CubeTexture;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.cubeTexture.js.map

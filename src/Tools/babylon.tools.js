@@ -871,8 +871,8 @@ var BABYLON;
             return name;
         };
         Tools.first = function (array, predicate) {
-            for (var _i = 0; _i < array.length; _i++) {
-                var el = array[_i];
+            for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
+                var el = array_1[_i];
                 if (predicate(el)) {
                     return el;
                 }
@@ -936,7 +936,7 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    })();
+    }());
     BABYLON.Tools = Tools;
     /**
      * This class is used to track a performance counter which is number based.
@@ -1075,7 +1075,7 @@ var BABYLON;
             }
         };
         return PerfCounter;
-    })();
+    }());
     BABYLON.PerfCounter = PerfCounter;
     /**
      * Use this className as a decorator on a given class definition to add it a name.
@@ -1171,6 +1171,7 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    })();
+    }());
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tools.js.map

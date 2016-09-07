@@ -228,6 +228,7 @@ var BABYLON;
             this.onSizeChangedObservable.clear();
         };
         return PostProcess;
-    })();
+    }());
     BABYLON.PostProcess = PostProcess;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.postProcess.js.map

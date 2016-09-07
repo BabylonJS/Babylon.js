@@ -27,7 +27,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    })();
+    }());
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -1066,7 +1066,7 @@ var BABYLON;
             }
             // If there's a design size, update the scale according to the renderingSize
             if (this._designSize) {
-                var scale;
+                var scale = void 0;
                 if (this._designUseHorizAxis) {
                     scale = this._renderingSize.width / this._designSize.width;
                 }
@@ -1146,8 +1146,8 @@ var BABYLON;
             // Try to find a spot in one of the cached texture
             var res = null;
             var map;
-            for (var _i = 0; _i < mapArray.length; _i++) {
-                var _map = mapArray[_i];
+            for (var _i = 0, mapArray_1 = mapArray; _i < mapArray_1.length; _i++) {
+                var _map = mapArray_1[_i];
                 map = _map;
                 var node = map.allocateRect(size);
                 if (node) {
@@ -1176,7 +1176,7 @@ var BABYLON;
             if (group !== this || this._isScreenSpace) {
                 var node = res.node;
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
-                var sprite;
+                var sprite = void 0;
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
                     this._cachedCanvasGroup = BABYLON.Group2D._createCachedCanvasGroup(this);
                     sprite = new BABYLON.Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
@@ -1356,7 +1356,7 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    })(BABYLON.Group2D);
+    }(BABYLON.Group2D));
     BABYLON.Canvas2D = Canvas2D;
     var WorldSpaceCanvas2D = (function (_super) {
         __extends(WorldSpaceCanvas2D, _super);
@@ -1441,7 +1441,7 @@ var BABYLON;
             BABYLON.className("WorldSpaceCanvas2D")
         ], WorldSpaceCanvas2D);
         return WorldSpaceCanvas2D;
-    })(Canvas2D);
+    }(Canvas2D));
     BABYLON.WorldSpaceCanvas2D = WorldSpaceCanvas2D;
     var ScreenSpaceCanvas2D = (function (_super) {
         __extends(ScreenSpaceCanvas2D, _super);
@@ -1484,6 +1484,7 @@ var BABYLON;
             BABYLON.className("ScreenSpaceCanvas2D")
         ], ScreenSpaceCanvas2D);
         return ScreenSpaceCanvas2D;
-    })(Canvas2D);
+    }(Canvas2D));
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.canvas2d.js.map

@@ -47,6 +47,7 @@ var BABYLON;
             return serializationObject;
         };
         return RefractionTexture;
-    })(BABYLON.RenderTargetTexture);
+    }(BABYLON.RenderTargetTexture));
     BABYLON.RefractionTexture = RefractionTexture;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.refractionTexture.js.map

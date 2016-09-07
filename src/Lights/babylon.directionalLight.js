@@ -124,6 +124,7 @@ var BABYLON;
             BABYLON.serialize()
         ], DirectionalLight.prototype, "autoUpdateExtends", void 0);
         return DirectionalLight;
-    })(BABYLON.Light);
+    }(BABYLON.Light));
     BABYLON.DirectionalLight = DirectionalLight;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.directionalLight.js.map

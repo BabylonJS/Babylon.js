@@ -443,6 +443,7 @@ var BABYLON;
             "back"
         ];
         return HDRCubeTexture;
-    })(BABYLON.BaseTexture);
+    }(BABYLON.BaseTexture));
     BABYLON.HDRCubeTexture = HDRCubeTexture;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.hdrCubeTexture.js.map

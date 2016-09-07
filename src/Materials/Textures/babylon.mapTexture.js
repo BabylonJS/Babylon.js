@@ -106,6 +106,7 @@ var BABYLON;
             return null;
         };
         return MapTexture;
-    })(BABYLON.Texture);
+    }(BABYLON.Texture));
     BABYLON.MapTexture = MapTexture;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.mapTexture.js.map

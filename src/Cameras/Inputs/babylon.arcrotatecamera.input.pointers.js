@@ -206,7 +206,8 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "panningSensibility", void 0);
         return ArcRotateCameraPointersInput;
-    })();
+    }());
     BABYLON.ArcRotateCameraPointersInput = ArcRotateCameraPointersInput;
     BABYLON.CameraInputTypes["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.arcrotatecamera.input.pointers.js.map

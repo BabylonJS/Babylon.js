@@ -72,8 +72,8 @@ var BABYLON;
          */
         BoundingInfo2D.CreateFromPointsToRef = function (points, b) {
             var xmin = Number.MAX_VALUE, ymin = Number.MAX_VALUE, xmax = Number.MIN_VALUE, ymax = Number.MIN_VALUE;
-            for (var _i = 0; _i < points.length; _i++) {
-                var p = points[_i];
+            for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
+                var p = points_1[_i];
                 xmin = Math.min(p.x, xmin);
                 xmax = Math.max(p.x, xmax);
                 ymin = Math.min(p.y, ymin);
@@ -206,6 +206,7 @@ var BABYLON;
         };
         BoundingInfo2D._transform = new Array(BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero(), BABYLON.Vector2.Zero());
         return BoundingInfo2D;
-    })();
+    }());
     BABYLON.BoundingInfo2D = BoundingInfo2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.bounding2d.js.map

@@ -119,6 +119,7 @@ var BABYLON;
             configurable: true
         });
         return CustomProceduralTexture;
-    })(BABYLON.ProceduralTexture);
+    }(BABYLON.ProceduralTexture));
     BABYLON.CustomProceduralTexture = CustomProceduralTexture;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.customProceduralTexture.js.map

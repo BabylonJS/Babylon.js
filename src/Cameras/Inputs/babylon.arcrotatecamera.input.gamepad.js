@@ -65,7 +65,8 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
         return ArcRotateCameraGamepadInput;
-    })();
+    }());
     BABYLON.ArcRotateCameraGamepadInput = ArcRotateCameraGamepadInput;
     BABYLON.CameraInputTypes["ArcRotateCameraGamepadInput"] = ArcRotateCameraGamepadInput;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.arcrotatecamera.input.gamepad.js.map
