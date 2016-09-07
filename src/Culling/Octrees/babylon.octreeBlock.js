@@ -120,3 +120,4 @@ var BABYLON;
     }());
     BABYLON.OctreeBlock = OctreeBlock;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.octreeBlock.js.map

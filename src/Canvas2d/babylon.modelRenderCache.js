@@ -319,3 +319,4 @@ var BABYLON;
     }());
     BABYLON.ModelRenderCachePartData = ModelRenderCachePartData;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.modelRenderCache.js.map

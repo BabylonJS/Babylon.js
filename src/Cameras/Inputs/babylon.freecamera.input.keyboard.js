@@ -116,3 +116,4 @@ var BABYLON;
     BABYLON.FreeCameraKeyboardMoveInput = FreeCameraKeyboardMoveInput;
     BABYLON.CameraInputTypes["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.freecamera.input.keyboard.js.map

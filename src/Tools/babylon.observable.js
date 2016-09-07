@@ -135,3 +135,4 @@ var BABYLON;
     }());
     BABYLON.Observable = Observable;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.observable.js.map

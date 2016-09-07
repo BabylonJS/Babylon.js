@@ -214,3 +214,4 @@ var BABYLON;
     }(PackedRect));
     BABYLON.RectPackingMap = RectPackingMap;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.rectPackingMap.js.map

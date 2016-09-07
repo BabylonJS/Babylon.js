@@ -543,3 +543,4 @@ var BABYLON;
     }());
     BABYLON.ColorCurves = ColorCurves;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.colorCurves.js.map

@@ -114,3 +114,4 @@ var BABYLON;
     }(BABYLON.UniversalCamera));
     BABYLON.StereoscopicUniversalCamera = StereoscopicUniversalCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.stereoscopicCameras.js.map

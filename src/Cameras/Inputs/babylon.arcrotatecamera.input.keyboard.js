@@ -114,3 +114,4 @@ var BABYLON;
     BABYLON.ArcRotateCameraKeyboardMoveInput = ArcRotateCameraKeyboardMoveInput;
     BABYLON.CameraInputTypes["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.arcrotatecamera.input.keyboard.js.map

@@ -449,3 +449,4 @@ var BABYLON;
     }(BABYLON.Shape2D));
     BABYLON.Rectangle2D = Rectangle2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.rectangle2d.js.map

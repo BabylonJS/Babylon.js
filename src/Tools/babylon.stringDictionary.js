@@ -142,3 +142,4 @@ var BABYLON;
     }());
     BABYLON.StringDictionary = StringDictionary;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.stringDictionary.js.map

@@ -261,3 +261,4 @@ var BABYLON;
     BABYLON.SceneLoader = SceneLoader;
     ;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.sceneLoader.js.map

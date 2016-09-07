@@ -351,3 +351,4 @@ var BABYLON;
     }(BABYLON.Shape2D));
     BABYLON.Ellipse2D = Ellipse2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.ellipse2d.js.map

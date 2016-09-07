@@ -39,3 +39,4 @@ var BABYLON;
     }(BABYLON.CameraInputsManager));
     BABYLON.FreeCameraInputsManager = FreeCameraInputsManager;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.freeCameraInputsManager.js.map

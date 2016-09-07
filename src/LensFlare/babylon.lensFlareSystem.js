@@ -212,3 +212,4 @@ var BABYLON;
     }());
     BABYLON.LensFlareSystem = LensFlareSystem;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.lensFlareSystem.js.map

@@ -91,3 +91,4 @@ var BABYLON;
     }());
     BABYLON.ReflectionProbe = ReflectionProbe;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.reflectionProbe.js.map

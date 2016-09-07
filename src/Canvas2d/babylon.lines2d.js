@@ -1174,3 +1174,4 @@ var BABYLON;
     }(BABYLON.Shape2D));
     BABYLON.Lines2D = Lines2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.lines2d.js.map

@@ -925,3 +925,4 @@ var BABYLON;
     }());
     BABYLON.TransparentPrimitiveInfo = TransparentPrimitiveInfo;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.group2d.js.map

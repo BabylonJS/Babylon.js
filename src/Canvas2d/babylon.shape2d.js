@@ -288,3 +288,4 @@ var BABYLON;
     }(BABYLON.InstanceDataBase));
     BABYLON.Shape2DInstanceData = Shape2DInstanceData;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.shape2d.js.map

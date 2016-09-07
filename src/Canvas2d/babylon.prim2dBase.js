@@ -1494,7 +1494,7 @@ var BABYLON;
                     return;
                 }
                 this._position = value;
-                this.markAsDirty("actualPosition");
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
             },
             enumerable: true,
             configurable: true
@@ -1521,8 +1521,8 @@ var BABYLON;
                     return;
                 }
                 this._position.x = value;
-                this.markAsDirty("position");
-                this.markAsDirty("actualPosition");
+                this._triggerPropertyChanged(Prim2DBase.positionProperty, value);
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
             },
             enumerable: true,
             configurable: true
@@ -1549,8 +1549,8 @@ var BABYLON;
                     return;
                 }
                 this._position.y = value;
-                this.markAsDirty("position");
-                this.markAsDirty("actualPosition");
+                this._triggerPropertyChanged(Prim2DBase.positionProperty, value);
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
             },
             enumerable: true,
             configurable: true
@@ -1602,7 +1602,7 @@ var BABYLON;
                     return;
                 }
                 this.size.width = value;
-                this.markAsDirty("size");
+                this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
                 this._positioningDirty();
             },
             enumerable: true,
@@ -1628,7 +1628,7 @@ var BABYLON;
                     return;
                 }
                 this.size.height = value;
-                this.markAsDirty("size");
+                this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
                 this._positioningDirty();
             },
             enumerable: true,
@@ -2976,3 +2976,4 @@ var BABYLON;
     }(BABYLON.SmartPropertyPrim));
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.prim2dBase.js.map

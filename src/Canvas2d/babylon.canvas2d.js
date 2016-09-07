@@ -1487,3 +1487,4 @@ var BABYLON;
     }(Canvas2D));
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.canvas2d.js.map
