@@ -262,7 +262,6 @@ var BABYLON;
             BABYLON.serialize()
         ], SSAORenderingPipeline.prototype, "_ratio", void 0);
         return SSAORenderingPipeline;
-    }(BABYLON.PostProcessRenderPipeline));
+    })(BABYLON.PostProcessRenderPipeline);
     BABYLON.SSAORenderingPipeline = SSAORenderingPipeline;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.ssaoRenderingPipeline.js.map

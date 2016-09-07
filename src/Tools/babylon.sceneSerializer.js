@@ -336,7 +336,6 @@ var BABYLON;
             return serializationObject;
         };
         return SceneSerializer;
-    }());
+    })();
     BABYLON.SceneSerializer = SceneSerializer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sceneSerializer.js.map

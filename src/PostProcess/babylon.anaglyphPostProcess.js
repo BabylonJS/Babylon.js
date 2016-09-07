@@ -16,7 +16,6 @@ var BABYLON;
             });
         }
         return AnaglyphPostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.AnaglyphPostProcess = AnaglyphPostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.anaglyphPostProcess.js.map

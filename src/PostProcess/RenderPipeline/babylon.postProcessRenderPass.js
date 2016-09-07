@@ -37,7 +37,6 @@ var BABYLON;
             return this._renderTexture;
         };
         return PostProcessRenderPass;
-    }());
+    })();
     BABYLON.PostProcessRenderPass = PostProcessRenderPass;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.postProcessRenderPass.js.map

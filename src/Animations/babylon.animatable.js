@@ -127,7 +127,6 @@ var BABYLON;
             return running;
         };
         return Animatable;
-    }());
+    })();
     BABYLON.Animatable = Animatable;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.animatable.js.map

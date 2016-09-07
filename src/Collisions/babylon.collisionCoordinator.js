@@ -205,7 +205,7 @@ var BABYLON;
             };
         };
         return CollisionCoordinatorWorker;
-    }());
+    })();
     BABYLON.CollisionCoordinatorWorker = CollisionCoordinatorWorker;
     var CollisionCoordinatorLegacy = (function () {
         function CollisionCoordinatorLegacy() {
@@ -268,7 +268,6 @@ var BABYLON;
             this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
         };
         return CollisionCoordinatorLegacy;
-    }());
+    })();
     BABYLON.CollisionCoordinatorLegacy = CollisionCoordinatorLegacy;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.collisionCoordinator.js.map

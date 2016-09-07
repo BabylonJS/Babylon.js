@@ -22,7 +22,6 @@ var BABYLON;
             }
         };
         return WorldSpaceCanvas2DNode;
-    }(BABYLON.Mesh));
+    })(BABYLON.Mesh);
     BABYLON.WorldSpaceCanvas2DNode = WorldSpaceCanvas2DNode;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.worldSpaceCanvas2dNode.js.map

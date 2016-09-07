@@ -44,7 +44,6 @@ var BABYLON;
             return true;
         };
         return BoundingSphere;
-    }());
+    })();
     BABYLON.BoundingSphere = BoundingSphere;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.boundingSphere.js.map

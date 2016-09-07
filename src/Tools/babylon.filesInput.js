@@ -134,7 +134,6 @@ var BABYLON;
         FilesInput.FilesTextures = new Array();
         FilesInput.FilesToLoad = new Array();
         return FilesInput;
-    }());
+    })();
     BABYLON.FilesInput = FilesInput;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.filesInput.js.map

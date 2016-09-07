@@ -23,12 +23,50 @@ var BABYLON;
             this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
             this.excludeWithLayerMask = 0;
+            this.lightmapMode = 0;
             // PBR Properties.
             this.radius = 0.00001;
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
             scene.addLight(this);
         }
+        Object.defineProperty(Light, "LIGHTMAP_DEFAULT", {
+            /**
+             * If every light affecting the material is in this lightmapMode,
+             * material.lightmapTexture adds or multiplies
+             * (depends on material.useLightmapAsShadowmap)
+             * after every other light calculations.
+             */
+            get: function () {
+                return Light._LIGHTMAP_DEFAULT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Light, "LIGHTMAP_SPECULAR", {
+            /**
+             * material.lightmapTexture as only diffuse lighting from this light
+             * adds pnly specular lighting from this light
+             * adds dynamic shadows
+             */
+            get: function () {
+                return Light._LIGHTMAP_SPECULAR;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Light, "LIGHTMAP_SHADOWSONLY", {
+            /**
+             * material.lightmapTexture as only lighting
+             * no light calculation from this light
+             * only adds dynamic shadows from this light
+             */
+            get: function () {
+                return Light._LIGHTMAP_SHADOWSONLY;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
@@ -167,6 +205,10 @@ var BABYLON;
             }
             return light;
         };
+        //lightmapMode Consts
+        Light._LIGHTMAP_DEFAULT = 0;
+        Light._LIGHTMAP_SPECULAR = 1;
+        Light._LIGHTMAP_SHADOWSONLY = 2;
         __decorate([
             BABYLON.serializeAsColor3()
         ], Light.prototype, "diffuse", void 0);
@@ -187,9 +229,11 @@ var BABYLON;
         ], Light.prototype, "excludeWithLayerMask", void 0);
         __decorate([
             BABYLON.serialize()
+        ], Light.prototype, "lightmapMode", void 0);
+        __decorate([
+            BABYLON.serialize()
         ], Light.prototype, "radius", void 0);
         return Light;
-    }(BABYLON.Node));
+    })(BABYLON.Node);
     BABYLON.Light = Light;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.light.js.map

@@ -53,7 +53,6 @@ var BABYLON;
             }
         };
         return TouchCamera;
-    }(BABYLON.FreeCamera));
+    })(BABYLON.FreeCamera);
     BABYLON.TouchCamera = TouchCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.touchCamera.js.map

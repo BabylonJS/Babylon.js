@@ -67,7 +67,6 @@ var BABYLON;
             return result;
         };
         return VRCameraMetrics;
-    }());
+    })();
     BABYLON.VRCameraMetrics = VRCameraMetrics;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.vrCameraMetrics.js.map

@@ -29,7 +29,7 @@ var BABYLON;
             }, parent);
         };
         return SwitchBooleanAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.SwitchBooleanAction = SwitchBooleanAction;
     var SetStateAction = (function (_super) {
         __extends(SetStateAction, _super);
@@ -51,7 +51,7 @@ var BABYLON;
             }, parent);
         };
         return SetStateAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.SetStateAction = SetStateAction;
     var SetValueAction = (function (_super) {
         __extends(SetValueAction, _super);
@@ -82,7 +82,7 @@ var BABYLON;
             }, parent);
         };
         return SetValueAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.SetValueAction = SetValueAction;
     var IncrementValueAction = (function (_super) {
         __extends(IncrementValueAction, _super);
@@ -116,7 +116,7 @@ var BABYLON;
             }, parent);
         };
         return IncrementValueAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.IncrementValueAction = IncrementValueAction;
     var PlayAnimationAction = (function (_super) {
         __extends(PlayAnimationAction, _super);
@@ -145,7 +145,7 @@ var BABYLON;
             }, parent);
         };
         return PlayAnimationAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.PlayAnimationAction = PlayAnimationAction;
     var StopAnimationAction = (function (_super) {
         __extends(StopAnimationAction, _super);
@@ -166,7 +166,7 @@ var BABYLON;
             }, parent);
         };
         return StopAnimationAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.StopAnimationAction = StopAnimationAction;
     var DoNothingAction = (function (_super) {
         __extends(DoNothingAction, _super);
@@ -183,7 +183,7 @@ var BABYLON;
             }, parent);
         };
         return DoNothingAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.DoNothingAction = DoNothingAction;
     var CombineAction = (function (_super) {
         __extends(CombineAction, _super);
@@ -214,7 +214,7 @@ var BABYLON;
             return serializationObject;
         };
         return CombineAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.CombineAction = CombineAction;
     var ExecuteCodeAction = (function (_super) {
         __extends(ExecuteCodeAction, _super);
@@ -226,7 +226,7 @@ var BABYLON;
             this.func(evt);
         };
         return ExecuteCodeAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.ExecuteCodeAction = ExecuteCodeAction;
     var SetParentAction = (function (_super) {
         __extends(SetParentAction, _super);
@@ -256,7 +256,7 @@ var BABYLON;
             }, parent);
         };
         return SetParentAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.SetParentAction = SetParentAction;
     var PlaySoundAction = (function (_super) {
         __extends(PlaySoundAction, _super);
@@ -277,7 +277,7 @@ var BABYLON;
             }, parent);
         };
         return PlaySoundAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.PlaySoundAction = PlaySoundAction;
     var StopSoundAction = (function (_super) {
         __extends(StopSoundAction, _super);
@@ -298,7 +298,6 @@ var BABYLON;
             }, parent);
         };
         return StopSoundAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.StopSoundAction = StopSoundAction;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.directActions.js.map

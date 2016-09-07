@@ -130,7 +130,7 @@ var BABYLON;
             configurable: true
         });
         return GroupInstanceInfo;
-    }());
+    })();
     BABYLON.GroupInstanceInfo = GroupInstanceInfo;
     var TransparentSegment = (function () {
         function TransparentSegment() {
@@ -149,7 +149,7 @@ var BABYLON;
             }
         };
         return TransparentSegment;
-    }());
+    })();
     BABYLON.TransparentSegment = TransparentSegment;
     var GroupInfoPartData = (function () {
         function GroupInfoPartData(stride) {
@@ -171,7 +171,7 @@ var BABYLON;
             this._isDisposed = true;
         };
         return GroupInfoPartData;
-    }());
+    })();
     BABYLON.GroupInfoPartData = GroupInfoPartData;
     var TransparentGroupInfoPartData = (function (_super) {
         __extends(TransparentGroupInfoPartData, _super);
@@ -181,7 +181,7 @@ var BABYLON;
             this._partData.sortingAscending = false;
         }
         return TransparentGroupInfoPartData;
-    }(GroupInfoPartData));
+    })(GroupInfoPartData);
     BABYLON.TransparentGroupInfoPartData = TransparentGroupInfoPartData;
     var ModelRenderCache = (function () {
         function ModelRenderCache(engine, modelKey) {
@@ -310,13 +310,12 @@ var BABYLON;
         ModelRenderCache.v3 = BABYLON.Vector3.Zero();
         ModelRenderCache.v4 = BABYLON.Vector4.Zero();
         return ModelRenderCache;
-    }());
+    })();
     BABYLON.ModelRenderCache = ModelRenderCache;
     var ModelRenderCachePartData = (function () {
         function ModelRenderCachePartData() {
         }
         return ModelRenderCachePartData;
-    }());
+    })();
     BABYLON.ModelRenderCachePartData = ModelRenderCachePartData;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.modelRenderCache.js.map

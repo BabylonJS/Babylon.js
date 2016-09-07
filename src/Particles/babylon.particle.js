@@ -24,7 +24,6 @@ var BABYLON;
             other.angularSpeed = this.angularSpeed;
         };
         return Particle;
-    }());
+    })();
     BABYLON.Particle = Particle;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.particle.js.map
