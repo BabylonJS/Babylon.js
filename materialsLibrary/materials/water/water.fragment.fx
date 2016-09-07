@@ -47,9 +47,6 @@ uniform vec3 cameraPosition;
 uniform vec4 waterColor;
 uniform float colorBlendFactor;
 
-uniform vec4 waterColor2;
-uniform float colorBlendFactor2;
-
 uniform float bumpHeight;
 
 // Water varyings
@@ -111,16 +108,18 @@ void main(void) {
 	
 	vec2 projectedRefractionTexCoords = clamp(vRefractionMapTexCoord.xy / vRefractionMapTexCoord.z + perturbation, 0.0, 1.0);
 	vec4 refractiveColor = texture2D(refractionSampler, projectedRefractionTexCoords);
+
+    //refraction (sea bed) combined with the water color: TODO: fog-like shallow underwater
     refractiveColor = colorBlendFactor*waterColor + (1.0-colorBlendFactor)*refractiveColor;
 
 	vec2 projectedReflectionTexCoords = clamp(vReflectionMapTexCoord.xy / vReflectionMapTexCoord.z + perturbation, 0.0, 1.0);
 	vec4 reflectiveColor = texture2D(reflectionSampler, projectedReflectionTexCoords);
-	reflectiveColor = colorBlendFactor2*waterColor2 + (1.0-colorBlendFactor2)*reflectiveColor;
-
+	
 	vec3 upVector = vec3(0.0, 1.0, 0.0);
 
-	float fresnelTerm = min(0.95, pow(max(dot(eyeVector, upVector), 0.0),3.0));
-
+	//physically correct water reflection by look angle
+	float fresnelTerm = min(0.95, pow(max(dot(eyeVector, upVector), 0.0),1.5));
+	
 	vec4 combinedColor = refractiveColor * fresnelTerm + reflectiveColor * (1.0 - fresnelTerm);
 	
 	baseColor = combinedColor;
