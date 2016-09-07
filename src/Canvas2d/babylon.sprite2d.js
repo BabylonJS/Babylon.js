@@ -86,7 +86,7 @@ var BABYLON;
             return true;
         };
         return Sprite2DRenderCache;
-    }(BABYLON.ModelRenderCache));
+    })(BABYLON.ModelRenderCache);
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -148,7 +148,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "properties", null);
         return Sprite2DInstanceData;
-    }(BABYLON.InstanceDataBase));
+    })(BABYLON.InstanceDataBase);
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -448,6 +448,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    }(BABYLON.RenderablePrim2D));
+    })(BABYLON.RenderablePrim2D);
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));

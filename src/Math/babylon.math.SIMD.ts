@@ -19,7 +19,7 @@
 
     class SIMDVector3 {
         public static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void {
-            SIMDVector3.TransformCoordinatesFromFloatsToRefSIMD(vector.x, vector.y, vector.z, transformation, result)
+            SIMDVector3.TransformCoordinatesFromFloatsToRefSIMD(vector.x, vector.y, vector.z, transformation, result);
         }
 
         public static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
@@ -265,15 +265,13 @@
 
             // check if polyfills needed
             if (!self.Math.fround) {
-                self.Math.fround = (function (array) {
-                    return function (x) {
-                        return array[0] = x, array[0];
-                    };
+                self.Math.fround = (array => x => {
+                    return array[0] = x, array[0];
                 })(new Float32Array(1));
             }
 
             if (!self.Math.imul) {
-                self.Math.imul = function (a, b) {
+                self.Math.imul = (a, b) => {
                     var ah = (a >>> 16) & 0xffff;
                     var al = a & 0xffff;
                     var bh = (b >>> 16) & 0xffff;

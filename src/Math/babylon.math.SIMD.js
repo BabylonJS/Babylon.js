@@ -34,7 +34,7 @@ var BABYLON;
             result.z = extract(r, 2);
         };
         return SIMDVector3;
-    }());
+    })();
     var SIMDMatrix = (function () {
         function SIMDMatrix() {
         }
@@ -194,7 +194,7 @@ var BABYLON;
             store(out, 12, add(mul(swizzle(b, 0, 0, 0, 0), a0), add(mul(swizzle(b, 1, 1, 1, 1), a1), add(mul(swizzle(b, 2, 2, 2, 2), a2), mul(swizzle(b, 3, 3, 3, 3), a3)))));
         };
         return SIMDMatrix;
-    }());
+    })();
     var previousMultiplyToArray = BABYLON.Matrix.prototype.multiplyToArray;
     var previousInvertToRef = BABYLON.Matrix.prototype.invertToRef;
     var previousLookAtLHToRef = BABYLON.Matrix.LookAtLHToRef;
@@ -225,11 +225,9 @@ var BABYLON;
             }
             // check if polyfills needed
             if (!self.Math.fround) {
-                self.Math.fround = (function (array) {
-                    return function (x) {
-                        return array[0] = x, array[0];
-                    };
-                })(new Float32Array(1));
+                self.Math.fround = (function (array) { return function (x) {
+                    return array[0] = x, array[0];
+                }; })(new Float32Array(1));
             }
             if (!self.Math.imul) {
                 self.Math.imul = function (a, b) {
@@ -252,6 +250,6 @@ var BABYLON;
         };
         SIMDHelper._isEnabled = false;
         return SIMDHelper;
-    }());
+    })();
     BABYLON.SIMDHelper = SIMDHelper;
 })(BABYLON || (BABYLON = {}));

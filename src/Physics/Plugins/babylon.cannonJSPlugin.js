@@ -424,6 +424,6 @@ var BABYLON;
             //nothing to do, actually.
         };
         return CannonJSPlugin;
-    }());
+    })();
     BABYLON.CannonJSPlugin = CannonJSPlugin;
 })(BABYLON || (BABYLON = {}));
