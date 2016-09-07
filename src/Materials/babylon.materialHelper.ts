@@ -104,7 +104,7 @@
                     }
                 }
 
-                if (light.lightmapMode != 0 ) {
+                if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
                     lightmapMode = true;
                     if (defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
                         needRebuild = true;
@@ -113,7 +113,7 @@
                         needRebuild = true;
                     }
                     defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
-                    if (light.lightmapMode == 2) {
+                    if (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY) {
                         defines["LIGHTMAPNOSPECULAR" + lightIndex] = true;
                     }
                 }

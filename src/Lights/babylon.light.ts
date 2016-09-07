@@ -22,13 +22,10 @@
 
     export class Light extends Node {
 
+        //lightmapMode Consts
         private static _LIGHTMAP_DEFAULT = 0;
-
-        //
         private static _LIGHTMAP_SPECULAR = 1;
-
-        //
-        private static _LIGHTMAP_NONE = 2;
+        private static _LIGHTMAP_SHADOWSONLY = 2;
 
         /**
          * If every light affecting the material is in this lightmapMode,
@@ -54,8 +51,8 @@
          * no light calculation from this light
          * only adds dynamic shadows from this light
          */
-        public static get LIGHTMAP_NONE(): number {
-            return Light._LIGHTMAP_NONE;
+        public static get LIGHTMAP_SHADOWSONLY(): number {
+            return Light._LIGHTMAP_SHADOWSONLY;
         }
 
         @serializeAsColor3()
