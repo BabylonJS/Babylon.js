@@ -316,25 +316,16 @@
             return false;
         }
 
-        private static propChangedInfo = new PropertyChangedInfo();
-
-        public markAsDirty(propertyName: string) {
+        protected _triggerPropertyChanged(propInfo: Prim2DPropInfo, newValue: any) {
             if (this.isDisposed) {
                 return;
             }
 
-            let i = propertyName.indexOf(".");
-            if (i !== -1) {
-                propertyName = propertyName.substr(0, i);
-            }
-
-            var propInfo = this.propDic.get(propertyName);
             if (!propInfo) {
                 return;
             }
 
-            var newValue = this[propertyName];
-            this._handlePropChanged(undefined, newValue, propertyName, propInfo, propInfo.typeLevelCompare);
+            this._handlePropChanged(undefined, newValue, propInfo.name, propInfo, propInfo.typeLevelCompare);
         }
 
         protected _boundingBoxDirty() {
@@ -361,6 +352,7 @@
             }
         }
 
+        private static propChangedInfo = new PropertyChangedInfo();
         private _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean) {
             // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
             if (propInfo.dirtyBoundingInfo) {
