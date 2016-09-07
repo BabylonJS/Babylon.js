@@ -21,6 +21,43 @@
     }
 
     export class Light extends Node {
+
+        private static _LIGHTMAP_DEFAULT = 0;
+
+        //
+        private static _LIGHTMAP_SPECULAR = 1;
+
+        //
+        private static _LIGHTMAP_NONE = 2;
+
+        /**
+         * If every light affecting the material is in this lightmapMode,
+         * material.lightmapTexture adds or multiplies
+         * (depends on material.useLightmapAsShadowmap)
+         * after every other light calculations.
+         */
+        public static get LIGHTMAP_DEFAULT(): number {
+            return Light._LIGHTMAP_DEFAULT;
+        }
+
+        /**
+         * material.lightmapTexture as only diffuse lighting from this light
+         * adds pnly specular lighting from this light
+         * adds dynamic shadows
+         */
+        public static get LIGHTMAP_SPECULAR(): number {
+            return Light._LIGHTMAP_SPECULAR;
+        }
+
+        /**
+         * material.lightmapTexture as only lighting
+         * no light calculation from this light
+         * only adds dynamic shadows from this light
+         */
+        public static get LIGHTMAP_NONE(): number {
+            return Light._LIGHTMAP_NONE;
+        }
+
         @serializeAsColor3()
         public diffuse = new Color3(1.0, 1.0, 1.0);
 
