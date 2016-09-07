@@ -37,6 +37,7 @@ var BABYLON;
             this._coneOuterAngle = 360;
             this._coneOuterGain = 0;
             this._isOutputConnected = false;
+            this._urlType = "Unknown";
             this.name = name;
             this._scene = scene;
             this._readyToPlayCallback = readyToPlayCallback;
@@ -74,40 +75,82 @@ var BABYLON;
                     this._createSpatialParameters();
                 }
                 this._scene.mainSoundTrack.AddSound(this);
+                var validParameter = true;
                 // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
                 if (urlOrArrayBuffer) {
-                    // If it's an URL
-                    if (typeof (urlOrArrayBuffer) === "string") {
-                        // Loading sound using XHR2
-                        if (!this._streaming) {
-                            BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) { _this._soundLoaded(data); }, null, this._scene.database, true);
-                        }
-                        else {
-                            this._htmlAudioElement = new Audio(urlOrArrayBuffer);
-                            this._htmlAudioElement.controls = false;
-                            this._htmlAudioElement.loop = this.loop;
-                            this._htmlAudioElement.crossOrigin = "anonymous";
-                            this._htmlAudioElement.preload = "auto";
-                            this._htmlAudioElement.addEventListener("canplaythrough", function () {
-                                _this._isReadyToPlay = true;
-                                if (_this.autoplay) {
-                                    _this.play();
-                                }
-                                if (_this._readyToPlayCallback) {
-                                    _this._readyToPlayCallback();
-                                }
-                            });
-                            document.body.appendChild(this._htmlAudioElement);
-                        }
-                    }
-                    else {
-                        if (urlOrArrayBuffer instanceof ArrayBuffer) {
+                    if (typeof (urlOrArrayBuffer) === "string")
+                        this._urlType = "String";
+                    if (Array.isArray(urlOrArrayBuffer))
+                        this._urlType = "Array";
+                    if (urlOrArrayBuffer instanceof ArrayBuffer)
+                        this._urlType = "ArrayBuffer";
+                    var urls = [];
+                    var codecSupportedFound = false;
+                    switch (this._urlType) {
+                        case "ArrayBuffer":
                             if (urlOrArrayBuffer.byteLength > 0) {
+                                codecSupportedFound = true;
                                 this._soundLoaded(urlOrArrayBuffer);
                             }
-                        }
-                        else {
-                            BABYLON.Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
+                            break;
+                        case "String":
+                            urls.push(urlOrArrayBuffer);
+                        case "Array":
+                            if (urls.length === 0)
+                                urls = urlOrArrayBuffer;
+                            // If we found a supported format, we load it immediately and stop the loop
+                            for (var i = 0; i < urls.length; i++) {
+                                var url = urls[i];
+                                if (url.indexOf(".mp3", url.length - 4) !== -1 && BABYLON.Engine.audioEngine.isMP3supported) {
+                                    codecSupportedFound = true;
+                                }
+                                if (url.indexOf(".ogg", url.length - 4) !== -1 && BABYLON.Engine.audioEngine.isOGGsupported) {
+                                    codecSupportedFound = true;
+                                }
+                                if (url.indexOf(".wav", url.length - 4) !== -1) {
+                                    codecSupportedFound = true;
+                                }
+                                if (codecSupportedFound) {
+                                    // Loading sound using XHR2
+                                    if (!this._streaming) {
+                                        BABYLON.Tools.LoadFile(url, function (data) { _this._soundLoaded(data); }, null, this._scene.database, true);
+                                    }
+                                    else {
+                                        this._htmlAudioElement = new Audio(url);
+                                        this._htmlAudioElement.controls = false;
+                                        this._htmlAudioElement.loop = this.loop;
+                                        this._htmlAudioElement.crossOrigin = "anonymous";
+                                        this._htmlAudioElement.preload = "auto";
+                                        this._htmlAudioElement.addEventListener("canplaythrough", function () {
+                                            _this._isReadyToPlay = true;
+                                            if (_this.autoplay) {
+                                                _this.play();
+                                            }
+                                            if (_this._readyToPlayCallback) {
+                                                _this._readyToPlayCallback();
+                                            }
+                                        });
+                                        document.body.appendChild(this._htmlAudioElement);
+                                    }
+                                    break;
+                                }
+                            }
+                            break;
+                        default:
+                            validParameter = false;
+                            break;
+                    }
+                    if (!validParameter) {
+                        BABYLON.Tools.Error("Parameter must be a URL to the sound, an Array of URLs (.mp3 & .ogg) or an ArrayBuffer of the sound.");
+                    }
+                    else {
+                        if (!codecSupportedFound) {
+                            // Simulating a ready to play event to avoid breaking code path
+                            if (this._readyToPlayCallback) {
+                                window.setTimeout(function () {
+                                    _this._readyToPlayCallback();
+                                }, 1000);
+                            }
                         }
                     }
                 }
@@ -175,7 +218,7 @@ var BABYLON;
                 if (_this._readyToPlayCallback) {
                     _this._readyToPlayCallback();
                 }
-            }, function () { BABYLON.Tools.Error("Error while decoding audio data for: " + _this.name); });
+            }, function (err) { BABYLON.Tools.Error("Error while decoding audio data for: " + _this.name + " / Error: " + err); });
         };
         Sound.prototype.setAudioBuffer = function (audioBuffer) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
@@ -586,6 +629,6 @@ var BABYLON;
             return newSound;
         };
         return Sound;
-    })();
+    }());
     BABYLON.Sound = Sound;
 })(BABYLON || (BABYLON = {}));
