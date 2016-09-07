@@ -43,10 +43,7 @@
         public excludeWithLayerMask = 0;
 
         @serialize()
-        public lightmapExcluded = false;
-
-        @serialize()
-        public lightmapNoSpecular = false;
+        public lightmapMode = 0;
 
         // PBR Properties.
         @serialize()

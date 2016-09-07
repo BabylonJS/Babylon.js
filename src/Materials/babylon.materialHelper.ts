@@ -5,7 +5,7 @@
             var needNormals = false;
             var needRebuild = false;
             var needShadows = false;
-            var lightmapExcluded = false;
+            var lightmapMode = false;
 
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
@@ -104,21 +104,19 @@
                     }
                 }
 
-                //lightmapExcluded
-                if (defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
-                    needRebuild = true;
+                if (light.lightmapMode != 0 ) {
+                    lightmapMode = true;
+                    if (defines["LIGHTMAPEXCLUDED" + lightIndex] === undefined) {
+                        needRebuild = true;
+                    }
+                    if (defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
+                        needRebuild = true;
+                    }
+                    defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
+                    if (light.lightmapMode == 2) {
+                        defines["LIGHTMAPNOSPECULAR" + lightIndex] = true;
+                    }
                 }
-                defines["LIGHTMAPEXCLUDED" + lightIndex] = light.lightmapExcluded;
-                if (light.lightmapExcluded) {
-                    lightmapExcluded = true;
-                }
-
-                //lightmapNoSpecular
-                if (defines["LIGHTMAPNOSPECULAR" + lightIndex] === undefined) {
-                    needRebuild = true;
-                }
-                defines["LIGHTMAPNOSPECULAR" + lightIndex] = light.lightmapNoSpecular;
-
 
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
@@ -137,7 +135,7 @@
             if (defines["LIGHTMAPEXCLUDED"] === undefined) {
                 needRebuild = true;
             }
-            if (lightmapExcluded) {
+            if (lightmapMode) {
                 defines["LIGHTMAPEXCLUDED"] = true;
             }
 
