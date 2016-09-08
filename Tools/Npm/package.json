@@ -22,6 +22,7 @@
     "Oimo.js",
     "package.json"
   ],
+  "typings": "babylon.d.ts",
   "keywords": [
     "3D",
     "javascript",
