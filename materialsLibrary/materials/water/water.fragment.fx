@@ -32,6 +32,7 @@ varying vec4 vColor;
 // Samplers
 #ifdef BUMP
 varying vec2 vNormalUV;
+varying vec2 vNormalUV2;
 uniform sampler2D normalSampler;
 uniform vec2 vNormalInfos;
 #endif
@@ -51,6 +52,8 @@ uniform vec4 waterColor2;
 uniform float colorBlendFactor2;
 
 uniform float bumpHeight;
+
+uniform float time;
 
 // Water varyings
 varying vec3 vRefractionMapTexCoord;
@@ -77,8 +80,11 @@ void main(void) {
 	float alpha = vDiffuseColor.a;
 
 #ifdef BUMP
-    //smaller bumps superimposed (better moving waves, no "conveyor belt" look):
-	baseColor = (texture2D(normalSampler, vNormalUV) + texture2D(normalSampler,vec2(vNormalUV.y*0.33,vNormalUV.x*0.33)))/2.0;
+    #ifdef BUMPSUPERIMPOSE
+    	baseColor = 0.6 * texture2D(normalSampler, vNormalUV) + 0.4 * texture2D(normalSampler,vec2(vNormalUV2.x,vNormalUV2.y));
+    #else
+	    baseColor = texture2D(normalSampler, vNormalUV);
+    #endif
 	vec3 bumpColor = baseColor.rgb;
 
 #ifdef ALPHATEST
@@ -97,9 +103,12 @@ void main(void) {
 
 	// Bump
 #ifdef NORMAL
-    //reflection angle is also perturbed
 	vec2 perturbation = bumpHeight * (baseColor.rg - 0.5);
-	vec3 normalW = normalize(vNormalW + vec3(perturbation.x*3.0,perturbation.y*3.0,0.0));
+	#ifdef BUMPAFFECTSREFLECTION
+	    vec3 normalW = normalize(vNormalW + vec3(perturbation.x,0.0,perturbation.y));
+    #else
+    	vec3 normalW = normalize(vNormalW);
+	#endif
 #else
 	vec3 normalW = vec3(1.0, 1.0, 1.0);
 	vec2 perturbation = bumpHeight * (vec2(1.0, 1.0) - 0.5);
@@ -111,19 +120,24 @@ void main(void) {
 	
 	vec2 projectedRefractionTexCoords = clamp(vRefractionMapTexCoord.xy / vRefractionMapTexCoord.z + perturbation, 0.0, 1.0);
 	vec4 refractiveColor = texture2D(refractionSampler, projectedRefractionTexCoords);
-    refractiveColor = colorBlendFactor*waterColor + (1.0-colorBlendFactor)*refractiveColor;
 
 	vec2 projectedReflectionTexCoords = clamp(vReflectionMapTexCoord.xy / vReflectionMapTexCoord.z + perturbation, 0.0, 1.0);
 	vec4 reflectiveColor = texture2D(reflectionSampler, projectedReflectionTexCoords);
-	reflectiveColor = colorBlendFactor2*waterColor2 + (1.0-colorBlendFactor2)*reflectiveColor;
 
 	vec3 upVector = vec3(0.0, 1.0, 0.0);
 
-	float fresnelTerm = min(0.95, pow(max(dot(eyeVector, upVector), 0.0),3.0));
+	#ifdef FRESNELSEPARATE
+        refractiveColor = colorBlendFactor*waterColor + (1.0-colorBlendFactor)*refractiveColor;
+	    reflectiveColor = colorBlendFactor2*waterColor2 + (1.0-colorBlendFactor2)*reflectiveColor;
 
-	vec4 combinedColor = refractiveColor * fresnelTerm + reflectiveColor * (1.0 - fresnelTerm);
-	
-	baseColor = combinedColor;
+    	float fresnelTerm = clamp(pow(dot(eyeVector, upVector),3.0),0.0,1.0);
+	    vec4 combinedColor = refractiveColor * fresnelTerm + reflectiveColor * (1.0 - fresnelTerm);
+	    baseColor = combinedColor;
+	#else
+    	float fresnelTerm = max(dot(eyeVector, upVector), 0.0);
+	    vec4 combinedColor = refractiveColor * fresnelTerm + reflectiveColor * (1.0 - fresnelTerm);
+	    baseColor = colorBlendFactor * waterColor + (1.0 - colorBlendFactor) * combinedColor;
+	#endif
 #endif
 
 	// Lighting
@@ -146,8 +160,7 @@ void main(void) {
 #endif
 
 #ifdef SPECULARTERM
-    //specular glare: more concentrated (no flat surface, specular is only for hard lights)
-	vec3 finalSpecular = specularBase * 2.0 * specularColor * specularColor;
+	vec3 finalSpecular = specularBase * specularColor;
 #else
 	vec3 finalSpecular = vec3(0.0);
 #endif

@@ -19,6 +19,9 @@ module BABYLON {
         public INSTANCES = false;
         public SPECULARTERM = false;
         public LOGARITHMICDEPTH = false;
+        public FRESNELSEPARATE = false;
+        public BUMPSUPERIMPOSE = false;
+        public BUMPAFFECTSREFLECTION = false;
 
 
         constructor() {
@@ -69,6 +72,22 @@ module BABYLON {
         */
         @serialize()
 		public bumpHeight: number = 0.4;
+        /**
+         * @param {boolean}: Add a smaller moving bump to less steady waves.
+         */
+        @serialize()
+        public bumpSuperimpose = false;
+        /**
+         * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+         */
+        @serialize()
+        public fresnelSeparate = false;
+        /**
+         * @param {boolean}: bump Waves modify the reflection.
+         */
+        @serialize()
+        public bumpAffectsReflection = false;
+
         /**
         * @param {number}: The water color blended with the refraction (near)
         */
@@ -253,6 +272,18 @@ module BABYLON {
 
             if (this.useLogarithmicDepth) {
                 this._defines.LOGARITHMICDEPTH = true;
+            }
+
+            if (this.fresnelSeparate) {
+                this._defines.FRESNELSEPARATE = true;
+            }
+
+            if (this.bumpSuperimpose) {
+                this._defines.BUMPSUPERIMPOSE = true;
+            }
+
+            if (this.bumpAffectsReflection) {
+                this._defines.BUMPAFFECTSREFLECTION = true;
             }
 
             // Fog

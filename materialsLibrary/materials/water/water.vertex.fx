@@ -25,6 +25,9 @@ uniform mat4 viewProjection;
 
 #ifdef BUMP
 varying vec2 vNormalUV;
+#ifdef BUMPSUPERIMPOSE
+    varying vec2 vNormalUV2;
+#endif
 uniform mat4 normalMatrix;
 uniform vec2 vNormalInfos;
 #endif
@@ -90,10 +93,16 @@ void main(void) {
 	if (vNormalInfos.x == 0.)
 	{
 		vNormalUV = vec2(normalMatrix * vec4((uv * 1.0) / waveLength + time * windForce * windDirection, 1.0, 0.0));
+        #ifdef BUMPSUPERIMPOSE
+		    vNormalUV2 = vec2(normalMatrix * vec4((uv * 0.721) / waveLength + time * 1.2 * windForce * windDirection, 1.0, 0.0));
+		#endif
 	}
 	else
 	{
-		vNormalUV = vec2(normalMatrix * vec4((uv2 * 1.0) / waveLength + time * windForce * windDirection, 1.0, 0.0));
+		vNormalUV = vec2(normalMatrix * vec4((uv2 * 1.0) / waveLength + time * windForce * windDirection , 1.0, 0.0));
+        #ifdef BUMPSUPERIMPOSE
+    		vNormalUV2 = vec2(normalMatrix * vec4((uv2 * 0.721) / waveLength + time * 1.2 * windForce * windDirection , 1.0, 0.0));
+    	#endif
 	}
 #endif
 
@@ -118,7 +127,7 @@ void main(void) {
 
 	vec3 p = position;
 	float newY = (sin(((p.x / 0.05) + time * waveSpeed)) * waveHeight * windDirection.x * 5.0)
-			   + (cos(((p.z / 0.05) +  time * waveSpeed)) * waveHeight * windDirection.y * 5.0);
+			   + (cos(((p.z / 0.05) +  time * waveSpeed)) * waveHeight * windDirection.y * 1.25);
 	p.y += abs(newY);
 	
 	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);
