@@ -307,9 +307,9 @@ var BABYLON;
             impostor.physicsBody.awake();
         };
         OimoJSPlugin.prototype.updateDistanceJoint = function (joint, maxDistance, minDistance) {
-            joint.physicsJoint.limitMotoe.upperLimit = maxDistance;
+            joint.physicsJoint.limitMotor.upperLimit = maxDistance;
             if (minDistance !== void 0) {
-                joint.physicsJoint.limitMotoe.lowerLimit = minDistance;
+                joint.physicsJoint.limitMotor.lowerLimit = minDistance;
             }
         };
         OimoJSPlugin.prototype.setMotor = function (joint, speed, maxForce, motorIndex) {

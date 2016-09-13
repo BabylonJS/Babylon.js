@@ -997,6 +997,14 @@ var BABYLON;
                 if (meshIndex !== -1) {
                     light.excludedMeshes.splice(meshIndex, 1);
                 }
+                // Shadow generators
+                var generator = light.getShadowGenerator();
+                if (generator) {
+                    meshIndex = generator.getShadowMap().renderList.indexOf(_this);
+                    if (meshIndex !== -1) {
+                        generator.getShadowMap().renderList.splice(meshIndex, 1);
+                    }
+                }
             });
             // Edges
             if (this._edgesRenderer) {
