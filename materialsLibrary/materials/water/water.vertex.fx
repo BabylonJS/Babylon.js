@@ -25,6 +25,9 @@ uniform mat4 viewProjection;
 
 #ifdef BUMP
 varying vec2 vNormalUV;
+#ifdef BUMPSUPERIMPOSE
+    varying vec2 vNormalUV2;
+#endif
 uniform mat4 normalMatrix;
 uniform vec2 vNormalInfos;
 #endif
@@ -48,6 +51,8 @@ varying vec4 vColor;
 #include<fogVertexDeclaration>
 #include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
 
+#include<logDepthDeclaration>
+
 // Water uniforms
 uniform mat4 worldReflectionViewProjection;
 uniform vec2 windDirection;
@@ -61,6 +66,8 @@ uniform float waveSpeed;
 varying vec3 vPosition;
 varying vec3 vRefractionMapTexCoord;
 varying vec3 vReflectionMapTexCoord;
+
+
 
 void main(void) {
 
@@ -86,10 +93,16 @@ void main(void) {
 	if (vNormalInfos.x == 0.)
 	{
 		vNormalUV = vec2(normalMatrix * vec4((uv * 1.0) / waveLength + time * windForce * windDirection, 1.0, 0.0));
+        #ifdef BUMPSUPERIMPOSE
+		    vNormalUV2 = vec2(normalMatrix * vec4((uv * 0.721) / waveLength + time * 1.2 * windForce * windDirection, 1.0, 0.0));
+		#endif
 	}
 	else
 	{
-		vNormalUV = vec2(normalMatrix * vec4((uv2 * 1.0) / waveLength + time * windForce * windDirection, 1.0, 0.0));
+		vNormalUV = vec2(normalMatrix * vec4((uv2 * 1.0) / waveLength + time * windForce * windDirection , 1.0, 0.0));
+        #ifdef BUMPSUPERIMPOSE
+    		vNormalUV2 = vec2(normalMatrix * vec4((uv2 * 0.721) / waveLength + time * 1.2 * windForce * windDirection , 1.0, 0.0));
+    	#endif
 	}
 #endif
 
@@ -134,4 +147,7 @@ void main(void) {
 	vReflectionMapTexCoord.y = 0.5 * (worldPos.w + worldPos.y);
 	vReflectionMapTexCoord.z = worldPos.w;
 #endif
+
+#include<logDepthVertex>
+
 }
