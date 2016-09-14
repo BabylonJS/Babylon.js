@@ -18,6 +18,11 @@ module BABYLON {
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public SPECULARTERM = false;
+        public LOGARITHMICDEPTH = false;
+        public FRESNELSEPARATE = false;
+        public BUMPSUPERIMPOSE = false;
+        public BUMPAFFECTSREFLECTION = false;
+
 
         constructor() {
             super();
@@ -68,7 +73,23 @@ module BABYLON {
         @serialize()
 		public bumpHeight: number = 0.4;
         /**
-        * @param {number}: The water color blended with the reflection and refraction samplers
+         * @param {boolean}: Add a smaller moving bump to less steady waves.
+         */
+        @serialize()
+        public bumpSuperimpose = false;
+        /**
+         * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+         */
+        @serialize()
+        public fresnelSeparate = false;
+        /**
+         * @param {boolean}: bump Waves modify the reflection.
+         */
+        @serialize()
+        public bumpAffectsReflection = false;
+
+        /**
+        * @param {number}: The water color blended with the refraction (near)
         */
         @serializeAsColor3()
 		public waterColor: Color3 = new Color3(0.1, 0.1, 0.6);
@@ -77,6 +98,16 @@ module BABYLON {
         */
         @serialize()
 		public colorBlendFactor: number = 0.2;
+        /**
+         * @param {number}: The water color blended with the reflection (far)
+         */
+        @serializeAsColor3()
+        public waterColor2: Color3 = new Color3(0.1, 0.1, 0.6);
+        /**
+         * @param {number}: The blend factor related to the water color (reflection, far)
+         */
+        @serialize()
+        public colorBlendFactor2: number = 0.2;
         /**
         * @param {number}: Represents the maximum length of a wave
         */
@@ -106,8 +137,10 @@ module BABYLON {
 
         private _defines = new WaterMaterialDefines();
         private _cachedDefines = new WaterMaterialDefines();
-		
-		/**
+
+        private _useLogarithmicDepth: boolean;
+
+        /**
 		* Constructor
 		*/
 		constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
@@ -116,7 +149,16 @@ module BABYLON {
 			// Create render targets
 			this._createRenderTargets(scene, renderTargetSize);
         }
-		
+
+        @serialize()
+        public get useLogarithmicDepth(): boolean {
+            return this._useLogarithmicDepth;
+        }
+
+        public set useLogarithmicDepth(value: boolean) {
+            this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
+        }
+
         // Get / Set
         public get refractionTexture(): RenderTargetTexture {
             return this._refractionRTT;
@@ -228,6 +270,22 @@ module BABYLON {
                 this._defines.POINTSIZE = true;
             }
 
+            if (this.useLogarithmicDepth) {
+                this._defines.LOGARITHMICDEPTH = true;
+            }
+
+            if (this.fresnelSeparate) {
+                this._defines.FRESNELSEPARATE = true;
+            }
+
+            if (this.bumpSuperimpose) {
+                this._defines.BUMPSUPERIMPOSE = true;
+            }
+
+            if (this.bumpAffectsReflection) {
+                this._defines.BUMPAFFECTSREFLECTION = true;
+            }
+
             // Fog
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
@@ -284,6 +342,10 @@ module BABYLON {
                     fallbacks.addFallback(1, "FOG");
                 }
 
+                if (this._defines.LOGARITHMICDEPTH) {
+                    fallbacks.addFallback(0, "LOGARITHMICDEPTH");
+                }
+
                 MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
              
                 if (this._defines.NUM_BONE_INFLUENCERS > 0) {
@@ -320,9 +382,11 @@ module BABYLON {
                     "vNormalInfos", 
                     "mBones",
                     "vClipPlane", "normalMatrix",
+                    "logarithmicDepthConstant",
+
                     // Water
                     "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
-                    "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "colorBlendFactor", "waveSpeed"
+                    "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed"
                 ]
                 var samplers = ["normalSampler",
                     // Water
@@ -403,7 +467,10 @@ module BABYLON {
 
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._effect);
-            
+
+            // Log. depth
+            MaterialHelper.BindLogDepth(this._defines, this._effect, scene);
+
             // Water
             if (StandardMaterial.ReflectionTextureEnabled) {
                 this._effect.setTexture("refractionSampler", this._refractionRTT);
@@ -422,6 +489,8 @@ module BABYLON {
             this._effect.setFloat("bumpHeight", this.bumpHeight);
 			this._effect.setColor4("waterColor", this.waterColor, 1.0);
 			this._effect.setFloat("colorBlendFactor", this.colorBlendFactor);
+            this._effect.setColor4("waterColor2", this.waterColor2, 1.0);
+            this._effect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
             this._effect.setFloat("waveSpeed", this.waveSpeed);
 
             super.bind(world, mesh);
@@ -430,8 +499,13 @@ module BABYLON {
 		private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {
 			// Render targets
 			this._refractionRTT = new RenderTargetTexture(name + "_refraction", {width: renderTargetSize.x, height: renderTargetSize.y}, scene, false, true);
+            this._refractionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._refractionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+
 			this._reflectionRTT = new RenderTargetTexture(name + "_reflection", {width: renderTargetSize.x, height: renderTargetSize.y}, scene, false, true);
-			
+            this._reflectionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._reflectionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+
 			scene.customRenderTargets.push(this._refractionRTT);
 			scene.customRenderTargets.push(this._reflectionRTT);
 			
