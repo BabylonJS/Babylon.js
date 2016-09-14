@@ -125,6 +125,11 @@
                     }
                 }
 
+                // Put a handler to resize the background whenever the canvas is resizing
+                this.propertyChanged.add((e, s) => {
+                    this._background.size = this.size;
+                }, Group2D.sizeProperty.flagId);
+
                 this._background._patchHierarchy(this);
             }
 
@@ -950,6 +955,14 @@
             this._setupInteraction(enable);
         }
 
+        public get designSize(): Size {
+            return this._designSize;
+        }
+
+        public get designSizeUseHorizAxis(): boolean {
+            return this._designUseHorizAxis;
+        }
+
         /**
          * Access the babylon.js' engine bound data, do not invoke this method, it's for internal purpose only
          * @returns {} 
@@ -1159,8 +1172,9 @@
                 let worldMtx = node.getWorldMatrix();
 
                 let proj = Vector3.Project(Canvas2D._v, worldMtx, Canvas2D._m, v);
-                group.x = Math.round(proj.x);
-                group.y = Math.round(rh - proj.y);
+                let s = this.scale;
+                group.x = Math.round(proj.x/s);
+                group.y = Math.round((rh - proj.y)/s);
             }
         }
 
@@ -1278,9 +1292,9 @@
 
             this._initPerfMetrics();
 
-            this._updateTrackedNodes();
-
             this._updateCanvasState(false);
+
+            this._updateTrackedNodes();
 
             // Nothing to do is the Canvas is not visible
             if (this.isVisible === false) {
