@@ -44,29 +44,60 @@ window.prepareWater = function() {
 	});
 	
 	// Specular color
-	registerRangeUI("water", "specularColorR", 0, 1, function(value) {
-		water.specularColor.r = value;
+	registerColorPicker("water", "specularColor", "#703605", function(value) {		
+		water.specularColor.r = value.r/255;
+		water.specularColor.g = value.g/255;
+		water.specularColor.b = value.b/255;
 	}, function() {
-		return water.specularColor.r;
+		return water.specularColor;
 	});
-	
-	registerRangeUI("water", "specularColorG", 0, 1, function(value) {
-		water.specularColor.g = value;
-	}, function() {
-		return water.specularColor.g;
-	});
-	
-	registerRangeUI("water", "specularColorB", 0, 1, function(value) {
-		water.specularColor.b = value;
-	}, function() {
-		return water.specularColor.b;
-	});
-	
+
 	registerRangeUI("water", "specularPower", 0, 512, function(value) {
 		water.specularPower = value;
 	}, function() {
 		return water.specularPower;
 	});
+
+	// Advanced
+	registerRangeUI("water", "bumpSuperimpose", 0, 1, function(value) {
+		water.bumpSuperimpose = value;
+	}, function() {
+		return water.bumpSuperimpose;
+	});
+
+	registerRangeUI("water", "fresnelSeparate", 0, 1, function(value) {
+		water.fresnelSeparate  = value;
+	}, function() {
+		return water.fresnelSeparate ;
+	});
 		
+	registerRangeUI("water", "bumpAffectsReflection", 0, 1, function(value) {
+		water.bumpAffectsReflection  = value;
+	}, function() {
+		return water.bumpAffectsReflection ;
+	});
+
+	registerRangeUI("water", "colorBlendFactor2", 0, 1, function(value) {
+		water.colorBlendFactor2 = value;
+	}, function() {
+		return water.colorBlendFactor2;
+	});
+
+	registerColorPicker("water", "waterColor", "#703605", function(value) {		
+		water.waterColor.r = value.r/255;
+		water.waterColor.g = value.g/255;
+		water.waterColor.b = value.b/255;
+	}, function() {
+		return water.waterColor;
+	});
+
+	registerColorPicker("water", "waterColor2", "#703605", function(value) {		
+		water.waterColor2.r = value.r/255;
+		water.waterColor2.g = value.g/255;
+		water.waterColor2.b = value.b/255;
+	}, function() {
+		return water.waterColor2;
+	});
+
 	return water;
 }
