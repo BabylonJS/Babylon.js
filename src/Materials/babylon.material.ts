@@ -114,7 +114,7 @@
         public backFaceCulling = true;
 
         @serialize()
-        public sideOrientation = Material.CounterClockWiseSideOrientation;
+        public sideOrientation: number;
 
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
@@ -209,6 +209,12 @@
 
             this._scene = scene;
 
+            if (scene.useRightHandedSystem) {
+                this.sideOrientation = Material.ClockWiseSideOrientation;
+            } else {
+                this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            }
+
             if (!doNotAdd) {
                 scene.materials.push(this);
             }
@@ -267,9 +273,10 @@
 
         public _preBind(): void {
             var engine = this._scene.getEngine();
+            var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
 
             engine.enableEffect(this._effect);
-            engine.setState(this.backFaceCulling, this.zOffset, false, this.sideOrientation === Material.ClockWiseSideOrientation);
+            engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {

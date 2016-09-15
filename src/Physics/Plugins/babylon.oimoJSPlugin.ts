@@ -365,9 +365,9 @@ module BABYLON {
         }
 
         public updateDistanceJoint(joint: IMotorEnabledJoint, maxDistance: number, minDistance?: number) {
-            joint.physicsJoint.limitMotoe.upperLimit = maxDistance;
+            joint.physicsJoint.limitMotor.upperLimit = maxDistance;
             if (minDistance !== void 0) {
-                joint.physicsJoint.limitMotoe.lowerLimit = minDistance;
+                joint.physicsJoint.limitMotor.lowerLimit = minDistance;
             }
         }
 

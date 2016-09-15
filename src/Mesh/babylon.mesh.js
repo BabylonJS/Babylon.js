@@ -712,7 +712,9 @@ var BABYLON;
             if (!this._geometry) {
                 return;
             }
+            var oldGeometry = this._geometry;
             var geometry = this._geometry.copy(BABYLON.Geometry.RandomId());
+            oldGeometry.releaseForMesh(this, true);
             geometry.applyToMesh(this);
         };
         /**
