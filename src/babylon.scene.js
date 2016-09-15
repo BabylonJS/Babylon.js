@@ -105,6 +105,7 @@ var BABYLON;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
+            this.useRightHandedSystem = false;
             this.hoverCursor = "pointer";
             // Events
             /**
