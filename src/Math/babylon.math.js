@@ -2258,6 +2258,32 @@ var BABYLON;
             var ez = -Vector3.Dot(this._zAxis, eye);
             return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
         };
+        Matrix.LookAtRH = function (eye, target, up) {
+            var result = Matrix.Zero();
+            Matrix.LookAtRHToRef(eye, target, up, result);
+            return result;
+        };
+        Matrix.LookAtRHToRef = function (eye, target, up, result) {
+            // Z axis
+            eye.subtractToRef(target, this._zAxis);
+            this._zAxis.normalize();
+            // X axis
+            Vector3.CrossToRef(up, this._zAxis, this._xAxis);
+            if (this._xAxis.lengthSquared() === 0) {
+                this._xAxis.x = 1.0;
+            }
+            else {
+                this._xAxis.normalize();
+            }
+            // Y axis
+            Vector3.CrossToRef(this._zAxis, this._xAxis, this._yAxis);
+            this._yAxis.normalize();
+            // Eye angles
+            var ex = -Vector3.Dot(this._xAxis, eye);
+            var ey = -Vector3.Dot(this._yAxis, eye);
+            var ez = -Vector3.Dot(this._zAxis, eye);
+            return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
+        };
         Matrix.OrthoLH = function (width, height, znear, zfar) {
             var matrix = Matrix.Zero();
             Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);

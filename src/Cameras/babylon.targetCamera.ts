@@ -227,7 +227,12 @@
                 this._currentTarget.copyFrom(this._getLockedTargetPosition());
             }
 
-            Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+            if (this.getScene().useRightHandedSystem) {
+                Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+            } else {
+                Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+            }
+            
             return this._viewMatrix;
         }
 
