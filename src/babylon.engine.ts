@@ -88,7 +88,7 @@
         engine.resetTextureCache();
         scene._removePendingData(texture);
 
-        texture.onLoadedCallbacks.forEach(function (callback) {
+        texture.onLoadedCallbacks.forEach(callback => {
             callback();
         });
         texture.onLoadedCallbacks = [];

@@ -1,7 +1,7 @@
 # 2.5.0:
 
 ### Major updates
-    
+- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))    
 ### Updates
 - Cube textures are now cached by texture cache ([deltakosh](https://github.com/deltakosh)) 
 - Added onAnimationEnd callback for `sprite.playAnimation` ([deltakosh](https://github.com/deltakosh)) 
