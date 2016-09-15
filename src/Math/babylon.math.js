@@ -2258,6 +2258,32 @@ var BABYLON;
             var ez = -Vector3.Dot(this._zAxis, eye);
             return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
         };
+        Matrix.LookAtRH = function (eye, target, up) {
+            var result = Matrix.Zero();
+            Matrix.LookAtRHToRef(eye, target, up, result);
+            return result;
+        };
+        Matrix.LookAtRHToRef = function (eye, target, up, result) {
+            // Z axis
+            eye.subtractToRef(target, this._zAxis);
+            this._zAxis.normalize();
+            // X axis
+            Vector3.CrossToRef(up, this._zAxis, this._xAxis);
+            if (this._xAxis.lengthSquared() === 0) {
+                this._xAxis.x = 1.0;
+            }
+            else {
+                this._xAxis.normalize();
+            }
+            // Y axis
+            Vector3.CrossToRef(this._zAxis, this._xAxis, this._yAxis);
+            this._yAxis.normalize();
+            // Eye angles
+            var ex = -Vector3.Dot(this._xAxis, eye);
+            var ey = -Vector3.Dot(this._yAxis, eye);
+            var ez = -Vector3.Dot(this._zAxis, eye);
+            return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
+        };
         Matrix.OrthoLH = function (width, height, znear, zfar) {
             var matrix = Matrix.Zero();
             Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
@@ -2280,12 +2306,21 @@ var BABYLON;
             result.m[1] = result.m[2] = result.m[3] = 0;
             result.m[5] = 2.0 / (top - bottom);
             result.m[4] = result.m[6] = result.m[7] = 0;
-            result.m[10] = -1.0 / (znear - zfar);
+            result.m[10] = 1.0 / (zfar - znear);
             result.m[8] = result.m[9] = result.m[11] = 0;
             result.m[12] = (left + right) / (left - right);
             result.m[13] = (top + bottom) / (bottom - top);
-            result.m[14] = znear / (znear - zfar);
+            result.m[14] = -znear / (zfar - znear);
             result.m[15] = 1.0;
+        };
+        Matrix.OrthoOffCenterRH = function (left, right, bottom, top, znear, zfar) {
+            var matrix = Matrix.Zero();
+            Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
+            return matrix;
+        };
+        Matrix.OrthoOffCenterRHToRef = function (left, right, bottom, top, znear, zfar, result) {
+            Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
+            result.m[10] *= -1.0;
         };
         Matrix.PerspectiveLH = function (width, height, znear, zfar) {
             var matrix = Matrix.Zero();
@@ -2323,8 +2358,36 @@ var BABYLON;
             }
             result.m[4] = result.m[6] = result.m[7] = 0.0;
             result.m[8] = result.m[9] = 0.0;
-            result.m[10] = -zfar / (znear - zfar);
+            result.m[10] = zfar / (zfar - znear);
             result.m[11] = 1.0;
+            result.m[12] = result.m[13] = result.m[15] = 0.0;
+            result.m[14] = -(znear * zfar) / (zfar - znear);
+        };
+        Matrix.PerspectiveFovRH = function (fov, aspect, znear, zfar) {
+            var matrix = Matrix.Zero();
+            Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
+            return matrix;
+        };
+        Matrix.PerspectiveFovRHToRef = function (fov, aspect, znear, zfar, result, isVerticalFovFixed) {
+            if (isVerticalFovFixed === void 0) { isVerticalFovFixed = true; }
+            var tan = 1.0 / (Math.tan(fov * 0.5));
+            if (isVerticalFovFixed) {
+                result.m[0] = tan / aspect;
+            }
+            else {
+                result.m[0] = tan;
+            }
+            result.m[1] = result.m[2] = result.m[3] = 0.0;
+            if (isVerticalFovFixed) {
+                result.m[5] = tan;
+            }
+            else {
+                result.m[5] = tan * aspect;
+            }
+            result.m[4] = result.m[6] = result.m[7] = 0.0;
+            result.m[8] = result.m[9] = 0.0;
+            result.m[10] = zfar / (znear - zfar);
+            result.m[11] = -1.0;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
             result.m[14] = (znear * zfar) / (znear - zfar);
         };

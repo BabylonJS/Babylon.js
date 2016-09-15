@@ -1,16 +1,20 @@
 ﻿#ifdef LIGHT{X}
-	#ifndef SPECULARTERM
-		vec3 vLightSpecular{X} = vec3(0.);
-	#endif
-	#ifdef SPOTLIGHT{X}
-		info = computeSpotLighting(viewDirectionW, normalW, vLightData{X}, vLightDirection{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, glossiness);
-	#endif
-	#ifdef HEMILIGHT{X}
-		info = computeHemisphericLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightGround{X}, glossiness);
-	#endif
-	#if defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
-		info = computeLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, glossiness);
-	#endif
+    #if defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
+        //No light calculation
+    #else
+        #ifndef SPECULARTERM
+            vec3 vLightSpecular{X} = vec3(0.);
+        #endif
+        #ifdef SPOTLIGHT{X}
+            info = computeSpotLighting(viewDirectionW, normalW, vLightData{X}, vLightDirection{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, glossiness);
+        #endif
+        #ifdef HEMILIGHT{X}
+            info = computeHemisphericLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightGround{X}, glossiness);
+        #endif
+        #if defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
+            info = computeLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, glossiness);
+        #endif
+    #endif
 	#ifdef SHADOW{X}
 		#ifdef SHADOWVSM{X}
 			shadow = computeShadowWithVSM(vPositionFromLight{X}, shadowSampler{X}, shadowsInfo{X}.z, shadowsInfo{X}.x);
@@ -32,8 +36,17 @@
 	#else
 		shadow = 1.;
 	#endif
-		diffuseBase += info.diffuse * shadow;
-	#ifdef SPECULARTERM
-		specularBase += info.specular * shadow;
+    #if defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X})
+	    diffuseBase += lightmapColor * shadow;
+	    #ifdef SPECULARTERM
+            #ifndef LIGHTMAPNOSPECULAR{X}
+                specularBase += info.specular * shadow * lightmapColor;
+            #endif
+        #endif
+    #else
+	    diffuseBase += info.diffuse * shadow;
+	    #ifdef SPECULARTERM
+		    specularBase += info.specular * shadow;
+	    #endif
 	#endif
 #endif

@@ -431,7 +431,11 @@
                     up = up.negate();
                 }
 
-                Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
+                if (this.getScene().useRightHandedSystem) {
+                    Matrix.LookAtRHToRef(this.position, target, up, this._viewMatrix);
+                } else {
+                    Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
+                }
                 this._viewMatrix.m[12] += this.targetScreenOffset.x;
                 this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }

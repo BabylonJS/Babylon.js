@@ -1725,7 +1725,7 @@
                 return;
             }
             this._position = value;
-            this.markAsDirty("actualPosition");
+            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
         }
 
         /**
@@ -1752,8 +1752,8 @@
             }
 
             this._position.x = value;
-            this.markAsDirty("position");
-            this.markAsDirty("actualPosition");
+            this._triggerPropertyChanged(Prim2DBase.positionProperty, value);
+            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
         }
 
         /**
@@ -1780,8 +1780,8 @@
             }
 
             this._position.y = value;
-            this.markAsDirty("position");
-            this.markAsDirty("actualPosition");
+            this._triggerPropertyChanged(Prim2DBase.positionProperty, value);
+            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
         }
 
         private static boundinbBoxReentrency = false;
@@ -1842,7 +1842,7 @@
             }
 
             this.size.width = value;
-            this.markAsDirty("size");
+            this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
             this._positioningDirty();
         }
 
@@ -1868,7 +1868,7 @@
             }
 
             this.size.height = value;
-            this.markAsDirty("size");
+            this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
             this._positioningDirty();
         }
 
@@ -2748,6 +2748,8 @@
         protected _spreadActualOpacityChanged() {
             for (let child of this._children) {
                 child._setFlags(SmartPropertyPrim.flagActualOpacityDirty);
+                child._updateRenderMode();
+                child.onPrimBecomesDirty();
                 child._spreadActualOpacityChanged();
             }
         }

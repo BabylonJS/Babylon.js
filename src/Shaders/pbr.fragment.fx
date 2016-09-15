@@ -289,7 +289,13 @@ void main(void) {
 #ifdef SPECULARTERM
 	vec3 lightSpecularContribution = vec3(0., 0., 0.);
 #endif
+	
 	float notShadowLevel = 1.; // 1 - shadowLevel
+
+	#ifdef LIGHTMAP
+  		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
+  	#endif
+
 	float NdotL = -1.;
 	lightingInfo info;
 
@@ -589,13 +595,13 @@ void main(void) {
 #endif
 
 #ifdef LIGHTMAP
-	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
-
-#ifdef USELIGHTMAPASSHADOWMAP
-	finalColor.rgb *= lightmapColor;
-#else
-	finalColor.rgb += lightmapColor;
-#endif
+    #ifndef LIGHTMAPEXCLUDED
+        #ifdef USELIGHTMAPASSHADOWMAP
+            finalColor.rgb *= lightmapColor;
+        #else
+            finalColor.rgb += lightmapColor;
+        #endif
+    #endif
 #endif
 
 	finalColor = max(finalColor, 0.0);

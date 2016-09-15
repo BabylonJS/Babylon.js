@@ -103,6 +103,7 @@
         public clipPlane: Plane;
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
+        public useRightHandedSystem = false;
 
         public hoverCursor = "pointer";
 

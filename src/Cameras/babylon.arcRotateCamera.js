@@ -407,7 +407,12 @@ var BABYLON;
                     up = up.clone();
                     up = up.negate();
                 }
-                BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
+                if (this.getScene().useRightHandedSystem) {
+                    BABYLON.Matrix.LookAtRHToRef(this.position, target, up, this._viewMatrix);
+                }
+                else {
+                    BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
+                }
                 this._viewMatrix.m[12] += this.targetScreenOffset.x;
                 this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }

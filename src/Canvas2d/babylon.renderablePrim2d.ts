@@ -359,7 +359,7 @@
          * The setter should be used only by implementers of new primitive type.
          */
         public get isTransparent(): boolean {
-            return (this._opacity<1) || this._shouldUseAlphaFromTexture() || this._isPrimTransparent();
+            return (this.actualOpacity<1) || this._shouldUseAlphaFromTexture() || this._isPrimTransparent();
         }
 
         public get renderMode(): number {
@@ -424,14 +424,17 @@
                 if (gii.hasOpaqueData) {
                     let od = gii.opaqueData[0];
                     usedCount += od._partData.usedElementCount;
+                    gii.opaqueDirty = true;
                 }
                 if (gii.hasAlphaTestData) {
                     let atd = gii.alphaTestData[0];
                     usedCount += atd._partData.usedElementCount;
+                    gii.alphaTestDirty = true;
                 }
                 if (gii.hasTransparentData) {
                     let td = gii.transparentData[0];
                     usedCount += td._partData.usedElementCount;
+                    gii.transparentDirty = true;
                 }
 
                 if (usedCount === 0 && gii.modelRenderCache!=null) {

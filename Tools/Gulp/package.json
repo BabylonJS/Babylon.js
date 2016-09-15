@@ -8,7 +8,7 @@
   "license": "(Apache-2.0)",
   "devDependencies": {
     "gulp": "^3.8.11",
-    "gulp-uglify": "~1.2.0",
+    "gulp-uglify": "~1.5.3",
     "gulp-sourcemaps": "~1.5.2",
     "typescript": "^1.7.5",
     "gulp-typescript": "~2.13.0",

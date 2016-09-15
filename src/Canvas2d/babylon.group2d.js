@@ -299,6 +299,15 @@ var BABYLON;
             var a = this.actualScale;
             var sw = Math.ceil(s.width * a.x);
             var sh = Math.ceil(s.height * a.y);
+            // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
+            // So we set the width/height to the rendering's one because that's what we want for the viewport!
+            if (this instanceof BABYLON.Canvas2D) {
+                var c = this;
+                if (c.designSize != null) {
+                    sw = this.owner.engine.getRenderWidth();
+                    sh = this.owner.engine.getRenderHeight();
+                }
+            }
             // Setup the size of the rendering viewport
             // In non cache mode, we're rendering directly to the rendering canvas, in this case we have to detect if the canvas size changed since the previous iteration, if it's the case all primitives must be prepared again because their transformation must be recompute
             if (!this._isCachedGroup) {

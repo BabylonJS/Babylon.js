@@ -71,7 +71,6 @@ var BABYLON;
             this.state = "";
             this.alpha = 1.0;
             this.backFaceCulling = true;
-            this.sideOrientation = Material.CounterClockWiseSideOrientation;
             /**
             * An event triggered when the material is disposed.
             * @type {BABYLON.Observable}
@@ -96,6 +95,12 @@ var BABYLON;
             this._fillMode = Material.TriangleFillMode;
             this.id = name;
             this._scene = scene;
+            if (scene.useRightHandedSystem) {
+                this.sideOrientation = Material.ClockWiseSideOrientation;
+            }
+            else {
+                this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            }
             if (!doNotAdd) {
                 scene.materials.push(this);
             }
@@ -231,8 +236,9 @@ var BABYLON;
         };
         Material.prototype._preBind = function () {
             var engine = this._scene.getEngine();
+            var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
             engine.enableEffect(this._effect);
-            engine.setState(this.backFaceCulling, this.zOffset, false, this.sideOrientation === Material.ClockWiseSideOrientation);
+            engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
         };
         Material.prototype.bind = function (world, mesh) {
             this._scene._cachedMaterial = this;

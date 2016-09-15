@@ -7,9 +7,18 @@ var BABYLON;
             this.canUseWebAudio = false;
             this.WarnedWebAudioUnsupported = false;
             this.unlocked = false;
+            this.isMP3supported = false;
+            this.isOGGsupported = false;
             if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 this.canUseWebAudio = true;
+            }
+            var audioElem = document.createElement('audio');
+            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
+                this.isMP3supported = true;
+            }
+            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, '')) {
+                this.isOGGsupported = true;
             }
             if (/iPad|iPhone|iPod/.test(navigator.platform)) {
                 this._unlockiOSaudio();

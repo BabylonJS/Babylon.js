@@ -988,24 +988,25 @@ var BABYLON;
             var row, col;
             var width = options.width || 1;
             var height = options.height || 1;
-            var subdivisions = options.subdivisions || 1;
-            for (row = 0; row <= subdivisions; row++) {
-                for (col = 0; col <= subdivisions; col++) {
-                    var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+            var subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
+            var subdivisionsY = options.subdivisionsY || options.subdivisions || 1;
+            for (row = 0; row <= subdivisionsY; row++) {
+                for (col = 0; col <= subdivisionsX; col++) {
+                    var position = new BABYLON.Vector3((col * width) / subdivisionsX - (width / 2.0), 0, ((subdivisionsY - row) * height) / subdivisionsY - (height / 2.0));
                     var normal = new BABYLON.Vector3(0, 1.0, 0);
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
-                    uvs.push(col / subdivisions, 1.0 - row / subdivisions);
+                    uvs.push(col / subdivisionsX, 1.0 - row / subdivisionsX);
                 }
             }
-            for (row = 0; row < subdivisions; row++) {
-                for (col = 0; col < subdivisions; col++) {
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + row * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
-                    indices.push(col + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
+            for (row = 0; row < subdivisionsY; row++) {
+                for (col = 0; col < subdivisionsX; col++) {
+                    indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + 1 + row * (subdivisionsX + 1));
+                    indices.push(col + row * (subdivisionsX + 1));
+                    indices.push(col + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + row * (subdivisionsX + 1));
                 }
             }
             // Result
