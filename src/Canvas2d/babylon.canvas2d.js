@@ -120,6 +120,10 @@ var BABYLON;
                         this.backgroundFill = settings.backgroundFill;
                     }
                 }
+                // Put a handler to resize the background whenever the canvas is resizing
+                this.propertyChanged.add(function (e, s) {
+                    _this._background.size = _this.size;
+                }, BABYLON.Group2D.sizeProperty.flagId);
                 this._background._patchHierarchy(this);
             }
             var engine = scene.getEngine();
@@ -859,6 +863,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Canvas2D.prototype, "designSize", {
+            get: function () {
+                return this._designSize;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "designSizeUseHorizAxis", {
+            get: function () {
+                return this._designUseHorizAxis;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Canvas2D.prototype, "_engineData", {
             /**
              * Access the babylon.js' engine bound data, do not invoke this method, it's for internal purpose only
@@ -990,8 +1008,9 @@ var BABYLON;
                 var node = group.trackedNode;
                 var worldMtx = node.getWorldMatrix();
                 var proj = BABYLON.Vector3.Project(Canvas2D._v, worldMtx, Canvas2D._m, v);
-                group.x = Math.round(proj.x);
-                group.y = Math.round(rh - proj.y);
+                var s = this.scale;
+                group.x = Math.round(proj.x / s);
+                group.y = Math.round((rh - proj.y) / s);
             }
         };
         /**
@@ -1086,8 +1105,8 @@ var BABYLON;
          */
         Canvas2D.prototype._render = function () {
             this._initPerfMetrics();
-            this._updateTrackedNodes();
             this._updateCanvasState(false);
+            this._updateTrackedNodes();
             // Nothing to do is the Canvas is not visible
             if (this.isVisible === false) {
                 return;

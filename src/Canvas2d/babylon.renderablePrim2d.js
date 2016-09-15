@@ -392,14 +392,17 @@ var BABYLON;
                 if (gii.hasOpaqueData) {
                     var od = gii.opaqueData[0];
                     usedCount += od._partData.usedElementCount;
+                    gii.opaqueDirty = true;
                 }
                 if (gii.hasAlphaTestData) {
                     var atd = gii.alphaTestData[0];
                     usedCount += atd._partData.usedElementCount;
+                    gii.alphaTestDirty = true;
                 }
                 if (gii.hasTransparentData) {
                     var td = gii.transparentData[0];
                     usedCount += td._partData.usedElementCount;
+                    gii.transparentDirty = true;
                 }
                 if (usedCount === 0 && gii.modelRenderCache != null) {
                     this.renderGroup._renderableData._renderGroupInstancesInfo.remove(gii.modelRenderCache.modelKey);
