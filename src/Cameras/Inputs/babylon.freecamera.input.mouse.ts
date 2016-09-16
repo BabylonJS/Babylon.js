@@ -70,7 +70,11 @@ module BABYLON {
                             offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
                         }
 
-                        camera.cameraRotation.y += offsetX / this.angularSensibility;
+                        if (this.camera.getScene().useRightHandedSystem) {
+                            camera.cameraRotation.y -= offsetX / this.angularSensibility;
+                        } else {
+                            camera.cameraRotation.y += offsetX / this.angularSensibility;                            
+                        }
                         camera.cameraRotation.x += offsetY / this.angularSensibility;
 
                         this.previousPosition = {

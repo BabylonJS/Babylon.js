@@ -62,7 +62,12 @@ var BABYLON;
                             offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                             offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
                         }
-                        camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                        if (_this.camera.getScene().useRightHandedSystem) {
+                            camera.cameraRotation.y -= offsetX / _this.angularSensibility;
+                        }
+                        else {
+                            camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                        }
                         camera.cameraRotation.x += offsetY / _this.angularSensibility;
                         _this.previousPosition = {
                             x: evt.clientX,

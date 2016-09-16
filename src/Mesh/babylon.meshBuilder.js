@@ -3,6 +3,30 @@ var BABYLON;
     var MeshBuilder = (function () {
         function MeshBuilder() {
         }
+        MeshBuilder.updateSideOrientationForRightHandedSystem = function (orientation, scene) {
+            if (!scene.useRightHandedSystem) {
+                if (orientation === undefined || orientation === null) {
+                    return BABYLON.Mesh.FRONTSIDE;
+                }
+                switch (orientation) {
+                    case BABYLON.Mesh.FRONTSIDE:
+                    case BABYLON.Mesh.DEFAULTSIDE:
+                        return BABYLON.Mesh.FRONTSIDE;
+                    default:
+                        return BABYLON.Mesh.BACKSIDE;
+                }
+            }
+            if (orientation === undefined || orientation === null) {
+                return BABYLON.Mesh.BACKSIDE;
+            }
+            switch (orientation) {
+                case BABYLON.Mesh.FRONTSIDE:
+                case BABYLON.Mesh.DEFAULTSIDE:
+                    return BABYLON.Mesh.BACKSIDE;
+                default:
+                    return BABYLON.Mesh.FRONTSIDE;
+            }
+        };
         /**
          * Creates a box mesh.
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#box
@@ -16,6 +40,7 @@ var BABYLON;
          */
         MeshBuilder.CreateBox = function (name, options, scene) {
             var box = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, options.updatable);
             return box;
@@ -34,6 +59,7 @@ var BABYLON;
          */
         MeshBuilder.CreateSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -50,6 +76,7 @@ var BABYLON;
          */
         MeshBuilder.CreateDisc = function (name, options, scene) {
             var disc = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateDisc(options);
             vertexData.applyToMesh(disc, options.updatable);
             return disc;
@@ -67,6 +94,7 @@ var BABYLON;
          */
         MeshBuilder.CreateIcoSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateIcoSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -93,7 +121,7 @@ var BABYLON;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
             var offset = options.offset;
-            var sideOrientation = options.sideOrientation;
+            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var instance = options.instance;
             var updatable = options.updatable;
             if (instance) {
@@ -215,6 +243,7 @@ var BABYLON;
          */
         MeshBuilder.CreateCylinder = function (name, options, scene) {
             var cylinder = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateCylinder(options);
             vertexData.applyToMesh(cylinder, options.updatable);
             return cylinder;
@@ -231,6 +260,7 @@ var BABYLON;
          */
         MeshBuilder.CreateTorus = function (name, options, scene) {
             var torus = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateTorus(options);
             vertexData.applyToMesh(torus, options.updatable);
             return torus;
@@ -248,6 +278,7 @@ var BABYLON;
          */
         MeshBuilder.CreateTorusKnot = function (name, options, scene) {
             var torusKnot = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
@@ -401,7 +432,7 @@ var BABYLON;
             var rotation = options.rotation || 0;
             var cap = (options.cap === 0) ? 0 : options.cap || BABYLON.Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV);
@@ -450,7 +481,7 @@ var BABYLON;
             var ribbonClosePath = options.ribbonClosePath || false;
             var cap = (options.cap === 0) ? 0 : options.cap || BABYLON.Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV);
@@ -479,7 +510,7 @@ var BABYLON;
             var radius = options.radius || 1;
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
             var paths = new Array();
@@ -522,6 +553,7 @@ var BABYLON;
          */
         MeshBuilder.CreatePlane = function (name, options, scene) {
             var plane = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, options.updatable);
             if (options.sourcePlane) {
@@ -667,7 +699,7 @@ var BABYLON;
             var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var invertUV = options.invertUV || false;
             var updatable = options.updatable;
-            var sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var instance = options.instance;
             options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
             // tube geometry
@@ -773,6 +805,7 @@ var BABYLON;
          */
         MeshBuilder.CreatePolyhedron = function (name, options, scene) {
             var polyhedron = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreatePolyhedron(options);
             vertexData.applyToMesh(polyhedron, options.updatable);
             return polyhedron;

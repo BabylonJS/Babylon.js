@@ -61,14 +61,29 @@ var BABYLON;
                 }
                 this.computeTransformedPosition();
                 BABYLON.Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
-                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent);
+                if (this.getScene().useRightHandedSystem) {
+                    effect.setFloat4(positionUniformName, -this.transformedPosition.x, -this.transformedPosition.y, -this.transformedPosition.z, this.exponent);
+                }
+                else {
+                    effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent);
+                }
                 normalizeDirection = BABYLON.Vector3.Normalize(this._transformedDirection);
             }
             else {
-                effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, this.exponent);
+                if (this.getScene().useRightHandedSystem) {
+                    effect.setFloat4(positionUniformName, -this.position.x, -this.position.y, -this.position.z, this.exponent);
+                }
+                else {
+                    effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, this.exponent);
+                }
                 normalizeDirection = BABYLON.Vector3.Normalize(this.direction);
             }
-            effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(this.angle * 0.5));
+            if (this.getScene().useRightHandedSystem) {
+                effect.setFloat4(directionUniformName, -normalizeDirection.x, -normalizeDirection.y, -normalizeDirection.z, Math.cos(this.angle * 0.5));
+            }
+            else {
+                effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(this.angle * 0.5));
+            }
         };
         SpotLight.prototype._getWorldMatrix = function () {
             if (!this._worldMatrix) {

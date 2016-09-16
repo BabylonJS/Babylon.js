@@ -99,7 +99,12 @@ var BABYLON;
                 effect.setFloat4(directionUniformName, this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1);
                 return;
             }
-            effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
+            if (this.getScene().useRightHandedSystem) {
+                effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, -1);
+            }
+            else {
+                effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
+            }
         };
         DirectionalLight.prototype._getWorldMatrix = function () {
             if (!this._worldMatrix) {
