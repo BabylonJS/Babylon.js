@@ -130,7 +130,11 @@
                 return;
             }
 
-            effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
+            if (this.getScene().useRightHandedSystem) {
+                effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, -1);
+            } else {
+                effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
+            }
         }
 
         public _getWorldMatrix(): Matrix {
