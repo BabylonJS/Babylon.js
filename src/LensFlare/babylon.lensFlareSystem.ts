@@ -2,6 +2,7 @@
     export class LensFlareSystem {
         public lensFlares = new Array<LensFlare>();
         public borderLimit = 300;
+        public viewportBorder = 0;
         public meshesSelectionPredicate: (mesh: Mesh) => boolean;
         public layerMask: number = 0x0FFFFFFF;
         public id: string;
@@ -88,11 +89,23 @@
 
             position = Vector3.TransformCoordinates(this.getEmitterPosition(), this._scene.getViewMatrix());
 
+            if (this.viewportBorder>0) {
+                globalViewport.x -= this.viewportBorder;
+                globalViewport.y -= this.viewportBorder;
+                globalViewport.width += this.viewportBorder * 2;
+                globalViewport.height += this.viewportBorder * 2;
+                position.x += this.viewportBorder;
+                position.y += this.viewportBorder;
+                this._positionX += this.viewportBorder;
+                this._positionY += this.viewportBorder;
+            }
+
             if (position.z > 0) {
                 if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
                     if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height))
                         return true;
                 }
+                return true;
             }
 
             return false;
@@ -153,6 +166,9 @@
             }
 
             var away = (awayX > awayY) ? awayX : awayY;
+
+            away -= this.viewportBorder;
+
             if (away > this.borderLimit) {
                 away = this.borderLimit;
             }
@@ -164,6 +180,15 @@
 
             if (intensity > 1.0) {
                 intensity = 1.0;
+            }
+
+            if (this.viewportBorder>0) {
+                globalViewport.x += this.viewportBorder;
+                globalViewport.y += this.viewportBorder;
+                globalViewport.width -= this.viewportBorder * 2;
+                globalViewport.height -= this.viewportBorder * 2;
+                this._positionX -= this.viewportBorder;
+                this._positionY -= this.viewportBorder;
             }
 
             // Position
