@@ -1272,6 +1272,7 @@
                 } else {
                     scale = this._renderingSize.height / this._designSize.height;
                 }
+                this.size = this._designSize.clone();
                 this.scale = scale;
             }
 
