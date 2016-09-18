@@ -2106,9 +2106,9 @@
             }
 
             this._opacity = value;
-            this._updateRenderMode();
             this._setFlags(SmartPropertyPrim.flagActualOpacityDirty);
             this._spreadActualOpacityChanged();
+            this._updateRenderMode();
         }
 
         @instanceLevelProperty(14, pi => Prim2DBase.scaleXProperty = pi, false, true)
