@@ -518,10 +518,13 @@ var BABYLON;
             var context = screenshotCanvas.getContext('2d');
             // Copy the pixels to a 2D canvas
             var imageData = context.createImageData(width, height);
-            //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
-            var castData = imageData.data;
+            var castData = (imageData.data);
             castData.set(data);
             context.putImageData(imageData, 0, 0);
+            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+        };
+        Tools.EncodeScreenshotCanvasData = function (successCallback, mimeType) {
+            if (mimeType === void 0) { mimeType = "image/png"; }
             var base64Image = screenshotCanvas.toDataURL(mimeType);
             if (successCallback) {
                 successCallback(base64Image);
@@ -549,6 +552,44 @@ var BABYLON;
             }
         };
         Tools.CreateScreenshot = function (engine, camera, size, successCallback, mimeType) {
+            if (mimeType === void 0) { mimeType = "image/png"; }
+            var width;
+            var height;
+            // If a precision value is specified
+            if (size.precision) {
+                width = Math.round(engine.getRenderWidth() * size.precision);
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+            else if (size.width && size.height) {
+                width = size.width;
+                height = size.height;
+            }
+            else if (size.width && !size.height) {
+                width = size.width;
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+            else if (size.height && !size.width) {
+                height = size.height;
+                width = Math.round(height * engine.getAspectRatio(camera));
+            }
+            else if (!isNaN(size)) {
+                height = size;
+                width = size;
+            }
+            else {
+                Tools.Error("Invalid 'size' parameter !");
+                return;
+            }
+            if (!screenshotCanvas) {
+                screenshotCanvas = document.createElement('canvas');
+            }
+            screenshotCanvas.width = width;
+            screenshotCanvas.height = height;
+            var renderContext = screenshotCanvas.getContext("2d");
+            renderContext.drawImage(engine.getRenderingCanvas(), 0, 0, width, height);
+            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+        };
+        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             var width;
             var height;

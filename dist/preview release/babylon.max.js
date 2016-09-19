@@ -5068,10 +5068,13 @@ var BABYLON;
             var context = screenshotCanvas.getContext('2d');
             // Copy the pixels to a 2D canvas
             var imageData = context.createImageData(width, height);
-            //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
-            var castData = imageData.data;
+            var castData = (imageData.data);
             castData.set(data);
             context.putImageData(imageData, 0, 0);
+            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+        };
+        Tools.EncodeScreenshotCanvasData = function (successCallback, mimeType) {
+            if (mimeType === void 0) { mimeType = "image/png"; }
             var base64Image = screenshotCanvas.toDataURL(mimeType);
             if (successCallback) {
                 successCallback(base64Image);
@@ -5099,6 +5102,44 @@ var BABYLON;
             }
         };
         Tools.CreateScreenshot = function (engine, camera, size, successCallback, mimeType) {
+            if (mimeType === void 0) { mimeType = "image/png"; }
+            var width;
+            var height;
+            // If a precision value is specified
+            if (size.precision) {
+                width = Math.round(engine.getRenderWidth() * size.precision);
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+            else if (size.width && size.height) {
+                width = size.width;
+                height = size.height;
+            }
+            else if (size.width && !size.height) {
+                width = size.width;
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+            else if (size.height && !size.width) {
+                height = size.height;
+                width = Math.round(height * engine.getAspectRatio(camera));
+            }
+            else if (!isNaN(size)) {
+                height = size;
+                width = size;
+            }
+            else {
+                Tools.Error("Invalid 'size' parameter !");
+                return;
+            }
+            if (!screenshotCanvas) {
+                screenshotCanvas = document.createElement('canvas');
+            }
+            screenshotCanvas.width = width;
+            screenshotCanvas.height = height;
+            var renderContext = screenshotCanvas.getContext("2d");
+            renderContext.drawImage(engine.getRenderingCanvas(), 0, 0, width, height);
+            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+        };
+        Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             var width;
             var height;
@@ -41523,9 +41564,9 @@ var BABYLON;
                     return;
                 }
                 this._opacity = value;
-                this._updateRenderMode();
                 this._setFlags(BABYLON.SmartPropertyPrim.flagActualOpacityDirty);
                 this._spreadActualOpacityChanged();
+                this._updateRenderMode();
             },
             enumerable: true,
             configurable: true
@@ -48318,6 +48359,7 @@ var BABYLON;
             eventState.skipNextObservers = skip;
         };
         Canvas2D.prototype._updatePointerInfo = function (eventData, localPosition) {
+            var s = this.scale;
             var pii = this._primPointerInfo;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = BABYLON.Vector2.Zero();
@@ -48330,12 +48372,12 @@ var BABYLON;
                 // Moving coordinates to local viewport world
                 var x = localPosition.x - viewport.x;
                 var y = localPosition.y - viewport.y;
-                pii.canvasPointerPos.x = x - this.actualPosition.x;
-                pii.canvasPointerPos.y = engine.getRenderHeight() - y - this.actualPosition.y;
+                pii.canvasPointerPos.x = (x - this.actualPosition.x) / s;
+                pii.canvasPointerPos.y = (engine.getRenderHeight() - y - this.actualPosition.y) / s;
             }
             else {
-                pii.canvasPointerPos.x = localPosition.x;
-                pii.canvasPointerPos.y = localPosition.y;
+                pii.canvasPointerPos.x = localPosition.x / s;
+                pii.canvasPointerPos.y = localPosition.y / s;
             }
             //console.log(`UpdatePointerInfo for ${this.id}, X:${pii.canvasPointerPos.x}, Y:${pii.canvasPointerPos.y}`);
             pii.mouseWheelDelta = 0;
@@ -49013,6 +49055,7 @@ var BABYLON;
                 else {
                     scale = this._renderingSize.height / this._designSize.height;
                 }
+                this.size = this._designSize.clone();
                 this.scale = scale;
             }
             var context = new BABYLON.PrepareRender2DContext();
@@ -55069,6 +55112,7 @@ var BABYLON;
             this.name = name;
             this.lensFlares = new Array();
             this.borderLimit = 300;
+            this.viewportBorder = 0;
             this.layerMask = 0x0FFFFFFF;
             this._vertexBuffers = {};
             this._isEnabled = true;
@@ -55125,11 +55169,22 @@ var BABYLON;
             this._positionX = position.x;
             this._positionY = position.y;
             position = BABYLON.Vector3.TransformCoordinates(this.getEmitterPosition(), this._scene.getViewMatrix());
+            if (this.viewportBorder > 0) {
+                globalViewport.x -= this.viewportBorder;
+                globalViewport.y -= this.viewportBorder;
+                globalViewport.width += this.viewportBorder * 2;
+                globalViewport.height += this.viewportBorder * 2;
+                position.x += this.viewportBorder;
+                position.y += this.viewportBorder;
+                this._positionX += this.viewportBorder;
+                this._positionY += this.viewportBorder;
+            }
             if (position.z > 0) {
                 if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
                     if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height))
                         return true;
                 }
+                return true;
             }
             return false;
         };
@@ -55181,6 +55236,7 @@ var BABYLON;
                 awayY = 0;
             }
             var away = (awayX > awayY) ? awayX : awayY;
+            away -= this.viewportBorder;
             if (away > this.borderLimit) {
                 away = this.borderLimit;
             }
@@ -55190,6 +55246,14 @@ var BABYLON;
             }
             if (intensity > 1.0) {
                 intensity = 1.0;
+            }
+            if (this.viewportBorder > 0) {
+                globalViewport.x += this.viewportBorder;
+                globalViewport.y += this.viewportBorder;
+                globalViewport.width -= this.viewportBorder * 2;
+                globalViewport.height -= this.viewportBorder * 2;
+                this._positionX -= this.viewportBorder;
+                this._positionY -= this.viewportBorder;
             }
             // Position
             var centerX = globalViewport.x + globalViewport.width / 2;

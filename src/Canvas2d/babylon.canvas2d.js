@@ -397,6 +397,7 @@ var BABYLON;
             eventState.skipNextObservers = skip;
         };
         Canvas2D.prototype._updatePointerInfo = function (eventData, localPosition) {
+            var s = this.scale;
             var pii = this._primPointerInfo;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = BABYLON.Vector2.Zero();
@@ -409,12 +410,12 @@ var BABYLON;
                 // Moving coordinates to local viewport world
                 var x = localPosition.x - viewport.x;
                 var y = localPosition.y - viewport.y;
-                pii.canvasPointerPos.x = x - this.actualPosition.x;
-                pii.canvasPointerPos.y = engine.getRenderHeight() - y - this.actualPosition.y;
+                pii.canvasPointerPos.x = (x - this.actualPosition.x) / s;
+                pii.canvasPointerPos.y = (engine.getRenderHeight() - y - this.actualPosition.y) / s;
             }
             else {
-                pii.canvasPointerPos.x = localPosition.x;
-                pii.canvasPointerPos.y = localPosition.y;
+                pii.canvasPointerPos.x = localPosition.x / s;
+                pii.canvasPointerPos.y = localPosition.y / s;
             }
             //console.log(`UpdatePointerInfo for ${this.id}, X:${pii.canvasPointerPos.x}, Y:${pii.canvasPointerPos.y}`);
             pii.mouseWheelDelta = 0;
@@ -1092,6 +1093,7 @@ var BABYLON;
                 else {
                     scale = this._renderingSize.height / this._designSize.height;
                 }
+                this.size = this._designSize.clone();
                 this.scale = scale;
             }
             var context = new BABYLON.PrepareRender2DContext();
