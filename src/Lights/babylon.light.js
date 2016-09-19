@@ -234,6 +234,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Light.prototype, "radius", void 0);
         return Light;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.Light = Light;
 })(BABYLON || (BABYLON = {}));
