@@ -17,7 +17,7 @@
         loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
     }
 
-    interface IRegisteredPlugin {
+    interface IRegisteredExtension {
         plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
         isBinary: boolean;
     }
@@ -70,22 +70,9 @@
         }
 
         // Members
-        private static _registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
+        private static _registeredExtensions: { [extension: string]: IRegisteredExtension } = {};
 
-        private static _getDefaultPlugin(): IRegisteredPlugin {
-            return SceneLoader._registeredPlugins[".babylon"];
-        }
-
-        private static _getPluginForExtension(extension: string): IRegisteredPlugin {
-            var registeredExtension = SceneLoader._registeredPlugins[extension];
-            if (registeredExtension) {
-                return registeredExtension;
-            }
-
-            return SceneLoader._getDefaultPlugin();
-        }
-
-        private static _getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
+        private static _getPluginForFilename(sceneFilename: string): IRegisteredExtension {
             var dotPosition = sceneFilename.lastIndexOf(".");
 
             var queryStringPosition = sceneFilename.indexOf("?");
@@ -95,7 +82,7 @@
             }
 
             var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
-            return SceneLoader._getPluginForExtension(extension);
+            return SceneLoader._registeredExtensions[extension];
         }
 
         // use babylon file loader directly if sceneFilename is prefixed with "data:"
@@ -109,13 +96,13 @@
 
         // Public functions
         public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
-            return SceneLoader._getPluginForExtension(extension).plugin;
+            return SceneLoader._registeredExtensions[extension].plugin;
         }
 
         public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
             if (typeof plugin.extensions === "string") {
                 var extension = <string>plugin.extensions;
-                SceneLoader._registeredPlugins[extension.toLowerCase()] = {
+                SceneLoader._registeredExtensions[extension.toLowerCase()] = {
                     plugin: plugin,
                     isBinary: false
                 };
@@ -123,7 +110,7 @@
             else {
                 var extensions = <ISceneLoaderPluginExtensions>plugin.extensions;
                 Object.keys(extensions).forEach(extension => {
-                    SceneLoader._registeredPlugins[extension.toLowerCase()] = {
+                    SceneLoader._registeredExtensions[extension.toLowerCase()] = {
                         plugin: plugin,
                         isBinary: extensions[extension].isBinary
                     };
@@ -142,7 +129,7 @@
                 return;
             }
 
-            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
+            var directLoad = this._getDirectLoad(sceneFilename);
 
             var loadingToken = {};
             scene._addPendingData(loadingToken);
@@ -150,7 +137,7 @@
             var manifestChecked = success => {
                 scene.database = database;
 
-                var registeredExtension = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+                var registeredExtension = directLoad ? this._registeredExtensions[".babylon"] : SceneLoader._getPluginForFilename(sceneFilename);
                 var plugin = registeredExtension.plugin;
                 var useArrayBuffer = registeredExtension.isBinary;
 
@@ -241,8 +228,8 @@
                 return;
             }
 
-            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
-            var registeredExtension = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+            var directLoad = this._getDirectLoad(sceneFilename);
+            var registeredExtension = directLoad ? this._registeredExtensions[".babylon"] : SceneLoader._getPluginForFilename(sceneFilename);
             var plugin = registeredExtension.plugin;
             var useArrayBuffer = registeredExtension.isBinary;
             var database;
