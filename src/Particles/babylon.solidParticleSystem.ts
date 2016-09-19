@@ -19,6 +19,10 @@
         */
         public billboard: boolean = false;
         /**
+         * Recompute normals when adding a shape
+         */
+        public recomputeNormals: boolean = true;
+        /**
         * This a counter ofr your own usage. It's not set by any SPS functions.
         */
         public counter: number = 0;
@@ -139,7 +143,9 @@
             this._positions32 = new Float32Array(this._positions);
             this._uvs32 = new Float32Array(this._uvs);
             this._colors32 = new Float32Array(this._colors);
-            VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+            if (this.recomputeNormals) {
+                VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+            }
             this._normals32 = new Float32Array(this._normals);
             this._fixedNormal32 = new Float32Array(this._normals);
             var vertexData = new VertexData();
@@ -187,6 +193,7 @@
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
             var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
+            var meshNor = mesh.getVerticesData(VertexBuffer.NormalKind);
 
             var f: number = 0;                              // facet counter
             var totalFacets: number = meshInd.length / 3;   // a facet is a triangle, so 3 indices
@@ -252,7 +259,7 @@
                 var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, null, null);
 
                 // add the particle in the SPS
-                this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, idx, 0, null);
+                this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, meshNor, this._normals, idx, 0, null);
                 this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0);
                 // initialize the particle position
                 this.particles[this.nbParticles].position.addInPlace(barycenter);
@@ -286,10 +293,11 @@
         }
 
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idx, idxInShape, options): void {
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options): void {
             var i;
             var u = 0;
             var c = 0;
+            var n = 0;
 
             this._resetCopy();
             if (options && options.positionFunction) {        // call to custom positionFunction
@@ -342,6 +350,15 @@
                 colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
                 c += 4;
 
+                if (!this.recomputeNormals && meshNor) {
+                    this._normal.x = meshNor[n];
+                    this._normal.y = meshNor[n + 1];
+                    this._normal.z = meshNor[n + 2];
+                    Vector3.TransformCoordinatesToRef(this._normal, this._rotMatrix, this._normal);
+                    normals.push(this._normal.x, this._normal.y, this._normal.z);
+                    n += 3;
+                }
+
             }
 
             for (i = 0; i < meshInd.length; i++) {
@@ -393,6 +410,7 @@
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
             var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
+            var meshNor = mesh.getVerticesData(VertexBuffer.NormalKind);
 
             var shape = this._posToShape(meshPos);
             var shapeUV = this._uvsToShapeUV(meshUV);
@@ -405,7 +423,7 @@
             // particles
             var idx = this.nbParticles;
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, idx, i, options);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
                 if (this._updatable) {
                     this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, i);
                 }
