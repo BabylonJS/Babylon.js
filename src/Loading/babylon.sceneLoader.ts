@@ -77,9 +77,9 @@
         }
 
         private static _getPluginForExtension(extension: string): IRegisteredPlugin {
-            var registeredExtension = SceneLoader._registeredPlugins[extension];
-            if (registeredExtension) {
-                return registeredExtension;
+            var registeredPlugin = SceneLoader._registeredPlugins[extension];
+            if (registeredPlugin) {
+                return registeredPlugin;
             }
 
             return SceneLoader._getDefaultPlugin();
@@ -150,9 +150,9 @@
             var manifestChecked = success => {
                 scene.database = database;
 
-                var registeredExtension = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
-                var plugin = registeredExtension.plugin;
-                var useArrayBuffer = registeredExtension.isBinary;
+                var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+                var plugin = registeredPlugin.plugin;
+                var useArrayBuffer = registeredPlugin.isBinary;
 
                 var importMeshFromData = data => {
                     var meshes = [];
@@ -242,9 +242,9 @@
             }
 
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
-            var registeredExtension = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
-            var plugin = registeredExtension.plugin;
-            var useArrayBuffer = registeredExtension.isBinary;
+            var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+            var plugin = registeredPlugin.plugin;
+            var useArrayBuffer = registeredPlugin.isBinary;
             var database;
 
             var loadingToken = {};
