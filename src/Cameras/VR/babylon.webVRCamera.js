@@ -101,6 +101,6 @@ var BABYLON;
             this._vrDevice.resetPose();
         };
         return WebVRFreeCamera;
-    }(BABYLON.FreeCamera));
+    })(BABYLON.FreeCamera);
     BABYLON.WebVRFreeCamera = WebVRFreeCamera;
 })(BABYLON || (BABYLON = {}));

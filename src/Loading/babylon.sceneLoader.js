@@ -61,16 +61,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        SceneLoader._getDefaultPlugin = function () {
-            return SceneLoader._registeredPlugins[".babylon"];
-        };
-        SceneLoader._getPluginForExtension = function (extension) {
-            var registeredExtension = SceneLoader._registeredPlugins[extension];
-            if (registeredExtension) {
-                return registeredExtension;
-            }
-            return SceneLoader._getDefaultPlugin();
-        };
         SceneLoader._getPluginForFilename = function (sceneFilename) {
             var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
@@ -78,36 +68,27 @@ var BABYLON;
                 queryStringPosition = sceneFilename.length;
             }
             var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
-            return SceneLoader._getPluginForExtension(extension);
-        };
-        // use babylon file loader directly if sceneFilename is prefixed with "data:"
-        SceneLoader._getDirectLoad = function (sceneFilename) {
-            if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
-                return sceneFilename.substr(5);
+            for (var index = 0; index < this._registeredPlugins.length; index++) {
+                var plugin = this._registeredPlugins[index];
+                if (plugin.extensions.indexOf(extension) !== -1) {
+                    return plugin;
+                }
             }
-            return null;
+            return this._registeredPlugins[0];
         };
         // Public functions
         SceneLoader.GetPluginForExtension = function (extension) {
-            return SceneLoader._getPluginForExtension(extension).plugin;
+            for (var index = 0; index < this._registeredPlugins.length; index++) {
+                var plugin = this._registeredPlugins[index];
+                if (plugin.extensions.indexOf(extension) !== -1) {
+                    return plugin;
+                }
+            }
+            return null;
         };
         SceneLoader.RegisterPlugin = function (plugin) {
-            if (typeof plugin.extensions === "string") {
-                var extension = plugin.extensions;
-                SceneLoader._registeredPlugins[extension.toLowerCase()] = {
-                    plugin: plugin,
-                    isBinary: false
-                };
-            }
-            else {
-                var extensions = plugin.extensions;
-                Object.keys(extensions).forEach(function (extension) {
-                    SceneLoader._registeredPlugins[extension.toLowerCase()] = {
-                        plugin: plugin,
-                        isBinary: extensions[extension].isBinary
-                    };
-                });
-            }
+            plugin.extensions = plugin.extensions.toLowerCase();
+            SceneLoader._registeredPlugins.push(plugin);
         };
         SceneLoader.ImportMesh = function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
@@ -118,14 +99,11 @@ var BABYLON;
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
             }
-            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
             var loadingToken = {};
             scene._addPendingData(loadingToken);
             var manifestChecked = function (success) {
                 scene.database = database;
-                var registeredExtension = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
-                var plugin = registeredExtension.plugin;
-                var useArrayBuffer = registeredExtension.isBinary;
+                var plugin = SceneLoader._getPluginForFilename(sceneFilename);
                 var importMeshFromData = function (data) {
                     var meshes = [];
                     var particleSystems = [];
@@ -169,15 +147,16 @@ var BABYLON;
                         scene._removePendingData(loadingToken);
                     }
                 };
-                if (directLoad) {
-                    importMeshFromData(directLoad);
+                if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
+                    // Direct load
+                    importMeshFromData(sceneFilename.substr(5));
                     return;
                 }
                 BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                     importMeshFromData(data);
-                }, progressCallBack, database, useArrayBuffer);
+                }, progressCallBack, database);
             };
-            if (scene.getEngine().enableOfflineSupport && !directLoad) {
+            if (scene.getEngine().enableOfflineSupport && !(sceneFilename.substr && sceneFilename.substr(0, 5) === "data:")) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
                 var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
             }
@@ -206,10 +185,7 @@ var BABYLON;
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
             }
-            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
-            var registeredExtension = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
-            var plugin = registeredExtension.plugin;
-            var useArrayBuffer = registeredExtension.isBinary;
+            var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
             var database;
             var loadingToken = {};
             scene._addPendingData(loadingToken);
@@ -254,10 +230,11 @@ var BABYLON;
                 }
             };
             var manifestChecked = function (success) {
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database, useArrayBuffer);
+                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database);
             };
-            if (directLoad) {
-                loadSceneFromData(directLoad);
+            if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
+                // Direct load
+                loadSceneFromData(sceneFilename.substr(5));
                 return;
             }
             if (rootUrl.indexOf("file:") === -1) {
@@ -270,7 +247,7 @@ var BABYLON;
                 }
             }
             else {
-                BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack, useArrayBuffer);
+                BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
             }
         };
         // Flags
@@ -278,9 +255,9 @@ var BABYLON;
         SceneLoader._ShowLoadingScreen = true;
         SceneLoader._loggingLevel = SceneLoader.NO_LOGGING;
         // Members
-        SceneLoader._registeredPlugins = {};
+        SceneLoader._registeredPlugins = new Array();
         return SceneLoader;
-    }());
+    })();
     BABYLON.SceneLoader = SceneLoader;
     ;
 })(BABYLON || (BABYLON = {}));
