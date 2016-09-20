@@ -6666,7 +6666,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.5-alpha";
+                return "2.5.-alpha";
             },
             enumerable: true,
             configurable: true
@@ -15172,7 +15172,8 @@ var BABYLON;
         };
         ArcRotateCamera.prototype._getTargetPosition = function () {
             if (this.target.getAbsolutePosition) {
-                return this.target.getAbsolutePosition();
+                var pos = this.target.getAbsolutePosition();
+                return this._targetBoundingCenter ? pos.add(this._targetBoundingCenter) : pos;
             }
             return this.target;
         };
@@ -15313,9 +15314,16 @@ var BABYLON;
             this.position.copyFrom(position);
             this.rebuildAnglesAndRadius();
         };
-        ArcRotateCamera.prototype.setTarget = function (target) {
+        ArcRotateCamera.prototype.setTarget = function (target, toBoundingCenter) {
+            if (toBoundingCenter === void 0) { toBoundingCenter = false; }
             if (this._getTargetPosition().equals(target)) {
                 return;
+            }
+            if (toBoundingCenter && target.getBoundingInfo) {
+                this._targetBoundingCenter = target.getBoundingInfo().boundingBox.center.clone();
+            }
+            else {
+                this._targetBoundingCenter = null;
             }
             this.target = target;
             this.rebuildAnglesAndRadius();
@@ -26409,6 +26417,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        SceneLoader._getDefaultPlugin = function () {
+            return SceneLoader._registeredPlugins[".babylon"];
+        };
+        SceneLoader._getPluginForExtension = function (extension) {
+            var registeredPlugin = SceneLoader._registeredPlugins[extension];
+            if (registeredPlugin) {
+                return registeredPlugin;
+            }
+            return SceneLoader._getDefaultPlugin();
+        };
         SceneLoader._getPluginForFilename = function (sceneFilename) {
             var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
@@ -26416,27 +26434,36 @@ var BABYLON;
                 queryStringPosition = sceneFilename.length;
             }
             var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
-            for (var index = 0; index < this._registeredPlugins.length; index++) {
-                var plugin = this._registeredPlugins[index];
-                if (plugin.extensions.indexOf(extension) !== -1) {
-                    return plugin;
-                }
-            }
-            return this._registeredPlugins[0];
+            return SceneLoader._getPluginForExtension(extension);
         };
-        // Public functions
-        SceneLoader.GetPluginForExtension = function (extension) {
-            for (var index = 0; index < this._registeredPlugins.length; index++) {
-                var plugin = this._registeredPlugins[index];
-                if (plugin.extensions.indexOf(extension) !== -1) {
-                    return plugin;
-                }
+        // use babylon file loader directly if sceneFilename is prefixed with "data:"
+        SceneLoader._getDirectLoad = function (sceneFilename) {
+            if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
+                return sceneFilename.substr(5);
             }
             return null;
         };
+        // Public functions
+        SceneLoader.GetPluginForExtension = function (extension) {
+            return SceneLoader._getPluginForExtension(extension).plugin;
+        };
         SceneLoader.RegisterPlugin = function (plugin) {
-            plugin.extensions = plugin.extensions.toLowerCase();
-            SceneLoader._registeredPlugins.push(plugin);
+            if (typeof plugin.extensions === "string") {
+                var extension = plugin.extensions;
+                SceneLoader._registeredPlugins[extension.toLowerCase()] = {
+                    plugin: plugin,
+                    isBinary: false
+                };
+            }
+            else {
+                var extensions = plugin.extensions;
+                Object.keys(extensions).forEach(function (extension) {
+                    SceneLoader._registeredPlugins[extension.toLowerCase()] = {
+                        plugin: plugin,
+                        isBinary: extensions[extension].isBinary
+                    };
+                });
+            }
         };
         SceneLoader.ImportMesh = function (meshesNames, rootUrl, sceneFilename, scene, onsuccess, progressCallBack, onerror) {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
@@ -26447,11 +26474,14 @@ var BABYLON;
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
             }
+            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
             var loadingToken = {};
             scene._addPendingData(loadingToken);
             var manifestChecked = function (success) {
                 scene.database = database;
-                var plugin = SceneLoader._getPluginForFilename(sceneFilename);
+                var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+                var plugin = registeredPlugin.plugin;
+                var useArrayBuffer = registeredPlugin.isBinary;
                 var importMeshFromData = function (data) {
                     var meshes = [];
                     var particleSystems = [];
@@ -26495,16 +26525,15 @@ var BABYLON;
                         scene._removePendingData(loadingToken);
                     }
                 };
-                if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
-                    // Direct load
-                    importMeshFromData(sceneFilename.substr(5));
+                if (directLoad) {
+                    importMeshFromData(directLoad);
                     return;
                 }
                 BABYLON.Tools.LoadFile(rootUrl + sceneFilename, function (data) {
                     importMeshFromData(data);
-                }, progressCallBack, database);
+                }, progressCallBack, database, useArrayBuffer);
             };
-            if (scene.getEngine().enableOfflineSupport && !(sceneFilename.substr && sceneFilename.substr(0, 5) === "data:")) {
+            if (scene.getEngine().enableOfflineSupport && !directLoad) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
                 var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
             }
@@ -26533,7 +26562,10 @@ var BABYLON;
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
             }
-            var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
+            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
+            var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+            var plugin = registeredPlugin.plugin;
+            var useArrayBuffer = registeredPlugin.isBinary;
             var database;
             var loadingToken = {};
             scene._addPendingData(loadingToken);
@@ -26578,11 +26610,10 @@ var BABYLON;
                 }
             };
             var manifestChecked = function (success) {
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database);
+                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database, useArrayBuffer);
             };
-            if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
-                // Direct load
-                loadSceneFromData(sceneFilename.substr(5));
+            if (directLoad) {
+                loadSceneFromData(directLoad);
                 return;
             }
             if (rootUrl.indexOf("file:") === -1) {
@@ -26595,7 +26626,7 @@ var BABYLON;
                 }
             }
             else {
-                BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
+                BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack, useArrayBuffer);
             }
         };
         // Flags
@@ -26603,7 +26634,7 @@ var BABYLON;
         SceneLoader._ShowLoadingScreen = true;
         SceneLoader._loggingLevel = SceneLoader.NO_LOGGING;
         // Members
-        SceneLoader._registeredPlugins = new Array();
+        SceneLoader._registeredPlugins = {};
         return SceneLoader;
     })();
     BABYLON.SceneLoader = SceneLoader;
@@ -29226,11 +29257,14 @@ var BABYLON;
             return this._absoluteTransform;
         };
         // Methods
-        Bone.prototype.updateMatrix = function (matrix) {
+        Bone.prototype.updateMatrix = function (matrix, updateDifferenceMatrix) {
+            if (updateDifferenceMatrix === void 0) { updateDifferenceMatrix = true; }
             this._baseMatrix = matrix.clone();
             this._matrix = matrix.clone();
             this._skeleton._markAsDirty();
-            this._updateDifferenceMatrix();
+            if (updateDifferenceMatrix) {
+                this._updateDifferenceMatrix();
+            }
         };
         Bone.prototype._updateDifferenceMatrix = function (rootMatrix) {
             if (!rootMatrix) {
@@ -58154,6 +58188,10 @@ var BABYLON;
             */
             this.billboard = false;
             /**
+             * Recompute normals when adding a shape
+             */
+            this.recomputeNormals = true;
+            /**
             * This a counter ofr your own usage. It's not set by any SPS functions.
             */
             this.counter = 0;
@@ -58235,7 +58273,9 @@ var BABYLON;
             this._positions32 = new Float32Array(this._positions);
             this._uvs32 = new Float32Array(this._uvs);
             this._colors32 = new Float32Array(this._colors);
-            BABYLON.VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+            if (this.recomputeNormals) {
+                BABYLON.VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+            }
             this._normals32 = new Float32Array(this._normals);
             this._fixedNormal32 = new Float32Array(this._normals);
             var vertexData = new BABYLON.VertexData();
@@ -58280,6 +58320,7 @@ var BABYLON;
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
             var meshCol = mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+            var meshNor = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var f = 0; // facet counter
             var totalFacets = meshInd.length / 3; // a facet is a triangle, so 3 indices
             // compute size from number
@@ -58338,7 +58379,7 @@ var BABYLON;
                 }
                 var modelShape = new BABYLON.ModelShape(this._shapeCounter, shape, shapeUV, null, null);
                 // add the particle in the SPS
-                this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, idx, 0, null);
+                this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, meshNor, this._normals, idx, 0, null);
                 this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0);
                 // initialize the particle position
                 this.particles[this.nbParticles].position.addInPlace(barycenter);
@@ -58369,10 +58410,11 @@ var BABYLON;
             this._copy.color = null;
         };
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        SolidParticleSystem.prototype._meshBuilder = function (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idx, idxInShape, options) {
+        SolidParticleSystem.prototype._meshBuilder = function (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options) {
             var i;
             var u = 0;
             var c = 0;
+            var n = 0;
             this._resetCopy();
             if (options && options.positionFunction) {
                 options.positionFunction(this._copy, idx, idxInShape);
@@ -58420,6 +58462,14 @@ var BABYLON;
                 }
                 colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
                 c += 4;
+                if (!this.recomputeNormals && meshNor) {
+                    this._normal.x = meshNor[n];
+                    this._normal.y = meshNor[n + 1];
+                    this._normal.z = meshNor[n + 2];
+                    BABYLON.Vector3.TransformCoordinatesToRef(this._normal, this._rotMatrix, this._normal);
+                    normals.push(this._normal.x, this._normal.y, this._normal.z);
+                    n += 3;
+                }
             }
             for (i = 0; i < meshInd.length; i++) {
                 indices.push(p + meshInd[i]);
@@ -58465,6 +58515,7 @@ var BABYLON;
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
             var meshCol = mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+            var meshNor = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var shape = this._posToShape(meshPos);
             var shapeUV = this._uvsToShapeUV(meshUV);
             var posfunc = options ? options.positionFunction : null;
@@ -58473,7 +58524,7 @@ var BABYLON;
             // particles
             var idx = this.nbParticles;
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, idx, i, options);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
                 if (this._updatable) {
                     this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, i);
                 }

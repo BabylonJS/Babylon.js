@@ -66,13 +66,15 @@
         }
 
         // Methods
-        public updateMatrix(matrix: Matrix): void {
+        public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true): void {
             this._baseMatrix = matrix.clone();
             this._matrix = matrix.clone();
 
             this._skeleton._markAsDirty();
 
-            this._updateDifferenceMatrix();
+            if (updateDifferenceMatrix) {
+                this._updateDifferenceMatrix();
+            }
         }
 
         public _updateDifferenceMatrix(rootMatrix?: Matrix): void {
