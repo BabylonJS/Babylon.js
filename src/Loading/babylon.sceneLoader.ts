@@ -1,14 +1,25 @@
 ﻿module BABYLON {
+    export interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+
     export interface ISceneLoaderPlugin {
-        extensions: string;
+        extensions: string | ISceneLoaderPluginExtensions;
         importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
         load: (scene: Scene, data: string, rootUrl: string) => boolean;
     }
 
     export interface ISceneLoaderPluginAsync {
-        extensions: string;
+        extensions: string | ISceneLoaderPluginExtensions;
         importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => void;
         loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
+    }
+
+    interface IRegisteredPlugin {
+        plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        isBinary: boolean;
     }
 
     export class SceneLoader {
@@ -59,9 +70,22 @@
         }
 
         // Members
-        private static _registeredPlugins = new Array<ISceneLoaderPlugin | ISceneLoaderPluginAsync >();
+        private static _registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 
-        private static _getPluginForFilename(sceneFilename): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
+        private static _getDefaultPlugin(): IRegisteredPlugin {
+            return SceneLoader._registeredPlugins[".babylon"];
+        }
+
+        private static _getPluginForExtension(extension: string): IRegisteredPlugin {
+            var registeredPlugin = SceneLoader._registeredPlugins[extension];
+            if (registeredPlugin) {
+                return registeredPlugin;
+            }
+
+            return SceneLoader._getDefaultPlugin();
+        }
+
+        private static _getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
             var dotPosition = sceneFilename.lastIndexOf(".");
 
             var queryStringPosition = sceneFilename.indexOf("?");
@@ -71,34 +95,40 @@
             }
 
             var extension = sceneFilename.substring(dotPosition, queryStringPosition).toLowerCase();
-
-            for (var index = 0; index < this._registeredPlugins.length; index++) {
-                var plugin = this._registeredPlugins[index];
-
-                if (plugin.extensions.indexOf(extension) !== -1) {
-                    return plugin;
-                }
-            }
-
-            return this._registeredPlugins[0];
+            return SceneLoader._getPluginForExtension(extension);
         }
 
-        // Public functions
-        public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync  {
-            for (var index = 0; index < this._registeredPlugins.length; index++) {
-                var plugin = this._registeredPlugins[index];
-
-                if (plugin.extensions.indexOf(extension) !== -1) {
-                    return plugin;
-                }
+        // use babylon file loader directly if sceneFilename is prefixed with "data:"
+        private static _getDirectLoad(sceneFilename: string): string {
+            if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
+                return sceneFilename.substr(5);
             }
 
             return null;
         }
 
-        public static RegisterPlugin(plugin: ISceneLoaderPlugin): void {
-            plugin.extensions = plugin.extensions.toLowerCase();
-            SceneLoader._registeredPlugins.push(plugin);
+        // Public functions
+        public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
+            return SceneLoader._getPluginForExtension(extension).plugin;
+        }
+
+        public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
+            if (typeof plugin.extensions === "string") {
+                var extension = <string>plugin.extensions;
+                SceneLoader._registeredPlugins[extension.toLowerCase()] = {
+                    plugin: plugin,
+                    isBinary: false
+                };
+            }
+            else {
+                var extensions = <ISceneLoaderPluginExtensions>plugin.extensions;
+                Object.keys(extensions).forEach(extension => {
+                    SceneLoader._registeredPlugins[extension.toLowerCase()] = {
+                        plugin: plugin,
+                        isBinary: extensions[extension].isBinary
+                    };
+                });
+            }
         }
 
         public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void {
@@ -112,13 +142,17 @@
                 return;
             }
 
+            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
+
             var loadingToken = {};
             scene._addPendingData(loadingToken);
 
             var manifestChecked = success => {
                 scene.database = database;
 
-                var plugin = SceneLoader._getPluginForFilename(sceneFilename);
+                var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+                var plugin = registeredPlugin.plugin;
+                var useArrayBuffer = registeredPlugin.isBinary;
 
                 var importMeshFromData = data => {
                     var meshes = [];
@@ -164,18 +198,17 @@
                     }
                 };
 
-                if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
-                    // Direct load
-                    importMeshFromData(sceneFilename.substr(5));
+                if (directLoad) {
+                    importMeshFromData(directLoad);
                     return;
                 }
 
                 Tools.LoadFile(rootUrl + sceneFilename, data => {
                     importMeshFromData(data);
-                }, progressCallBack, database);
+                }, progressCallBack, database, useArrayBuffer);
             };
 
-            if (scene.getEngine().enableOfflineSupport && !(sceneFilename.substr && sceneFilename.substr(0, 5) === "data:")) {
+            if (scene.getEngine().enableOfflineSupport && !directLoad) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
                 var database = new Database(rootUrl + sceneFilename, manifestChecked);
             }
@@ -208,7 +241,10 @@
                 return;
             }
 
-            var plugin = this._getPluginForFilename(sceneFilename.name || sceneFilename);
+            var directLoad = SceneLoader._getDirectLoad(sceneFilename);
+            var registeredPlugin = directLoad ? SceneLoader._getDefaultPlugin() : SceneLoader._getPluginForFilename(sceneFilename);
+            var plugin = registeredPlugin.plugin;
+            var useArrayBuffer = registeredPlugin.isBinary;
             var database;
 
             var loadingToken = {};
@@ -261,12 +297,11 @@
             };
 
             var manifestChecked = success => {
-                Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database);
+                Tools.LoadFile(rootUrl + sceneFilename, loadSceneFromData, progressCallBack, database, useArrayBuffer);
             };
 
-            if (sceneFilename.substr && sceneFilename.substr(0, 5) === "data:") {
-                // Direct load
-                loadSceneFromData(sceneFilename.substr(5));
+            if (directLoad) {
+                loadSceneFromData(directLoad);
                 return;
             }
 
@@ -281,7 +316,7 @@
             }
             // Loading file from disk via input file or drag'n'drop
             else {
-                Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
+                Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack, useArrayBuffer);
             }
         }
     };
