@@ -889,7 +889,7 @@
          * @Deprecated
          */
         public updatePhysicsBodyPosition(): void {
-            Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()")
+            Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()");
             this.updatePhysicsBody();
         }
 
