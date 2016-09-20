@@ -176,6 +176,26 @@
             }
         }
 
+        public static GetBufferFromBufferView(gltfRuntime: IGLTFRuntime, bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType): any {
+            var byteOffset = bufferView.byteOffset + byteOffset;
+
+            var loadedBufferView = gltfRuntime.loadedBufferViews[bufferView.buffer];
+            if (byteOffset + byteLength > loadedBufferView.byteLength) {
+                throw new Error("Buffer access is out of range");
+            }
+
+            var buffer = loadedBufferView.buffer;
+            byteOffset += loadedBufferView.byteOffset;
+
+            switch (componentType) {
+                case EComponentType.BYTE: return new Int8Array(buffer, byteOffset, byteLength);
+                case EComponentType.UNSIGNED_BYTE: return new Uint8Array(buffer, byteOffset, byteLength);
+                case EComponentType.SHORT: return new Int16Array(buffer, byteOffset, byteLength);
+                case EComponentType.UNSIGNED_SHORT: return new Uint16Array(buffer, byteOffset, byteLength);
+                default: return new Float32Array(buffer, byteOffset, byteLength);
+            }
+        }
+
         /**
          * Returns a buffer from its accessor
          * @param gltfRuntime: the GLTF runtime
@@ -183,18 +203,23 @@
          */
         public static GetBufferFromAccessor(gltfRuntime: IGLTFRuntime, accessor: IGLTFAccessor): any {
             var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[accessor.bufferView];
-            var arrayBuffer: ArrayBuffer = gltfRuntime.arrayBuffers[bufferView.buffer];
+            var byteLength = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
+            return GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, accessor.byteOffset, byteLength, accessor.componentType);
+        }
 
-            var byteOffset = accessor.byteOffset + bufferView.byteOffset;
-            var count = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
+        /**
+         * Decodes a buffer view into a string
+         * @param view: the buffer view
+         */
+        public static DecodeBufferToText(view: ArrayBufferView): string {
+            var result = "";
+            var length = view.byteLength;
 
-            switch (accessor.componentType) {
-                case EComponentType.BYTE: return new Int8Array(arrayBuffer, byteOffset, count);
-                case EComponentType.UNSIGNED_BYTE: return new Uint8Array(arrayBuffer, byteOffset, count);
-                case EComponentType.SHORT: return new Int16Array(arrayBuffer, byteOffset, count);
-                case EComponentType.UNSIGNED_SHORT: return new Uint16Array(arrayBuffer, byteOffset, count);
-                default: return new Float32Array(arrayBuffer, byteOffset, count);
+            for (var i = 0; i < length; ++i) {
+                result += String.fromCharCode(view[i]);
             }
+
+            return result;
         }
     }
 }

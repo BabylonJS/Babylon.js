@@ -351,9 +351,11 @@
 
         scene: Scene;
         rootUrl: string;
-        loadedBuffers: number;
-        loadedShaders: number;
-        arrayBuffers: Object;
+
+        loadedBufferCount: number;
+        loadedBufferViews: { [name: string]: ArrayBufferView };
+
+        loadedShaderCount: number;
 
         importOnlyMeshes: boolean;
         importMeshesNames?: string[];
@@ -398,4 +400,27 @@
         */
         apply(gltfRuntime: IGLTFRuntime, id: string, name: string, extension: ExtensionType, object: ExtensionObject): ExtensionObject;
     }
+
+    export enum EContentFormat {
+        JSON = 0
+    };
+
+    export const BinaryExtensionName = "KHR_binary_glTF";
+    export const BinaryExtensionBufferName = "binary_glTF";
+
+    export interface IGLTFBinaryExtension {
+        content: Object;
+        body: Uint8Array;
+    };
+
+    export interface IGLTFBinaryExtensionShader {
+        bufferView: string;
+    };
+
+    export interface IGLTFBinaryExtensionImage {
+        bufferView: string;
+        mimeType: string;
+        height: number;
+        width: number;
+    };
 }
