@@ -269,7 +269,7 @@
                     babylonAnimation = lastAnimation;
                     modifyKey = true;
                 }
-                
+
                 if (!modifyKey) {
                     babylonAnimation = new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
                 }
@@ -329,7 +329,7 @@
                         lastAnimation.getKeys()[j].value = value;
                     }
                 }
-                
+
                 // Finish
                 if (!modifyKey) {
                     babylonAnimation.setKeys(keys);
@@ -491,17 +491,17 @@
         for (var i = 0; i < nodesToRoot.length; i++) {
             var nodeToRoot = nodesToRoot[i];
             var children = nodeToRoot.node.children;
-            
+
             for (var j = 0; j < children.length; j++) {
                 var child: INodeToRoot = null;
-                
+
                 for (var k = 0; k < nodesToRoot.length; k++) {
                     if (nodesToRoot[k].id === children[j]) {
                         child = nodesToRoot[k];
                         break;
                     }
                 }
-                
+
                 if (child) {
                     (<any>child.bone)._parent = nodeToRoot.bone;
                     nodeToRoot.bone.children.push(child.bone);
@@ -562,7 +562,7 @@
                 Tools.Warn("Joint named " + skins.jointNames[i] + " does not exist");
                 continue;
             }
-            
+
             var id = jointNode.id;
 
             // Optimize, if the bone already exists...
@@ -605,7 +605,7 @@
                         break;
                     }
                 }
-                
+
                 if (foundBone) {
                     break;
                 }
@@ -695,7 +695,7 @@
         for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
             var meshID = meshes[meshIndex];
             var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
-            
+
             if (!mesh) {
                 continue;
             }
@@ -911,7 +911,7 @@
         // Lights
         else if (node.light && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
             var light: IGLTFLight = gltfRuntime.lights[node.light];
-            
+
             if (light) {
                 if (light.type === "ambient") {
                     var ambienLight: IGLTFAmbienLight = light[light.type];
@@ -1098,7 +1098,7 @@
     */
     var onLoadBuffer = (gltfRuntime: IGLTFRuntime, buf: string) => {
         return (data: any) => {
-            gltfRuntime.loadedBuffers++;
+            gltfRuntime.loadedBufferCount++;
 
             if (!(data instanceof ArrayBuffer)) {
                 Tools.Error("Buffer named " + buf + " is not an array buffer");
@@ -1107,9 +1107,9 @@
                 Tools.Error("Buffer named " + buf + " is length " + data.byteLength + ". Expected: " + gltfRuntime.buffers[buf].byteLength); // Improve error message
             }
 
-            gltfRuntime.arrayBuffers[buf] = data;
+            gltfRuntime.loadedBufferViews[buf] = new Uint8Array(data);
 
-            if (gltfRuntime.loadedBuffers === gltfRuntime.buffersCount) {
+            if (gltfRuntime.loadedBufferCount === gltfRuntime.buffersCount) {
                 onBuffersLoaded(gltfRuntime);
             }
         };
@@ -1144,19 +1144,28 @@
     */
     var loadBuffers = (gltfRuntime: IGLTFRuntime) => {
         for (var buf in gltfRuntime.buffers) {
-            var buffer: IGLTFBuffer = gltfRuntime.buffers[buf];
+            if (gltfRuntime.extensionsUsed.indexOf(BinaryExtensionName) != -1 && buf === BinaryExtensionBufferName) {
+                gltfRuntime.loadedBufferCount++;
 
-            if (buffer) {
-                if (GLTFUtils.IsBase64(buffer.uri)) {
-                    var arrayBuffer = decodeArrayBuffer(buffer.uri.split(",")[1]);
-                    onLoadBuffer(gltfRuntime, buf)(arrayBuffer);
-                }
-                else {
-                    Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, onLoadBuffer(gltfRuntime, buf), null, null, true, onLoadBufferError(gltfRuntime, buf));
+                if (gltfRuntime.loadedBufferCount === gltfRuntime.buffersCount) {
+                    onBuffersLoaded(gltfRuntime);
                 }
             }
             else {
-                Tools.Error("No buffer named : " + buf);
+                var buffer: IGLTFBuffer = gltfRuntime.buffers[buf];
+
+                if (buffer) {
+                    if (GLTFUtils.IsBase64(buffer.uri)) {
+                        var arrayBuffer = decodeArrayBuffer(buffer.uri.split(",")[1]);
+                        onLoadBuffer(gltfRuntime, buf)(arrayBuffer);
+                    }
+                    else {
+                        Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, onLoadBuffer(gltfRuntime, buf), null, null, true, onLoadBufferError(gltfRuntime, buf));
+                    }
+                }
+                else {
+                    Tools.Error("No buffer named : " + buf);
+                }
             }
         }
     };
@@ -1242,11 +1251,19 @@
                 var createMipMaps = (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
                     (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
                     (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
-                    (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR); 
+                    (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR);
 
                 var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
-                if (GLTFUtils.IsBase64(source.uri)) {
+                if (gltfRuntime.extensionsUsed.indexOf(BinaryExtensionName) != -1 && BinaryExtensionName in source.extensions) {
+                    var binaryExtensionImage: IGLTFBinaryExtensionImage = source.extensions[BinaryExtensionName];
+                    var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[binaryExtensionImage.bufferView];
+                    var imageBytes = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
+                    var blob = new Blob([imageBytes], { type: binaryExtensionImage.mimeType });
+                    var blobURL = URL.createObjectURL(blob);
+                    var revokeBlobURL = () => URL.revokeObjectURL(blobURL);
+                    newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
+                } else if (GLTFUtils.IsBase64(source.uri)) {
                     newTexture = new Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, null, null, source.uri, true);
                 }
                 else {
@@ -1454,7 +1471,7 @@
             shaderMaterial.id = mat;
             shaderMaterial.onError = onShaderCompileError(program, shaderMaterial);
             shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
-            
+
             if (states.functions) {
                 var functions = states.functions;
                 if (functions.cullFace && functions.cullFace[0] !== ECullingType.BACK) {
@@ -1494,10 +1511,10 @@
     */
     var onLoadShader = (gltfRuntime: IGLTFRuntime, sha: string) => {
         return (data: any) => {
-            gltfRuntime.loadedShaders++;
+            gltfRuntime.loadedShaderCount++;
             Effect.ShadersStore[sha + (gltfRuntime.shaders[sha].type === EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = data;
 
-            if (gltfRuntime.loadedShaders === gltfRuntime.shaderscount) {
+            if (gltfRuntime.loadedShaderCount === gltfRuntime.shaderscount) {
                 onShadersLoaded(gltfRuntime);
             }
         };
@@ -1523,9 +1540,16 @@
             atLeastOneShader = true;
 
             var shader: IGLTFShader = gltfRuntime.shaders[sha];
-            
+
             if (shader) {
-                if (GLTFUtils.IsBase64(shader.uri)) {
+                if (gltfRuntime.extensionsUsed.indexOf(BinaryExtensionName) != -1 && BinaryExtensionName in shader.extensions) {
+                    var binaryExtensionShader: IGLTFBinaryExtensionShader = shader.extensions[BinaryExtensionName];
+                    var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
+                    var shaderBytes = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
+                    var shaderString = GLTFUtils.DecodeBufferToText(shaderBytes);
+                    onLoadShader(gltfRuntime, sha)(shaderString);
+                }
+                else if (GLTFUtils.IsBase64(shader.uri)) {
                     var shaderString = atob(shader.uri.split(",")[1]);
                     onLoadShader(gltfRuntime, sha)(shaderString);
                 }
@@ -1543,6 +1567,34 @@
         }
     };
 
+    class BinaryReader {
+        private _arrayBuffer: ArrayBuffer;
+        private _dataView: DataView;
+        private _byteOffset: number;
+
+        constructor(arrayBuffer: ArrayBuffer) {
+            this._arrayBuffer = arrayBuffer;
+            this._dataView = new DataView(arrayBuffer);
+            this._byteOffset = 0;
+        }
+
+        public getUint32(): number {
+            var value = this._dataView.getUint32(this._byteOffset, true);
+            this._byteOffset += 4;
+            return value;
+        }
+
+        public getUint8Array(length?: number): Uint8Array {
+            if (!length) {
+                length = this._arrayBuffer.byteLength - this._byteOffset;
+            }
+
+            var value = new Uint8Array(this._arrayBuffer, this._byteOffset, length);
+            this._byteOffset += length;
+            return value;
+        }
+    }
+
     /**
     * glTF File Loader Plugin
     */
@@ -1550,7 +1602,10 @@
         /**
         * Public members
         */
-        public extensions = ".gltf";
+        public extensions: ISceneLoaderPluginExtensions = {
+            ".gltf": { isBinary: false },
+            ".glb": { isBinary: true }
+        };
 
         /**
         * Private members
@@ -1578,8 +1633,7 @@
         * Import meshes
         */
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
-            var parsedData = JSON.parse(data);
-            var gltfRuntime = this._createGlTFRuntime(parsedData, scene, rootUrl);
+            var gltfRuntime = this._loadRuntime(scene, data, rootUrl);
             gltfRuntime.importOnlyMeshes = true;
 
             if (meshesNames === "") {
@@ -1625,9 +1679,8 @@
         /**
         * Load scene
         */
-        public load(scene: Scene, data: string, rootUrl: string): boolean {
-            var parsedData = JSON.parse(data);
-            var gltfRuntime = this._createGlTFRuntime(parsedData, scene, rootUrl);
+        public load(scene: Scene, data: string | ArrayBuffer, rootUrl: string): boolean {
+            var gltfRuntime = this._loadRuntime(scene, data, rootUrl);
 
             // Create nodes
             this._createNodes(gltfRuntime);
@@ -1638,6 +1691,66 @@
             // Finish
             return true;
         }
+
+        // Loads data into a runtime object
+        private _loadRuntime(scene: Scene, data: string | ArrayBuffer, rootUrl: string): IGLTFRuntime {
+            if (typeof data === "string") {
+                return this._createGlTFRuntime(JSON.parse(data), scene, rootUrl);
+            }
+            else {
+                var binary = this._parseBinary(data);
+
+                var gltfRuntime = this._createGlTFRuntime(binary.content, scene, rootUrl);
+
+                if (gltfRuntime.extensionsUsed.indexOf(BinaryExtensionName) == -1) {
+                    Tools.Warn("glTF binary file does not have " + BinaryExtensionName + " specified in extensionsUsed");
+                }
+
+                gltfRuntime.loadedBufferViews[BinaryExtensionBufferName] = binary.body;
+
+                return gltfRuntime;
+            }
+        }
+
+        // Parses a glTF binary array buffer into its content and body
+        private _parseBinary(data: ArrayBuffer): IGLTFBinaryExtension {
+            var binaryReader = new BinaryReader(data);
+
+            var magic = GLTFUtils.DecodeBufferToText(binaryReader.getUint8Array(4));
+            if (magic != "glTF") {
+                throw new Error("Unexpected magic: " + magic);
+            }
+
+            var version = binaryReader.getUint32();
+            if (version != 1) {
+                throw new Error("Unsupported version: " + version);
+            }
+
+            var length = binaryReader.getUint32();
+            if (length != data.byteLength) {
+                throw new Error("Length in header does not match actual data length: " + length + " != " + data.byteLength);
+            }
+
+            var contentLength = binaryReader.getUint32();
+            var contentFormat = <EContentFormat>binaryReader.getUint32();
+
+            var content: Object;
+            switch (contentFormat) {
+                case EContentFormat.JSON:
+                    var jsonText = GLTFUtils.DecodeBufferToText(binaryReader.getUint8Array(contentLength));
+                    content = JSON.parse(jsonText);
+                    break;
+                default:
+                    throw new Error("Unexpected content format: " + contentFormat);
+            }
+
+            var body = binaryReader.getUint8Array();
+
+            return {
+                content: content,
+                body: body
+            };
+        };
 
         // Creates nodes before loading buffers and shaders
         private _createNodes(gltfRuntime: IGLTFRuntime): void {
@@ -1677,14 +1790,16 @@
                 shaderscount: 0,
 
                 scene: scene,
-                dummyNodes: [],
-                loadedBuffers: 0,
-                loadedShaders: 0,
                 rootUrl: rootUrl,
+
+                loadedBufferCount: 0,
+                loadedBufferViews: {},
+
+                loadedShaderCount: 0,
 
                 importOnlyMeshes: false,
 
-                arrayBuffers: []
+                dummyNodes: []
             }
 
             // Parse
