@@ -26428,6 +26428,9 @@ var BABYLON;
             return SceneLoader._getDefaultPlugin();
         };
         SceneLoader._getPluginForFilename = function (sceneFilename) {
+            if (sceneFilename.name) {
+                sceneFilename = sceneFilename.name;
+            }
             var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
             if (queryStringPosition === -1) {
@@ -55227,10 +55230,10 @@ var BABYLON;
                 return false;
             }
             var emitterPosition = this.getEmitterPosition();
-            var direction = emitterPosition.subtract(this._scene.activeCamera.position);
+            var direction = emitterPosition.subtract(this._scene.activeCamera.globalPosition);
             var distance = direction.length();
             direction.normalize();
-            var ray = new BABYLON.Ray(this._scene.activeCamera.position, direction);
+            var ray = new BABYLON.Ray(this._scene.activeCamera.globalPosition, direction);
             var pickInfo = this._scene.pickWithRay(ray, this.meshesSelectionPredicate, true);
             return !pickInfo.hit || pickInfo.distance > distance;
         };
