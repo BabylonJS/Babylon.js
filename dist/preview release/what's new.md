@@ -1,7 +1,8 @@
 # 2.5.0:
 
 ### Major updates
-- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))    
+- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
+
 ### Updates
 - New ```Tools.CreateScreenshot``` function will capture all canvas data. Previous implementation is now called `CreateScreenshotUsingRenderTarget` ([deltakosh](https://github.com/deltakosh)) 
 - Cube textures are now cached by texture cache ([deltakosh](https://github.com/deltakosh)) 
