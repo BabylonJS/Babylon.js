@@ -10,6 +10,7 @@ module BABYLON {
         private _observer: Observer<PointerInfo>;
 
         private previousPosition: { x: number, y: number };
+        private _isPointerLock = false;
 
         constructor(public touchEnabled = true) {
         }
@@ -24,6 +25,12 @@ module BABYLON {
                     if (!this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
+
+                    if (this._isPointerLock && !engine.isPointerLock) {
+						this.previousPosition = null;
+					}
+					
+					this._isPointerLock = engine.isPointerLock;
 
                     if (p.type === PointerEventTypes.POINTERDOWN) {
                         try {
