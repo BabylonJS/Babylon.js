@@ -6,6 +6,7 @@ module BABYLON {
         public angularSensibility = 2000.0;
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
+        private _onMouseMove: (e: MouseEvent) => any;
         private _observer: Observer<PointerInfo>;
 
         private previousPosition: { x: number, y: number };
@@ -55,26 +56,19 @@ module BABYLON {
                     }
 
                     else if (p.type === PointerEventTypes.POINTERMOVE) {
-                        if (!this.previousPosition && !engine.isPointerLock) {
+                        if (!this.previousPosition || engine.isPointerLock) {
                             return;
                         }
 
-                        var offsetX;
-                        var offsetY;
-
-                        if (!engine.isPointerLock) {
-                            offsetX = evt.clientX - this.previousPosition.x;
-                            offsetY = evt.clientY - this.previousPosition.y;
-                        } else {
-                            offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                            offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                        }
-
+                        var offsetX = evt.clientX - this.previousPosition.x;
+                        var offsetY = evt.clientY - this.previousPosition.y;
+                        
                         if (this.camera.getScene().useRightHandedSystem) {
                             camera.cameraRotation.y -= offsetX / this.angularSensibility;
                         } else {
                             camera.cameraRotation.y += offsetX / this.angularSensibility;                            
                         }
+
                         camera.cameraRotation.x += offsetY / this.angularSensibility;
 
                         this.previousPosition = {
@@ -89,14 +83,44 @@ module BABYLON {
                 }
             }
 
+            this._onMouseMove = evt => {
+                if (!engine.isPointerLock) {
+                    return;
+                }
+
+                var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+
+                if (this.camera.getScene().useRightHandedSystem) {
+                    camera.cameraRotation.y -= offsetX / this.angularSensibility;
+                } else {
+                    camera.cameraRotation.y += offsetX / this.angularSensibility;                            
+                }
+                
+                camera.cameraRotation.x += offsetY / this.angularSensibility;
+
+                this.previousPosition = {
+                    x: evt.clientX,
+                    y: evt.clientY
+                };
+                
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
+            };
+
             this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+            element.addEventListener("mousemove", this._onMouseMove, false);
+
         }
 
         detachControl(element: HTMLElement) {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
-                this._observer = null;
+                element.removeEventListener("mousemove", this._onMouseMove);
 
+                this._observer = null;
+                this._onMouseMove = null;
                 this.previousPosition = null;
             }
         }
