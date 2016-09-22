@@ -13,6 +13,7 @@ var runSequence = require('run-sequence');
 var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
 var expect = require('gulp-expect-file');
+var optimisejs = require('gulp-optimize-js');
 
 var config = require("./config.json");
 
@@ -131,6 +132,7 @@ gulp.task("buildCore", ["shaders"], function () {
         .pipe(replace(decorateSearchRegex, ""))
         .pipe(addModuleExports("BABYLON"))
         .pipe(uglify())
+        .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
 });
 
@@ -149,6 +151,7 @@ gulp.task("buildNoWorker", ["shaders"], function () {
         .pipe(replace(decorateSearchRegex, ""))
         .pipe(addModuleExports("BABYLON"))
         .pipe(uglify())
+        .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
 });
 
@@ -170,6 +173,7 @@ gulp.task("build", ["workers", "shaders"], function () {
         .pipe(gulp.dest(config.build.outputDirectory))
         .pipe(rename(config.build.minFilename))
         .pipe(uglify())
+        .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
 });
 

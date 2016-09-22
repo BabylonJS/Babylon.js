@@ -13698,6 +13698,10 @@ var BABYLON;
             window.removeEventListener("deviceorientation", this._deviceOrientation);
         };
         FreeCameraDeviceOrientationInput.prototype.checkInputs = function () {
+            //if no device orientation provided, don't update the rotation.
+            //Only testing against alpha under the assumption thatnorientation will never be so exact when set.
+            if (!this._alpha)
+                return;
             BABYLON.Quaternion.RotationYawPitchRollToRef(BABYLON.Tools.ToRadians(this._alpha), BABYLON.Tools.ToRadians(this._beta), -BABYLON.Tools.ToRadians(this._gamma), this.camera.rotationQuaternion);
             this._camera.rotationQuaternion.multiplyInPlace(this._screenQuaternion);
             this._camera.rotationQuaternion.multiplyInPlace(this._constantTranform);
@@ -55391,6 +55395,7 @@ var BABYLON;
         __extends(DeviceOrientationCamera, _super);
         function DeviceOrientationCamera(name, position, scene) {
             _super.call(this, name, position, scene);
+            this._quaternionCache = new BABYLON.Quaternion();
             this.inputs.addDeviceOrientation();
         }
         DeviceOrientationCamera.prototype.getTypeName = function () {
@@ -55398,8 +55403,8 @@ var BABYLON;
         };
         DeviceOrientationCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
+            this._quaternionCache.copyFrom(this.rotationQuaternion);
             if (this._initialQuaternion) {
-                this._quaternionCache.copyFrom(this.rotationQuaternion);
                 this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
         };
@@ -55422,6 +55427,8 @@ var BABYLON;
                 }
             });
             this._initialQuaternion.normalize();
+            //force rotation update
+            this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
         };
         return DeviceOrientationCamera;
     })(BABYLON.FreeCamera);

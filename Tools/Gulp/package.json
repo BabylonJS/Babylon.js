@@ -22,6 +22,7 @@
     "run-sequence": "~1.1.0",
     "gulp-replace": "~0.5.3",
     "gulp-content-to-variable": "^0.1.0",
-    "gulp-expect-file": "^0.0.7"
+    "gulp-expect-file": "^0.0.7",
+    "gulp-optimize-js": "^1.0.2"
   }
 }
