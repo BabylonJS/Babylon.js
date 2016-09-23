@@ -10,8 +10,7 @@ module BABYLON {
         private _observer: Observer<PointerInfo>;
 
         private previousPosition: { x: number, y: number };
-        private _isPointerLock = false;
-
+        
         constructor(public touchEnabled = true) {
         }
 
@@ -25,12 +24,6 @@ module BABYLON {
                     if (!this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
-
-                    if (this._isPointerLock && !engine.isPointerLock) {
-						this.previousPosition = null;
-					}
-					
-					this._isPointerLock = engine.isPointerLock;
 
                     if (p.type === PointerEventTypes.POINTERDOWN) {
                         try {
@@ -106,10 +99,7 @@ module BABYLON {
                 
                 camera.cameraRotation.x += offsetY / this.angularSensibility;
 
-                this.previousPosition = {
-                    x: evt.clientX,
-                    y: evt.clientY
-                };
+                this.previousPosition = null;
                 
                 if (!noPreventDefault) {
                     evt.preventDefault();
