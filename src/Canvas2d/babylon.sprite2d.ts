@@ -218,7 +218,7 @@
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, pi => Sprite2D.spriteScaleFactorProperty = pi)
         /**
-         * Get/set the sprite location (in pixels) in the texture
+         * Get/set the scaling of the texture. 0.5 means the texture is streched twice the size.
          */
         public get spriteScaleFactor(): Vector2 {
             return this._spriteScaleFactor;
@@ -242,6 +242,33 @@
         protected updateLevelBoundingInfo() {
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         }
+
+        /**
+         * Sets the scale of the sprite using a BABYLON.Size(w,h).
+         * Keeps proportion by taking the maximum of the two scale for x and y.
+         * @param {Size} size Size(width,height)
+         */
+        public scaleToSize(size: Size) {
+            var baseSize = this.size;
+            if (baseSize == null || !this.texture.isReady()) {
+                // we're probably at initiation of the scene, size is not set
+                if (this.texture.isReady()) {
+                    baseSize = <Size>this.texture.getBaseSize();
+                }
+                else {
+                    // the texture is not ready, wait for it to load before calling scaleToSize again
+                    var thisObject = <Sprite2D>this;
+                    this.texture.onLoadObservable.add(function () {
+                            thisObject.scaleToSize(size); 
+                        });
+                    return;
+                }
+            }
+            
+            this.scale = Math.max(size.height / baseSize.height, size.width / baseSize.width);
+        }
+
+        //TODO: A function to set the size.height, and size.width independently
 
         /**
          * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
