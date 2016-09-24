@@ -1,7 +1,9 @@
 # 2.5.0:
 
 ### Major updates
-- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))    
+- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
+- Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
+
 ### Updates
 - New ```Tools.CreateScreenshot``` function will capture all canvas data. Previous implementation is now called `CreateScreenshotUsingRenderTarget` ([deltakosh](https://github.com/deltakosh)) 
 - Cube textures are now cached by texture cache ([deltakosh](https://github.com/deltakosh)) 
@@ -29,6 +31,7 @@
 ### API doc
 
 ### Bug fixes
+- Fixed issue with FreeCamera not working in fullscreen or when pointer locked ([abow](https://github.com/abow))
 - MapTexture: Font Characters are now correctly aligned on Chrome ([nockawa](https://github.com/nockawa))
 - Fixed some missing parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))
 - Fixed cross vector calculation in `_computeHeightQuads()` that affected  all the `GroundMesh.getHeightAtCoordinates()` and `GroundMesh.getNormalAtCoordinates()` methods ([jerome](https://github.com/jbousquie))

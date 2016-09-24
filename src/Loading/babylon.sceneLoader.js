@@ -72,6 +72,9 @@ var BABYLON;
             return SceneLoader._getDefaultPlugin();
         };
         SceneLoader._getPluginForFilename = function (sceneFilename) {
+            if (sceneFilename.name) {
+                sceneFilename = sceneFilename.name;
+            }
             var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
             if (queryStringPosition === -1) {

@@ -11170,7 +11170,12 @@ var BABYLON;
         PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();
-                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
+                if (this.getScene().useRightHandedSystem) {
+                    effect.setFloat4(positionUniformName, -this.transformedPosition.x, -this.transformedPosition.y, -this.transformedPosition.z, 0);
+                }
+                else {
+                    effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
+                }
                 return;
             }
             if (this.getScene().useRightHandedSystem) {
@@ -13324,6 +13329,7 @@ var BABYLON;
             if (touchEnabled === void 0) { touchEnabled = true; }
             this.touchEnabled = touchEnabled;
             this.angularSensibility = 2000.0;
+            this._isPointerLock = false;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -13335,6 +13341,10 @@ var BABYLON;
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
+                    if (_this._isPointerLock && !engine.isPointerLock) {
+                        _this.previousPosition = null;
+                    }
+                    _this._isPointerLock = engine.isPointerLock;
                     if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                         try {
                             evt.srcElement.setPointerCapture(evt.pointerId);
@@ -13362,19 +13372,11 @@ var BABYLON;
                         }
                     }
                     else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                        if (!_this.previousPosition && !engine.isPointerLock) {
+                        if (!_this.previousPosition || engine.isPointerLock) {
                             return;
                         }
-                        var offsetX;
-                        var offsetY;
-                        if (!engine.isPointerLock) {
-                            offsetX = evt.clientX - _this.previousPosition.x;
-                            offsetY = evt.clientY - _this.previousPosition.y;
-                        }
-                        else {
-                            offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                            offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                        }
+                        var offsetX = evt.clientX - _this.previousPosition.x;
+                        var offsetY = evt.clientY - _this.previousPosition.y;
                         if (_this.camera.getScene().useRightHandedSystem) {
                             camera.cameraRotation.y -= offsetX / _this.angularSensibility;
                         }
@@ -13392,12 +13394,36 @@ var BABYLON;
                     }
                 };
             }
+            this._onMouseMove = function (evt) {
+                if (!engine.isPointerLock) {
+                    return;
+                }
+                var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                if (_this.camera.getScene().useRightHandedSystem) {
+                    camera.cameraRotation.y -= offsetX / _this.angularSensibility;
+                }
+                else {
+                    camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                }
+                camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                _this.previousPosition = {
+                    x: evt.clientX,
+                    y: evt.clientY
+                };
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
+            };
             this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
+            element.addEventListener("mousemove", this._onMouseMove, false);
         };
         FreeCameraMouseInput.prototype.detachControl = function (element) {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
+                element.removeEventListener("mousemove", this._onMouseMove);
                 this._observer = null;
+                this._onMouseMove = null;
                 this.previousPosition = null;
             }
         };
@@ -13698,6 +13724,10 @@ var BABYLON;
             window.removeEventListener("deviceorientation", this._deviceOrientation);
         };
         FreeCameraDeviceOrientationInput.prototype.checkInputs = function () {
+            //if no device orientation provided, don't update the rotation.
+            //Only testing against alpha under the assumption thatnorientation will never be so exact when set.
+            if (!this._alpha)
+                return;
             BABYLON.Quaternion.RotationYawPitchRollToRef(BABYLON.Tools.ToRadians(this._alpha), BABYLON.Tools.ToRadians(this._beta), -BABYLON.Tools.ToRadians(this._gamma), this.camera.rotationQuaternion);
             this._camera.rotationQuaternion.multiplyInPlace(this._screenQuaternion);
             this._camera.rotationQuaternion.multiplyInPlace(this._constantTranform);
@@ -26428,6 +26458,9 @@ var BABYLON;
             return SceneLoader._getDefaultPlugin();
         };
         SceneLoader._getPluginForFilename = function (sceneFilename) {
+            if (sceneFilename.name) {
+                sceneFilename = sceneFilename.name;
+            }
             var dotPosition = sceneFilename.lastIndexOf(".");
             var queryStringPosition = sceneFilename.indexOf("?");
             if (queryStringPosition === -1) {
@@ -55227,10 +55260,10 @@ var BABYLON;
                 return false;
             }
             var emitterPosition = this.getEmitterPosition();
-            var direction = emitterPosition.subtract(this._scene.activeCamera.position);
+            var direction = emitterPosition.subtract(this._scene.activeCamera.globalPosition);
             var distance = direction.length();
             direction.normalize();
-            var ray = new BABYLON.Ray(this._scene.activeCamera.position, direction);
+            var ray = new BABYLON.Ray(this._scene.activeCamera.globalPosition, direction);
             var pickInfo = this._scene.pickWithRay(ray, this.meshesSelectionPredicate, true);
             return !pickInfo.hit || pickInfo.distance > distance;
         };
@@ -55388,6 +55421,7 @@ var BABYLON;
         __extends(DeviceOrientationCamera, _super);
         function DeviceOrientationCamera(name, position, scene) {
             _super.call(this, name, position, scene);
+            this._quaternionCache = new BABYLON.Quaternion();
             this.inputs.addDeviceOrientation();
         }
         DeviceOrientationCamera.prototype.getTypeName = function () {
@@ -55395,8 +55429,8 @@ var BABYLON;
         };
         DeviceOrientationCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
+            this._quaternionCache.copyFrom(this.rotationQuaternion);
             if (this._initialQuaternion) {
-                this._quaternionCache.copyFrom(this.rotationQuaternion);
                 this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
         };
@@ -55419,6 +55453,8 @@ var BABYLON;
                 }
             });
             this._initialQuaternion.normalize();
+            //force rotation update
+            this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
         };
         return DeviceOrientationCamera;
     })(BABYLON.FreeCamera);

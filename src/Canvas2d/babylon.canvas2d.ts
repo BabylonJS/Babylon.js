@@ -412,7 +412,9 @@
             }
 
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            this._updatePointerInfo(eventData, localPosition);
+            if (!this._updatePointerInfo(eventData, localPosition)) {
+                return;
+            }
 
             let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
@@ -451,13 +453,17 @@
             eventState.skipNextObservers = skip;
         }
 
-        private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2) {
+        private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2): boolean {
             let s = this.scale;
             let pii = this._primPointerInfo;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = Vector2.Zero();
             }
             var camera = this._scene.cameraToUseForPointers || this._scene.activeCamera;
+            if (!camera || !camera.viewport) {
+                return false;
+            }
+
             var engine = this._scene.getEngine();
 
             if (this._isScreenSpace) {
@@ -500,6 +506,8 @@
                 pii.tilt.y = pe.tiltY;
                 pii.isCaptured = this.getCapturedPrimitive(pe.pointerId) !== null;
             }
+
+            return true;
         }
 
         private _updateIntersectionList(mouseLocalPos: Vector2, isCapture: boolean) {
