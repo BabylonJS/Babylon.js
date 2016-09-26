@@ -365,7 +365,9 @@ var BABYLON;
                 return;
             }
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            this._updatePointerInfo(eventData, localPosition);
+            if (!this._updatePointerInfo(eventData, localPosition)) {
+                return;
+            }
             var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
@@ -403,6 +405,9 @@ var BABYLON;
                 pii.canvasPointerPos = BABYLON.Vector2.Zero();
             }
             var camera = this._scene.cameraToUseForPointers || this._scene.activeCamera;
+            if (!camera || !camera.viewport) {
+                return false;
+            }
             var engine = this._scene.getEngine();
             if (this._isScreenSpace) {
                 var cameraViewport = camera.viewport;
@@ -444,6 +449,7 @@ var BABYLON;
                 pii.tilt.y = pe.tiltY;
                 pii.isCaptured = this.getCapturedPrimitive(pe.pointerId) !== null;
             }
+            return true;
         };
         Canvas2D.prototype._updateIntersectionList = function (mouseLocalPos, isCapture) {
             if (this.scene.getRenderId() === this._intersectionRenderId) {

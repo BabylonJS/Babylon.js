@@ -13329,7 +13329,6 @@ var BABYLON;
             if (touchEnabled === void 0) { touchEnabled = true; }
             this.touchEnabled = touchEnabled;
             this.angularSensibility = 2000.0;
-            this._isPointerLock = false;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -13341,10 +13340,6 @@ var BABYLON;
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
-                    if (_this._isPointerLock && !engine.isPointerLock) {
-                        _this.previousPosition = null;
-                    }
-                    _this._isPointerLock = engine.isPointerLock;
                     if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                         try {
                             evt.srcElement.setPointerCapture(evt.pointerId);
@@ -13407,10 +13402,7 @@ var BABYLON;
                     camera.cameraRotation.y += offsetX / _this.angularSensibility;
                 }
                 camera.cameraRotation.x += offsetY / _this.angularSensibility;
-                _this.previousPosition = {
-                    x: evt.clientX,
-                    y: evt.clientY
-                };
+                _this.previousPosition = null;
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }
@@ -39741,6 +39733,7 @@ var BABYLON;
         SmartPropertyPrim.flagActualScaleDirty = 0x0040000; // set if the actualScale property needs to be recomputed
         SmartPropertyPrim.flagDontInheritParentScale = 0x0080000; // set if the actualScale must not use its parent's scale to be computed
         SmartPropertyPrim.flagGlobalTransformDirty = 0x0100000; // set if the global transform must be recomputed due to a local transform change
+        SmartPropertyPrim.flagLayoutBoundingInfoDirty = 0x0100000; // set if the layout bounding info is dirty
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim")
         ], SmartPropertyPrim);
@@ -40721,13 +40714,14 @@ var BABYLON;
         };
         /**
          * Compute the positioning/size of an area considering the thickness of this object and a given alignment
-         * @param sourceArea the source area
+         * @param sourceArea the source area where the content must be sized/positioned
          * @param contentSize the content size to position/resize
          * @param alignment the alignment setting
          * @param dstOffset the position of the content
          * @param dstArea the new size of the content
          */
-        PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea) {
+        PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea, computeLayoutArea) {
+            if (computeLayoutArea === void 0) { computeLayoutArea = false; }
             // Fetch some data
             var topType = this._getType(0, true);
             var leftType = this._getType(1, true);
@@ -40752,6 +40746,9 @@ var BABYLON;
                             dstOffset.x = this.leftPixels;
                         }
                         dstArea.width = width;
+                        if (computeLayoutArea) {
+                            dstArea.width += this.leftPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignRight:
@@ -40764,6 +40761,9 @@ var BABYLON;
                             dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
                         }
                         dstArea.width = width;
+                        if (computeLayoutArea) {
+                            dstArea.width += this.rightPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -40808,6 +40808,9 @@ var BABYLON;
                             dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
                         }
                         dstArea.height = height;
+                        if (computeLayoutArea) {
+                            dstArea.height += this.topPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignBottom:
@@ -40820,6 +40823,9 @@ var BABYLON;
                             dstOffset.y = this.bottomPixels;
                         }
                         dstArea.height = height;
+                        if (computeLayoutArea) {
+                            dstArea.height += this.bottomPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -40973,7 +40979,8 @@ var BABYLON;
             this._actualSize = null;
             this._boundingSize = BABYLON.Size.Zero();
             this._layoutArea = BABYLON.Size.Zero();
-            this._layoutAreaPos = BABYLON.Vector2.Zero();
+            this._layoutAreaPos = null;
+            this._layoutBoundingInfo = null;
             this._marginOffset = BABYLON.Vector2.Zero();
             this._paddingOffset = BABYLON.Vector2.Zero();
             this._parentPaddingOffset = BABYLON.Vector2.Zero();
@@ -41014,7 +41021,7 @@ var BABYLON;
             if (settings.dontInheritParentScale) {
                 this._setFlags(BABYLON.SmartPropertyPrim.flagDontInheritParentScale);
             }
-            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0) | BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0) | BABYLON.SmartPropertyPrim.flagActualScaleDirty | BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
             }
@@ -41765,6 +41772,9 @@ var BABYLON;
                     return;
                 }
                 this._positioningDirty();
+                if (this.parent) {
+                    this.parent._setFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                }
                 this._layoutArea = val;
             },
             enumerable: true,
@@ -41776,11 +41786,14 @@ var BABYLON;
              * The setter should only be called by a Layout Engine class.
              */
             get: function () {
-                return this._layoutAreaPos;
+                return this._layoutAreaPos || Prim2DBase._nullPosition;
             },
             set: function (val) {
-                if (this._layoutAreaPos.equals(val)) {
+                if (this._layoutAreaPos && this._layoutAreaPos.equals(val)) {
                     return;
+                }
+                if (this.parent) {
+                    this.parent._setFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
                 }
                 this._positioningDirty();
                 this._layoutAreaPos = val;
@@ -41906,7 +41919,8 @@ var BABYLON;
                     var tps = new BABYLON.BoundingInfo2D();
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var curChild = _a[_i];
-                        curChild.boundingInfo.transformToRef(curChild.localTransform, tps);
+                        var bb = curChild.boundingInfo;
+                        bb.transformToRef(curChild.localTransform, tps);
                         bi.unionToRef(tps, bi);
                     }
                     this._boundingInfo.maxToRef(Prim2DBase._bMax);
@@ -41914,6 +41928,45 @@ var BABYLON;
                     this._clearFlags(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty);
                 }
                 return this._boundingInfo;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "layoutBoundingInfo", {
+            /**
+             * Get the boundingInfo of the primitive's content arranged by a layout Engine
+             * If a particular child is not arranged by layout, it's boundingInfo is used instead to produce something as accurate as possible
+             */
+            get: function () {
+                if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty)) {
+                    if (!this._layoutBoundingInfo) {
+                        this._layoutBoundingInfo = new BABYLON.BoundingInfo2D();
+                    }
+                    if (this.isSizedByContent) {
+                        this._layoutBoundingInfo.clear();
+                    }
+                    else {
+                        this._layoutBoundingInfo.copyFrom(this.levelBoundingInfo);
+                    }
+                    var bi = this._layoutBoundingInfo;
+                    var tps = new BABYLON.BoundingInfo2D();
+                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                        var curChild = _a[_i];
+                        var bb = void 0;
+                        if (curChild._layoutAreaPos) {
+                            var s = curChild._layoutArea;
+                            BABYLON.BoundingInfo2D.CreateFromMinMaxToRef(0, s.width, 0, s.height, Prim2DBase._tpsBB);
+                            bb = Prim2DBase._tpsBB;
+                        }
+                        else {
+                            bb = curChild.boundingInfo;
+                        }
+                        bb.transformToRef(curChild.localTransform, tps);
+                        bi.unionToRef(tps, bi);
+                    }
+                    this._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                }
+                return this._layoutBoundingInfo;
             },
             enumerable: true,
             configurable: true
@@ -42284,7 +42337,7 @@ var BABYLON;
                 }
                 var rot = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), this._rotation);
                 var local;
-                var pos = this.position;
+                var pos = this._position ? this.position : this.layoutAreaPos;
                 if (this._origin.x === 0 && this._origin.y === 0) {
                     local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale.x, this._scale.y, 1), rot, new BABYLON.Vector3(pos.x, pos.y, 0));
                     this._localTransform = local;
@@ -42337,21 +42390,21 @@ var BABYLON;
                     this.clearPropertiesDirty(Prim2DBase.sizeProperty.flagId);
                 }
             }
-            // Check for layout update
             var positioningDirty = this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
+            var positioningComputed = positioningDirty && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
+            // Check for layout update
             if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutDirty)) {
                 this.owner.addUpdateLayoutCounter(1);
                 this._layoutEngine.updateLayout(this);
                 this._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutDirty);
             }
-            var positioningComputed = positioningDirty && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
             var autoContentChanged = false;
             if (this.isSizeAuto) {
                 if (!this._lastAutoSizeArea) {
-                    autoContentChanged = this.size !== null;
+                    autoContentChanged = this.actualSize !== null;
                 }
                 else {
-                    autoContentChanged = (!this._lastAutoSizeArea.equals(this.size));
+                    autoContentChanged = (!this._lastAutoSizeArea.equals(this.actualSize));
                 }
             }
             // Check for positioning update
@@ -42388,8 +42441,8 @@ var BABYLON;
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
                     var localTransform;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
-                    Prim2DBase._transMtx.m[12] += this._layoutAreaPos.x + this._marginOffset.x + parentPaddingOffset.x;
-                    Prim2DBase._transMtx.m[13] += this._layoutAreaPos.y + this._marginOffset.y + parentPaddingOffset.y;
+                    Prim2DBase._transMtx.m[12] += this._marginOffset.x + parentPaddingOffset.x;
+                    Prim2DBase._transMtx.m[13] += this._marginOffset.y + parentPaddingOffset.y;
                     localTransform = Prim2DBase._transMtx;
                     this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
                     this._invGlobalTransform = BABYLON.Matrix.Invert(this._globalTransform);
@@ -42426,7 +42479,7 @@ var BABYLON;
             }
             // Apply margin
             if (this._hasMargin) {
-                this.margin.computeWithAlignment(this.layoutArea, this.size, this.marginAlignment, this._marginOffset, Prim2DBase._size);
+                this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase._size);
                 this.actualSize = Prim2DBase._size.clone();
             }
             var isSizeAuto = this.isSizeAuto;
@@ -42461,11 +42514,11 @@ var BABYLON;
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
             if (!this._position) {
-                var aPos = new BABYLON.Vector2(this._layoutAreaPos.x + this._marginOffset.x, this._layoutAreaPos.y + this._marginOffset.y);
+                var aPos = new BABYLON.Vector2(this.layoutAreaPos.x + this._marginOffset.x, this.layoutAreaPos.y + this._marginOffset.y);
                 this.actualPosition = aPos;
             }
             if (isSizeAuto) {
-                this._lastAutoSizeArea = this.size;
+                this._lastAutoSizeArea = this.actualSize;
             }
         };
         Object.defineProperty(Prim2DBase.prototype, "contentArea", {
@@ -42679,6 +42732,7 @@ var BABYLON;
         Prim2DBase.boundinbBoxReentrency = false;
         Prim2DBase.nullSize = BABYLON.Size.Zero();
         Prim2DBase._bMax = BABYLON.Vector2.Zero();
+        Prim2DBase._tpsBB = new BABYLON.BoundingInfo2D();
         Prim2DBase._isCanvasInit = false;
         Prim2DBase._t0 = new BABYLON.Matrix();
         Prim2DBase._t1 = new BABYLON.Matrix();
@@ -44437,12 +44491,16 @@ var BABYLON;
             get: function () {
                 // The computed size will be floor on both width and height
                 var actualSize;
+                // Return the actualSize if set
+                if (this._actualSize) {
+                    return this._actualSize;
+                }
                 // Return the size if set by the user
                 if (this._size) {
                     actualSize = new BABYLON.Size(Math.ceil(this._size.width), Math.ceil(this._size.height));
                 }
                 else {
-                    var m = this.boundingInfo.max();
+                    var m = this.layoutBoundingInfo.max();
                     actualSize = new BABYLON.Size(Math.ceil(m.x), Math.ceil(m.y));
                 }
                 // Compare the size with the one we previously had, if it differs we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
@@ -44452,6 +44510,9 @@ var BABYLON;
                     this.handleGroupChanged(Group2D.actualSizeProperty);
                 }
                 return actualSize;
+            },
+            set: function (value) {
+                this._actualSize = value;
             },
             enumerable: true,
             configurable: true
@@ -46257,6 +46318,29 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Sets the scale of the sprite using a BABYLON.Size(w,h).
+         * Keeps proportion by taking the maximum of the two scale for x and y.
+         * @param {Size} size Size(width,height)
+         */
+        Sprite2D.prototype.scaleToSize = function (size) {
+            var baseSize = this.size;
+            if (baseSize == null || !this.texture.isReady()) {
+                // we're probably at initiation of the scene, size is not set
+                if (this.texture.isReady()) {
+                    baseSize = this.texture.getBaseSize();
+                }
+                else {
+                    // the texture is not ready, wait for it to load before calling scaleToSize again
+                    var thisObject = this;
+                    this.texture.onLoadObservable.add(function () {
+                        thisObject.scaleToSize(size);
+                    });
+                    return;
+                }
+            }
+            this.scale = Math.max(size.height / baseSize.height, size.width / baseSize.width);
+        };
         Object.defineProperty(Sprite2D.prototype, "alignToPixel", {
             /**
              * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
@@ -48394,7 +48478,9 @@ var BABYLON;
                 return;
             }
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            this._updatePointerInfo(eventData, localPosition);
+            if (!this._updatePointerInfo(eventData, localPosition)) {
+                return;
+            }
             var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
@@ -48432,6 +48518,9 @@ var BABYLON;
                 pii.canvasPointerPos = BABYLON.Vector2.Zero();
             }
             var camera = this._scene.cameraToUseForPointers || this._scene.activeCamera;
+            if (!camera || !camera.viewport) {
+                return false;
+            }
             var engine = this._scene.getEngine();
             if (this._isScreenSpace) {
                 var cameraViewport = camera.viewport;
@@ -48473,6 +48562,7 @@ var BABYLON;
                 pii.tilt.y = pe.tiltY;
                 pii.isCaptured = this.getCapturedPrimitive(pe.pointerId) !== null;
             }
+            return true;
         };
         Canvas2D.prototype._updateIntersectionList = function (mouseLocalPos, isCapture) {
             if (this.scene.getRenderId() === this._intersectionRenderId) {
@@ -49700,8 +49790,16 @@ var BABYLON;
                 var max = 0;
                 for (var _i = 0, _a = prim.children; _i < _a.length; _i++) {
                     var child = _a[_i];
-                    var layoutArea = child.layoutArea;
-                    child.margin.computeArea(child.actualSize, layoutArea);
+                    var layoutArea = void 0;
+                    if (child._hasMargin) {
+                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
+                        layoutArea = StackPanelLayoutEngine.dstArea;
+                        child.layoutArea = layoutArea;
+                    }
+                    else {
+                        layoutArea = child.layoutArea;
+                        child.margin.computeArea(child.actualSize, layoutArea);
+                    }
                     max = Math.max(max, h ? layoutArea.height : layoutArea.width);
                 }
                 for (var _b = 0, _c = prim.children; _b < _c.length; _b++) {
@@ -49729,6 +49827,8 @@ var BABYLON;
         });
         StackPanelLayoutEngine._horizontal = null;
         StackPanelLayoutEngine._vertical = null;
+        StackPanelLayoutEngine.dstOffset = BABYLON.Vector2.Zero();
+        StackPanelLayoutEngine.dstArea = BABYLON.Size.Zero();
         StackPanelLayoutEngine = __decorate([
             BABYLON.className("StackPanelLayoutEngine")
         ], StackPanelLayoutEngine);
