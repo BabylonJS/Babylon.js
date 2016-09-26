@@ -115,7 +115,7 @@
         }
     }
 
-    @className("Text2D")
+    @className("Text2D", "BABYLON")
     /**
      * Primitive that render text using a specific font
      */
