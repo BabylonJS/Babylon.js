@@ -332,7 +332,7 @@
         private _dataElementCount: number;
     }
 
-    @className("RenderablePrim2D")
+    @className("RenderablePrim2D", "BABYLON")
     /**
      * The abstract class for primitive that render into the Canvas2D
      */

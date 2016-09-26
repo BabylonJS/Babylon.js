@@ -120,7 +120,7 @@
         }
     }
 
-    @className("Sprite2D")
+    @className("Sprite2D", "BABYLON")
     /**
      * Primitive that displays a Sprite/Picture
      */

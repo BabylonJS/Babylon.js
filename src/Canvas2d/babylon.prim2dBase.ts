@@ -1297,12 +1297,12 @@
         }
     }
 
-    @className("Prim2DBase")
+    @className("Prim2DBase", "BABYLON")
     /**
      * Base class for a Primitive of the Canvas2D feature
      */
     export class Prim2DBase extends SmartPropertyPrim {
-        static PRIM2DBASE_PROPCOUNT: number = 16;
+        static PRIM2DBASE_PROPCOUNT: number = 15;
         public  static _bigInt = Math.pow(2, 30);
 
         constructor(settings: {
@@ -1385,14 +1385,12 @@
             this._lastAutoSizeArea = Size.Zero();
             this._contentArea = new Size(null, null);
             this._pointerEventObservable = new Observable<PrimitivePointerInfo>();
-            this._boundingInfo = new BoundingInfo2D();
             this._owner = owner;
             this._parent = null;
             this._margin = null;
             this._padding = null;
             this._marginAlignment = null;
             this._id = settings.id;
-            this.propertyChanged = new Observable<PropertyChangedInfo>();
             this._children = new Array<Prim2DBase>();
             this._localTransform = new Matrix();
             this._globalTransform = null;
@@ -1557,6 +1555,21 @@
             this._positioningDirty();
         }
 
+        // Overload the SmartPropertyBase's method to provide the additional logic of returning the parent's dataSource if there's no dataSource specified at this level.
+        protected _getDataSource(): IPropertyChanged {
+            let levelDS = super._getDataSource();
+            if (levelDS != null) {
+                return levelDS;
+            }
+
+            let p = this.parent;
+            if (p != null) {
+                return p.dataSource;
+            }
+
+            return null;
+        }
+
         public get actionManager(): ActionManager {
             if (!this._actionManager) {
                 this._actionManager = new ActionManager(this.owner.scene);
@@ -1684,7 +1697,7 @@
          */
         public static scaleYProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 0, pi => Prim2DBase.actualPositionProperty = pi, false, false, true)
         /**
          * Return the position where the primitive is rendered in the Canvas, this position may be different than the one returned by the position property due to layout/alignment/margin/padding computing
          */
@@ -1728,7 +1741,7 @@
          * Use this property to set a new Vector2 object, otherwise to change only the x/y use Prim2DBase.x or y properties.
          * Setting this property may have no effect is specific alignment are in effect.
          */
-        @dynamicLevelProperty(2, pi => Prim2DBase.positionProperty = pi, false, false, true)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 1, pi => Prim2DBase.positionProperty = pi, false, false, true)
         public get position(): Vector2 {
             return this._position || Prim2DBase._nullPosition;
         }
@@ -1805,7 +1818,7 @@
          * BEWARE: if you change only size.width or height it won't trigger a property change and you won't have the expected behavior.
          * Use this property to set a new Size object, otherwise to change only the width/height use Prim2DBase.width or height properties.
          */
-        @dynamicLevelProperty(3, pi => Prim2DBase.sizeProperty = pi, false, true)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 2, pi => Prim2DBase.sizeProperty = pi, false, true)
         public get size(): Size {
 
             if (!this._size || this._size.width == null || this._size.height == null) {
@@ -1885,7 +1898,7 @@
             this._positioningDirty();
         }
 
-        @instanceLevelProperty(4, pi => Prim2DBase.rotationProperty = pi, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 3, pi => Prim2DBase.rotationProperty = pi, false, true)
         /**
          * Rotation of the primitive, in radian, along the Z axis
          */
@@ -1897,7 +1910,7 @@
             this._rotation = value;
         }
 
-        @instanceLevelProperty(5, pi => Prim2DBase.scaleProperty = pi, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 4, pi => Prim2DBase.scaleProperty = pi, false, true)
         /**
          * Uniform scale applied on the primitive. If a non-uniform scale is applied through scaleX/scaleY property the getter of this property will return scaleX.
          */
@@ -1987,7 +2000,7 @@
          * 0,1 means the center is top/left
          * @returns The normalized center.
          */
-        @dynamicLevelProperty(6, pi => Prim2DBase.originProperty = pi, false, true)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 5, pi => Prim2DBase.originProperty = pi, false, true)
         public get origin(): Vector2 {
             return this._origin;
         }
@@ -1996,7 +2009,7 @@
             this._origin = value;
         }
 
-        @dynamicLevelProperty(7, pi => Prim2DBase.levelVisibleProperty = pi)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 6, pi => Prim2DBase.levelVisibleProperty = pi)
         /**
          * Let the user defines if the Primitive is hidden or not at its level. As Primitives inherit the hidden status from their parent, only the isVisible property give properly the real visible state.
          * Default is true, setting to false will hide this primitive and its children.
@@ -2009,7 +2022,7 @@
             this._changeFlags(SmartPropertyPrim.flagLevelVisible, value);
         }
 
-        @instanceLevelProperty(8, pi => Prim2DBase.isVisibleProperty = pi)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 7, pi => Prim2DBase.isVisibleProperty = pi)
         /**
          * Use ONLY THE GETTER to determine if the primitive is visible or not.
          * The Setter is for internal purpose only!
@@ -2022,7 +2035,7 @@
             this._changeFlags(SmartPropertyPrim.flagIsVisible, value);
         }
 
-        @instanceLevelProperty(9, pi => Prim2DBase.zOrderProperty = pi)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 8, pi => Prim2DBase.zOrderProperty = pi)
         /**
          * You can override the default Z Order through this property, but most of the time the default behavior is acceptable
          */
@@ -2046,7 +2059,7 @@
             return this._manualZOrder != null;
         }
 
-        @dynamicLevelProperty(10, pi => Prim2DBase.marginProperty = pi)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 9, pi => Prim2DBase.marginProperty = pi)
         /**
          * You can get/set a margin on the primitive through this property
          * @returns the margin object, if there was none, a default one is created and returned
@@ -2067,7 +2080,7 @@
             return (this._margin !== null) || (this._marginAlignment !== null);
         }
 
-        @dynamicLevelProperty(11, pi => Prim2DBase.paddingProperty = pi)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 10, pi => Prim2DBase.paddingProperty = pi)
         /**
          * You can get/set a margin on the primitive through this property
          * @returns the margin object, if there was none, a default one is created and returned
@@ -2088,7 +2101,7 @@
             return this._padding !== null;
         }
 
-        @dynamicLevelProperty(12, pi => Prim2DBase.marginAlignmentProperty = pi)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 11, pi => Prim2DBase.marginAlignmentProperty = pi)
         /**
          * You can get/set the margin alignment through this property
          */
@@ -2099,7 +2112,7 @@
             return this._marginAlignment;
         }
 
-        @instanceLevelProperty(13, pi => Prim2DBase.opacityProperty = pi)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 12, pi => Prim2DBase.opacityProperty = pi)
         /**
          * Get/set the opacity of the whole primitive
          */
@@ -2124,7 +2137,7 @@
             this._updateRenderMode();
         }
 
-        @instanceLevelProperty(14, pi => Prim2DBase.scaleXProperty = pi, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 13, pi => Prim2DBase.scaleXProperty = pi, false, true)
         /**
          * Scale applied on the X axis of the primitive
          */
@@ -2138,7 +2151,7 @@
             return this._scale.x;
         }
 
-        @instanceLevelProperty(15, pi => Prim2DBase.scaleYProperty = pi, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 14, pi => Prim2DBase.scaleYProperty = pi, false, true)
         /**
          * Scale applied on the Y axis of the primitive
          */
