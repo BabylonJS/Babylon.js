@@ -298,6 +298,29 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Sets the scale of the sprite using a BABYLON.Size(w,h).
+         * Keeps proportion by taking the maximum of the two scale for x and y.
+         * @param {Size} size Size(width,height)
+         */
+        Sprite2D.prototype.scaleToSize = function (size) {
+            var baseSize = this.size;
+            if (baseSize == null || !this.texture.isReady()) {
+                // we're probably at initiation of the scene, size is not set
+                if (this.texture.isReady()) {
+                    baseSize = this.texture.getBaseSize();
+                }
+                else {
+                    // the texture is not ready, wait for it to load before calling scaleToSize again
+                    var thisObject = this;
+                    this.texture.onLoadObservable.add(function () {
+                        thisObject.scaleToSize(size);
+                    });
+                    return;
+                }
+            }
+            this.scale = Math.max(size.height / baseSize.height, size.width / baseSize.width);
+        };
         Object.defineProperty(Sprite2D.prototype, "alignToPixel", {
             /**
              * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not

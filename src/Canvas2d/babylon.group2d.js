@@ -206,12 +206,16 @@ var BABYLON;
             get: function () {
                 // The computed size will be floor on both width and height
                 var actualSize;
+                // Return the actualSize if set
+                if (this._actualSize) {
+                    return this._actualSize;
+                }
                 // Return the size if set by the user
                 if (this._size) {
                     actualSize = new BABYLON.Size(Math.ceil(this._size.width), Math.ceil(this._size.height));
                 }
                 else {
-                    var m = this.boundingInfo.max();
+                    var m = this.layoutBoundingInfo.max();
                     actualSize = new BABYLON.Size(Math.ceil(m.x), Math.ceil(m.y));
                 }
                 // Compare the size with the one we previously had, if it differs we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
@@ -221,6 +225,9 @@ var BABYLON;
                     this.handleGroupChanged(Group2D.actualSizeProperty);
                 }
                 return actualSize;
+            },
+            set: function (value) {
+                this._actualSize = value;
             },
             enumerable: true,
             configurable: true

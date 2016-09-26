@@ -11,7 +11,6 @@ var BABYLON;
             if (touchEnabled === void 0) { touchEnabled = true; }
             this.touchEnabled = touchEnabled;
             this.angularSensibility = 2000.0;
-            this._isPointerLock = false;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -23,10 +22,6 @@ var BABYLON;
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
-                    if (_this._isPointerLock && !engine.isPointerLock) {
-                        _this.previousPosition = null;
-                    }
-                    _this._isPointerLock = engine.isPointerLock;
                     if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                         try {
                             evt.srcElement.setPointerCapture(evt.pointerId);
@@ -89,10 +84,7 @@ var BABYLON;
                     camera.cameraRotation.y += offsetX / _this.angularSensibility;
                 }
                 camera.cameraRotation.x += offsetY / _this.angularSensibility;
-                _this.previousPosition = {
-                    x: evt.clientX,
-                    y: evt.clientY
-                };
+                _this.previousPosition = null;
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }
