@@ -954,13 +954,14 @@ var BABYLON;
         };
         /**
          * Compute the positioning/size of an area considering the thickness of this object and a given alignment
-         * @param sourceArea the source area
+         * @param sourceArea the source area where the content must be sized/positioned
          * @param contentSize the content size to position/resize
          * @param alignment the alignment setting
          * @param dstOffset the position of the content
          * @param dstArea the new size of the content
          */
-        PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea) {
+        PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea, computeLayoutArea) {
+            if (computeLayoutArea === void 0) { computeLayoutArea = false; }
             // Fetch some data
             var topType = this._getType(0, true);
             var leftType = this._getType(1, true);
@@ -985,6 +986,9 @@ var BABYLON;
                             dstOffset.x = this.leftPixels;
                         }
                         dstArea.width = width;
+                        if (computeLayoutArea) {
+                            dstArea.width += this.leftPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignRight:
@@ -997,6 +1001,9 @@ var BABYLON;
                             dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
                         }
                         dstArea.width = width;
+                        if (computeLayoutArea) {
+                            dstArea.width += this.rightPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -1041,6 +1048,9 @@ var BABYLON;
                             dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
                         }
                         dstArea.height = height;
+                        if (computeLayoutArea) {
+                            dstArea.height += this.topPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignBottom:
@@ -1053,6 +1063,9 @@ var BABYLON;
                             dstOffset.y = this.bottomPixels;
                         }
                         dstArea.height = height;
+                        if (computeLayoutArea) {
+                            dstArea.height += this.bottomPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -1206,7 +1219,8 @@ var BABYLON;
             this._actualSize = null;
             this._boundingSize = BABYLON.Size.Zero();
             this._layoutArea = BABYLON.Size.Zero();
-            this._layoutAreaPos = BABYLON.Vector2.Zero();
+            this._layoutAreaPos = null;
+            this._layoutBoundingInfo = null;
             this._marginOffset = BABYLON.Vector2.Zero();
             this._paddingOffset = BABYLON.Vector2.Zero();
             this._parentPaddingOffset = BABYLON.Vector2.Zero();
@@ -1247,7 +1261,7 @@ var BABYLON;
             if (settings.dontInheritParentScale) {
                 this._setFlags(BABYLON.SmartPropertyPrim.flagDontInheritParentScale);
             }
-            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0) | BABYLON.SmartPropertyPrim.flagActualScaleDirty);
+            this._setFlags((isPickable ? BABYLON.SmartPropertyPrim.flagIsPickable : 0) | BABYLON.SmartPropertyPrim.flagBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? BABYLON.SmartPropertyPrim.flagIsContainer : 0) | BABYLON.SmartPropertyPrim.flagActualScaleDirty | BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
             }
@@ -1998,6 +2012,9 @@ var BABYLON;
                     return;
                 }
                 this._positioningDirty();
+                if (this.parent) {
+                    this.parent._setFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                }
                 this._layoutArea = val;
             },
             enumerable: true,
@@ -2009,11 +2026,14 @@ var BABYLON;
              * The setter should only be called by a Layout Engine class.
              */
             get: function () {
-                return this._layoutAreaPos;
+                return this._layoutAreaPos || Prim2DBase._nullPosition;
             },
             set: function (val) {
-                if (this._layoutAreaPos.equals(val)) {
+                if (this._layoutAreaPos && this._layoutAreaPos.equals(val)) {
                     return;
+                }
+                if (this.parent) {
+                    this.parent._setFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
                 }
                 this._positioningDirty();
                 this._layoutAreaPos = val;
@@ -2139,7 +2159,8 @@ var BABYLON;
                     var tps = new BABYLON.BoundingInfo2D();
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var curChild = _a[_i];
-                        curChild.boundingInfo.transformToRef(curChild.localTransform, tps);
+                        var bb = curChild.boundingInfo;
+                        bb.transformToRef(curChild.localTransform, tps);
                         bi.unionToRef(tps, bi);
                     }
                     this._boundingInfo.maxToRef(Prim2DBase._bMax);
@@ -2147,6 +2168,45 @@ var BABYLON;
                     this._clearFlags(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty);
                 }
                 return this._boundingInfo;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "layoutBoundingInfo", {
+            /**
+             * Get the boundingInfo of the primitive's content arranged by a layout Engine
+             * If a particular child is not arranged by layout, it's boundingInfo is used instead to produce something as accurate as possible
+             */
+            get: function () {
+                if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty)) {
+                    if (!this._layoutBoundingInfo) {
+                        this._layoutBoundingInfo = new BABYLON.BoundingInfo2D();
+                    }
+                    if (this.isSizedByContent) {
+                        this._layoutBoundingInfo.clear();
+                    }
+                    else {
+                        this._layoutBoundingInfo.copyFrom(this.levelBoundingInfo);
+                    }
+                    var bi = this._layoutBoundingInfo;
+                    var tps = new BABYLON.BoundingInfo2D();
+                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                        var curChild = _a[_i];
+                        var bb = void 0;
+                        if (curChild._layoutAreaPos) {
+                            var s = curChild._layoutArea;
+                            BABYLON.BoundingInfo2D.CreateFromMinMaxToRef(0, s.width, 0, s.height, Prim2DBase._tpsBB);
+                            bb = Prim2DBase._tpsBB;
+                        }
+                        else {
+                            bb = curChild.boundingInfo;
+                        }
+                        bb.transformToRef(curChild.localTransform, tps);
+                        bi.unionToRef(tps, bi);
+                    }
+                    this._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                }
+                return this._layoutBoundingInfo;
             },
             enumerable: true,
             configurable: true
@@ -2517,7 +2577,7 @@ var BABYLON;
                 }
                 var rot = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), this._rotation);
                 var local;
-                var pos = this.position;
+                var pos = this._position ? this.position : this.layoutAreaPos;
                 if (this._origin.x === 0 && this._origin.y === 0) {
                     local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale.x, this._scale.y, 1), rot, new BABYLON.Vector3(pos.x, pos.y, 0));
                     this._localTransform = local;
@@ -2570,21 +2630,21 @@ var BABYLON;
                     this.clearPropertiesDirty(Prim2DBase.sizeProperty.flagId);
                 }
             }
-            // Check for layout update
             var positioningDirty = this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
+            var positioningComputed = positioningDirty && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
+            // Check for layout update
             if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutDirty)) {
                 this.owner.addUpdateLayoutCounter(1);
                 this._layoutEngine.updateLayout(this);
                 this._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutDirty);
             }
-            var positioningComputed = positioningDirty && !this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty);
             var autoContentChanged = false;
             if (this.isSizeAuto) {
                 if (!this._lastAutoSizeArea) {
-                    autoContentChanged = this.size !== null;
+                    autoContentChanged = this.actualSize !== null;
                 }
                 else {
-                    autoContentChanged = (!this._lastAutoSizeArea.equals(this.size));
+                    autoContentChanged = (!this._lastAutoSizeArea.equals(this.actualSize));
                 }
             }
             // Check for positioning update
@@ -2621,8 +2681,8 @@ var BABYLON;
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
                     var localTransform;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
-                    Prim2DBase._transMtx.m[12] += this._layoutAreaPos.x + this._marginOffset.x + parentPaddingOffset.x;
-                    Prim2DBase._transMtx.m[13] += this._layoutAreaPos.y + this._marginOffset.y + parentPaddingOffset.y;
+                    Prim2DBase._transMtx.m[12] += this._marginOffset.x + parentPaddingOffset.x;
+                    Prim2DBase._transMtx.m[13] += this._marginOffset.y + parentPaddingOffset.y;
                     localTransform = Prim2DBase._transMtx;
                     this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
                     this._invGlobalTransform = BABYLON.Matrix.Invert(this._globalTransform);
@@ -2659,7 +2719,7 @@ var BABYLON;
             }
             // Apply margin
             if (this._hasMargin) {
-                this.margin.computeWithAlignment(this.layoutArea, this.size, this.marginAlignment, this._marginOffset, Prim2DBase._size);
+                this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase._size);
                 this.actualSize = Prim2DBase._size.clone();
             }
             var isSizeAuto = this.isSizeAuto;
@@ -2694,11 +2754,11 @@ var BABYLON;
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
             if (!this._position) {
-                var aPos = new BABYLON.Vector2(this._layoutAreaPos.x + this._marginOffset.x, this._layoutAreaPos.y + this._marginOffset.y);
+                var aPos = new BABYLON.Vector2(this.layoutAreaPos.x + this._marginOffset.x, this.layoutAreaPos.y + this._marginOffset.y);
                 this.actualPosition = aPos;
             }
             if (isSizeAuto) {
-                this._lastAutoSizeArea = this.size;
+                this._lastAutoSizeArea = this.actualSize;
             }
         };
         Object.defineProperty(Prim2DBase.prototype, "contentArea", {
@@ -2912,6 +2972,7 @@ var BABYLON;
         Prim2DBase.boundinbBoxReentrency = false;
         Prim2DBase.nullSize = BABYLON.Size.Zero();
         Prim2DBase._bMax = BABYLON.Vector2.Zero();
+        Prim2DBase._tpsBB = new BABYLON.BoundingInfo2D();
         Prim2DBase._isCanvasInit = false;
         Prim2DBase._t0 = new BABYLON.Matrix();
         Prim2DBase._t1 = new BABYLON.Matrix();

@@ -136,8 +136,16 @@ var BABYLON;
                 var max = 0;
                 for (var _i = 0, _a = prim.children; _i < _a.length; _i++) {
                     var child = _a[_i];
-                    var layoutArea = child.layoutArea;
-                    child.margin.computeArea(child.actualSize, layoutArea);
+                    var layoutArea = void 0;
+                    if (child._hasMargin) {
+                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
+                        layoutArea = StackPanelLayoutEngine.dstArea;
+                        child.layoutArea = layoutArea;
+                    }
+                    else {
+                        layoutArea = child.layoutArea;
+                        child.margin.computeArea(child.actualSize, layoutArea);
+                    }
                     max = Math.max(max, h ? layoutArea.height : layoutArea.width);
                 }
                 for (var _b = 0, _c = prim.children; _b < _c.length; _b++) {
@@ -165,6 +173,8 @@ var BABYLON;
         });
         StackPanelLayoutEngine._horizontal = null;
         StackPanelLayoutEngine._vertical = null;
+        StackPanelLayoutEngine.dstOffset = BABYLON.Vector2.Zero();
+        StackPanelLayoutEngine.dstArea = BABYLON.Size.Zero();
         StackPanelLayoutEngine = __decorate([
             BABYLON.className("StackPanelLayoutEngine")
         ], StackPanelLayoutEngine);
