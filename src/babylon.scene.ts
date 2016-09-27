@@ -360,7 +360,7 @@
 
         // Layers
         public layers = new Array<Layer>();
-        public highlightLayer:HighlightLayer = null;
+        public highlightLayers = new Array<HighlightLayer>();
 
         // Skeletons
         public skeletonsEnabled = true;
@@ -2042,14 +2042,21 @@
 
             // Activate HighlightLayer stencil
             var stencilState = this._engine.getStencilBuffer();
-            if (this.highlightLayer && this.highlightLayer.shouldRender()) {
-                this._engine.setStencilBuffer(true);
+            var renderhighlights = false;
+            if (this.highlightLayers && this.highlightLayers.length > 0) {
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        renderhighlights = true;
+                        this._engine.setStencilBuffer(true);
+                        break;
+                    }
+                }
             }
 
             this._renderingManager.render(null, null, true, true);
 
             // Restore HighlightLayer stencil
-            if (this.highlightLayer && this.highlightLayer.shouldRender()) {
+            if (renderhighlights) {
                 this._engine.setStencilBuffer(stencilState);
             }
 
@@ -2089,9 +2096,13 @@
             }
 
             // Highlight Layer
-            if (this.highlightLayer && this.highlightLayer.shouldRender()) {
+            if (renderhighlights) {
                 engine.setDepthBuffer(false);
-                this.highlightLayer.render();
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        this.highlightLayers[i].render();
+                    }
+                }
                 engine.setDepthBuffer(true);
             }
 
@@ -2280,8 +2291,12 @@
             }
 
             // HighlightLayer
-            if (this.highlightLayer && this.highlightLayer.shouldRender()) {
-               this._renderTargets.push((<any>this.highlightLayer)._mainTexture);
+            if (this.highlightLayers && this.highlightLayers.length > 0) {
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        this._renderTargets.push((<any>this.highlightLayers[i])._mainTexture);
+                    }
+                }
             }
 
             // RenderPipeline
@@ -2562,9 +2577,8 @@
             while (this.layers.length) {
                 this.layers[0].dispose();
             }
-
-            if (this.highlightLayer) {
-                this.highlightLayer.dispose();
+            while (this.highlightLayers.length) {
+                this.highlightLayers[0].dispose();
             }
 
             // Release textures

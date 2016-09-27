@@ -114,6 +114,7 @@
         private _meshes: {[id: string]: IHighlightLayerMesh} = {};
         private _maxSize:number = 0;
         private _shouldRender = false;
+        private _instanceGlowingMeshStencilReference = HighlightLayer.glowingMeshStencilReference++;
 
         /**
          * Specifies whether or not the inner glow is ACTIVE in the layer.
@@ -178,7 +179,7 @@
             var engine = scene.getEngine();
             this._engine = engine;
             this._maxSize = this._engine.getCaps().maxTextureSize;
-            this._scene.highlightLayer = this;
+            this._scene.highlightLayers.push(this);
 
             // Warn on stencil.
             if (!this._engine.isStencilEnable) {
@@ -486,7 +487,7 @@
             engine.setAlphaMode(this._options.alphaBlendingMode);
             engine.setStencilMask(0x00);
             engine.setStencilBuffer(true);
-            engine.setStencilFunctionReference(HighlightLayer.glowingMeshStencilReference);
+            engine.setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
 
             if (this.outerGlow) {
                 currentEffect.setFloat("offset", 0);
@@ -532,7 +533,10 @@
                 this._meshes[mesh.id] = {
                     mesh: mesh,
                     color: color,
-                    observerHighlight: mesh.onBeforeRenderObservable.add(this.highligtStencilReference),
+                    // Lambda required for capture due to Observable this context
+                    observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => { 
+                        mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                    }),
                     observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference)
                 };
             }
@@ -579,13 +583,6 @@
 
             this._mainTextureDesiredSize.width = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
             this._mainTextureDesiredSize.height = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
-        }
-
-        /**
-         * Force the stencil to the glowing expected value for glowing parts
-         */
-        private highligtStencilReference(mesh: Mesh) {
-            mesh.getScene().getEngine().setStencilFunctionReference(HighlightLayer.glowingMeshStencilReference);
         }
 
         /**
@@ -636,7 +633,10 @@
             this._meshes = null;
 
             // Remove from scene
-            this._scene.highlightLayer = null;
+            var index = this._scene.highlightLayers.indexOf(this, 0);
+            if (index > -1) {
+                this._scene.highlightLayers.splice(index, 1);
+            }
 
             // Callback
             this.onDisposeObservable.notifyObservers(this);
