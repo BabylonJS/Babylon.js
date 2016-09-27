@@ -127,7 +127,9 @@
 
                 // Put a handler to resize the background whenever the canvas is resizing
                 this.propertyChanged.add((e, s) => {
-                    this._background.size = this.size;
+                    if (e.propertyName === "size") {
+                        this._background.size = this.size;
+                    }
                 }, Group2D.sizeProperty.flagId);
 
                 this._background._patchHierarchy(this);
@@ -1264,7 +1266,8 @@
 
             // If the canvas fit the rendering size and it changed, update
             if (renderingSizeChanged && this._fitRenderingDevice) {
-                this.size = this._renderingSize;
+                this._actualSize = this._renderingSize.clone();
+                this._size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;
                 }
