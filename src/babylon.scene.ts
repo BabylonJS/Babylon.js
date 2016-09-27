@@ -104,7 +104,7 @@
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
         public useRightHandedSystem = false;
-
+        
         public hoverCursor = "pointer";
 
         // Events
@@ -360,6 +360,7 @@
 
         // Layers
         public layers = new Array<Layer>();
+        public highlightLayer:HighlightLayer = null;
 
         // Skeletons
         public skeletonsEnabled = true;
@@ -2038,7 +2039,20 @@
 
             // Render
             Tools.StartPerformanceCounter("Main render");
+
+            // Activate HighlightLayer stencil
+            var stencilState = this._engine.getStencilBuffer();
+            if (this.highlightLayer && this.highlightLayer.shouldRender()) {
+                this._engine.setStencilBuffer(true);
+            }
+
             this._renderingManager.render(null, null, true, true);
+
+            // Restore HighlightLayer stencil
+            if (this.highlightLayer && this.highlightLayer.shouldRender()) {
+                this._engine.setStencilBuffer(stencilState);
+            }
+
             Tools.EndPerformanceCounter("Main render");
 
             // Bounding boxes
@@ -2071,6 +2085,13 @@
                         layer.render();
                     }
                 }
+                engine.setDepthBuffer(true);
+            }
+
+            // Highlight Layer
+            if (this.highlightLayer && this.highlightLayer.shouldRender()) {
+                engine.setDepthBuffer(false);
+                this.highlightLayer.render();
                 engine.setDepthBuffer(true);
             }
 
@@ -2188,7 +2209,7 @@
 
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
-
+            
             // Customs render targets
             this._renderTargetsDuration.beginMonitoring();
             var beforeRenderTargetDate = Tools.Now;
@@ -2256,6 +2277,11 @@
             // Depth renderer
             if (this._depthRenderer) {
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
+            }
+
+            // HighlightLayer
+            if (this.highlightLayer && this.highlightLayer.shouldRender()) {
+               this._renderTargets.push((<any>this.highlightLayer)._mainTexture);
             }
 
             // RenderPipeline
@@ -2535,6 +2561,10 @@
             // Release layers
             while (this.layers.length) {
                 this.layers[0].dispose();
+            }
+
+            if (this.highlightLayer) {
+                this.highlightLayer.dispose();
             }
 
             // Release textures
