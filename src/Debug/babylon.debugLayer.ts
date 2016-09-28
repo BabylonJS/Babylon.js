@@ -818,6 +818,7 @@
                 + "</div><br>"
                 + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Caps.</b><br>"
+                + "Stencil: " + (engine.isStencilEnable ? "Enabled" : "Disabled") + "<br>"
                 + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
                 + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
                 + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br>"
