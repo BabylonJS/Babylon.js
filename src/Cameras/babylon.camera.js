@@ -160,6 +160,7 @@ var BABYLON;
             this._cache.minZ = undefined;
             this._cache.maxZ = undefined;
             this._cache.fov = undefined;
+            this._cache.fovMode = undefined;
             this._cache.aspectRatio = undefined;
             this._cache.orthoLeft = undefined;
             this._cache.orthoRight = undefined;
@@ -179,6 +180,7 @@ var BABYLON;
             this._cache.minZ = this.minZ;
             this._cache.maxZ = this.maxZ;
             this._cache.fov = this.fov;
+            this._cache.fovMode = this.fovMode;
             this._cache.aspectRatio = engine.getAspectRatio(this);
             this._cache.orthoLeft = this.orthoLeft;
             this._cache.orthoRight = this.orthoRight;
@@ -212,6 +214,7 @@ var BABYLON;
             var engine = this.getEngine();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 check = this._cache.fov === this.fov
+                    && this._cache.fovMode === this.fovMode
                     && this._cache.aspectRatio === engine.getAspectRatio(this);
             }
             else {
@@ -685,6 +688,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Camera.prototype, "isStereoscopicSideBySide", void 0);
         return Camera;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.Camera = Camera;
 })(BABYLON || (BABYLON = {}));

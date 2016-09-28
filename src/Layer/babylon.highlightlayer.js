@@ -46,6 +46,7 @@ var BABYLON;
             this._meshes = {};
             this._maxSize = 0;
             this._shouldRender = false;
+            this._instanceGlowingMeshStencilReference = HighlightLayer.glowingMeshStencilReference++;
             /**
              * Specifies whether or not the inner glow is ACTIVE in the layer.
              */
@@ -93,7 +94,7 @@ var BABYLON;
             var engine = scene.getEngine();
             this._engine = engine;
             this._maxSize = this._engine.getCaps().maxTextureSize;
-            this._scene.highlightLayer = this;
+            this._scene.highlightLayers.push(this);
             // Warn on stencil.
             if (!this._engine.isStencilEnable) {
                 BABYLON.Tools.Warn("Rendering the Highlight Layer requires the stencil to be active on the canvas. var engine = new BABYLON.Engine(canvas, antialias, { stencil: true }");
@@ -322,7 +323,7 @@ var BABYLON;
             engine.setAlphaMode(this._options.alphaBlendingMode);
             engine.setStencilMask(0x00);
             engine.setStencilBuffer(true);
-            engine.setStencilFunctionReference(HighlightLayer.glowingMeshStencilReference);
+            engine.setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
             if (this.outerGlow) {
                 currentEffect.setFloat("offset", 0);
                 engine.setStencilFunction(WebGLRenderingContext.NOTEQUAL);
@@ -355,6 +356,7 @@ var BABYLON;
          * @param color The color of the highlight
          */
         HighlightLayer.prototype.pushMesh = function (mesh, color) {
+            var _this = this;
             var meshHighlight = this._meshes[mesh.id];
             if (meshHighlight) {
                 meshHighlight.color = color;
@@ -363,7 +365,10 @@ var BABYLON;
                 this._meshes[mesh.id] = {
                     mesh: mesh,
                     color: color,
-                    observerHighlight: mesh.onBeforeRenderObservable.add(this.highligtStencilReference),
+                    // Lambda required for capture due to Observable this context
+                    observerHighlight: mesh.onBeforeRenderObservable.add(function (mesh) {
+                        mesh.getScene().getEngine().setStencilFunctionReference(_this._instanceGlowingMeshStencilReference);
+                    }),
                     observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference)
                 };
             }
@@ -403,12 +408,6 @@ var BABYLON;
             this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
             this._mainTextureDesiredSize.width = BABYLON.Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
             this._mainTextureDesiredSize.height = BABYLON.Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
-        };
-        /**
-         * Force the stencil to the glowing expected value for glowing parts
-         */
-        HighlightLayer.prototype.highligtStencilReference = function (mesh) {
-            mesh.getScene().getEngine().setStencilFunctionReference(HighlightLayer.glowingMeshStencilReference);
         };
         /**
          * Force the stencil to the normal expected value for none glowing parts
@@ -451,7 +450,10 @@ var BABYLON;
             }
             this._meshes = null;
             // Remove from scene
-            this._scene.highlightLayer = null;
+            var index = this._scene.highlightLayers.indexOf(this, 0);
+            if (index > -1) {
+                this._scene.highlightLayers.splice(index, 1);
+            }
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
