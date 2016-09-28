@@ -36,7 +36,7 @@ module.exports = function (varName) {
         }
 
         try {
-            file.contents = new Buffer(decorateAddition + extendsAddition + String(file.contents) + moduleExportsAddition);
+            file.contents = new Buffer(decorateAddition.concat(new Buffer(extendsAddition.concat(String(file.contents)).concat(moduleExportsAddition))));
             this.push(file);
 
         } catch (err) {
