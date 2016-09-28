@@ -156,6 +156,8 @@
         get properties(): Vector3 {
             return null;
         }
+        set properties(value: Vector3) {
+        }
     }
 
     @className("Rectangle2D")
