@@ -20125,6 +20125,14 @@ var BABYLON;
             while (this.instances.length) {
                 this.instances[0].dispose();
             }
+            // Highlight layers.
+            var highlightLayers = this.getScene().highlightLayers;
+            for (var i = 0; i < highlightLayers.length; i++) {
+                var highlightLayer = highlightLayers[i];
+                if (highlightLayer) {
+                    highlightLayer.removeMesh(this);
+                }
+            }
             _super.prototype.dispose.call(this, doNotRecurse);
         };
         /**
@@ -48515,7 +48523,7 @@ var BABYLON;
             var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null);
+            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus();
             // Check if we have nothing to raise
@@ -48595,8 +48603,8 @@ var BABYLON;
             }
             return true;
         };
-        Canvas2D.prototype._updateIntersectionList = function (mouseLocalPos, isCapture) {
-            if (this.scene.getRenderId() === this._intersectionRenderId) {
+        Canvas2D.prototype._updateIntersectionList = function (mouseLocalPos, isCapture, force) {
+            if (!force && (this.scene.getRenderId() === this._intersectionRenderId)) {
                 return;
             }
             // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
@@ -48753,7 +48761,7 @@ var BABYLON;
                         window.setTimeout(function () {
                             var ppi = _this._primPointerInfo;
                             var capturedPrim = _this.getCapturedPrimitive(ppi.pointerId);
-                            _this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null);
+                            _this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null, true);
                             var ii = new BABYLON.IntersectInfo2D();
                             ii.pickPosition = ppi.canvasPointerPos.clone();
                             ii.findFirstOnly = false;
@@ -49269,7 +49277,7 @@ var BABYLON;
             }
             this._updateCanvasState(false);
             if (this._primPointerInfo.canvasPointerPos) {
-                this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
+                this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
                 this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
             }
             this.engine.setState(false);
@@ -49559,6 +49567,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WorldSpaceCanvas2D(scene, size, settings) {
+            var _this = this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             var s = settings;
             s.isScreenSpace = false;
@@ -49608,6 +49617,12 @@ var BABYLON;
                 this._worldSpaceNode = settings.customWorldSpaceNode;
                 this.applyCachedTexture(null, null);
             }
+            this.propertyChanged.add(function (e, st) {
+                var mesh = _this._worldSpaceNode;
+                if (mesh) {
+                    mesh.isVisible = _this.isVisible;
+                }
+            }, BABYLON.Prim2DBase.isVisibleProperty.flagId);
         }
         WorldSpaceCanvas2D = __decorate([
             BABYLON.className("WorldSpaceCanvas2D")

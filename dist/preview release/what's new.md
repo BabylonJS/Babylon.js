@@ -1,6 +1,7 @@
 # 2.5.0:
 
 ### Major updates
+- New `HighlightLayer` object to enable highlights rendering. [Demo]() - ([sebavan](https://github.com/sebavan))
 - Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
 - Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
 
