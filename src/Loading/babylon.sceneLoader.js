@@ -283,7 +283,7 @@ var BABYLON;
         // Members
         SceneLoader._registeredPlugins = {};
         return SceneLoader;
-    })();
+    }());
     BABYLON.SceneLoader = SceneLoader;
     ;
 })(BABYLON || (BABYLON = {}));
