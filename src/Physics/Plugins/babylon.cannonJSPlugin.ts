@@ -116,7 +116,7 @@
                                 this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
                             }
-                            childImpostor.parent = mainImpostor;
+                            (childImpostor as any).parent = mainImpostor;
                             childImpostor.resetUpdateFlags();
                             mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new CANNON.Vec3(localPosition.x, localPosition.y, localPosition.z));
                             //Add the mass of the children.

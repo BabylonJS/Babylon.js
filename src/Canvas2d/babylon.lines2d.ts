@@ -154,10 +154,14 @@
         get boundingMin(): Vector2 {
             return null;
         }
+        set boundingMin(value: Vector2) {
+        }
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_FILLGRADIENT)
         get boundingMax(): Vector2 {
             return null;
+        }
+        set boundingMax(value: Vector2) {
         }
     }
 

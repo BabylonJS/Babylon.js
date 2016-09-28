@@ -213,20 +213,28 @@
         get fillSolidColor(): Color4 {
             return null;
         }
+        set fillSolidColor(value: Color4) {
+        }
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_FILLGRADIENT)
         get fillGradientColor1(): Color4 {
             return null;
+        }
+        set fillGradientColor1(value: Color4) {
         }
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_FILLGRADIENT)
         get fillGradientColor2(): Color4 {
             return null;
         }
+        set fillGradientColor2(value: Color4) {
+        }
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_FILLGRADIENT)
         get fillGradientTY(): Vector4 {
             return null;
+        }
+        set fillGradientTY(value: Vector4) {
         }
 
         // BORDER ATTRIBUTES
@@ -235,25 +243,35 @@
         get borderThickness(): number {
             return null;
         }
+        set borderThickness(value: number) {
+        }
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERSOLID)
         get borderSolidColor(): Color4 {
             return null;
+        }
+        set borderSolidColor(value: Color4) {
         }
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
         get borderGradientColor1(): Color4 {
             return null;
         }
+        set borderGradientColor1(value: Color4) {
+        }
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
         get borderGradientColor2(): Color4 {
             return null;
         }
+        set borderGradientColor2(value: Color4) {
+        }
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
         get borderGradientTY(): Vector4 {
             return null;
+        }
+        set borderGradientTY(value: Vector4) {
         }
     }
 }

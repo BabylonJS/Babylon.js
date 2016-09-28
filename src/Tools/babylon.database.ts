@@ -11,7 +11,7 @@ module BABYLON {
         private isSupported: boolean;
 
         // Handling various flavors of prefixed version of IndexedDB
-        private idbFactory = <IDBFactory> (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
+        private idbFactory = <IDBFactory> (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || (window as any).msIndexedDB);
 
         static IsUASupportingBlobStorage = true;
         static IDBStorageEnabled = true;
@@ -275,7 +275,7 @@ module BABYLON {
                             var transaction = this.db.transaction(["textures"], "readwrite");
 
                             // the transaction could abort because of a QuotaExceededError error
-                            transaction.onabort = function (event) {
+                            transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                                     if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
@@ -530,7 +530,7 @@ module BABYLON {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                                     if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
-                                        this.hasReachedQuota = true;
+                                        (this as any).hasReachedQuota = true;
                                     }
                                 }
                                 catch (ex) { }
