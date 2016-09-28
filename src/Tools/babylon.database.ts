@@ -11,7 +11,7 @@ module BABYLON {
         private isSupported: boolean;
 
         // Handling various flavors of prefixed version of IndexedDB
-        private idbFactory = <IDBFactory> (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || (window as any).msIndexedDB);
+        private idbFactory = <IDBFactory> (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
 
         static IsUASupportingBlobStorage = true;
         static IDBStorageEnabled = true;
