@@ -1340,6 +1340,15 @@
                 this.instances[0].dispose();
             }
 
+            // Highlight layers.
+            let highlightLayers = this.getScene().highlightLayers;
+            for (let i = 0; i < highlightLayers.length; i++) {
+                let highlightLayer = highlightLayers[i];
+                if (highlightLayer) {
+                    highlightLayer.removeMesh(this);
+                }
+            }
+
             super.dispose(doNotRecurse);
         }
 
