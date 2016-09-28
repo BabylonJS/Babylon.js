@@ -421,6 +421,10 @@
          * @return true if ready otherwise, false
          */
         private isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+            if (!subMesh.getMaterial().isReady()) {
+                return false;
+            }
+
             var defines = [];
 
             var attribs = [VertexBuffer.PositionKind];
