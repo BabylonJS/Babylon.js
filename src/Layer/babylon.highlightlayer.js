@@ -136,6 +136,38 @@ var BABYLON;
             // Create Textures and post processes
             this.createTextureAndPostProcesses();
         }
+        Object.defineProperty(HighlightLayer.prototype, "blurHorizontalSize", {
+            /**
+             * Gets the horizontal size of the blur.
+             */
+            get: function () {
+                return this._horizontalBlurPostprocess.blurWidth;
+            },
+            /**
+             * Specifies the horizontal size of the blur.
+             */
+            set: function (value) {
+                this._horizontalBlurPostprocess.blurWidth = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(HighlightLayer.prototype, "blurVerticalSize", {
+            /**
+             * Gets the vertical size of the blur.
+             */
+            get: function () {
+                return this._verticalBlurPostprocess.blurWidth;
+            },
+            /**
+             * Specifies the vertical size of the blur.
+             */
+            set: function (value) {
+                this._verticalBlurPostprocess.blurWidth = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Creates the render target textures and post processes used in the highlight layer.
          */
@@ -248,6 +280,9 @@ var BABYLON;
          * @return true if ready otherwise, false
          */
         HighlightLayer.prototype.isReady = function (subMesh, useInstances) {
+            if (!subMesh.getMaterial().isReady()) {
+                return false;
+            }
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var mesh = subMesh.getMesh();
