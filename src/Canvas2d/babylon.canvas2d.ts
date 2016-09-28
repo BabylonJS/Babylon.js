@@ -1688,15 +1688,7 @@
                 this._worldSpaceNode = settings.customWorldSpaceNode;
                 this.applyCachedTexture(null, null);
             }
-
-            this.propertyChanged.add((e, st) => {
-                let mesh = this._worldSpaceNode as AbstractMesh;
-                if (mesh) {
-                    mesh.isVisible = this.isVisible;
-                }
-            }, Prim2DBase.isVisibleProperty.flagId);
         }
-
     }
 
     @className("ScreenSpaceCanvas2D")
