@@ -127,6 +127,34 @@
         public outerGlow: boolean = true;
 
         /**
+         * Specifies the horizontal size of the blur.
+         */
+        public set blurHorizontalSize(value: number) {
+            this._horizontalBlurPostprocess.blurWidth = value;
+        }
+
+        /**
+         * Specifies the vertical size of the blur.
+         */
+        public set blurVerticalSize(value: number) {
+            this._verticalBlurPostprocess.blurWidth = value;
+        }
+
+        /**
+         * Gets the horizontal size of the blur.
+         */
+        public get blurHorizontalSize(): number {
+            return this._horizontalBlurPostprocess.blurWidth
+        }
+
+        /**
+         * Gets the vertical size of the blur.
+         */
+        public get blurVerticalSize(): number {
+            return this._verticalBlurPostprocess.blurWidth;
+        }
+
+        /**
          * An event triggered when the highlight layer has been disposed.
          * @type {BABYLON.Observable}
          */
