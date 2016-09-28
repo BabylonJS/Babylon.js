@@ -1196,6 +1196,14 @@ var BABYLON;
             while (this.instances.length) {
                 this.instances[0].dispose();
             }
+            // Highlight layers.
+            var highlightLayers = this.getScene().highlightLayers;
+            for (var i = 0; i < highlightLayers.length; i++) {
+                var highlightLayer = highlightLayers[i];
+                if (highlightLayer) {
+                    highlightLayer.removeMesh(this);
+                }
+            }
             _super.prototype.dispose.call(this, doNotRecurse);
         };
         /**
