@@ -352,6 +352,7 @@
 
             this.onDisposeObservable.clear();
             this.onBindObservable.clear();
+            this.onUnBindObservable.clear();
         }
 
         public serialize(): any {
