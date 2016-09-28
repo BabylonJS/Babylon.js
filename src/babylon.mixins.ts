@@ -2,7 +2,7 @@
 interface Window {
     mozIndexedDB(func: any): any;
     webkitIndexedDB(func: any): any;
-    msIndexedDB(func: any): any;
+    msIndexedDB: IDBFactory;
     IDBTransaction(func: any): any;
     webkitIDBTransaction(func: any): any;
     msIDBTransaction(func: any): any;
