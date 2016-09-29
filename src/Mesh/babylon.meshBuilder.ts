@@ -1,6 +1,10 @@
 ﻿module BABYLON {
     export class MeshBuilder {
         private static updateSideOrientationForRightHandedSystem(orientation: number, scene: Scene): number {
+            if (orientation == Mesh.DOUBLESIDE) {
+                return Mesh.DOUBLESIDE;
+            }
+
             if (!scene.useRightHandedSystem) {
                 if (orientation === undefined || orientation === null) {
                     return Mesh.FRONTSIDE;

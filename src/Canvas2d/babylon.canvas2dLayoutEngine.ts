@@ -145,7 +145,7 @@
                     let layoutArea: Size;
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
-                        layoutArea = StackPanelLayoutEngine.dstArea;
+                        layoutArea = StackPanelLayoutEngine.dstArea.clone();
                         child.layoutArea = layoutArea;
                     } else {
                         layoutArea = child.layoutArea;

@@ -4,6 +4,9 @@ var BABYLON;
         function MeshBuilder() {
         }
         MeshBuilder.updateSideOrientationForRightHandedSystem = function (orientation, scene) {
+            if (orientation == BABYLON.Mesh.DOUBLESIDE) {
+                return BABYLON.Mesh.DOUBLESIDE;
+            }
             if (!scene.useRightHandedSystem) {
                 if (orientation === undefined || orientation === null) {
                     return BABYLON.Mesh.FRONTSIDE;
@@ -1073,6 +1076,6 @@ var BABYLON;
             return extrudedGeneric;
         };
         return MeshBuilder;
-    })();
+    }());
     BABYLON.MeshBuilder = MeshBuilder;
 })(BABYLON || (BABYLON = {}));
