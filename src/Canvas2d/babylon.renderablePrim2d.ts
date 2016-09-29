@@ -263,20 +263,29 @@
         get zBias(): Vector2 {
             return null;
         }
+        set zBias(value: Vector2) {
+        }
+
 
         @instanceData()
         get transformX(): Vector4 {
             return null;
+        }
+        set transformX(value: Vector4) {
         }
 
         @instanceData()
         get transformY(): Vector4 {
             return null;
         }
+        set transformY(value: Vector4) {
+        }
 
         @instanceData()
         get opacity(): number {
             return null;
+        }
+        set opacity(value: number) {
         }
 
         getClassTreeInfo(): ClassTreeInfo<InstanceClassInfo, InstancePropInfo> {

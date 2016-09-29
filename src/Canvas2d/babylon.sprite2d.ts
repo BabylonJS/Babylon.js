@@ -94,20 +94,28 @@
         get topLeftUV(): Vector2 {
             return null;
         }
+        set topLeftUV(value: Vector2) {
+        }
 
         @instanceData()
         get sizeUV(): Vector2 {
             return null;
+        }
+        set sizeUV(value: Vector2) {
         }
 
         @instanceData()
         get scaleFactor(): Vector2 {
             return null;
         }
+        set scaleFactor(value: Vector2) {
+        }
 
         @instanceData()
         get textureSize(): Vector2 {
             return null;
+        }
+        set textureSize(value: Vector2) {
         }
 
         // 3 floats being:
@@ -117,6 +125,8 @@
         @instanceData()
         get properties(): Vector3 {
             return null;
+        }
+        set properties(value: Vector3) {
         }
     }
 

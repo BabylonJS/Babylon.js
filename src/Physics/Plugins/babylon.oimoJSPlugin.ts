@@ -95,7 +95,7 @@ module BABYLON {
                 };
 
                 var impostors = [impostor];
-                function addToArray(parent: IPhysicsEnabledObject) {
+                let addToArray = (parent: IPhysicsEnabledObject) => {
                     if (!parent.getChildMeshes) return;
                     parent.getChildMeshes().forEach(function (m) {
                         if (m.physicsImpostor) {
@@ -106,7 +106,7 @@ module BABYLON {
                 }
                 addToArray(impostor.object)
 
-                function checkWithEpsilon(value: number): number {
+                let  checkWithEpsilon = (value: number): number => {
                     return Math.max(value, PhysicsEngine.Epsilon);
                 }
 

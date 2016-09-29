@@ -275,7 +275,7 @@ module BABYLON {
                             var transaction = this.db.transaction(["textures"], "readwrite");
 
                             // the transaction could abort because of a QuotaExceededError error
-                            transaction.onabort = function (event) {
+                            transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                                     if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
@@ -526,7 +526,7 @@ module BABYLON {
                             var transaction = this.db.transaction([targetStore], "readwrite");
 
                             // the transaction could abort because of a QuotaExceededError error
-                            transaction.onabort = function (event) {
+                            transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                                     if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
