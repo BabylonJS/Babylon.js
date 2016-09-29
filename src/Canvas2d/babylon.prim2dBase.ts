@@ -2830,7 +2830,7 @@
                 let pos = this._position ? this.position : this.layoutAreaPos;
 
                 if (this._origin.x === 0 && this._origin.y === 0) {
-                    local = Matrix.Compose(new Vector3(this._scale.x, this._scale.y, 1), rot, new Vector3(pos.x, pos.y, 0));
+                    local = Matrix.Compose(new Vector3(this._scale.x, this._scale.y, 1), rot, new Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
                     this._localTransform = local;
                 } else {
                     // -Origin offset
@@ -2846,7 +2846,7 @@
                     Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
 
                     // -Origin * rotation * scale * (Origin + Position)
-                    Matrix.TranslationToRef((as.width * this._origin.x) + pos.x, (as.height * this._origin.y) + pos.y, 0, Prim2DBase._t2);
+                    Matrix.TranslationToRef((as.width * this._origin.x) + pos.x + this._marginOffset.x, (as.height * this._origin.y) + pos.y + this._marginOffset.y, 0, Prim2DBase._t2);
                     Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, this._localTransform);
                 }
 
@@ -2956,8 +2956,8 @@
 
                     let localTransform: Matrix;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
-                    Prim2DBase._transMtx.m[12] += this._marginOffset.x + parentPaddingOffset.x;
-                    Prim2DBase._transMtx.m[13] += this._marginOffset.y + parentPaddingOffset.y;
+                    Prim2DBase._transMtx.m[12] += parentPaddingOffset.x;
+                    Prim2DBase._transMtx.m[13] += parentPaddingOffset.y;
                     localTransform = Prim2DBase._transMtx;
 
                     this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
