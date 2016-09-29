@@ -523,12 +523,12 @@
 
             if (this.outerGlow) {
                 currentEffect.setFloat("offset", 0);
-                engine.setStencilFunction(WebGLRenderingContext.NOTEQUAL);
+                engine.setStencilFunction(Engine.NOTEQUAL);
                 engine.draw(true, 0, 6);
             }
             if (this.innerGlow) {
                 currentEffect.setFloat("offset", 1);
-                engine.setStencilFunction(WebGLRenderingContext.EQUAL);
+                engine.setStencilFunction(Engine.EQUAL);
                 engine.draw(true, 0, 6);
             }
 
