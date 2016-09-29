@@ -61,7 +61,7 @@ var BABYLON;
             return result;
         };
         return MaterialDefines;
-    })();
+    }());
     BABYLON.MaterialDefines = MaterialDefines;
     var Material = (function () {
         function Material(name, scene, doNotAdd) {
@@ -295,6 +295,7 @@ var BABYLON;
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
             this.onBindObservable.clear();
+            this.onUnBindObservable.clear();
         };
         Material.prototype.serialize = function () {
             return BABYLON.SerializationHelper.Serialize(this);
@@ -373,6 +374,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Material.prototype, "fillMode", null);
         return Material;
-    })();
+    }());
     BABYLON.Material = Material;
 })(BABYLON || (BABYLON = {}));

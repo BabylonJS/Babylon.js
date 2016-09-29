@@ -1,6 +1,7 @@
 # 2.5.0:
 
 ### Major updates
+- New `HighlightLayer` object to enable highlights rendering. [Demo](http://www.babylonjs.com/Demos/Highlights/) - ([sebavan](https://github.com/sebavan))
 - Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
 - Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
 
@@ -40,7 +41,7 @@
 - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
 - Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
 - Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
-- Fixed bug with isntances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
+- Fixed bug with instances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
 - Canvas2D: ([nockawa](https://github.com/nockawa))
  - `WorldSpaceCanvas2D`:
 	- Intersection/interaction now works on non squared canvas

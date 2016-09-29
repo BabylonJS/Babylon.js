@@ -143,8 +143,12 @@ module BABYLON {
             return this._parent ? this._parent.physicsBody : this._physicsBody;
         }
 
-        public get parent() {
+        public get parent(): PhysicsImpostor {
             return this._parent;
+        }
+
+        public set parent(value: PhysicsImpostor) {
+            this._parent = value;
         }
 
         /**
