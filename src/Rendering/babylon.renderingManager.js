@@ -124,15 +124,15 @@ var BABYLON;
             if (opaqueSortCompareFn === void 0) { opaqueSortCompareFn = null; }
             if (alphaTestSortCompareFn === void 0) { alphaTestSortCompareFn = null; }
             if (transparentSortCompareFn === void 0) { transparentSortCompareFn = null; }
+            this._customOpaqueSortCompareFn[renderingGroupId] = opaqueSortCompareFn;
+            this._customAlphaTestSortCompareFn[renderingGroupId] = alphaTestSortCompareFn;
+            this._customTransparentSortCompareFn[renderingGroupId] = transparentSortCompareFn;
             if (this._renderingGroups[renderingGroupId]) {
                 var group = this._renderingGroups[renderingGroupId];
                 group.opaqueSortCompareFn = this._customOpaqueSortCompareFn[renderingGroupId];
                 group.alphaTestSortCompareFn = this._customAlphaTestSortCompareFn[renderingGroupId];
                 group.transparentSortCompareFn = this._customTransparentSortCompareFn[renderingGroupId];
             }
-            this._customOpaqueSortCompareFn[renderingGroupId] = opaqueSortCompareFn;
-            this._customAlphaTestSortCompareFn[renderingGroupId] = alphaTestSortCompareFn;
-            this._customTransparentSortCompareFn[renderingGroupId] = transparentSortCompareFn;
         };
         /**
          * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
