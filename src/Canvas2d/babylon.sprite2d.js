@@ -97,12 +97,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Sprite2DInstanceData.prototype, "sizeUV", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -111,12 +115,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Sprite2DInstanceData.prototype, "textureSize", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -128,6 +136,8 @@ var BABYLON;
             // - z: alignToPixel setting
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true

@@ -3776,7 +3776,7 @@ var BABYLON;
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                                     if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
-                                        this.hasReachedQuota = true;
+                                        _this.hasReachedQuota = true;
                                     }
                                 }
                                 catch (ex) { }
@@ -3998,7 +3998,7 @@ var BABYLON;
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                                     if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
-                                        this.hasReachedQuota = true;
+                                        _this.hasReachedQuota = true;
                                     }
                                 }
                                 catch (ex) { }
@@ -30589,6 +30589,9 @@ var BABYLON;
             get: function () {
                 return this._parent;
             },
+            set: function (value) {
+                this._parent = value;
+            },
             enumerable: true,
             configurable: true
         });
@@ -39125,7 +39128,7 @@ var BABYLON;
                     var layoutArea = void 0;
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
-                        layoutArea = StackPanelLayoutEngine.dstArea;
+                        layoutArea = StackPanelLayoutEngine.dstArea.clone();
                         child.layoutArea = layoutArea;
                     }
                     else {
@@ -42533,7 +42536,7 @@ var BABYLON;
                 var local;
                 var pos = this._position ? this.position : this.layoutAreaPos;
                 if (this._origin.x === 0 && this._origin.y === 0) {
-                    local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale.x, this._scale.y, 1), rot, new BABYLON.Vector3(pos.x, pos.y, 0));
+                    local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale.x, this._scale.y, 1), rot, new BABYLON.Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
                     this._localTransform = local;
                 }
                 else {
@@ -42547,7 +42550,7 @@ var BABYLON;
                     BABYLON.Matrix.ScalingToRef(this._scale.x, this._scale.y, 1, Prim2DBase._t0);
                     Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
                     // -Origin * rotation * scale * (Origin + Position)
-                    BABYLON.Matrix.TranslationToRef((as.width * this._origin.x) + pos.x, (as.height * this._origin.y) + pos.y, 0, Prim2DBase._t2);
+                    BABYLON.Matrix.TranslationToRef((as.width * this._origin.x) + pos.x + this._marginOffset.x, (as.height * this._origin.y) + pos.y + this._marginOffset.y, 0, Prim2DBase._t2);
                     Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, this._localTransform);
                 }
                 this.clearPropertiesDirty(tflags);
@@ -42635,8 +42638,8 @@ var BABYLON;
                     var globalTransform = this._parent ? this._parent._globalTransform : null;
                     var localTransform = void 0;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
-                    Prim2DBase._transMtx.m[12] += this._marginOffset.x + parentPaddingOffset.x;
-                    Prim2DBase._transMtx.m[13] += this._marginOffset.y + parentPaddingOffset.y;
+                    Prim2DBase._transMtx.m[12] += parentPaddingOffset.x;
+                    Prim2DBase._transMtx.m[13] += parentPaddingOffset.y;
                     localTransform = Prim2DBase._transMtx;
                     this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
                     this._invGlobalTransform = BABYLON.Matrix.Invert(this._globalTransform);
@@ -43555,12 +43558,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(InstanceDataBase.prototype, "transformX", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -43569,12 +43576,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(InstanceDataBase.prototype, "opacity", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -44390,12 +44401,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Shape2DInstanceData.prototype, "fillGradientColor1", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -44404,12 +44419,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Shape2DInstanceData.prototype, "fillGradientTY", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -44419,12 +44438,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Shape2DInstanceData.prototype, "borderSolidColor", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -44433,6 +44456,8 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
@@ -44440,12 +44465,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Shape2DInstanceData.prototype, "borderGradientTY", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -45564,6 +45593,8 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
@@ -46011,6 +46042,8 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
@@ -46311,12 +46344,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Sprite2DInstanceData.prototype, "sizeUV", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -46325,12 +46362,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Sprite2DInstanceData.prototype, "textureSize", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -46342,6 +46383,8 @@ var BABYLON;
             // - z: alignToPixel setting
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -46780,12 +46823,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Text2DInstanceData.prototype, "sizeUV", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -46794,6 +46841,8 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
@@ -46801,12 +46850,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Text2DInstanceData.prototype, "superSampleFactor", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -47281,12 +47334,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Lines2DInstanceData.prototype, "boundingMax", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -50944,7 +51001,7 @@ var BABYLON;
                     world: this.world
                 };
                 var impostors = [impostor];
-                function addToArray(parent) {
+                var addToArray = function (parent) {
                     if (!parent.getChildMeshes)
                         return;
                     parent.getChildMeshes().forEach(function (m) {
@@ -50953,11 +51010,11 @@ var BABYLON;
                             m.physicsImpostor._init();
                         }
                     });
-                }
+                };
                 addToArray(impostor.object);
-                function checkWithEpsilon(value) {
+                var checkWithEpsilon_1 = function (value) {
                     return Math.max(value, BABYLON.PhysicsEngine.Epsilon);
-                }
+                };
                 impostors.forEach(function (i) {
                     //get the correct bounding box
                     var oldQuaternion = i.object.rotationQuaternion;
@@ -50997,7 +51054,7 @@ var BABYLON;
                             var radiusX = extendSize.x;
                             var radiusY = extendSize.y;
                             var radiusZ = extendSize.z;
-                            var size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
+                            var size = Math.max(checkWithEpsilon_1(radiusX), checkWithEpsilon_1(radiusY), checkWithEpsilon_1(radiusZ)) / 2;
                             bodyConfig.type.push('sphere');
                             //due to the way oimo works with compounds, add 3 times
                             bodyConfig.size.push(size);
@@ -51005,8 +51062,8 @@ var BABYLON;
                             bodyConfig.size.push(size);
                             break;
                         case BABYLON.PhysicsImpostor.CylinderImpostor:
-                            var sizeX = checkWithEpsilon(extendSize.x) / 2;
-                            var sizeY = checkWithEpsilon(extendSize.y);
+                            var sizeX = checkWithEpsilon_1(extendSize.x) / 2;
+                            var sizeY = checkWithEpsilon_1(extendSize.y);
                             bodyConfig.type.push('cylinder');
                             bodyConfig.size.push(sizeX);
                             bodyConfig.size.push(sizeY);
@@ -51016,9 +51073,9 @@ var BABYLON;
                         case BABYLON.PhysicsImpostor.PlaneImpostor:
                         case BABYLON.PhysicsImpostor.BoxImpostor:
                         default:
-                            var sizeX = checkWithEpsilon(extendSize.x);
-                            var sizeY = checkWithEpsilon(extendSize.y);
-                            var sizeZ = checkWithEpsilon(extendSize.z);
+                            var sizeX = checkWithEpsilon_1(extendSize.x);
+                            var sizeY = checkWithEpsilon_1(extendSize.y);
+                            var sizeZ = checkWithEpsilon_1(extendSize.z);
                             bodyConfig.type.push('box');
                             bodyConfig.size.push(sizeX);
                             bodyConfig.size.push(sizeY);

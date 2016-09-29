@@ -219,7 +219,7 @@ var BABYLON;
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                                     if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
-                                        this.hasReachedQuota = true;
+                                        _this.hasReachedQuota = true;
                                     }
                                 }
                                 catch (ex) { }
@@ -441,7 +441,7 @@ var BABYLON;
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
                                     if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
-                                        this.hasReachedQuota = true;
+                                        _this.hasReachedQuota = true;
                                     }
                                 }
                                 catch (ex) { }

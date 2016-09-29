@@ -159,6 +159,9 @@ var BABYLON;
             get: function () {
                 return this._parent;
             },
+            set: function (value) {
+                this._parent = value;
+            },
             enumerable: true,
             configurable: true
         });
