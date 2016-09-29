@@ -361,12 +361,12 @@ var BABYLON;
             engine.setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
             if (this.outerGlow) {
                 currentEffect.setFloat("offset", 0);
-                engine.setStencilFunction(WebGLRenderingContext.NOTEQUAL);
+                engine.setStencilFunction(BABYLON.Engine.NOTEQUAL);
                 engine.draw(true, 0, 6);
             }
             if (this.innerGlow) {
                 currentEffect.setFloat("offset", 1);
-                engine.setStencilFunction(WebGLRenderingContext.EQUAL);
+                engine.setStencilFunction(BABYLON.Engine.EQUAL);
                 engine.draw(true, 0, 6);
             }
             // Restore Cache
