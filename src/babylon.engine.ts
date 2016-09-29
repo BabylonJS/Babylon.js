@@ -230,35 +230,35 @@
         private static _NOTEQUAL =  0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
 
         public static get NEVER(): number {
-            return Engine.NEVER;
+            return Engine._NEVER;
         }
 
         public static get ALWAYS(): number {
-            return Engine.ALWAYS;
+            return Engine._ALWAYS;
         }
 
         public static get LESS(): number {
-            return Engine.LESS;
+            return Engine._LESS;
         }
 
         public static get EQUAL(): number {
-            return Engine.EQUAL;
+            return Engine._EQUAL;
         }
 
         public static get LEQUAL(): number {
-            return Engine.LEQUAL;
+            return Engine._LEQUAL;
         }
 
         public static get GREATER(): number {
-            return Engine.GREATER;
+            return Engine._GREATER;
         }
 
         public static get GEQUAL(): number {
-            return Engine.GEQUAL;
+            return Engine._GEQUAL;
         }
 
         public static get NOTEQUAL(): number {
-            return Engine.NOTEQUAL;
+            return Engine._NOTEQUAL;
         }
 
         // Stencil Actions Constants.
@@ -271,31 +271,31 @@
         private static _DECR_WRAP =	0x8508;
 
         public static get KEEP(): number {
-            return Engine.KEEP;
+            return Engine._KEEP;
         }
 
         public static get REPLACE(): number {
-            return Engine.REPLACE;
+            return Engine._REPLACE;
         }
 
         public static get INCR(): number {
-            return Engine.INCR;
+            return Engine._INCR;
         }
 
         public static get DECR(): number {
-            return Engine.DECR;
+            return Engine._DECR;
         }
 
         public static get INVERT(): number {
-            return Engine.INVERT;
+            return Engine._INVERT;
         }
 
         public static get INCR_WRAP(): number {
-            return Engine.INCR_WRAP;
+            return Engine._INCR_WRAP;
         }
 
         public static get DECR_WRAP(): number {
-            return Engine.DECR_WRAP;
+            return Engine._DECR_WRAP;
         }        
 
         public static get ALPHA_DISABLE(): number {
