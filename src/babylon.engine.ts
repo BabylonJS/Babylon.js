@@ -219,6 +219,85 @@
         private static _TEXTURETYPE_FLOAT = 1;
         private static _TEXTURETYPE_HALF_FLOAT = 2;
 
+        // Depht or Stencil test Constants.
+        private static _NEVER =     0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
+        private static _ALWAYS =    0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
+        private static _LESS =      0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
+        private static _EQUAL =     0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
+        private static _LEQUAL =    0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
+        private static _GREATER =   0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
+        private static _GEQUAL =    0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
+        private static _NOTEQUAL =  0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
+
+        public static get NEVER(): number {
+            return Engine.NEVER;
+        }
+
+        public static get ALWAYS(): number {
+            return Engine.ALWAYS;
+        }
+
+        public static get LESS(): number {
+            return Engine.LESS;
+        }
+
+        public static get EQUAL(): number {
+            return Engine.EQUAL;
+        }
+
+        public static get LEQUAL(): number {
+            return Engine.LEQUAL;
+        }
+
+        public static get GREATER(): number {
+            return Engine.GREATER;
+        }
+
+        public static get GEQUAL(): number {
+            return Engine.GEQUAL;
+        }
+
+        public static get NOTEQUAL(): number {
+            return Engine.NOTEQUAL;
+        }
+
+        // Stencil Actions Constants.
+        private static _KEEP =	    0x1E00; 
+        private static _REPLACE =	0x1E01; 
+        private static _INCR =	    0x1E02; 
+        private static _DECR =	    0x1E03; 
+        private static _INVERT =	0x150A; 
+        private static _INCR_WRAP =	0x8507; 
+        private static _DECR_WRAP =	0x8508;
+
+        public static get KEEP(): number {
+            return Engine.KEEP;
+        }
+
+        public static get REPLACE(): number {
+            return Engine.REPLACE;
+        }
+
+        public static get INCR(): number {
+            return Engine.INCR;
+        }
+
+        public static get DECR(): number {
+            return Engine.DECR;
+        }
+
+        public static get INVERT(): number {
+            return Engine.INVERT;
+        }
+
+        public static get INCR_WRAP(): number {
+            return Engine.INCR_WRAP;
+        }
+
+        public static get DECR_WRAP(): number {
+            return Engine.DECR_WRAP;
+        }        
+
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
         }
