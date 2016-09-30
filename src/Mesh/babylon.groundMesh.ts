@@ -6,7 +6,7 @@
         private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
         
         public _subdivisionsX: number;
-        public _subdivisionsY: number;
+        public _subdivisionsZ: number;
         public _width: number;
         public _height: number;
         public _minX: number;
@@ -19,20 +19,20 @@
         }
 
         public get subdivisions(): number {
-            return Math.min(this._subdivisionsX, this._subdivisionsY);
+            return Math.min(this._subdivisionsX, this._subdivisionsZ);
         }
 
         public get subdivisionsX(): number {
             return this._subdivisionsX;
         }
 
-        public get subdivisionsY(): number {
-            return this._subdivisionsY;
+        public get subdivisionsZ(): number {
+            return this._subdivisionsZ;
         }
 
         public optimize(chunksCount: number, octreeBlocksSize = 32): void {
             this._subdivisionsX = chunksCount;
-            this._subdivisionsY = chunksCount;
+            this._subdivisionsZ = chunksCount;
             this.subdivide(chunksCount);
             this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
         }
@@ -115,9 +115,9 @@
         private _getFacetAt(x: number, z: number): Vector4 {
             // retrieve col and row from x, z coordinates in the ground local system
             var subdivisionsX = this._subdivisionsX;
-            var subdivisionsY = this._subdivisionsY;
+            var subdivisionsZ = this._subdivisionsZ;
             var col = Math.floor((x + this._maxX) * this._subdivisionsX / this._width);
-            var row = Math.floor(-(z + this._maxZ) * this._subdivisionsY / this._height + this._subdivisionsY);
+            var row = Math.floor(-(z + this._maxZ) * this._subdivisionsZ / this._height + this._subdivisionsZ);
             var quad = this._heightQuads[row * this._subdivisionsX + col];
             var facet;
             if (z < quad.slope.x * x + quad.slope.y) {
@@ -135,9 +135,9 @@
         // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
         private _initHeightQuads(): void {
             var subdivisionsX = this._subdivisionsX;
-            var subdivisionsY = this._subdivisionsY;
+            var subdivisionsZ = this._subdivisionsZ;
             this._heightQuads = new Array();
-            for (var row = 0; row < subdivisionsY; row++) {
+            for (var row = 0; row < subdivisionsZ; row++) {
                 for (var col = 0; col < subdivisionsX; col++) {
                     var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0, 0, 0, 0), facet2: new BABYLON.Vector4(0, 0, 0, 0) };
                     this._heightQuads[row * subdivisionsX + col] = quad;
@@ -169,9 +169,9 @@
             var d2 = 0;
 
             var subdivisionsX = this._subdivisionsX;
-            var subdivisionsY = this._subdivisionsY;
+            var subdivisionsZ = this._subdivisionsZ;
 
-            for (var row = 0; row < subdivisionsY; row++) {
+            for (var row = 0; row < subdivisionsZ; row++) {
                 for (var col = 0; col < subdivisionsX; col++) {
                     i = col * 3;
                     j = row * (subdivisionsX + 1) * 3;
