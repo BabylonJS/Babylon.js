@@ -67,9 +67,11 @@
          * The mesh render callback use to come to the default behavior
          */
         observerDefault: Observer<Mesh>;
-
-        // TODO.
-        // glowEmissiveOnly: boolean = false;
+        /**
+         * If it exists, the emissive color of the material will be used to generate the glow.
+         * Else it falls back to the current color.
+         */
+        glowEmissiveOnly: boolean;
     }
 
     /**
@@ -347,14 +349,18 @@
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
-                if (this.isReady(subMesh, hardwareInstancedRendering)) {
+                var highlightLayerMesh = this._meshes[mesh.id];
+                var material = subMesh.getMaterial();
+                var emissiveTexture: Texture = null;
+                if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
+                    emissiveTexture = (<any>material).emissiveTexture;
+                }
+
+                if (this.isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
                     engine.enableEffect(this._glowMapGenerationEffect);
                     mesh._bind(subMesh, this._glowMapGenerationEffect, Material.TriangleFillMode);
-                    var material = subMesh.getMaterial();
 
                     this._glowMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
-
-                    var highlightLayerMesh = this._meshes[mesh.id];
                     if (highlightLayerMesh) {
                         this._glowMapGenerationEffect.setFloat4("color", 
                             highlightLayerMesh.color.r,
@@ -375,6 +381,12 @@
                         var alphaTexture = material.getAlphaTestTexture();
                         this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
                         this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    }
+
+                    // Glow emissive only
+                    if (emissiveTexture) {
+                        this._glowMapGenerationEffect.setTexture("emissiveSampler", emissiveTexture);
+                        this._glowMapGenerationEffect.setMatrix("emissiveMatrix", emissiveTexture.getTextureMatrix());
                     }
 
                     // Bones
@@ -418,9 +430,10 @@
          * Checks for the readiness of the element composing the layer.
          * @param subMesh the mesh to check for
          * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
          * @return true if ready otherwise, false
          */
-        private isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+        private isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Texture): boolean {
             if (!subMesh.getMaterial().isReady()) {
                 return false;
             }
@@ -431,22 +444,47 @@
 
             var mesh = subMesh.getMesh();
             var material = subMesh.getMaterial();
+            var uv1 = false;
+            var uv2 = false;
 
             // Alpha test
             if (material && material.needAlphaTesting()) {
-                defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
-                }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    var alphaTexture = material.getAlphaTestTexture();
-
-                    if (alphaTexture.coordinatesIndex === 1) {
-                        attribs.push(VertexBuffer.UV2Kind);
-                        defines.push("#define UV2");
+                var alphaTexture = material.getAlphaTestTexture();
+                if (alphaTexture) {
+                    defines.push("#define ALPHATEST");
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
+                        alphaTexture.coordinatesIndex === 1) {                    
+                        defines.push("#define DIFFUSEUV2");
+                        uv2 = true;
+                    }
+                    else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                        defines.push("#define DIFFUSEUV1");
+                        uv1 = true;
                     }
                 }
+            }
+
+            // Emissive
+            if (emissiveTexture) {
+                defines.push("#define EMISSIVE");
+                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
+                    emissiveTexture.coordinatesIndex === 1) {                    
+                    defines.push("#define EMISSIVEUV2");
+                    uv2 = true;
+                }
+                else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                    defines.push("#define EMISSIVEUV1");
+                    uv1 = true;
+                }
+            }
+
+            if (uv1) {
+                attribs.push(VertexBuffer.UVKind);
+                defines.push("#define UV1");
+            }
+            if (uv2) {
+                attribs.push(VertexBuffer.UV2Kind);
+                defines.push("#define UV2");
             }
 
             // Bones
@@ -478,8 +516,8 @@
                 this._cachedDefines = join;
                 this._glowMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "color"],
-                    ["diffuseSampler"], join);
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "color", "emissiveMatrix"],
+                    ["diffuseSampler", "emissiveSampler"], join);
             }
 
             return this._glowMapGenerationEffect.isReady();
@@ -555,8 +593,9 @@
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.
          * @param mesh The mesh to highlight
          * @param color The color of the highlight
+         * @param glowEmissiveOnly Extract the glow from the emissive texture
          */
-        public pushMesh(mesh: Mesh, color: Color3) {
+        public addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly = false) {
             var meshHighlight = this._meshes[mesh.id];
             if (meshHighlight) {
                 meshHighlight.color = color;
@@ -569,7 +608,8 @@
                     observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => { 
                         mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
                     }),
-                    observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference)
+                    observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference),
+                    glowEmissiveOnly: glowEmissiveOnly
                 };
             }
 

@@ -10,15 +10,22 @@ uniform mat4 viewProjection;
 
 varying vec4 vPosition;
 
-#ifdef ALPHATEST
-varying vec2 vUV;
-uniform mat4 diffuseMatrix;
 #ifdef UV1
 attribute vec2 uv;
 #endif
+
 #ifdef UV2
 attribute vec2 uv2;
 #endif
+
+#ifdef ALPHATEST
+	varying vec2 vUVDiffuse;
+	uniform mat4 diffuseMatrix;
+#endif
+
+#ifdef EMISSIVE
+	varying vec2 vUVEmissive;
+	uniform mat4 emissiveMatrix;
 #endif
 
 void main(void)
@@ -35,11 +42,20 @@ void main(void)
 #endif
 
 #ifdef ALPHATEST
-#ifdef UV1
-	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
+	#ifdef DIFFUSEUV1
+		vUVDiffuse = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
+	#endif
+	#ifdef DIFFUSEUV2
+		vUVDiffuse = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+	#endif
 #endif
-#ifdef UV2
-	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
-#endif
+
+#ifdef EMISSIVE
+	#ifdef EMISSIVEUV1
+		vUVEmissive = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));
+	#endif
+	#ifdef EMISSIVEUV2
+		vUVEmissive = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));
+	#endif
 #endif
 }
