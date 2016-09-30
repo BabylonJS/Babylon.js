@@ -226,12 +226,16 @@ var BABYLON;
                     return;
                 }
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
-                if (_this.isReady(subMesh, hardwareInstancedRendering)) {
+                var highlightLayerMesh = _this._meshes[mesh.id];
+                var material = subMesh.getMaterial();
+                var emissiveTexture = null;
+                if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
+                    emissiveTexture = material.emissiveTexture;
+                }
+                if (_this.isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
                     engine.enableEffect(_this._glowMapGenerationEffect);
                     mesh._bind(subMesh, _this._glowMapGenerationEffect, BABYLON.Material.TriangleFillMode);
-                    var material = subMesh.getMaterial();
                     _this._glowMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
-                    var highlightLayerMesh = _this._meshes[mesh.id];
                     if (highlightLayerMesh) {
                         _this._glowMapGenerationEffect.setFloat4("color", highlightLayerMesh.color.r, highlightLayerMesh.color.g, highlightLayerMesh.color.b, 1.0);
                     }
@@ -243,6 +247,11 @@ var BABYLON;
                         var alphaTexture = material.getAlphaTestTexture();
                         _this._glowMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
                         _this._glowMapGenerationEffect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    }
+                    // Glow emissive only
+                    if (emissiveTexture) {
+                        _this._glowMapGenerationEffect.setTexture("emissiveSampler", emissiveTexture);
+                        _this._glowMapGenerationEffect.setMatrix("emissiveMatrix", emissiveTexture.getTextureMatrix());
                     }
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
@@ -277,9 +286,10 @@ var BABYLON;
          * Checks for the readiness of the element composing the layer.
          * @param subMesh the mesh to check for
          * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
          * @return true if ready otherwise, false
          */
-        HighlightLayer.prototype.isReady = function (subMesh, useInstances) {
+        HighlightLayer.prototype.isReady = function (subMesh, useInstances, emissiveTexture) {
             if (!subMesh.getMaterial().isReady()) {
                 return false;
             }
@@ -287,20 +297,44 @@ var BABYLON;
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var mesh = subMesh.getMesh();
             var material = subMesh.getMaterial();
+            var uv1 = false;
+            var uv2 = false;
             // Alpha test
             if (material && material.needAlphaTesting()) {
-                defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-                    attribs.push(BABYLON.VertexBuffer.UVKind);
-                    defines.push("#define UV1");
-                }
-                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                    var alphaTexture = material.getAlphaTestTexture();
-                    if (alphaTexture.coordinatesIndex === 1) {
-                        attribs.push(BABYLON.VertexBuffer.UV2Kind);
-                        defines.push("#define UV2");
+                var alphaTexture = material.getAlphaTestTexture();
+                if (alphaTexture) {
+                    defines.push("#define ALPHATEST");
+                    if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind) &&
+                        alphaTexture.coordinatesIndex === 1) {
+                        defines.push("#define DIFFUSEUV2");
+                        uv2 = true;
+                    }
+                    else if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                        defines.push("#define DIFFUSEUV1");
+                        uv1 = true;
                     }
                 }
+            }
+            // Emissive
+            if (emissiveTexture) {
+                defines.push("#define EMISSIVE");
+                if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind) &&
+                    emissiveTexture.coordinatesIndex === 1) {
+                    defines.push("#define EMISSIVEUV2");
+                    uv2 = true;
+                }
+                else if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                    defines.push("#define EMISSIVEUV1");
+                    uv1 = true;
+                }
+            }
+            if (uv1) {
+                attribs.push(BABYLON.VertexBuffer.UVKind);
+                defines.push("#define UV1");
+            }
+            if (uv2) {
+                attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                defines.push("#define UV2");
             }
             // Bones
             if (mesh.useBones && mesh.computeBonesUsingShaders) {
@@ -328,7 +362,7 @@ var BABYLON;
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
-                this._glowMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "color"], ["diffuseSampler"], join);
+                this._glowMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "color", "emissiveMatrix"], ["diffuseSampler", "emissiveSampler"], join);
             }
             return this._glowMapGenerationEffect.isReady();
         };
@@ -389,9 +423,11 @@ var BABYLON;
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.
          * @param mesh The mesh to highlight
          * @param color The color of the highlight
+         * @param glowEmissiveOnly Extract the glow from the emissive texture
          */
-        HighlightLayer.prototype.pushMesh = function (mesh, color) {
+        HighlightLayer.prototype.addMesh = function (mesh, color, glowEmissiveOnly) {
             var _this = this;
+            if (glowEmissiveOnly === void 0) { glowEmissiveOnly = false; }
             var meshHighlight = this._meshes[mesh.id];
             if (meshHighlight) {
                 meshHighlight.color = color;
@@ -404,7 +440,8 @@ var BABYLON;
                     observerHighlight: mesh.onBeforeRenderObservable.add(function (mesh) {
                         mesh.getScene().getEngine().setStencilFunctionReference(_this._instanceGlowingMeshStencilReference);
                     }),
-                    observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference)
+                    observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference),
+                    glowEmissiveOnly: glowEmissiveOnly
                 };
             }
             this._shouldRender = true;
