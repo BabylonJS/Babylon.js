@@ -48,9 +48,9 @@ interface Document {
 
 interface HTMLCanvasElement {
     requestPointerLock(): void;
-    msRequestPointerLock(): void;
-    mozRequestPointerLock(): void;
-    webkitRequestPointerLock(): void;
+    msRequestPointerLock?(): void;
+    mozRequestPointerLock?(): void;
+    webkitRequestPointerLock?(): void;
 }
 
 interface CanvasRenderingContext2D {
