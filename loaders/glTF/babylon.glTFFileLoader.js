@@ -145,6 +145,29 @@ var BABYLON;
     var glTFAnimationPaths = ["translation", "rotation", "scale"];
     var babylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
     /**
+    * Parse
+    */
+    var parseBuffers = function (parsedBuffers, gltfRuntime) {
+        for (var buf in parsedBuffers) {
+            var parsedBuffer = parsedBuffers[buf];
+            gltfRuntime.buffers[buf] = parsedBuffer;
+            gltfRuntime.buffersCount++;
+        }
+    };
+    var parseShaders = function (parsedShaders, gltfRuntime) {
+        for (var sha in parsedShaders) {
+            var parsedShader = parsedShaders[sha];
+            gltfRuntime.shaders[sha] = parsedShader;
+            gltfRuntime.shaderscount++;
+        }
+    };
+    var parseObject = function (parsedObjects, runtimeProperty, gltfRuntime) {
+        for (var object in parsedObjects) {
+            var parsedObject = parsedObjects[object];
+            gltfRuntime[runtimeProperty][object] = parsedObject;
+        }
+    };
+    /**
     * Utils
     */
     var normalizeUVs = function (buffer) {
@@ -181,43 +204,6 @@ var BABYLON;
             var channel = Number(attributeParameter.semantic.split("_")[1]);
             return "uv" + (channel === 0 ? "" : channel + 1);
         }
-    };
-    var applyExtensions = function (func, defaultFunc) {
-        for (var extensionName in GLTFFileLoader.Extensions) {
-            var loaderExtension = GLTFFileLoader.Extensions[extensionName];
-            if (func(loaderExtension)) {
-                return;
-            }
-        }
-        defaultFunc();
-    };
-    var loadRuntimeAsync = function (scene, data, rootUrl, onSuccess, onError) {
-        applyExtensions(function (loaderExtension) {
-            return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
-        }, function () {
-            onSuccess(BABYLON.GLTFUtils.CreateGlTFRuntime(JSON.parse(data), scene, rootUrl));
-        });
-    };
-    var loadBufferAsync = function (gltfRuntime, buffer, onSuccess, onError) {
-        applyExtensions(function (loaderExtension) {
-            return loaderExtension.loadBufferAsync(gltfRuntime, buffer, onSuccess, onError);
-        }, function () {
-            BABYLON.GLTFUtils.LoadBufferAsync(gltfRuntime, buffer, onSuccess, onError);
-        });
-    };
-    var loadTextureAsync = function (gltfRuntime, texture, onSuccess, onError) {
-        applyExtensions(function (loaderExtension) {
-            return loaderExtension.loadTextureAsync(gltfRuntime, texture, onSuccess, onError);
-        }, function () {
-            BABYLON.GLTFUtils.LoadTextureAsync(gltfRuntime, texture, onSuccess, onError);
-        });
-    };
-    var loadShaderStringAsync = function (gltfRuntime, shader, onSuccess, onError) {
-        applyExtensions(function (loaderExtension) {
-            return loaderExtension.loadShaderStringAsync(gltfRuntime, shader, onSuccess, onError);
-        }, function () {
-            BABYLON.GLTFUtils.LoadShaderAsync(gltfRuntime, shader, onSuccess, onError);
-        });
     };
     /**
     * Returns the animation path (glTF -> Babylon)
@@ -927,9 +913,21 @@ var BABYLON;
         }
     };
     /**
+    * Decode array buffer from base64
+    */
+    var decodeArrayBuffer = function (base64) {
+        var decodedString = atob(base64);
+        var bufferLength = decodedString.length;
+        var arraybuffer = new Uint8Array(new ArrayBuffer(bufferLength));
+        for (var i = 0; i < bufferLength; i++) {
+            arraybuffer[i] = decodedString.charCodeAt(i);
+        }
+        return arraybuffer.buffer;
+    };
+    /**
     * onBind shaderrs callback to set uniforms and matrices
     */
-    var onBindShaderMaterial = function (mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material) {
+    var onBindShaderMaterial = function (mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material, onSuccess) {
         for (var unif in unTreatedUniforms) {
             var uniform = unTreatedUniforms[unif];
             var type = uniform.type;
@@ -965,6 +963,7 @@ var BABYLON;
                 }
             }
         }
+        onSuccess(shaderMaterial);
     };
     /**
     * Prepare uniforms to send the only one time
@@ -992,7 +991,7 @@ var BABYLON;
             };
             // Texture (sampler2D)
             if (type === BABYLON.EParameterType.SAMPLER_2D) {
-                loadTextureAsync(gltfRuntime, gltfRuntime.textures[value], onLoadTexture, function () { return onLoadTexture(null); });
+                BABYLON.GLTFFileLoaderExtension.loadTextureAsync(gltfRuntime, value, onLoadTexture, function () { return onLoadTexture(null); });
             }
             else {
                 if (uniform.value && BABYLON.GLTFUtils.SetUniform(shaderMaterial, unif, value, type)) {
@@ -1005,20 +1004,21 @@ var BABYLON;
     /**
     * Shader compilation failed
     */
-    var onShaderCompileError = function (program, shaderMaterial) {
+    var onShaderCompileError = function (program, shaderMaterial, onError) {
         return function (effect, error) {
             BABYLON.Tools.Error("Cannot compile program named " + program.name + ". Error: " + error + ". Default material will be applied");
             shaderMaterial.dispose(true);
+            onError();
         };
     };
     /**
     * Shader compilation success
     */
-    var onShaderCompileSuccess = function (gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms) {
+    var onShaderCompileSuccess = function (gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess) {
         return function (_) {
             prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
             shaderMaterial.onBind = function (mesh) {
-                onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material);
+                onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material, onSuccess);
             };
         };
     };
@@ -1044,10 +1044,156 @@ var BABYLON;
     /**
     * All shaders loaded. Create materials one by one
     */
-    var onShadersLoaded = function (gltfRuntime) {
+    var importMaterials = function (gltfRuntime) {
         // Create materials
         for (var mat in gltfRuntime.materials) {
-            var material = gltfRuntime.materials[mat];
+            BABYLON.GLTFFileLoaderExtension.loadMaterialAsync(gltfRuntime, mat, function (material) { }, function () { });
+        }
+    };
+    /**
+    * Implementation of the base glTF spec
+    */
+    var GLTFFileLoaderBase = (function () {
+        function GLTFFileLoaderBase() {
+        }
+        GLTFFileLoaderBase.createRuntime = function (parsedData, scene, rootUrl) {
+            var gltfRuntime = {
+                accessors: {},
+                buffers: {},
+                bufferViews: {},
+                meshes: {},
+                lights: {},
+                cameras: {},
+                nodes: {},
+                images: {},
+                textures: {},
+                shaders: {},
+                programs: {},
+                samplers: {},
+                techniques: {},
+                materials: {},
+                animations: {},
+                skins: {},
+                currentScene: {},
+                extensionsUsed: [],
+                buffersCount: 0,
+                shaderscount: 0,
+                scene: scene,
+                rootUrl: rootUrl,
+                loadedBufferCount: 0,
+                loadedBufferViews: {},
+                loadedShaderCount: 0,
+                importOnlyMeshes: false,
+                dummyNodes: []
+            };
+            // Parse
+            if (parsedData.extensionsUsed) {
+                parseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
+            }
+            if (parsedData.buffers) {
+                parseBuffers(parsedData.buffers, gltfRuntime);
+            }
+            if (parsedData.bufferViews) {
+                parseObject(parsedData.bufferViews, "bufferViews", gltfRuntime);
+            }
+            if (parsedData.accessors) {
+                parseObject(parsedData.accessors, "accessors", gltfRuntime);
+            }
+            if (parsedData.meshes) {
+                parseObject(parsedData.meshes, "meshes", gltfRuntime);
+            }
+            if (parsedData.lights) {
+                parseObject(parsedData.lights, "lights", gltfRuntime);
+            }
+            if (parsedData.cameras) {
+                parseObject(parsedData.cameras, "cameras", gltfRuntime);
+            }
+            if (parsedData.nodes) {
+                parseObject(parsedData.nodes, "nodes", gltfRuntime);
+            }
+            if (parsedData.images) {
+                parseObject(parsedData.images, "images", gltfRuntime);
+            }
+            if (parsedData.textures) {
+                parseObject(parsedData.textures, "textures", gltfRuntime);
+            }
+            if (parsedData.shaders) {
+                parseShaders(parsedData.shaders, gltfRuntime);
+            }
+            if (parsedData.programs) {
+                parseObject(parsedData.programs, "programs", gltfRuntime);
+            }
+            if (parsedData.samplers) {
+                parseObject(parsedData.samplers, "samplers", gltfRuntime);
+            }
+            if (parsedData.techniques) {
+                parseObject(parsedData.techniques, "techniques", gltfRuntime);
+            }
+            if (parsedData.materials) {
+                parseObject(parsedData.materials, "materials", gltfRuntime);
+            }
+            if (parsedData.animations) {
+                parseObject(parsedData.animations, "animations", gltfRuntime);
+            }
+            if (parsedData.skins) {
+                parseObject(parsedData.skins, "skins", gltfRuntime);
+            }
+            if (parsedData.scene && parsedData.scenes) {
+                gltfRuntime.currentScene = parsedData.scenes[parsedData.scene];
+            }
+            return gltfRuntime;
+        };
+        GLTFFileLoaderBase.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
+            var buffer = gltfRuntime.buffers[id];
+            if (BABYLON.GLTFUtils.IsBase64(buffer.uri)) {
+                var decodedBuffer = decodeArrayBuffer(buffer.uri.split(",")[1]);
+                onSuccess(new Uint8Array(decodedBuffer));
+            }
+            else {
+                BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, function (data) { return onSuccess(new Uint8Array(data)); }, null, null, true, onError);
+            }
+        };
+        GLTFFileLoaderBase.loadTextureAsync = function (gltfRuntime, id, onSuccess, onError) {
+            var texture = gltfRuntime.textures[id];
+            if (!texture || !texture.source) {
+                onError();
+                return;
+            }
+            if (texture.babylonTexture) {
+                onSuccess(texture.babylonTexture);
+                return;
+            }
+            var sampler = gltfRuntime.samplers[texture.sampler];
+            var source = gltfRuntime.images[texture.source];
+            var newTexture;
+            var createMipMaps = (sampler.minFilter === BABYLON.ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
+                (sampler.minFilter === BABYLON.ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
+                (sampler.minFilter === BABYLON.ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
+                (sampler.minFilter === BABYLON.ETextureFilterType.LINEAR_MIPMAP_LINEAR);
+            var samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
+            if (BABYLON.GLTFUtils.IsBase64(source.uri)) {
+                newTexture = new BABYLON.Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, function () { return onSuccess(newTexture); }, onError, source.uri, true);
+            }
+            else {
+                newTexture = new BABYLON.Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, function () { return onSuccess(newTexture); }, onError);
+            }
+            newTexture.wrapU = BABYLON.GLTFUtils.GetWrapMode(sampler.wrapS);
+            newTexture.wrapV = BABYLON.GLTFUtils.GetWrapMode(sampler.wrapT);
+            newTexture.name = name;
+            texture.babylonTexture = newTexture;
+        };
+        GLTFFileLoaderBase.loadShaderDataAsync = function (gltfRuntime, id, onSuccess, onError) {
+            var shader = gltfRuntime.shaders[id];
+            if (BABYLON.GLTFUtils.IsBase64(shader.uri)) {
+                var shaderData = atob(shader.uri.split(",")[1]);
+                onSuccess(shaderData);
+            }
+            else {
+                BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, null, null, false, onError);
+            }
+        };
+        GLTFFileLoaderBase.loadMaterialAsync = function (gltfRuntime, id, onSuccess, onError) {
+            var material = gltfRuntime.materials[id];
             var technique = gltfRuntime.techniques[material.technique];
             var program = gltfRuntime.programs[technique.program];
             var states = technique.states;
@@ -1123,8 +1269,8 @@ var BABYLON;
             }
             // Create shader material
             var shaderPath = {
-                vertex: program.vertexShader + mat,
-                fragment: program.fragmentShader + mat
+                vertex: program.vertexShader + id,
+                fragment: program.fragmentShader + id
             };
             var options = {
                 attributes: attributes,
@@ -1132,12 +1278,12 @@ var BABYLON;
                 samplers: samplers,
                 needAlphaBlending: states.functions && states.functions.blendEquationSeparate
             };
-            BABYLON.Effect.ShadersStore[program.vertexShader + mat + "VertexShader"] = newVertexShader;
-            BABYLON.Effect.ShadersStore[program.fragmentShader + mat + "PixelShader"] = newPixelShader;
+            BABYLON.Effect.ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
+            BABYLON.Effect.ShadersStore[program.fragmentShader + id + "PixelShader"] = newPixelShader;
             var shaderMaterial = new BABYLON.ShaderMaterial(material.name, gltfRuntime.scene, shaderPath, options);
-            shaderMaterial.id = mat;
-            shaderMaterial.onError = onShaderCompileError(program, shaderMaterial);
-            shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
+            shaderMaterial.id = id;
+            shaderMaterial.onError = onShaderCompileError(program, shaderMaterial, onError);
+            shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
             if (states.functions) {
                 var functions = states.functions;
                 if (functions.cullFace && functions.cullFace[0] !== BABYLON.ECullingType.BACK) {
@@ -1165,8 +1311,10 @@ var BABYLON;
                     }
                 }
             }
-        }
-    };
+        };
+        return GLTFFileLoaderBase;
+    }());
+    BABYLON.GLTFFileLoaderBase = GLTFFileLoaderBase;
     /**
     * glTF File Loader Plugin
     */
@@ -1192,7 +1340,7 @@ var BABYLON;
         */
         GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onError) {
             var _this = this;
-            var gltfRuntime = loadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
+            var gltfRuntime = BABYLON.GLTFFileLoaderExtension.loadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
                 gltfRuntime.importOnlyMeshes = true;
                 if (meshesNames === "") {
                     gltfRuntime.importMeshesNames = [];
@@ -1226,7 +1374,7 @@ var BABYLON;
                 }
                 // Load shaders and then buffers
                 _this._loadShadersAsync(gltfRuntime, function () {
-                    onShadersLoaded(gltfRuntime);
+                    importMaterials(gltfRuntime);
                     _this._loadBuffersAsync(gltfRuntime, function () {
                         onBuffersLoaded(gltfRuntime);
                     });
@@ -1242,12 +1390,12 @@ var BABYLON;
         */
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onError) {
             var _this = this;
-            loadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
+            BABYLON.GLTFFileLoaderExtension.loadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
                 // Create nodes
                 _this._createNodes(gltfRuntime);
                 // Load shaders and then buffers
                 _this._loadShadersAsync(gltfRuntime, function () {
-                    onShadersLoaded(gltfRuntime);
+                    importMaterials(gltfRuntime);
                     _this._loadBuffersAsync(gltfRuntime, function () {
                         onBuffersLoaded(gltfRuntime);
                     });
@@ -1259,9 +1407,9 @@ var BABYLON;
         GLTFFileLoader.prototype._loadShadersAsync = function (gltfRuntime, onload) {
             var hasShaders = false;
             var processShader = function (sha, shader) {
-                loadShaderStringAsync(gltfRuntime, shader, function (shaderString) {
+                BABYLON.GLTFFileLoaderExtension.loadShaderDataAsync(gltfRuntime, sha, function (shaderData) {
                     gltfRuntime.loadedShaderCount++;
-                    BABYLON.Effect.ShadersStore[sha + (shader.type === BABYLON.EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderString;
+                    BABYLON.Effect.ShadersStore[sha + (shader.type === BABYLON.EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderData;
                     if (gltfRuntime.loadedShaderCount === gltfRuntime.shaderscount) {
                         onload();
                     }
@@ -1287,7 +1435,7 @@ var BABYLON;
         GLTFFileLoader.prototype._loadBuffersAsync = function (gltfRuntime, onload) {
             var hasBuffers = false;
             var processBuffer = function (buf, buffer) {
-                loadBufferAsync(gltfRuntime, buffer, function (bufferView) {
+                BABYLON.GLTFFileLoaderExtension.loadBufferAsync(gltfRuntime, buf, function (bufferView) {
                     gltfRuntime.loadedBufferCount++;
                     if (bufferView.byteLength != gltfRuntime.buffers[buf].byteLength) {
                         BABYLON.Tools.Error("Buffer named " + buf + " is length " + bufferView.byteLength + ". Expected: " + buffer.byteLength); // Improve error message
@@ -1520,177 +1668,6 @@ var BABYLON;
             }
             return result;
         };
-        /**
-         * Loads a texture from its name
-         * @param gltfRuntime: the gltf runtime
-         * @param name: the name of the texture
-         */
-        GLTFUtils.LoadTextureAsync = function (gltfRuntime, texture, onSuccess, onError) {
-            if (!texture || !texture.source) {
-                onError();
-                return;
-            }
-            if (texture.babylonTexture) {
-                onSuccess(texture.babylonTexture);
-                return;
-            }
-            var sampler = gltfRuntime.samplers[texture.sampler];
-            var source = gltfRuntime.images[texture.source];
-            var newTexture;
-            var createMipMaps = (sampler.minFilter === BABYLON.ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
-                (sampler.minFilter === BABYLON.ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
-                (sampler.minFilter === BABYLON.ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
-                (sampler.minFilter === BABYLON.ETextureFilterType.LINEAR_MIPMAP_LINEAR);
-            var samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE;
-            if (GLTFUtils.IsBase64(source.uri)) {
-                newTexture = new BABYLON.Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, function () { return onSuccess(newTexture); }, onError, source.uri, true);
-            }
-            else {
-                newTexture = new BABYLON.Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, function () { return onSuccess(newTexture); }, onError);
-            }
-            newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
-            newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
-            newTexture.name = name;
-            texture.babylonTexture = newTexture;
-        };
-        GLTFUtils.LoadShaderAsync = function (gltfRuntime, shader, onSuccess, onError) {
-            if (GLTFUtils.IsBase64(shader.uri)) {
-                var shaderString = atob(shader.uri.split(",")[1]);
-                onSuccess(shaderString);
-            }
-            else {
-                BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, null, null, false, onError);
-            }
-        };
-        /**
-        * Decode array buffer from base64
-        */
-        GLTFUtils.DecodeArrayBuffer = function (base64) {
-            var decodedString = atob(base64);
-            var bufferLength = decodedString.length;
-            var arraybuffer = new Uint8Array(new ArrayBuffer(bufferLength));
-            for (var i = 0; i < bufferLength; i++) {
-                arraybuffer[i] = decodedString.charCodeAt(i);
-            }
-            return arraybuffer.buffer;
-        };
-        ;
-        GLTFUtils.LoadBufferAsync = function (gltfRuntime, buffer, onSuccess, onError) {
-            if (GLTFUtils.IsBase64(buffer.uri)) {
-                var decodedBuffer = GLTFUtils.DecodeArrayBuffer(buffer.uri.split(",")[1]);
-                onSuccess(new Uint8Array(decodedBuffer));
-            }
-            else {
-                BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, function (data) { return onSuccess(new Uint8Array(data)); }, null, null, true, onError);
-            }
-        };
-        GLTFUtils.ParseObject = function (parsedObjects, runtimeProperty, gltfRuntime) {
-            for (var object in parsedObjects) {
-                var parsedObject = parsedObjects[object];
-                gltfRuntime[runtimeProperty][object] = parsedObject;
-            }
-        };
-        GLTFUtils.ParseBuffers = function (parsedBuffers, gltfRuntime) {
-            for (var buf in parsedBuffers) {
-                var parsedBuffer = parsedBuffers[buf];
-                gltfRuntime.buffers[buf] = parsedBuffer;
-                gltfRuntime.buffersCount++;
-            }
-        };
-        GLTFUtils.ParseShaders = function (parsedShaders, gltfRuntime) {
-            for (var sha in parsedShaders) {
-                var parsedShader = parsedShaders[sha];
-                gltfRuntime.shaders[sha] = parsedShader;
-                gltfRuntime.shaderscount++;
-            }
-        };
-        GLTFUtils.CreateGlTFRuntime = function (parsedData, scene, rootUrl) {
-            var gltfRuntime = {
-                accessors: {},
-                buffers: {},
-                bufferViews: {},
-                meshes: {},
-                lights: {},
-                cameras: {},
-                nodes: {},
-                images: {},
-                textures: {},
-                shaders: {},
-                programs: {},
-                samplers: {},
-                techniques: {},
-                materials: {},
-                animations: {},
-                skins: {},
-                currentScene: {},
-                extensionsUsed: [],
-                buffersCount: 0,
-                shaderscount: 0,
-                scene: scene,
-                rootUrl: rootUrl,
-                loadedBufferCount: 0,
-                loadedBufferViews: {},
-                loadedShaderCount: 0,
-                importOnlyMeshes: false,
-                dummyNodes: []
-            };
-            // Parse
-            if (parsedData.extensionsUsed) {
-                GLTFUtils.ParseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
-            }
-            if (parsedData.buffers) {
-                GLTFUtils.ParseBuffers(parsedData.buffers, gltfRuntime);
-            }
-            if (parsedData.bufferViews) {
-                GLTFUtils.ParseObject(parsedData.bufferViews, "bufferViews", gltfRuntime);
-            }
-            if (parsedData.accessors) {
-                GLTFUtils.ParseObject(parsedData.accessors, "accessors", gltfRuntime);
-            }
-            if (parsedData.meshes) {
-                GLTFUtils.ParseObject(parsedData.meshes, "meshes", gltfRuntime);
-            }
-            if (parsedData.lights) {
-                GLTFUtils.ParseObject(parsedData.lights, "lights", gltfRuntime);
-            }
-            if (parsedData.cameras) {
-                GLTFUtils.ParseObject(parsedData.cameras, "cameras", gltfRuntime);
-            }
-            if (parsedData.nodes) {
-                GLTFUtils.ParseObject(parsedData.nodes, "nodes", gltfRuntime);
-            }
-            if (parsedData.images) {
-                GLTFUtils.ParseObject(parsedData.images, "images", gltfRuntime);
-            }
-            if (parsedData.textures) {
-                GLTFUtils.ParseObject(parsedData.textures, "textures", gltfRuntime);
-            }
-            if (parsedData.shaders) {
-                GLTFUtils.ParseShaders(parsedData.shaders, gltfRuntime);
-            }
-            if (parsedData.programs) {
-                GLTFUtils.ParseObject(parsedData.programs, "programs", gltfRuntime);
-            }
-            if (parsedData.samplers) {
-                GLTFUtils.ParseObject(parsedData.samplers, "samplers", gltfRuntime);
-            }
-            if (parsedData.techniques) {
-                GLTFUtils.ParseObject(parsedData.techniques, "techniques", gltfRuntime);
-            }
-            if (parsedData.materials) {
-                GLTFUtils.ParseObject(parsedData.materials, "materials", gltfRuntime);
-            }
-            if (parsedData.animations) {
-                GLTFUtils.ParseObject(parsedData.animations, "animations", gltfRuntime);
-            }
-            if (parsedData.skins) {
-                GLTFUtils.ParseObject(parsedData.skins, "skins", gltfRuntime);
-            }
-            if (parsedData.scene && parsedData.scenes) {
-                gltfRuntime.currentScene = parsedData.scenes[parsedData.scene];
-            }
-            return gltfRuntime;
-        };
         return GLTFUtils;
     }());
     BABYLON.GLTFUtils = GLTFUtils;
@@ -1711,31 +1688,85 @@ var BABYLON;
         });
         /**
         * Defines an override for loading the runtime
-        * Return true to stop further extensions from processing this buffer
+        * Return true to stop further extensions from loading the runtime
         */
         GLTFFileLoaderExtension.prototype.loadRuntimeAsync = function (scene, data, rootUrl, onSuccess, onError) {
             return false;
         };
         /**
         * Defines an override for loading buffers
-        * Return true to stop further extensions from processing this buffer
+        * Return true to stop further extensions from loading this buffer
         */
-        GLTFFileLoaderExtension.prototype.loadBufferAsync = function (gltfRuntime, bufferName, onSuccess, onError) {
+        GLTFFileLoaderExtension.prototype.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
             return false;
         };
         /**
         * Defines an override for loading textures
-        * Return true to stop further extensions from processing this texture
+        * Return true to stop further extensions from loading this texture
         */
-        GLTFFileLoaderExtension.prototype.loadTextureAsync = function (gltfRuntime, texture, onSuccess, onError) {
+        GLTFFileLoaderExtension.prototype.loadTextureAsync = function (gltfRuntime, id, onSuccess, onError) {
             return false;
         };
         /**
-        * Defines an override for loading shader strings
-        * Return true to stop further extensions from processing this shader
+        * Defines an override for loading shader data
+        * Return true to stop further extensions from loading this shader data
         */
-        GLTFFileLoaderExtension.prototype.loadShaderStringAsync = function (gltfRuntime, shader, onSuccess, onError) {
+        GLTFFileLoaderExtension.prototype.loadShaderDataAsync = function (gltfRuntime, id, onSuccess, onError) {
             return false;
+        };
+        /**
+        * Defines an override for loading materials
+        * Return true to stop further extensions from loading this material
+        */
+        GLTFFileLoaderExtension.prototype.loadMaterialAsync = function (gltfRuntime, id, onSuccess, onError) {
+            return false;
+        };
+        // ---------
+        // Utilities
+        // ---------
+        GLTFFileLoaderExtension.loadRuntimeAsync = function (scene, data, rootUrl, onSuccess, onError) {
+            GLTFFileLoaderExtension.applyExtensions(function (loaderExtension) {
+                return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
+            }, function () {
+                onSuccess(BABYLON.GLTFFileLoaderBase.createRuntime(JSON.parse(data), scene, rootUrl));
+            });
+        };
+        GLTFFileLoaderExtension.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
+            GLTFFileLoaderExtension.applyExtensions(function (loaderExtension) {
+                return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError);
+            }, function () {
+                BABYLON.GLTFFileLoaderBase.loadBufferAsync(gltfRuntime, id, onSuccess, onError);
+            });
+        };
+        GLTFFileLoaderExtension.loadTextureAsync = function (gltfRuntime, id, onSuccess, onError) {
+            GLTFFileLoaderExtension.applyExtensions(function (loaderExtension) {
+                return loaderExtension.loadTextureAsync(gltfRuntime, id, onSuccess, onError);
+            }, function () {
+                BABYLON.GLTFFileLoaderBase.loadTextureAsync(gltfRuntime, id, onSuccess, onError);
+            });
+        };
+        GLTFFileLoaderExtension.loadShaderDataAsync = function (gltfRuntime, id, onSuccess, onError) {
+            GLTFFileLoaderExtension.applyExtensions(function (loaderExtension) {
+                return loaderExtension.loadShaderDataAsync(gltfRuntime, id, onSuccess, onError);
+            }, function () {
+                BABYLON.GLTFFileLoaderBase.loadShaderDataAsync(gltfRuntime, id, onSuccess, onError);
+            });
+        };
+        GLTFFileLoaderExtension.loadMaterialAsync = function (gltfRuntime, id, onSuccess, onError) {
+            GLTFFileLoaderExtension.applyExtensions(function (loaderExtension) {
+                return loaderExtension.loadMaterialAsync(gltfRuntime, id, onSuccess, onError);
+            }, function () {
+                BABYLON.GLTFFileLoaderBase.loadMaterialAsync(gltfRuntime, id, onSuccess, onError);
+            });
+        };
+        GLTFFileLoaderExtension.applyExtensions = function (func, defaultFunc) {
+            for (var extensionName in BABYLON.GLTFFileLoader.Extensions) {
+                var loaderExtension = BABYLON.GLTFFileLoader.Extensions[extensionName];
+                if (func(loaderExtension)) {
+                    return;
+                }
+            }
+            defaultFunc();
         };
         return GLTFFileLoaderExtension;
     }());
@@ -1772,22 +1803,27 @@ var BABYLON;
                 onError();
                 return true;
             }
-            var gltfRuntime = BABYLON.GLTFUtils.CreateGlTFRuntime(binary.content, scene, rootUrl);
-            if (gltfRuntime.extensionsUsed.indexOf(this.name) == -1) {
+            var gltfRuntime = BABYLON.GLTFFileLoaderBase.createRuntime(binary.content, scene, rootUrl);
+            if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
                 BABYLON.Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
+                gltfRuntime.extensionsUsed.push(this.name);
             }
             gltfRuntime.loadedBufferViews[BinaryExtensionBufferName] = binary.body;
             onSuccess(gltfRuntime);
             return true;
         };
-        GLTFBinaryExtension.prototype.loadBufferAsync = function (gltfRuntime, buffer, onSuccess, onError) {
-            if (gltfRuntime.extensionsUsed.indexOf(this.name) == -1) {
+        GLTFBinaryExtension.prototype.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
+            if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
+                return false;
+            }
+            if (id !== BinaryExtensionBufferName) {
                 return false;
             }
             onSuccess(gltfRuntime.loadedBufferViews[BinaryExtensionBufferName]);
             return true;
         };
-        GLTFBinaryExtension.prototype.loadTextureAsync = function (gltfRuntime, texture, onSuccess, onError) {
+        GLTFBinaryExtension.prototype.loadTextureAsync = function (gltfRuntime, id, onSuccess, onError) {
+            var texture = gltfRuntime.textures[id];
             var source = gltfRuntime.images[texture.source];
             if (!source.extensions || !(this.name in source.extensions)) {
                 return false;
@@ -1812,15 +1848,16 @@ var BABYLON;
             onSuccess(newTexture);
             return true;
         };
-        GLTFBinaryExtension.prototype.loadShaderStringAsync = function (gltfRuntime, shader, onSuccess, onError) {
+        GLTFBinaryExtension.prototype.loadShaderDataAsync = function (gltfRuntime, id, onSuccess, onError) {
+            var shader = gltfRuntime.shaders[id];
             if (!shader.extensions || !(this.name in shader.extensions)) {
                 return false;
             }
             var binaryExtensionShader = shader.extensions[this.name];
             var bufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
             var shaderBytes = BABYLON.GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, BABYLON.EComponentType.UNSIGNED_BYTE);
-            var shaderString = BABYLON.GLTFUtils.DecodeBufferToText(shaderBytes);
-            onSuccess(shaderString);
+            var shaderData = BABYLON.GLTFUtils.DecodeBufferToText(shaderBytes);
+            onSuccess(shaderData);
             return true;
         };
         // Parses a glTF binary array buffer into its content and body

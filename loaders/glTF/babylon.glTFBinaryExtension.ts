@@ -37,10 +37,11 @@
                 return true;
             }
 
-            var gltfRuntime = GLTFUtils.CreateGlTFRuntime(binary.content, scene, rootUrl);
+            var gltfRuntime = GLTFFileLoaderBase.createRuntime(binary.content, scene, rootUrl);
 
-            if (gltfRuntime.extensionsUsed.indexOf(this.name) == -1) {
+            if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
                 Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
+                gltfRuntime.extensionsUsed.push(this.name);
             }
 
             gltfRuntime.loadedBufferViews[BinaryExtensionBufferName] = binary.body;
@@ -49,8 +50,12 @@
             return true;
         }
 
-        public loadBufferAsync(gltfRuntime: IGLTFRuntime, buffer: IGLTFBuffer, onSuccess: (data: ArrayBufferView) => void, onError: () => void): boolean {
-            if (gltfRuntime.extensionsUsed.indexOf(this.name) == -1) {
+        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): boolean {
+            if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
+                return false;
+            }
+
+            if (id !== BinaryExtensionBufferName) {
                 return false;
             }
 
@@ -58,7 +63,8 @@
             return true;
         }
 
-        public loadTextureAsync(gltfRuntime: IGLTFRuntime, texture: IGLTFTexture, onSuccess: (texture: Texture) => void, onError: () => void): boolean {
+        public loadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: () => void): boolean {
+            var texture: IGLTFTexture = gltfRuntime.textures[id];
             var source: IGLTFImage = gltfRuntime.images[texture.source];
             if (!source.extensions || !(this.name in source.extensions)) {
                 return false;
@@ -91,7 +97,8 @@
             return true;
         }
 
-        public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, shader: IGLTFShader, onSuccess: (shaderString: string) => void, onError: () => void): boolean {
+        public loadShaderDataAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: () => void): boolean {
+            var shader: IGLTFShader = gltfRuntime.shaders[id];
             if (!shader.extensions || !(this.name in shader.extensions)) {
                 return false;
             }
@@ -99,8 +106,8 @@
             var binaryExtensionShader: IGLTFBinaryExtensionShader = shader.extensions[this.name];
             var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
             var shaderBytes = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
-            var shaderString = GLTFUtils.DecodeBufferToText(shaderBytes);
-            onSuccess(shaderString);
+            var shaderData = GLTFUtils.DecodeBufferToText(shaderBytes);
+            onSuccess(shaderData);
             return true;
         }
 
