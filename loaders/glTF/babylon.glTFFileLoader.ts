@@ -70,6 +70,32 @@
     var babylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
 
     /**
+    * Parse
+    */
+    var parseBuffers = (parsedBuffers: any, gltfRuntime: IGLTFRuntime) => {
+        for (var buf in parsedBuffers) {
+            var parsedBuffer = parsedBuffers[buf];
+            gltfRuntime.buffers[buf] = parsedBuffer;
+            gltfRuntime.buffersCount++;
+        }
+    };
+
+    var parseShaders = (parsedShaders: any, gltfRuntime: IGLTFRuntime) => {
+        for (var sha in parsedShaders) {
+            var parsedShader = parsedShaders[sha];
+            gltfRuntime.shaders[sha] = parsedShader;
+            gltfRuntime.shaderscount++;
+        }
+    };
+
+    var parseObject = (parsedObjects: any, runtimeProperty: string, gltfRuntime: IGLTFRuntime) => {
+        for (var object in parsedObjects) {
+            var parsedObject = parsedObjects[object];
+            gltfRuntime[runtimeProperty][object] = parsedObject;
+        }
+    };
+
+    /**
     * Utils
     */
     var normalizeUVs = (buffer: any) => {
@@ -106,49 +132,6 @@
             return "uv" + (channel === 0 ? "" : channel + 1);
         }
     };
-
-    var applyExtensions = <ObjectT extends Object>(func: (loaderExtension: GLTFFileLoaderExtension) => boolean, defaultFunc: () => void): void => {
-        for (var extensionName in GLTFFileLoader.Extensions) {
-            var loaderExtension = GLTFFileLoader.Extensions[extensionName];
-            if (func(loaderExtension)) {
-                return;
-            }
-        }
-
-        defaultFunc();
-    }
-
-    var loadRuntimeAsync = (scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void => {
-        applyExtensions<IGLTFRuntime>(loaderExtension => {
-            return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
-        }, () => {
-            onSuccess(GLTFUtils.CreateGlTFRuntime(JSON.parse(<string>data), scene, rootUrl));
-        });
-    }
-
-    var loadBufferAsync = (gltfRuntime: IGLTFRuntime, buffer: IGLTFBuffer, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): void => {
-        applyExtensions<Texture>(loaderExtension => {
-            return loaderExtension.loadBufferAsync(gltfRuntime, buffer, onSuccess, onError);
-        }, () => {
-            GLTFUtils.LoadBufferAsync(gltfRuntime, buffer, onSuccess, onError);
-        });
-    }
-
-    var loadTextureAsync = (gltfRuntime: IGLTFRuntime, texture: IGLTFTexture, onSuccess: (texture: Texture) => void, onError: () => void): void => {
-        applyExtensions<Texture>(loaderExtension => {
-            return loaderExtension.loadTextureAsync(gltfRuntime, texture, onSuccess, onError);
-        }, () => {
-            GLTFUtils.LoadTextureAsync(gltfRuntime, texture, onSuccess, onError);
-        });
-    }
-
-    var loadShaderStringAsync = (gltfRuntime: IGLTFRuntime, shader: IGLTFShader, onSuccess: (shaderString: string) => void, onError: () => void): void => {
-        applyExtensions<Texture>(loaderExtension => {
-            return loaderExtension.loadShaderStringAsync(gltfRuntime, shader, onSuccess, onError);
-        }, () => {
-            GLTFUtils.LoadShaderAsync(gltfRuntime, shader, onSuccess, onError);
-        });
-    }
 
     /**
     * Returns the animation path (glTF -> Babylon)
@@ -1025,9 +1008,24 @@
     };
 
     /**
+    * Decode array buffer from base64
+    */
+    var decodeArrayBuffer = (base64: string): ArrayBuffer => {
+        var decodedString = atob(base64);
+        var bufferLength = decodedString.length;
+        var arraybuffer = new Uint8Array(new ArrayBuffer(bufferLength));
+
+        for (var i = 0; i < bufferLength; i++) {
+            arraybuffer[i] = decodedString.charCodeAt(i);
+        }
+
+        return arraybuffer.buffer;
+    };
+
+    /**
     * onBind shaderrs callback to set uniforms and matrices
     */
-    var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: Object, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial) => {
+    var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: Object, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
         for (var unif in unTreatedUniforms) {
             var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
             var type = uniform.type;
@@ -1068,6 +1066,8 @@
                 }
             }
         }
+
+        onSuccess(shaderMaterial);
     };
 
     /**
@@ -1100,7 +1100,7 @@
 
             // Texture (sampler2D)
             if (type === EParameterType.SAMPLER_2D) {
-                loadTextureAsync(gltfRuntime, gltfRuntime.textures[<string>value], onLoadTexture, () => onLoadTexture(null));
+                GLTFFileLoaderExtension.loadTextureAsync(gltfRuntime, <string>value, onLoadTexture, () => onLoadTexture(null));
             }
             // Others
             else {
@@ -1115,22 +1115,23 @@
     /**
     * Shader compilation failed
     */
-    var onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMaterial) => {
+    var onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMaterial, onError: () => void) => {
         return (effect: Effect, error: string) => {
             Tools.Error("Cannot compile program named " + program.name + ". Error: " + error + ". Default material will be applied");
             shaderMaterial.dispose(true);
+            onError();
         };
     };
 
     /**
     * Shader compilation success
     */
-    var onShaderCompileSuccess = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: Object) => {
+    var onShaderCompileSuccess = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: Object, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
         return (_: Effect) => {
             prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
 
             shaderMaterial.onBind = (mesh: Mesh) => {
-                onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material);
+                onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material, onSuccess);
             };
         };
     };
@@ -1161,11 +1162,195 @@
     /**
     * All shaders loaded. Create materials one by one
     */
-    var onShadersLoaded = (gltfRuntime: IGLTFRuntime) => {
+    var importMaterials = (gltfRuntime: IGLTFRuntime) => {
         // Create materials
         for (var mat in gltfRuntime.materials) {
-            var material: IGLTFMaterial = gltfRuntime.materials[mat];
+            GLTFFileLoaderExtension.loadMaterialAsync(gltfRuntime, mat, (material: Material) => { }, () => { });
+        }
+    };
 
+    /**
+    * Implementation of the base glTF spec
+    */
+    export class GLTFFileLoaderBase {
+        public static createRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime {
+            var gltfRuntime: IGLTFRuntime = {
+                accessors: {},
+                buffers: {},
+                bufferViews: {},
+                meshes: {},
+                lights: {},
+                cameras: {},
+                nodes: {},
+                images: {},
+                textures: {},
+                shaders: {},
+                programs: {},
+                samplers: {},
+                techniques: {},
+                materials: {},
+                animations: {},
+                skins: {},
+                currentScene: {},
+                extensionsUsed: [],
+
+                buffersCount: 0,
+                shaderscount: 0,
+
+                scene: scene,
+                rootUrl: rootUrl,
+
+                loadedBufferCount: 0,
+                loadedBufferViews: {},
+
+                loadedShaderCount: 0,
+
+                importOnlyMeshes: false,
+
+                dummyNodes: []
+            }
+
+            // Parse
+            if (parsedData.extensionsUsed) {
+                parseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
+            }
+
+            if (parsedData.buffers) {
+                parseBuffers(parsedData.buffers, gltfRuntime);
+            }
+
+            if (parsedData.bufferViews) {
+                parseObject(parsedData.bufferViews, "bufferViews", gltfRuntime);
+            }
+
+            if (parsedData.accessors) {
+                parseObject(parsedData.accessors, "accessors", gltfRuntime);
+            }
+
+            if (parsedData.meshes) {
+                parseObject(parsedData.meshes, "meshes", gltfRuntime);
+            }
+
+            if (parsedData.lights) {
+                parseObject(parsedData.lights, "lights", gltfRuntime);
+            }
+
+            if (parsedData.cameras) {
+                parseObject(parsedData.cameras, "cameras", gltfRuntime);
+            }
+
+            if (parsedData.nodes) {
+                parseObject(parsedData.nodes, "nodes", gltfRuntime);
+            }
+
+            if (parsedData.images) {
+                parseObject(parsedData.images, "images", gltfRuntime);
+            }
+
+            if (parsedData.textures) {
+                parseObject(parsedData.textures, "textures", gltfRuntime);
+            }
+
+            if (parsedData.shaders) {
+                parseShaders(parsedData.shaders, gltfRuntime);
+            }
+
+            if (parsedData.programs) {
+                parseObject(parsedData.programs, "programs", gltfRuntime);
+            }
+
+            if (parsedData.samplers) {
+                parseObject(parsedData.samplers, "samplers", gltfRuntime);
+            }
+
+            if (parsedData.techniques) {
+                parseObject(parsedData.techniques, "techniques", gltfRuntime);
+            }
+
+            if (parsedData.materials) {
+                parseObject(parsedData.materials, "materials", gltfRuntime);
+            }
+
+            if (parsedData.animations) {
+                parseObject(parsedData.animations, "animations", gltfRuntime);
+            }
+
+            if (parsedData.skins) {
+                parseObject(parsedData.skins, "skins", gltfRuntime);
+            }
+
+            if (parsedData.scene && parsedData.scenes) {
+                gltfRuntime.currentScene = parsedData.scenes[parsedData.scene];
+            }
+
+            return gltfRuntime;
+        }
+
+        public static loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): void {
+            var buffer: IGLTFBuffer = gltfRuntime.buffers[id];
+
+            if (GLTFUtils.IsBase64(buffer.uri)) {
+                var decodedBuffer = decodeArrayBuffer(buffer.uri.split(",")[1]);
+                onSuccess(new Uint8Array(decodedBuffer));
+            }
+            else {
+                Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data)), null, null, true, onError);
+            }
+        }
+
+        public static loadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: () => void): void {
+            var texture: IGLTFTexture = gltfRuntime.textures[id];
+
+            if (!texture || !texture.source) {
+                onError();
+                return;
+            }
+
+            if (texture.babylonTexture) {
+                onSuccess(texture.babylonTexture);
+                return;
+            }
+
+            var sampler: IGLTFSampler = gltfRuntime.samplers[texture.sampler];
+            var source: IGLTFImage = gltfRuntime.images[texture.source];
+            var newTexture: Texture;
+
+            var createMipMaps =
+                (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
+                (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
+                (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
+                (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR);
+
+            var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
+
+            if (GLTFUtils.IsBase64(source.uri)) {
+                newTexture = new Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, () => onSuccess(newTexture), onError, source.uri, true);
+            }
+            else {
+                newTexture = new Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, () => onSuccess(newTexture), onError);
+            }
+
+            newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
+            newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
+            newTexture.name = name;
+
+            texture.babylonTexture = newTexture;
+        }
+
+        public static loadShaderDataAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: () => void): void {
+            var shader: IGLTFShader = gltfRuntime.shaders[id];
+
+            if (GLTFUtils.IsBase64(shader.uri)) {
+                var shaderData = atob(shader.uri.split(",")[1]);
+                onSuccess(shaderData);
+            }
+            else {
+                Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, null, null, false, onError);
+            }
+        }
+
+        public static loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): void {
+            var material: IGLTFMaterial = gltfRuntime.materials[id];
             var technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
 
             var program: IGLTFProgram = gltfRuntime.programs[technique.program];
@@ -1261,8 +1446,8 @@
 
             // Create shader material
             var shaderPath = {
-                vertex: program.vertexShader + mat,
-                fragment: program.fragmentShader + mat
+                vertex: program.vertexShader + id,
+                fragment: program.fragmentShader + id
             };
 
             var options = {
@@ -1272,13 +1457,13 @@
                 needAlphaBlending: states.functions && states.functions.blendEquationSeparate
             };
 
-            Effect.ShadersStore[program.vertexShader + mat + "VertexShader"] = newVertexShader;
-            Effect.ShadersStore[program.fragmentShader + mat + "PixelShader"] = newPixelShader;
+            Effect.ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
+            Effect.ShadersStore[program.fragmentShader + id + "PixelShader"] = newPixelShader;
 
             var shaderMaterial = new ShaderMaterial(material.name, gltfRuntime.scene, shaderPath, options);
-            shaderMaterial.id = mat;
-            shaderMaterial.onError = onShaderCompileError(program, shaderMaterial);
-            shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
+            shaderMaterial.id = id;
+            shaderMaterial.onError = onShaderCompileError(program, shaderMaterial, onError);
+            shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
 
             if (states.functions) {
                 var functions = states.functions;
@@ -1309,7 +1494,7 @@
                 }
             }
         }
-    };
+    }
 
     /**
     * glTF File Loader Plugin
@@ -1349,7 +1534,7 @@
         * Import meshes
         */
         public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError?: () => void): boolean {
-            var gltfRuntime = loadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
+            var gltfRuntime = GLTFFileLoaderExtension.loadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
                 gltfRuntime.importOnlyMeshes = true;
 
                 if (meshesNames === "") {
@@ -1391,7 +1576,7 @@
 
                 // Load shaders and then buffers
                 this._loadShadersAsync(gltfRuntime, () => {
-                    onShadersLoaded(gltfRuntime);
+                    importMaterials(gltfRuntime);
                     this._loadBuffersAsync(gltfRuntime, () => {
                         onBuffersLoaded(gltfRuntime);
                     });
@@ -1409,13 +1594,13 @@
         * Load scene
         */
         public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): boolean {
-            loadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
+            GLTFFileLoaderExtension.loadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
                 // Create nodes
                 this._createNodes(gltfRuntime);
 
                 // Load shaders and then buffers
                 this._loadShadersAsync(gltfRuntime, () => {
-                    onShadersLoaded(gltfRuntime);
+                    importMaterials(gltfRuntime);
                     this._loadBuffersAsync(gltfRuntime, () => {
                         onBuffersLoaded(gltfRuntime);
                     });
@@ -1431,9 +1616,9 @@
             var hasShaders = false;
 
             var processShader = (sha: string, shader: IGLTFShader) => {
-                loadShaderStringAsync(gltfRuntime, shader, shaderString => {
+                GLTFFileLoaderExtension.loadShaderDataAsync(gltfRuntime, sha, shaderData => {
                     gltfRuntime.loadedShaderCount++;
-                    Effect.ShadersStore[sha + (shader.type === EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderString;
+                    Effect.ShadersStore[sha + (shader.type === EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderData;
                     if (gltfRuntime.loadedShaderCount === gltfRuntime.shaderscount) {
                         onload();
                     }
@@ -1463,7 +1648,7 @@
             var hasBuffers = false;
 
             var processBuffer = (buf: string, buffer: IGLTFBuffer) => {
-                loadBufferAsync(gltfRuntime, buffer, bufferView => {
+                GLTFFileLoaderExtension.loadBufferAsync(gltfRuntime, buf, bufferView => {
                     gltfRuntime.loadedBufferCount++;
 
                     if (bufferView.byteLength != gltfRuntime.buffers[buf].byteLength) {
