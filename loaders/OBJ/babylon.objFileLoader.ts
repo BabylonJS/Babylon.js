@@ -229,11 +229,11 @@ module BABYLON {
             var pathOfFile = BABYLON.Tools.BaseUrl + rootUrl + url;
 
             // Loads through the babylon tools to allow fileInput search.
-            BABYLON.Tools.LoadFile(pathOfFile,
-                onSuccess,
-                null,
-                null,
-                false,
+            BABYLON.Tools.LoadFile(pathOfFile, 
+                onSuccess, 
+                null, 
+                null, 
+                false, 
                 () => { console.warn("Error - Unable to load " + pathOfFile); });
         }
 
