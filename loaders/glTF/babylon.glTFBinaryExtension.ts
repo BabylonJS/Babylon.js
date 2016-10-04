@@ -59,7 +59,8 @@
                 return false;
             }
 
-            onSuccess(gltfRuntime.loadedBufferViews[BinaryExtensionBufferName]);
+            // Buffer is already loaded in loadRuntimeAsync
+            onSuccess(null);
             return true;
         }
 
