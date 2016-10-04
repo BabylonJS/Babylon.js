@@ -678,7 +678,6 @@ var BABYLON;
         }
         // Apply geometry
         geometry.setAllVerticesData(vertexData, false);
-        newMesh.flipFaces(true);
         newMesh.computeWorldMatrix(true);
         // Apply submeshes
         newMesh.subMeshes = [];
@@ -1283,6 +1282,7 @@ var BABYLON;
             var shaderMaterial = new BABYLON.ShaderMaterial(id, gltfRuntime.scene, shaderPath, options);
             shaderMaterial.onError = onShaderCompileError(program, shaderMaterial, onError);
             shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
+            shaderMaterial.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
             if (states.functions) {
                 var functions = states.functions;
                 if (functions.cullFace && functions.cullFace[0] !== BABYLON.ECullingType.BACK) {
@@ -1339,6 +1339,7 @@ var BABYLON;
         */
         GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onError) {
             var _this = this;
+            scene.useRightHandedSystem = true;
             var gltfRuntime = BABYLON.GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
                 gltfRuntime.importOnlyMeshes = true;
                 if (meshesNames === "") {
@@ -1389,6 +1390,7 @@ var BABYLON;
         */
         GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onSuccess, onError) {
             var _this = this;
+            scene.useRightHandedSystem = true;
             BABYLON.GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
                 // Create nodes
                 _this._createNodes(gltfRuntime);
