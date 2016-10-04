@@ -653,7 +653,7 @@
             }
 
             //Detect if we are running on a faulty buggy OS.
-            var regexp = /iPhone.*10.[\d] Mobile/
+            var regexp = /AppleWebKit.*10.[\d] Mobile/
             //ua sniffing is the tool of the devil.
             this._badOS = regexp.test(navigator.userAgent);
 
