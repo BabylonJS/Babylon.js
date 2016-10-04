@@ -1332,7 +1332,7 @@
 
             newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
             newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
-            newTexture.name = name;
+            newTexture.name = id;
 
             texture.babylonTexture = newTexture;
         }
@@ -1460,8 +1460,7 @@
             Effect.ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
             Effect.ShadersStore[program.fragmentShader + id + "PixelShader"] = newPixelShader;
 
-            var shaderMaterial = new ShaderMaterial(material.name, gltfRuntime.scene, shaderPath, options);
-            shaderMaterial.id = id;
+            var shaderMaterial = new ShaderMaterial(id, gltfRuntime.scene, shaderPath, options);
             shaderMaterial.onError = onShaderCompileError(program, shaderMaterial, onError);
             shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
 
@@ -1618,7 +1617,11 @@
             var processShader = (sha: string, shader: IGLTFShader) => {
                 GLTFFileLoaderExtension.loadShaderDataAsync(gltfRuntime, sha, shaderData => {
                     gltfRuntime.loadedShaderCount++;
-                    Effect.ShadersStore[sha + (shader.type === EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderData;
+
+                    if (shaderData) {
+                        Effect.ShadersStore[sha + (shader.type === EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderData;
+                    }
+
                     if (gltfRuntime.loadedShaderCount === gltfRuntime.shaderscount) {
                         onload();
                     }
@@ -1651,11 +1654,13 @@
                 GLTFFileLoaderExtension.loadBufferAsync(gltfRuntime, buf, bufferView => {
                     gltfRuntime.loadedBufferCount++;
 
-                    if (bufferView.byteLength != gltfRuntime.buffers[buf].byteLength) {
-                        Tools.Error("Buffer named " + buf + " is length " + bufferView.byteLength + ". Expected: " + buffer.byteLength); // Improve error message
-                    }
+                    if (bufferView) {
+                        if (bufferView.byteLength != gltfRuntime.buffers[buf].byteLength) {
+                            Tools.Error("Buffer named " + buf + " is length " + bufferView.byteLength + ". Expected: " + buffer.byteLength); // Improve error message
+                        }
 
-                    gltfRuntime.loadedBufferViews[buf] = bufferView;
+                        gltfRuntime.loadedBufferViews[buf] = bufferView;
+                    }
 
                     if (gltfRuntime.loadedBufferCount === gltfRuntime.buffersCount) {
                         onload();
