@@ -344,7 +344,15 @@
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
-        public defaultMaterial = new StandardMaterial("default material", this);
+        private _defaultMaterial: StandardMaterial;
+
+        public get defaultMaterial(): StandardMaterial {
+            if (!this._defaultMaterial) {
+                this._defaultMaterial = new StandardMaterial("default material", this);
+            }
+
+            return this._defaultMaterial;
+        }
 
         // Textures
         public texturesEnabled = true;

@@ -239,7 +239,6 @@ var BABYLON;
             this._geometries = new Array();
             this.materials = new Array();
             this.multiMaterials = new Array();
-            this.defaultMaterial = new BABYLON.StandardMaterial("default material", this);
             // Textures
             this.texturesEnabled = true;
             this.textures = new Array();
@@ -411,6 +410,16 @@ var BABYLON;
         Object.defineProperty(Scene.prototype, "unTranslatedPointer", {
             get: function () {
                 return new BABYLON.Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "defaultMaterial", {
+            get: function () {
+                if (!this._defaultMaterial) {
+                    this._defaultMaterial = new BABYLON.StandardMaterial("default material", this);
+                }
+                return this._defaultMaterial;
             },
             enumerable: true,
             configurable: true
