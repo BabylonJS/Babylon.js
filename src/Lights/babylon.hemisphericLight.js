@@ -27,12 +27,7 @@ var BABYLON;
         };
         HemisphericLight.prototype.transferToEffect = function (effect, directionUniformName, groundColorUniformName) {
             var normalizeDirection = BABYLON.Vector3.Normalize(this.direction);
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat4(directionUniformName, -normalizeDirection.x, -normalizeDirection.y, -normalizeDirection.z, 0);
-            }
-            else {
-                effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0);
-            }
+            effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0);
             effect.setColor3(groundColorUniformName, this.groundColor.scale(this.intensity));
         };
         HemisphericLight.prototype._getWorldMatrix = function () {

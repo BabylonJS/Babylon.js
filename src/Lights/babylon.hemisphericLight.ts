@@ -25,19 +25,13 @@
 
         public transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void {
             var normalizeDirection = Vector3.Normalize(this.direction);
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat4(directionUniformName,
-                    -normalizeDirection.x,
-                    -normalizeDirection.y,
-                    -normalizeDirection.z,
-                    0);
-            } else {
-                effect.setFloat4(directionUniformName,
-                    normalizeDirection.x,
-                    normalizeDirection.y,
-                    normalizeDirection.z,
-                    0);
-            }
+
+            effect.setFloat4(directionUniformName,
+                normalizeDirection.x,
+                normalizeDirection.y,
+                normalizeDirection.z,
+                0);
+
             effect.setColor3(groundColorUniformName, this.groundColor.scale(this.intensity));
         }
 

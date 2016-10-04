@@ -6773,7 +6773,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.5.-alpha";
+                return "2.5.-beta";
             },
             enumerable: true,
             configurable: true
@@ -11294,20 +11294,10 @@ var BABYLON;
         PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();
-                if (this.getScene().useRightHandedSystem) {
-                    effect.setFloat4(positionUniformName, -this.transformedPosition.x, -this.transformedPosition.y, -this.transformedPosition.z, 0);
-                }
-                else {
-                    effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
-                }
+                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
                 return;
             }
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat4(positionUniformName, -this.position.x, -this.position.y, -this.position.z, 0);
-            }
-            else {
-                effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
-            }
+            effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
         };
         PointLight.prototype.needCube = function () {
             return true;
@@ -11415,29 +11405,14 @@ var BABYLON;
                 }
                 this.computeTransformedPosition();
                 BABYLON.Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
-                if (this.getScene().useRightHandedSystem) {
-                    effect.setFloat4(positionUniformName, -this.transformedPosition.x, -this.transformedPosition.y, -this.transformedPosition.z, this.exponent);
-                }
-                else {
-                    effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent);
-                }
+                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent);
                 normalizeDirection = BABYLON.Vector3.Normalize(this._transformedDirection);
             }
             else {
-                if (this.getScene().useRightHandedSystem) {
-                    effect.setFloat4(positionUniformName, -this.position.x, -this.position.y, -this.position.z, this.exponent);
-                }
-                else {
-                    effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, this.exponent);
-                }
+                effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, this.exponent);
                 normalizeDirection = BABYLON.Vector3.Normalize(this.direction);
             }
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat4(directionUniformName, -normalizeDirection.x, -normalizeDirection.y, -normalizeDirection.z, Math.cos(this.angle * 0.5));
-            }
-            else {
-                effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(this.angle * 0.5));
-            }
+            effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(this.angle * 0.5));
         };
         SpotLight.prototype._getWorldMatrix = function () {
             if (!this._worldMatrix) {
@@ -11490,12 +11465,7 @@ var BABYLON;
         };
         HemisphericLight.prototype.transferToEffect = function (effect, directionUniformName, groundColorUniformName) {
             var normalizeDirection = BABYLON.Vector3.Normalize(this.direction);
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat4(directionUniformName, -normalizeDirection.x, -normalizeDirection.y, -normalizeDirection.z, 0);
-            }
-            else {
-                effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0);
-            }
+            effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0);
             effect.setColor3(groundColorUniformName, this.groundColor.scale(this.intensity));
         };
         HemisphericLight.prototype._getWorldMatrix = function () {
@@ -11614,12 +11584,7 @@ var BABYLON;
                 effect.setFloat4(directionUniformName, this._transformedDirection.x, this._transformedDirection.y, this._transformedDirection.z, 1);
                 return;
             }
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, -1);
-            }
-            else {
-                effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
-            }
+            effect.setFloat4(directionUniformName, this.direction.x, this.direction.y, this.direction.z, 1);
         };
         DirectionalLight.prototype._getWorldMatrix = function () {
             if (!this._worldMatrix) {
@@ -21633,32 +21598,14 @@ var BABYLON;
     var MeshBuilder = (function () {
         function MeshBuilder() {
         }
-        MeshBuilder.updateSideOrientationForRightHandedSystem = function (orientation, scene) {
+        MeshBuilder.updateSideOrientation = function (orientation, scene) {
             if (orientation == BABYLON.Mesh.DOUBLESIDE) {
                 return BABYLON.Mesh.DOUBLESIDE;
             }
-            if (!scene.useRightHandedSystem) {
-                if (orientation === undefined || orientation === null) {
-                    return BABYLON.Mesh.FRONTSIDE;
-                }
-                switch (orientation) {
-                    case BABYLON.Mesh.FRONTSIDE:
-                    case BABYLON.Mesh.DEFAULTSIDE:
-                        return BABYLON.Mesh.FRONTSIDE;
-                    default:
-                        return BABYLON.Mesh.BACKSIDE;
-                }
-            }
             if (orientation === undefined || orientation === null) {
-                return BABYLON.Mesh.BACKSIDE;
+                return BABYLON.Mesh.FRONTSIDE;
             }
-            switch (orientation) {
-                case BABYLON.Mesh.FRONTSIDE:
-                case BABYLON.Mesh.DEFAULTSIDE:
-                    return BABYLON.Mesh.BACKSIDE;
-                default:
-                    return BABYLON.Mesh.FRONTSIDE;
-            }
+            return orientation;
         };
         /**
          * Creates a box mesh.
@@ -21673,7 +21620,7 @@ var BABYLON;
          */
         MeshBuilder.CreateBox = function (name, options, scene) {
             var box = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, options.updatable);
             return box;
@@ -21692,7 +21639,7 @@ var BABYLON;
          */
         MeshBuilder.CreateSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -21709,7 +21656,7 @@ var BABYLON;
          */
         MeshBuilder.CreateDisc = function (name, options, scene) {
             var disc = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateDisc(options);
             vertexData.applyToMesh(disc, options.updatable);
             return disc;
@@ -21727,7 +21674,7 @@ var BABYLON;
          */
         MeshBuilder.CreateIcoSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateIcoSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -21754,7 +21701,7 @@ var BABYLON;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
             var offset = options.offset;
-            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var updatable = options.updatable;
             if (instance) {
@@ -21876,7 +21823,7 @@ var BABYLON;
          */
         MeshBuilder.CreateCylinder = function (name, options, scene) {
             var cylinder = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateCylinder(options);
             vertexData.applyToMesh(cylinder, options.updatable);
             return cylinder;
@@ -21893,7 +21840,7 @@ var BABYLON;
          */
         MeshBuilder.CreateTorus = function (name, options, scene) {
             var torus = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateTorus(options);
             vertexData.applyToMesh(torus, options.updatable);
             return torus;
@@ -21911,7 +21858,7 @@ var BABYLON;
          */
         MeshBuilder.CreateTorusKnot = function (name, options, scene) {
             var torusKnot = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
@@ -22065,7 +22012,7 @@ var BABYLON;
             var rotation = options.rotation || 0;
             var cap = (options.cap === 0) ? 0 : options.cap || BABYLON.Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV);
@@ -22114,7 +22061,7 @@ var BABYLON;
             var ribbonClosePath = options.ribbonClosePath || false;
             var cap = (options.cap === 0) ? 0 : options.cap || BABYLON.Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV);
@@ -22143,7 +22090,7 @@ var BABYLON;
             var radius = options.radius || 1;
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
-            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
             var paths = new Array();
@@ -22186,7 +22133,7 @@ var BABYLON;
          */
         MeshBuilder.CreatePlane = function (name, options, scene) {
             var plane = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, options.updatable);
             if (options.sourcePlane) {
@@ -22332,7 +22279,7 @@ var BABYLON;
             var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var invertUV = options.invertUV || false;
             var updatable = options.updatable;
-            var sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
             // tube geometry
@@ -22438,7 +22385,7 @@ var BABYLON;
          */
         MeshBuilder.CreatePolyhedron = function (name, options, scene) {
             var polyhedron = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientationForRightHandedSystem(options.sideOrientation, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreatePolyhedron(options);
             vertexData.applyToMesh(polyhedron, options.updatable);
             return polyhedron;
@@ -25308,12 +25255,7 @@ var BABYLON;
             this._fillMode = Material.TriangleFillMode;
             this.id = name;
             this._scene = scene;
-            if (scene.useRightHandedSystem) {
-                this.sideOrientation = Material.ClockWiseSideOrientation;
-            }
-            else {
-                this.sideOrientation = Material.CounterClockWiseSideOrientation;
-            }
+            this.sideOrientation = Material.CounterClockWiseSideOrientation;
             if (!doNotAdd) {
                 scene.materials.push(this);
             }
@@ -36463,6 +36405,7 @@ var BABYLON;
                     }
                     else {
                         if (!codecSupportedFound) {
+                            this._isReadyToPlay = true;
                             // Simulating a ready to play event to avoid breaking code path
                             if (this._readyToPlayCallback) {
                                 window.setTimeout(function () {
