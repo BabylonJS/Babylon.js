@@ -5,7 +5,7 @@ module.exports = function (varName) {
     return through.obj(function (file, enc, cb) {
 
         var moduleExportsAddition =
-            '\nexport as namespace ' + varName + ';\n' +
+ //           '\nexport as namespace ' + varName + ';\n' +
             '\nexport = ' + varName + ';\n';
 
         if (file.isNull()) {

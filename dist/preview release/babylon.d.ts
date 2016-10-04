@@ -15261,6 +15261,4 @@ declare module BABYLON {
     }
 }
 
-export as namespace BABYLON;
-
 export = BABYLON;

@@ -234,8 +234,7 @@ module BABYLON {
                 null, 
                 null, 
                 false, 
-                () => { console.warn("Error - Unable to load " + pathOfFile); }, 
-                true /* synchronous call */);
+                () => { console.warn("Error - Unable to load " + pathOfFile); });
         }
 
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
