@@ -145,6 +145,7 @@ var BABYLON;
                     }
                     else {
                         if (!codecSupportedFound) {
+                            this._isReadyToPlay = true;
                             // Simulating a ready to play event to avoid breaking code path
                             if (this._readyToPlayCallback) {
                                 window.setTimeout(function () {
