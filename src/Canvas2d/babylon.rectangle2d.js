@@ -135,7 +135,7 @@ var BABYLON;
             return true;
         };
         return Rectangle2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Rectangle2DRenderCache = Rectangle2DRenderCache;
     var Rectangle2DInstanceData = (function (_super) {
         __extends(Rectangle2DInstanceData, _super);
@@ -146,6 +146,8 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
@@ -153,7 +155,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Rectangle2DInstanceData.prototype, "properties", null);
         return Rectangle2DInstanceData;
-    })(BABYLON.Shape2DInstanceData);
+    }(BABYLON.Shape2DInstanceData));
     BABYLON.Rectangle2DInstanceData = Rectangle2DInstanceData;
     var Rectangle2D = (function (_super) {
         __extends(Rectangle2D, _super);
@@ -446,6 +448,6 @@ var BABYLON;
             BABYLON.className("Rectangle2D")
         ], Rectangle2D);
         return Rectangle2D;
-    })(BABYLON.Shape2D);
+    }(BABYLON.Shape2D));
     BABYLON.Rectangle2D = Rectangle2D;
 })(BABYLON || (BABYLON = {}));

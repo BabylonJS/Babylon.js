@@ -1,7 +1,11 @@
 # 2.5.0:
 
 ### Major updates
-- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))    
+- New `StandardRenderingPipeline` effect to support screen space lens flare and depth of field. []Demo](http://www.babylonjs.com/Demos/StandardRenderingPipeline/) - ([Julien Moreau-Mathis](https://github.com/julien-moreau))
+- New `HighlightLayer` object to enable highlights rendering. [Demo](http://www.babylonjs.com/Demos/Highlights/) - ([sebavan](https://github.com/sebavan))
+- Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
+- Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
+
 ### Updates
 - New ```Tools.CreateScreenshot``` function will capture all canvas data. Previous implementation is now called `CreateScreenshotUsingRenderTarget` ([deltakosh](https://github.com/deltakosh)) 
 - Cube textures are now cached by texture cache ([deltakosh](https://github.com/deltakosh)) 
@@ -29,6 +33,7 @@
 ### API doc
 
 ### Bug fixes
+- Fixed issue with FreeCamera not working in fullscreen or when pointer locked ([abow](https://github.com/abow))
 - MapTexture: Font Characters are now correctly aligned on Chrome ([nockawa](https://github.com/nockawa))
 - Fixed some missing parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))
 - Fixed cross vector calculation in `_computeHeightQuads()` that affected  all the `GroundMesh.getHeightAtCoordinates()` and `GroundMesh.getNormalAtCoordinates()` methods ([jerome](https://github.com/jbousquie))
@@ -37,7 +42,7 @@
 - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
 - Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
 - Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
-- Fixed bug with isntances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
+- Fixed bug with instances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
 - Canvas2D: ([nockawa](https://github.com/nockawa))
  - `WorldSpaceCanvas2D`:
 	- Intersection/interaction now works on non squared canvas

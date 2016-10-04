@@ -240,7 +240,8 @@ var BABYLON;
         };
         ArcRotateCamera.prototype._getTargetPosition = function () {
             if (this.target.getAbsolutePosition) {
-                return this.target.getAbsolutePosition();
+                var pos = this.target.getAbsolutePosition();
+                return this._targetBoundingCenter ? pos.add(this._targetBoundingCenter) : pos;
             }
             return this.target;
         };
@@ -381,9 +382,16 @@ var BABYLON;
             this.position.copyFrom(position);
             this.rebuildAnglesAndRadius();
         };
-        ArcRotateCamera.prototype.setTarget = function (target) {
+        ArcRotateCamera.prototype.setTarget = function (target, toBoundingCenter) {
+            if (toBoundingCenter === void 0) { toBoundingCenter = false; }
             if (this._getTargetPosition().equals(target)) {
                 return;
+            }
+            if (toBoundingCenter && target.getBoundingInfo) {
+                this._targetBoundingCenter = target.getBoundingInfo().boundingBox.center.clone();
+            }
+            else {
+                this._targetBoundingCenter = null;
             }
             this.target = target;
             this.rebuildAnglesAndRadius();
@@ -553,6 +561,6 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "allowUpsideDown", void 0);
         return ArcRotateCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));

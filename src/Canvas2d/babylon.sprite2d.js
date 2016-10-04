@@ -86,7 +86,7 @@ var BABYLON;
             return true;
         };
         return Sprite2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -97,12 +97,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Sprite2DInstanceData.prototype, "sizeUV", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -111,12 +115,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Sprite2DInstanceData.prototype, "textureSize", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -128,6 +136,8 @@ var BABYLON;
             // - z: alignToPixel setting
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -148,7 +158,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "properties", null);
         return Sprite2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -298,6 +308,29 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Sets the scale of the sprite using a BABYLON.Size(w,h).
+         * Keeps proportion by taking the maximum of the two scale for x and y.
+         * @param {Size} size Size(width,height)
+         */
+        Sprite2D.prototype.scaleToSize = function (size) {
+            var baseSize = this.size;
+            if (baseSize == null || !this.texture.isReady()) {
+                // we're probably at initiation of the scene, size is not set
+                if (this.texture.isReady()) {
+                    baseSize = this.texture.getBaseSize();
+                }
+                else {
+                    // the texture is not ready, wait for it to load before calling scaleToSize again
+                    var thisObject = this;
+                    this.texture.onLoadObservable.add(function () {
+                        thisObject.scaleToSize(size);
+                    });
+                    return;
+                }
+            }
+            this.scale = Math.max(size.height / baseSize.height, size.width / baseSize.width);
+        };
         Object.defineProperty(Sprite2D.prototype, "alignToPixel", {
             /**
              * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
@@ -448,6 +481,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));

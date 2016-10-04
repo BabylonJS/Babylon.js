@@ -262,14 +262,19 @@
             // The computed size will be floor on both width and height
             let actualSize: Size;
 
+            // Return the actualSize if set
+            if (this._actualSize) {
+                return this._actualSize;
+            }
+
             // Return the size if set by the user
             if (this._size) {
                 actualSize = new Size(Math.ceil(this._size.width), Math.ceil(this._size.height));
             }
 
-            // Otherwise the size is computed based on the boundingInfo
+            // Otherwise the size is computed based on the boundingInfo of the layout (or bounding info) content
             else {
-                let m = this.boundingInfo.max();
+                let m = this.layoutBoundingInfo.max();
                 actualSize = new Size(Math.ceil(m.x), Math.ceil(m.y));
             }
 
@@ -282,6 +287,11 @@
 
             return actualSize;
         }
+
+        public set actualSize(value: Size) {
+            this._actualSize = value;
+        }
+
 
         /**
          * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.

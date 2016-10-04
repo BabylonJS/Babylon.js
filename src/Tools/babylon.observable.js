@@ -18,7 +18,7 @@ var BABYLON;
             return this;
         };
         return EventState;
-    })();
+    }());
     BABYLON.EventState = EventState;
     /**
      * Represent an Observer registered to a given Observable object.
@@ -29,7 +29,7 @@ var BABYLON;
             this.mask = mask;
         }
         return Observer;
-    })();
+    }());
     BABYLON.Observer = Observer;
     /**
      * The Observable class is a simple implementation of the Observable pattern.
@@ -132,6 +132,6 @@ var BABYLON;
             return result;
         };
         return Observable;
-    })();
+    }());
     BABYLON.Observable = Observable;
 })(BABYLON || (BABYLON = {}));

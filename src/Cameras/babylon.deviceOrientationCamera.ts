@@ -7,6 +7,7 @@ module BABYLON {
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
+            this._quaternionCache = new Quaternion();
             this.inputs.addDeviceOrientation();
         }
 
@@ -16,18 +17,18 @@ module BABYLON {
 
         public _checkInputs(): void {
             super._checkInputs();
+            this._quaternionCache.copyFrom(this.rotationQuaternion);
             if (this._initialQuaternion) {
-                this._quaternionCache.copyFrom(this.rotationQuaternion);
                 this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
         }
 
-        public resetToCurrentRotation(axis: BABYLON.Axis = BABYLON.Axis.Y) {
+        public resetToCurrentRotation(axis: Axis = Axis.Y) {
             //can only work if this camera has a rotation quaternion already.
             if (!this.rotationQuaternion) return;
 
             if (!this._initialQuaternion) {
-                this._initialQuaternion = new BABYLON.Quaternion();
+                this._initialQuaternion = new Quaternion();
             }
 
             this._initialQuaternion.copyFrom(this._quaternionCache || this.rotationQuaternion);
@@ -40,6 +41,8 @@ module BABYLON {
                 }
             });
             this._initialQuaternion.normalize();
+            //force rotation update
+            this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
         }
     }
 }

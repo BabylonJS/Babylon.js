@@ -85,7 +85,11 @@
             return SceneLoader._getDefaultPlugin();
         }
 
-        private static _getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
+        private static _getPluginForFilename(sceneFilename: any): IRegisteredPlugin {
+            if (sceneFilename.name) {
+                sceneFilename = sceneFilename.name;
+            }
+
             var dotPosition = sceneFilename.lastIndexOf(".");
 
             var queryStringPosition = sceneFilename.indexOf("?");
