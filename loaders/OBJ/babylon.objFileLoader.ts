@@ -152,7 +152,7 @@ module BABYLON {
             //At the end of the file, add the last material
             this.materials.push(material);
         }
-        
+
         /**
          * Gets the texture for the material.
          * 
@@ -163,7 +163,7 @@ module BABYLON {
          * @param value The value stored in the mtl
          * @return The Texture
          */
-        private static _getTexture(rootUrl:string, value: string, scene: Scene): Texture {
+        private static _getTexture(rootUrl: string, value: string, scene: Scene): Texture {
             var url = rootUrl;
             // Load from input file.
             if (rootUrl === "file:") {
@@ -171,9 +171,9 @@ module BABYLON {
                 if (lastDelimiter === -1) {
                     lastDelimiter = value.lastIndexOf("/");
                 }
-                
+
                 if (lastDelimiter > -1) {
-                    url += value.substr(lastDelimiter + 1); 
+                    url += value.substr(lastDelimiter + 1);
                 }
                 else {
                     url += value;
@@ -183,7 +183,7 @@ module BABYLON {
             else {
                 url += value;
             }
-            
+
             return new BABYLON.Texture(url, scene);
         }
     }
@@ -227,15 +227,14 @@ module BABYLON {
         private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string) => any) {
             //The complete path to the mtl file
             var pathOfFile = BABYLON.Tools.BaseUrl + rootUrl + url;
-            
+
             // Loads through the babylon tools to allow fileInput search.
-            BABYLON.Tools.LoadFile(pathOfFile, 
-                onSuccess, 
-                null, 
-                null, 
-                false, 
-                () => { console.warn("Error - Unable to load " + pathOfFile); }, 
-                true /* synchronous call */);
+            BABYLON.Tools.LoadFile(pathOfFile,
+                onSuccess,
+                null,
+                null,
+                false,
+                () => { console.warn("Error - Unable to load " + pathOfFile); });
         }
 
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
@@ -301,8 +300,8 @@ module BABYLON {
              * @param obj Array<number>
              * @returns {boolean}
              */
-            var isInArray = (arr: Array<{ normals: Array<number>; idx: Array<number>}>, obj: Array<number>) => {
-                if (!arr[obj[0]]) arr[obj[0]] = { normals: [], idx: []};
+            var isInArray = (arr: Array<{ normals: Array<number>; idx: Array<number> }>, obj: Array<number>) => {
+                if (!arr[obj[0]]) arr[obj[0]] = { normals: [], idx: [] };
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
 
                 return idx === -1 ? -1 : arr[obj[0]].idx[idx];
@@ -311,7 +310,7 @@ module BABYLON {
                 if (!arr[obj[0]]) arr[obj[0]] = { normals: [], idx: [], uv: [] };
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
 
-                if(idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
+                if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
                     return arr[obj[0]].idx[idx];
                 }
                 return -1;
@@ -332,8 +331,8 @@ module BABYLON {
              */
             var setData = (indicePositionFromObj: number, indiceUvsFromObj: number, indiceNormalFromObj: number, positionVectorFromOBJ: BABYLON.Vector3, textureVectorFromOBJ: BABYLON.Vector2, normalsVectorFromOBJ: BABYLON.Vector3) => {
                 //Check if this tuple already exists in the list of tuples
-                var _index : number;
-                if(OBJFileLoader.OPTIMIZE_WITH_UV) {
+                var _index: number;
+                if (OBJFileLoader.OPTIMIZE_WITH_UV) {
                     _index = isInArrayUV(
                         tuplePosNorm,
                         [
@@ -371,7 +370,7 @@ module BABYLON {
                     //Add the tuple in the comparison list
                     tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                     tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
-                    if(OBJFileLoader.OPTIMIZE_WITH_UV) tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj);
+                    if (OBJFileLoader.OPTIMIZE_WITH_UV) tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj);
                 } else {
                     //The tuple already exists
                     //Add the index of the already existing tuple
@@ -390,8 +389,8 @@ module BABYLON {
                     unwrappedPositionsForBabylon.push(wrappedPositionForBabylon[l].x, wrappedPositionForBabylon[l].y, wrappedPositionForBabylon[l].z);
                     unwrappedNormalsForBabylon.push(wrappedNormalsForBabylon[l].x, wrappedNormalsForBabylon[l].y, wrappedNormalsForBabylon[l].z);
                     unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
-                }				
-				// Reset arrays for the next new meshes
+                }
+                // Reset arrays for the next new meshes
                 wrappedPositionForBabylon = [];
                 wrappedNormalsForBabylon = [];
                 wrappedUvsForBabylon = [];
@@ -422,7 +421,7 @@ module BABYLON {
                     //Recursion
                     getTriangles(face, v);
                 }
-                
+
                 //Result obtained after 2 iterations:
                 //Pattern1 => triangle = ["1","2","3","1","3","4"];
                 //Pattern2 => triangle = ["1/1","2/2","3/3","1/1","3/3","4/4"];
@@ -727,7 +726,7 @@ module BABYLON {
                                 uvs: undefined,
                                 materialName: materialNameFromObj
                             };
-                        increment ++;
+                        increment++;
                         //If meshes are already defined
                         meshesFromObj.push(objMesh);
                     }
@@ -817,7 +816,7 @@ module BABYLON {
                 //This is indispensable for the importMesh function
                 materialToUse.push(meshesFromObj[j].materialName);
 
-				var vertexData: VertexData = new BABYLON.VertexData(); //The container for the values
+                var vertexData: VertexData = new BABYLON.VertexData(); //The container for the values
                 //Set the data for the babylonMesh
                 vertexData.positions = handledMesh.positions;
                 vertexData.normals = handledMesh.normals;
