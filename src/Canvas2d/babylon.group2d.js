@@ -206,12 +206,16 @@ var BABYLON;
             get: function () {
                 // The computed size will be floor on both width and height
                 var actualSize;
+                // Return the actualSize if set
+                if (this._actualSize) {
+                    return this._actualSize;
+                }
                 // Return the size if set by the user
                 if (this._size) {
                     actualSize = new BABYLON.Size(Math.ceil(this._size.width), Math.ceil(this._size.height));
                 }
                 else {
-                    var m = this.boundingInfo.max();
+                    var m = this.layoutBoundingInfo.max();
                     actualSize = new BABYLON.Size(Math.ceil(m.x), Math.ceil(m.y));
                 }
                 // Compare the size with the one we previously had, if it differs we set the property dirty and trigger a GroupChanged to synchronize a displaySprite (if any)
@@ -221,6 +225,9 @@ var BABYLON;
                     this.handleGroupChanged(Group2D.actualSizeProperty);
                 }
                 return actualSize;
+            },
+            set: function (value) {
+                this._actualSize = value;
             },
             enumerable: true,
             configurable: true
@@ -396,10 +403,10 @@ var BABYLON;
                 engine.setAlphaTesting(false);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                var context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
+                var context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeOpaque);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context, v);
+                    var renderCount = _this._prepareContext(engine, context_1, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -407,7 +414,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context);
+                        var renderFailed = !v.modelRenderCache.render(v, context_1);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -419,10 +426,10 @@ var BABYLON;
                 engine.setAlphaTesting(true);
                 engine.setDepthWrite(true);
                 // For each different model of primitive to render
-                context = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
+                context_1 = new BABYLON.Render2DContext(BABYLON.Render2DContext.RenderModeAlphaTest);
                 this._renderableData._renderGroupInstancesInfo.forEach(function (k, v) {
                     // Prepare the context object, update the WebGL Instanced Array buffer if needed
-                    var renderCount = _this._prepareContext(engine, context, v);
+                    var renderCount = _this._prepareContext(engine, context_1, v);
                     // If null is returned, there's no opaque data to render
                     if (renderCount === null) {
                         return;
@@ -430,7 +437,7 @@ var BABYLON;
                     // Submit render only if we have something to render (everything may be hidden and the floatarray empty)
                     if (!_this.owner.supportInstancedArray || renderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        var renderFailed = !v.modelRenderCache.render(v, context);
+                        var renderFailed = !v.modelRenderCache.render(v, context_1);
                         // Update dirty flag/related
                         v.opaqueDirty = renderFailed;
                         failedCount += renderFailed ? 1 : 0;
@@ -848,7 +855,7 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    })(BABYLON.Prim2DBase);
+    }(BABYLON.Prim2DBase));
     BABYLON.Group2D = Group2D;
     var RenderableGroupData = (function () {
         function RenderableGroupData() {
@@ -925,12 +932,12 @@ var BABYLON;
             //this.updateSmallestZChangedPrim(tpi);
         };
         return RenderableGroupData;
-    })();
+    }());
     BABYLON.RenderableGroupData = RenderableGroupData;
     var TransparentPrimitiveInfo = (function () {
         function TransparentPrimitiveInfo() {
         }
         return TransparentPrimitiveInfo;
-    })();
+    }());
     BABYLON.TransparentPrimitiveInfo = TransparentPrimitiveInfo;
 })(BABYLON || (BABYLON = {}));

@@ -94,20 +94,28 @@
         get topLeftUV(): Vector2 {
             return null;
         }
+        set topLeftUV(value: Vector2) {
+        }
 
         @instanceData()
         get sizeUV(): Vector2 {
             return null;
+        }
+        set sizeUV(value: Vector2) {
         }
 
         @instanceData()
         get scaleFactor(): Vector2 {
             return null;
         }
+        set scaleFactor(value: Vector2) {
+        }
 
         @instanceData()
         get textureSize(): Vector2 {
             return null;
+        }
+        set textureSize(value: Vector2) {
         }
 
         // 3 floats being:
@@ -117,6 +125,8 @@
         @instanceData()
         get properties(): Vector3 {
             return null;
+        }
+        set properties(value: Vector3) {
         }
     }
 
@@ -226,6 +236,31 @@
 
         public set spriteScaleFactor(value: Vector2) {
             this._spriteScaleFactor = value;
+        }
+
+        /**
+         * Sets the scale of the sprite using a BABYLON.Size(w,h).
+         * Keeps proportion by taking the maximum of the two scale for x and y.
+         * @param {Size} size Size(width,height)
+         */
+        public scaleToSize(size: Size) {
+            var baseSize = this.size;
+            if (baseSize == null || !this.texture.isReady()) {
+                // we're probably at initiation of the scene, size is not set
+                if (this.texture.isReady()) {
+                    baseSize = <Size>this.texture.getBaseSize();
+                }
+                else {
+                    // the texture is not ready, wait for it to load before calling scaleToSize again
+                    var thisObject = <Sprite2D>this;
+                    this.texture.onLoadObservable.add(function () {
+                            thisObject.scaleToSize(size); 
+                        });
+                    return;
+                }
+            }
+            
+            this.scale = Math.max(size.height / baseSize.height, size.width / baseSize.width);
         }
 
         /**
