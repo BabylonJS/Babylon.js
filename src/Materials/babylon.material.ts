@@ -208,7 +208,12 @@
             this.id = name;
 
             this._scene = scene;
-            this.sideOrientation = Material.CounterClockWiseSideOrientation;
+
+            if (scene.useRightHandedSystem) {
+                this.sideOrientation = Material.ClockWiseSideOrientation;
+            } else {
+                this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            }
 
             if (!doNotAdd) {
                 scene.materials.push(this);
@@ -268,6 +273,7 @@
 
         public _preBind(): void {
             var engine = this._scene.getEngine();
+
             var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
 
             engine.enableEffect(this._effect);

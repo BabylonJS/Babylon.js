@@ -95,7 +95,12 @@ var BABYLON;
             this._fillMode = Material.TriangleFillMode;
             this.id = name;
             this._scene = scene;
-            this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            if (scene.useRightHandedSystem) {
+                this.sideOrientation = Material.ClockWiseSideOrientation;
+            }
+            else {
+                this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            }
             if (!doNotAdd) {
                 scene.materials.push(this);
             }
