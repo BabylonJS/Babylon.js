@@ -732,7 +732,6 @@ var BABYLON;
         }
         // Apply geometry
         geometry.setAllVerticesData(vertexData, false);
-        newMesh.flipFaces(true);
         newMesh.computeWorldMatrix(true);
         // Apply submeshes
         newMesh.subMeshes = [];
@@ -1274,6 +1273,7 @@ var BABYLON;
             shaderMaterial.id = mat;
             shaderMaterial.onError = onShaderCompileError(program, shaderMaterial);
             shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
+            shaderMaterial.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
             if (states.functions) {
                 var functions = states.functions;
                 if (functions.cullFace && functions.cullFace[0] !== BABYLON.ECullingType.BACK) {
@@ -1372,6 +1372,7 @@ var BABYLON;
         * Import meshes
         */
         GLTFFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
+            scene.useRightHandedSystem = true;
             var parsedData = JSON.parse(data);
             var gltfRuntime = this._createGlTFRuntime(parsedData, scene, rootUrl);
             gltfRuntime.importOnlyMeshes = true;
@@ -1411,6 +1412,7 @@ var BABYLON;
         * Load scene
         */
         GLTFFileLoader.prototype.load = function (scene, data, rootUrl) {
+            scene.useRightHandedSystem = true;
             var parsedData = JSON.parse(data);
             var gltfRuntime = this._createGlTFRuntime(parsedData, scene, rootUrl);
             // Create nodes
