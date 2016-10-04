@@ -717,7 +717,6 @@
         // Apply geometry
         geometry.setAllVerticesData(vertexData, false);
 
-        newMesh.flipFaces(true);
         newMesh.computeWorldMatrix(true);
 
         // Apply submeshes
@@ -1463,6 +1462,7 @@
             var shaderMaterial = new ShaderMaterial(id, gltfRuntime.scene, shaderPath, options);
             shaderMaterial.onError = onShaderCompileError(program, shaderMaterial, onError);
             shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
+            shaderMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
 
             if (states.functions) {
                 var functions = states.functions;
@@ -1533,6 +1533,8 @@
         * Import meshes
         */
         public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onError?: () => void): boolean {
+            scene.useRightHandedSystem = true;
+
             var gltfRuntime = GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
                 gltfRuntime.importOnlyMeshes = true;
 
@@ -1593,6 +1595,8 @@
         * Load scene
         */
         public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onError: () => void): boolean {
+            scene.useRightHandedSystem = true;
+
             GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
                 // Create nodes
                 this._createNodes(gltfRuntime);
