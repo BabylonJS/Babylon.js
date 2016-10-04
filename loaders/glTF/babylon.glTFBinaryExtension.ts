@@ -37,7 +37,7 @@
                 return true;
             }
 
-            var gltfRuntime = GLTFFileLoaderBase.createRuntime(binary.content, scene, rootUrl);
+            var gltfRuntime = GLTFFileLoaderBase.CreateRuntime(binary.content, scene, rootUrl);
 
             if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
                 Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
