@@ -135,7 +135,7 @@ var BABYLON;
             return true;
         };
         return Lines2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Lines2DRenderCache = Lines2DRenderCache;
     var Lines2DInstanceData = (function (_super) {
         __extends(Lines2DInstanceData, _super);
@@ -146,12 +146,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Lines2DInstanceData.prototype, "boundingMax", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -163,7 +167,7 @@ var BABYLON;
             BABYLON.instanceData(BABYLON.Shape2D.SHAPE2D_CATEGORY_FILLGRADIENT)
         ], Lines2DInstanceData.prototype, "boundingMax", null);
         return Lines2DInstanceData;
-    })(BABYLON.Shape2DInstanceData);
+    }(BABYLON.Shape2DInstanceData));
     BABYLON.Lines2DInstanceData = Lines2DInstanceData;
     var Lines2D = (function (_super) {
         __extends(Lines2D, _super);
@@ -1171,6 +1175,6 @@ var BABYLON;
             BABYLON.className("Lines2D")
         ], Lines2D);
         return Lines2D;
-    })(BABYLON.Shape2D);
+    }(BABYLON.Shape2D));
     BABYLON.Lines2D = Lines2D;
 })(BABYLON || (BABYLON = {}));

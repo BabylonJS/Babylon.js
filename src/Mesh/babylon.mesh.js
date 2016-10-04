@@ -12,7 +12,7 @@ var BABYLON;
             this.renderSelf = new Array();
         }
         return _InstancesBatch;
-    })();
+    }());
     BABYLON._InstancesBatch = _InstancesBatch;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
@@ -1196,6 +1196,14 @@ var BABYLON;
             while (this.instances.length) {
                 this.instances[0].dispose();
             }
+            // Highlight layers.
+            var highlightLayers = this.getScene().highlightLayers;
+            for (var i = 0; i < highlightLayers.length; i++) {
+                var highlightLayer = highlightLayers[i];
+                if (highlightLayer) {
+                    highlightLayer.removeMesh(this);
+                }
+            }
             _super.prototype.dispose.call(this, doNotRecurse);
         };
         /**
@@ -2377,6 +2385,6 @@ var BABYLON;
         Mesh._CAP_END = 2;
         Mesh._CAP_ALL = 3;
         return Mesh;
-    })(BABYLON.AbstractMesh);
+    }(BABYLON.AbstractMesh));
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));

@@ -32,7 +32,7 @@ var BABYLON;
             return new Vertex(BABYLON.Vector3.Lerp(this.pos, other.pos, t), BABYLON.Vector3.Lerp(this.normal, other.normal, t), BABYLON.Vector2.Lerp(this.uv, other.uv, t));
         };
         return Vertex;
-    })();
+    }());
     // # class Plane
     // Represents a plane in 3D space.
     var Plane = (function () {
@@ -124,7 +124,7 @@ var BABYLON;
         // point is on the plane.
         Plane.EPSILON = 1e-5;
         return Plane;
-    })();
+    }());
     // # class Polygon
     // Represents a convex polygon. The vertices used to initialize a polygon must
     // be coplanar and form a convex loop.
@@ -147,7 +147,7 @@ var BABYLON;
             this.plane.flip();
         };
         return Polygon;
-    })();
+    }());
     // # class Node
     // Holds a node in a BSP tree. A BSP tree is built from a collection of polygons
     // by picking a polygon to split along. That polygon (and all other coplanar
@@ -253,7 +253,7 @@ var BABYLON;
             }
         };
         return Node;
-    })();
+    }());
     var CSG = (function () {
         function CSG() {
             this.polygons = new Array();
@@ -508,6 +508,6 @@ var BABYLON;
             return mesh;
         };
         return CSG;
-    })();
+    }());
     BABYLON.CSG = CSG;
 })(BABYLON || (BABYLON = {}));

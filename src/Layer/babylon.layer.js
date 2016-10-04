@@ -101,7 +101,7 @@ var BABYLON;
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect);
             // Draw order
-            if (!this._alphaTestEffect) {
+            if (!this.alphaTest) {
                 engine.setAlphaMode(this.alphaBlendingMode);
                 engine.draw(true, 0, 6);
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
@@ -135,6 +135,6 @@ var BABYLON;
             this.onBeforeRenderObservable.clear();
         };
         return Layer;
-    })();
+    }());
     BABYLON.Layer = Layer;
 })(BABYLON || (BABYLON = {}));

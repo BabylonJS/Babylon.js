@@ -55,11 +55,14 @@ var BABYLON;
             return this._absoluteTransform;
         };
         // Methods
-        Bone.prototype.updateMatrix = function (matrix) {
+        Bone.prototype.updateMatrix = function (matrix, updateDifferenceMatrix) {
+            if (updateDifferenceMatrix === void 0) { updateDifferenceMatrix = true; }
             this._baseMatrix = matrix.clone();
             this._matrix = matrix.clone();
             this._skeleton._markAsDirty();
-            this._updateDifferenceMatrix();
+            if (updateDifferenceMatrix) {
+                this._updateDifferenceMatrix();
+            }
         };
         Bone.prototype._updateDifferenceMatrix = function (rootMatrix) {
             if (!rootMatrix) {
@@ -136,6 +139,6 @@ var BABYLON;
             return true;
         };
         return Bone;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.Bone = Bone;
 })(BABYLON || (BABYLON = {}));
