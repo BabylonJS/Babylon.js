@@ -410,6 +410,8 @@
         private _windowIsBackground = false;
         private _webGLVersion = "1.0";
 
+        private _badOS = false; 
+
         public static audioEngine: AudioEngine;
 
         private _onBlur: () => void;
@@ -649,6 +651,11 @@
             if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
+
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /iPhone.*10.[\d] Mobile/
+            //ua sniffing is the tool of the devil.
+            this._badOS = regexp.test(navigator.userAgent);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
@@ -989,7 +996,10 @@
         }
 
         public endFrame(): void {
-            //this.flushFramebuffer();
+            //force a flush in case we are using a bad OS.
+            if(this._badOS) {
+                this.flushFramebuffer();
+            }
 
             //submit frame to the vr device, if enabled
             if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
