@@ -10,6 +10,7 @@ var BABYLON;
         __extends(DeviceOrientationCamera, _super);
         function DeviceOrientationCamera(name, position, scene) {
             _super.call(this, name, position, scene);
+            this._quaternionCache = new BABYLON.Quaternion();
             this.inputs.addDeviceOrientation();
         }
         DeviceOrientationCamera.prototype.getTypeName = function () {
@@ -17,8 +18,8 @@ var BABYLON;
         };
         DeviceOrientationCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
+            this._quaternionCache.copyFrom(this.rotationQuaternion);
             if (this._initialQuaternion) {
-                this._quaternionCache.copyFrom(this.rotationQuaternion);
                 this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
         };
@@ -41,8 +42,10 @@ var BABYLON;
                 }
             });
             this._initialQuaternion.normalize();
+            //force rotation update
+            this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
         };
         return DeviceOrientationCamera;
-    })(BABYLON.FreeCamera);
+    }(BABYLON.FreeCamera));
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));

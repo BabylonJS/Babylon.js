@@ -1033,13 +1033,13 @@
 
         /**
          * Compute the positioning/size of an area considering the thickness of this object and a given alignment
-         * @param sourceArea the source area
+         * @param sourceArea the source area where the content must be sized/positioned
          * @param contentSize the content size to position/resize
          * @param alignment the alignment setting
          * @param dstOffset the position of the content
          * @param dstArea the new size of the content
          */
-        public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size) {
+        public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size, computeLayoutArea = false) {
             // Fetch some data
             let topType = this._getType(0, true);
             let leftType = this._getType(1, true);
@@ -1064,6 +1064,9 @@
                             dstOffset.x = this.leftPixels;
                         }
                         dstArea.width = width;
+                        if (computeLayoutArea) {
+                            dstArea.width += this.leftPixels;
+                        }
                         break;
 
                     }
@@ -1076,6 +1079,9 @@
                             dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
                         }
                         dstArea.width = width;
+                        if (computeLayoutArea) {
+                            dstArea.width += this.rightPixels;
+                        }
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -1121,6 +1127,9 @@
                             dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
                         }
                         dstArea.height = height;
+                        if (computeLayoutArea) {
+                            dstArea.height += this.topPixels;
+                        }
                         break;
 
                     }
@@ -1133,6 +1142,9 @@
                             dstOffset.y = this.bottomPixels;
                         }
                         dstArea.height = height;
+                        if (computeLayoutArea) {
+                            dstArea.height += this.bottomPixels;
+                        }
                         break;
 
                     }
@@ -1364,7 +1376,8 @@
             this._actualSize = null;
             this._boundingSize = Size.Zero();
             this._layoutArea = Size.Zero();
-            this._layoutAreaPos = Vector2.Zero();
+            this._layoutAreaPos = null;
+            this._layoutBoundingInfo = null;
             this._marginOffset = Vector2.Zero();
             this._paddingOffset = Vector2.Zero();
             this._parentPaddingOffset = Vector2.Zero();
@@ -1405,7 +1418,7 @@
             if (settings.dontInheritParentScale) {
                 this._setFlags(SmartPropertyPrim.flagDontInheritParentScale);
             }
-            this._setFlags((isPickable ? SmartPropertyPrim.flagIsPickable : 0) | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? SmartPropertyPrim.flagIsContainer : 0) | SmartPropertyPrim.flagActualScaleDirty);
+            this._setFlags((isPickable ? SmartPropertyPrim.flagIsPickable : 0) | SmartPropertyPrim.flagBoundingInfoDirty | SmartPropertyPrim.flagActualOpacityDirty | (isContainer ? SmartPropertyPrim.flagIsContainer : 0) | SmartPropertyPrim.flagActualScaleDirty | SmartPropertyPrim.flagLayoutBoundingInfoDirty);
 
             if (settings.opacity != null) {
                 this._opacity = settings.opacity;
@@ -2050,7 +2063,7 @@
             return this._margin;
         }
 
-        private get _hasMargin(): boolean {
+        public get _hasMargin(): boolean {
             return (this._margin !== null) || (this._marginAlignment !== null);
         }
 
@@ -2231,6 +2244,9 @@
                 return;
             }
             this._positioningDirty();
+            if (this.parent) {
+                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+            }
             this._layoutArea = val;
         }
 
@@ -2239,12 +2255,15 @@
          * The setter should only be called by a Layout Engine class.
          */
         public get layoutAreaPos(): Vector2 {
-            return this._layoutAreaPos;
+            return this._layoutAreaPos || Prim2DBase._nullPosition;
         }
 
         public set layoutAreaPos(val: Vector2) {
-            if (this._layoutAreaPos.equals(val)) {
+            if (this._layoutAreaPos && this._layoutAreaPos.equals(val)) {
                 return;
+            }
+            if (this.parent) {
+                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
             }
             this._positioningDirty();
             this._layoutAreaPos = val;
@@ -2332,7 +2351,7 @@
         }
 
         private static _bMax = Vector2.Zero();
-
+        private static _tpsBB = new BoundingInfo2D();
         /**
          * Get the boundingInfo associated to the primitive and its children.
          * The value is supposed to be always up to date
@@ -2351,7 +2370,8 @@
 
                 var tps = new BoundingInfo2D();
                 for (let curChild of this._children) {
-                    curChild.boundingInfo.transformToRef(curChild.localTransform, tps);
+                    let bb = curChild.boundingInfo;
+                    bb.transformToRef(curChild.localTransform, tps);
                     bi.unionToRef(tps, bi);
                 }
 
@@ -2363,6 +2383,41 @@
                 this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
             }
             return this._boundingInfo;
+        }
+
+        /**
+         * Get the boundingInfo of the primitive's content arranged by a layout Engine
+         * If a particular child is not arranged by layout, it's boundingInfo is used instead to produce something as accurate as possible
+         */
+        public get layoutBoundingInfo(): BoundingInfo2D {
+            if (this._isFlagSet(SmartPropertyPrim.flagLayoutBoundingInfoDirty)) {
+                if (!this._layoutBoundingInfo) {
+                    this._layoutBoundingInfo = new BoundingInfo2D();
+                }
+                if (this.isSizedByContent) {
+                    this._layoutBoundingInfo.clear();
+                } else {
+                    this._layoutBoundingInfo.copyFrom(this.levelBoundingInfo);
+                }
+                let bi = this._layoutBoundingInfo;
+
+                var tps = new BoundingInfo2D();
+                for (let curChild of this._children) {
+                    let bb: BoundingInfo2D;
+                    if (curChild._layoutAreaPos) {
+                        let s = curChild._layoutArea;
+                        BoundingInfo2D.CreateFromMinMaxToRef(0, s.width, 0, s.height, Prim2DBase._tpsBB);
+                        bb = Prim2DBase._tpsBB;
+                    } else {
+                        bb = curChild.boundingInfo;
+                    }
+                    bb.transformToRef(curChild.localTransform, tps);
+                    bi.unionToRef(tps, bi);
+                }
+
+                this._clearFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+            }
+            return this._layoutBoundingInfo;
         }
 
         /**
@@ -2772,10 +2827,10 @@
 
                 var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
                 var local: Matrix;
-                let pos = this.position;
+                let pos = this._position ? this.position : this.layoutAreaPos;
 
                 if (this._origin.x === 0 && this._origin.y === 0) {
-                    local = Matrix.Compose(new Vector3(this._scale.x, this._scale.y, 1), rot, new Vector3(pos.x, pos.y, 0));
+                    local = Matrix.Compose(new Vector3(this._scale.x, this._scale.y, 1), rot, new Vector3(pos.x + this._marginOffset.x, pos.y + this._marginOffset.y, 0));
                     this._localTransform = local;
                 } else {
                     // -Origin offset
@@ -2791,7 +2846,7 @@
                     Prim2DBase._t2.multiplyToRef(Prim2DBase._t0, Prim2DBase._t1);
 
                     // -Origin * rotation * scale * (Origin + Position)
-                    Matrix.TranslationToRef((as.width * this._origin.x) + pos.x, (as.height * this._origin.y) + pos.y, 0, Prim2DBase._t2);
+                    Matrix.TranslationToRef((as.width * this._origin.x) + pos.x + this._marginOffset.x, (as.height * this._origin.y) + pos.y + this._marginOffset.y, 0, Prim2DBase._t2);
                     Prim2DBase._t1.multiplyToRef(Prim2DBase._t2, this._localTransform);
                 }
 
@@ -2837,8 +2892,10 @@
                 }
             }
 
-            // Check for layout update
             let positioningDirty = this._isFlagSet(SmartPropertyPrim.flagPositioningDirty);
+            let positioningComputed = positioningDirty && !this._isFlagSet(SmartPropertyPrim.flagPositioningDirty);
+
+            // Check for layout update
             if (this._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
                 this.owner.addUpdateLayoutCounter(1);
                 this._layoutEngine.updateLayout(this);
@@ -2846,13 +2903,12 @@
                 this._clearFlags(SmartPropertyPrim.flagLayoutDirty);
             }
 
-            let positioningComputed = positioningDirty && !this._isFlagSet(SmartPropertyPrim.flagPositioningDirty);
             let autoContentChanged = false;
             if (this.isSizeAuto) {
                 if (!this._lastAutoSizeArea) {
-                    autoContentChanged = this.size!==null;
+                    autoContentChanged = this.actualSize!==null;
                 } else {
-                    autoContentChanged = (!this._lastAutoSizeArea.equals(this.size));
+                    autoContentChanged = (!this._lastAutoSizeArea.equals(this.actualSize));
                 }
             }
 
@@ -2900,8 +2956,8 @@
 
                     let localTransform: Matrix;
                     Prim2DBase._transMtx.copyFrom(this._localTransform);
-                    Prim2DBase._transMtx.m[12] += this._layoutAreaPos.x + this._marginOffset.x + parentPaddingOffset.x;
-                    Prim2DBase._transMtx.m[13] += this._layoutAreaPos.y + this._marginOffset.y + parentPaddingOffset.y;
+                    Prim2DBase._transMtx.m[12] += parentPaddingOffset.x;
+                    Prim2DBase._transMtx.m[13] += parentPaddingOffset.y;
                     localTransform = Prim2DBase._transMtx;
 
                     this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
@@ -2949,7 +3005,7 @@
 
             // Apply margin
             if (this._hasMargin) {
-                this.margin.computeWithAlignment(this.layoutArea, this.size, this.marginAlignment, this._marginOffset, Prim2DBase._size);
+                this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase._size);
                 this.actualSize = Prim2DBase._size.clone();
             }
 
@@ -2986,11 +3042,11 @@
             }
 
             if (!this._position) {
-                let aPos = new Vector2(this._layoutAreaPos.x + this._marginOffset.x, this._layoutAreaPos.y + this._marginOffset.y);
+                let aPos = new Vector2(this.layoutAreaPos.x + this._marginOffset.x, this.layoutAreaPos.y + this._marginOffset.y);
                 this.actualPosition = aPos;
             }
             if (isSizeAuto) {
-                this._lastAutoSizeArea = this.size;                
+                this._lastAutoSizeArea = this.actualSize;
             }
         }
 

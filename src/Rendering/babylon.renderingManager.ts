@@ -173,17 +173,17 @@
             opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null) {
-            
+
+            this._customOpaqueSortCompareFn[renderingGroupId] = opaqueSortCompareFn;
+            this._customAlphaTestSortCompareFn[renderingGroupId] = alphaTestSortCompareFn;
+            this._customTransparentSortCompareFn[renderingGroupId] = transparentSortCompareFn;
+                
             if (this._renderingGroups[renderingGroupId]) {
                 var group = this._renderingGroups[renderingGroupId];
                 group.opaqueSortCompareFn = this._customOpaqueSortCompareFn[renderingGroupId];
                 group.alphaTestSortCompareFn = this._customAlphaTestSortCompareFn[renderingGroupId];
                 group.transparentSortCompareFn = this._customTransparentSortCompareFn[renderingGroupId];
             }
-
-            this._customOpaqueSortCompareFn[renderingGroupId] = opaqueSortCompareFn;
-            this._customAlphaTestSortCompareFn[renderingGroupId] = alphaTestSortCompareFn;
-            this._customTransparentSortCompareFn[renderingGroupId] = transparentSortCompareFn;
         }
 
         /**

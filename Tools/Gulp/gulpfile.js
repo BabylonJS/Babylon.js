@@ -3,6 +3,7 @@ var uglify = require("gulp-uglify");
 var typescript = require("gulp-typescript");
 var sourcemaps = require("gulp-sourcemaps");
 var srcToVariable = require("gulp-content-to-variable");
+var addDtsExport = require("./gulp-addDtsExport");
 var addModuleExports = require("./gulp-addModuleExports");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
@@ -13,6 +14,7 @@ var runSequence = require('run-sequence');
 var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
 var expect = require('gulp-expect-file');
+var optimisejs = require('gulp-optimize-js');
 
 var config = require("./config.json");
 
@@ -97,6 +99,7 @@ gulp.task('typescript-compile', function () {
     return merge2([
         tsResult.dts
             .pipe(concat(config.build.declarationFilename))
+            .pipe(addDtsExport("BABYLON"))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
             .pipe(gulp.dest(config.build.srcOutputDirectory))
@@ -131,6 +134,7 @@ gulp.task("buildCore", ["shaders"], function () {
         .pipe(replace(decorateSearchRegex, ""))
         .pipe(addModuleExports("BABYLON"))
         .pipe(uglify())
+        .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
 });
 
@@ -149,6 +153,7 @@ gulp.task("buildNoWorker", ["shaders"], function () {
         .pipe(replace(decorateSearchRegex, ""))
         .pipe(addModuleExports("BABYLON"))
         .pipe(uglify())
+        .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
 });
 
@@ -170,6 +175,7 @@ gulp.task("build", ["workers", "shaders"], function () {
         .pipe(gulp.dest(config.build.outputDirectory))
         .pipe(rename(config.build.minFilename))
         .pipe(uglify())
+        .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
 });
 

@@ -374,7 +374,7 @@
 
             // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
             if (this instanceof Group2D) {
-                this.handleGroupChanged(propInfo);
+                (<SmartPropertyPrim>this).handleGroupChanged(propInfo);
             }
 
             // Check for parent layout dirty
@@ -607,35 +607,37 @@
             }
         }
 
-        public static flagIsDisposed             = 0x0000001;    // set if the object is already disposed
-        public static flagLevelBoundingInfoDirty = 0x0000002;    // set if the primitive's level bounding box (not including children) is dirty
-        public static flagModelDirty             = 0x0000004;    // set if the model must be changed
-        public static flagLayoutDirty            = 0x0000008;    // set if the layout must be computed
-        public static flagLevelVisible           = 0x0000010;    // set if the primitive is set as visible for its level only
-        public static flagBoundingInfoDirty      = 0x0000020;    // set if the primitive's overall bounding box (including children) is dirty
-        public static flagIsPickable             = 0x0000040;    // set if the primitive can be picked during interaction
-        public static flagIsVisible              = 0x0000080;    // set if the primitive is concretely visible (use the levelVisible of parents)
-        public static flagVisibilityChanged      = 0x0000100;    // set if there was a transition between visible/hidden status
-        public static flagPositioningDirty       = 0x0000200;    // set if the primitive positioning must be computed
-        public static flagTrackedGroup           = 0x0000400;    // set if the group2D is tracking a scene node
-        public static flagWorldCacheChanged      = 0x0000800;    // set if the cached bitmap of a world space canvas changed
-        public static flagChildrenFlatZOrder     = 0x0001000;    // set if all the children (direct and indirect) will share the same Z-Order
-        public static flagZOrderDirty            = 0x0002000;    // set if the Z-Order for this prim and its children must be recomputed
-        public static flagActualOpacityDirty     = 0x0004000;    // set if the actualOpactity should be recomputed
-        public static flagPrimInDirtyList        = 0x0008000;    // set if the primitive is in the primDirtyList
-        public static flagIsContainer            = 0x0010000;    // set if the primitive is a container
-        public static flagNeedRefresh            = 0x0020000;    // set if the primitive wasn't successful at refresh
-        public static flagActualScaleDirty       = 0x0040000;    // set if the actualScale property needs to be recomputed
-        public static flagDontInheritParentScale = 0x0080000;    // set if the actualScale must not use its parent's scale to be computed
-        public static flagGlobalTransformDirty   = 0x0100000;    // set if the global transform must be recomputed due to a local transform change
+        public static flagIsDisposed              = 0x0000001;    // set if the object is already disposed
+        public static flagLevelBoundingInfoDirty  = 0x0000002;    // set if the primitive's level bounding box (not including children) is dirty
+        public static flagModelDirty              = 0x0000004;    // set if the model must be changed
+        public static flagLayoutDirty             = 0x0000008;    // set if the layout must be computed
+        public static flagLevelVisible            = 0x0000010;    // set if the primitive is set as visible for its level only
+        public static flagBoundingInfoDirty       = 0x0000020;    // set if the primitive's overall bounding box (including children) is dirty
+        public static flagIsPickable              = 0x0000040;    // set if the primitive can be picked during interaction
+        public static flagIsVisible               = 0x0000080;    // set if the primitive is concretely visible (use the levelVisible of parents)
+        public static flagVisibilityChanged       = 0x0000100;    // set if there was a transition between visible/hidden status
+        public static flagPositioningDirty        = 0x0000200;    // set if the primitive positioning must be computed
+        public static flagTrackedGroup            = 0x0000400;    // set if the group2D is tracking a scene node
+        public static flagWorldCacheChanged       = 0x0000800;    // set if the cached bitmap of a world space canvas changed
+        public static flagChildrenFlatZOrder      = 0x0001000;    // set if all the children (direct and indirect) will share the same Z-Order
+        public static flagZOrderDirty             = 0x0002000;    // set if the Z-Order for this prim and its children must be recomputed
+        public static flagActualOpacityDirty      = 0x0004000;    // set if the actualOpactity should be recomputed
+        public static flagPrimInDirtyList         = 0x0008000;    // set if the primitive is in the primDirtyList
+        public static flagIsContainer             = 0x0010000;    // set if the primitive is a container
+        public static flagNeedRefresh             = 0x0020000;    // set if the primitive wasn't successful at refresh
+        public static flagActualScaleDirty        = 0x0040000;    // set if the actualScale property needs to be recomputed
+        public static flagDontInheritParentScale  = 0x0080000;    // set if the actualScale must not use its parent's scale to be computed
+        public static flagGlobalTransformDirty    = 0x0100000;    // set if the global transform must be recomputed due to a local transform change
+        public static flagLayoutBoundingInfoDirty = 0x0100000;    // set if the layout bounding info is dirty
 
-        private   _flags             : number;
-        private   _externalData      : StringDictionary<Object>;
-        private   _modelKey          : string;
-        private   _propInfo          : StringDictionary<Prim2DPropInfo>;
-        protected _levelBoundingInfo : BoundingInfo2D;
-        protected _boundingInfo      : BoundingInfo2D;
-        protected _instanceDirtyFlags: number;
+        private   _flags              : number;
+        private   _externalData       : StringDictionary<Object>;
+        private   _modelKey           : string;
+        private   _propInfo           : StringDictionary<Prim2DPropInfo>;
+        protected _levelBoundingInfo  : BoundingInfo2D;
+        protected _boundingInfo       : BoundingInfo2D;
+        protected _layoutBoundingInfo : BoundingInfo2D;
+        protected _instanceDirtyFlags : number;
     }
 
     export function modelLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare = false, dirtyBoundingInfo = false, dirtyParentBoundingBox = false): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {

@@ -127,7 +127,9 @@
 
                 // Put a handler to resize the background whenever the canvas is resizing
                 this.propertyChanged.add((e, s) => {
-                    this._background.size = this.size;
+                    if (e.propertyName === "size") {
+                        this._background.size = this.size;
+                    }
                 }, Group2D.sizeProperty.flagId);
 
                 this._background._patchHierarchy(this);
@@ -412,13 +414,15 @@
             }
 
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            this._updatePointerInfo(eventData, localPosition);
+            if (!this._updatePointerInfo(eventData, localPosition)) {
+                return;
+            }
 
             let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null);
+            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
 
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus();
@@ -451,13 +455,17 @@
             eventState.skipNextObservers = skip;
         }
 
-        private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2) {
+        private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2): boolean {
             let s = this.scale;
             let pii = this._primPointerInfo;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = Vector2.Zero();
             }
             var camera = this._scene.cameraToUseForPointers || this._scene.activeCamera;
+            if (!camera || !camera.viewport) {
+                return false;
+            }
+
             var engine = this._scene.getEngine();
 
             if (this._isScreenSpace) {
@@ -500,10 +508,12 @@
                 pii.tilt.y = pe.tiltY;
                 pii.isCaptured = this.getCapturedPrimitive(pe.pointerId) !== null;
             }
+
+            return true;
         }
 
-        private _updateIntersectionList(mouseLocalPos: Vector2, isCapture: boolean) {
-            if (this.scene.getRenderId() === this._intersectionRenderId) {
+        private _updateIntersectionList(mouseLocalPos: Vector2, isCapture: boolean, force: boolean) {
+            if (!force && (this.scene.getRenderId() === this._intersectionRenderId)) {
                 return;
             }
 
@@ -692,7 +702,7 @@
                         window.setTimeout(() => {
                             let ppi = this._primPointerInfo;
                             let capturedPrim = this.getCapturedPrimitive(ppi.pointerId);
-                            this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null);
+                            this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null, true);
 
                             let ii = new IntersectInfo2D();
                             ii.pickPosition = ppi.canvasPointerPos.clone();
@@ -1256,7 +1266,8 @@
 
             // If the canvas fit the rendering size and it changed, update
             if (renderingSizeChanged && this._fitRenderingDevice) {
-                this.size = this._renderingSize;
+                this._actualSize = this._renderingSize.clone();
+                this._size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;
                 }
@@ -1310,7 +1321,7 @@
             this._updateCanvasState(false);
 
             if (this._primPointerInfo.canvasPointerPos) {
-                this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
+                this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
                 this._updateOverStatus();   // TODO this._primPointerInfo may not be up to date!
             }
 
@@ -1680,6 +1691,13 @@
                 this._worldSpaceNode = settings.customWorldSpaceNode;
                 this.applyCachedTexture(null, null);
             }
+
+            this.propertyChanged.add((e, st) => {
+                let mesh = this._worldSpaceNode as AbstractMesh;
+                if (mesh) {
+                    mesh.isVisible = this.isVisible;
+                }
+            }, Prim2DBase.isVisibleProperty.flagId);
         }
     }
 

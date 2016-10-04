@@ -193,6 +193,8 @@
         private _previousRadius: number;
         //due to async collision inspection
         private _collisionTriggered: boolean;
+        
+        private _targetBoundingCenter: Vector3;
 
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
@@ -236,7 +238,8 @@
 
         private _getTargetPosition(): Vector3 {
             if ((<any>this.target).getAbsolutePosition) {
-                return (<any>this.target).getAbsolutePosition();
+                var pos : Vector3 = (<any>this.target).getAbsolutePosition();
+                return this._targetBoundingCenter ? pos.add(this._targetBoundingCenter) : pos;
             }
 
             return this.target;
@@ -402,9 +405,15 @@
             this.rebuildAnglesAndRadius();
         }
 
-        public setTarget(target: Vector3): void {
+        public setTarget(target: Vector3, toBoundingCenter = false): void {            
             if (this._getTargetPosition().equals(target)) {
                 return;
+            }
+            
+            if (toBoundingCenter && (<any>target).getBoundingInfo){
+                this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.center.clone();
+            }else{
+                this._targetBoundingCenter = null;
             }
             this.target = target;
             this.rebuildAnglesAndRadius();
