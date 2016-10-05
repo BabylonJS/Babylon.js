@@ -26,7 +26,7 @@
     "Exporters",
     "Loaders",
     "Previous releases",
-    "Tools",
+    "/Tools",
     "gulpfile.js",
     "package.json",
     "babylon.2.1*.*",
