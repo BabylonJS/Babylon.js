@@ -6346,6 +6346,7 @@ var BABYLON;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._webGLVersion = "1.0";
+            this._badOS = false;
             this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
@@ -6531,6 +6532,10 @@ var BABYLON;
             if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /AppleWebKit.*10.[\d] Mobile/;
+            //ua sniffing is the tool of the devil.
+            this._badOS = regexp.test(navigator.userAgent);
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "NEVER", {
@@ -7068,7 +7073,10 @@ var BABYLON;
             this._measureFps();
         };
         Engine.prototype.endFrame = function () {
-            //this.flushFramebuffer();
+            //force a flush in case we are using a bad OS.
+            if (this._badOS) {
+                this.flushFramebuffer();
+            }
             //submit frame to the vr device, if enabled
             if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
                 this._vrDisplayEnabled.submitFrame();
@@ -13424,9 +13432,8 @@ var BABYLON;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
+            var engine = this.camera.getEngine();
             if (!this._pointerInput) {
-                var camera = this.camera;
-                var engine = this.camera.getEngine();
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
@@ -13465,12 +13472,12 @@ var BABYLON;
                         var offsetX = evt.clientX - _this.previousPosition.x;
                         var offsetY = evt.clientY - _this.previousPosition.y;
                         if (_this.camera.getScene().useRightHandedSystem) {
-                            camera.cameraRotation.y -= offsetX / _this.angularSensibility;
+                            _this.camera.cameraRotation.y -= offsetX / _this.angularSensibility;
                         }
                         else {
-                            camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                            _this.camera.cameraRotation.y += offsetX / _this.angularSensibility;
                         }
-                        camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                        _this.camera.cameraRotation.x += offsetY / _this.angularSensibility;
                         _this.previousPosition = {
                             x: evt.clientX,
                             y: evt.clientY
@@ -13488,12 +13495,12 @@ var BABYLON;
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                 var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
                 if (_this.camera.getScene().useRightHandedSystem) {
-                    camera.cameraRotation.y -= offsetX / _this.angularSensibility;
+                    _this.camera.cameraRotation.y -= offsetX / _this.angularSensibility;
                 }
                 else {
-                    camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                    _this.camera.cameraRotation.y += offsetX / _this.angularSensibility;
                 }
-                camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                _this.camera.cameraRotation.x += offsetY / _this.angularSensibility;
                 _this.previousPosition = null;
                 if (!noPreventDefault) {
                     evt.preventDefault();
