@@ -283,6 +283,8 @@
                         if (onsuccess) {
                             onsuccess(scene);
                         }
+
+                        scene._removePendingData(loadingToken);
                     }, () => {
                         if (onerror) {
                             onerror(scene);
