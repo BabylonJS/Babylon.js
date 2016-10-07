@@ -220,14 +220,14 @@
         private static _TEXTURETYPE_HALF_FLOAT = 2;
 
         // Depht or Stencil test Constants.
-        private static _NEVER =     0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
-        private static _ALWAYS =    0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
-        private static _LESS =      0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
-        private static _EQUAL =     0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
-        private static _LEQUAL =    0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
-        private static _GREATER =   0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
-        private static _GEQUAL =    0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
-        private static _NOTEQUAL =  0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
+        private static _NEVER = 0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
+        private static _ALWAYS = 0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
+        private static _LESS = 0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
+        private static _EQUAL = 0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
+        private static _LEQUAL = 0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
+        private static _GREATER = 0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
+        private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
+        private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
 
         public static get NEVER(): number {
             return Engine._NEVER;
@@ -262,13 +262,13 @@
         }
 
         // Stencil Actions Constants.
-        private static _KEEP =	    0x1E00; 
-        private static _REPLACE =	0x1E01; 
-        private static _INCR =	    0x1E02; 
-        private static _DECR =	    0x1E03; 
-        private static _INVERT =	0x150A; 
-        private static _INCR_WRAP =	0x8507; 
-        private static _DECR_WRAP =	0x8508;
+        private static _KEEP = 0x1E00;
+        private static _REPLACE = 0x1E01;
+        private static _INCR = 0x1E02;
+        private static _DECR = 0x1E03;
+        private static _INVERT = 0x150A;
+        private static _INCR_WRAP = 0x8507;
+        private static _DECR_WRAP = 0x8508;
 
         public static get KEEP(): number {
             return Engine._KEEP;
@@ -296,7 +296,7 @@
 
         public static get DECR_WRAP(): number {
             return Engine._DECR_WRAP;
-        }        
+        }
 
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
@@ -410,7 +410,7 @@
         private _windowIsBackground = false;
         private _webGLVersion = "1.0";
 
-        private _badOS = false; 
+        private _badOS = false;
 
         public static audioEngine: AudioEngine;
 
@@ -997,7 +997,7 @@
 
         public endFrame(): void {
             //force a flush in case we are using a bad OS.
-            if(this._badOS) {
+            if (this._badOS) {
                 this.flushFramebuffer();
             }
 
@@ -2156,6 +2156,9 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+            }
             this.resetTextureCache();
             texture.isReady = true;
         }
