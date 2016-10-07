@@ -8016,6 +8016,9 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+            }
             this.resetTextureCache();
             texture.isReady = true;
         };
@@ -26760,6 +26763,7 @@ var BABYLON;
                         if (onsuccess) {
                             onsuccess(scene);
                         }
+                        scene._removePendingData(loadingToken);
                     }, function () {
                         if (onerror) {
                             onerror(scene);

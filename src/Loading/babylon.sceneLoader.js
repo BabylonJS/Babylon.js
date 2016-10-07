@@ -242,6 +242,7 @@ var BABYLON;
                         if (onsuccess) {
                             onsuccess(scene);
                         }
+                        scene._removePendingData(loadingToken);
                     }, function () {
                         if (onerror) {
                             onerror(scene);

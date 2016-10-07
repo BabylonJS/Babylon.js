@@ -140,6 +140,7 @@ var BABYLON;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._webGLVersion = "1.0";
+            this._badOS = false;
             this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
@@ -325,6 +326,10 @@ var BABYLON;
             if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /AppleWebKit.*10.[\d] Mobile/;
+            //ua sniffing is the tool of the devil.
+            this._badOS = regexp.test(navigator.userAgent);
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "NEVER", {
@@ -862,7 +867,10 @@ var BABYLON;
             this._measureFps();
         };
         Engine.prototype.endFrame = function () {
-            //this.flushFramebuffer();
+            //force a flush in case we are using a bad OS.
+            if (this._badOS) {
+                this.flushFramebuffer();
+            }
             //submit frame to the vr device, if enabled
             if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
                 this._vrDisplayEnabled.submitFrame();
@@ -1802,6 +1810,9 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+            }
             this.resetTextureCache();
             texture.isReady = true;
         };
