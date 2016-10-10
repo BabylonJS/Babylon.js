@@ -552,10 +552,6 @@
             this._previousOverPrimitive = this._actualOverPrimitive;
             this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
 
-            if (this._previousOverPrimitive && this._actualOverPrimitive && this._previousOverPrimitive.prim !== this._actualOverPrimitive.prim) {
-                console.log("changed");
-            }
-
             this._intersectionRenderId = this.scene.getRenderId();
         }
 
