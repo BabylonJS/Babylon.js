@@ -425,7 +425,7 @@
             this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
 
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
-            this._updateOverStatus();
+            this._updateOverStatus(true);
 
             // Check if we have nothing to raise
             if (!this._actualOverPrimitive && !capturedPrim) {
@@ -543,12 +543,16 @@
             this._previousOverPrimitive = this._actualOverPrimitive;
             this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
 
+            if (this._previousOverPrimitive && this._actualOverPrimitive && this._previousOverPrimitive.prim !== this._actualOverPrimitive.prim) {
+                console.log("changed");
+            }
+
             this._intersectionRenderId = this.scene.getRenderId();
         }
 
         // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
-        private _updateOverStatus() {
-            if ((this.scene.getRenderId() === this._hoverStatusRenderId) || !this._previousIntersectionList || !this._actualIntersectionList) {
+        private _updateOverStatus(force: boolean) {
+            if ((!force && (this.scene.getRenderId() === this._hoverStatusRenderId)) || !this._previousIntersectionList || !this._actualIntersectionList) {
                 return;
             }
 
@@ -703,6 +707,7 @@
                             let ppi = this._primPointerInfo;
                             let capturedPrim = this.getCapturedPrimitive(ppi.pointerId);
                             this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null, true);
+                            this._updateOverStatus(false);
 
                             let ii = new IntersectInfo2D();
                             ii.pickPosition = ppi.canvasPointerPos.clone();
@@ -1322,7 +1327,7 @@
 
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
-                this._updateOverStatus();   // TODO this._primPointerInfo may not be up to date!
+                this._updateOverStatus(false);   // TODO this._primPointerInfo may not be up to date!
             }
 
             this.engine.setState(false);
