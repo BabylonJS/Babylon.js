@@ -1176,7 +1176,7 @@
             if (instance) { // instance update
                 path3D = ((<any>instance).path3D).update(curve);
                 pathArray = extrusionPathArray(shape, curve, (<any>instance).path3D, (<any>instance).pathArray, scale, rotation, scaleFunction, rotateFunction, (<any>instance).cap, custom);
-                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, scene, null, null, instance);
 
                 return instance;
             }
