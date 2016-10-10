@@ -169,6 +169,8 @@ var BABYLON;
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
             //this._supprtInstancedArray = false; // TODO REMOVE!!!
             this._setupInteraction(enableInteraction);
+            // Register this instance
+            Canvas2D._INSTANCES.push(this);
         }
         Object.defineProperty(Canvas2D.prototype, "drawCallsOpaqueCounter", {
             get: function () {
@@ -250,6 +252,13 @@ var BABYLON;
         Object.defineProperty(Canvas2D.prototype, "boundingInfoRecomputeCounter", {
             get: function () {
                 return this._boundingInfoRecomputeCounter;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D, "instances", {
+            get: function () {
+                return Canvas2D._INSTANCES;
             },
             enumerable: true,
             configurable: true
@@ -375,7 +384,7 @@ var BABYLON;
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
             this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
-            this._updateOverStatus();
+            this._updateOverStatus(true);
             // Check if we have nothing to raise
             if (!this._actualOverPrimitive && !capturedPrim) {
                 return;
@@ -481,8 +490,8 @@ var BABYLON;
             this._intersectionRenderId = this.scene.getRenderId();
         };
         // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
-        Canvas2D.prototype._updateOverStatus = function () {
-            if ((this.scene.getRenderId() === this._hoverStatusRenderId) || !this._previousIntersectionList || !this._actualIntersectionList) {
+        Canvas2D.prototype._updateOverStatus = function (force) {
+            if ((!force && (this.scene.getRenderId() === this._hoverStatusRenderId)) || !this._previousIntersectionList || !this._actualIntersectionList) {
                 return;
             }
             // Detect a change of over
@@ -612,6 +621,7 @@ var BABYLON;
                             var ppi = _this._primPointerInfo;
                             var capturedPrim = _this.getCapturedPrimitive(ppi.pointerId);
                             _this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null, true);
+                            _this._updateOverStatus(false);
                             var ii = new BABYLON.IntersectInfo2D();
                             ii.pickPosition = ppi.canvasPointerPos.clone();
                             ii.findFirstOnly = false;
@@ -700,6 +710,11 @@ var BABYLON;
             if (this._groupCacheMaps) {
                 this._groupCacheMaps.forEach(function (k, m) { return m.forEach(function (e) { return e.dispose(); }); });
                 this._groupCacheMaps = null;
+            }
+            // Unregister this instance
+            var index = Canvas2D._INSTANCES.indexOf(this);
+            if (index > -1) {
+                Canvas2D._INSTANCES.splice(index, 1);
             }
         };
         Object.defineProperty(Canvas2D.prototype, "scene", {
@@ -1128,7 +1143,7 @@ var BABYLON;
             this._updateCanvasState(false);
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
-                this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
+                this._updateOverStatus(false); // TODO this._primPointerInfo may not be up to date!
             }
             this.engine.setState(false);
             this._groupRender();
@@ -1369,6 +1384,7 @@ var BABYLON;
          * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
          */
         Canvas2D.CACHESTRATEGY_DONTCACHE = 4;
+        Canvas2D._INSTANCES = [];
         Canvas2D._zMinDelta = 1 / (Math.pow(2, 24) - 1);
         Canvas2D._interInfo = new BABYLON.IntersectInfo2D();
         Canvas2D._v = BABYLON.Vector3.Zero(); // Must stay zero
