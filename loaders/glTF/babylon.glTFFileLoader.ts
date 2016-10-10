@@ -788,7 +788,6 @@
         // Apply geometry
         geometry.setAllVerticesData(vertexData, false);
 
-        newMesh.flipFaces(true);
         newMesh.computeWorldMatrix(true);
 
         // Apply submeshes
@@ -1454,7 +1453,8 @@
             shaderMaterial.id = mat;
             shaderMaterial.onError = onShaderCompileError(program, shaderMaterial);
             shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
-            
+            shaderMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
+
             if (states.functions) {
                 var functions = states.functions;
                 if (functions.cullFace && functions.cullFace[0] !== ECullingType.BACK) {
@@ -1578,6 +1578,8 @@
         * Import meshes
         */
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
+            scene.useRightHandedSystem = true;
+
             var parsedData = JSON.parse(data);
             var gltfRuntime = this._createGlTFRuntime(parsedData, scene, rootUrl);
             gltfRuntime.importOnlyMeshes = true;
@@ -1626,6 +1628,8 @@
         * Load scene
         */
         public load(scene: Scene, data: string, rootUrl: string): boolean {
+            scene.useRightHandedSystem = true;
+
             var parsedData = JSON.parse(data);
             var gltfRuntime = this._createGlTFRuntime(parsedData, scene, rootUrl);
 

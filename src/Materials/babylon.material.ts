@@ -273,6 +273,7 @@
 
         public _preBind(): void {
             var engine = this._scene.getEngine();
+
             var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
 
             engine.enableEffect(this._effect);
@@ -352,6 +353,7 @@
 
             this.onDisposeObservable.clear();
             this.onBindObservable.clear();
+            this.onUnBindObservable.clear();
         }
 
         public serialize(): any {

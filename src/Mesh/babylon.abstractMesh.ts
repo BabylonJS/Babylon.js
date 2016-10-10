@@ -374,7 +374,7 @@
                 this.rotation = Vector3.Zero();
             }
             var rotationQuaternion: Quaternion;
-            if (!space || space === Space.LOCAL) {
+            if (!space || (space as any) === Space.LOCAL) {
                 rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
                 this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
             }
@@ -393,7 +393,7 @@
         public translate(axis: Vector3, distance: number, space?: Space): void {
             var displacementVector = axis.scale(distance);
 
-            if (!space || space === Space.LOCAL) {
+            if (!space || (space as any) === Space.LOCAL) {
                 var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
                 this.setPositionWithLocalVector(tempV3);
             }

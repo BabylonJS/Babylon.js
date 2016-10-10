@@ -185,7 +185,7 @@ var BABYLON;
             BABYLON.className("Shape2D")
         ], Shape2D);
         return Shape2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Shape2D = Shape2D;
     var Shape2DInstanceData = (function (_super) {
         __extends(Shape2DInstanceData, _super);
@@ -197,12 +197,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Shape2DInstanceData.prototype, "fillGradientColor1", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -211,12 +215,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Shape2DInstanceData.prototype, "fillGradientTY", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -226,12 +234,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Shape2DInstanceData.prototype, "borderSolidColor", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -240,6 +252,8 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
@@ -247,12 +261,16 @@ var BABYLON;
             get: function () {
                 return null;
             },
+            set: function (value) {
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Shape2DInstanceData.prototype, "borderGradientTY", {
             get: function () {
                 return null;
+            },
+            set: function (value) {
             },
             enumerable: true,
             configurable: true
@@ -285,6 +303,6 @@ var BABYLON;
             BABYLON.instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
         ], Shape2DInstanceData.prototype, "borderGradientTY", null);
         return Shape2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Shape2DInstanceData = Shape2DInstanceData;
 })(BABYLON || (BABYLON = {}));

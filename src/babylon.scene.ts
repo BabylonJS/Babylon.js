@@ -104,7 +104,7 @@
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
         public useRightHandedSystem = false;
-
+        
         public hoverCursor = "pointer";
 
         // Events
@@ -344,7 +344,15 @@
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
-        public defaultMaterial = new StandardMaterial("default material", this);
+        private _defaultMaterial: StandardMaterial;
+
+        public get defaultMaterial(): StandardMaterial {
+            if (!this._defaultMaterial) {
+                this._defaultMaterial = new StandardMaterial("default material", this);
+            }
+
+            return this._defaultMaterial;
+        }
 
         // Textures
         public texturesEnabled = true;
@@ -360,6 +368,7 @@
 
         // Layers
         public layers = new Array<Layer>();
+        public highlightLayers = new Array<HighlightLayer>();
 
         // Skeletons
         public skeletonsEnabled = true;
@@ -2038,7 +2047,27 @@
 
             // Render
             Tools.StartPerformanceCounter("Main render");
+
+            // Activate HighlightLayer stencil
+            var stencilState = this._engine.getStencilBuffer();
+            var renderhighlights = false;
+            if (this.highlightLayers && this.highlightLayers.length > 0) {
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        renderhighlights = true;
+                        this._engine.setStencilBuffer(true);
+                        break;
+                    }
+                }
+            }
+
             this._renderingManager.render(null, null, true, true);
+
+            // Restore HighlightLayer stencil
+            if (renderhighlights) {
+                this._engine.setStencilBuffer(stencilState);
+            }
+
             Tools.EndPerformanceCounter("Main render");
 
             // Bounding boxes
@@ -2069,6 +2098,17 @@
                     layer = this.layers[layerIndex];
                     if (!layer.isBackground) {
                         layer.render();
+                    }
+                }
+                engine.setDepthBuffer(true);
+            }
+
+            // Highlight Layer
+            if (renderhighlights) {
+                engine.setDepthBuffer(false);
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        this.highlightLayers[i].render();
                     }
                 }
                 engine.setDepthBuffer(true);
@@ -2188,7 +2228,7 @@
 
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
-
+            
             // Customs render targets
             this._renderTargetsDuration.beginMonitoring();
             var beforeRenderTargetDate = Tools.Now;
@@ -2256,6 +2296,15 @@
             // Depth renderer
             if (this._depthRenderer) {
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
+            }
+
+            // HighlightLayer
+            if (this.highlightLayers && this.highlightLayers.length > 0) {
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        this._renderTargets.push((<any>this.highlightLayers[i])._mainTexture);
+                    }
+                }
             }
 
             // RenderPipeline
@@ -2535,6 +2584,9 @@
             // Release layers
             while (this.layers.length) {
                 this.layers[0].dispose();
+            }
+            while (this.highlightLayers.length) {
+                this.highlightLayers[0].dispose();
             }
 
             // Release textures

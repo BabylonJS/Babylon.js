@@ -2,6 +2,7 @@
 interface Window {
     mozIndexedDB(func: any): any;
     webkitIndexedDB(func: any): any;
+    msIndexedDB: IDBFactory;
     IDBTransaction(func: any): any;
     webkitIDBTransaction(func: any): any;
     msIDBTransaction(func: any): any;
@@ -47,9 +48,9 @@ interface Document {
 
 interface HTMLCanvasElement {
     requestPointerLock(): void;
-    msRequestPointerLock(): void;
-    mozRequestPointerLock(): void;
-    webkitRequestPointerLock(): void;
+    msRequestPointerLock?(): void;
+    mozRequestPointerLock?(): void;
+    webkitRequestPointerLock?(): void;
 }
 
 interface CanvasRenderingContext2D {

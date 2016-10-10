@@ -46,6 +46,6 @@ var BABYLON;
             this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
         };
         return DeviceOrientationCamera;
-    })(BABYLON.FreeCamera);
+    }(BABYLON.FreeCamera));
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));

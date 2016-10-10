@@ -125,7 +125,8 @@
       "../../src/Tools/babylon.loadingScreen.js",
       "../../src/Audio/babylon.audioEngine.js",
       "../../src/Audio/babylon.sound.js",
-      "../../src/Audio/babylon.soundtrack.js"
+      "../../src/Audio/babylon.soundtrack.js",
+      "../../src/Layer/babylon.highlightlayer.js"
     ]
   },
   "shadersDirectories": [

@@ -155,6 +155,8 @@
         get properties(): Vector3 {
             return null;
         }
+        set properties(value: Vector3) {
+        }
     }
 
     @className("Ellipse2D", "BABYLON")

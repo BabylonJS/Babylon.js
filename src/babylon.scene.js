@@ -49,7 +49,7 @@ var BABYLON;
         PointerEventTypes._POINTERWHEEL = 0x08;
         PointerEventTypes._POINTERPICK = 0x10;
         return PointerEventTypes;
-    })();
+    }());
     BABYLON.PointerEventTypes = PointerEventTypes;
     var PointerInfoBase = (function () {
         function PointerInfoBase(type, event) {
@@ -57,7 +57,7 @@ var BABYLON;
             this.event = event;
         }
         return PointerInfoBase;
-    })();
+    }());
     BABYLON.PointerInfoBase = PointerInfoBase;
     /**
      * This class is used to store pointer related info for the onPrePointerObservable event.
@@ -71,7 +71,7 @@ var BABYLON;
             this.localPosition = new BABYLON.Vector2(localX, localY);
         }
         return PointerInfoPre;
-    })(PointerInfoBase);
+    }(PointerInfoBase));
     BABYLON.PointerInfoPre = PointerInfoPre;
     /**
      * This type contains all the data related to a pointer event in Babylon.js.
@@ -84,7 +84,7 @@ var BABYLON;
             this.pickInfo = pickInfo;
         }
         return PointerInfo;
-    })(PointerInfoBase);
+    }(PointerInfoBase));
     BABYLON.PointerInfo = PointerInfo;
     /**
      * Represents a scene to be rendered by the engine.
@@ -239,7 +239,6 @@ var BABYLON;
             this._geometries = new Array();
             this.materials = new Array();
             this.multiMaterials = new Array();
-            this.defaultMaterial = new BABYLON.StandardMaterial("default material", this);
             // Textures
             this.texturesEnabled = true;
             this.textures = new Array();
@@ -251,6 +250,7 @@ var BABYLON;
             this.spriteManagers = new Array();
             // Layers
             this.layers = new Array();
+            this.highlightLayers = new Array();
             // Skeletons
             this.skeletonsEnabled = true;
             this.skeletons = new Array();
@@ -410,6 +410,16 @@ var BABYLON;
         Object.defineProperty(Scene.prototype, "unTranslatedPointer", {
             get: function () {
                 return new BABYLON.Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "defaultMaterial", {
+            get: function () {
+                if (!this._defaultMaterial) {
+                    this._defaultMaterial = new BABYLON.StandardMaterial("default material", this);
+                }
+                return this._defaultMaterial;
             },
             enumerable: true,
             configurable: true
@@ -1718,7 +1728,23 @@ var BABYLON;
             }
             // Render
             BABYLON.Tools.StartPerformanceCounter("Main render");
+            // Activate HighlightLayer stencil
+            var stencilState = this._engine.getStencilBuffer();
+            var renderhighlights = false;
+            if (this.highlightLayers && this.highlightLayers.length > 0) {
+                for (var i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        renderhighlights = true;
+                        this._engine.setStencilBuffer(true);
+                        break;
+                    }
+                }
+            }
             this._renderingManager.render(null, null, true, true);
+            // Restore HighlightLayer stencil
+            if (renderhighlights) {
+                this._engine.setStencilBuffer(stencilState);
+            }
             BABYLON.Tools.EndPerformanceCounter("Main render");
             // Bounding boxes
             this._boundingBoxRenderer.render();
@@ -1744,6 +1770,16 @@ var BABYLON;
                     layer = this.layers[layerIndex];
                     if (!layer.isBackground) {
                         layer.render();
+                    }
+                }
+                engine.setDepthBuffer(true);
+            }
+            // Highlight Layer
+            if (renderhighlights) {
+                engine.setDepthBuffer(false);
+                for (var i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        this.highlightLayers[i].render();
                     }
                 }
                 engine.setDepthBuffer(true);
@@ -1896,6 +1932,14 @@ var BABYLON;
             // Depth renderer
             if (this._depthRenderer) {
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
+            }
+            // HighlightLayer
+            if (this.highlightLayers && this.highlightLayers.length > 0) {
+                for (var i = 0; i < this.highlightLayers.length; i++) {
+                    if (this.highlightLayers[i].shouldRender()) {
+                        this._renderTargets.push(this.highlightLayers[i]._mainTexture);
+                    }
+                }
             }
             // RenderPipeline
             this.postProcessRenderPipelineManager.update();
@@ -2135,6 +2179,9 @@ var BABYLON;
             // Release layers
             while (this.layers.length) {
                 this.layers[0].dispose();
+            }
+            while (this.highlightLayers.length) {
+                this.highlightLayers[0].dispose();
             }
             // Release textures
             while (this.textures.length) {
@@ -2477,6 +2524,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    })();
+    }());
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));

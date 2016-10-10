@@ -27,7 +27,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    })();
+    }());
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -122,7 +122,9 @@ var BABYLON;
                 }
                 // Put a handler to resize the background whenever the canvas is resizing
                 this.propertyChanged.add(function (e, s) {
-                    _this._background.size = _this.size;
+                    if (e.propertyName === "size") {
+                        _this._background.size = _this.size;
+                    }
                 }, BABYLON.Group2D.sizeProperty.flagId);
                 this._background._patchHierarchy(this);
             }
@@ -371,7 +373,7 @@ var BABYLON;
             var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null);
+            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus();
             // Check if we have nothing to raise
@@ -451,8 +453,8 @@ var BABYLON;
             }
             return true;
         };
-        Canvas2D.prototype._updateIntersectionList = function (mouseLocalPos, isCapture) {
-            if (this.scene.getRenderId() === this._intersectionRenderId) {
+        Canvas2D.prototype._updateIntersectionList = function (mouseLocalPos, isCapture, force) {
+            if (!force && (this.scene.getRenderId() === this._intersectionRenderId)) {
                 return;
             }
             // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
@@ -609,7 +611,7 @@ var BABYLON;
                         window.setTimeout(function () {
                             var ppi = _this._primPointerInfo;
                             var capturedPrim = _this.getCapturedPrimitive(ppi.pointerId);
-                            _this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null);
+                            _this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null, true);
                             var ii = new BABYLON.IntersectInfo2D();
                             ii.pickPosition = ppi.canvasPointerPos.clone();
                             ii.findFirstOnly = false;
@@ -1083,7 +1085,8 @@ var BABYLON;
             this._renderingSize.height = newHeight;
             // If the canvas fit the rendering size and it changed, update
             if (renderingSizeChanged && this._fitRenderingDevice) {
-                this.size = this._renderingSize;
+                this._actualSize = this._renderingSize.clone();
+                this._size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;
                 }
@@ -1092,7 +1095,7 @@ var BABYLON;
             }
             // If there's a design size, update the scale according to the renderingSize
             if (this._designSize) {
-                var scale;
+                var scale = void 0;
                 if (this._designUseHorizAxis) {
                     scale = this._renderingSize.width / this._designSize.width;
                 }
@@ -1124,7 +1127,7 @@ var BABYLON;
             }
             this._updateCanvasState(false);
             if (this._primPointerInfo.canvasPointerPos) {
-                this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false);
+                this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
                 this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
             }
             this.engine.setState(false);
@@ -1173,8 +1176,8 @@ var BABYLON;
             // Try to find a spot in one of the cached texture
             var res = null;
             var map;
-            for (var _i = 0; _i < mapArray.length; _i++) {
-                var _map = mapArray[_i];
+            for (var _i = 0, mapArray_1 = mapArray; _i < mapArray_1.length; _i++) {
+                var _map = mapArray_1[_i];
                 map = _map;
                 var node = map.allocateRect(size);
                 if (node) {
@@ -1203,7 +1206,7 @@ var BABYLON;
             if (group !== this || this._isScreenSpace) {
                 var node = res.node;
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
-                var sprite;
+                var sprite = void 0;
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
                     this._cachedCanvasGroup = BABYLON.Group2D._createCachedCanvasGroup(this);
                     sprite = new BABYLON.Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
@@ -1383,7 +1386,7 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    })(BABYLON.Group2D);
+    }(BABYLON.Group2D));
     BABYLON.Canvas2D = Canvas2D;
     var WorldSpaceCanvas2D = (function (_super) {
         __extends(WorldSpaceCanvas2D, _super);
@@ -1414,6 +1417,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WorldSpaceCanvas2D(scene, size, settings) {
+            var _this = this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             var s = settings;
             s.isScreenSpace = false;
@@ -1463,12 +1467,18 @@ var BABYLON;
                 this._worldSpaceNode = settings.customWorldSpaceNode;
                 this.applyCachedTexture(null, null);
             }
+            this.propertyChanged.add(function (e, st) {
+                var mesh = _this._worldSpaceNode;
+                if (mesh) {
+                    mesh.isVisible = _this.isVisible;
+                }
+            }, BABYLON.Prim2DBase.isVisibleProperty.flagId);
         }
         WorldSpaceCanvas2D = __decorate([
             BABYLON.className("WorldSpaceCanvas2D")
         ], WorldSpaceCanvas2D);
         return WorldSpaceCanvas2D;
-    })(Canvas2D);
+    }(Canvas2D));
     BABYLON.WorldSpaceCanvas2D = WorldSpaceCanvas2D;
     var ScreenSpaceCanvas2D = (function (_super) {
         __extends(ScreenSpaceCanvas2D, _super);
@@ -1511,6 +1521,6 @@ var BABYLON;
             BABYLON.className("ScreenSpaceCanvas2D")
         ], ScreenSpaceCanvas2D);
         return ScreenSpaceCanvas2D;
-    })(Canvas2D);
+    }(Canvas2D));
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
 })(BABYLON || (BABYLON = {}));
