@@ -12,7 +12,7 @@
             return new CubeTexture("", scene, null, noMipmap, files);
         }
 
-        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad: () => void = null, onError: () => void = null) {
+        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[]) {
             super(scene);
 
             this.name = rootUrl;
@@ -45,15 +45,9 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError);
+                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap);
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
-                }
-            } else {
-                if (this._texture.isReady) {
-                    Tools.SetImmediate(() => onLoad());
-                } else {
-                    this._texture.onLoadedCallbacks.push(onLoad);
                 }
             }
 

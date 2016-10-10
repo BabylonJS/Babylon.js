@@ -179,40 +179,6 @@
         }
     }
 
-    export class CubeTextureAssetTask implements IAssetTask {
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
-
-        public isCompleted = false;
-        public texture: CubeTexture;
-
-        constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
-        }
-
-        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
-
-            var onload = () => {
-                this.isCompleted = true;
-
-                if (this.onSuccess) {
-                    this.onSuccess(this);
-                }
-
-                onSuccess();
-            };
-
-            var onerror = () => {
-                if (this.onError) {
-                    this.onError(this);
-                }
-
-                onError();
-            };
-
-            this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
-        }
-    }
-
     export class AssetsManager {
         private _scene: Scene;
 
