@@ -386,7 +386,7 @@ declare module BABYLON {
         updateVideoTexture(texture: WebGLTexture, video: HTMLVideoElement, invertY: boolean): void;
         createRenderTargetTexture(size: any, options: any): WebGLTexture;
         createRenderTargetCubeTexture(size: number, options?: any): WebGLTexture;
-        createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean): WebGLTexture;
+        createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad?: () => void, onError?: () => void): WebGLTexture;
         updateTextureSize(texture: WebGLTexture, width: number, height: number): void;
         createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer) => ArrayBufferView[], mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture;
         _releaseTexture(texture: WebGLTexture): void;
@@ -12336,6 +12336,28 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        refreshRate: number;
+        getScene(): Scene;
+        cubeTexture: RenderTargetTexture;
+        renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class BoundingBoxRenderer {
         frontColor: Color3;
         backColor: Color3;
@@ -12797,6 +12819,19 @@ declare module BABYLON {
         isCompleted: boolean;
         texture: Texture;
         constructor(name: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode?: number);
+        run(scene: Scene, onSuccess: () => void, onError: () => void): void;
+    }
+    class CubeTextureAssetTask implements IAssetTask {
+        name: string;
+        url: string;
+        extensions: string[];
+        noMipmap: boolean;
+        files: string[];
+        onSuccess: (task: IAssetTask) => void;
+        onError: (task: IAssetTask) => void;
+        isCompleted: boolean;
+        texture: CubeTexture;
+        constructor(name: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]);
         run(scene: Scene, onSuccess: () => void, onError: () => void): void;
     }
     class AssetsManager {
@@ -14326,7 +14361,7 @@ declare module BABYLON {
         private _extensions;
         private _textureMatrix;
         static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture;
-        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[]);
+        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[], onLoad?: () => void, onError?: () => void);
         delayLoad(): void;
         getReflectionTextureMatrix(): Matrix;
         static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture;
