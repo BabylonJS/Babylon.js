@@ -66,7 +66,7 @@
         }
     }
 
-    @className("SolidColorBrush2D", "BABYLON")
+    @className("SolidColorBrush2D")
     /**
      * This class implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
      */
@@ -113,7 +113,7 @@
         private _color: Color4;
     }
 
-    @className("GradientColorBrush2D", "BABYLON")
+    @className("GradientColorBrush2D")
     /**
      * This class implements a Gradient Color Brush, the brush color will blend from a first given color to a second one.
      */
