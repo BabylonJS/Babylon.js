@@ -33,20 +33,10 @@ var BABYLON;
         PointLight.prototype.transferToEffect = function (effect, positionUniformName) {
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();
-                if (this.getScene().useRightHandedSystem) {
-                    effect.setFloat4(positionUniformName, -this.transformedPosition.x, -this.transformedPosition.y, -this.transformedPosition.z, 0);
-                }
-                else {
-                    effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
-                }
+                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
                 return;
             }
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat4(positionUniformName, -this.position.x, -this.position.y, -this.position.z, 0);
-            }
-            else {
-                effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
-            }
+            effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, 0);
         };
         PointLight.prototype.needCube = function () {
             return true;
@@ -92,6 +82,6 @@ var BABYLON;
             BABYLON.serializeAsVector3()
         ], PointLight.prototype, "position", void 0);
         return PointLight;
-    })(BABYLON.Light);
+    }(BABYLON.Light));
     BABYLON.PointLight = PointLight;
 })(BABYLON || (BABYLON = {}));

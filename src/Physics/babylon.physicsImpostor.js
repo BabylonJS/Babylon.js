@@ -159,6 +159,9 @@ var BABYLON;
             get: function () {
                 return this._parent;
             },
+            set: function (value) {
+                this._parent = value;
+            },
             enumerable: true,
             configurable: true
         });
@@ -360,6 +363,6 @@ var BABYLON;
         PhysicsImpostor.ParticleImpostor = 8;
         PhysicsImpostor.HeightmapImpostor = 9;
         return PhysicsImpostor;
-    })();
+    }());
     BABYLON.PhysicsImpostor = PhysicsImpostor;
 })(BABYLON || (BABYLON = {}));

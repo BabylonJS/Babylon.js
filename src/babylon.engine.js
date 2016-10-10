@@ -109,13 +109,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    })();
+    }());
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    })();
+    }());
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -140,6 +140,7 @@ var BABYLON;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._webGLVersion = "1.0";
+            this._badOS = false;
             this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
@@ -325,8 +326,117 @@ var BABYLON;
             if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /AppleWebKit.*10.[\d] Mobile/;
+            //ua sniffing is the tool of the devil.
+            this._badOS = regexp.test(navigator.userAgent);
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
+        Object.defineProperty(Engine, "NEVER", {
+            get: function () {
+                return Engine._NEVER;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "ALWAYS", {
+            get: function () {
+                return Engine._ALWAYS;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "LESS", {
+            get: function () {
+                return Engine._LESS;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "EQUAL", {
+            get: function () {
+                return Engine._EQUAL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "LEQUAL", {
+            get: function () {
+                return Engine._LEQUAL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "GREATER", {
+            get: function () {
+                return Engine._GREATER;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "GEQUAL", {
+            get: function () {
+                return Engine._GEQUAL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "NOTEQUAL", {
+            get: function () {
+                return Engine._NOTEQUAL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "KEEP", {
+            get: function () {
+                return Engine._KEEP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "REPLACE", {
+            get: function () {
+                return Engine._REPLACE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "INCR", {
+            get: function () {
+                return Engine._INCR;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "DECR", {
+            get: function () {
+                return Engine._DECR;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "INVERT", {
+            get: function () {
+                return Engine._INVERT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "INCR_WRAP", {
+            get: function () {
+                return Engine._INCR_WRAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "DECR_WRAP", {
+            get: function () {
+                return Engine._DECR_WRAP;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
             get: function () {
                 return Engine._ALPHA_DISABLE;
@@ -462,7 +572,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.5.-alpha";
+                return "2.5.-beta";
             },
             enumerable: true,
             configurable: true
@@ -757,7 +867,10 @@ var BABYLON;
             this._measureFps();
         };
         Engine.prototype.endFrame = function () {
-            //this.flushFramebuffer();
+            //force a flush in case we are using a bad OS.
+            if (this._badOS) {
+                this.flushFramebuffer();
+            }
             //submit frame to the vr device, if enabled
             if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
                 this._vrDisplayEnabled.submitFrame();
@@ -1697,6 +1810,9 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+            }
             this.resetTextureCache();
             texture.isReady = true;
         };
@@ -2535,11 +2651,28 @@ var BABYLON;
         Engine._TEXTURETYPE_UNSIGNED_INT = 0;
         Engine._TEXTURETYPE_FLOAT = 1;
         Engine._TEXTURETYPE_HALF_FLOAT = 2;
+        // Depht or Stencil test Constants.
+        Engine._NEVER = 0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
+        Engine._ALWAYS = 0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
+        Engine._LESS = 0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
+        Engine._EQUAL = 0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
+        Engine._LEQUAL = 0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
+        Engine._GREATER = 0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
+        Engine._GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
+        Engine._NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
+        // Stencil Actions Constants.
+        Engine._KEEP = 0x1E00;
+        Engine._REPLACE = 0x1E01;
+        Engine._INCR = 0x1E02;
+        Engine._DECR = 0x1E03;
+        Engine._INVERT = 0x150A;
+        Engine._INCR_WRAP = 0x8507;
+        Engine._DECR_WRAP = 0x8508;
         // Updatable statics so stick with vars here
         Engine.CollisionsEpsilon = 0.001;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    })();
+    }());
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));

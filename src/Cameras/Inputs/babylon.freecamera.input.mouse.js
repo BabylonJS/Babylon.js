@@ -14,9 +14,8 @@ var BABYLON;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
+            var engine = this.camera.getEngine();
             if (!this._pointerInput) {
-                var camera = this.camera;
-                var engine = this.camera.getEngine();
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
@@ -55,12 +54,12 @@ var BABYLON;
                         var offsetX = evt.clientX - _this.previousPosition.x;
                         var offsetY = evt.clientY - _this.previousPosition.y;
                         if (_this.camera.getScene().useRightHandedSystem) {
-                            camera.cameraRotation.y -= offsetX / _this.angularSensibility;
+                            _this.camera.cameraRotation.y -= offsetX / _this.angularSensibility;
                         }
                         else {
-                            camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                            _this.camera.cameraRotation.y += offsetX / _this.angularSensibility;
                         }
-                        camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                        _this.camera.cameraRotation.x += offsetY / _this.angularSensibility;
                         _this.previousPosition = {
                             x: evt.clientX,
                             y: evt.clientY
@@ -78,12 +77,12 @@ var BABYLON;
                 var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                 var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
                 if (_this.camera.getScene().useRightHandedSystem) {
-                    camera.cameraRotation.y -= offsetX / _this.angularSensibility;
+                    _this.camera.cameraRotation.y -= offsetX / _this.angularSensibility;
                 }
                 else {
-                    camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                    _this.camera.cameraRotation.y += offsetX / _this.angularSensibility;
                 }
-                camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                _this.camera.cameraRotation.x += offsetY / _this.angularSensibility;
                 _this.previousPosition = null;
                 if (!noPreventDefault) {
                     evt.preventDefault();
@@ -111,7 +110,7 @@ var BABYLON;
             BABYLON.serialize()
         ], FreeCameraMouseInput.prototype, "angularSensibility", void 0);
         return FreeCameraMouseInput;
-    })();
+    }());
     BABYLON.FreeCameraMouseInput = FreeCameraMouseInput;
     BABYLON.CameraInputTypes["FreeCameraMouseInput"] = FreeCameraMouseInput;
 })(BABYLON || (BABYLON = {}));

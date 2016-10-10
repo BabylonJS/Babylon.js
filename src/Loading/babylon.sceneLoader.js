@@ -242,6 +242,7 @@ var BABYLON;
                         if (onsuccess) {
                             onsuccess(scene);
                         }
+                        scene._removePendingData(loadingToken);
                     }, function () {
                         if (onerror) {
                             onerror(scene);
@@ -283,7 +284,7 @@ var BABYLON;
         // Members
         SceneLoader._registeredPlugins = {};
         return SceneLoader;
-    })();
+    }());
     BABYLON.SceneLoader = SceneLoader;
     ;
 })(BABYLON || (BABYLON = {}));

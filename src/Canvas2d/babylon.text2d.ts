@@ -93,25 +93,35 @@
         get topLeftUV(): Vector2 {
             return null;
         }
+        set topLeftUV(value: Vector2) {
+        }
 
         @instanceData()
         get sizeUV(): Vector2 {
             return null;
+        }
+        set sizeUV(value: Vector2) {
         }
 
         @instanceData()
         get textureSize(): Vector2 {
             return null;
         }
+        set textureSize(value: Vector2) {
+        }
 
         @instanceData()
         get color(): Color4 {
             return null;
         }
+        set color(value: Color4) {
+        }
 
         @instanceData()
         get superSampleFactor(): number {
             return null;
+        }
+        set superSampleFactor(value: number) {
         }
     }
 

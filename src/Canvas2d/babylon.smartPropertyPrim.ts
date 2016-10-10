@@ -1131,7 +1131,7 @@
 
             // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
             if (this instanceof Group2D) {
-                this.handleGroupChanged(propInfo);
+                (<SmartPropertyPrim>this).handleGroupChanged(propInfo);
             }
 
             // Check for parent layout dirty

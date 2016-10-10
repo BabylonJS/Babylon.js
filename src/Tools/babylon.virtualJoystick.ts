@@ -222,8 +222,8 @@ module BABYLON {
             else {
                 let data = this._touches.get(e.pointerId.toString());
                 if (data) {
-                    data.x = e.clientX;
-                    data.y = e.clientY;                     
+                    (data as any).x = e.clientX;
+                    (data as any).y = e.clientY;                     
                 }
             }
         }

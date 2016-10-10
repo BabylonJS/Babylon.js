@@ -1,4 +1,4 @@
-
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -210,7 +210,7 @@ var BABYLON;
             //The complete path to the mtl file
             var pathOfFile = BABYLON.Tools.BaseUrl + rootUrl + url;
             // Loads through the babylon tools to allow fileInput search.
-            BABYLON.Tools.LoadFile(pathOfFile, onSuccess, null, null, false, function () { console.warn("Error - Unable to load " + pathOfFile); }, true /* synchronous call */);
+            BABYLON.Tools.LoadFile(pathOfFile, onSuccess, null, null, false, function () { console.warn("Error - Unable to load " + pathOfFile); });
         };
         OBJFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
             //get the meshes from OBJ file
@@ -354,13 +354,12 @@ var BABYLON;
                     unwrappedNormalsForBabylon.push(wrappedNormalsForBabylon[l].x, wrappedNormalsForBabylon[l].y, wrappedNormalsForBabylon[l].z);
                     unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
                 }
-				// Reset arrays for the next new meshes
+                // Reset arrays for the next new meshes
                 wrappedPositionForBabylon = [];
                 wrappedNormalsForBabylon = [];
                 wrappedUvsForBabylon = [];
                 tuplePosNorm = [];
                 curPositionInIndices = 0;
-                
             };
             /**
              * Create triangles from polygons by recursion
@@ -505,7 +504,7 @@ var BABYLON;
                     indicesForBabylon = [];
                     unwrappedPositionsForBabylon = [];
                     unwrappedNormalsForBabylon = [];
-                    unwrappedUVForBabylon = [];  
+                    unwrappedUVForBabylon = [];
                 }
             };
             //Main function
@@ -685,9 +684,8 @@ var BABYLON;
                 //Push the name of the material to an array
                 //This is indispensable for the importMesh function
                 materialToUse.push(meshesFromObj[j].materialName);
-                //Set the data for the babylonMesh
-                
                 var vertexData = new BABYLON.VertexData(); //The container for the values
+                //Set the data for the babylonMesh
                 vertexData.positions = handledMesh.positions;
                 vertexData.normals = handledMesh.normals;
                 vertexData.uvs = handledMesh.uvs;
