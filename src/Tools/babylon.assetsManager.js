@@ -138,6 +138,35 @@ var BABYLON;
         return TextureAssetTask;
     }());
     BABYLON.TextureAssetTask = TextureAssetTask;
+    var CubeTextureAssetTask = (function () {
+        function CubeTextureAssetTask(name, url, extensions, noMipmap, files) {
+            this.name = name;
+            this.url = url;
+            this.extensions = extensions;
+            this.noMipmap = noMipmap;
+            this.files = files;
+            this.isCompleted = false;
+        }
+        CubeTextureAssetTask.prototype.run = function (scene, onSuccess, onError) {
+            var _this = this;
+            var onload = function () {
+                _this.isCompleted = true;
+                if (_this.onSuccess) {
+                    _this.onSuccess(_this);
+                }
+                onSuccess();
+            };
+            var onerror = function () {
+                if (_this.onError) {
+                    _this.onError(_this);
+                }
+                onError();
+            };
+            this.texture = new BABYLON.CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
+        };
+        return CubeTextureAssetTask;
+    }());
+    BABYLON.CubeTextureAssetTask = CubeTextureAssetTask;
     var AssetsManager = (function () {
         function AssetsManager(scene) {
             this.tasks = new Array();
