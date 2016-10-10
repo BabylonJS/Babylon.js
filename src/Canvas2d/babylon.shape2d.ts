@@ -1,6 +1,6 @@
 ﻿module BABYLON {
 
-    @className("Shape2D", "BABYLON")
+    @className("Shape2D")
     /**
      * The abstract class for parametric shape based Primitives types.
      * Shape2D based primitives are composed of two parts: fill and border, both are optional but at least one must be specified.

@@ -159,7 +159,7 @@
         }
     }
 
-    @className("Ellipse2D", "BABYLON")
+    @className("Ellipse2D")
     /**
      * Ellipse Primitive class
      */

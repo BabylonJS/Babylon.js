@@ -165,7 +165,7 @@
         }
     }
 
-    @className("Lines2D", "BABYLON")
+    @className("Lines2D")
     /**
      * Primitive drawing a series of line segments
      */
