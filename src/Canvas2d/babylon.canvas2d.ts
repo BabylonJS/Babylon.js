@@ -53,6 +53,8 @@
          */
         public static CACHESTRATEGY_DONTCACHE = 4;
 
+        private static _INSTANCES : Array<Canvas2D> = [];
+
         constructor(scene: Scene, settings?: {
             id?: string,
             children?: Array<Prim2DBase>,
@@ -184,8 +186,8 @@
 
             this._setupInteraction(enableInteraction);
 
-            // Register the canvas into the scene
-            this._scene.canvas2ds.push(this);
+            // Register this instance
+            Canvas2D._INSTANCES.push(this);
         }
 
         public get drawCallsOpaqueCounter(): PerfCounter {
@@ -234,6 +236,10 @@
 
         public get boundingInfoRecomputeCounter(): PerfCounter {
             return this._boundingInfoRecomputeCounter;
+        }
+
+        public static get instances() : Array<Canvas2D> {
+            return Canvas2D._INSTANCES;
         }
 
         protected _canvasPreInit(settings: any) {
@@ -820,13 +826,13 @@
             if (this._groupCacheMaps) {
                 this._groupCacheMaps.forEach((k, m) => m.forEach(e => e.dispose()));
                 this._groupCacheMaps = null;
-            }
+            }       
 
-            // Unregister this canvas from the scene
-            let index = this._scene.canvas2ds.indexOf(this);
+            // Unregister this instance
+            let index = Canvas2D._INSTANCES.indexOf(this);
             if (index > -1) {
-                this._scene.canvas2ds.splice(index, 1);
-            }            
+                Canvas2D._INSTANCES.splice(index, 1);
+            }  
         }
 
         /**
