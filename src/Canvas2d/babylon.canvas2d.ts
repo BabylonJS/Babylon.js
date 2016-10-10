@@ -19,7 +19,7 @@
         }
     }
 
-    @className("Canvas2D")
+    @className("Canvas2D", "BABYLON")
     /**
      * The Canvas2D main class.
      * This class is extended in both ScreenSpaceCanvas2D and WorldSpaceCanvas2D which are designed only for semantic use.
@@ -1597,7 +1597,7 @@
         private static _gradientColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
     }
 
-    @className("WorldSpaceCanvas2D")
+    @className("WorldSpaceCanvas2D", "BABYLON")
     /**
      * Class to create a WorldSpace Canvas2D.
      */
@@ -1717,7 +1717,7 @@
         }
     }
 
-    @className("ScreenSpaceCanvas2D")
+    @className("ScreenSpaceCanvas2D", "BABYLON")
     /**
      * Class to create a ScreenSpace Canvas2D
      */
