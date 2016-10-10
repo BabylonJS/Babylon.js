@@ -26,6 +26,7 @@
  - Text2D super sampling to enhance quality in World Space Canvas
  - World Space Canvas is now rendering in an adaptive way for its resolution to fit the on screen projected one to achieve a good rendering quality
  - Transparent Primitives are now drawn with Instanced Array when supported
+ - New property in Scene (canvas2ds) that contains all instances of canvas2d in this scene [Temechon](https://github.com/Temechon)
 - WebVR Camera was updated to be conform with the current specs. ([RaananW](https://github.com/RaananW)) 
 
 ### Exporters
