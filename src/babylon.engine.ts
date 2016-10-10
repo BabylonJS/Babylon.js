@@ -95,7 +95,7 @@
     };
 
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
-        onfinish: (images: HTMLImageElement[]) => void) => {
+        onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: () => void = null) => {
 
         var img: HTMLImageElement;
 
@@ -112,6 +112,10 @@
 
         var onerror = () => {
             scene._removePendingData(img);
+
+            if (onErrorCallBack) {
+                onErrorCallBack();
+            }
         };
 
         img = Tools.LoadImage(url, onload, onerror, scene.database);
@@ -119,13 +123,13 @@
     }
 
     var cascadeLoad = (rootUrl: string, scene,
-        onfinish: (images: HTMLImageElement[]) => void, files: string[]) => {
+        onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: () => void = null) => {
 
         var loadedImages: any = [];
         loadedImages._internalCount = 0;
 
         for (var index = 0; index < 6; index++) {
-            partialLoad(files[index], index, loadedImages, scene, onfinish);
+            partialLoad(files[index], index, loadedImages, scene, onfinish, onError);
         }
     };
 
@@ -2413,7 +2417,7 @@
             return texture;
         }
 
-        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean): WebGLTexture {
+        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: () => void = null, onError: () => void = null): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
@@ -2451,7 +2455,7 @@
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
-                }, null, null, true);
+                }, null, null, true, onError);
             } else {
                 cascadeLoad(rootUrl, scene, imgs => {
                     var width = Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
@@ -2490,7 +2494,11 @@
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
-                }, files);
+
+                    if (onLoad) {
+                        onLoad();
+                    }
+                }, files, onError);
             }
 
             this._loadedTexturesCache.push(texture);
