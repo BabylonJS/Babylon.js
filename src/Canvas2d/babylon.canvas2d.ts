@@ -183,6 +183,9 @@
                         //this._supprtInstancedArray = false; // TODO REMOVE!!!
 
             this._setupInteraction(enableInteraction);
+
+            // Register the canvas into the scene
+            this._scene.canvas2ds.push(this);
         }
 
         public get drawCallsOpaqueCounter(): PerfCounter {
@@ -818,6 +821,12 @@
                 this._groupCacheMaps.forEach((k, m) => m.forEach(e => e.dispose()));
                 this._groupCacheMaps = null;
             }
+
+            // Unregister this canvas from the scene
+            let index = this._scene.canvas2ds.indexOf(this);
+            if (index > -1) {
+                this._scene.canvas2ds.splice(index, 1);
+            }            
         }
 
         /**
