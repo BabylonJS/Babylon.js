@@ -160,7 +160,7 @@
         }
     }
 
-    @className("Rectangle2D", "BABYLON")
+    @className("Rectangle2D")
     /**
      * The Rectangle Primitive type
      */
