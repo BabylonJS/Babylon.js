@@ -82,8 +82,7 @@ var BABYLON;
         });
         texture.onLoadedCallbacks = [];
     };
-    var partialLoad = function (url, index, loadedImages, scene, onfinish, onErrorCallBack) {
-        if (onErrorCallBack === void 0) { onErrorCallBack = null; }
+    var partialLoad = function (url, index, loadedImages, scene, onfinish) {
         var img;
         var onload = function () {
             loadedImages[index] = img;
@@ -95,19 +94,15 @@ var BABYLON;
         };
         var onerror = function () {
             scene._removePendingData(img);
-            if (onErrorCallBack) {
-                onErrorCallBack();
-            }
         };
         img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
     };
-    var cascadeLoad = function (rootUrl, scene, onfinish, files, onError) {
-        if (onError === void 0) { onError = null; }
+    var cascadeLoad = function (rootUrl, scene, onfinish, files) {
         var loadedImages = [];
         loadedImages._internalCount = 0;
         for (var index = 0; index < 6; index++) {
-            partialLoad(files[index], index, loadedImages, scene, onfinish, onError);
+            partialLoad(files[index], index, loadedImages, scene, onfinish);
         }
     };
     var InstancingAttributeInfo = (function () {
@@ -2025,10 +2020,8 @@ var BABYLON;
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createCubeTexture = function (rootUrl, scene, files, noMipmap, onLoad, onError) {
+        Engine.prototype.createCubeTexture = function (rootUrl, scene, files, noMipmap) {
             var _this = this;
-            if (onLoad === void 0) { onLoad = null; }
-            if (onError === void 0) { onError = null; }
             var gl = this._gl;
             var texture = gl.createTexture();
             texture.isCube = true;
@@ -2055,7 +2048,7 @@ var BABYLON;
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
-                }, null, null, true, onError);
+                }, null, null, true);
             }
             else {
                 cascadeLoad(rootUrl, scene, function (imgs) {
@@ -2086,10 +2079,7 @@ var BABYLON;
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
-                    if (onLoad) {
-                        onLoad();
-                    }
-                }, files, onError);
+                }, files);
             }
             this._loadedTexturesCache.push(texture);
             return texture;
