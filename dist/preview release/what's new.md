@@ -28,6 +28,7 @@
  - Transparent Primitives are now drawn with Instanced Array when supported
  - New property in Canvas2D (instances) that contains all instances of canvas2d [Temechon](https://github.com/Temechon)
 - WebVR Camera was updated to be conform with the current specs. ([RaananW](https://github.com/RaananW)) 
+- New "CubeTextureTask" function will allow you to load a CubeTexture in the assetsManager. ([agallouin](https://github.com/AGallouin)) 
 
 ### Exporters
     
