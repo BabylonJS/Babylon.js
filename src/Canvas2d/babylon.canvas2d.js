@@ -375,7 +375,7 @@ var BABYLON;
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
             this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
-            this._updateOverStatus();
+            this._updateOverStatus(true);
             // Check if we have nothing to raise
             if (!this._actualOverPrimitive && !capturedPrim) {
                 return;
@@ -478,11 +478,14 @@ var BABYLON;
             this._actualIntersectionList = ii.intersectedPrimitives;
             this._previousOverPrimitive = this._actualOverPrimitive;
             this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+            if (this._previousOverPrimitive && this._actualOverPrimitive && this._previousOverPrimitive.prim !== this._actualOverPrimitive.prim) {
+                console.log("changed");
+            }
             this._intersectionRenderId = this.scene.getRenderId();
         };
         // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
-        Canvas2D.prototype._updateOverStatus = function () {
-            if ((this.scene.getRenderId() === this._hoverStatusRenderId) || !this._previousIntersectionList || !this._actualIntersectionList) {
+        Canvas2D.prototype._updateOverStatus = function (force) {
+            if ((!force && (this.scene.getRenderId() === this._hoverStatusRenderId)) || !this._previousIntersectionList || !this._actualIntersectionList) {
                 return;
             }
             // Detect a change of over
@@ -612,6 +615,7 @@ var BABYLON;
                             var ppi = _this._primPointerInfo;
                             var capturedPrim = _this.getCapturedPrimitive(ppi.pointerId);
                             _this._updateIntersectionList(ppi.canvasPointerPos, capturedPrim !== null, true);
+                            _this._updateOverStatus(false);
                             var ii = new BABYLON.IntersectInfo2D();
                             ii.pickPosition = ppi.canvasPointerPos.clone();
                             ii.findFirstOnly = false;
@@ -1128,7 +1132,7 @@ var BABYLON;
             this._updateCanvasState(false);
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
-                this._updateOverStatus(); // TODO this._primPointerInfo may not be up to date!
+                this._updateOverStatus(false); // TODO this._primPointerInfo may not be up to date!
             }
             this.engine.setState(false);
             this._groupRender();

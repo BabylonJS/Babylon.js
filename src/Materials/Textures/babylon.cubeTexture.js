@@ -7,7 +7,9 @@ var BABYLON;
 (function (BABYLON) {
     var CubeTexture = (function (_super) {
         __extends(CubeTexture, _super);
-        function CubeTexture(rootUrl, scene, extensions, noMipmap, files) {
+        function CubeTexture(rootUrl, scene, extensions, noMipmap, files, onLoad, onError) {
+            if (onLoad === void 0) { onLoad = null; }
+            if (onError === void 0) { onError = null; }
             _super.call(this, scene);
             this.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
             this.name = rootUrl;
@@ -31,10 +33,18 @@ var BABYLON;
             this._files = files;
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap);
+                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError);
                 }
                 else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                }
+            }
+            else {
+                if (this._texture.isReady) {
+                    BABYLON.Tools.SetImmediate(function () { return onLoad(); });
+                }
+                else {
+                    this._texture.onLoadedCallbacks.push(onLoad);
                 }
             }
             this.isCube = true;
