@@ -339,6 +339,9 @@
         */
         public meshes = new Array<AbstractMesh>();
 
+        // Contain all canvas2D used in the scene
+        public canvas2ds = new Array<Canvas2D>();
+
         // Geometries
         private _geometries = new Array<Geometry>();
 
