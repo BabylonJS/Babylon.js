@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    @className("Group2D")
+    @className("Group2D", "BABYLON")
     /**
      * A non renderable primitive that defines a logical group.
      * Can also serve the purpose of caching its content into a bitmap to reduce rendering overhead
