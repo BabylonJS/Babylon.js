@@ -1349,7 +1349,7 @@
         }
 
         public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
-            if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
+         //   if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
 
@@ -1384,13 +1384,13 @@
                         }
                     }
                 }
-            }
+         //   }
 
-            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
+           // if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
-            }
+            //}
         }
 
         public unbindInstanceAttributes() {
@@ -1615,13 +1615,13 @@
         }
 
         public enableEffect(effect: Effect): void {
-            if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
+            //if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
 
-                if (effect && effect.onBind) {
-                    effect.onBind(effect);
-                }
-                return;
-            }
+            //    if (effect && effect.onBind) {
+            //        effect.onBind(effect);
+            //    }
+            //    return;
+            //}
 
             // Use program
             this.setProgram(effect.getProgram());
@@ -2926,6 +2926,16 @@
             }
         }
 
+        public unbindAllAttributes() {
+            for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+                if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
+                    continue;
+                }
+                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArraysEnabled[i] = false;
+            }
+        }
+
         // Dispose
         public dispose(): void {
             this.hideLoadingUI();
@@ -2946,12 +2956,7 @@
             }
 
             // Unbind
-            for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
-                if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
-                    continue;
-                }
-                this._gl.disableVertexAttribArray(i);
-            }
+            this.unbindAllAttributes();
 
             this._gl = null;
 

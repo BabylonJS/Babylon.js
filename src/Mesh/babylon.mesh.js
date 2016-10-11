@@ -423,9 +423,9 @@ var BABYLON;
             if (!this._geometry) {
                 var result = [];
                 if (this._delayInfo) {
-                    for (var kind in this._delayInfo) {
+                    this._delayInfo.forEach(function (kind, index, array) {
                         result.push(kind);
-                    }
+                    });
                 }
                 return result;
             }
