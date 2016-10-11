@@ -42,6 +42,7 @@
 - Fixed `Mesh.CreateDashedLines()` missing `instance` parameter on update ([jerome](https://github.com/jbousquie))
 - Added BBox update on each ribbon based shape (ribbon, tube, extrusion, etc) on dynamic updates ([jerome](https://github.com/jbousquie))
 - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
+- Fixed billboard when the SPS mesh is parented in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
 - Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
 - Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
 - Fixed bug with instances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))
