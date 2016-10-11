@@ -305,8 +305,9 @@
     /**
      * Defines the horizontal and vertical alignment information for a Primitive.
      */
+    @className("PrimitiveAlignment", "BABYLON")
     export class PrimitiveAlignment {
-        constructor(changeCallback: () => void) {
+        constructor(changeCallback?: () => void) {
             this._changedCallback = changeCallback;
             this._horizontal = PrimitiveAlignment.AlignLeft;
             this._vertical = PrimitiveAlignment.AlignBottom;
@@ -362,7 +363,7 @@
             }
 
             this._horizontal = value;
-            this._changedCallback();
+            this.onChangeCallback();
         }
 
         /**
@@ -378,7 +379,13 @@
             }
 
             this._vertical = value;
-            this._changedCallback();
+            this.onChangeCallback();
+        }
+
+        private onChangeCallback() {
+            if (this._changedCallback) {
+                this._changedCallback();
+            }
         }
 
         private _changedCallback: () => void;
@@ -435,33 +442,48 @@
          */
         fromString(value: string) {
             let m = value.trim().split(",");
-            for (let v of m) {
-                v = v.toLocaleLowerCase().trim();
+            if (m.length === 1) {
+                this.setHorizontal(m[0]);
+                this.setVertical(m[0]);
+            } else {
+                for (let v of m) {
+                    v = v.toLocaleLowerCase().trim();
 
-                // Horizontal
-                let i = v.indexOf("h:");
-                if (i === -1) {
-                    i = v.indexOf("horizontal:");
-                }
+                    // Horizontal
+                    let i = v.indexOf("h:");
+                    if (i === -1) {
+                        i = v.indexOf("horizontal:");
+                    }
 
-                if (i !== -1) {
-                    v = v.substr(v.indexOf(":") + 1);
-                    this.setHorizontal(v);
-                    continue;
-                }
+                    if (i !== -1) {
+                        v = v.substr(v.indexOf(":") + 1);
+                        this.setHorizontal(v);
+                        continue;
+                    }
 
-                // Vertical
-                i = v.indexOf("v:");
-                if (i === -1) {
-                    i = v.indexOf("vertical:");
-                }
+                    // Vertical
+                    i = v.indexOf("v:");
+                    if (i === -1) {
+                        i = v.indexOf("vertical:");
+                    }
 
-                if (i !== -1) {
-                    v = v.substr(v.indexOf(":") + 1);
-                    this.setVertical(v);
-                    continue;
+                    if (i !== -1) {
+                        v = v.substr(v.indexOf(":") + 1);
+                        this.setVertical(v);
+                        continue;
+                    }
                 }
             }
+        }
+
+        copyFrom(pa: PrimitiveAlignment) {
+            this._horizontal = pa._horizontal;
+            this._vertical = pa._vertical;
+            this.onChangeCallback();
+        }
+
+        public get isDefault(): boolean {
+            return this.horizontal === PrimitiveAlignment.AlignLeft && this.vertical === PrimitiveAlignment.AlignBottom;
         }
     }
 
@@ -478,8 +500,9 @@
      * Define a thickness toward every edges of a Primitive to allow margin and padding.
      * The thickness can be expressed as pixels, percentages, inherit the value of the parent primitive or be auto.
      */
+    @className("PrimitiveThickness", "BABYLON")
     export class PrimitiveThickness {
-        constructor(parentAccess: () => PrimitiveThickness, changedCallback: () => void) {
+        constructor(parentAccess: () => PrimitiveThickness, changedCallback?: () => void) {
             this._parentAccess = parentAccess;
             this._changedCallback = changedCallback;
             this._pixels = new Array<number>(4);
@@ -511,7 +534,7 @@
                 this._setStringValue(m[0], 2, false);
                 this._setStringValue(m[0], 3, false);
 
-                this._changedCallback();
+                this.onChangeCallback();
                 return;
             }
 
@@ -530,7 +553,7 @@
             if ((this._flags & 0x0F00) === 0) this._flags |= PrimitiveThickness.Pixel << 8;
             if ((this._flags & 0xF000) === 0) this._flags |= PrimitiveThickness.Pixel << 12;
 
-            this._changedCallback();
+            this.onChangeCallback();
 
         }
 
@@ -549,7 +572,7 @@
             this._setStringValue(left, 1, false);
             this._setStringValue(right, 2, false);
             this._setStringValue(bottom, 3, false);
-            this._changedCallback();
+            this.onChangeCallback();
             return this;
         }
 
@@ -567,7 +590,7 @@
             this._pixels[1] = left;
             this._pixels[2] = right;
             this._pixels[3] = bottom;
-            this._changedCallback();
+            this.onChangeCallback();
             return this;
         }
 
@@ -582,8 +605,18 @@
             this._pixels[1] = margin;
             this._pixels[2] = margin;
             this._pixels[3] = margin;
-            this._changedCallback();
+            this.onChangeCallback();
             return this;
+        }
+
+        public copyFrom(pt: PrimitiveThickness) {
+            this._clear();
+            for (let i = 0; i < 4; i++) {
+                this._pixels[i] = pt._pixels[i];
+                this._percentages[i] = pt._percentages[i];
+            }
+            this._flags = pt._flags;
+            this.onChangeCallback();
         }
 
         /**
@@ -597,7 +630,7 @@
             this._pixels[1] = 0;
             this._pixels[2] = 0;
             this._pixels[3] = 0;
-            this._changedCallback();
+            this.onChangeCallback();
             return this;
         }
 
@@ -649,7 +682,7 @@
                 this._setType(index, PrimitiveThickness.Auto);
                 this._pixels[index] = 0;
                 if (emitChanged) {
-                    this._changedCallback();
+                    this.onChangeCallback();
                 }
             } else if (v === "inherit") {
                 if (this._isType(index, PrimitiveThickness.Inherit)) {
@@ -658,7 +691,7 @@
                 this._setType(index, PrimitiveThickness.Inherit);
                 this._pixels[index] = null;
                 if (emitChanged) {
-                    this._changedCallback();
+                    this.onChangeCallback();
                 }
             } else {
                 let pI = v.indexOf("%");
@@ -679,7 +712,7 @@
                     this._percentages[index] = number;
 
                     if (emitChanged) {
-                        this._changedCallback();
+                        this.onChangeCallback();
                     }
 
                     return true;
@@ -703,7 +736,7 @@
                 this._pixels[index] = number;
                 this._setType(index, PrimitiveThickness.Pixel);
                 if (emitChanged) {
-                    this._changedCallback();
+                    this.onChangeCallback();
                 }
 
                 return true;
@@ -721,7 +754,7 @@
             this._pixels[index] = value;
 
             if (emitChanged) {
-                this._changedCallback();
+                this.onChangeCallback();
             }
         }
 
@@ -738,7 +771,7 @@
             this._percentages[index] = value;
 
             if (emitChanged) {
-                this._changedCallback();
+                this.onChangeCallback();
             }
         }
 
@@ -1000,6 +1033,10 @@
             this._setType(3, mode);
         }
 
+        public get isDefault(): boolean {
+            return this._flags === 0x1111;
+        }
+
         private _parentAccess: () => PrimitiveThickness;
         private _changedCallback: () => void;
         private _pixels: number[];
@@ -1027,6 +1064,12 @@
             this._pixels[index] = pixels;
 
             if (emitChanged) {
+                this.onChangeCallback();
+            }
+        }
+
+        private onChangeCallback() {
+            if (this._changedCallback) {
                 this._changedCallback();
             }
         }
@@ -1297,12 +1340,13 @@
         }
     }
 
-    @className("Prim2DBase")
+    @className("Prim2DBase", "BABYLON")
     /**
      * Base class for a Primitive of the Canvas2D feature
      */
     export class Prim2DBase extends SmartPropertyPrim {
-        static PRIM2DBASE_PROPCOUNT: number = 16;
+        static PRIM2DBASE_PROPCOUNT: number = 24;
+
         public  static _bigInt = Math.pow(2, 30);
 
         constructor(settings: {
@@ -1392,7 +1436,6 @@
             this._padding = null;
             this._marginAlignment = null;
             this._id = settings.id;
-            this.propertyChanged = new Observable<PropertyChangedInfo>();
             this._children = new Array<Prim2DBase>();
             this._localTransform = new Matrix();
             this._globalTransform = null;
@@ -1614,14 +1657,44 @@
         public static positionProperty: Prim2DPropInfo;
 
         /**
+         * Metadata of the left property
+         */
+        public static xProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the bottom property
+         */
+        public static yProperty: Prim2DPropInfo;
+
+        /**
          * Metadata of the actualPosition property
          */
         public static actualPositionProperty: Prim2DPropInfo;
 
         /**
+         * Metadata of the actualX (Left) property
+         */
+        public static actualXProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the actualY (Bottom) property
+         */
+        public static actualYProperty: Prim2DPropInfo;
+
+        /**
          * Metadata of the size property
          */
         public static sizeProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the width property
+         */
+        public static widthProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the height property
+         */
+        public static heightProperty: Prim2DPropInfo;
 
         /**
          * Metadata of the rotation property
@@ -1632,6 +1705,21 @@
          * Metadata of the scale property
          */
         public static scaleProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the actualSize property
+         */
+        public static actualSizeProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the actualWidth property
+         */
+        public static actualWidthProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the actualHeight property
+         */
+        public static actualHeightProperty: Prim2DPropInfo;
 
         /**
          * Metadata of the origin property
@@ -1711,15 +1799,27 @@
         /**
          * Shortcut to actualPosition.x
          */
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 1, pi => Prim2DBase.actualXProperty = pi, false, false, true)
         public get actualX(): number {
             return this.actualPosition.x;
+        }
+
+        public set actualX(val: number) {
+            this._actualPosition.x = val;
+            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, this._actualPosition);
         }
 
         /**
          * Shortcut to actualPosition.y
          */
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 2, pi => Prim2DBase.actualYProperty = pi, false, false, true)
         public get actualY(): number {
             return this.actualPosition.y;
+        }
+
+        public set actualY(val: number) {
+            this._actualPosition.y = val;
+            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, this._actualPosition);
         }
 
         /**
@@ -1728,7 +1828,7 @@
          * Use this property to set a new Vector2 object, otherwise to change only the x/y use Prim2DBase.x or y properties.
          * Setting this property may have no effect is specific alignment are in effect.
          */
-        @dynamicLevelProperty(2, pi => Prim2DBase.positionProperty = pi, false, false, true)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 3, pi => Prim2DBase.positionProperty = pi, false, false, true)
         public get position(): Vector2 {
             return this._position || Prim2DBase._nullPosition;
         }
@@ -1745,6 +1845,7 @@
          * Direct access to the position.x value of the primitive
          * Use this property when you only want to change one component of the position property
          */
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 4, pi => Prim2DBase.xProperty = pi, false, false, true)
         public get x(): number {
             if (!this._position) {
                 return null;
@@ -1773,6 +1874,7 @@
          * Direct access to the position.y value of the primitive
          * Use this property when you only want to change one component of the position property
          */
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 5, pi => Prim2DBase.yProperty = pi, false, false, true)
         public get y(): number {
             if (!this._position) {
                 return null;
@@ -1805,7 +1907,7 @@
          * BEWARE: if you change only size.width or height it won't trigger a property change and you won't have the expected behavior.
          * Use this property to set a new Size object, otherwise to change only the width/height use Prim2DBase.width or height properties.
          */
-        @dynamicLevelProperty(3, pi => Prim2DBase.sizeProperty = pi, false, true)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 6, pi => Prim2DBase.sizeProperty = pi, false, true)
         public get size(): Size {
 
             if (!this._size || this._size.width == null || this._size.height == null) {
@@ -1837,6 +1939,7 @@
          * Direct access to the size.width value of the primitive
          * Use this property when you only want to change one component of the size property
          */
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 7, pi => Prim2DBase.widthProperty = pi, false, true)
         public get width(): number {
             if (!this.size) {
                 return null;
@@ -1845,16 +1948,16 @@
         }
 
         public set width(value: number) {
+            if (this.size && this.size.width === value) {
+                return;
+            }
+
             if (!this.size) {
                 this.size = new Size(value, 0);
-                return;
+            } else {
+                this.size.width = value;
             }
 
-            if (this.size.width === value) {
-                return;
-            }
-
-            this.size.width = value;
             this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
             this._positioningDirty();
         }
@@ -1863,6 +1966,7 @@
          * Direct access to the size.height value of the primitive
          * Use this property when you only want to change one component of the size property
          */
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 8, pi => Prim2DBase.heightProperty = pi, false, true)
         public get height(): number {
             if (!this.size) {
                 return null;
@@ -1871,21 +1975,21 @@
         }
 
         public set height(value: number) {
+            if (this.size && this.size.height === value) {
+                return;
+            }
+
             if (!this.size) {
                 this.size = new Size(0, value);
-                return;
+            } else {
+                this.size.height = value;
             }
 
-            if (this.size.height === value) {
-                return;
-            }
-
-            this.size.height = value;
             this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
             this._positioningDirty();
         }
 
-        @instanceLevelProperty(4, pi => Prim2DBase.rotationProperty = pi, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 9, pi => Prim2DBase.rotationProperty = pi, false, true)
         /**
          * Rotation of the primitive, in radian, along the Z axis
          */
@@ -1897,7 +2001,7 @@
             this._rotation = value;
         }
 
-        @instanceLevelProperty(5, pi => Prim2DBase.scaleProperty = pi, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 10, pi => Prim2DBase.scaleProperty = pi, false, true)
         /**
          * Uniform scale applied on the primitive. If a non-uniform scale is applied through scaleX/scaleY property the getter of this property will return scaleX.
          */
@@ -1917,6 +2021,7 @@
          * BEWARE: don't use the setter, it's for internal purpose only
          * Note to implementers: you have to override this property and declare if necessary a @xxxxInstanceLevel decorator
          */
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 11, pi => Prim2DBase.actualSizeProperty = pi, false, true)
         public get actualSize(): Size {
             if (this._actualSize) {
                 return this._actualSize;
@@ -1930,6 +2035,32 @@
             }
 
             this._actualSize = value;
+        }
+
+        /**
+         * Shortcut to actualSize.width
+         */
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 12, pi => Prim2DBase.actualWidthProperty = pi, false, true)
+        public get actualWidth(): number {
+            return this.actualSize.width;
+        }
+
+        public set actualWidth(val: number) {
+            this._actualSize.width = val;
+            this._triggerPropertyChanged(Prim2DBase.actualSizeProperty, this._actualSize);
+        }
+
+        /**
+         * Shortcut to actualPosition.height
+         */
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 13, pi => Prim2DBase.actualHeightProperty = pi, false, true)
+        public get actualHeight(): number {
+            return this.actualSize.width;
+        }
+
+        public set actualHeight(val: number) {
+            this._actualSize.height = val;
+            this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, this._actualSize);
         }
 
         public get actualZOffset(): number {
@@ -1987,7 +2118,7 @@
          * 0,1 means the center is top/left
          * @returns The normalized center.
          */
-        @dynamicLevelProperty(6, pi => Prim2DBase.originProperty = pi, false, true)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 14, pi => Prim2DBase.originProperty = pi, false, true)
         public get origin(): Vector2 {
             return this._origin;
         }
@@ -1996,7 +2127,7 @@
             this._origin = value;
         }
 
-        @dynamicLevelProperty(7, pi => Prim2DBase.levelVisibleProperty = pi)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 15, pi => Prim2DBase.levelVisibleProperty = pi)
         /**
          * Let the user defines if the Primitive is hidden or not at its level. As Primitives inherit the hidden status from their parent, only the isVisible property give properly the real visible state.
          * Default is true, setting to false will hide this primitive and its children.
@@ -2009,7 +2140,7 @@
             this._changeFlags(SmartPropertyPrim.flagLevelVisible, value);
         }
 
-        @instanceLevelProperty(8, pi => Prim2DBase.isVisibleProperty = pi)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 16, pi => Prim2DBase.isVisibleProperty = pi)
         /**
          * Use ONLY THE GETTER to determine if the primitive is visible or not.
          * The Setter is for internal purpose only!
@@ -2022,7 +2153,7 @@
             this._changeFlags(SmartPropertyPrim.flagIsVisible, value);
         }
 
-        @instanceLevelProperty(9, pi => Prim2DBase.zOrderProperty = pi)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 17, pi => Prim2DBase.zOrderProperty = pi)
         /**
          * You can override the default Z Order through this property, but most of the time the default behavior is acceptable
          */
@@ -2046,7 +2177,7 @@
             return this._manualZOrder != null;
         }
 
-        @dynamicLevelProperty(10, pi => Prim2DBase.marginProperty = pi)
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 18, pi => Prim2DBase.marginProperty = pi)
         /**
          * You can get/set a margin on the primitive through this property
          * @returns the margin object, if there was none, a default one is created and returned
@@ -2063,11 +2194,18 @@
             return this._margin;
         }
 
-        public get _hasMargin(): boolean {
-            return (this._margin !== null) || (this._marginAlignment !== null);
+        public set margin(value: PrimitiveThickness) {
+            this.margin.copyFrom(value);
         }
 
-        @dynamicLevelProperty(11, pi => Prim2DBase.paddingProperty = pi)
+        /**
+         * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
+         */
+        public get _hasMargin(): boolean {
+            return (this._margin !== null && !this._margin.isDefault) || (this._marginAlignment !== null && !this._marginAlignment.isDefault);
+        }
+
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 19, pi => Prim2DBase.paddingProperty = pi)
         /**
          * You can get/set a margin on the primitive through this property
          * @returns the margin object, if there was none, a default one is created and returned
@@ -2084,11 +2222,15 @@
             return this._padding;
         }
 
-        private get _hasPadding(): boolean {
-            return this._padding !== null;
+        public set padding(value: PrimitiveThickness) {
+            this.padding.copyFrom(value);
         }
 
-        @dynamicLevelProperty(12, pi => Prim2DBase.marginAlignmentProperty = pi)
+        private get _hasPadding(): boolean {
+            return this._padding !== null && !this._padding.isDefault;
+        }
+
+        @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 20, pi => Prim2DBase.marginAlignmentProperty = pi)
         /**
          * You can get/set the margin alignment through this property
          */
@@ -2099,7 +2241,18 @@
             return this._marginAlignment;
         }
 
-        @instanceLevelProperty(13, pi => Prim2DBase.opacityProperty = pi)
+        public set marginAlignment(value: PrimitiveAlignment) {
+            this.marginAlignment.copyFrom(value);
+        }
+
+        /**
+         * Check if there a marginAlignment specified (non null and not default)
+         */
+        public get _hasMarginAlignment(): boolean {
+            return (this._marginAlignment !== null && !this._marginAlignment.isDefault);
+        }
+
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 21, pi => Prim2DBase.opacityProperty = pi)
         /**
          * Get/set the opacity of the whole primitive
          */
@@ -2124,7 +2277,7 @@
             this._updateRenderMode();
         }
 
-        @instanceLevelProperty(14, pi => Prim2DBase.scaleXProperty = pi, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 22, pi => Prim2DBase.scaleXProperty = pi, false, true)
         /**
          * Scale applied on the X axis of the primitive
          */
@@ -2138,7 +2291,7 @@
             return this._scale.x;
         }
 
-        @instanceLevelProperty(15, pi => Prim2DBase.scaleYProperty = pi, false, true)
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 23, pi => Prim2DBase.scaleYProperty = pi, false, true)
         /**
          * Scale applied on the Y axis of the primitive
          */
@@ -2361,11 +2514,11 @@
                 if (this.owner) {
                     this.owner.boundingInfoRecomputeCounter.addCount(1, false);
                 }
-                if (this.isSizedByContent) {
-                    this._boundingInfo.clear();
-                } else {
+                //if (this.isSizedByContent) {
+                //    this._boundingInfo.clear();
+                //} else {
                     this._boundingInfo.copyFrom(this.levelBoundingInfo);
-                }
+                //}
                 let bi = this._boundingInfo;
 
                 var tps = new BoundingInfo2D();
@@ -2992,13 +3145,15 @@
             //  1. Determine the PaddingArea and the ActualPosition based on the margin/marginAlignment properties, which will also set the size property of the primitive
             //  2. Determine the contentArea based on the padding property.
 
+            let isSizeAuto = this.isSizeAuto;
+
             // Auto Create PaddingArea if there's no actualSize on width&|height to allocate the whole content available to the paddingArea where the actualSize is null
-            if (!this._hasMargin && (this.actualSize.width == null || this.actualSize.height == null)) {
-                if (this.actualSize.width == null) {
+            if (!this._hasMarginAlignment && (isSizeAuto || (this.actualSize.width == null || this.actualSize.height == null))) {
+                if (isSizeAuto || this.actualSize.width == null) {
                     this.marginAlignment.horizontal = PrimitiveAlignment.AlignStretch;
                 }
 
-                if (this.actualSize.height == null) {
+                if (isSizeAuto || this.actualSize.height == null) {
                     this.marginAlignment.vertical = PrimitiveAlignment.AlignStretch;
                 }
             }
@@ -3009,7 +3164,6 @@
                 this.actualSize = Prim2DBase._size.clone();
             }
 
-            let isSizeAuto = this.isSizeAuto;
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so me resize the primitive itself
                 if (isSizeAuto) {

@@ -163,9 +163,10 @@
         }
         set boundingMax(value: Vector2) {
         }
+
     }
 
-    @className("Lines2D")
+    @className("Lines2D", "BABYLON")
     /**
      * Primitive drawing a series of line segments
      */

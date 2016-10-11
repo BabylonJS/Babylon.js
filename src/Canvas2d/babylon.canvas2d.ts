@@ -19,7 +19,7 @@
         }
     }
 
-    @className("Canvas2D")
+    @className("Canvas2D", "BABYLON")
     /**
      * The Canvas2D main class.
      * This class is extended in both ScreenSpaceCanvas2D and WorldSpaceCanvas2D which are designed only for semantic use.
@@ -52,6 +52,17 @@
          * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
          */
         public static CACHESTRATEGY_DONTCACHE = 4;
+
+        /**
+         * Observable Mask to be notified before rendering is made
+         */
+        public static RENDEROBSERVABLE_PRE = 1;
+
+        /**
+         * Observable Mask to be notified after rendering is made
+         */
+        public static RENDEROBSERVABLE_POST = 2;
+
 
         private static _INSTANCES : Array<Canvas2D> = [];
 
@@ -86,6 +97,7 @@
             this._updateGlobalTransformCounter = new PerfCounter();
             this._boundingInfoRecomputeCounter = new PerfCounter();
 
+            this._uid = null;
             this._cachedCanvasGroup = null;
 
             this._profileInfoText = null;
@@ -552,6 +564,10 @@
             this._previousOverPrimitive = this._actualOverPrimitive;
             this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
 
+            if ((!this._actualOverPrimitive && !this._previousOverPrimitive) || !(this._actualOverPrimitive && this._previousOverPrimitive && this._actualOverPrimitive.prim === this._previousOverPrimitive.prim)) {
+                this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
+            }
+
             this._intersectionRenderId = this.scene.getRenderId();
         }
 
@@ -848,6 +864,29 @@
         }
 
         /**
+         * return a unique identifier for the Canvas2D
+         */
+        public get uid(): string {
+            if (!this._uid) {
+                this._uid = Tools.RandomId();
+            }
+            return this._uid;
+        }
+
+        /**
+         * And observable called during the Canvas rendering process.
+         * This observable is called twice per render, each time with a different mask:
+         *  - 1: before render is executed
+         *  - 2: after render is executed
+         */
+        public get renderObservable(): Observable<Canvas2D> {
+            if (!this._renderObservable) {
+                this._renderObservable = new Observable<Canvas2D>();
+            }
+            return this._renderObservable;
+        }
+
+        /**
          * Accessor of the Caching Strategy used by this Canvas.
          * See Canvas2D.CACHESTRATEGY_xxxx static members for more information
          * @returns the value corresponding to the used strategy.
@@ -991,6 +1030,13 @@
         }
 
         /**
+         * Return 
+         */
+        public get overPrim(): Prim2DBase {
+            return this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
+        }
+
+        /**
          * Access the babylon.js' engine bound data, do not invoke this method, it's for internal purpose only
          * @returns {} 
          */
@@ -1126,6 +1172,8 @@
             this._updateGlobalTransformCounter.addCount(count, false);
         }
 
+        private _uid: string;
+        private _renderObservable: Observable<Canvas2D>;
         private __engineData: Canvas2DEngineBoundData;
         private _interactionEnabled: boolean;
         private _primPointerInfo: PrimitivePointerInfo;
@@ -1322,6 +1370,10 @@
 
             this._initPerfMetrics();
 
+            if (this._renderObservable && this._renderObservable.hasObservers()) {
+                this._renderObservable.notifyObservers(this, Canvas2D.RENDEROBSERVABLE_PRE);
+            }
+
             this._updateCanvasState(false);
 
             this._updateTrackedNodes();
@@ -1339,7 +1391,7 @@
 
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
-                this._updateOverStatus(false);   // TODO this._primPointerInfo may not be up to date!
+                this._updateOverStatus(false);
             }
 
             this.engine.setState(false);
@@ -1359,6 +1411,10 @@
 
             this._fetchPerfMetrics();
             this._updateProfileCanvas();
+
+            if (this._renderObservable && this._renderObservable.hasObservers()) {
+                this._renderObservable.notifyObservers(this, Canvas2D.RENDEROBSERVABLE_POST);
+            }
         }
 
         private static _unS = new Vector2(1, 1);
@@ -1598,7 +1654,7 @@
         private static _gradientColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
     }
 
-    @className("WorldSpaceCanvas2D")
+    @className("WorldSpaceCanvas2D", "BABYLON")
     /**
      * Class to create a WorldSpace Canvas2D.
      */
@@ -1718,7 +1774,7 @@
         }
     }
 
-    @className("ScreenSpaceCanvas2D")
+    @className("ScreenSpaceCanvas2D", "BABYLON")
     /**
      * Class to create a ScreenSpace Canvas2D
      */
