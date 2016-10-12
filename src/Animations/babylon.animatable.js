@@ -77,16 +77,24 @@ var BABYLON;
         Animatable.prototype.restart = function () {
             this._paused = false;
         };
-        Animatable.prototype.stop = function () {
+        Animatable.prototype.stop = function (animationName) {
             var index = this._scene._activeAnimatables.indexOf(this);
             if (index > -1) {
-                this._scene._activeAnimatables.splice(index, 1);
                 var animations = this._animations;
-                for (var index = 0; index < animations.length; index++) {
+                var numberOfAnimationsStopped = 0;
+                for (var index = animations.length - 1; index >= 0; index--) {
+                    if (typeof animationName === "string" && animations[index].name != animationName) {
+                        continue;
+                    }
                     animations[index].reset();
+                    animations.splice(index, 1);
+                    numberOfAnimationsStopped++;
                 }
-                if (this.onAnimationEnd) {
-                    this.onAnimationEnd();
+                if (animations.length == numberOfAnimationsStopped) {
+                    this._scene._activeAnimatables.splice(index, 1);
+                    if (this.onAnimationEnd) {
+                        this.onAnimationEnd();
+                    }
                 }
             }
         };

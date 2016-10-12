@@ -1022,12 +1022,13 @@ var BABYLON;
         /**
          * Will stop the animation of the given target
          * @param target - the target
+         * @param animationName - the name of the animation to stop (all animations will be stopped is empty)
          * @see beginAnimation
          */
-        Scene.prototype.stopAnimation = function (target) {
+        Scene.prototype.stopAnimation = function (target, animationName) {
             var animatable = this.getAnimatableByTarget(target);
             if (animatable) {
-                animatable.stop();
+                animatable.stop(animationName);
             }
         };
         Scene.prototype._animate = function () {

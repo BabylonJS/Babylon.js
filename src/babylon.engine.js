@@ -2034,6 +2034,7 @@ var BABYLON;
             texture.isCube = true;
             texture.url = rootUrl;
             texture.references = 1;
+            texture.onLoadedCallbacks = [];
             var extension = rootUrl.substr(rootUrl.length - 4, 4).toLowerCase();
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
             if (isDDS) {
@@ -2086,6 +2087,9 @@ var BABYLON;
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
+                    texture.onLoadedCallbacks.forEach(function (callback) {
+                        callback();
+                    });
                     if (onLoad) {
                         onLoad();
                     }
