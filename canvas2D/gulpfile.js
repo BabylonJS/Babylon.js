@@ -17,9 +17,7 @@ var optimisejs = require('gulp-optimize-js');
 
 var config = require("./config.json");
 
-var includeShadersStream;
 var shadersStream;
-var workersStream;
 
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
 var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
@@ -95,12 +93,7 @@ gulp.task("default", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files).        
             pipe(expect.real({ errorOnFailure: true }, config.core.files)),
-        gulp.src(config.extras.files).        
-            pipe(expect.real({ errorOnFailure: true }, config.extras.files)),   
-        shadersStream,
-        includeShadersStream,
-        workersStream
-        )
+        shadersStream)
         .pipe(concat(config.build.filename))
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))

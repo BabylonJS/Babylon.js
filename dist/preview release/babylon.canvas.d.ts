@@ -2352,6 +2352,7 @@ declare module BABYLON {
         setSize(val: any): void;
         writeData(array: Float32Array, offset: number, val: any): void;
     }
+    function instanceData<T>(category?: string, shaderAttributeName?: string): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
     class InstanceDataBase {
         constructor(partId: number, dataElementCount: number);
         id: number;
@@ -2728,6 +2729,9 @@ declare module BABYLON {
         protected _layoutBoundingInfo: BoundingInfo2D;
         protected _instanceDirtyFlags: number;
     }
+    function modelLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean, dirtyParentBoundingBox?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+    function instanceLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean, dirtyParentBoundingBox?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+    function dynamicLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean, dirtyParentBoundingBox?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
 }
 
 declare module BABYLON {

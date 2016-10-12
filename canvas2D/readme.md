@@ -1,7 +1,9 @@
-Build Babylon.js with Gulp
+Build Babylon.canvas2d.js with Gulp
 ====================
 
-Build Babylon.js with [gulp](http://gulpjs.com/ "gulp") and npm ([nodejs](http://nodejs.org/ "nodejs")), easy and cross-platform
+More info about [Canvas2D](http://doc.babylonjs.com/overviews/Canvas2D_Home)
+
+Build Babylon.canvas2d.js with [gulp](http://gulpjs.com/ "gulp") and npm ([nodejs](http://nodejs.org/ "nodejs")), easy and cross-platform
 
 (Paths in this file are relative to this file location.)
 
@@ -22,45 +24,35 @@ npm install
 npm update
 ```
 
-### Update config.json if you want to add your own files:
-```
-"extras" : {
-    "files": [
-        "file1.js", "file2.js"
-    ]
-}
-```
 ## From the javascript source
-### Build Babylon.js from the javascript files:
+### Build Babylon.canvas2d.js from the javascript files:
 
 ```
 gulp
 ```
 Will be generated :
-- babylon.js
-- babylon.noworker.js (minified version without collisions workers)
-- babylon.max.js (unminified)
+- babylon.canvas2d.js
+- babylon.canvas2d.max.js (unminified)
 
-### Build Babylon.js when you save a javascript file:
+### Build Babylon.canvas2d.js when you save a javascript file:
 ```
 gulp watch
 ```
 
 ## From the typescript source
-### Build Babylon.js from the typescript files:
+### Build Babylon.canvas2d.js from the typescript files:
 
 ```
 gulp typescript
 ```
 Will be generated :
-- babylon.js
-- babylon.d.ts
-- babylon.noworker.js (minified version without collisions workers)
-- babylon.max.js (unminified)
+- babylon.canvas2d.js
+- babylon.canvas2d.d.ts
+- babylon.canvas2d.max.js (unminified)
 
 Be aware that all js files content will be overwrite.
 
-### Build Babylon.js when you save a typescript file:
+### Build Babylon.canvas2d.js when you save a typescript file:
 ```
 gulp watch-typescript
 ```

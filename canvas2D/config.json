@@ -34,7 +34,7 @@
   "shadersDirectories": [
     {
       "variable": "BABYLON.Effect.ShadersStore",
-      "files": "Shaders/*.fx"
+      "files": "src/Shaders/*.fx"
     }
   ]
 }
