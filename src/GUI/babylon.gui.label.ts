@@ -70,6 +70,7 @@
         createVisualTree(owner: UIElement, visualPlaceholder: Group2D): { root: Prim2DBase; contentPlaceholder: Prim2DBase } {
             let r = new Text2D("", { parent: visualPlaceholder });
             r.createSimpleDataBinding(Text2D.textProperty, "text");
+            r.dataSource = <any>owner;
 
             return { root: r, contentPlaceholder: r };
         }
