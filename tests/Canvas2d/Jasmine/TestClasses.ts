@@ -1,4 +1,4 @@
-module BABYLON {
+﻿module BABYLON {
 
     @className("Address")
     export class Address extends PropertyChangedBase {
@@ -156,7 +156,7 @@ module BABYLON {
             this._city = value;
         }
 
-        @BABYLON.dependencyProperty(2, pi => CustomerViewModel.firstNameProperty = pi, Binding.MODE_ONETIME)
+        @BABYLON.dependencyProperty(2, pi => CustomerViewModel.firstNameProperty = pi, DataBinding.MODE_ONETIME)
         public get firstName(): string {
             return this._firstName;
         }

@@ -608,13 +608,13 @@
             let p = this._visualPlaceholder;
             p.addExternalData<UIElement>("_GUIOwnerElement_", this);
             p.dataSource = this;
-            p.createSimpleDataBinding(Prim2DBase.widthProperty, "width", Binding.MODE_ONEWAY);
-            p.createSimpleDataBinding(Prim2DBase.heightProperty, "height", Binding.MODE_ONEWAY);
-            p.createSimpleDataBinding(Prim2DBase.actualWidthProperty, "actualWidth", Binding.MODE_ONEWAYTOSOURCE);
-            p.createSimpleDataBinding(Prim2DBase.actualHeightProperty, "actualHeight", Binding.MODE_ONEWAYTOSOURCE);
-            p.createSimpleDataBinding(Prim2DBase.marginProperty, "margin", Binding.MODE_ONEWAY);
-            p.createSimpleDataBinding(Prim2DBase.paddingProperty, "padding", Binding.MODE_ONEWAY);
-            p.createSimpleDataBinding(Prim2DBase.marginAlignmentProperty, "marginAlignment", Binding.MODE_ONEWAY);
+            p.createSimpleDataBinding(Prim2DBase.widthProperty, "width", DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(Prim2DBase.heightProperty, "height", DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(Prim2DBase.actualWidthProperty, "actualWidth", DataBinding.MODE_ONEWAYTOSOURCE);
+            p.createSimpleDataBinding(Prim2DBase.actualHeightProperty, "actualHeight", DataBinding.MODE_ONEWAYTOSOURCE);
+            p.createSimpleDataBinding(Prim2DBase.marginProperty, "margin", DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(Prim2DBase.paddingProperty, "padding", DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(Prim2DBase.marginAlignmentProperty, "marginAlignment", DataBinding.MODE_ONEWAY);
             this.createVisualTree();
         }
 
