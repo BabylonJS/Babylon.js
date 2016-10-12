@@ -107,10 +107,10 @@
 
                 if (animations.length == numberOfAnimationsStopped) {
                     this._scene._activeAnimatables.splice(index, 1);
-                }
 
-                if (this.onAnimationEnd) {
-                    this.onAnimationEnd();
+                    if (this.onAnimationEnd) {
+                        this.onAnimationEnd();
+                    }
                 }
             }
         }
