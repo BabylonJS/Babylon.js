@@ -125,7 +125,7 @@
         }
     }
 
-    @className("Text2D")
+    @className("Text2D", "BABYLON")
     /**
      * Primitive that render text using a specific font
      */
@@ -175,6 +175,9 @@
         }
 
         public set text(value: string) {
+            if (!value) {
+                value = "";
+            }
             this._text = value;
             this._textSize = null;    // A change of text will reset the TextSize which will be recomputed next time it's used
             this._size = null;
@@ -200,6 +203,10 @@
             this._size = value;
         }
 
+        public get isSizeAuto(): boolean {
+            return false;
+        }
+
         /**
          * Get the actual size of the Text2D primitive
          */
@@ -215,7 +222,7 @@
          */
         public get textSize(): Size {
             if (!this._textSize) {
-                if (this.owner) {
+                if (this.owner && this._text) {
                     let newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
                     if (!newSize.equals(this._textSize)) {
                         this.onPrimitivePropertyDirty(Prim2DBase.sizeProperty.flagId);
