@@ -5,6 +5,7 @@
         "ExtensionsWithNoOutput": [ ".d.ts" ]
     },
     "References": [
+
         { "Path": "../../../src/Math/babylon.math.js" },
         { "Path": "../../../src/Math/babylon.math.simd.js" },
         { "Path": "../../../src/Tools/babylon.decorators.js" },
@@ -107,6 +108,11 @@
         { "Path": "../../../src/Canvas2d/babylon.ellipse2d.js" },
         { "Path": "../../../src/Canvas2d/babylon.lines2d.js" },
         { "Path": "../../../src/Canvas2d/babylon.worldspacecanvas2dNode.js" },
+        { "Path": "../../../src/GUI/babylon.gui.UIElement.js" },
+        { "Path": "../../../src/GUI/babylon.gui.control.js" },
+        { "Path": "../../../src/GUI/babylon.gui.label.js" },
+        { "Path": "../../../src/GUI/babylon.gui.window.js" },
+        { "Path": "../../../src/GUI/babylon.gui.button.js" },
         { "Path": "../../../src/Loading/babylon.sceneLoader.js" },
         { "Path": "../../../src/Loading/Plugins/babylon.babylonFileLoader.js" },
         { "Path": "../../../src/Sprites/babylon.spriteManager.js" },

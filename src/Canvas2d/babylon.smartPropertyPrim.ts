@@ -721,7 +721,7 @@
             return this._dataSource;
         }
 
-        public createSimpleDataBinding(propInfo: Prim2DPropInfo, propertyPathName: string, mode: number = Binding.MODE_TWOWAY): Binding {
+        public createSimpleDataBinding(propInfo: Prim2DPropInfo, propertyPathName: string, mode: number = Binding.MODE_DEFAULT): Binding {
             let binding = new Binding();
             binding.propertyPathName = propertyPathName;
             binding.mode = mode;
