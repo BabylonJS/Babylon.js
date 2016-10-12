@@ -1,0 +1,40 @@
+{
+  "build": {
+    "filename": "babylon.canvas2d.max.js",
+    "minFilename": "babylon.canvas2d.js",
+    "declarationFilename": "babylon.canvas.d.ts",
+    "outputDirectory": "../dist/preview release",
+    "srcOutputDirectory": "src/"
+  },
+  "core": {
+    "typescript": [
+      "src/**/*.ts",
+      "../dist/preview release/babylon.d.ts", 
+      "!src/**/*.d.ts"
+    ],
+    "files": [   
+      "src/babylon.bounding2d.js",
+      "src/babylon.canvas2dLayoutEngine.js",
+      "src/babylon.brushes2d.js",
+      "src/babylon.smartPropertyPrim.js",
+      "src/babylon.prim2dBase.js",
+      "src/babylon.modelRenderCache.js",
+      "src/babylon.renderablePrim2d.js",
+      "src/babylon.shape2d.js",
+      "src/babylon.group2d.js",
+      "src/babylon.rectangle2d.js",
+      "src/babylon.ellipse2d.js",
+      "src/babylon.sprite2d.js",
+      "src/babylon.text2d.js",
+      "src/babylon.lines2d.js",
+      "src/babylon.canvas2d.js",
+      "src/babylon.worldSpaceCanvas2dNode.js"
+    ]
+  },
+  "shadersDirectories": [
+    {
+      "variable": "BABYLON.Effect.ShadersStore",
+      "files": "Shaders/*.fx"
+    }
+  ]
+}

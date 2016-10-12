@@ -2294,17 +2294,17 @@ var BABYLON;
         Mesh.MinMax = function (meshes) {
             var minVector = null;
             var maxVector = null;
-            for (var i in meshes) {
-                var mesh = meshes[i];
+            meshes.forEach(function (mesh, index, array) {
                 var boundingBox = mesh.getBoundingInfo().boundingBox;
                 if (!minVector) {
                     minVector = boundingBox.minimumWorld;
                     maxVector = boundingBox.maximumWorld;
-                    continue;
                 }
-                minVector.MinimizeInPlace(boundingBox.minimumWorld);
-                maxVector.MaximizeInPlace(boundingBox.maximumWorld);
-            }
+                else {
+                    minVector.MinimizeInPlace(boundingBox.minimumWorld);
+                    maxVector.MaximizeInPlace(boundingBox.maximumWorld);
+                }
+            });
             return {
                 min: minVector,
                 max: maxVector
@@ -2314,7 +2314,7 @@ var BABYLON;
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         Mesh.Center = function (meshesOrMinMaxVector) {
-            var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);
+            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
         };
         /**
