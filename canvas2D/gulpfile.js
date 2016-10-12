@@ -2,7 +2,7 @@ var gulp = require("gulp");
 var uglify = require("gulp-uglify");
 var typescript = require("gulp-typescript");
 var sourcemaps = require("gulp-sourcemaps");
-var srcToVariable = require("gulp-content-to-variable");
+var srcToVariable = require("./gulp-srcToVariable");
 var addModuleExports = require("./gulp-addModuleExports");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
@@ -34,9 +34,8 @@ gulp.task("shaders", function (cb) {
         return gulp.src(shadersDef.files).
             pipe(expect.real({ errorOnFailure: true }, shadersDef.files)).
             pipe(uncommentShader()).
-            pipe(srcToVariable({
-            variableName: shadersDef.variable, asMap: true, namingCallback: shadersName
-        }));
+            pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName)
+            );
     });
     cb();
 });
