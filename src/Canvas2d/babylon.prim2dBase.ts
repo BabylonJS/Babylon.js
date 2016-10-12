@@ -2514,11 +2514,11 @@
                 if (this.owner) {
                     this.owner.boundingInfoRecomputeCounter.addCount(1, false);
                 }
-                //if (this.isSizedByContent) {
-                //    this._boundingInfo.clear();
-                //} else {
+                if (this.isSizedByContent) {
+                    this._boundingInfo.clear();
+                } else {
                     this._boundingInfo.copyFrom(this.levelBoundingInfo);
-                //}
+                }
                 let bi = this._boundingInfo;
 
                 var tps = new BoundingInfo2D();
