@@ -1189,13 +1189,14 @@
         /**
          * Will stop the animation of the given target
          * @param target - the target 
-         * @see beginAnimation 
+         * @param animationName - the name of the animation to stop (all animations will be stopped is empty)
+         * @see beginAnimation
          */
-        public stopAnimation(target: any): void {
+        public stopAnimation(target: any, animationName?: string): void {
             var animatable = this.getAnimatableByTarget(target);
 
             if (animatable) {
-                animatable.stop();
+                animatable.stop(animationName);
             }
         }
 

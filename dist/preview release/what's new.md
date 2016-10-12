@@ -29,6 +29,8 @@
  - New property in Canvas2D (instances) that contains all instances of canvas2d [Temechon](https://github.com/Temechon)
 - WebVR Camera was updated to be conform with the current specs. ([RaananW](https://github.com/RaananW)) 
 - New "CubeTextureTask" function will allow you to load a CubeTexture in the assetsManager. ([agallouin](https://github.com/AGallouin)) 
+- Scene.stopAnimation has now an optional second parameter, the name of the animation to kill.
+Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGallouin)) 
 
 ### Exporters
     
