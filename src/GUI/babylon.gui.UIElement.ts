@@ -672,7 +672,7 @@
             return this._visualChildrenPlaceholder;
         }
 
-        protected abstract get _position(): Vector2;
+        protected get _position(): Vector2 { return null; } // TODO use abstract keyword when TS 2.0 will be approved
         protected abstract _getChildren(): Array<UIElement>;
 
         public static flagVisualToBuild = 0x0000001;    // set if the UIElement visual must be updated
@@ -707,7 +707,7 @@
     export abstract class UIElementStyle {
         abstract removeStyle(uiel: UIElement);
         abstract applyStyle(uiel: UIElement);
-        abstract get name(): string;
+        get name(): string { return null; } // TODO use abstract keyword when TS 2.0 will be approved
     }
 
     export class UIElementStyleManager {
