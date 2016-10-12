@@ -291,7 +291,11 @@
 
         public static BindBonesParameters(mesh: AbstractMesh, effect: Effect): void {
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                var matrices = mesh.skeleton.getTransformMatrices(mesh);
+
+                if (matrices) {
+                    effect.setMatrices("mBones", matrices);
+                }
             }
         }
 

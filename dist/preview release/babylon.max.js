@@ -25156,7 +25156,10 @@ var BABYLON;
         };
         MaterialHelper.BindBonesParameters = function (mesh, effect) {
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                var matrices = mesh.skeleton.getTransformMatrices(mesh);
+                if (matrices) {
+                    effect.setMatrices("mBones", matrices);
+                }
             }
         };
         MaterialHelper.BindLogDepth = function (defines, effect, scene) {
