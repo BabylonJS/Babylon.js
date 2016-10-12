@@ -241,7 +241,7 @@
         private static _replacedAction         = 0x10;
     }
 
-    class OSDWatchedObjectChangedInfo<T> {
+    export class OSDWatchedObjectChangedInfo<T> {
         key: string;
         object: T;
         propertyChanged: PropertyChangedInfo;
