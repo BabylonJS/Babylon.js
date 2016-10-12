@@ -2,7 +2,7 @@
   "build": {
     "filename": "babylon.canvas2d.max.js",
     "minFilename": "babylon.canvas2d.js",
-    "declarationFilename": "babylon.canvas.d.ts",
+    "declarationFilename": "babylon.canvas2d.d.ts",
     "outputDirectory": "../dist/preview release",
     "srcOutputDirectory": "src/"
   },
