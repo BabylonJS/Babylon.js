@@ -106,7 +106,7 @@ describe("GUI - Data Binding", () => {
         vm.dataSource = c;
 
         // Create the binding and set it up
-        let b = new BABYLON.Binding();
+        let b = new BABYLON.DataBinding();
         b.propertyPathName = "firstName";
         b.stringFormat = v => `My Name is ${v}`;
         vm.createDataBinding(BABYLON.CustomerViewModel.firstNameProperty, b);
@@ -115,7 +115,7 @@ describe("GUI - Data Binding", () => {
         expect(vm.firstName).toBe("My Name is Loic Baumann", "binding string format doesn't work");
 
         // Bind age to city with "Age: $value" format
-        b = new BABYLON.Binding();
+        b = new BABYLON.DataBinding();
         b.propertyPathName = "age";
         b.stringFormat = v => `Age: ${v}`;
         vm.createDataBinding(BABYLON.CustomerViewModel.cityProperty, b);
@@ -140,12 +140,12 @@ describe("GUI - Data Binding", () => {
         vm.dataSource = c1;
 
         // Create the binding and set it up
-        let b = new BABYLON.Binding();
+        let b = new BABYLON.DataBinding();
         b.propertyPathName = "firstName";
         vm.createDataBinding(BABYLON.CustomerViewModel.firstNameProperty, b);
 
         // Bind age with a custom source
-        b = new BABYLON.Binding();
+        b = new BABYLON.DataBinding();
         b.propertyPathName = "age";
         b.dataSource = c2;
         vm.createDataBinding(BABYLON.CustomerViewModel.ageProperty, b);

@@ -125,8 +125,8 @@
         private _classContentFactory: (base: TClass) => TClass;
     }
 
-    @className("Binding", "BABYLON")
-    export class Binding {
+    @className("DataBinding", "BABYLON")
+    export class DataBinding {
 
         /**
          * Use the mode specified in the SmartProperty declaration
@@ -176,13 +176,13 @@
 
         constructor() {
             this._converter = null;
-            this._mode = Binding.MODE_DEFAULT;
+            this._mode = DataBinding.MODE_DEFAULT;
             this._uiElementId = null;
             this._dataSource = null;
             this._currentDataSource = null;
             this._propertyPathName = null;
             this._stringFormat = null;
-            this._updateSourceTrigger = Binding.UPDATESOURCETRIGGER_PROPERTYCHANGED;
+            this._updateSourceTrigger = DataBinding.UPDATESOURCETRIGGER_PROPERTYCHANGED;
             this._boundTo = null;
             this._owner = null;
             this._updateCounter = 0;
@@ -211,7 +211,7 @@
          * Set the mode to use for the data flow in the binding. Set one of the MODE_xxx static member of this class. If not specified then MODE_DEFAULT will be used
          */
         public get mode(): number {
-            if (this._mode === Binding.MODE_DEFAULT) {
+            if (this._mode === DataBinding.MODE_DEFAULT) {
                 return this._boundTo.bindingMode;
             }
             return this._mode;
@@ -321,11 +321,11 @@
             }
 
             let mode = this.mode;
-            if (mode === Binding.MODE_ONETIME) {
+            if (mode === DataBinding.MODE_ONETIME) {
                 return this._updateCounter === 0;
             }
 
-            if (mode === Binding.MODE_ONEWAYTOSOURCE) {
+            if (mode === DataBinding.MODE_ONEWAYTOSOURCE) {
                 return false;
             }
             return true;
@@ -341,7 +341,7 @@
         }
 
         public _storeBoundValue(watcher: SmartPropertyBase, value) {
-            if ((++this._updateCounter > 1) && (this.mode === Binding.MODE_ONETIME)) {
+            if ((++this._updateCounter > 1) && (this.mode === DataBinding.MODE_ONETIME)) {
                 return;
             }
 
@@ -609,8 +609,8 @@
             propInfo.flagId = Math.pow(2, propId);
             propInfo.kind = kind;
             propInfo.name = propName;
-            propInfo.bindingMode = (settings.bindingMode !== undefined) ? settings.bindingMode : Binding.MODE_TWOWAY;
-            propInfo.bindingUpdateSourceTrigger = (settings.bindingUpdateSourceTrigger !== undefined) ? settings.bindingUpdateSourceTrigger : Binding.UPDATESOURCETRIGGER_PROPERTYCHANGED;
+            propInfo.bindingMode = (settings.bindingMode !== undefined) ? settings.bindingMode : DataBinding.MODE_TWOWAY;
+            propInfo.bindingUpdateSourceTrigger = (settings.bindingUpdateSourceTrigger !== undefined) ? settings.bindingUpdateSourceTrigger : DataBinding.UPDATESOURCETRIGGER_PROPERTYCHANGED;
             propInfo.dirtyBoundingInfo = (settings.dirtyBoundingInfo!==undefined) ? settings.dirtyBoundingInfo : false;
             propInfo.dirtyParentBoundingInfo = (settings.dirtyParentBoundingBox!==undefined) ? settings.dirtyParentBoundingBox : false;
             propInfo.typeLevelCompare = (settings.typeLevelCompare!==undefined) ? settings.typeLevelCompare : false;
@@ -721,16 +721,16 @@
             return this._dataSource;
         }
 
-        public createSimpleDataBinding(propInfo: Prim2DPropInfo, propertyPathName: string, mode: number = Binding.MODE_DEFAULT): Binding {
-            let binding = new Binding();
+        public createSimpleDataBinding(propInfo: Prim2DPropInfo, propertyPathName: string, mode: number = DataBinding.MODE_DEFAULT): DataBinding {
+            let binding = new DataBinding();
             binding.propertyPathName = propertyPathName;
             binding.mode = mode;
             return this.createDataBinding(propInfo, binding);
         }
 
-        public createDataBinding(propInfo: Prim2DPropInfo, binding: Binding): Binding {
+        public createDataBinding(propInfo: Prim2DPropInfo, binding: DataBinding): DataBinding {
             if (!this._bindings) {
-                this._bindings = new Array<Binding>();
+                this._bindings = new Array<DataBinding>();
             }
 
             if (!binding || binding._owner != null) {
@@ -778,19 +778,19 @@
         private _externalData: StringDictionary<Object>;
         protected _instanceDirtyFlags: number;
         private _propInfo: StringDictionary<Prim2DPropInfo>;
-        public _bindings: Array<Binding>;
+        public _bindings: Array<DataBinding>;
         private _hasBinding: number;
         private _bindingSourceChanged: number;
         private _disposeObservable: Observable<SmartPropertyBase>;
     }
 
     class BindingInfo {
-        constructor(binding: Binding, level: number, isLast: boolean) {
+        constructor(binding: DataBinding, level: number, isLast: boolean) {
             this.binding = binding;
             this.level = level;
             this.isLast = isLast;
         }
-        binding: Binding;
+        binding: DataBinding;
         level: number;
         isLast: boolean;
     }
@@ -834,7 +834,7 @@
 
     class BindingHelper {
 
-        static registerDataSource(dataSource: IPropertyChanged, binding: Binding) {
+        static registerDataSource(dataSource: IPropertyChanged, binding: DataBinding) {
 
             let properties = binding.propertyPathName.split(".");
 
@@ -877,7 +877,7 @@
             }
         }
 
-        static unregisterDataSource(dataSource: IPropertyChanged, binding: Binding, level: number) {
+        static unregisterDataSource(dataSource: IPropertyChanged, binding: DataBinding, level: number) {
             let properties = binding.propertyPathName.split(".");
 
             let propertyOwner = dataSource;
@@ -898,7 +898,7 @@
             }
         }
 
-        private static _unregisterBinding(mod: MonitoredObjectData, propertyID: number, binding: Binding): MonitoredObjectData {
+        private static _unregisterBinding(mod: MonitoredObjectData, propertyID: number, binding: DataBinding): MonitoredObjectData {
             let propertyIDStr = propertyID.toString();
             let res: MonitoredObjectData = null;
 
@@ -1274,7 +1274,7 @@
         protected _layoutBoundingInfo : BoundingInfo2D;
     }
 
-    export function dependencyProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, mode = Binding.MODE_TWOWAY, updateSourceTrigger = Binding.UPDATESOURCETRIGGER_PROPERTYCHANGED): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
+    export function dependencyProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, mode = DataBinding.MODE_TWOWAY, updateSourceTrigger = DataBinding.UPDATESOURCETRIGGER_PROPERTYCHANGED): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
         return SmartPropertyBase._hookProperty(propId, piStore, Prim2DPropInfo.PROPKIND_DYNAMIC, { bindingMode: mode, bindingUpdateSourceTrigger: updateSourceTrigger });
     }
 

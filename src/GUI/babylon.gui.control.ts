@@ -171,13 +171,13 @@
             // Test primary types
             else if ((typeof c === "string") || (typeof c === "boolean") || (typeof c === "number")) {
                 let l = new Label({ parent: this, id: "Content of " + this.id });
-                let binding = new Binding();
+                let binding = new DataBinding();
                 binding.propertyPathName = "content";
                 binding.stringFormat = v => `${v}`;
                 binding.dataSource = this;
                 l.createDataBinding(Label.textProperty, binding);
 
-                binding = new Binding();
+                binding = new DataBinding();
                 binding.propertyPathName = "contentAlignment";
                 binding.dataSource = this;
                 l.createDataBinding(Label.marginAlignmentProperty, binding);
