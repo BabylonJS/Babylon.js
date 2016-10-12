@@ -2582,17 +2582,16 @@
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector: Vector3 = null;
             var maxVector: Vector3 = null;
-            for (var i in meshes) {
-                var mesh = meshes[i];
+            meshes.forEach( function(mesh, index, array) {
                 var boundingBox = mesh.getBoundingInfo().boundingBox;
                 if (!minVector) {
                     minVector = boundingBox.minimumWorld;
                     maxVector = boundingBox.maximumWorld;
-                    continue;
+                } else {
+                    minVector.MinimizeInPlace(boundingBox.minimumWorld);
+                    maxVector.MaximizeInPlace(boundingBox.maximumWorld);
                 }
-                minVector.MinimizeInPlace(boundingBox.minimumWorld);
-                maxVector.MaximizeInPlace(boundingBox.maximumWorld);
-            }
+            });
 
             return {
                 min: minVector,
