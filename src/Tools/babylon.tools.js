@@ -920,6 +920,34 @@ var BABYLON;
             }
         };
         /**
+         * This method will return the name of the full name of the class, including its owning module (if any).
+         * It will works only on Javascript basic data types (number, string, ...) and instance of class declared with the @className decorator or implementing a method getClassName():string (in which case the module won't be specified).
+         * @param object the object to get the class name from
+         * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
+         */
+        Tools.getFullClassName = function (object, isType) {
+            if (isType === void 0) { isType = false; }
+            var className = null;
+            var moduleName = null;
+            if (!isType && object.getClassName) {
+                className = object.getClassName();
+            }
+            else {
+                if (object instanceof Object) {
+                    var classObj = isType ? object : Object.getPrototypeOf(object);
+                    className = classObj.constructor["__bjsclassName__"];
+                    moduleName = classObj.constructor["__bjsmoduleName__"];
+                }
+                if (!className) {
+                    className = typeof object;
+                }
+            }
+            if (!className) {
+                return null;
+            }
+            return ((moduleName != null) ? (moduleName + ".") : "") + className;
+        };
+        /**
          * This method can be used with hashCodeFromStream when your input is an array of values that are either: number, string, boolean or custom type implementing the getHashCode():number method.
          * @param array
          */
@@ -1119,14 +1147,16 @@ var BABYLON;
     }());
     BABYLON.PerfCounter = PerfCounter;
     /**
-     * Use this className as a decorator on a given class definition to add it a name.
+     * Use this className as a decorator on a given class definition to add it a name and optionally its module.
      * You can then use the Tools.getClassName(obj) on an instance to retrieve its class name.
      * This method is the only way to get it done in all cases, even if the .js file declaring the class is minified
-     * @param name
+     * @param name The name of the class, case should be preserved
+     * @param module The name of the Module hosting the class, optional, but strongly recommended to specify if possible. Case should be preserved.
      */
-    function className(name) {
+    function className(name, module) {
         return function (target) {
             target["__bjsclassName__"] = name;
+            target["__bjsmoduleName__"] = (module != null) ? module : null;
         };
     }
     BABYLON.className = className;

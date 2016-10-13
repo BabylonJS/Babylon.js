@@ -106,6 +106,8 @@
         private _w: number = 0.0;
         private _minimum: Vector3 = Tmp.Vector3[0];
         private _maximum: Vector3 = Tmp.Vector3[1];
+        private _scale: Vector3 = Tmp.Vector3[2];
+        private _translation: Vector3 = Tmp.Vector3[3];
 
 
         /**
@@ -526,21 +528,18 @@
             // if the particles will always face the camera
             if (this.billboard) {
                 // compute the camera position and un-rotate it by the current mesh rotation
-                this._yaw = this.mesh.rotation.y;
-                this._pitch = this.mesh.rotation.x;
-                this._roll = this.mesh.rotation.z;
-                this._quaternionRotationYPR();
-                this._quaternionToRotationMatrix();
-                this._rotMatrix.invertToRef(this._invertMatrix);
-                this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
-                Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
-                this._cam_axisZ.normalize();
-
-                // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
-                Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
-                Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
-                this._cam_axisY.normalize();
-                this._cam_axisX.normalize();             
+                if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
+                    this._quaternionToRotationMatrix();
+                    this._rotMatrix.invertToRef(this._invertMatrix);
+                    this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
+                    Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
+                    this._cam_axisZ.normalize();
+                    // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
+                    Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
+                    Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
+                    this._cam_axisY.normalize();
+                    this._cam_axisX.normalize();
+                }             
             }
 
             Matrix.IdentityToRef(this._rotMatrix);

@@ -439,9 +439,9 @@
             if (!this._geometry) {
                 var result = [];
                 if (this._delayInfo) {
-                    for (var kind in this._delayInfo) {
+                    this._delayInfo.forEach( function(kind, index, array) {
                         result.push(kind);
-                    }
+                    });
                 }
                 return result;
             }
@@ -2582,17 +2582,16 @@
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector: Vector3 = null;
             var maxVector: Vector3 = null;
-            for (var i in meshes) {
-                var mesh = meshes[i];
+            meshes.forEach( function(mesh, index, array) {
                 var boundingBox = mesh.getBoundingInfo().boundingBox;
                 if (!minVector) {
                     minVector = boundingBox.minimumWorld;
                     maxVector = boundingBox.maximumWorld;
-                    continue;
+                } else {
+                    minVector.MinimizeInPlace(boundingBox.minimumWorld);
+                    maxVector.MaximizeInPlace(boundingBox.maximumWorld);
                 }
-                minVector.MinimizeInPlace(boundingBox.minimumWorld);
-                maxVector.MaximizeInPlace(boundingBox.maximumWorld);
-            }
+            });
 
             return {
                 min: minVector,
@@ -2603,7 +2602,7 @@
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         public static Center(meshesOrMinMaxVector): Vector3 {
-            var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);
+            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }
 

@@ -11,6 +11,16 @@ var BABYLON;
             this._data = {};
         }
         /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        StringDictionary.prototype.copyFrom = function (source) {
+            var _this = this;
+            this.clear();
+            source.forEach(function (t, v) { return _this.add(t, v); });
+        };
+        /**
          * Get a value based from its key
          * @param key the given key to get the matching value from
          * @return the value if found, otherwise undefined is returned
@@ -83,6 +93,19 @@ var BABYLON;
             }
             this._data[key] = value;
             return true;
+        };
+        /**
+         * Get the element of the given key and remove it from the dictionary
+         * @param key
+         */
+        StringDictionary.prototype.getAndRemove = function (key) {
+            var val = this.get(key);
+            if (val !== undefined) {
+                delete this._data[key];
+                --this._count;
+                return val;
+            }
+            return null;
         };
         /**
          * Remove a key/value from the dictionary.

@@ -10,14 +10,14 @@ module BABYLON {
         private _observer: Observer<PointerInfo>;
 
         private previousPosition: { x: number, y: number };
-        
+
         constructor(public touchEnabled = true) {
         }
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
+            var engine = this.camera.getEngine();
+
             if (!this._pointerInput) {
-                var camera = this.camera;
-                var engine = this.camera.getEngine();
                 this._pointerInput = (p, s) => {
                     var evt = <PointerEvent>p.event;
 
@@ -62,14 +62,14 @@ module BABYLON {
 
                         var offsetX = evt.clientX - this.previousPosition.x;
                         var offsetY = evt.clientY - this.previousPosition.y;
-                        
+
                         if (this.camera.getScene().useRightHandedSystem) {
-                            camera.cameraRotation.y -= offsetX / this.angularSensibility;
+                            this.camera.cameraRotation.y -= offsetX / this.angularSensibility;
                         } else {
-                            camera.cameraRotation.y += offsetX / this.angularSensibility;                            
+                            this.camera.cameraRotation.y += offsetX / this.angularSensibility;
                         }
 
-                        camera.cameraRotation.x += offsetY / this.angularSensibility;
+                        this.camera.cameraRotation.x += offsetY / this.angularSensibility;
 
                         this.previousPosition = {
                             x: evt.clientX,
@@ -92,15 +92,15 @@ module BABYLON {
                 var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
                 if (this.camera.getScene().useRightHandedSystem) {
-                    camera.cameraRotation.y -= offsetX / this.angularSensibility;
+                    this.camera.cameraRotation.y -= offsetX / this.angularSensibility;
                 } else {
-                    camera.cameraRotation.y += offsetX / this.angularSensibility;                            
+                    this.camera.cameraRotation.y += offsetX / this.angularSensibility;
                 }
-                
-                camera.cameraRotation.x += offsetY / this.angularSensibility;
+
+                this.camera.cameraRotation.x += offsetY / this.angularSensibility;
 
                 this.previousPosition = null;
-                
+
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }

@@ -95,7 +95,7 @@
     };
 
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
-        onfinish: (images: HTMLImageElement[]) => void) => {
+        onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: () => void = null) => {
 
         var img: HTMLImageElement;
 
@@ -112,6 +112,10 @@
 
         var onerror = () => {
             scene._removePendingData(img);
+
+            if (onErrorCallBack) {
+                onErrorCallBack();
+            }
         };
 
         img = Tools.LoadImage(url, onload, onerror, scene.database);
@@ -119,13 +123,13 @@
     }
 
     var cascadeLoad = (rootUrl: string, scene,
-        onfinish: (images: HTMLImageElement[]) => void, files: string[]) => {
+        onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: () => void = null) => {
 
         var loadedImages: any = [];
         loadedImages._internalCount = 0;
 
         for (var index = 0; index < 6; index++) {
-            partialLoad(files[index], index, loadedImages, scene, onfinish);
+            partialLoad(files[index], index, loadedImages, scene, onfinish, onError);
         }
     };
 
@@ -220,14 +224,14 @@
         private static _TEXTURETYPE_HALF_FLOAT = 2;
 
         // Depht or Stencil test Constants.
-        private static _NEVER =     0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
-        private static _ALWAYS =    0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
-        private static _LESS =      0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
-        private static _EQUAL =     0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
-        private static _LEQUAL =    0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
-        private static _GREATER =   0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
-        private static _GEQUAL =    0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
-        private static _NOTEQUAL =  0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
+        private static _NEVER = 0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
+        private static _ALWAYS = 0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
+        private static _LESS = 0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
+        private static _EQUAL = 0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
+        private static _LEQUAL = 0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
+        private static _GREATER = 0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
+        private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
+        private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
 
         public static get NEVER(): number {
             return Engine._NEVER;
@@ -262,13 +266,13 @@
         }
 
         // Stencil Actions Constants.
-        private static _KEEP =	    0x1E00; 
-        private static _REPLACE =	0x1E01; 
-        private static _INCR =	    0x1E02; 
-        private static _DECR =	    0x1E03; 
-        private static _INVERT =	0x150A; 
-        private static _INCR_WRAP =	0x8507; 
-        private static _DECR_WRAP =	0x8508;
+        private static _KEEP = 0x1E00;
+        private static _REPLACE = 0x1E01;
+        private static _INCR = 0x1E02;
+        private static _DECR = 0x1E03;
+        private static _INVERT = 0x150A;
+        private static _INCR_WRAP = 0x8507;
+        private static _DECR_WRAP = 0x8508;
 
         public static get KEEP(): number {
             return Engine._KEEP;
@@ -296,7 +300,7 @@
 
         public static get DECR_WRAP(): number {
             return Engine._DECR_WRAP;
-        }        
+        }
 
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
@@ -409,6 +413,8 @@
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
         private _webGLVersion = "1.0";
+
+        private _badOS = false;
 
         public static audioEngine: AudioEngine;
 
@@ -649,6 +655,11 @@
             if (options.autoEnableWebVR) {
                 this.initWebVR();
             }
+
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /AppleWebKit.*10.[\d] Mobile/
+            //ua sniffing is the tool of the devil.
+            this._badOS = regexp.test(navigator.userAgent);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
@@ -989,7 +1000,10 @@
         }
 
         public endFrame(): void {
-            //this.flushFramebuffer();
+            //force a flush in case we are using a bad OS.
+            if (this._badOS) {
+                this.flushFramebuffer();
+            }
 
             //submit frame to the vr device, if enabled
             if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
@@ -1335,7 +1349,7 @@
         }
 
         public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
-            if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
+         //   if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
 
@@ -1370,13 +1384,13 @@
                         }
                     }
                 }
-            }
+         //   }
 
-            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
+           // if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
-            }
+            //}
         }
 
         public unbindInstanceAttributes() {
@@ -1601,13 +1615,13 @@
         }
 
         public enableEffect(effect: Effect): void {
-            if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
+            //if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
 
-                if (effect && effect.onBind) {
-                    effect.onBind(effect);
-                }
-                return;
-            }
+            //    if (effect && effect.onBind) {
+            //        effect.onBind(effect);
+            //    }
+            //    return;
+            //}
 
             // Use program
             this.setProgram(effect.getProgram());
@@ -2146,6 +2160,9 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+            }
             this.resetTextureCache();
             texture.isReady = true;
         }
@@ -2400,13 +2417,14 @@
             return texture;
         }
 
-        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean): WebGLTexture {
+        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: () => void = null, onError: () => void = null): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
             texture.isCube = true;
             texture.url = rootUrl;
             texture.references = 1;
+            texture.onLoadedCallbacks = [];
 
             var extension = rootUrl.substr(rootUrl.length - 4, 4).toLowerCase();
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
@@ -2438,7 +2456,7 @@
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
-                }, null, null, true);
+                }, null, null, true, onError);
             } else {
                 cascadeLoad(rootUrl, scene, imgs => {
                     var width = Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
@@ -2477,7 +2495,15 @@
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
-                }, files);
+
+                    texture.onLoadedCallbacks.forEach(callback => {
+                        callback();
+                    });
+
+                    if (onLoad) {
+                        onLoad();
+                    }
+                }, files, onError);
             }
 
             this._loadedTexturesCache.push(texture);
@@ -2905,6 +2931,16 @@
             }
         }
 
+        public unbindAllAttributes() {
+            for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+                if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
+                    continue;
+                }
+                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArraysEnabled[i] = false;
+            }
+        }
+
         // Dispose
         public dispose(): void {
             this.hideLoadingUI();
@@ -2925,12 +2961,7 @@
             }
 
             // Unbind
-            for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
-                if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
-                    continue;
-                }
-                this._gl.disableVertexAttribArray(i);
-            }
+            this.unbindAllAttributes();
 
             this._gl = null;
 

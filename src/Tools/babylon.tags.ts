@@ -66,9 +66,9 @@
             }
 
             var tags = tagsString.split(" ");
-            for (var t in tags) {
-                Tags._AddTagTo(obj, tags[t]);
-            }
+            tags.forEach( function(tag, index, array) {
+                Tags._AddTagTo(obj, tag);
+            });
         }
 
         public static _AddTagTo(obj: any, tag: string): void {

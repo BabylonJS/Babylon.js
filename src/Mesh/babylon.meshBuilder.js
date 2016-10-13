@@ -1043,7 +1043,7 @@ var BABYLON;
             if (instance) {
                 path3D = (instance.path3D).update(curve);
                 pathArray = extrusionPathArray(shape, curve, instance.path3D, instance.pathArray, scale, rotation, scaleFunction, rotateFunction, instance.cap, custom);
-                instance = BABYLON.Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+                instance = BABYLON.Mesh.CreateRibbon(null, pathArray, null, null, null, scene, null, null, instance);
                 return instance;
             }
             // extruded shape creation
