@@ -156,32 +156,4 @@
         }
     }
 
-    /**
-     * Custom type of the propertyChanged observable
-     */
-    export class PropertyChangedInfo {
-        /**
-         * Previous value of the property
-         */
-        oldValue: any;
-        /**
-         * New value of the property
-         */
-        newValue: any;
-
-        /**
-         * Name of the property that changed its value
-         */
-        propertyName: string;
-    }
-
-    /**
-     * Property Changed interface
-     */
-    export interface IPropertyChanged {
-        /**
-         * PropertyChanged observable
-         */
-        propertyChanged: Observable<PropertyChangedInfo>;
-    }
 }
