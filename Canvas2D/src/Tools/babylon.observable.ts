@@ -1,6 +1,35 @@
 ﻿module BABYLON {
 
     /**
+     * Custom type of the propertyChanged observable
+     */
+    export class PropertyChangedInfo {
+        /**
+         * Previous value of the property
+         */
+        oldValue: any;
+        /**
+         * New value of the property
+         */
+        newValue: any;
+
+        /**
+         * Name of the property that changed its value
+         */
+        propertyName: string;
+    }
+
+    /**
+     * Property Changed interface
+     */
+    export interface IPropertyChanged {
+        /**
+         * PropertyChanged observable
+         */
+        propertyChanged: Observable<PropertyChangedInfo>;
+    }
+
+    /**
      * The purpose of this class is to provide a base implementation of the IPropertyChanged interface for the user to avoid rewriting a code needlessly.
      * Typical use of this class is to check for equality in a property set(), then call the onPropertyChanged method if values are different after the new value is set. The protected method will notify observers of the change.
      * Remark: onPropertyChanged detects reentrant code and acts in a way to make sure everything is fine, fast and allocation friendly (when there no reentrant code which should be 99% of the time)
