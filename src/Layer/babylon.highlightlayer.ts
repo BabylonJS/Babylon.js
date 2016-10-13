@@ -87,7 +87,7 @@
          * The neutral color used during the preparation of the glow effect.
          * This is black by default as the blend operation is a blend operation. 
          */
-        public static neutralColor:Color4 = new Color4(0, 0, 0, 0);
+        public static neutralColor: Color4 = new Color4(0, 0, 0, 0);
 
         /**
          * Stencil value used for glowing meshes.
@@ -109,12 +109,12 @@
         private _verticalBlurPostprocess: GlowBlurPostProcess;
         private _cachedDefines: string;
         private _glowMapGenerationEffect: Effect;
-        private _glowMapMergeEffect: Effect;      
+        private _glowMapMergeEffect: Effect;
         private _blurTexture: RenderTargetTexture;
         private _mainTexture: RenderTargetTexture;
-        private _mainTextureDesiredSize: ISize = { width:0, height:0 };
-        private _meshes: {[id: string]: IHighlightLayerMesh} = {};
-        private _maxSize:number = 0;
+        private _mainTextureDesiredSize: ISize = { width: 0, height: 0 };
+        private _meshes: { [id: string]: IHighlightLayerMesh } = {};
+        private _maxSize: number = 0;
         private _shouldRender = false;
         private _instanceGlowingMeshStencilReference = HighlightLayer.glowingMeshStencilReference++;
 
@@ -122,11 +122,16 @@
          * Specifies whether or not the inner glow is ACTIVE in the layer.
          */
         public innerGlow: boolean = true;
-        
+
         /**
          * Specifies whether or not the outer glow is ACTIVE in the layer.
          */
         public outerGlow: boolean = true;
+
+        /**
+         * Specifies the listof mesh excluded during the generation of the highlight layer.
+         */
+        public excludedMeshes: Mesh[] = [];
 
         /**
          * Specifies the horizontal size of the blur.
@@ -173,7 +178,7 @@
          * @type {BABYLON.Observable}
          */
         public onBeforeBlurObservable = new Observable<HighlightLayer>();
-        
+
         /**
          * An event triggered when the highlight layer has been blurred.
          * @type {BABYLON.Observable}
@@ -224,7 +229,7 @@
                 blurVerticalSize: 1,
                 alphaBlendingMode: Engine.ALPHA_COMBINE
             };
-            this._options.mainTextureRatio = this._options.mainTextureRatio || 0.25; 
+            this._options.mainTextureRatio = this._options.mainTextureRatio || 0.25;
             this._options.blurTextureSizeRatio = this._options.blurTextureSizeRatio || 0.5;
             this._options.blurHorizontalSize = this._options.blurHorizontalSize || 1;
             this._options.blurVerticalSize = this._options.blurVerticalSize || 1;
@@ -250,13 +255,13 @@
             indices.push(3);
 
             this._indexBuffer = engine.createIndexBuffer(indices);
-            
+
             // Effect
             this._glowMapMergeEffect = engine.createEffect("glowMapMerge",
                 [VertexBuffer.PositionKind],
                 ["offset"],
                 ["textureSampler"], "");
-            
+
             // Render target
             this.setMainTextureSize();
 
@@ -273,13 +278,13 @@
             blurTextureWidth = Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize);
             blurTextureHeight = Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize);
 
-            this._mainTexture = new RenderTargetTexture("HighlightLayerMainRTT", 
+            this._mainTexture = new RenderTargetTexture("HighlightLayerMainRTT",
                 {
                     width: this._mainTextureDesiredSize.width,
                     height: this._mainTextureDesiredSize.height
-                }, 
-                this._scene, 
-                false, 
+                },
+                this._scene,
+                false,
                 true,
                 Engine.TEXTURETYPE_UNSIGNED_INT);
             this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -293,9 +298,9 @@
                 {
                     width: blurTextureWidth,
                     height: blurTextureHeight
-                }, 
-                this._scene, 
-                false, 
+                },
+                this._scene,
+                false,
                 true,
                 Engine.TEXTURETYPE_UNSIGNED_INT);
             this._blurTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -304,19 +309,19 @@
             this._blurTexture.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
             this._blurTexture.renderParticles = false;
 
-            this._downSamplePostprocess = new PassPostProcess("HighlightLayerPPP", this._options.blurTextureSizeRatio, 
+            this._downSamplePostprocess = new PassPostProcess("HighlightLayerPPP", this._options.blurTextureSizeRatio,
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
             this._downSamplePostprocess.onApplyObservable.add(effect => {
                 effect.setTexture("textureSampler", this._mainTexture);
             });
 
-            this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1, 
+            this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
             this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
                 effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
             });
 
-            this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1, 
+            this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
             this._verticalBlurPostprocess.onApplyObservable.add(effect => {
                 effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
@@ -326,9 +331,9 @@
                 this.onBeforeBlurObservable.notifyObservers(this);
 
                 this._scene.postProcessManager.directRender(
-                    [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess], 
+                    [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess],
                     this._blurTexture.getInternalTexture());
-                
+
                 this.onAfterBlurObservable.notifyObservers(this);
             });
 
@@ -347,6 +352,11 @@
                     return;
                 }
 
+                // Excluded Mesh
+                if (this.excludedMeshes.indexOf(mesh)) {
+                    return;
+                };
+
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
                 var highlightLayerMesh = this._meshes[mesh.id];
@@ -362,14 +372,14 @@
 
                     this._glowMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
                     if (highlightLayerMesh) {
-                        this._glowMapGenerationEffect.setFloat4("color", 
+                        this._glowMapGenerationEffect.setFloat4("color",
                             highlightLayerMesh.color.r,
                             highlightLayerMesh.color.g,
                             highlightLayerMesh.color.b,
                             1.0);
                     }
                     else {
-                        this._glowMapGenerationEffect.setFloat4("color", 
+                        this._glowMapGenerationEffect.setFloat4("color",
                             HighlightLayer.neutralColor.r,
                             HighlightLayer.neutralColor.g,
                             HighlightLayer.neutralColor.b,
@@ -453,7 +463,7 @@
                 if (alphaTexture) {
                     defines.push("#define ALPHATEST");
                     if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
-                        alphaTexture.coordinatesIndex === 1) {                    
+                        alphaTexture.coordinatesIndex === 1) {
                         defines.push("#define DIFFUSEUV2");
                         uv2 = true;
                     }
@@ -468,7 +478,7 @@
             if (emissiveTexture) {
                 defines.push("#define EMISSIVE");
                 if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
-                    emissiveTexture.coordinatesIndex === 1) {                    
+                    emissiveTexture.coordinatesIndex === 1) {
                     defines.push("#define EMISSIVEUV2");
                     uv2 = true;
                 }
@@ -605,7 +615,7 @@
                     mesh: mesh,
                     color: color,
                     // Lambda required for capture due to Observable this context
-                    observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => { 
+                    observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
                         mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
                     }),
                     observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference),
@@ -624,7 +634,7 @@
             var meshHighlight = this._meshes[mesh.id];
             if (meshHighlight) {
                 mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
-                mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault); 
+                mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
             }
 
             this._meshes[mesh.id] = undefined;
@@ -649,7 +659,7 @@
          * Sets the main texture desired size which is the closest power of two
          * of the engine canvas size.
          */
-        private setMainTextureSize() : void {
+        private setMainTextureSize(): void {
             this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
             this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
 
@@ -670,7 +680,7 @@
         private disposeTextureAndPostProcesses(): void {
             this._blurTexture.dispose();
             this._mainTexture.dispose();
-            
+
             this._downSamplePostprocess.dispose();
             this._horizontalBlurPostprocess.dispose();
             this._verticalBlurPostprocess.dispose();
@@ -700,7 +710,7 @@
                 if (meshHighlight && meshHighlight.mesh) {
                     meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
                     meshHighlight.mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
-                } 
+                }
             }
             this._meshes = null;
 
