@@ -182,7 +182,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Shape2D.borderThicknessProperty = pi; })
         ], Shape2D.prototype, "borderThickness", null);
         Shape2D = __decorate([
-            BABYLON.className("Shape2D")
+            BABYLON.className("Shape2D", "BABYLON")
         ], Shape2D);
         return Shape2D;
     }(BABYLON.RenderablePrim2D));

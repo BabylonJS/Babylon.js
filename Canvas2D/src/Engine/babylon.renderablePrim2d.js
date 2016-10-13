@@ -885,7 +885,7 @@ var BABYLON;
             BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return RenderablePrim2D.isTransparentProperty = pi; })
         ], RenderablePrim2D.prototype, "isTransparent", null);
         RenderablePrim2D = __decorate([
-            BABYLON.className("RenderablePrim2D")
+            BABYLON.className("RenderablePrim2D", "BABYLON")
         ], RenderablePrim2D);
         return RenderablePrim2D;
     }(BABYLON.Prim2DBase));
