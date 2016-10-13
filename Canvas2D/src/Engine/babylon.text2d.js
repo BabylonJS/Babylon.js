@@ -234,6 +234,9 @@ var BABYLON;
                 return this._text;
             },
             set: function (value) {
+                if (!value) {
+                    value = "";
+                }
                 this._text = value;
                 this._textSize = null; // A change of text will reset the TextSize which will be recomputed next time it's used
                 this._size = null;
@@ -257,6 +260,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Text2D.prototype, "isSizeAuto", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Text2D.prototype, "actualSize", {
             /**
              * Get the actual size of the Text2D primitive
@@ -276,7 +286,7 @@ var BABYLON;
              */
             get: function () {
                 if (!this._textSize) {
-                    if (this.owner) {
+                    if (this.owner && this._text) {
                         var newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
                         if (!newSize.equals(this._textSize)) {
                             this.onPrimitivePropertyDirty(BABYLON.Prim2DBase.sizeProperty.flagId);
@@ -455,7 +465,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Text2D.sizeProperty = pi; })
         ], Text2D.prototype, "size", null);
         Text2D = __decorate([
-            BABYLON.className("Text2D")
+            BABYLON.className("Text2D", "BABYLON")
         ], Text2D);
         return Text2D;
     }(BABYLON.RenderablePrim2D));

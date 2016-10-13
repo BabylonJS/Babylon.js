@@ -1172,7 +1172,7 @@ var BABYLON;
             BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 5, function (pi) { return Lines2D.endCapProperty = pi; })
         ], Lines2D.prototype, "endCap", null);
         Lines2D = __decorate([
-            BABYLON.className("Lines2D")
+            BABYLON.className("Lines2D", "BABYLON")
         ], Lines2D);
         return Lines2D;
     }(BABYLON.Shape2D));

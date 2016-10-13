@@ -478,7 +478,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Sprite2D.spriteScaleFactorProperty = pi; })
         ], Sprite2D.prototype, "spriteScaleFactor", null);
         Sprite2D = __decorate([
-            BABYLON.className("Sprite2D")
+            BABYLON.className("Sprite2D", "BABYLON")
         ], Sprite2D);
         return Sprite2D;
     }(BABYLON.RenderablePrim2D));

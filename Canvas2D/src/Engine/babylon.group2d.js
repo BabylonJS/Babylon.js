@@ -852,7 +852,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 2, function (pi) { return Group2D.actualSizeProperty = pi; })
         ], Group2D.prototype, "actualSize", null);
         Group2D = __decorate([
-            BABYLON.className("Group2D")
+            BABYLON.className("Group2D", "BABYLON")
         ], Group2D);
         return Group2D;
     }(BABYLON.Prim2DBase));

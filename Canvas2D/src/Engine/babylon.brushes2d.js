@@ -79,7 +79,7 @@ var BABYLON;
             return this._color.toHexString();
         };
         SolidColorBrush2D = __decorate([
-            BABYLON.className("SolidColorBrush2D")
+            BABYLON.className("SolidColorBrush2D", "BABYLON")
         ], SolidColorBrush2D);
         return SolidColorBrush2D;
     }(LockableBase));
@@ -204,7 +204,7 @@ var BABYLON;
             return "C1:" + color1 + ";C2:" + color2 + ";T:" + translation.toString() + ";R:" + rotation + ";S:" + scale + ";";
         };
         GradientColorBrush2D = __decorate([
-            BABYLON.className("GradientColorBrush2D")
+            BABYLON.className("GradientColorBrush2D", "BABYLON")
         ], GradientColorBrush2D);
         return GradientColorBrush2D;
     }(LockableBase));

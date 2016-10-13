@@ -86,6 +86,7 @@ var BABYLON;
             this._updateLocalTransformCounter = new BABYLON.PerfCounter();
             this._updateGlobalTransformCounter = new BABYLON.PerfCounter();
             this._boundingInfoRecomputeCounter = new BABYLON.PerfCounter();
+            this._uid = null;
             this._cachedCanvasGroup = null;
             this._profileInfoText = null;
             BABYLON.Prim2DBase._isCanvasInit = false;
@@ -487,6 +488,9 @@ var BABYLON;
             this._actualIntersectionList = ii.intersectedPrimitives;
             this._previousOverPrimitive = this._actualOverPrimitive;
             this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+            if ((!this._actualOverPrimitive && !this._previousOverPrimitive) || !(this._actualOverPrimitive && this._previousOverPrimitive && this._actualOverPrimitive.prim === this._previousOverPrimitive.prim)) {
+                this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
+            }
             this._intersectionRenderId = this.scene.getRenderId();
         };
         // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
@@ -739,6 +743,35 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Canvas2D.prototype, "uid", {
+            /**
+             * return a unique identifier for the Canvas2D
+             */
+            get: function () {
+                if (!this._uid) {
+                    this._uid = BABYLON.Tools.RandomId();
+                }
+                return this._uid;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "renderObservable", {
+            /**
+             * And observable called during the Canvas rendering process.
+             * This observable is called twice per render, each time with a different mask:
+             *  - 1: before render is executed
+             *  - 2: after render is executed
+             */
+            get: function () {
+                if (!this._renderObservable) {
+                    this._renderObservable = new BABYLON.Observable();
+                }
+                return this._renderObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Canvas2D.prototype, "cachingStrategy", {
             /**
              * Accessor of the Caching Strategy used by this Canvas.
@@ -897,6 +930,16 @@ var BABYLON;
         Object.defineProperty(Canvas2D.prototype, "designSizeUseHorizAxis", {
             get: function () {
                 return this._designUseHorizAxis;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "overPrim", {
+            /**
+             * Return
+             */
+            get: function () {
+                return this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
             },
             enumerable: true,
             configurable: true
@@ -1132,6 +1175,9 @@ var BABYLON;
          */
         Canvas2D.prototype._render = function () {
             this._initPerfMetrics();
+            if (this._renderObservable && this._renderObservable.hasObservers()) {
+                this._renderObservable.notifyObservers(this, Canvas2D.RENDEROBSERVABLE_PRE);
+            }
             this._updateCanvasState(false);
             this._updateTrackedNodes();
             // Nothing to do is the Canvas is not visible
@@ -1144,7 +1190,7 @@ var BABYLON;
             this._updateCanvasState(false);
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
-                this._updateOverStatus(false); // TODO this._primPointerInfo may not be up to date!
+                this._updateOverStatus(false);
             }
             this.engine.setState(false);
             this._groupRender();
@@ -1160,6 +1206,9 @@ var BABYLON;
             }
             this._fetchPerfMetrics();
             this._updateProfileCanvas();
+            if (this._renderObservable && this._renderObservable.hasObservers()) {
+                this._renderObservable.notifyObservers(this, Canvas2D.RENDEROBSERVABLE_POST);
+            }
         };
         /**
          * Internal method that allocate a cache for the given group.
@@ -1385,6 +1434,14 @@ var BABYLON;
          * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
          */
         Canvas2D.CACHESTRATEGY_DONTCACHE = 4;
+        /**
+         * Observable Mask to be notified before rendering is made
+         */
+        Canvas2D.RENDEROBSERVABLE_PRE = 1;
+        /**
+         * Observable Mask to be notified after rendering is made
+         */
+        Canvas2D.RENDEROBSERVABLE_POST = 2;
         Canvas2D._INSTANCES = [];
         Canvas2D._zMinDelta = 1 / (Math.pow(2, 24) - 1);
         Canvas2D._interInfo = new BABYLON.IntersectInfo2D();
@@ -1400,7 +1457,7 @@ var BABYLON;
         Canvas2D._solidColorBrushes = new BABYLON.StringDictionary();
         Canvas2D._gradientColorBrushes = new BABYLON.StringDictionary();
         Canvas2D = __decorate([
-            BABYLON.className("Canvas2D")
+            BABYLON.className("Canvas2D", "BABYLON")
         ], Canvas2D);
         return Canvas2D;
     }(BABYLON.Group2D));
@@ -1492,7 +1549,7 @@ var BABYLON;
             }, BABYLON.Prim2DBase.isVisibleProperty.flagId);
         }
         WorldSpaceCanvas2D = __decorate([
-            BABYLON.className("WorldSpaceCanvas2D")
+            BABYLON.className("WorldSpaceCanvas2D", "BABYLON")
         ], WorldSpaceCanvas2D);
         return WorldSpaceCanvas2D;
     }(Canvas2D));
@@ -1535,7 +1592,7 @@ var BABYLON;
             _super.call(this, scene, settings);
         }
         ScreenSpaceCanvas2D = __decorate([
-            BABYLON.className("ScreenSpaceCanvas2D")
+            BABYLON.className("ScreenSpaceCanvas2D", "BABYLON")
         ], ScreenSpaceCanvas2D);
         return ScreenSpaceCanvas2D;
     }(Canvas2D));

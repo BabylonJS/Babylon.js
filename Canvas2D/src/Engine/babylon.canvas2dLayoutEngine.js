@@ -35,7 +35,7 @@ var BABYLON;
             return true;
         };
         LayoutEngineBase = __decorate([
-            BABYLON.className("LayoutEngineBase")
+            BABYLON.className("LayoutEngineBase", "BABYLON")
         ], LayoutEngineBase);
         return LayoutEngineBase;
     }());
@@ -79,7 +79,7 @@ var BABYLON;
         });
         CanvasLayoutEngine.Singleton = new CanvasLayoutEngine();
         CanvasLayoutEngine = __decorate([
-            BABYLON.className("CanvasLayoutEngine")
+            BABYLON.className("CanvasLayoutEngine", "BABYLON")
         ], CanvasLayoutEngine);
         return CanvasLayoutEngine;
     }(LayoutEngineBase));
@@ -176,7 +176,7 @@ var BABYLON;
         StackPanelLayoutEngine.dstOffset = BABYLON.Vector2.Zero();
         StackPanelLayoutEngine.dstArea = BABYLON.Size.Zero();
         StackPanelLayoutEngine = __decorate([
-            BABYLON.className("StackPanelLayoutEngine")
+            BABYLON.className("StackPanelLayoutEngine", "BABYLON")
         ], StackPanelLayoutEngine);
         return StackPanelLayoutEngine;
     }(LayoutEngineBase));
