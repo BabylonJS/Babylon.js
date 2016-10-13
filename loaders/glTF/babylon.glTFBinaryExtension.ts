@@ -50,7 +50,7 @@
             return true;
         }
 
-        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): boolean {
+        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): boolean {
             if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
                 return false;
             }
@@ -64,7 +64,7 @@
             return true;
         }
 
-        public loadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: () => void): boolean {
+        public loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): boolean {
             var texture: IGLTFTexture = gltfRuntime.textures[id];
             var source: IGLTFImage = gltfRuntime.images[texture.source];
             if (!source.extensions || !(this.name in source.extensions)) {
@@ -72,33 +72,15 @@
             }
 
             var sourceExt: IGLTFBinaryExtensionImage = source.extensions[this.name];
-            var sampler: IGLTFSampler = gltfRuntime.samplers[texture.sampler];
 
-            var createMipMaps =
-                (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
-                (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
-                (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
-                (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR);
-
-            var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
             var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[sourceExt.bufferView];
-            var imageBytes = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
-            var blob = new Blob([imageBytes], { type: sourceExt.mimeType });
-            var blobURL = URL.createObjectURL(blob);
-            var revokeBlobURL = () => URL.revokeObjectURL(blobURL);
-            var newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
-
-            newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
-            newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
-            newTexture.name = name;
-
-            texture.babylonTexture = newTexture;
-            onSuccess(newTexture);
+            var buffer = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
+            onSuccess(buffer);
             return true;
         }
 
-        public loadShaderDataAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: () => void): boolean {
+        public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: () => void): boolean {
             var shader: IGLTFShader = gltfRuntime.shaders[id];
             if (!shader.extensions || !(this.name in shader.extensions)) {
                 return false;
@@ -107,8 +89,8 @@
             var binaryExtensionShader: IGLTFBinaryExtensionShader = shader.extensions[this.name];
             var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
             var shaderBytes = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
-            var shaderData = GLTFUtils.DecodeBufferToText(shaderBytes);
-            onSuccess(shaderData);
+            var shaderString = GLTFUtils.DecodeBufferToText(shaderBytes);
+            onSuccess(shaderString);
             return true;
         }
 

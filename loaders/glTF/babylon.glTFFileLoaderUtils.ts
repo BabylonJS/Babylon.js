@@ -88,6 +88,22 @@
         }
 
         /**
+        * Decode the base64 uri
+        * @param uri: the uri to decode
+        */
+        public static DecodeBase64(uri: string): ArrayBuffer {
+            var decodedString = atob(uri.split(",")[1]);
+            var bufferLength = decodedString.length;
+            var bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+            for (var i = 0; i < bufferLength; i++) {
+                bufferView[i] = decodedString.charCodeAt(i);
+            }
+
+            return bufferView.buffer;
+        }
+
+        /**
         * Returns the wrap mode of the texture
         * @param mode: the mode value
         */
@@ -134,7 +150,7 @@
             }
         }
 
-        public static GetBufferFromBufferView(gltfRuntime: IGLTFRuntime, bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType): any {
+        public static GetBufferFromBufferView(gltfRuntime: IGLTFRuntime, bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType): ArrayBufferView {
             var byteOffset = bufferView.byteOffset + byteOffset;
 
             var loadedBufferView = gltfRuntime.loadedBufferViews[bufferView.buffer];
