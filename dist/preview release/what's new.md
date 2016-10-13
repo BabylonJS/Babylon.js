@@ -5,6 +5,7 @@
 - New `HighlightLayer` object to enable highlights rendering. [Demo](http://www.babylonjs.com/Demos/Highlights/) - ([sebavan](https://github.com/sebavan))
 - Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
 - Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
+- Canvas2D moved to a separate folder in main repo. Now you need to also include babylon.cavans2d.js to get Canvas@D feature ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
 - New ```Tools.CreateScreenshot``` function will capture all canvas data. Previous implementation is now called `CreateScreenshotUsingRenderTarget` ([deltakosh](https://github.com/deltakosh)) 
@@ -26,7 +27,11 @@
  - Text2D super sampling to enhance quality in World Space Canvas
  - World Space Canvas is now rendering in an adaptive way for its resolution to fit the on screen projected one to achieve a good rendering quality
  - Transparent Primitives are now drawn with Instanced Array when supported
+ - New property in Canvas2D (instances) that contains all instances of canvas2d [Temechon](https://github.com/Temechon)
 - WebVR Camera was updated to be conform with the current specs. ([RaananW](https://github.com/RaananW)) 
+- New "CubeTextureTask" function will allow you to load a CubeTexture in the assetsManager. ([agallouin](https://github.com/AGallouin)) 
+- Scene.stopAnimation has now an optional second parameter, the name of the animation to kill.
+Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGallouin)) 
 
 ### Exporters
     
@@ -40,6 +45,7 @@
 - Fixed `Mesh.CreateDashedLines()` missing `instance` parameter on update ([jerome](https://github.com/jbousquie))
 - Added BBox update on each ribbon based shape (ribbon, tube, extrusion, etc) on dynamic updates ([jerome](https://github.com/jbousquie))
 - Fixed model shape initial red vertex color set to zero not formerly being taken in account in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
+- Fixed billboard when the SPS mesh is parented in the `SolidParticleSystem` ([jerome](https://github.com/jbousquie))
 - Fixed RenderTargetTexture meshes selection ([deltakosh](https://github.com/deltakosh))
 - Fixed camera speed computation ([deltakosh](https://github.com/deltakosh))
 - Fixed bug with instances, LOD and edgesRendering ([deltakosh](https://github.com/deltakosh))

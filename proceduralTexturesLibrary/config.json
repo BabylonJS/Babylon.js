@@ -55,20 +55,6 @@
         "proceduralTextures/starfield/starfieldProceduralTexture.fragment.fx"
       ],
       "output": "babylon.starfieldProceduralTexture.js"
-    },
-    {
-      "file": "proceduralTextures/asciiArt/babylon.asciiArtPostProcess.ts",
-      "shaderFiles": [
-        "proceduralTextures/asciiArt/asciiart.fragment.fx"
-      ],
-      "output": "babylon.asciiArtPostProcess.js"
-    },
-    {
-      "file": "proceduralTextures/digitalRain/babylon.digitalRainPostProcess.ts",
-      "shaderFiles": [
-        "proceduralTextures/digitalRain/digitalrain.fragment.fx"
-      ],
-      "output": "babylon.digitalRainPostProcess.js"
     }
   ],
   "build": {

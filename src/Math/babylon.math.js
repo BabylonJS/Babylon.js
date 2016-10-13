@@ -1971,8 +1971,8 @@ var BABYLON;
                 rotation.w = 1;
                 return false;
             }
-            var rotationMatrix = Matrix.FromValues(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1);
-            Quaternion.FromRotationMatrixToRef(rotationMatrix, rotation);
+            Matrix.FromValuesToRef(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1, Tmp.Matrix[0]);
+            Quaternion.FromRotationMatrixToRef(Tmp.Matrix[0], rotation);
             return true;
         };
         // Statics

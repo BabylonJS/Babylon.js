@@ -99,7 +99,7 @@ gulp.task('typescript-compile', function () {
     return merge2([
         tsResult.dts
             .pipe(concat(config.build.declarationFilename))
-            .pipe(addDtsExport("BABYLON"))
+            //.pipe(addDtsExport("BABYLON"))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
             .pipe(gulp.dest(config.build.srcOutputDirectory))

@@ -60,9 +60,9 @@ var BABYLON;
                 return;
             }
             var tags = tagsString.split(" ");
-            for (var t in tags) {
-                Tags._AddTagTo(obj, tags[t]);
-            }
+            tags.forEach(function (tag, index, array) {
+                Tags._AddTagTo(obj, tag);
+            });
         };
         Tags._AddTagTo = function (obj, tag) {
             tag = tag.trim();

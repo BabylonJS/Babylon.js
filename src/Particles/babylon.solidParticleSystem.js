@@ -85,6 +85,8 @@ var BABYLON;
             this._w = 0.0;
             this._minimum = BABYLON.Tmp.Vector3[0];
             this._maximum = BABYLON.Tmp.Vector3[1];
+            this._scale = BABYLON.Tmp.Vector3[2];
+            this._translation = BABYLON.Tmp.Vector3[3];
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -455,20 +457,18 @@ var BABYLON;
             // if the particles will always face the camera
             if (this.billboard) {
                 // compute the camera position and un-rotate it by the current mesh rotation
-                this._yaw = this.mesh.rotation.y;
-                this._pitch = this.mesh.rotation.x;
-                this._roll = this.mesh.rotation.z;
-                this._quaternionRotationYPR();
-                this._quaternionToRotationMatrix();
-                this._rotMatrix.invertToRef(this._invertMatrix);
-                this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
-                BABYLON.Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
-                this._cam_axisZ.normalize();
-                // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
-                BABYLON.Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
-                BABYLON.Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
-                this._cam_axisY.normalize();
-                this._cam_axisX.normalize();
+                if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
+                    this._quaternionToRotationMatrix();
+                    this._rotMatrix.invertToRef(this._invertMatrix);
+                    this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
+                    BABYLON.Vector3.TransformCoordinatesToRef(this._camDir, this._invertMatrix, this._cam_axisZ);
+                    this._cam_axisZ.normalize();
+                    // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the rotated camDir axis (_cam_axisZ)
+                    BABYLON.Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
+                    BABYLON.Vector3.CrossToRef(this._cam_axisY, this._cam_axisZ, this._cam_axisX);
+                    this._cam_axisY.normalize();
+                    this._cam_axisX.normalize();
+                }
             }
             BABYLON.Matrix.IdentityToRef(this._rotMatrix);
             var idx = 0;

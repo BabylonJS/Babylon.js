@@ -14,6 +14,7 @@
         private _matrices: { [name: string]: Matrix } = {};
         private _matrices3x3: { [name: string]: Float32Array } = {};
         private _matrices2x2: { [name: string]: Float32Array } = {};
+        private _vectors3Arrays: { [name: string]: Vector3[] } = {};
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
@@ -136,6 +137,13 @@
             return this;
         }
 
+        public setVector3Array(name: string, value: Vector3[]): ShaderMaterial {
+            this._checkUniform(name);
+            this._vectors3Arrays[name] = value;
+
+            return this;
+        }
+        
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             var scene = this.getScene();
             var engine = scene.getEngine();
@@ -291,6 +299,11 @@
                 for (name in this._matrices2x2) {
                     this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
+                
+                // Vector3Array   
+                for (name in this._vectors3Arrays) {
+                    this._effect.setArray3(name, this._vectors3Arrays[name]);
+                }
             }
 
             super.bind(world, mesh);
@@ -408,6 +421,12 @@
                 serializationObject.matrices2x2[name] = this._matrices2x2[name];
             }
 
+            // Vector3Array
+            serializationObject.vectors3Arrays = {};
+            for (name in this._vectors3Arrays) {
+                serializationObject.vectors3Arrays[name] = this._vectors3Arrays[name];
+            }
+            
             return serializationObject;
         }
 
@@ -482,6 +501,11 @@
                 material.setMatrix2x2(name, source.matrices2x2[name]);
             }
 
+            // Vector3Array
+            for (name in source.vectors3Arrays) {
+                material.setVector3Array(name, source.vectors3Arrays[name]);
+            }
+            
             return material;
         }
     }

@@ -1183,6 +1183,9 @@
             // SubMeshes
             this.releaseSubMeshes();
 
+            // Engine
+            this.getScene().getEngine().unbindAllAttributes();
+
             // Remove from scene
             this.getScene().removeMesh(this);
 
