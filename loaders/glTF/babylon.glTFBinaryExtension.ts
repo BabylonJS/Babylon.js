@@ -72,8 +72,6 @@
             }
 
             var sourceExt: IGLTFBinaryExtensionImage = source.extensions[this.name];
-
-
             var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[sourceExt.bufferView];
             var buffer = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
             onSuccess(buffer);
