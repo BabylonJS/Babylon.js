@@ -31659,7 +31659,7 @@ var BABYLON;
         VertexData.CreateCylinder = function (options) {
             var height = options.height || 2;
             var diameterTop = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
-            var diameterBottom = options.diameterBottom || options.diameter || 1;
+            var diameterBottom = (options.diameterBottom === 0) ? 0 : options.diameterBottom || options.diameter || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
             var hasRings = options.hasRings;
@@ -38915,6 +38915,7 @@ var BABYLON;
             this._matrices = {};
             this._matrices3x3 = {};
             this._matrices2x2 = {};
+            this._vectors3Arrays = {};
             this._cachedWorldViewMatrix = new BABYLON.Matrix();
             this._shaderPath = shaderPath;
             options.needAlphaBlending = options.needAlphaBlending || false;
@@ -38999,6 +39000,11 @@ var BABYLON;
         ShaderMaterial.prototype.setMatrix2x2 = function (name, value) {
             this._checkUniform(name);
             this._matrices2x2[name] = value;
+            return this;
+        };
+        ShaderMaterial.prototype.setVector3Array = function (name, value) {
+            this._checkUniform(name);
+            this._vectors3Arrays[name] = value;
             return this;
         };
         ShaderMaterial.prototype.isReady = function (mesh, useInstances) {
@@ -39120,6 +39126,10 @@ var BABYLON;
                 for (name in this._matrices2x2) {
                     this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
+                // Vector3Array   
+                for (name in this._vectors3Arrays) {
+                    this._effect.setArray3(name, this._vectors3Arrays[name]);
+                }
             }
             _super.prototype.bind.call(this, world, mesh);
         };
@@ -39213,6 +39223,11 @@ var BABYLON;
             for (name in this._matrices2x2) {
                 serializationObject.matrices2x2[name] = this._matrices2x2[name];
             }
+            // Vector3Array
+            serializationObject.vectors3Arrays = {};
+            for (name in this._vectors3Arrays) {
+                serializationObject.vectors3Arrays[name] = this._vectors3Arrays[name];
+            }
             return serializationObject;
         };
         ShaderMaterial.Parse = function (source, scene, rootUrl) {
@@ -39270,6 +39285,10 @@ var BABYLON;
             // Matrix 2x2
             for (name in source.matrices2x2) {
                 material.setMatrix2x2(name, source.matrices2x2[name]);
+            }
+            // Vector3Array
+            for (name in source.vectors3Arrays) {
+                material.setVector3Array(name, source.vectors3Arrays[name]);
             }
             return material;
         };
