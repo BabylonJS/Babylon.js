@@ -1007,21 +1007,6 @@
     };
 
     /**
-    * Decode array buffer from base64
-    */
-    var decodeArrayBuffer = (base64: string): ArrayBuffer => {
-        var decodedString = atob(base64);
-        var bufferLength = decodedString.length;
-        var arraybuffer = new Uint8Array(new ArrayBuffer(bufferLength));
-
-        for (var i = 0; i < bufferLength; i++) {
-            arraybuffer[i] = decodedString.charCodeAt(i);
-        }
-
-        return arraybuffer.buffer;
-    };
-
-    /**
     * onBind shaderrs callback to set uniforms and matrices
     */
     var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: Object, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
@@ -1285,19 +1270,18 @@
             return gltfRuntime;
         }
 
-        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): void {
+        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): void {
             var buffer: IGLTFBuffer = gltfRuntime.buffers[id];
 
             if (GLTFUtils.IsBase64(buffer.uri)) {
-                var decodedBuffer = decodeArrayBuffer(buffer.uri.split(",")[1]);
-                onSuccess(new Uint8Array(decodedBuffer));
+                onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(buffer.uri)));
             }
             else {
                 Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data)), null, null, true, onError);
             }
         }
 
-        public static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: () => void): void {
+        public static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): void {
             var texture: IGLTFTexture = gltfRuntime.textures[id];
 
             if (!texture || !texture.source) {
@@ -1306,13 +1290,29 @@
             }
 
             if (texture.babylonTexture) {
+                onSuccess(null);
+                return;
+            }
+
+            var source: IGLTFImage = gltfRuntime.images[texture.source];
+
+            if (GLTFUtils.IsBase64(source.uri)) {
+                onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(source.uri)));
+            }
+            else {
+                Tools.LoadFile(gltfRuntime.rootUrl + source.uri, data => onSuccess(new Uint8Array(data)), null, null, true, onError);
+            }
+        }
+
+        public static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: () => void): void {
+            var texture: IGLTFTexture = gltfRuntime.textures[id];
+
+            if (texture.babylonTexture) {
                 onSuccess(texture.babylonTexture);
                 return;
             }
 
             var sampler: IGLTFSampler = gltfRuntime.samplers[texture.sampler];
-            var source: IGLTFImage = gltfRuntime.images[texture.source];
-            var newTexture: Texture;
 
             var createMipMaps =
                 (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
@@ -1322,26 +1322,24 @@
 
             var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
-            if (GLTFUtils.IsBase64(source.uri)) {
-                newTexture = new Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, () => onSuccess(newTexture), onError, source.uri, true);
-            }
-            else {
-                newTexture = new Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, () => onSuccess(newTexture), onError);
-            }
-
+            var blob = new Blob([buffer]);
+            var blobURL = URL.createObjectURL(blob);
+            var revokeBlobURL = () => URL.revokeObjectURL(blobURL);
+            var newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
             newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
             newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
             newTexture.name = id;
 
             texture.babylonTexture = newTexture;
+            onSuccess(newTexture);
         }
 
-        public static LoadShaderDataAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: () => void): void {
+        public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: () => void): void {
             var shader: IGLTFShader = gltfRuntime.shaders[id];
 
             if (GLTFUtils.IsBase64(shader.uri)) {
-                var shaderData = atob(shader.uri.split(",")[1]);
-                onSuccess(shaderData);
+                var shaderString = atob(shader.uri.split(",")[1]);
+                onSuccess(shaderString);
             }
             else {
                 Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, null, null, false, onError);
@@ -1619,11 +1617,11 @@
             var hasShaders = false;
 
             var processShader = (sha: string, shader: IGLTFShader) => {
-                GLTFFileLoaderExtension.LoadShaderDataAsync(gltfRuntime, sha, shaderData => {
+                GLTFFileLoaderExtension.LoadShaderStringAsync(gltfRuntime, sha, shaderString => {
                     gltfRuntime.loadedShaderCount++;
 
-                    if (shaderData) {
-                        Effect.ShadersStore[sha + (shader.type === EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderData;
+                    if (shaderString) {
+                        Effect.ShadersStore[sha + (shader.type === EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderString;
                     }
 
                     if (gltfRuntime.loadedShaderCount === gltfRuntime.shaderscount) {
