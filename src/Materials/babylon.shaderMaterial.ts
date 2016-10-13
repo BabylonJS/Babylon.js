@@ -14,7 +14,7 @@
         private _matrices: { [name: string]: Matrix } = {};
         private _matrices3x3: { [name: string]: Float32Array } = {};
         private _matrices2x2: { [name: string]: Float32Array } = {};
-        private _vectors3Arrays: { [name: string]: Vector3[] } = {};
+        private _vectors3Arrays: { [name: string]: number[] } = {};
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
@@ -137,7 +137,7 @@
             return this;
         }
 
-        public setVector3Array(name: string, value: Vector3[]): ShaderMaterial {
+        public setVector3Array(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._vectors3Arrays[name] = value;
 
