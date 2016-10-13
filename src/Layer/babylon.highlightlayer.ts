@@ -353,7 +353,7 @@
                 }
 
                 // Excluded Mesh
-                if (this.excludedMeshes.indexOf(mesh)) {
+                if (this.excludedMeshes.indexOf(mesh) > -1) {
                     return;
                 };
 
