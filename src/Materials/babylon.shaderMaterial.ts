@@ -503,7 +503,7 @@
 
             // Vector3Array
             for (name in source.vectors3Arrays) {
-                material.setArray3(name, source.vectors3Arrays[name]);
+                material.setVector3Array(name, source.vectors3Arrays[name]);
             }
             
             return material;
