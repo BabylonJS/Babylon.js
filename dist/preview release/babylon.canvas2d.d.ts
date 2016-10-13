@@ -255,6 +255,14 @@ declare module BABYLON {
          * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
          */
         static CACHESTRATEGY_DONTCACHE: number;
+        /**
+         * Observable Mask to be notified before rendering is made
+         */
+        static RENDEROBSERVABLE_PRE: number;
+        /**
+         * Observable Mask to be notified after rendering is made
+         */
+        static RENDEROBSERVABLE_POST: number;
         private static _INSTANCES;
         constructor(scene: Scene, settings?: {
             id?: string;
@@ -339,6 +347,17 @@ declare module BABYLON {
          */
         engine: Engine;
         /**
+         * return a unique identifier for the Canvas2D
+         */
+        uid: string;
+        /**
+         * And observable called during the Canvas rendering process.
+         * This observable is called twice per render, each time with a different mask:
+         *  - 1: before render is executed
+         *  - 2: after render is executed
+         */
+        renderObservable: Observable<Canvas2D>;
+        /**
          * Accessor of the Caching Strategy used by this Canvas.
          * See Canvas2D.CACHESTRATEGY_xxxx static members for more information
          * @returns the value corresponding to the used strategy.
@@ -386,6 +405,10 @@ declare module BABYLON {
         designSize: Size;
         designSizeUseHorizAxis: boolean;
         /**
+         * Return
+         */
+        overPrim: Prim2DBase;
+        /**
          * Access the babylon.js' engine bound data, do not invoke this method, it's for internal purpose only
          * @returns {}
          */
@@ -404,6 +427,8 @@ declare module BABYLON {
         addUpdatePositioningCounter(count: number): void;
         addupdateLocalTransformCounter(count: number): void;
         addUpdateGlobalTransformCounter(count: number): void;
+        private _uid;
+        private _renderObservable;
         private __engineData;
         private _interactionEnabled;
         private _primPointerInfo;
@@ -1476,7 +1501,7 @@ declare module BABYLON {
      * Defines the horizontal and vertical alignment information for a Primitive.
      */
     class PrimitiveAlignment {
-        constructor(changeCallback: () => void);
+        constructor(changeCallback?: () => void);
         /**
          * Alignment is made relative to the left edge of the Primitive. Valid for horizontal alignment only.
          */
@@ -1515,6 +1540,7 @@ declare module BABYLON {
          * Get/set the vertical alignment. Use one of the AlignXXX static properties of this class
          */
         vertical: number;
+        private onChangeCallback();
         private _changedCallback;
         private _horizontal;
         private _vertical;
@@ -1533,6 +1559,8 @@ declare module BABYLON {
          * @param text can be: [<h:|horizontal:><left|right|center|stretch>], [<v:|vertical:><top|bottom|center|stretch>]
          */
         fromString(value: string): void;
+        copyFrom(pa: PrimitiveAlignment): void;
+        isDefault: boolean;
     }
     /**
      * Stores information about a Primitive that was intersected
@@ -1547,7 +1575,7 @@ declare module BABYLON {
      * The thickness can be expressed as pixels, percentages, inherit the value of the parent primitive or be auto.
      */
     class PrimitiveThickness {
-        constructor(parentAccess: () => PrimitiveThickness, changedCallback: () => void);
+        constructor(parentAccess: () => PrimitiveThickness, changedCallback?: () => void);
         /**
          * Set the thickness from a string value
          * @param thickness format is "top: <value>, left:<value>, right:<value>, bottom:<value>" or "<value>" (same for all edges) each are optional, auto will be set if it's omitted.
@@ -1576,6 +1604,7 @@ declare module BABYLON {
          * @param margin the value to set, in pixels.
          */
         fromUniformPixels(margin: number): PrimitiveThickness;
+        copyFrom(pt: PrimitiveThickness): void;
         /**
          * Set all edges in auto
          */
@@ -1665,6 +1694,7 @@ declare module BABYLON {
          * Get/set the bottom mode. The setter shouldn't be used, other setters with value should be preferred
          */
         bottomMode: number;
+        isDefault: boolean;
         private _parentAccess;
         private _changedCallback;
         private _pixels;
@@ -1675,6 +1705,7 @@ declare module BABYLON {
         static Percentage: number;
         static Pixel: number;
         private _computePixels(index, sourceArea, emitChanged);
+        private onChangeCallback();
         /**
          * Compute the positioning/size of an area considering the thickness of this object and a given alignment
          * @param sourceArea the source area where the content must be sized/positioned
@@ -1798,13 +1829,37 @@ declare module BABYLON {
          */
         static positionProperty: Prim2DPropInfo;
         /**
+         * Metadata of the left property
+         */
+        static xProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the bottom property
+         */
+        static yProperty: Prim2DPropInfo;
+        /**
          * Metadata of the actualPosition property
          */
         static actualPositionProperty: Prim2DPropInfo;
         /**
+         * Metadata of the actualX (Left) property
+         */
+        static actualXProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the actualY (Bottom) property
+         */
+        static actualYProperty: Prim2DPropInfo;
+        /**
          * Metadata of the size property
          */
         static sizeProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the width property
+         */
+        static widthProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the height property
+         */
+        static heightProperty: Prim2DPropInfo;
         /**
          * Metadata of the rotation property
          */
@@ -1813,6 +1868,18 @@ declare module BABYLON {
          * Metadata of the scale property
          */
         static scaleProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the actualSize property
+         */
+        static actualSizeProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the actualWidth property
+         */
+        static actualWidthProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the actualHeight property
+         */
+        static actualHeightProperty: Prim2DPropInfo;
         /**
          * Metadata of the origin property
          */
@@ -1910,6 +1977,14 @@ declare module BABYLON {
          * Note to implementers: you have to override this property and declare if necessary a @xxxxInstanceLevel decorator
          */
         actualSize: Size;
+        /**
+         * Shortcut to actualSize.width
+         */
+        actualWidth: number;
+        /**
+         * Shortcut to actualPosition.height
+         */
+        actualHeight: number;
         actualZOffset: number;
         /**
          * Get or set the minimal size the Layout Engine should respect when computing the primitive's actualSize.
@@ -1938,10 +2013,17 @@ declare module BABYLON {
         zOrder: number;
         isManualZOrder: boolean;
         margin: PrimitiveThickness;
+        /**
+         * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
+         */
         _hasMargin: boolean;
         padding: PrimitiveThickness;
         private _hasPadding;
         marginAlignment: PrimitiveAlignment;
+        /**
+         * Check if there a marginAlignment specified (non null and not default)
+         */
+        _hasMarginAlignment: boolean;
         opacity: number;
         scaleX: number;
         scaleY: number;
@@ -2514,32 +2596,8 @@ declare module BABYLON {
         dirtyBoundingInfo: boolean;
         dirtyParentBoundingInfo: boolean;
         typeLevelCompare: boolean;
-    }
-    /**
-     * Custom type of the propertyChanged observable
-     */
-    class PropertyChangedInfo {
-        /**
-         * Previous value of the property
-         */
-        oldValue: any;
-        /**
-         * New value of the property
-         */
-        newValue: any;
-        /**
-         * Name of the property that changed its value
-         */
-        propertyName: string;
-    }
-    /**
-     * Property Changed interface
-     */
-    interface IPropertyChanged {
-        /**
-         * PropertyChanged observable
-         */
-        propertyChanged: Observable<PropertyChangedInfo>;
+        bindingMode: number;
+        bindingUpdateSourceTrigger: number;
     }
     class ClassTreeInfo<TClass, TProp> {
         constructor(baseClass: ClassTreeInfo<TClass, TProp>, type: Object, classContentFactory: (base: TClass) => TClass);
@@ -2559,13 +2617,107 @@ declare module BABYLON {
         private _fullContent;
         private _classContentFactory;
     }
-    abstract class SmartPropertyPrim implements IPropertyChanged {
+    class DataBinding {
+        /**
+         * Use the mode specified in the SmartProperty declaration
+         */
+        static MODE_DEFAULT: number;
+        /**
+         * Update the binding target only once when the Smart Property's value is first accessed
+         */
+        static MODE_ONETIME: number;
+        /**
+         * Update the smart property when the source changes.
+         * The source won't be updated if the smart property value is set.
+         */
+        static MODE_ONEWAY: number;
+        /**
+         * Only update the source when the target's data is changing.
+         */
+        static MODE_ONEWAYTOSOURCE: number;
+        /**
+         * Update the bind target when the source changes and update the source when the Smart Property value is set.
+         */
+        static MODE_TWOWAY: number;
+        /**
+         * Use the Update Source Trigger defined in the SmartProperty declaration
+         */
+        static UPDATESOURCETRIGGER_DEFAULT: number;
+        /**
+         * Update the source as soon as the Smart Property has a value change
+         */
+        static UPDATESOURCETRIGGER_PROPERTYCHANGED: number;
+        /**
+         * Update the source when the binding target loses focus
+         */
+        static UPDATESOURCETRIGGER_LOSTFOCUS: number;
+        /**
+         * Update the source will be made by explicitly calling the UpdateFromDataSource method
+         */
+        static UPDATESOURCETRIGGER_EXPLICIT: number;
         constructor();
         /**
-         * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
-         * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
+         * Provide a callback that will convert the value obtained by the Data Binding to the type of the SmartProperty it's bound to.
+         * If no value are set, then it's assumed that the sourceValue is of the same type as the SmartProperty's one.
+         * If the SmartProperty type is a basic data type (string, boolean or number) and no converter is specified but the sourceValue is of a different type, the conversion will be implicitly made, if possible.
+         * @param sourceValue the source object retrieve by the Data Binding mechanism
+         * @returns the object of a compatible type with the SmartProperty it's bound to
          */
-        propertyChanged: Observable<PropertyChangedInfo>;
+        converter: (sourceValue: any) => any;
+        /**
+         * Set the mode to use for the data flow in the binding. Set one of the MODE_xxx static member of this class. If not specified then MODE_DEFAULT will be used
+         */
+        mode: number;
+        /**
+         * You can override the Data Source object with this member which is the Id of a uiElement existing in the UI Logical tree.
+         * If not set and source no set too, then the dataSource property will be used.
+         */
+        uiElementId: string;
+        /**
+         * You can override the Data Source object with this member which is the source object to use directly.
+         * If not set and uiElement no set too, then the dataSource property of the SmartPropertyBase object will be used.
+         */
+        dataSource: IPropertyChanged;
+        /**
+         * The path & name of the property to get from the source object.
+         * Once the Source object is evaluated (it's either the one got from uiElementId, source or dataSource) you can specify which property of this object is the value to bind to the smartProperty.
+         * If nothing is set then the source object will be used.
+         * You can specify an indirect property using the format "firstProperty.indirectProperty" like "address.postalCode" if the source is a Customer object which contains an address property and the Address class contains a postalCode property.
+         * If the property is an Array and you want to address a particular element then use the 'arrayProperty[index]' notation. For example "phoneNumbers[0]" to get the first element of the phoneNumber property which is an array.
+         */
+        propertyPathName: string;
+        /**
+         * If the Smart Property is of the string type, you can use the string interpolation notation to provide how the sourceValue will be formatted, reference to the source value must be made via the token: ${value}. For instance `Customer Name: ${value}`
+         */
+        stringFormat: (value: any) => string;
+        /**
+         * Specify how the source should be updated, use one of the UPDATESOURCETRIGGER_xxx member of this class, if not specified then UPDATESOURCETRIGGER_DEFAULT will be used.
+         */
+        updateSourceTrigger: number;
+        canUpdateTarget(resetUpdateCounter: boolean): boolean;
+        updateTarget(): void;
+        _storeBoundValue(watcher: SmartPropertyBase, value: any): void;
+        private _getActualDataSource();
+        _registerDataSource(updateTarget: boolean): void;
+        _unregisterDataSource(): void;
+        /**
+         * The PropInfo of the property the binding is bound to
+         */
+        _boundTo: Prim2DPropInfo;
+        _owner: SmartPropertyBase;
+        private _converter;
+        private _mode;
+        private _uiElementId;
+        private _dataSource;
+        _currentDataSource: IPropertyChanged;
+        private _propertyPathName;
+        private _stringFormat;
+        private _updateSourceTrigger;
+        private _updateCounter;
+    }
+    abstract class SmartPropertyBase extends PropertyChangedBase {
+        constructor();
+        disposeObservable: Observable<SmartPropertyBase>;
         /**
          * Check if the object is disposed or not.
          * @returns true if the object is dispose, false otherwise.
@@ -2576,39 +2728,6 @@ declare module BABYLON {
          * @returns false if the object is already dispose, true otherwise. Your implementation must call super.dispose() and check for a false return and return immediately if it's the case.
          */
         dispose(): boolean;
-        /**
-         * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
-         */
-        animations: Animation[];
-        /**
-         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
-         * Look at Sprite2D for more information
-         */
-        getAnimatables(): IAnimatable[];
-        /**
-         * Property giving the Model Key associated to the property.
-         * This value is constructed from the type of the primitive and all the name/value of its properties declared with the modelLevelProperty decorator
-         * @returns the model key string.
-         */
-        modelKey: string;
-        /**
-         * States if the Primitive is dirty and should be rendered again next time.
-         * @returns true is dirty, false otherwise
-         */
-        isDirty: boolean;
-        /**
-         * Access the dictionary of properties metadata. Only properties decorated with XXXXLevelProperty are concerned
-         * @returns the dictionary, the key is the property name as declared in Javascript, the value is the metadata object
-         */
-        private propDic;
-        private static _createPropInfo(target, propName, propId, dirtyBoundingInfo, dirtyParentBoundingBox, typeLevelCompare, kind);
-        private static _checkUnchanged(curValue, newValue);
-        protected _triggerPropertyChanged(propInfo: Prim2DPropInfo, newValue: any): void;
-        protected _boundingBoxDirty(): void;
-        private static propChangedInfo;
-        private _handlePropChanged<T>(curValue, newValue, propName, propInfo, typeLevelCompare);
-        protected onPrimitivePropertyDirty(propFlagId: number): void;
-        protected handleGroupChanged(prop: Prim2DPropInfo): void;
         /**
          * Check if a given set of properties are dirty or not.
          * @param flags a ORed combination of Prim2DPropInfo.flagId values
@@ -2622,19 +2741,6 @@ declare module BABYLON {
          */
         protected clearPropertiesDirty(flags: number): number;
         _resetPropertiesDirty(): void;
-        /**
-         * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
-         */
-        levelBoundingInfo: BoundingInfo2D;
-        /**
-         * This method must be overridden by a given Primitive implementation to compute its boundingInfo
-         */
-        protected updateLevelBoundingInfo(): void;
-        /**
-         * Property method called when the Primitive becomes dirty
-         */
-        protected onPrimBecomesDirty(): void;
-        static _hookProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare: boolean, dirtyBoundingInfo: boolean, dirtyParentBoundingBox: boolean, kind: number): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
         /**
          * Add an externally attached data from its key.
          * This method call will fail and return false, if such key already exists.
@@ -2663,6 +2769,90 @@ declare module BABYLON {
          * @return true if the data was successfully removed, false if it doesn't exist
          */
         removeExternalData(key: any): boolean;
+        static _hookProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, kind: number, settings?: {
+            bindingMode?: number;
+            bindingUpdateSourceTrigger?: number;
+            typeLevelCompare?: boolean;
+            dirtyBoundingInfo?: boolean;
+            dirtyParentBoundingBox?: boolean;
+        }): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
+        private static _createPropInfo(target, propName, propId, kind, settings);
+        /**
+         * Access the dictionary of properties metadata. Only properties decorated with XXXXLevelProperty are concerned
+         * @returns the dictionary, the key is the property name as declared in Javascript, the value is the metadata object
+         */
+        protected propDic: StringDictionary<Prim2DPropInfo>;
+        private static _checkUnchanged(curValue, newValue);
+        private static propChangedInfo;
+        private static propChangeGuarding;
+        protected _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean): void;
+        protected _triggerPropertyChanged(propInfo: Prim2DPropInfo, newValue: any): void;
+        /**
+         * Set the object from which Smart Properties using Binding will take/update their data from/to.
+         * When the object is part of a graph (with parent/children relationship) if the dataSource of a given instance is not specified, then the parent's one is used.
+         */
+        dataSource: IPropertyChanged;
+        protected _getDataSource(): IPropertyChanged;
+        createSimpleDataBinding(propInfo: Prim2DPropInfo, propertyPathName: string, mode?: number): DataBinding;
+        createDataBinding(propInfo: Prim2DPropInfo, binding: DataBinding): DataBinding;
+        removeDataBinding(propInfo: Prim2DPropInfo): boolean;
+        updateFromDataSource(): void;
+        private _dataSource;
+        private _dataSourceObserver;
+        private _isDisposed;
+        private _externalData;
+        protected _instanceDirtyFlags: number;
+        private _propInfo;
+        _bindings: Array<DataBinding>;
+        private _hasBinding;
+        private _bindingSourceChanged;
+        private _disposeObservable;
+    }
+    abstract class SmartPropertyPrim extends SmartPropertyBase {
+        static SMARTPROPERTYPRIM_PROPCOUNT: number;
+        constructor();
+        /**
+         * Disposable pattern, this method must be overloaded by derived types in order to clean up hardware related resources.
+         * @returns false if the object is already dispose, true otherwise. Your implementation must call super.dispose() and check for a false return and return immediately if it's the case.
+         */
+        dispose(): boolean;
+        /**
+         * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
+         */
+        animations: Animation[];
+        /**
+         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
+         * Look at Sprite2D for more information
+         */
+        getAnimatables(): IAnimatable[];
+        /**
+         * Property giving the Model Key associated to the property.
+         * This value is constructed from the type of the primitive and all the name/value of its properties declared with the modelLevelProperty decorator
+         * @returns the model key string.
+         */
+        modelKey: string;
+        /**
+         * States if the Primitive is dirty and should be rendered again next time.
+         * @returns true is dirty, false otherwise
+         */
+        isDirty: boolean;
+        protected _boundingBoxDirty(): void;
+        protected _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean): void;
+        protected onPrimitivePropertyDirty(propFlagId: number): void;
+        protected handleGroupChanged(prop: Prim2DPropInfo): void;
+        _resetPropertiesDirty(): void;
+        /**
+         * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
+         */
+        levelBoundingInfo: BoundingInfo2D;
+        /**
+         * This method must be overridden by a given Primitive implementation to compute its boundingInfo
+         */
+        protected updateLevelBoundingInfo(): void;
+        /**
+         * Property method called when the Primitive becomes dirty
+         */
+        protected onPrimBecomesDirty(): void;
         /**
          * Check if a given flag is set
          * @param flag the flag value
@@ -2698,7 +2888,7 @@ declare module BABYLON {
          * @param state true to set them, false to clear them
          */
         _changeFlags(flags: number, state: boolean): void;
-        static flagIsDisposed: number;
+        static flagFREE001: number;
         static flagLevelBoundingInfoDirty: number;
         static flagModelDirty: number;
         static flagLayoutDirty: number;
@@ -2721,14 +2911,12 @@ declare module BABYLON {
         static flagGlobalTransformDirty: number;
         static flagLayoutBoundingInfoDirty: number;
         private _flags;
-        private _externalData;
         private _modelKey;
-        private _propInfo;
         protected _levelBoundingInfo: BoundingInfo2D;
         protected _boundingInfo: BoundingInfo2D;
         protected _layoutBoundingInfo: BoundingInfo2D;
-        protected _instanceDirtyFlags: number;
     }
+    function dependencyProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, mode?: number, updateSourceTrigger?: number): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
     function modelLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean, dirtyParentBoundingBox?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
     function instanceLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean, dirtyParentBoundingBox?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
     function dynamicLevelProperty<T>(propId: number, piStore: (pi: Prim2DPropInfo) => void, typeLevelCompare?: boolean, dirtyBoundingInfo?: boolean, dirtyParentBoundingBox?: boolean): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void;
@@ -2914,6 +3102,7 @@ declare module BABYLON {
         defaultFontColor: Color4;
         text: string;
         size: Size;
+        isSizeAuto: boolean;
         /**
          * Get the actual size of the Text2D primitive
          */
@@ -3032,5 +3221,831 @@ declare module BABYLON {
         constructor(name: string, scene: Scene, canvas: Canvas2D);
         dispose(): void;
         private _canvas;
+    }
+}
+
+declare module BABYLON {
+    class Button extends ContentControl {
+        static BUTTON_PROPCOUNT: number;
+        static isPushedProperty: Prim2DPropInfo;
+        static isDefaultProperty: Prim2DPropInfo;
+        static isOutlineProperty: Prim2DPropInfo;
+        constructor(settings?: {
+            id?: string;
+            parent?: UIElement;
+            templateName?: string;
+            styleName?: string;
+            content?: any;
+            contentAlignment?: string;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        });
+        isPushed: boolean;
+        isDefault: boolean;
+        isOutline: boolean;
+        clickObservable: Observable<Button>;
+        _raiseClick(): void;
+        protected createVisualTree(): void;
+        private _isPushed;
+        private _isDefault;
+        private _isOutline;
+        private _clickObservable;
+        protected _position: Vector2;
+        normalEnabledBackground: IBrush2D;
+        normalDisabledBackground: IBrush2D;
+        normalMouseOverBackground: IBrush2D;
+        normalPushedBackground: IBrush2D;
+        normalEnabledBorder: IBrush2D;
+        normalDisabledBorder: IBrush2D;
+        normalMouseOverBorder: IBrush2D;
+        normalPushedBorder: IBrush2D;
+        defaultEnabledBackground: IBrush2D;
+        defaultDisabledBackground: IBrush2D;
+        defaultMouseOverBackground: IBrush2D;
+        defaultPushedBackground: IBrush2D;
+        defaultEnabledBorder: IBrush2D;
+        defaultDisabledBorder: IBrush2D;
+        defaultMouseOverBorder: IBrush2D;
+        defaultPushedBorder: IBrush2D;
+    }
+    class DefaultButtonRenderingTemplate extends UIElementRenderingTemplateBase {
+        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+        attach(owner: UIElement): void;
+        stateChange(): void;
+        private _rect;
+    }
+}
+
+declare module BABYLON {
+    abstract class Control extends UIElement {
+        static CONTROL_PROPCOUNT: number;
+        static backgroundProperty: Prim2DPropInfo;
+        static borderProperty: Prim2DPropInfo;
+        static borderThicknessProperty: Prim2DPropInfo;
+        static fontNameProperty: Prim2DPropInfo;
+        static foregroundProperty: Prim2DPropInfo;
+        constructor(settings: {
+            id?: string;
+            templateName?: string;
+            styleName?: string;
+        });
+        background: StringDictionary<IBrush2D>;
+        border: IBrush2D;
+        borderThickness: number;
+        fontName: string;
+        foreground: IBrush2D;
+        private _background;
+        private _border;
+        private _borderThickness;
+        private _fontName;
+        private _foreground;
+    }
+    abstract class ContentControl extends Control {
+        static CONTENTCONTROL_PROPCOUNT: number;
+        static contentProperty: Prim2DPropInfo;
+        static contentAlignmentProperty: Prim2DPropInfo;
+        constructor(settings?: {
+            id?: string;
+            templateName?: string;
+            styleName?: string;
+            content?: any;
+            contentAlignment?: string;
+        });
+        dispose(): boolean;
+        content: any;
+        contentAlignment: PrimitiveAlignment;
+        /**
+         * Check if there a contentAlignment specified (non null and not default)
+         */
+        _hasContentAlignment: boolean;
+        protected _contentUIElement: UIElement;
+        private _buildContentUIElement();
+        private _content;
+        private _contentAlignment;
+        private __contentUIElement;
+        protected _getChildren(): Array<UIElement>;
+    }
+}
+
+declare module BABYLON {
+    class Label extends Control {
+        static textProperty: Prim2DPropInfo;
+        constructor(settings?: {
+            id?: string;
+            parent?: UIElement;
+            templateName?: string;
+            styleName?: string;
+            text?: string;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        });
+        protected _position: Vector2;
+        private static _emptyArray;
+        protected _getChildren(): UIElement[];
+        protected createVisualTree(): void;
+        text: string;
+        private _text;
+    }
+    class DefaultLabelRenderingTemplate extends UIElementRenderingTemplateBase {
+        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+    }
+}
+
+declare module BABYLON {
+    interface ICommand {
+        canExecute(parameter: any): boolean;
+        execute(parameter: any): void;
+        canExecuteChanged: Observable<void>;
+    }
+    class Command implements ICommand {
+        constructor(execute: (p) => void, canExecute: (p) => boolean);
+        canExecute(parameter: any): boolean;
+        execute(parameter: any): void;
+        canExecuteChanged: Observable<void>;
+        private _lastCanExecuteResult;
+        private _execute;
+        private _canExecute;
+        private _canExecuteChanged;
+    }
+    abstract class UIElement extends SmartPropertyBase {
+        static UIELEMENT_PROPCOUNT: number;
+        static parentProperty: Prim2DPropInfo;
+        static widthProperty: Prim2DPropInfo;
+        static heightProperty: Prim2DPropInfo;
+        static minWidthProperty: Prim2DPropInfo;
+        static minHeightProperty: Prim2DPropInfo;
+        static maxWidthProperty: Prim2DPropInfo;
+        static maxHeightProperty: Prim2DPropInfo;
+        static actualWidthProperty: Prim2DPropInfo;
+        static actualHeightProperty: Prim2DPropInfo;
+        static marginProperty: Prim2DPropInfo;
+        static paddingProperty: Prim2DPropInfo;
+        static marginAlignmentProperty: Prim2DPropInfo;
+        static isEnabledProperty: Prim2DPropInfo;
+        static isFocusedProperty: Prim2DPropInfo;
+        static isMouseOverProperty: Prim2DPropInfo;
+        constructor(settings: {
+            id?: string;
+            parent?: UIElement;
+            templateName?: string;
+            styleName?: string;
+            minWidth?: number;
+            minHeight?: number;
+            maxWidth?: number;
+            maxHeight?: number;
+            width?: number;
+            height?: number;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        });
+        dispose(): boolean;
+        /**
+         * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
+         */
+        animations: Animation[];
+        /**
+         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
+         * Look at Sprite2D for more information
+         */
+        getAnimatables(): IAnimatable[];
+        ownerWindows: Window;
+        style: string;
+        /**
+         * A string that identifies the UIElement.
+         * The id is optional and there's possible collision with other UIElement's id as the uniqueness is not supported.
+         */
+        id: string;
+        /**
+         * Return a unique id automatically generated.
+         * This property is mainly used for serialization to ensure a perfect way of identifying a UIElement
+         */
+        uid: string;
+        hierarchyDepth: number;
+        parent: UIElement;
+        width: number;
+        height: number;
+        minWidth: number;
+        minHheight: number;
+        minHeight: number;
+        maxWidth: number;
+        maxHeight: number;
+        actualWidth: number;
+        actualHeight: number;
+        margin: PrimitiveThickness;
+        _hasMargin: boolean;
+        padding: PrimitiveThickness;
+        private _hasPadding;
+        marginAlignment: PrimitiveAlignment;
+        /**
+         * Check if there a marginAlignment specified (non null and not default)
+         */
+        _hasMarginAlignment: boolean;
+        isEnabled: boolean;
+        isFocused: boolean;
+        isMouseOver: boolean;
+        /**
+         * Check if a given flag is set
+         * @param flag the flag value
+         * @return true if set, false otherwise
+         */
+        _isFlagSet(flag: number): boolean;
+        /**
+         * Check if all given flags are set
+         * @param flags the flags ORed
+         * @return true if all the flags are set, false otherwise
+         */
+        _areAllFlagsSet(flags: number): boolean;
+        /**
+         * Check if at least one flag of the given flags is set
+         * @param flags the flags ORed
+         * @return true if at least one flag is set, false otherwise
+         */
+        _areSomeFlagsSet(flags: number): boolean;
+        /**
+         * Clear the given flags
+         * @param flags the flags to clear
+         */
+        _clearFlags(flags: number): void;
+        /**
+         * Set the given flags to true state
+         * @param flags the flags ORed to set
+         * @return the flags state before this call
+         */
+        _setFlags(flags: number): number;
+        /**
+         * Change the state of the given flags
+         * @param flags the flags ORed to change
+         * @param state true to set them, false to clear them
+         */
+        _changeFlags(flags: number, state: boolean): void;
+        private _assignTemplate(templateName);
+        _createVisualTree(): void;
+        _patchUIElement(ownerWindow: Window, parent: UIElement): void;
+        protected _getDataSource(): IPropertyChanged;
+        protected createVisualTree(): void;
+        protected visualPlaceholder: Prim2DBase;
+        protected visualTemplateRoot: Prim2DBase;
+        protected visualChildrenPlaceholder: Prim2DBase;
+        protected _position: Vector2;
+        protected abstract _getChildren(): Array<UIElement>;
+        static flagVisualToBuild: number;
+        protected _visualPlaceholder: Group2D;
+        protected _visualTemplateRoot: Prim2DBase;
+        protected _visualChildrenPlaceholder: Prim2DBase;
+        private _renderingTemplate;
+        private _parent;
+        private _hierarchyDepth;
+        private _flags;
+        private _style;
+        private _ownerWindow;
+        private _id;
+        private _uid;
+        private _actualWidth;
+        private _actualHeight;
+        private _minWidth;
+        private _minHeight;
+        private _maxWidth;
+        private _maxHeight;
+        private _width;
+        private _height;
+        private _margin;
+        private _padding;
+        private _marginAlignment;
+        private _isEnabled;
+        private _isFocused;
+        private _isMouseOver;
+    }
+    abstract class UIElementStyle {
+        abstract removeStyle(uiel: UIElement): any;
+        abstract applyStyle(uiel: UIElement): any;
+        name: string;
+    }
+    class UIElementStyleManager {
+        static getStyle(uiElType: string, styleName: string): UIElementStyle;
+        static registerStyle(uiElType: string, templateName: string, style: UIElementStyle): void;
+        static stylesByUIElement: StringDictionary<StringDictionary<UIElementStyle>>;
+        static DefaultStyleName: string;
+        private static _defaultStyleName;
+    }
+    class UIElementRenderingTemplateManager {
+        static getRenderingTemplate(uiElType: string, templateName: string): () => UIElementRenderingTemplateBase;
+        static registerRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase): void;
+        static renderingTemplatesByUIElement: StringDictionary<StringDictionary<() => UIElementRenderingTemplateBase>>;
+        static DefaultTemplateName: string;
+        private static _defaultTemplateName;
+    }
+    abstract class UIElementRenderingTemplateBase {
+        attach(owner: UIElement): void;
+        detach(): void;
+        owner: UIElement;
+        abstract createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+        private _owner;
+    }
+    function registerWindowRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase): (target: Object) => void;
+}
+
+declare module BABYLON {
+    class Window extends ContentControl {
+        static WINDOW_PROPCOUNT: number;
+        static leftProperty: Prim2DPropInfo;
+        static bottomProperty: Prim2DPropInfo;
+        static positionProperty: Prim2DPropInfo;
+        constructor(scene: Scene, settings?: {
+            id?: string;
+            templateName?: string;
+            styleName?: string;
+            content?: any;
+            contentAlignment?: string;
+            left?: number;
+            bottom?: number;
+            minWidth?: number;
+            minHeight?: number;
+            maxWidth?: number;
+            maxHeight?: number;
+            width?: number;
+            height?: number;
+            worldPosition?: Vector3;
+            worldRotation?: Quaternion;
+        });
+        canvas: Canvas2D;
+        left: number;
+        bottom: number;
+        position: Vector2;
+        protected _position: Vector2;
+        protected createVisualTree(): void;
+        _registerVisualToBuild(uiel: UIElement): void;
+        private _overPrimChanged(oldPrim, newPrim);
+        private _canvasPreRender();
+        private _canvasDisposed();
+        private _canvas;
+        private _left;
+        private _bottom;
+        private _isWorldSpaceCanvas;
+        private _renderObserver;
+        private _disposeObserver;
+        private _UIElementVisualToBuildList;
+        private _mouseOverUIElement;
+        private static getScreenCanvas(scene);
+        private static _screenCanvasList;
+    }
+    class DefaultWindowRenderingTemplate extends UIElementRenderingTemplateBase {
+        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Custom type of the propertyChanged observable
+     */
+    class PropertyChangedInfo {
+        /**
+         * Previous value of the property
+         */
+        oldValue: any;
+        /**
+         * New value of the property
+         */
+        newValue: any;
+        /**
+         * Name of the property that changed its value
+         */
+        propertyName: string;
+    }
+    /**
+     * Property Changed interface
+     */
+    interface IPropertyChanged {
+        /**
+         * PropertyChanged observable
+         */
+        propertyChanged: Observable<PropertyChangedInfo>;
+    }
+    /**
+     * The purpose of this class is to provide a base implementation of the IPropertyChanged interface for the user to avoid rewriting a code needlessly.
+     * Typical use of this class is to check for equality in a property set(), then call the onPropertyChanged method if values are different after the new value is set. The protected method will notify observers of the change.
+     * Remark: onPropertyChanged detects reentrant code and acts in a way to make sure everything is fine, fast and allocation friendly (when there no reentrant code which should be 99% of the time)
+     */
+    abstract class PropertyChangedBase implements IPropertyChanged {
+        /**
+         * Protected method to call when there's a change of value in a property set
+         * @param propName the name of the concerned property
+         * @param oldValue its old value
+         * @param newValue its new value
+         * @param mask an optional observable mask
+         */
+        protected onPropertyChanged<T>(propName: string, oldValue: T, newValue: T, mask?: number): void;
+        /**
+         * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
+         * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
+         */
+        propertyChanged: Observable<PropertyChangedInfo>;
+        _propertyChanged: Observable<PropertyChangedInfo>;
+        private static pci;
+        private static calling;
+    }
+    /**
+     * Class for the ObservableArray.onArrayChanged observable
+     */
+    class ArrayChanged<T> {
+        constructor();
+        /**
+         * Contain the action that were made on the ObservableArray, it's one of the ArrayChanged.xxxAction members.
+         * Note the action's value can be used in the "mask" field of the Observable to only be notified about given action(s)
+         */
+        action: number;
+        /**
+         * Only valid if the action is newItemsAction
+         */
+        newItems: {
+            index: number;
+            value: T;
+        }[];
+        /**
+         * Only valid if the action is removedItemsAction
+         */
+        removedItems: {
+            index: number;
+            value: T;
+        }[];
+        /**
+         * Only valid if the action is changedItemAction
+         */
+        changedItems: {
+            index: number;
+            value: T;
+        }[];
+        /**
+         * Get the index of the first item inserted
+         */
+        newStartingIndex: number;
+        /**
+         * Get the index of the first item removed
+         */
+        removedStartingIndex: number;
+        /**
+         * Get the index of the first changed item
+         */
+        changedStartingIndex: number;
+        /**
+         * The content of the array was totally cleared
+         */
+        static clearAction: number;
+        /**
+         * A new item was added, the newItems field contains the key/value pairs
+         */
+        static newItemsAction: number;
+        /**
+         * An existing item was removed, the removedKey field contains its key
+         */
+        static removedItemsAction: number;
+        /**
+         * One or many items in the array were changed, the
+         */
+        static changedItemAction: number;
+        /**
+         * The array's content was totally changed
+         * Depending on the method that used this mode the ChangedArray object may contains more information
+         */
+        static replacedArrayAction: number;
+        /**
+         * The length of the array changed
+         */
+        static lengthChangedAction: number;
+        private static _clearAction;
+        private static _newItemsAction;
+        private static _removedItemsAction;
+        private static _replacedArrayAction;
+        private static _lengthChangedAction;
+        private static _changedItemAction;
+        clear(): void;
+    }
+    class OAWatchedObjectChangedInfo<T> {
+        object: T;
+        propertyChanged: PropertyChangedInfo;
+    }
+    /**
+     * This class mimics the Javascript Array and TypeScript Array<T> classes, adding new features concerning the Observable pattern.
+     *
+     */
+    class ObservableArray<T> extends PropertyChangedBase {
+        /**
+         * Create an Observable Array.
+         * @param watchObjectsPropertyChange
+         * @param array and optional array that will be encapsulated by this ObservableArray instance. That's right, it's NOT a copy!
+         */
+        constructor(watchObjectsPropertyChange: boolean, array?: Array<T>);
+        /**
+          * Gets or sets the length of the array. This is a number one higher than the highest element defined in an array.
+          */
+        length: number;
+        getAt(index: number): T;
+        setAt(index: number, value: T): boolean;
+        /**
+          * Returns a string representation of an array.
+          */
+        toString(): string;
+        toLocaleString(): string;
+        /**
+          * Appends new elements to an array, and returns the new length of the array.
+          * @param items New elements of the Array.
+          */
+        push(...items: T[]): number;
+        /**
+          * Removes the last element from an array and returns it.
+          */
+        pop(): T;
+        /**
+          * Combines two or more arrays.
+          * @param items Additional items to add to the end of array1.
+          */
+        concat(...items: T[]): ObservableArray<T>;
+        /**
+          * Adds all the elements of an array separated by the specified separator string.
+          * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
+          */
+        join(separator?: string): string;
+        /**
+          * Reverses the elements in an Array.
+         * The arrayChanged action is
+          */
+        reverse(): T[];
+        /**
+          * Removes the first element from an array and returns it, shift all subsequents element one element before.
+         * The ArrayChange action is replacedArrayAction, the whole array changes and must be reevaluate as such, the removed element is in removedItems.
+         *
+          */
+        shift(): T;
+        /**
+          * Returns a section of an array.
+          * @param start The beginning of the specified portion of the array.
+          * @param end The end of the specified portion of the array.
+          */
+        slice(start?: number, end?: number): ObservableArray<T>;
+        /**
+          * Sorts an array.
+          * @param compareFn The name of the function used to determine the order of the elements. If omitted, the elements are sorted in ascending, ASCII character order.
+         * On the contrary of the Javascript Array's implementation, this method returns nothing
+          */
+        sort(compareFn?: (a: T, b: T) => number): void;
+        /**
+          * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
+          * @param start The zero-based location in the array from which to start removing elements.
+          * @param deleteCount The number of elements to remove.
+          * @param items Elements to insert into the array in place of the deleted elements.
+          */
+        splice(start: number, deleteCount: number, ...items: T[]): T[];
+        /**
+          * Inserts new elements at the start of an array.
+          * @param items  Elements to insert at the start of the Array.
+          * The ChangedArray action is replacedArrayAction, newItems contains the list of the added items
+          */
+        unshift(...items: T[]): number;
+        /**
+          * Returns the index of the first occurrence of a value in an array.
+          * @param searchElement The value to locate in the array.
+          * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+          */
+        indexOf(searchElement: T, fromIndex?: number): number;
+        /**
+          * Returns the index of the last occurrence of a specified value in an array.
+          * @param searchElement The value to locate in the array.
+          * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
+          */
+        lastIndexOf(searchElement: T, fromIndex?: number): number;
+        /**
+          * Determines whether all the members of an array satisfy the specified test.
+          * @param callbackfn A function that accepts up to three arguments. The every method calls the callbackfn function for each element in array1 until the callbackfn returns false, or until the end of the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        every(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean;
+        /**
+          * Determines whether the specified callback function returns true for any element of an array.
+          * @param callbackfn A function that accepts up to three arguments. The some method calls the callbackfn function for each element in array1 until the callbackfn returns true, or until the end of the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        some(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean;
+        /**
+          * Performs the specified action for each element in an array.
+          * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.
+          * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+        /**
+          * Calls a defined callback function on each element of an array, and returns an array that contains the results.
+          * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+        /**
+          * Returns the elements of an array that meet the condition specified in a callback function.
+          * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        filter(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): T[];
+        /**
+          * Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+          * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
+          * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
+          */
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
+        /**
+          * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+          * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
+          * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
+          */
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
+        arrayChanged: Observable<ArrayChanged<T>>;
+        protected getArrayChangedObject(): ArrayChanged<T>;
+        protected feedNotifArray(array: {
+            index: number;
+            value: T;
+        }[], startindIndex: number, ...items: T[]): void;
+        protected callArrayChanged(ac: ArrayChanged<T>): void;
+        watchedObjectChanged: Observable<OAWatchedObjectChangedInfo<T>>;
+        private _addWatchedElement(...items);
+        private _removeWatchedElement(...items);
+        protected onWatchedObjectChanged(key: string, object: T, propChanged: PropertyChangedInfo): void;
+        private _array;
+        private _arrayChanged;
+        private dci;
+        private _callingArrayChanged;
+        private _watchedObjectChanged;
+        private _woci;
+        private _callingWatchedObjectChanged;
+        private _watchObjectsPropertyChange;
+        private _watchedObjectList;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class for the ObservableStringDictionary.onDictionaryChanged observable
+     */
+    class DictionaryChanged<T> {
+        /**
+         * Contain the action that were made on the dictionary, it's one of the DictionaryChanged.xxxAction members.
+         * Note the action's value can be used in the "mask" field of the Observable to only be notified about given action(s)
+         */
+        action: number;
+        /**
+         * Only valid if the action is newItemAction
+         */
+        newItem: {
+            key: string;
+            value: T;
+        };
+        /**
+         * Only valid if the action is removedItemAction
+         */
+        removedKey: string;
+        /**
+         * Only valid if the action is itemValueChangedAction
+         */
+        changedItem: {
+            key: string;
+            oldValue: T;
+            newValue: T;
+        };
+        /**
+         * The content of the dictionary was totally cleared
+         */
+        static clearAction: number;
+        /**
+         * A new item was added, the newItem field contains the key/value pair
+         */
+        static newItemAction: number;
+        /**
+         * An existing item was removed, the removedKey field contains its key
+         */
+        static removedItemAction: number;
+        /**
+         * An existing item had a value change, the changedItem field contains the key/value
+         */
+        static itemValueChangedAction: number;
+        /**
+         * The dictionary's content was reset and replaced by the content of another dictionary.
+         * DictionaryChanged<T> contains no further information about this action
+         */
+        static replacedAction: number;
+        private static _clearAction;
+        private static _newItemAction;
+        private static _removedItemAction;
+        private static _itemValueChangedAction;
+        private static _replacedAction;
+    }
+    class OSDWatchedObjectChangedInfo<T> {
+        key: string;
+        object: T;
+        propertyChanged: PropertyChangedInfo;
+    }
+    class ObservableStringDictionary<T> extends StringDictionary<T> implements IPropertyChanged {
+        constructor(watchObjectsPropertyChange: boolean);
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        copyFrom(source: StringDictionary<T>): void;
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matching value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        add(key: string, value: T): boolean;
+        getAndRemove(key: string): T;
+        private _add(key, value, fireNotif, registerWatcher);
+        private _addWatchedElement(key, el);
+        private _removeWatchedElement(key, el);
+        set(key: string, value: T): boolean;
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        remove(key: string): boolean;
+        private _remove(key, fireNotif, element?);
+        /**
+         * Clear the whole content of the dictionary
+         */
+        clear(): void;
+        propertyChanged: Observable<PropertyChangedInfo>;
+        protected onPropertyChanged<T>(propName: string, oldValue: T, newValue: T, mask?: number): void;
+        dictionaryChanged: Observable<DictionaryChanged<T>>;
+        protected onDictionaryChanged(action: number, newItem: {
+            key: string;
+            value: T;
+        }, removedKey: string, changedItem: {
+            key: string;
+            oldValue: T;
+            newValue: T;
+        }): void;
+        watchedObjectChanged: Observable<OSDWatchedObjectChangedInfo<T>>;
+        protected onWatchedObjectChanged(key: string, object: T, propChanged: PropertyChangedInfo): void;
+        private _propertyChanged;
+        private static pci;
+        private static callingPropChanged;
+        private _dictionaryChanged;
+        private dci;
+        private _callingDicChanged;
+        private _watchedObjectChanged;
+        private _woci;
+        private _callingWatchedObjectChanged;
+        private _watchObjectsPropertyChange;
+        private _watchedObjectList;
     }
 }

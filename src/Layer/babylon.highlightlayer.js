@@ -56,6 +56,10 @@ var BABYLON;
              */
             this.outerGlow = true;
             /**
+             * Specifies the listof mesh excluded during the generation of the highlight layer.
+             */
+            this.excludedMeshes = [];
+            /**
              * An event triggered when the highlight layer has been disposed.
              * @type {BABYLON.Observable}
              */
@@ -225,6 +229,11 @@ var BABYLON;
                 if (batch.mustReturn) {
                     return;
                 }
+                // Excluded Mesh
+                if (_this.excludedMeshes.indexOf(mesh) > -1) {
+                    return;
+                }
+                ;
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
                 var highlightLayerMesh = _this._meshes[mesh.id];
                 var material = subMesh.getMaterial();

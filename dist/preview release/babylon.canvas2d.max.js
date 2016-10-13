@@ -10,6 +10,918 @@ function __() { this.constructor = d; }
 __.prototype = b.prototype;
 d.prototype = new __();
 };
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * Class for the ObservableStringDictionary.onDictionaryChanged observable
+     */
+    var DictionaryChanged = (function () {
+        function DictionaryChanged() {
+        }
+        Object.defineProperty(DictionaryChanged, "clearAction", {
+            /**
+             * The content of the dictionary was totally cleared
+             */
+            get: function () {
+                return DictionaryChanged._clearAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "newItemAction", {
+            /**
+             * A new item was added, the newItem field contains the key/value pair
+             */
+            get: function () {
+                return DictionaryChanged._newItemAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "removedItemAction", {
+            /**
+             * An existing item was removed, the removedKey field contains its key
+             */
+            get: function () {
+                return DictionaryChanged._removedItemAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "itemValueChangedAction", {
+            /**
+             * An existing item had a value change, the changedItem field contains the key/value
+             */
+            get: function () {
+                return DictionaryChanged._itemValueChangedAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "replacedAction", {
+            /**
+             * The dictionary's content was reset and replaced by the content of another dictionary.
+             * DictionaryChanged<T> contains no further information about this action
+             */
+            get: function () {
+                return DictionaryChanged._replacedAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        DictionaryChanged._clearAction = 0x1;
+        DictionaryChanged._newItemAction = 0x2;
+        DictionaryChanged._removedItemAction = 0x4;
+        DictionaryChanged._itemValueChangedAction = 0x8;
+        DictionaryChanged._replacedAction = 0x10;
+        return DictionaryChanged;
+    }());
+    BABYLON.DictionaryChanged = DictionaryChanged;
+    var OSDWatchedObjectChangedInfo = (function () {
+        function OSDWatchedObjectChangedInfo() {
+        }
+        return OSDWatchedObjectChangedInfo;
+    }());
+    BABYLON.OSDWatchedObjectChangedInfo = OSDWatchedObjectChangedInfo;
+    var ObservableStringDictionary = (function (_super) {
+        __extends(ObservableStringDictionary, _super);
+        function ObservableStringDictionary(watchObjectsPropertyChange) {
+            _super.call(this);
+            this._propertyChanged = null;
+            this._dictionaryChanged = null;
+            this.dci = new DictionaryChanged();
+            this._callingDicChanged = false;
+            this._watchedObjectChanged = null;
+            this._callingWatchedObjectChanged = false;
+            this._woci = new OSDWatchedObjectChangedInfo();
+            this._watchObjectsPropertyChange = watchObjectsPropertyChange;
+            this._watchedObjectList = this._watchObjectsPropertyChange ? new BABYLON.StringDictionary() : null;
+        }
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        ObservableStringDictionary.prototype.copyFrom = function (source) {
+            var _this = this;
+            var oldCount = this.count;
+            // Don't rely on this class' implementation for clear/add otherwise tons of notification will be thrown
+            _super.prototype.clear.call(this);
+            source.forEach(function (t, v) { return _this._add(t, v, false, _this._watchObjectsPropertyChange); });
+            this.onDictionaryChanged(DictionaryChanged.replacedAction, null, null, null);
+            this.onPropertyChanged("count", oldCount, this.count);
+        };
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matching value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        ObservableStringDictionary.prototype.getOrAddWithFactory = function (key, factory) {
+            var _this = this;
+            var val = _super.prototype.getOrAddWithFactory.call(this, key, function (k) {
+                var v = factory(key);
+                _this._add(key, v, true, _this._watchObjectsPropertyChange);
+                return v;
+            });
+            return val;
+        };
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        ObservableStringDictionary.prototype.add = function (key, value) {
+            return this._add(key, value, true, true);
+        };
+        ObservableStringDictionary.prototype.getAndRemove = function (key) {
+            var val = _super.prototype.get.call(this, key);
+            this._remove(key, true, val);
+            return val;
+        };
+        ObservableStringDictionary.prototype._add = function (key, value, fireNotif, registerWatcher) {
+            if (_super.prototype.add.call(this, key, value)) {
+                if (fireNotif) {
+                    this.onDictionaryChanged(DictionaryChanged.newItemAction, { key: key, value: value }, null, null);
+                    this.onPropertyChanged("count", this.count - 1, this.count);
+                }
+                if (registerWatcher) {
+                    this._addWatchedElement(key, value);
+                }
+                return true;
+            }
+            return false;
+        };
+        ObservableStringDictionary.prototype._addWatchedElement = function (key, el) {
+            var _this = this;
+            if (el["propertyChanged"]) {
+                this._watchedObjectList.add(key, el.propertyChanged.add(function (e, d) {
+                    _this.onWatchedObjectChanged(key, el, e);
+                }));
+            }
+        };
+        ObservableStringDictionary.prototype._removeWatchedElement = function (key, el) {
+            var observer = this._watchedObjectList.getAndRemove(key);
+            el.propertyChanged.remove(observer);
+        };
+        ObservableStringDictionary.prototype.set = function (key, value) {
+            var oldValue = this.get(key);
+            if (this._watchObjectsPropertyChange) {
+                this._removeWatchedElement(key, oldValue);
+            }
+            if (_super.prototype.set.call(this, key, value)) {
+                this.onDictionaryChanged(DictionaryChanged.itemValueChangedAction, null, null, { key: key, oldValue: oldValue, newValue: value });
+                this._addWatchedElement(key, value);
+                return true;
+            }
+            return false;
+        };
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        ObservableStringDictionary.prototype.remove = function (key) {
+            return this._remove(key, true);
+        };
+        ObservableStringDictionary.prototype._remove = function (key, fireNotif, element) {
+            if (!element) {
+                element = this.get(key);
+            }
+            if (!element) {
+                return false;
+            }
+            if (_super.prototype.remove.call(this, key) === undefined) {
+                return false;
+            }
+            this.onDictionaryChanged(DictionaryChanged.removedItemAction, null, key, null);
+            this.onPropertyChanged("count", this.count + 1, this.count);
+            if (this._watchObjectsPropertyChange) {
+                this._removeWatchedElement(key, element);
+            }
+            return true;
+        };
+        /**
+         * Clear the whole content of the dictionary
+         */
+        ObservableStringDictionary.prototype.clear = function () {
+            var _this = this;
+            this._watchedObjectList.forEach(function (k, v) {
+                var el = _this.get(k);
+                _this._removeWatchedElement(k, el);
+            });
+            this._watchedObjectList.clear();
+            var oldCount = this.count;
+            _super.prototype.clear.call(this);
+            this.onDictionaryChanged(DictionaryChanged.clearAction, null, null, null);
+            this.onPropertyChanged("count", oldCount, 0);
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "propertyChanged", {
+            get: function () {
+                if (!this._propertyChanged) {
+                    this._propertyChanged = new BABYLON.Observable();
+                }
+                return this._propertyChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onPropertyChanged = function (propName, oldValue, newValue, mask) {
+            if (this._propertyChanged && this._propertyChanged.hasObservers()) {
+                var pci = ObservableStringDictionary.callingPropChanged ? new BABYLON.PropertyChangedInfo() : ObservableStringDictionary.pci;
+                pci.oldValue = oldValue;
+                pci.newValue = newValue;
+                pci.propertyName = propName;
+                try {
+                    ObservableStringDictionary.callingPropChanged = true;
+                    this.propertyChanged.notifyObservers(pci, mask);
+                }
+                finally {
+                    ObservableStringDictionary.callingPropChanged = false;
+                }
+            }
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "dictionaryChanged", {
+            get: function () {
+                if (!this._dictionaryChanged) {
+                    this._dictionaryChanged = new BABYLON.Observable();
+                }
+                return this._dictionaryChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onDictionaryChanged = function (action, newItem, removedKey, changedItem) {
+            if (this._dictionaryChanged && this._dictionaryChanged.hasObservers()) {
+                var dci = this._callingDicChanged ? new DictionaryChanged() : this.dci;
+                dci.action = action;
+                dci.newItem = newItem;
+                dci.removedKey = removedKey;
+                dci.changedItem = changedItem;
+                try {
+                    this._callingDicChanged = true;
+                    this.dictionaryChanged.notifyObservers(dci, action);
+                }
+                finally {
+                    this._callingDicChanged = false;
+                }
+            }
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "watchedObjectChanged", {
+            get: function () {
+                if (!this._watchedObjectChanged) {
+                    this._watchedObjectChanged = new BABYLON.Observable();
+                }
+                return this._watchedObjectChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onWatchedObjectChanged = function (key, object, propChanged) {
+            if (this._watchedObjectChanged && this._watchedObjectChanged.hasObservers()) {
+                var woci = this._callingWatchedObjectChanged ? new OSDWatchedObjectChangedInfo() : this._woci;
+                woci.key = key;
+                woci.object = object;
+                woci.propertyChanged = propChanged;
+                try {
+                    this._callingWatchedObjectChanged = true;
+                    this.watchedObjectChanged.notifyObservers(woci);
+                }
+                finally {
+                    this._callingWatchedObjectChanged = false;
+                }
+            }
+        };
+        ObservableStringDictionary.pci = new BABYLON.PropertyChangedInfo();
+        ObservableStringDictionary.callingPropChanged = false;
+        return ObservableStringDictionary;
+    }(BABYLON.StringDictionary));
+    BABYLON.ObservableStringDictionary = ObservableStringDictionary;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * Custom type of the propertyChanged observable
+     */
+    var PropertyChangedInfo = (function () {
+        function PropertyChangedInfo() {
+        }
+        return PropertyChangedInfo;
+    }());
+    BABYLON.PropertyChangedInfo = PropertyChangedInfo;
+    /**
+     * The purpose of this class is to provide a base implementation of the IPropertyChanged interface for the user to avoid rewriting a code needlessly.
+     * Typical use of this class is to check for equality in a property set(), then call the onPropertyChanged method if values are different after the new value is set. The protected method will notify observers of the change.
+     * Remark: onPropertyChanged detects reentrant code and acts in a way to make sure everything is fine, fast and allocation friendly (when there no reentrant code which should be 99% of the time)
+     */
+    var PropertyChangedBase = (function () {
+        function PropertyChangedBase() {
+            this._propertyChanged = null;
+        }
+        /**
+         * Protected method to call when there's a change of value in a property set
+         * @param propName the name of the concerned property
+         * @param oldValue its old value
+         * @param newValue its new value
+         * @param mask an optional observable mask
+         */
+        PropertyChangedBase.prototype.onPropertyChanged = function (propName, oldValue, newValue, mask) {
+            if (this.propertyChanged.hasObservers()) {
+                var pci = PropertyChangedBase.calling ? new PropertyChangedInfo() : PropertyChangedBase.pci;
+                pci.oldValue = oldValue;
+                pci.newValue = newValue;
+                pci.propertyName = propName;
+                try {
+                    PropertyChangedBase.calling = true;
+                    this.propertyChanged.notifyObservers(pci, mask);
+                }
+                finally {
+                    PropertyChangedBase.calling = false;
+                }
+            }
+        };
+        Object.defineProperty(PropertyChangedBase.prototype, "propertyChanged", {
+            /**
+             * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
+             * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
+             */
+            get: function () {
+                if (!this._propertyChanged) {
+                    this._propertyChanged = new BABYLON.Observable();
+                }
+                return this._propertyChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        PropertyChangedBase.pci = new PropertyChangedInfo();
+        PropertyChangedBase.calling = false;
+        return PropertyChangedBase;
+    }());
+    BABYLON.PropertyChangedBase = PropertyChangedBase;
+    /**
+     * Class for the ObservableArray.onArrayChanged observable
+     */
+    var ArrayChanged = (function () {
+        function ArrayChanged() {
+            this.action = 0;
+            this.newItems = new Array();
+            this.removedItems = new Array();
+            this.changedItems = new Array();
+            this.newStartingIndex = -1;
+            this.removedStartingIndex = -1;
+        }
+        Object.defineProperty(ArrayChanged, "clearAction", {
+            /**
+             * The content of the array was totally cleared
+             */
+            get: function () {
+                return ArrayChanged._clearAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArrayChanged, "newItemsAction", {
+            /**
+             * A new item was added, the newItems field contains the key/value pairs
+             */
+            get: function () {
+                return ArrayChanged._newItemsAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArrayChanged, "removedItemsAction", {
+            /**
+             * An existing item was removed, the removedKey field contains its key
+             */
+            get: function () {
+                return ArrayChanged._removedItemsAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArrayChanged, "changedItemAction", {
+            /**
+             * One or many items in the array were changed, the
+             */
+            get: function () {
+                return ArrayChanged._changedItemAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArrayChanged, "replacedArrayAction", {
+            /**
+             * The array's content was totally changed
+             * Depending on the method that used this mode the ChangedArray object may contains more information
+             */
+            get: function () {
+                return ArrayChanged._replacedArrayAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ArrayChanged, "lengthChangedAction", {
+            /**
+             * The length of the array changed
+             */
+            get: function () {
+                return ArrayChanged._lengthChangedAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ArrayChanged.prototype.clear = function () {
+            this.action = 0;
+            this.newItems.splice(0);
+            this.removedItems.splice(0);
+            this.changedItems.splice(0);
+            this.removedStartingIndex = this.removedStartingIndex = this.changedStartingIndex = 0;
+        };
+        ArrayChanged._clearAction = 0x1;
+        ArrayChanged._newItemsAction = 0x2;
+        ArrayChanged._removedItemsAction = 0x4;
+        ArrayChanged._replacedArrayAction = 0x8;
+        ArrayChanged._lengthChangedAction = 0x10;
+        ArrayChanged._changedItemAction = 0x20;
+        return ArrayChanged;
+    }());
+    BABYLON.ArrayChanged = ArrayChanged;
+    var OAWatchedObjectChangedInfo = (function () {
+        function OAWatchedObjectChangedInfo() {
+        }
+        return OAWatchedObjectChangedInfo;
+    }());
+    BABYLON.OAWatchedObjectChangedInfo = OAWatchedObjectChangedInfo;
+    /**
+     * This class mimics the Javascript Array and TypeScript Array<T> classes, adding new features concerning the Observable pattern.
+     *
+     */
+    var ObservableArray = (function (_super) {
+        __extends(ObservableArray, _super);
+        /**
+         * Create an Observable Array.
+         * @param watchObjectsPropertyChange
+         * @param array and optional array that will be encapsulated by this ObservableArray instance. That's right, it's NOT a copy!
+         */
+        function ObservableArray(watchObjectsPropertyChange, array) {
+            _super.call(this);
+            this.dci = new ArrayChanged();
+            this._callingArrayChanged = false;
+            this._array = (array != null) ? array : new Array();
+            this.dci = new ArrayChanged();
+            this._callingArrayChanged = false;
+            this._arrayChanged = null;
+            this._callingWatchedObjectChanged = false;
+            this._watchObjectsPropertyChange = watchObjectsPropertyChange;
+            this._watchedObjectList = this._watchObjectsPropertyChange ? new BABYLON.StringDictionary() : null;
+            this._woci = new OAWatchedObjectChangedInfo();
+        }
+        Object.defineProperty(ObservableArray.prototype, "length", {
+            /**
+              * Gets or sets the length of the array. This is a number one higher than the highest element defined in an array.
+              */
+            get: function () {
+                return this._array.length;
+            },
+            set: function (value) {
+                if (value === this._array.length) {
+                    return;
+                }
+                var oldLength = this._array.length;
+                this._array.length = value;
+                this.onPropertyChanged("length", oldLength, this._array.length);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableArray.prototype.getAt = function (index) {
+            return this._array[index];
+        };
+        ObservableArray.prototype.setAt = function (index, value) {
+            if (index < 0) {
+                return false;
+            }
+            var insertion = (index >= this._array.length) || this._array[index] === undefined;
+            var oldLength = 0;
+            if (insertion) {
+                oldLength = this._array.length;
+            }
+            else if (this._watchObjectsPropertyChange) {
+                this._removeWatchedElement(this._array[index]);
+            }
+            this._array[index] = value;
+            if (this._watchObjectsPropertyChange) {
+                this._addWatchedElement(value);
+            }
+            if (insertion) {
+                this.onPropertyChanged("length", oldLength, this._array.length);
+            }
+            var ac = this.getArrayChangedObject();
+            if (ac) {
+                ac.action = insertion ? ArrayChanged.newItemsAction : ArrayChanged.changedItemAction;
+                if (insertion) {
+                    ac.newItems.splice(0, ac.newItems.length, { index: index, value: value });
+                    ac.newStartingIndex = index;
+                    ac.changedItems.splice(0);
+                }
+                else {
+                    ac.newItems.splice(0);
+                    ac.changedStartingIndex = index;
+                    ac.changedItems.splice(0, ac.changedItems.length, { index: index, value: value });
+                }
+                ac.removedItems.splice(0);
+                ac.removedStartingIndex = -1;
+                this.callArrayChanged(ac);
+            }
+        };
+        /**
+          * Returns a string representation of an array.
+          */
+        ObservableArray.prototype.toString = function () {
+            return this._array.toString();
+        };
+        ObservableArray.prototype.toLocaleString = function () {
+            return this._array.toLocaleString();
+        };
+        /**
+          * Appends new elements to an array, and returns the new length of the array.
+          * @param items New elements of the Array.
+          */
+        ObservableArray.prototype.push = function () {
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i - 0] = arguments[_i];
+            }
+            var oldLength = this._array.length;
+            var n = (_a = this._array).push.apply(_a, items);
+            if (this._watchObjectsPropertyChange) {
+                this._addWatchedElement.apply(this, items);
+            }
+            this.onPropertyChanged("length", oldLength, this._array.length);
+            var ac = this.getArrayChangedObject();
+            if (ac) {
+                ac.action = ArrayChanged.newItemsAction;
+                ac.newStartingIndex = oldLength;
+                this.feedNotifArray.apply(this, [ac.newItems, oldLength].concat(items));
+                this.callArrayChanged(ac);
+            }
+            return n;
+            var _a;
+        };
+        /**
+          * Removes the last element from an array and returns it.
+          */
+        ObservableArray.prototype.pop = function () {
+            var firstRemove = this._array.length - 1;
+            var res = this._array.pop();
+            if (res && this._watchObjectsPropertyChange) {
+                this._removeWatchedElement(res);
+            }
+            if (firstRemove !== -1) {
+                this.onPropertyChanged("length", this._array.length + 1, this._array.length);
+                var ac = this.getArrayChangedObject();
+                if (ac) {
+                    ac.action = ArrayChanged.removedItemsAction;
+                    ac.removedStartingIndex = firstRemove;
+                    this.feedNotifArray(ac.removedItems, firstRemove, res);
+                }
+            }
+            return res;
+        };
+        /**
+          * Combines two or more arrays.
+          * @param items Additional items to add to the end of array1.
+          */
+        ObservableArray.prototype.concat = function () {
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i - 0] = arguments[_i];
+            }
+            return new ObservableArray(this._watchObjectsPropertyChange, (_a = this._array).concat.apply(_a, items));
+            var _a;
+        };
+        /**
+          * Adds all the elements of an array separated by the specified separator string.
+          * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
+          */
+        ObservableArray.prototype.join = function (separator) {
+            return this._array.join(separator);
+        };
+        /**
+          * Reverses the elements in an Array.
+         * The arrayChanged action is
+          */
+        ObservableArray.prototype.reverse = function () {
+            var res = this._array.reverse();
+            var ac = this.getArrayChangedObject();
+            ac.action = ArrayChanged.replacedArrayAction;
+            return res;
+        };
+        /**
+          * Removes the first element from an array and returns it, shift all subsequents element one element before.
+         * The ArrayChange action is replacedArrayAction, the whole array changes and must be reevaluate as such, the removed element is in removedItems.
+         *
+          */
+        ObservableArray.prototype.shift = function () {
+            var oldLength = this._array.length;
+            var res = this._array.shift();
+            if (this._watchedObjectChanged && res != null) {
+                this._removeWatchedElement(res);
+            }
+            if (oldLength !== 0) {
+                this.onPropertyChanged("length", oldLength, this._array.length);
+                var ac = this.getArrayChangedObject();
+                if (ac) {
+                    ac.action = ArrayChanged.replacedArrayAction;
+                    ac.removedItems.splice(0, ac.removedItems.length, { index: 0, value: res });
+                    ac.newItems.splice(0);
+                    ac.changedItems.splice(0);
+                    ac.removedStartingIndex = 0;
+                    this.callArrayChanged(ac);
+                }
+            }
+            return res;
+        };
+        /**
+          * Returns a section of an array.
+          * @param start The beginning of the specified portion of the array.
+          * @param end The end of the specified portion of the array.
+          */
+        ObservableArray.prototype.slice = function (start, end) {
+            return new ObservableArray(this._watchObjectsPropertyChange, this._array.slice(start, end));
+        };
+        /**
+          * Sorts an array.
+          * @param compareFn The name of the function used to determine the order of the elements. If omitted, the elements are sorted in ascending, ASCII character order.
+         * On the contrary of the Javascript Array's implementation, this method returns nothing
+          */
+        ObservableArray.prototype.sort = function (compareFn) {
+            var oldLength = this._array.length;
+            this._array.sort(compareFn);
+            if (oldLength !== 0) {
+                var ac = this.getArrayChangedObject();
+                if (ac) {
+                    ac.clear();
+                    ac.action = ArrayChanged.replacedArrayAction;
+                    this.callArrayChanged(ac);
+                }
+            }
+        };
+        /**
+          * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
+          * @param start The zero-based location in the array from which to start removing elements.
+          * @param deleteCount The number of elements to remove.
+          * @param items Elements to insert into the array in place of the deleted elements.
+          */
+        ObservableArray.prototype.splice = function (start, deleteCount) {
+            var items = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                items[_i - 2] = arguments[_i];
+            }
+            var oldLength = this._array.length;
+            if (this._watchObjectsPropertyChange) {
+                for (var i = start; i < start + deleteCount; i++) {
+                    var val = this._array[i];
+                    if (this._watchObjectsPropertyChange && val != null) {
+                        this._removeWatchedElement(val);
+                    }
+                }
+            }
+            var res = (_a = this._array).splice.apply(_a, [start, deleteCount].concat(items));
+            if (this._watchObjectsPropertyChange) {
+                this._addWatchedElement.apply(this, items);
+            }
+            if (oldLength !== this._array.length) {
+                this.onPropertyChanged("length", oldLength, this._array.length);
+            }
+            var ac = this.getArrayChangedObject();
+            if (ac) {
+                ac.clear();
+                ac.action = ArrayChanged.replacedArrayAction;
+                this.callArrayChanged(ac);
+            }
+            return res;
+            var _a;
+        };
+        /**
+          * Inserts new elements at the start of an array.
+          * @param items  Elements to insert at the start of the Array.
+          * The ChangedArray action is replacedArrayAction, newItems contains the list of the added items
+          */
+        ObservableArray.prototype.unshift = function () {
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i - 0] = arguments[_i];
+            }
+            var oldLength = this._array.length;
+            var res = (_a = this._array).unshift.apply(_a, items);
+            if (this._watchObjectsPropertyChange) {
+                this._addWatchedElement.apply(this, items);
+            }
+            this.onPropertyChanged("length", oldLength, this._array.length);
+            var ac = this.getArrayChangedObject();
+            if (ac) {
+                ac.clear();
+                ac.action = ArrayChanged.replacedArrayAction;
+                ac.newStartingIndex = 0,
+                    this.feedNotifArray.apply(this, [ac.newItems, 0].concat(items));
+                this.callArrayChanged(ac);
+            }
+            return res;
+            var _a;
+        };
+        /**
+          * Returns the index of the first occurrence of a value in an array.
+          * @param searchElement The value to locate in the array.
+          * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+          */
+        ObservableArray.prototype.indexOf = function (searchElement, fromIndex) {
+            return this._array.indexOf(searchElement, fromIndex);
+        };
+        /**
+          * Returns the index of the last occurrence of a specified value in an array.
+          * @param searchElement The value to locate in the array.
+          * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
+          */
+        ObservableArray.prototype.lastIndexOf = function (searchElement, fromIndex) {
+            return this._array.lastIndexOf(searchElement, fromIndex);
+        };
+        /**
+          * Determines whether all the members of an array satisfy the specified test.
+          * @param callbackfn A function that accepts up to three arguments. The every method calls the callbackfn function for each element in array1 until the callbackfn returns false, or until the end of the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        ObservableArray.prototype.every = function (callbackfn, thisArg) {
+            return this._array.every(callbackfn, thisArg);
+        };
+        /**
+          * Determines whether the specified callback function returns true for any element of an array.
+          * @param callbackfn A function that accepts up to three arguments. The some method calls the callbackfn function for each element in array1 until the callbackfn returns true, or until the end of the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        ObservableArray.prototype.some = function (callbackfn, thisArg) {
+            return this._array.some(callbackfn, thisArg);
+        };
+        /**
+          * Performs the specified action for each element in an array.
+          * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.
+          * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        ObservableArray.prototype.forEach = function (callbackfn, thisArg) {
+            return this._array.forEach(callbackfn, thisArg);
+        };
+        /**
+          * Calls a defined callback function on each element of an array, and returns an array that contains the results.
+          * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        ObservableArray.prototype.map = function (callbackfn, thisArg) {
+            return this._array.map(callbackfn, thisArg);
+        };
+        /**
+          * Returns the elements of an array that meet the condition specified in a callback function.
+          * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        ObservableArray.prototype.filter = function (callbackfn, thisArg) {
+            return this._array.filter(callbackfn, thisArg);
+        };
+        /**
+          * Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+          * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
+          * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
+          */
+        ObservableArray.prototype.reduce = function (callbackfn, initialValue) {
+            return this._array.reduce(callbackfn);
+        };
+        /**
+          * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+          * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
+          * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
+          */
+        ObservableArray.prototype.reduceRight = function (callbackfn, initialValue) {
+            return this._array.reduceRight(callbackfn);
+        };
+        Object.defineProperty(ObservableArray.prototype, "arrayChanged", {
+            get: function () {
+                if (!this._arrayChanged) {
+                    this._arrayChanged = new BABYLON.Observable();
+                }
+                return this._arrayChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableArray.prototype.getArrayChangedObject = function () {
+            if (this._arrayChanged && this._arrayChanged.hasObservers()) {
+                var ac = this._callingArrayChanged ? new ArrayChanged() : this.dci;
+                return ac;
+            }
+            return null;
+        };
+        ObservableArray.prototype.feedNotifArray = function (array, startindIndex) {
+            var items = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                items[_i - 2] = arguments[_i];
+            }
+            array.splice(0);
+            for (var i = 0; i < items.length; i++) {
+                var value = this._array[i + startindIndex];
+                if (value !== undefined) {
+                    array.push({ index: i + startindIndex, value: value });
+                }
+            }
+        };
+        ObservableArray.prototype.callArrayChanged = function (ac) {
+            try {
+                this._callingArrayChanged = true;
+                this.arrayChanged.notifyObservers(ac, ac.action);
+            }
+            finally {
+                this._callingArrayChanged = false;
+            }
+        };
+        Object.defineProperty(ObservableArray.prototype, "watchedObjectChanged", {
+            get: function () {
+                if (!this._watchedObjectChanged) {
+                    this._watchedObjectChanged = new BABYLON.Observable();
+                }
+                return this._watchedObjectChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableArray.prototype._addWatchedElement = function () {
+            var _this = this;
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i - 0] = arguments[_i];
+            }
+            var _loop_1 = function(curItem) {
+                if (curItem["propertyChanged"]) {
+                    var key_1 = curItem["__ObsArrayObjID__"];
+                    // The object may already be part of another ObsArray, so there already be a valid ID
+                    if (!key_1) {
+                        key_1 = BABYLON.Tools.RandomId();
+                        curItem["__ObsArrayObjID__"] = key_1;
+                    }
+                    this_1._watchedObjectList.add(key_1, curItem.propertyChanged.add(function (e, d) {
+                        _this.onWatchedObjectChanged(key_1, curItem, e);
+                    }));
+                }
+            };
+            var this_1 = this;
+            for (var _a = 0, items_1 = items; _a < items_1.length; _a++) {
+                var curItem = items_1[_a];
+                _loop_1(curItem);
+            }
+        };
+        ObservableArray.prototype._removeWatchedElement = function () {
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i - 0] = arguments[_i];
+            }
+            for (var _a = 0, items_2 = items; _a < items_2.length; _a++) {
+                var curItem = items_2[_a];
+                var key = curItem["__ObsArrayObjID__"];
+                if (key != null) {
+                    var observer = this._watchedObjectList.getAndRemove(key);
+                    curItem.propertyChanged.remove(observer);
+                }
+            }
+        };
+        ObservableArray.prototype.onWatchedObjectChanged = function (key, object, propChanged) {
+            if (this._watchedObjectChanged && this._watchedObjectChanged.hasObservers()) {
+                var woci = this._callingWatchedObjectChanged ? new OAWatchedObjectChangedInfo() : this._woci;
+                woci.object = object;
+                woci.propertyChanged = propChanged;
+                try {
+                    this._callingWatchedObjectChanged = true;
+                    this.watchedObjectChanged.notifyObservers(woci);
+                }
+                finally {
+                    this._callingWatchedObjectChanged = false;
+                }
+            }
+        };
+        return ObservableArray;
+    }(PropertyChangedBase));
+    BABYLON.ObservableArray = ObservableArray;
+})(BABYLON || (BABYLON = {}));
+
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -224,6 +1136,10 @@ var BABYLON;
 
 
 
+
+
+
+
 var BABYLON;
 (function (BABYLON) {
     var LayoutEngineBase = (function () {
@@ -250,7 +1166,7 @@ var BABYLON;
             return true;
         };
         LayoutEngineBase = __decorate([
-            BABYLON.className("LayoutEngineBase")
+            BABYLON.className("LayoutEngineBase", "BABYLON")
         ], LayoutEngineBase);
         return LayoutEngineBase;
     }());
@@ -294,7 +1210,7 @@ var BABYLON;
         });
         CanvasLayoutEngine.Singleton = new CanvasLayoutEngine();
         CanvasLayoutEngine = __decorate([
-            BABYLON.className("CanvasLayoutEngine")
+            BABYLON.className("CanvasLayoutEngine", "BABYLON")
         ], CanvasLayoutEngine);
         return CanvasLayoutEngine;
     }(LayoutEngineBase));
@@ -391,7 +1307,7 @@ var BABYLON;
         StackPanelLayoutEngine.dstOffset = BABYLON.Vector2.Zero();
         StackPanelLayoutEngine.dstArea = BABYLON.Size.Zero();
         StackPanelLayoutEngine = __decorate([
-            BABYLON.className("StackPanelLayoutEngine")
+            BABYLON.className("StackPanelLayoutEngine", "BABYLON")
         ], StackPanelLayoutEngine);
         return StackPanelLayoutEngine;
     }(LayoutEngineBase));
@@ -474,7 +1390,7 @@ var BABYLON;
             return this._color.toHexString();
         };
         SolidColorBrush2D = __decorate([
-            BABYLON.className("SolidColorBrush2D")
+            BABYLON.className("SolidColorBrush2D", "BABYLON")
         ], SolidColorBrush2D);
         return SolidColorBrush2D;
     }(LockableBase));
@@ -599,12 +1515,17 @@ var BABYLON;
             return "C1:" + color1 + ";C2:" + color2 + ";T:" + translation.toString() + ";R:" + rotation + ";S:" + scale + ";";
         };
         GradientColorBrush2D = __decorate([
-            BABYLON.className("GradientColorBrush2D")
+            BABYLON.className("GradientColorBrush2D", "BABYLON")
         ], GradientColorBrush2D);
         return GradientColorBrush2D;
     }(LockableBase));
     BABYLON.GradientColorBrush2D = GradientColorBrush2D;
 })(BABYLON || (BABYLON = {}));
+
+
+
+
+
 
 
 var BABYLON;
@@ -624,15 +1545,6 @@ var BABYLON;
         return Prim2DPropInfo;
     }());
     BABYLON.Prim2DPropInfo = Prim2DPropInfo;
-    /**
-     * Custom type of the propertyChanged observable
-     */
-    var PropertyChangedInfo = (function () {
-        function PropertyChangedInfo() {
-        }
-        return PropertyChangedInfo;
-    }());
-    BABYLON.PropertyChangedInfo = PropertyChangedInfo;
     var ClassTreeInfo = (function () {
         function ClassTreeInfo(baseClass, type, classContentFactory) {
             this._baseClass = baseClass;
@@ -736,21 +1648,289 @@ var BABYLON;
         return ClassTreeInfo;
     }());
     BABYLON.ClassTreeInfo = ClassTreeInfo;
-    var SmartPropertyPrim = (function () {
-        function SmartPropertyPrim() {
-            this._flags = 0;
-            this._modelKey = null;
-            this._instanceDirtyFlags = 0;
-            this._levelBoundingInfo = new BABYLON.BoundingInfo2D();
-            this.animations = new Array();
+    var DataBinding = (function () {
+        function DataBinding() {
+            this._converter = null;
+            this._mode = DataBinding.MODE_DEFAULT;
+            this._uiElementId = null;
+            this._dataSource = null;
+            this._currentDataSource = null;
+            this._propertyPathName = null;
+            this._stringFormat = null;
+            this._updateSourceTrigger = DataBinding.UPDATESOURCETRIGGER_PROPERTYCHANGED;
+            this._boundTo = null;
+            this._owner = null;
+            this._updateCounter = 0;
         }
-        Object.defineProperty(SmartPropertyPrim.prototype, "isDisposed", {
+        Object.defineProperty(DataBinding.prototype, "converter", {
+            /**
+             * Provide a callback that will convert the value obtained by the Data Binding to the type of the SmartProperty it's bound to.
+             * If no value are set, then it's assumed that the sourceValue is of the same type as the SmartProperty's one.
+             * If the SmartProperty type is a basic data type (string, boolean or number) and no converter is specified but the sourceValue is of a different type, the conversion will be implicitly made, if possible.
+             * @param sourceValue the source object retrieve by the Data Binding mechanism
+             * @returns the object of a compatible type with the SmartProperty it's bound to
+             */
+            get: function () {
+                return this._converter;
+            },
+            set: function (value) {
+                if (this._converter === value) {
+                    return;
+                }
+                this._converter = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataBinding.prototype, "mode", {
+            /**
+             * Set the mode to use for the data flow in the binding. Set one of the MODE_xxx static member of this class. If not specified then MODE_DEFAULT will be used
+             */
+            get: function () {
+                if (this._mode === DataBinding.MODE_DEFAULT) {
+                    return this._boundTo.bindingMode;
+                }
+                return this._mode;
+            },
+            set: function (value) {
+                if (this._mode === value) {
+                    return;
+                }
+                this._mode = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataBinding.prototype, "uiElementId", {
+            /**
+             * You can override the Data Source object with this member which is the Id of a uiElement existing in the UI Logical tree.
+             * If not set and source no set too, then the dataSource property will be used.
+             */
+            get: function () {
+                return this._uiElementId;
+            },
+            set: function (value) {
+                if (this._uiElementId === value) {
+                    return;
+                }
+                this._uiElementId = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataBinding.prototype, "dataSource", {
+            /**
+             * You can override the Data Source object with this member which is the source object to use directly.
+             * If not set and uiElement no set too, then the dataSource property of the SmartPropertyBase object will be used.
+             */
+            get: function () {
+                return this._dataSource;
+            },
+            set: function (value) {
+                if (this._dataSource === value) {
+                    return;
+                }
+                this._dataSource = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataBinding.prototype, "propertyPathName", {
+            /**
+             * The path & name of the property to get from the source object.
+             * Once the Source object is evaluated (it's either the one got from uiElementId, source or dataSource) you can specify which property of this object is the value to bind to the smartProperty.
+             * If nothing is set then the source object will be used.
+             * You can specify an indirect property using the format "firstProperty.indirectProperty" like "address.postalCode" if the source is a Customer object which contains an address property and the Address class contains a postalCode property.
+             * If the property is an Array and you want to address a particular element then use the 'arrayProperty[index]' notation. For example "phoneNumbers[0]" to get the first element of the phoneNumber property which is an array.
+             */
+            get: function () {
+                return this._propertyPathName;
+            },
+            set: function (value) {
+                if (this._propertyPathName === value) {
+                    return;
+                }
+                if (this._owner) {
+                }
+                this._propertyPathName = value;
+                if (this._owner) {
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataBinding.prototype, "stringFormat", {
+            /**
+             * If the Smart Property is of the string type, you can use the string interpolation notation to provide how the sourceValue will be formatted, reference to the source value must be made via the token: ${value}. For instance `Customer Name: ${value}`
+             */
+            get: function () {
+                return this._stringFormat;
+            },
+            set: function (value) {
+                if (this._stringFormat === value) {
+                    return;
+                }
+                this._stringFormat = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DataBinding.prototype, "updateSourceTrigger", {
+            /**
+             * Specify how the source should be updated, use one of the UPDATESOURCETRIGGER_xxx member of this class, if not specified then UPDATESOURCETRIGGER_DEFAULT will be used.
+             */
+            get: function () {
+                return this._updateSourceTrigger;
+            },
+            set: function (value) {
+                if (this._updateSourceTrigger === value) {
+                    return;
+                }
+                this._updateSourceTrigger = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        DataBinding.prototype.canUpdateTarget = function (resetUpdateCounter) {
+            if (resetUpdateCounter) {
+                this._updateCounter = 0;
+            }
+            var mode = this.mode;
+            if (mode === DataBinding.MODE_ONETIME) {
+                return this._updateCounter === 0;
+            }
+            if (mode === DataBinding.MODE_ONEWAYTOSOURCE) {
+                return false;
+            }
+            return true;
+        };
+        DataBinding.prototype.updateTarget = function () {
+            var value = this._getActualDataSource();
+            var properties = this.propertyPathName.split(".");
+            for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
+                var propertyName = properties_1[_i];
+                value = value[propertyName];
+            }
+            this._storeBoundValue(this._owner, value);
+        };
+        DataBinding.prototype._storeBoundValue = function (watcher, value) {
+            if ((++this._updateCounter > 1) && (this.mode === DataBinding.MODE_ONETIME)) {
+                return;
+            }
+            var newValue = value;
+            if (this._converter) {
+                newValue = this._converter(value);
+            }
+            if (this._stringFormat) {
+                newValue = this._stringFormat(newValue);
+            }
+            watcher[this._boundTo.name] = newValue;
+        };
+        DataBinding.prototype._getActualDataSource = function () {
+            if (this.dataSource) {
+                return this.dataSource;
+            }
+            if (this.uiElementId) {
+                // TODO Find UIElement
+                return null;
+            }
+            return this._owner.dataSource;
+        };
+        DataBinding.prototype._registerDataSource = function (updateTarget) {
+            var ds = this._getActualDataSource();
+            if (ds === this._currentDataSource) {
+                return;
+            }
+            if (this._currentDataSource) {
+                BindingHelper.unregisterDataSource(this._currentDataSource, this, 0);
+            }
+            if (ds) {
+                BindingHelper.registerDataSource(ds, this);
+                if (updateTarget && this.canUpdateTarget(true)) {
+                    this.updateTarget();
+                }
+            }
+            this._currentDataSource = ds;
+        };
+        DataBinding.prototype._unregisterDataSource = function () {
+            var ds = this._getActualDataSource();
+            if (ds) {
+                BindingHelper.unregisterDataSource(ds, this, 0);
+            }
+        };
+        /**
+         * Use the mode specified in the SmartProperty declaration
+         */
+        DataBinding.MODE_DEFAULT = 1;
+        /**
+         * Update the binding target only once when the Smart Property's value is first accessed
+         */
+        DataBinding.MODE_ONETIME = 2;
+        /**
+         * Update the smart property when the source changes.
+         * The source won't be updated if the smart property value is set.
+         */
+        DataBinding.MODE_ONEWAY = 3;
+        /**
+         * Only update the source when the target's data is changing.
+         */
+        DataBinding.MODE_ONEWAYTOSOURCE = 4;
+        /**
+         * Update the bind target when the source changes and update the source when the Smart Property value is set.
+         */
+        DataBinding.MODE_TWOWAY = 5;
+        /**
+         * Use the Update Source Trigger defined in the SmartProperty declaration
+         */
+        DataBinding.UPDATESOURCETRIGGER_DEFAULT = 1;
+        /**
+         * Update the source as soon as the Smart Property has a value change
+         */
+        DataBinding.UPDATESOURCETRIGGER_PROPERTYCHANGED = 2;
+        /**
+         * Update the source when the binding target loses focus
+         */
+        DataBinding.UPDATESOURCETRIGGER_LOSTFOCUS = 3;
+        /**
+         * Update the source will be made by explicitly calling the UpdateFromDataSource method
+         */
+        DataBinding.UPDATESOURCETRIGGER_EXPLICIT = 4;
+        DataBinding = __decorate([
+            BABYLON.className("DataBinding", "BABYLON")
+        ], DataBinding);
+        return DataBinding;
+    }());
+    BABYLON.DataBinding = DataBinding;
+    var SmartPropertyBase = (function (_super) {
+        __extends(SmartPropertyBase, _super);
+        function SmartPropertyBase() {
+            _super.call(this);
+            this._dataSource = null;
+            this._dataSourceObserver = null;
+            this._instanceDirtyFlags = 0;
+            this._isDisposed = false;
+            this._bindings = null;
+            this._hasBinding = 0;
+            this._bindingSourceChanged = 0;
+            this._disposeObservable = null;
+        }
+        Object.defineProperty(SmartPropertyBase.prototype, "disposeObservable", {
+            get: function () {
+                if (!this._disposeObservable) {
+                    this._disposeObservable = new BABYLON.Observable();
+                }
+                return this._disposeObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SmartPropertyBase.prototype, "isDisposed", {
             /**
              * Check if the object is disposed or not.
              * @returns true if the object is dispose, false otherwise.
              */
             get: function () {
-                return this._isFlagSet(SmartPropertyPrim.flagIsDisposed);
+                return this._isDisposed;
             },
             enumerable: true,
             configurable: true
@@ -759,13 +1939,467 @@ var BABYLON;
          * Disposable pattern, this method must be overloaded by derived types in order to clean up hardware related resources.
          * @returns false if the object is already dispose, true otherwise. Your implementation must call super.dispose() and check for a false return and return immediately if it's the case.
          */
+        SmartPropertyBase.prototype.dispose = function () {
+            if (this.isDisposed) {
+                return false;
+            }
+            if (this._disposeObservable && this._disposeObservable.hasObservers()) {
+                this._disposeObservable.notifyObservers(this);
+            }
+            this._isDisposed = true;
+            return true;
+        };
+        /**
+         * Check if a given set of properties are dirty or not.
+         * @param flags a ORed combination of Prim2DPropInfo.flagId values
+         * @return true if at least one property is dirty, false if none of them are.
+         */
+        SmartPropertyBase.prototype.checkPropertiesDirty = function (flags) {
+            return (this._instanceDirtyFlags & flags) !== 0;
+        };
+        /**
+         * Clear a given set of properties.
+         * @param flags a ORed combination of Prim2DPropInfo.flagId values
+         * @return the new set of property still marked as dirty
+         */
+        SmartPropertyBase.prototype.clearPropertiesDirty = function (flags) {
+            this._instanceDirtyFlags &= ~flags;
+            return this._instanceDirtyFlags;
+        };
+        SmartPropertyBase.prototype._resetPropertiesDirty = function () {
+            this._instanceDirtyFlags = 0;
+        };
+        /**
+         * Add an externally attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        SmartPropertyBase.prototype.addExternalData = function (key, data) {
+            if (!this._externalData) {
+                this._externalData = new BABYLON.StringDictionary();
+            }
+            return this._externalData.add(key, data);
+        };
+        /**
+         * Get an externally attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        SmartPropertyBase.prototype.getExternalData = function (key) {
+            if (!this._externalData) {
+                return null;
+            }
+            return this._externalData.get(key);
+        };
+        /**
+         * Get an externally attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        SmartPropertyBase.prototype.getOrAddExternalDataWithFactory = function (key, factory) {
+            if (!this._externalData) {
+                this._externalData = new BABYLON.StringDictionary();
+            }
+            return this._externalData.getOrAddWithFactory(key, factory);
+        };
+        /**
+         * Remove an externally attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        SmartPropertyBase.prototype.removeExternalData = function (key) {
+            if (!this._externalData) {
+                return false;
+            }
+            return this._externalData.remove(key);
+        };
+        SmartPropertyBase._hookProperty = function (propId, piStore, kind, settings) {
+            return function (target, propName, descriptor) {
+                if (!settings) {
+                    settings = {};
+                }
+                var propInfo = SmartPropertyBase._createPropInfo(target, propName, propId, kind, settings);
+                if (piStore) {
+                    piStore(propInfo);
+                }
+                var getter = descriptor.get, setter = descriptor.set;
+                var typeLevelCompare = (settings.typeLevelCompare !== undefined) ? settings.typeLevelCompare : false;
+                // Overload the property setter implementation to add our own logic
+                descriptor.set = function (val) {
+                    if (!setter) {
+                        throw Error("Property '" + propInfo.name + "' of type '" + BABYLON.Tools.getFullClassName(this) + "' has no setter defined but was invoked as if it had one.");
+                    }
+                    // check for disposed first, do nothing
+                    if (this.isDisposed) {
+                        return;
+                    }
+                    var curVal = getter.call(this);
+                    if (SmartPropertyBase._checkUnchanged(curVal, val)) {
+                        return;
+                    }
+                    // Cast the object we're working one
+                    var prim = this;
+                    // Change the value
+                    setter.call(this, val);
+                    // Notify change, dirty flags update
+                    prim._handlePropChanged(curVal, val, propName, propInfo, typeLevelCompare);
+                };
+            };
+        };
+        SmartPropertyBase._createPropInfo = function (target, propName, propId, kind, settings) {
+            var dic = ClassTreeInfo.getOrRegister(target, function () { return new Prim2DClassInfo(); });
+            var node = dic.getLevelOf(target);
+            var propInfo = node.levelContent.get(propId.toString());
+            if (propInfo) {
+                throw new Error("The ID " + propId + " is already taken by another property declaration named: " + propInfo.name);
+            }
+            // Create, setup and add the PropInfo object to our prop dictionary
+            propInfo = new Prim2DPropInfo();
+            propInfo.id = propId;
+            propInfo.flagId = Math.pow(2, propId);
+            propInfo.kind = kind;
+            propInfo.name = propName;
+            propInfo.bindingMode = (settings.bindingMode !== undefined) ? settings.bindingMode : DataBinding.MODE_TWOWAY;
+            propInfo.bindingUpdateSourceTrigger = (settings.bindingUpdateSourceTrigger !== undefined) ? settings.bindingUpdateSourceTrigger : DataBinding.UPDATESOURCETRIGGER_PROPERTYCHANGED;
+            propInfo.dirtyBoundingInfo = (settings.dirtyBoundingInfo !== undefined) ? settings.dirtyBoundingInfo : false;
+            propInfo.dirtyParentBoundingInfo = (settings.dirtyParentBoundingBox !== undefined) ? settings.dirtyParentBoundingBox : false;
+            propInfo.typeLevelCompare = (settings.typeLevelCompare !== undefined) ? settings.typeLevelCompare : false;
+            node.levelContent.add(propName, propInfo);
+            return propInfo;
+        };
+        Object.defineProperty(SmartPropertyBase.prototype, "propDic", {
+            /**
+             * Access the dictionary of properties metadata. Only properties decorated with XXXXLevelProperty are concerned
+             * @returns the dictionary, the key is the property name as declared in Javascript, the value is the metadata object
+             */
+            get: function () {
+                if (!this._propInfo) {
+                    var cti = ClassTreeInfo.get(Object.getPrototypeOf(this));
+                    if (!cti) {
+                        throw new Error("Can't access the propDic member in class definition, is this class SmartPropertyPrim based?");
+                    }
+                    this._propInfo = cti.fullContent;
+                }
+                return this._propInfo;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        SmartPropertyBase._checkUnchanged = function (curValue, newValue) {
+            // Nothing to nothing: nothing to do!
+            if ((curValue === null && newValue === null) || (curValue === undefined && newValue === undefined)) {
+                return true;
+            }
+            // Check value unchanged
+            if ((curValue != null) && (newValue != null)) {
+                if (typeof (curValue.equals) == "function") {
+                    if (curValue.equals(newValue)) {
+                        return true;
+                    }
+                }
+                else {
+                    if (curValue === newValue) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        SmartPropertyBase.prototype._handlePropChanged = function (curValue, newValue, propName, propInfo, typeLevelCompare) {
+            // Trigger property changed
+            var info = SmartPropertyBase.propChangeGuarding ? new BABYLON.PropertyChangedInfo() : SmartPropertyPrim.propChangedInfo;
+            info.oldValue = curValue;
+            info.newValue = newValue;
+            info.propertyName = propName;
+            var propMask = propInfo ? propInfo.flagId : -1;
+            try {
+                SmartPropertyBase.propChangeGuarding = true;
+                this.propertyChanged.notifyObservers(info, propMask);
+            }
+            finally {
+                SmartPropertyBase.propChangeGuarding = false;
+            }
+        };
+        SmartPropertyBase.prototype._triggerPropertyChanged = function (propInfo, newValue) {
+            if (this.isDisposed) {
+                return;
+            }
+            if (!propInfo) {
+                return;
+            }
+            this._handlePropChanged(undefined, newValue, propInfo.name, propInfo, propInfo.typeLevelCompare);
+        };
+        Object.defineProperty(SmartPropertyBase.prototype, "dataSource", {
+            /**
+             * Set the object from which Smart Properties using Binding will take/update their data from/to.
+             * When the object is part of a graph (with parent/children relationship) if the dataSource of a given instance is not specified, then the parent's one is used.
+             */
+            get: function () {
+                // Don't access to _dataSource directly but via a call to the _getDataSource method which can be overloaded in inherited classes
+                return this._getDataSource();
+            },
+            set: function (value) {
+                if (this._dataSource === value) {
+                    return;
+                }
+                var oldValue = this._dataSource;
+                this._dataSource = value;
+                if (this._bindings && value != null) {
+                    // Register the bindings
+                    for (var _i = 0, _a = this._bindings; _i < _a.length; _i++) {
+                        var binding = _a[_i];
+                        if (binding != null) {
+                            binding._registerDataSource(true);
+                        }
+                    }
+                }
+                this.onPropertyChanged("dataSource", oldValue, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        // Inheriting classes can overload this method to provides additional logic for dataSource access
+        SmartPropertyBase.prototype._getDataSource = function () {
+            return this._dataSource;
+        };
+        SmartPropertyBase.prototype.createSimpleDataBinding = function (propInfo, propertyPathName, mode) {
+            if (mode === void 0) { mode = DataBinding.MODE_DEFAULT; }
+            var binding = new DataBinding();
+            binding.propertyPathName = propertyPathName;
+            binding.mode = mode;
+            return this.createDataBinding(propInfo, binding);
+        };
+        SmartPropertyBase.prototype.createDataBinding = function (propInfo, binding) {
+            if (!this._bindings) {
+                this._bindings = new Array();
+            }
+            if (!binding || binding._owner != null) {
+                throw Error("A valid/unused Binding must be passed.");
+            }
+            // Unregister a potentially existing binding for this property
+            this.removeDataBinding(propInfo);
+            // register the binding
+            binding._owner = this;
+            binding._boundTo = propInfo;
+            this._bindings[propInfo.id] = binding;
+            this._hasBinding |= propInfo.flagId;
+            binding._registerDataSource(true);
+            return binding;
+        };
+        SmartPropertyBase.prototype.removeDataBinding = function (propInfo) {
+            if ((this._hasBinding & propInfo.flagId) === 0) {
+                return false;
+            }
+            var curBinding = this._bindings[propInfo.id];
+            curBinding._unregisterDataSource();
+            this._bindings[propInfo.id] = null;
+            this._hasBinding &= ~propInfo.flagId;
+            return true;
+        };
+        SmartPropertyBase.prototype.updateFromDataSource = function () {
+            for (var _i = 0, _a = this._bindings; _i < _a.length; _i++) {
+                var binding = _a[_i];
+                if (binding) {
+                }
+            }
+        };
+        SmartPropertyBase.propChangedInfo = new BABYLON.PropertyChangedInfo();
+        SmartPropertyBase.propChangeGuarding = false;
+        SmartPropertyBase = __decorate([
+            BABYLON.className("SmartPropertyBase", "BABYLON")
+        ], SmartPropertyBase);
+        return SmartPropertyBase;
+    }(BABYLON.PropertyChangedBase));
+    BABYLON.SmartPropertyBase = SmartPropertyBase;
+    var BindingInfo = (function () {
+        function BindingInfo(binding, level, isLast) {
+            this.binding = binding;
+            this.level = level;
+            this.isLast = isLast;
+        }
+        return BindingInfo;
+    }());
+    var MonitoredObjectData = (function () {
+        function MonitoredObjectData(monitoredObject) {
+            var _this = this;
+            this.monitoredObject = monitoredObject;
+            this.monitoredIntermediateProperties = new BABYLON.StringDictionary();
+            this.observer = this.monitoredObject.propertyChanged.add(function (e, s) { _this.propertyChangedHandler(e.propertyName, e.oldValue, e.newValue); });
+            this.boundProperties = new BABYLON.StringDictionary();
+            this.monitoredIntermediateMask = 0;
+            this.boundPropertiesMask = 0;
+        }
+        MonitoredObjectData.prototype.propertyChangedHandler = function (propName, oldValue, newValue) {
+            var propId = BindingHelper._getPropertyID(this.monitoredObject, propName);
+            var propIdStr = propId.toString();
+            // Loop through all the registered bindings for this property that had a value change
+            if ((this.boundPropertiesMask & propId) !== 0) {
+                var bindingInfos = this.boundProperties.get(propIdStr);
+                for (var _i = 0, bindingInfos_1 = bindingInfos; _i < bindingInfos_1.length; _i++) {
+                    var bi = bindingInfos_1[_i];
+                    if (!bi.isLast) {
+                        BindingHelper.unregisterDataSource(this.monitoredObject, bi.binding, bi.level);
+                        BindingHelper.registerDataSource(bi.binding._currentDataSource, bi.binding);
+                    }
+                    if (bi.binding.canUpdateTarget(false)) {
+                        bi.binding.updateTarget();
+                    }
+                }
+            }
+        };
+        return MonitoredObjectData;
+    }());
+    var BindingHelper = (function () {
+        function BindingHelper() {
+        }
+        BindingHelper.registerDataSource = function (dataSource, binding) {
+            var properties = binding.propertyPathName.split(".");
+            var ownerMod = null;
+            var ownerInterPropId = 0;
+            var propertyOwner = dataSource;
+            var _loop_1 = function(i) {
+                var propName = properties[i];
+                var propId = BindingHelper._getPropertyID(propertyOwner, propName);
+                var propIdStr = propId.toString();
+                var mod = void 0;
+                if (ownerMod) {
+                    var o_1 = ownerMod;
+                    var po_1 = propertyOwner;
+                    var oii_1 = ownerInterPropId;
+                    mod = ownerMod.monitoredIntermediateProperties.getOrAddWithFactory(oii_1.toString(), function (k) {
+                        o_1.monitoredIntermediateMask |= oii_1;
+                        return BindingHelper._getMonitoredObjectData(po_1);
+                    });
+                }
+                else {
+                    mod = BindingHelper._getMonitoredObjectData(propertyOwner);
+                }
+                var m = mod;
+                var bindingInfos = mod.boundProperties.getOrAddWithFactory(propIdStr, function (k) {
+                    m.boundPropertiesMask |= propId;
+                    return new Array();
+                });
+                var bi = BABYLON.Tools.first(bindingInfos, function (cbi) { return cbi.binding === binding; });
+                if (!bi) {
+                    bindingInfos.push(new BindingInfo(binding, i, (i + 1) === properties.length));
+                }
+                ownerMod = mod;
+                ownerInterPropId = propId;
+                propertyOwner = propertyOwner[propName];
+            };
+            for (var i = 0; i < properties.length; i++) {
+                _loop_1(i);
+            }
+        };
+        BindingHelper.unregisterDataSource = function (dataSource, binding, level) {
+            var properties = binding.propertyPathName.split(".");
+            var propertyOwner = dataSource;
+            var mod = BindingHelper._getMonitoredObjectData(propertyOwner);
+            for (var i = 0; i < properties.length; i++) {
+                var propName = properties[i];
+                var propId = BindingHelper._getPropertyID(propertyOwner, propName);
+                var propIdStr = propId.toString();
+                if (i >= level) {
+                    mod = BindingHelper._unregisterBinding(mod, propId, binding);
+                }
+                else {
+                    mod = mod.monitoredIntermediateProperties.get(propIdStr);
+                }
+                propertyOwner = propertyOwner[propName];
+            }
+        };
+        BindingHelper._unregisterBinding = function (mod, propertyID, binding) {
+            var propertyIDStr = propertyID.toString();
+            var res = null;
+            // Check if the property is registered as an intermediate and remove it
+            if ((mod.monitoredIntermediateMask & propertyID) !== 0) {
+                res = mod.monitoredIntermediateProperties.get(propertyIDStr);
+                mod.monitoredIntermediateProperties.remove(propertyIDStr);
+                // Update the mask
+                mod.monitoredIntermediateMask &= ~propertyID;
+            }
+            // Check if the property is registered as a final property and remove it
+            if ((mod.boundPropertiesMask & propertyID) !== 0) {
+                var bindingInfos = mod.boundProperties.get(propertyIDStr);
+                // Find the binding and remove it
+                var bi = BABYLON.Tools.first(bindingInfos, function (cbi) { return cbi.binding === binding; });
+                if (bi) {
+                    var bii = bindingInfos.indexOf(bi);
+                    bindingInfos.splice(bii, 1);
+                }
+                // If the array is empty, update the mask
+                if (bindingInfos.length === 0) {
+                    mod.boundPropertiesMask &= ~propertyID;
+                }
+            }
+            // Check if the MOD is empty and unregister the observer and remove it from the list of MODs
+            if (mod.boundPropertiesMask === 0 && mod.monitoredIntermediateMask === 0) {
+                // Unregister the observer on Property Change
+                mod.monitoredObject.propertyChanged.remove(mod.observer);
+                // Remove the MOD from the dic
+                var objectId = BindingHelper._getObjectId(mod.monitoredObject);
+                BindingHelper._monitoredObjects.remove(objectId);
+            }
+            return res;
+        };
+        BindingHelper._getMonitoredObjectData = function (object) {
+            var objectId = BindingHelper._getObjectId(object);
+            var mod = BindingHelper._monitoredObjects.getOrAddWithFactory(objectId, function (k) { return new MonitoredObjectData(object); });
+            return mod;
+        };
+        BindingHelper._getObjectId = function (obj) {
+            var id = obj["__bindingHelperObjectId__"];
+            if (id == null) {
+                id = BABYLON.Tools.RandomId();
+                obj["__bindingHelperObjectId__"] = id;
+                return id;
+            }
+            return id;
+        };
+        BindingHelper._getObjectTypePropertyIDs = function (obj) {
+            var fullName = BABYLON.Tools.getFullClassName(obj);
+            if (!fullName) {
+                throw Error("Types involved in Data Binding must be decorated with the @className decorator");
+            }
+            var d = BindingHelper._propertiesID.getOrAddWithFactory(fullName, function () { return new BABYLON.StringDictionary(); });
+            return d;
+        };
+        BindingHelper._getPropertyID = function (object, propName) {
+            var otd = BindingHelper._getObjectTypePropertyIDs(object);
+            // Make sure we have a WatchedPropertyData for this property of this object type. This will contains the flagIg of the watched property.
+            // We use this flagId to flag for each watched instance which properties are watched, as final or intermediate and which directions are used
+            var propData = otd.getOrAddWithFactory(propName, function (k) { return 1 << otd.count; });
+            return propData;
+        };
+        BindingHelper._propertiesID = new BABYLON.StringDictionary();
+        BindingHelper._monitoredObjects = new BABYLON.StringDictionary();
+        return BindingHelper;
+    }());
+    var SmartPropertyPrim = (function (_super) {
+        __extends(SmartPropertyPrim, _super);
+        function SmartPropertyPrim() {
+            _super.call(this);
+            this._flags = 0;
+            this._modelKey = null;
+            this._levelBoundingInfo = new BABYLON.BoundingInfo2D();
+            this._boundingInfo = new BABYLON.BoundingInfo2D();
+            this.animations = new Array();
+        }
+        /**
+         * Disposable pattern, this method must be overloaded by derived types in order to clean up hardware related resources.
+         * @returns false if the object is already dispose, true otherwise. Your implementation must call super.dispose() and check for a false return and return immediately if it's the case.
+         */
         SmartPropertyPrim.prototype.dispose = function () {
             if (this.isDisposed) {
                 return false;
             }
+            _super.prototype.dispose.call(this);
             // Don't set to null, it may upset somebody...
             this.animations.splice(0);
-            this._setFlags(SmartPropertyPrim.flagIsDisposed);
             return true;
         };
         /**
@@ -823,72 +2457,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SmartPropertyPrim.prototype, "propDic", {
-            /**
-             * Access the dictionary of properties metadata. Only properties decorated with XXXXLevelProperty are concerned
-             * @returns the dictionary, the key is the property name as declared in Javascript, the value is the metadata object
-             */
-            get: function () {
-                if (!this._propInfo) {
-                    var cti = ClassTreeInfo.get(Object.getPrototypeOf(this));
-                    if (!cti) {
-                        throw new Error("Can't access the propDic member in class definition, is this class SmartPropertyPrim based?");
-                    }
-                    this._propInfo = cti.fullContent;
-                }
-                return this._propInfo;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        SmartPropertyPrim._createPropInfo = function (target, propName, propId, dirtyBoundingInfo, dirtyParentBoundingBox, typeLevelCompare, kind) {
-            var dic = ClassTreeInfo.getOrRegister(target, function () { return new Prim2DClassInfo(); });
-            var node = dic.getLevelOf(target);
-            var propInfo = node.levelContent.get(propId.toString());
-            if (propInfo) {
-                throw new Error("The ID " + propId + " is already taken by another property declaration named: " + propInfo.name);
-            }
-            // Create, setup and add the PropInfo object to our prop dictionary
-            propInfo = new Prim2DPropInfo();
-            propInfo.id = propId;
-            propInfo.flagId = Math.pow(2, propId);
-            propInfo.kind = kind;
-            propInfo.name = propName;
-            propInfo.dirtyBoundingInfo = dirtyBoundingInfo;
-            propInfo.dirtyParentBoundingInfo = dirtyParentBoundingBox;
-            propInfo.typeLevelCompare = typeLevelCompare;
-            node.levelContent.add(propName, propInfo);
-            return propInfo;
-        };
-        SmartPropertyPrim._checkUnchanged = function (curValue, newValue) {
-            // Nothing to nothing: nothing to do!
-            if ((curValue === null && newValue === null) || (curValue === undefined && newValue === undefined)) {
-                return true;
-            }
-            // Check value unchanged
-            if ((curValue != null) && (newValue != null)) {
-                if (typeof (curValue.equals) == "function") {
-                    if (curValue.equals(newValue)) {
-                        return true;
-                    }
-                }
-                else {
-                    if (curValue === newValue) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        };
-        SmartPropertyPrim.prototype._triggerPropertyChanged = function (propInfo, newValue) {
-            if (this.isDisposed) {
-                return;
-            }
-            if (!propInfo) {
-                return;
-            }
-            this._handlePropChanged(undefined, newValue, propInfo.name, propInfo, propInfo.typeLevelCompare);
-        };
         SmartPropertyPrim.prototype._boundingBoxDirty = function () {
             this._setFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
             // Escalate the dirty flag in the instance hierarchy, stop when a renderable group is found or at the end
@@ -910,6 +2478,7 @@ var BABYLON;
             }
         };
         SmartPropertyPrim.prototype._handlePropChanged = function (curValue, newValue, propName, propInfo, typeLevelCompare) {
+            _super.prototype._handlePropChanged.call(this, curValue, newValue, propName, propInfo, typeLevelCompare);
             // If the property change also dirty the boundingInfo, update the boundingInfo dirty flags
             if (propInfo.dirtyBoundingInfo) {
                 this._boundingBoxDirty();
@@ -920,13 +2489,6 @@ var BABYLON;
                     p._boundingBoxDirty();
                 }
             }
-            // Trigger property changed
-            var info = SmartPropertyPrim.propChangedInfo;
-            info.oldValue = curValue;
-            info.newValue = newValue;
-            info.propertyName = propName;
-            var propMask = propInfo.flagId;
-            this.propertyChanged.notifyObservers(info, propMask);
             // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
             if (this instanceof BABYLON.Group2D) {
                 this.handleGroupChanged(propInfo);
@@ -952,6 +2514,7 @@ var BABYLON;
                 }
             }
             else if (instanceDirty || (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
+                var propMask = propInfo.flagId;
                 this.onPrimitivePropertyDirty(propMask);
             }
         };
@@ -961,25 +2524,8 @@ var BABYLON;
         };
         SmartPropertyPrim.prototype.handleGroupChanged = function (prop) {
         };
-        /**
-         * Check if a given set of properties are dirty or not.
-         * @param flags a ORed combination of Prim2DPropInfo.flagId values
-         * @return true if at least one property is dirty, false if none of them are.
-         */
-        SmartPropertyPrim.prototype.checkPropertiesDirty = function (flags) {
-            return (this._instanceDirtyFlags & flags) !== 0;
-        };
-        /**
-         * Clear a given set of properties.
-         * @param flags a ORed combination of Prim2DPropInfo.flagId values
-         * @return the new set of property still marked as dirty
-         */
-        SmartPropertyPrim.prototype.clearPropertiesDirty = function (flags) {
-            this._instanceDirtyFlags &= ~flags;
-            return this._instanceDirtyFlags;
-        };
         SmartPropertyPrim.prototype._resetPropertiesDirty = function () {
-            this._instanceDirtyFlags = 0;
+            _super.prototype._resetPropertiesDirty.call(this);
             this._clearFlags(SmartPropertyPrim.flagPrimInDirtyList | SmartPropertyPrim.flagNeedRefresh);
         };
         Object.defineProperty(SmartPropertyPrim.prototype, "levelBoundingInfo", {
@@ -1005,80 +2551,6 @@ var BABYLON;
          * Property method called when the Primitive becomes dirty
          */
         SmartPropertyPrim.prototype.onPrimBecomesDirty = function () {
-        };
-        SmartPropertyPrim._hookProperty = function (propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox, kind) {
-            return function (target, propName, descriptor) {
-                var propInfo = SmartPropertyPrim._createPropInfo(target, propName, propId, dirtyBoundingInfo, dirtyParentBoundingBox, typeLevelCompare, kind);
-                if (piStore) {
-                    piStore(propInfo);
-                }
-                var getter = descriptor.get, setter = descriptor.set;
-                // Overload the property setter implementation to add our own logic
-                descriptor.set = function (val) {
-                    // check for disposed first, do nothing
-                    if (this.isDisposed) {
-                        return;
-                    }
-                    var curVal = getter.call(this);
-                    if (SmartPropertyPrim._checkUnchanged(curVal, val)) {
-                        return;
-                    }
-                    // Cast the object we're working one
-                    var prim = this;
-                    // Change the value
-                    setter.call(this, val);
-                    // Notify change, dirty flags update
-                    prim._handlePropChanged(curVal, val, propName, propInfo, typeLevelCompare);
-                };
-            };
-        };
-        /**
-         * Add an externally attached data from its key.
-         * This method call will fail and return false, if such key already exists.
-         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
-         * @param key the unique key that identifies the data
-         * @param data the data object to associate to the key for this Engine instance
-         * @return true if no such key were already present and the data was added successfully, false otherwise
-         */
-        SmartPropertyPrim.prototype.addExternalData = function (key, data) {
-            if (!this._externalData) {
-                this._externalData = new BABYLON.StringDictionary();
-            }
-            return this._externalData.add(key, data);
-        };
-        /**
-         * Get an externally attached data from its key
-         * @param key the unique key that identifies the data
-         * @return the associated data, if present (can be null), or undefined if not present
-         */
-        SmartPropertyPrim.prototype.getExternalData = function (key) {
-            if (!this._externalData) {
-                return null;
-            }
-            return this._externalData.get(key);
-        };
-        /**
-         * Get an externally attached data from its key, create it using a factory if it's not already present
-         * @param key the unique key that identifies the data
-         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
-         * @return the associated data, can be null if the factory returned null.
-         */
-        SmartPropertyPrim.prototype.getOrAddExternalDataWithFactory = function (key, factory) {
-            if (!this._externalData) {
-                this._externalData = new BABYLON.StringDictionary();
-            }
-            return this._externalData.getOrAddWithFactory(key, factory);
-        };
-        /**
-         * Remove an externally attached data from the Engine instance
-         * @param key the unique key that identifies the data
-         * @return true if the data was successfully removed, false if it doesn't exist
-         */
-        SmartPropertyPrim.prototype.removeExternalData = function (key) {
-            if (!this._externalData) {
-                return false;
-            }
-            return this._externalData.remove(key);
         };
         /**
          * Check if a given flag is set
@@ -1134,8 +2606,8 @@ var BABYLON;
                 this._flags &= ~flags;
             }
         };
-        SmartPropertyPrim.propChangedInfo = new PropertyChangedInfo();
-        SmartPropertyPrim.flagIsDisposed = 0x0000001; // set if the object is already disposed
+        SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT = 0;
+        SmartPropertyPrim.flagFREE001 = 0x0000001; // set if the object is already disposed
         SmartPropertyPrim.flagLevelBoundingInfoDirty = 0x0000002; // set if the primitive's level bounding box (not including children) is dirty
         SmartPropertyPrim.flagModelDirty = 0x0000004; // set if the model must be changed
         SmartPropertyPrim.flagLayoutDirty = 0x0000008; // set if the layout must be computed
@@ -1158,30 +2630,36 @@ var BABYLON;
         SmartPropertyPrim.flagGlobalTransformDirty = 0x0100000; // set if the global transform must be recomputed due to a local transform change
         SmartPropertyPrim.flagLayoutBoundingInfoDirty = 0x0100000; // set if the layout bounding info is dirty
         SmartPropertyPrim = __decorate([
-            BABYLON.className("SmartPropertyPrim")
+            BABYLON.className("SmartPropertyPrim", "BABYLON")
         ], SmartPropertyPrim);
         return SmartPropertyPrim;
-    }());
+    }(SmartPropertyBase));
     BABYLON.SmartPropertyPrim = SmartPropertyPrim;
+    function dependencyProperty(propId, piStore, mode, updateSourceTrigger) {
+        if (mode === void 0) { mode = DataBinding.MODE_TWOWAY; }
+        if (updateSourceTrigger === void 0) { updateSourceTrigger = DataBinding.UPDATESOURCETRIGGER_PROPERTYCHANGED; }
+        return SmartPropertyBase._hookProperty(propId, piStore, Prim2DPropInfo.PROPKIND_DYNAMIC, { bindingMode: mode, bindingUpdateSourceTrigger: updateSourceTrigger });
+    }
+    BABYLON.dependencyProperty = dependencyProperty;
     function modelLevelProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox) {
         if (typeLevelCompare === void 0) { typeLevelCompare = false; }
         if (dirtyBoundingInfo === void 0) { dirtyBoundingInfo = false; }
         if (dirtyParentBoundingBox === void 0) { dirtyParentBoundingBox = false; }
-        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox, Prim2DPropInfo.PROPKIND_MODEL);
+        return SmartPropertyBase._hookProperty(propId, piStore, Prim2DPropInfo.PROPKIND_MODEL, { typeLevelCompare: typeLevelCompare, dirtyBoundingInfo: dirtyBoundingInfo, dirtyParentBoundingBox: dirtyParentBoundingBox });
     }
     BABYLON.modelLevelProperty = modelLevelProperty;
     function instanceLevelProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox) {
         if (typeLevelCompare === void 0) { typeLevelCompare = false; }
         if (dirtyBoundingInfo === void 0) { dirtyBoundingInfo = false; }
         if (dirtyParentBoundingBox === void 0) { dirtyParentBoundingBox = false; }
-        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox, Prim2DPropInfo.PROPKIND_INSTANCE);
+        return SmartPropertyBase._hookProperty(propId, piStore, Prim2DPropInfo.PROPKIND_INSTANCE, { typeLevelCompare: typeLevelCompare, dirtyBoundingInfo: dirtyBoundingInfo, dirtyParentBoundingBox: dirtyParentBoundingBox });
     }
     BABYLON.instanceLevelProperty = instanceLevelProperty;
     function dynamicLevelProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox) {
         if (typeLevelCompare === void 0) { typeLevelCompare = false; }
         if (dirtyBoundingInfo === void 0) { dirtyBoundingInfo = false; }
         if (dirtyParentBoundingBox === void 0) { dirtyParentBoundingBox = false; }
-        return SmartPropertyPrim._hookProperty(propId, piStore, typeLevelCompare, dirtyBoundingInfo, dirtyParentBoundingBox, Prim2DPropInfo.PROPKIND_DYNAMIC);
+        return SmartPropertyBase._hookProperty(propId, piStore, Prim2DPropInfo.PROPKIND_DYNAMIC, { typeLevelCompare: typeLevelCompare, dirtyBoundingInfo: dirtyBoundingInfo, dirtyParentBoundingBox: dirtyParentBoundingBox });
     }
     BABYLON.dynamicLevelProperty = dynamicLevelProperty;
 })(BABYLON || (BABYLON = {}));
@@ -1487,7 +2965,7 @@ var BABYLON;
                     return;
                 }
                 this._horizontal = value;
-                this._changedCallback();
+                this.onChangeCallback();
             },
             enumerable: true,
             configurable: true
@@ -1504,11 +2982,16 @@ var BABYLON;
                     return;
                 }
                 this._vertical = value;
-                this._changedCallback();
+                this.onChangeCallback();
             },
             enumerable: true,
             configurable: true
         });
+        PrimitiveAlignment.prototype.onChangeCallback = function () {
+            if (this._changedCallback) {
+                this._changedCallback();
+            }
+        };
         /**
          * Set the horizontal alignment from a string value.
          * @param text can be either: 'left','right','center','stretch'
@@ -1557,37 +3040,58 @@ var BABYLON;
          */
         PrimitiveAlignment.prototype.fromString = function (value) {
             var m = value.trim().split(",");
-            for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
-                var v = m_1[_i];
-                v = v.toLocaleLowerCase().trim();
-                // Horizontal
-                var i = v.indexOf("h:");
-                if (i === -1) {
-                    i = v.indexOf("horizontal:");
-                }
-                if (i !== -1) {
-                    v = v.substr(v.indexOf(":") + 1);
-                    this.setHorizontal(v);
-                    continue;
-                }
-                // Vertical
-                i = v.indexOf("v:");
-                if (i === -1) {
-                    i = v.indexOf("vertical:");
-                }
-                if (i !== -1) {
-                    v = v.substr(v.indexOf(":") + 1);
-                    this.setVertical(v);
-                    continue;
+            if (m.length === 1) {
+                this.setHorizontal(m[0]);
+                this.setVertical(m[0]);
+            }
+            else {
+                for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
+                    var v = m_1[_i];
+                    v = v.toLocaleLowerCase().trim();
+                    // Horizontal
+                    var i = v.indexOf("h:");
+                    if (i === -1) {
+                        i = v.indexOf("horizontal:");
+                    }
+                    if (i !== -1) {
+                        v = v.substr(v.indexOf(":") + 1);
+                        this.setHorizontal(v);
+                        continue;
+                    }
+                    // Vertical
+                    i = v.indexOf("v:");
+                    if (i === -1) {
+                        i = v.indexOf("vertical:");
+                    }
+                    if (i !== -1) {
+                        v = v.substr(v.indexOf(":") + 1);
+                        this.setVertical(v);
+                        continue;
+                    }
                 }
             }
         };
+        PrimitiveAlignment.prototype.copyFrom = function (pa) {
+            this._horizontal = pa._horizontal;
+            this._vertical = pa._vertical;
+            this.onChangeCallback();
+        };
+        Object.defineProperty(PrimitiveAlignment.prototype, "isDefault", {
+            get: function () {
+                return this.horizontal === PrimitiveAlignment.AlignLeft && this.vertical === PrimitiveAlignment.AlignBottom;
+            },
+            enumerable: true,
+            configurable: true
+        });
         PrimitiveAlignment._AlignLeft = 1;
         PrimitiveAlignment._AlignTop = 1; // Same as left
         PrimitiveAlignment._AlignRight = 2;
         PrimitiveAlignment._AlignBottom = 2; // Same as right
         PrimitiveAlignment._AlignCenter = 3;
         PrimitiveAlignment._AlignStretch = 4;
+        PrimitiveAlignment = __decorate([
+            BABYLON.className("PrimitiveAlignment", "BABYLON")
+        ], PrimitiveAlignment);
         return PrimitiveAlignment;
     }());
     BABYLON.PrimitiveAlignment = PrimitiveAlignment;
@@ -1635,7 +3139,7 @@ var BABYLON;
                 this._setStringValue(m[0], 1, false);
                 this._setStringValue(m[0], 2, false);
                 this._setStringValue(m[0], 3, false);
-                this._changedCallback();
+                this.onChangeCallback();
                 return;
             }
             var res = false;
@@ -1655,7 +3159,7 @@ var BABYLON;
                 this._flags |= PrimitiveThickness.Pixel << 8;
             if ((this._flags & 0xF000) === 0)
                 this._flags |= PrimitiveThickness.Pixel << 12;
-            this._changedCallback();
+            this.onChangeCallback();
         };
         /**
          * Set the thickness from multiple string
@@ -1671,7 +3175,7 @@ var BABYLON;
             this._setStringValue(left, 1, false);
             this._setStringValue(right, 2, false);
             this._setStringValue(bottom, 3, false);
-            this._changedCallback();
+            this.onChangeCallback();
             return this;
         };
         /**
@@ -1687,7 +3191,7 @@ var BABYLON;
             this._pixels[1] = left;
             this._pixels[2] = right;
             this._pixels[3] = bottom;
-            this._changedCallback();
+            this.onChangeCallback();
             return this;
         };
         /**
@@ -1700,8 +3204,17 @@ var BABYLON;
             this._pixels[1] = margin;
             this._pixels[2] = margin;
             this._pixels[3] = margin;
-            this._changedCallback();
+            this.onChangeCallback();
             return this;
+        };
+        PrimitiveThickness.prototype.copyFrom = function (pt) {
+            this._clear();
+            for (var i = 0; i < 4; i++) {
+                this._pixels[i] = pt._pixels[i];
+                this._percentages[i] = pt._percentages[i];
+            }
+            this._flags = pt._flags;
+            this.onChangeCallback();
         };
         /**
          * Set all edges in auto
@@ -1713,7 +3226,7 @@ var BABYLON;
             this._pixels[1] = 0;
             this._pixels[2] = 0;
             this._pixels[3] = 0;
-            this._changedCallback();
+            this.onChangeCallback();
             return this;
         };
         PrimitiveThickness.prototype._clear = function () {
@@ -1757,7 +3270,7 @@ var BABYLON;
                 this._setType(index, PrimitiveThickness.Auto);
                 this._pixels[index] = 0;
                 if (emitChanged) {
-                    this._changedCallback();
+                    this.onChangeCallback();
                 }
             }
             else if (v === "inherit") {
@@ -1767,7 +3280,7 @@ var BABYLON;
                 this._setType(index, PrimitiveThickness.Inherit);
                 this._pixels[index] = null;
                 if (emitChanged) {
-                    this._changedCallback();
+                    this.onChangeCallback();
                 }
             }
             else {
@@ -1785,7 +3298,7 @@ var BABYLON;
                     }
                     this._percentages[index] = number_1;
                     if (emitChanged) {
-                        this._changedCallback();
+                        this.onChangeCallback();
                     }
                     return true;
                 }
@@ -1808,7 +3321,7 @@ var BABYLON;
                 this._pixels[index] = number;
                 this._setType(index, PrimitiveThickness.Pixel);
                 if (emitChanged) {
-                    this._changedCallback();
+                    this.onChangeCallback();
                 }
                 return true;
             }
@@ -1822,7 +3335,7 @@ var BABYLON;
             this._setType(index, PrimitiveThickness.Pixel);
             this._pixels[index] = value;
             if (emitChanged) {
-                this._changedCallback();
+                this.onChangeCallback();
             }
         };
         PrimitiveThickness.prototype._setPercentage = function (value, index, emitChanged) {
@@ -1836,7 +3349,7 @@ var BABYLON;
             this._setType(index, PrimitiveThickness.Percentage);
             this._percentages[index] = value;
             if (emitChanged) {
-                this._changedCallback();
+                this.onChangeCallback();
             }
         };
         PrimitiveThickness.prototype._getStringValue = function (index) {
@@ -2120,6 +3633,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(PrimitiveThickness.prototype, "isDefault", {
+            get: function () {
+                return this._flags === 0x1111;
+            },
+            enumerable: true,
+            configurable: true
+        });
         PrimitiveThickness.prototype._computePixels = function (index, sourceArea, emitChanged) {
             var type = this._getType(index, false);
             if (type === PrimitiveThickness.Inherit) {
@@ -2132,6 +3652,11 @@ var BABYLON;
             var pixels = ((index === 0 || index === 3) ? sourceArea.height : sourceArea.width) * this._percentages[index];
             this._pixels[index] = pixels;
             if (emitChanged) {
+                this.onChangeCallback();
+            }
+        };
+        PrimitiveThickness.prototype.onChangeCallback = function () {
+            if (this._changedCallback) {
                 this._changedCallback();
             }
         };
@@ -2326,6 +3851,9 @@ var BABYLON;
         PrimitiveThickness.Inherit = 0x2;
         PrimitiveThickness.Percentage = 0x4;
         PrimitiveThickness.Pixel = 0x8;
+        PrimitiveThickness = __decorate([
+            BABYLON.className("PrimitiveThickness", "BABYLON")
+        ], PrimitiveThickness);
         return PrimitiveThickness;
     }());
     BABYLON.PrimitiveThickness = PrimitiveThickness;
@@ -2418,7 +3946,6 @@ var BABYLON;
             this._padding = null;
             this._marginAlignment = null;
             this._id = settings.id;
-            this.propertyChanged = new BABYLON.Observable();
             this._children = new Array();
             this._localTransform = new BABYLON.Matrix();
             this._globalTransform = null;
@@ -2663,6 +4190,10 @@ var BABYLON;
             get: function () {
                 return this.actualPosition.x;
             },
+            set: function (val) {
+                this._actualPosition.x = val;
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, this._actualPosition);
+            },
             enumerable: true,
             configurable: true
         });
@@ -2672,6 +4203,10 @@ var BABYLON;
              */
             get: function () {
                 return this.actualPosition.y;
+            },
+            set: function (val) {
+                this._actualPosition.y = val;
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, this._actualPosition);
             },
             enumerable: true,
             configurable: true
@@ -2791,14 +4326,15 @@ var BABYLON;
                 return this.size.width;
             },
             set: function (value) {
+                if (this.size && this.size.width === value) {
+                    return;
+                }
                 if (!this.size) {
                     this.size = new BABYLON.Size(value, 0);
-                    return;
                 }
-                if (this.size.width === value) {
-                    return;
+                else {
+                    this.size.width = value;
                 }
-                this.size.width = value;
                 this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
                 this._positioningDirty();
             },
@@ -2817,14 +4353,15 @@ var BABYLON;
                 return this.size.height;
             },
             set: function (value) {
+                if (this.size && this.size.height === value) {
+                    return;
+                }
                 if (!this.size) {
                     this.size = new BABYLON.Size(0, value);
-                    return;
                 }
-                if (this.size.height === value) {
-                    return;
+                else {
+                    this.size.height = value;
                 }
-                this.size.height = value;
                 this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
                 this._positioningDirty();
             },
@@ -2871,6 +4408,34 @@ var BABYLON;
                     return;
                 }
                 this._actualSize = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "actualWidth", {
+            /**
+             * Shortcut to actualSize.width
+             */
+            get: function () {
+                return this.actualSize.width;
+            },
+            set: function (val) {
+                this._actualSize.width = val;
+                this._triggerPropertyChanged(Prim2DBase.actualSizeProperty, this._actualSize);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "actualHeight", {
+            /**
+             * Shortcut to actualPosition.height
+             */
+            get: function () {
+                return this.actualSize.width;
+            },
+            set: function (val) {
+                this._actualSize.height = val;
+                this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, this._actualSize);
             },
             enumerable: true,
             configurable: true
@@ -3002,12 +4567,18 @@ var BABYLON;
                 }
                 return this._margin;
             },
+            set: function (value) {
+                this.margin.copyFrom(value);
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Prim2DBase.prototype, "_hasMargin", {
+            /**
+             * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
+             */
             get: function () {
-                return (this._margin !== null) || (this._marginAlignment !== null);
+                return (this._margin !== null && !this._margin.isDefault) || (this._marginAlignment !== null && !this._marginAlignment.isDefault);
             },
             enumerable: true,
             configurable: true
@@ -3025,12 +4596,15 @@ var BABYLON;
                 }
                 return this._padding;
             },
+            set: function (value) {
+                this.padding.copyFrom(value);
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Prim2DBase.prototype, "_hasPadding", {
             get: function () {
-                return this._padding !== null;
+                return this._padding !== null && !this._padding.isDefault;
             },
             enumerable: true,
             configurable: true
@@ -3042,6 +4616,19 @@ var BABYLON;
                     this._marginAlignment = new PrimitiveAlignment(function () { return _this._positioningDirty(); });
                 }
                 return this._marginAlignment;
+            },
+            set: function (value) {
+                this.marginAlignment.copyFrom(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "_hasMarginAlignment", {
+            /**
+             * Check if there a marginAlignment specified (non null and not default)
+             */
+            get: function () {
+                return (this._marginAlignment !== null && !this._marginAlignment.isDefault);
             },
             enumerable: true,
             configurable: true
@@ -3891,12 +5478,13 @@ var BABYLON;
             // We know have to :
             //  1. Determine the PaddingArea and the ActualPosition based on the margin/marginAlignment properties, which will also set the size property of the primitive
             //  2. Determine the contentArea based on the padding property.
+            var isSizeAuto = this.isSizeAuto;
             // Auto Create PaddingArea if there's no actualSize on width&|height to allocate the whole content available to the paddingArea where the actualSize is null
-            if (!this._hasMargin && (this.actualSize.width == null || this.actualSize.height == null)) {
-                if (this.actualSize.width == null) {
+            if (!this._hasMarginAlignment && (isSizeAuto || (this.actualSize.width == null || this.actualSize.height == null))) {
+                if (isSizeAuto || this.actualSize.width == null) {
                     this.marginAlignment.horizontal = PrimitiveAlignment.AlignStretch;
                 }
-                if (this.actualSize.height == null) {
+                if (isSizeAuto || this.actualSize.height == null) {
                     this.marginAlignment.vertical = PrimitiveAlignment.AlignStretch;
                 }
             }
@@ -3905,7 +5493,6 @@ var BABYLON;
                 this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase._size);
                 this.actualSize = Prim2DBase._size.clone();
             }
-            var isSizeAuto = this.isSizeAuto;
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so me resize the primitive itself
                 if (isSizeAuto) {
@@ -4149,7 +5736,7 @@ var BABYLON;
         Prim2DBase.prototype._getActualSizeFromContentToRef = function (primSize, newPrimSize) {
             newPrimSize.copyFrom(primSize);
         };
-        Prim2DBase.PRIM2DBASE_PROPCOUNT = 16;
+        Prim2DBase.PRIM2DBASE_PROPCOUNT = 24;
         Prim2DBase._bigInt = Math.pow(2, 30);
         Prim2DBase._nullPosition = BABYLON.Vector2.Zero();
         Prim2DBase.boundinbBoxReentrency = false;
@@ -4172,49 +5759,76 @@ var BABYLON;
             BABYLON.instanceLevelProperty(1, function (pi) { return Prim2DBase.actualPositionProperty = pi; }, false, false, true)
         ], Prim2DBase.prototype, "actualPosition", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(2, function (pi) { return Prim2DBase.positionProperty = pi; }, false, false, true)
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 1, function (pi) { return Prim2DBase.actualXProperty = pi; }, false, false, true)
+        ], Prim2DBase.prototype, "actualX", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 2, function (pi) { return Prim2DBase.actualYProperty = pi; }, false, false, true)
+        ], Prim2DBase.prototype, "actualY", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 3, function (pi) { return Prim2DBase.positionProperty = pi; }, false, false, true)
         ], Prim2DBase.prototype, "position", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(3, function (pi) { return Prim2DBase.sizeProperty = pi; }, false, true)
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 4, function (pi) { return Prim2DBase.xProperty = pi; }, false, false, true)
+        ], Prim2DBase.prototype, "x", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 5, function (pi) { return Prim2DBase.yProperty = pi; }, false, false, true)
+        ], Prim2DBase.prototype, "y", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 6, function (pi) { return Prim2DBase.sizeProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "size", null);
         __decorate([
-            BABYLON.instanceLevelProperty(4, function (pi) { return Prim2DBase.rotationProperty = pi; }, false, true)
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 7, function (pi) { return Prim2DBase.widthProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "width", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 8, function (pi) { return Prim2DBase.heightProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "height", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 9, function (pi) { return Prim2DBase.rotationProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "rotation", null);
         __decorate([
-            BABYLON.instanceLevelProperty(5, function (pi) { return Prim2DBase.scaleProperty = pi; }, false, true)
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 10, function (pi) { return Prim2DBase.scaleProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "scale", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(6, function (pi) { return Prim2DBase.originProperty = pi; }, false, true)
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 11, function (pi) { return Prim2DBase.actualSizeProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "actualSize", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 12, function (pi) { return Prim2DBase.actualWidthProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "actualWidth", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 13, function (pi) { return Prim2DBase.actualHeightProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "actualHeight", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 14, function (pi) { return Prim2DBase.originProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "origin", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(7, function (pi) { return Prim2DBase.levelVisibleProperty = pi; })
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 15, function (pi) { return Prim2DBase.levelVisibleProperty = pi; })
         ], Prim2DBase.prototype, "levelVisible", null);
         __decorate([
-            BABYLON.instanceLevelProperty(8, function (pi) { return Prim2DBase.isVisibleProperty = pi; })
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 16, function (pi) { return Prim2DBase.isVisibleProperty = pi; })
         ], Prim2DBase.prototype, "isVisible", null);
         __decorate([
-            BABYLON.instanceLevelProperty(9, function (pi) { return Prim2DBase.zOrderProperty = pi; })
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 17, function (pi) { return Prim2DBase.zOrderProperty = pi; })
         ], Prim2DBase.prototype, "zOrder", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(10, function (pi) { return Prim2DBase.marginProperty = pi; })
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 18, function (pi) { return Prim2DBase.marginProperty = pi; })
         ], Prim2DBase.prototype, "margin", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(11, function (pi) { return Prim2DBase.paddingProperty = pi; })
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 19, function (pi) { return Prim2DBase.paddingProperty = pi; })
         ], Prim2DBase.prototype, "padding", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(12, function (pi) { return Prim2DBase.marginAlignmentProperty = pi; })
+            BABYLON.dynamicLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 20, function (pi) { return Prim2DBase.marginAlignmentProperty = pi; })
         ], Prim2DBase.prototype, "marginAlignment", null);
         __decorate([
-            BABYLON.instanceLevelProperty(13, function (pi) { return Prim2DBase.opacityProperty = pi; })
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 21, function (pi) { return Prim2DBase.opacityProperty = pi; })
         ], Prim2DBase.prototype, "opacity", null);
         __decorate([
-            BABYLON.instanceLevelProperty(14, function (pi) { return Prim2DBase.scaleXProperty = pi; }, false, true)
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 22, function (pi) { return Prim2DBase.scaleXProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "scaleX", null);
         __decorate([
-            BABYLON.instanceLevelProperty(15, function (pi) { return Prim2DBase.scaleYProperty = pi; }, false, true)
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 23, function (pi) { return Prim2DBase.scaleYProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "scaleY", null);
         Prim2DBase = __decorate([
-            BABYLON.className("Prim2DBase")
+            BABYLON.className("Prim2DBase", "BABYLON")
         ], Prim2DBase);
         return Prim2DBase;
     }(BABYLON.SmartPropertyPrim));
@@ -5426,7 +7040,7 @@ var BABYLON;
             BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return RenderablePrim2D.isTransparentProperty = pi; })
         ], RenderablePrim2D.prototype, "isTransparent", null);
         RenderablePrim2D = __decorate([
-            BABYLON.className("RenderablePrim2D")
+            BABYLON.className("RenderablePrim2D", "BABYLON")
         ], RenderablePrim2D);
         return RenderablePrim2D;
     }(BABYLON.Prim2DBase));
@@ -5612,7 +7226,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Shape2D.borderThicknessProperty = pi; })
         ], Shape2D.prototype, "borderThickness", null);
         Shape2D = __decorate([
-            BABYLON.className("Shape2D")
+            BABYLON.className("Shape2D", "BABYLON")
         ], Shape2D);
         return Shape2D;
     }(BABYLON.RenderablePrim2D));
@@ -6586,7 +8200,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 2, function (pi) { return Group2D.actualSizeProperty = pi; })
         ], Group2D.prototype, "actualSize", null);
         Group2D = __decorate([
-            BABYLON.className("Group2D")
+            BABYLON.className("Group2D", "BABYLON")
         ], Group2D);
         return Group2D;
     }(BABYLON.Prim2DBase));
@@ -7118,7 +8732,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 3, function (pi) { return Rectangle2D.roundRadiusProperty = pi; })
         ], Rectangle2D.prototype, "roundRadius", null);
         Rectangle2D = __decorate([
-            BABYLON.className("Rectangle2D")
+            BABYLON.className("Rectangle2D", "BABYLON")
         ], Rectangle2D);
         return Rectangle2D;
     }(BABYLON.Shape2D));
@@ -7469,7 +9083,7 @@ var BABYLON;
             BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 2, function (pi) { return Ellipse2D.subdivisionsProperty = pi; })
         ], Ellipse2D.prototype, "subdivisions", null);
         Ellipse2D = __decorate([
-            BABYLON.className("Ellipse2D")
+            BABYLON.className("Ellipse2D", "BABYLON")
         ], Ellipse2D);
         return Ellipse2D;
     }(BABYLON.Shape2D));
@@ -7951,7 +9565,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Sprite2D.spriteScaleFactorProperty = pi; })
         ], Sprite2D.prototype, "spriteScaleFactor", null);
         Sprite2D = __decorate([
-            BABYLON.className("Sprite2D")
+            BABYLON.className("Sprite2D", "BABYLON")
         ], Sprite2D);
         return Sprite2D;
     }(BABYLON.RenderablePrim2D));
@@ -8189,6 +9803,9 @@ var BABYLON;
                 return this._text;
             },
             set: function (value) {
+                if (!value) {
+                    value = "";
+                }
                 this._text = value;
                 this._textSize = null; // A change of text will reset the TextSize which will be recomputed next time it's used
                 this._size = null;
@@ -8212,6 +9829,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Text2D.prototype, "isSizeAuto", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Text2D.prototype, "actualSize", {
             /**
              * Get the actual size of the Text2D primitive
@@ -8231,7 +9855,7 @@ var BABYLON;
              */
             get: function () {
                 if (!this._textSize) {
-                    if (this.owner) {
+                    if (this.owner && this._text) {
                         var newSize = this.fontTexture.measureText(this._text, this._tabulationSize);
                         if (!newSize.equals(this._textSize)) {
                             this.onPrimitivePropertyDirty(BABYLON.Prim2DBase.sizeProperty.flagId);
@@ -8410,7 +10034,7 @@ var BABYLON;
             BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Text2D.sizeProperty = pi; })
         ], Text2D.prototype, "size", null);
         Text2D = __decorate([
-            BABYLON.className("Text2D")
+            BABYLON.className("Text2D", "BABYLON")
         ], Text2D);
         return Text2D;
     }(BABYLON.RenderablePrim2D));
@@ -9586,7 +11210,7 @@ var BABYLON;
             BABYLON.modelLevelProperty(BABYLON.Shape2D.SHAPE2D_PROPCOUNT + 5, function (pi) { return Lines2D.endCapProperty = pi; })
         ], Lines2D.prototype, "endCap", null);
         Lines2D = __decorate([
-            BABYLON.className("Lines2D")
+            BABYLON.className("Lines2D", "BABYLON")
         ], Lines2D);
         return Lines2D;
     }(BABYLON.Shape2D));
@@ -9676,6 +11300,7 @@ var BABYLON;
             this._updateLocalTransformCounter = new BABYLON.PerfCounter();
             this._updateGlobalTransformCounter = new BABYLON.PerfCounter();
             this._boundingInfoRecomputeCounter = new BABYLON.PerfCounter();
+            this._uid = null;
             this._cachedCanvasGroup = null;
             this._profileInfoText = null;
             BABYLON.Prim2DBase._isCanvasInit = false;
@@ -10077,6 +11702,9 @@ var BABYLON;
             this._actualIntersectionList = ii.intersectedPrimitives;
             this._previousOverPrimitive = this._actualOverPrimitive;
             this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+            if ((!this._actualOverPrimitive && !this._previousOverPrimitive) || !(this._actualOverPrimitive && this._previousOverPrimitive && this._actualOverPrimitive.prim === this._previousOverPrimitive.prim)) {
+                this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
+            }
             this._intersectionRenderId = this.scene.getRenderId();
         };
         // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
@@ -10329,6 +11957,35 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Canvas2D.prototype, "uid", {
+            /**
+             * return a unique identifier for the Canvas2D
+             */
+            get: function () {
+                if (!this._uid) {
+                    this._uid = BABYLON.Tools.RandomId();
+                }
+                return this._uid;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "renderObservable", {
+            /**
+             * And observable called during the Canvas rendering process.
+             * This observable is called twice per render, each time with a different mask:
+             *  - 1: before render is executed
+             *  - 2: after render is executed
+             */
+            get: function () {
+                if (!this._renderObservable) {
+                    this._renderObservable = new BABYLON.Observable();
+                }
+                return this._renderObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Canvas2D.prototype, "cachingStrategy", {
             /**
              * Accessor of the Caching Strategy used by this Canvas.
@@ -10487,6 +12144,16 @@ var BABYLON;
         Object.defineProperty(Canvas2D.prototype, "designSizeUseHorizAxis", {
             get: function () {
                 return this._designUseHorizAxis;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "overPrim", {
+            /**
+             * Return
+             */
+            get: function () {
+                return this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
             },
             enumerable: true,
             configurable: true
@@ -10722,6 +12389,9 @@ var BABYLON;
          */
         Canvas2D.prototype._render = function () {
             this._initPerfMetrics();
+            if (this._renderObservable && this._renderObservable.hasObservers()) {
+                this._renderObservable.notifyObservers(this, Canvas2D.RENDEROBSERVABLE_PRE);
+            }
             this._updateCanvasState(false);
             this._updateTrackedNodes();
             // Nothing to do is the Canvas is not visible
@@ -10734,7 +12404,7 @@ var BABYLON;
             this._updateCanvasState(false);
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
-                this._updateOverStatus(false); // TODO this._primPointerInfo may not be up to date!
+                this._updateOverStatus(false);
             }
             this.engine.setState(false);
             this._groupRender();
@@ -10750,6 +12420,9 @@ var BABYLON;
             }
             this._fetchPerfMetrics();
             this._updateProfileCanvas();
+            if (this._renderObservable && this._renderObservable.hasObservers()) {
+                this._renderObservable.notifyObservers(this, Canvas2D.RENDEROBSERVABLE_POST);
+            }
         };
         /**
          * Internal method that allocate a cache for the given group.
@@ -10975,6 +12648,14 @@ var BABYLON;
          * Note that you can't use this strategy for WorldSpace Canvas, they need at least a top level group caching.
          */
         Canvas2D.CACHESTRATEGY_DONTCACHE = 4;
+        /**
+         * Observable Mask to be notified before rendering is made
+         */
+        Canvas2D.RENDEROBSERVABLE_PRE = 1;
+        /**
+         * Observable Mask to be notified after rendering is made
+         */
+        Canvas2D.RENDEROBSERVABLE_POST = 2;
         Canvas2D._INSTANCES = [];
         Canvas2D._zMinDelta = 1 / (Math.pow(2, 24) - 1);
         Canvas2D._interInfo = new BABYLON.IntersectInfo2D();
@@ -10990,7 +12671,7 @@ var BABYLON;
         Canvas2D._solidColorBrushes = new BABYLON.StringDictionary();
         Canvas2D._gradientColorBrushes = new BABYLON.StringDictionary();
         Canvas2D = __decorate([
-            BABYLON.className("Canvas2D")
+            BABYLON.className("Canvas2D", "BABYLON")
         ], Canvas2D);
         return Canvas2D;
     }(BABYLON.Group2D));
@@ -11082,7 +12763,7 @@ var BABYLON;
             }, BABYLON.Prim2DBase.isVisibleProperty.flagId);
         }
         WorldSpaceCanvas2D = __decorate([
-            BABYLON.className("WorldSpaceCanvas2D")
+            BABYLON.className("WorldSpaceCanvas2D", "BABYLON")
         ], WorldSpaceCanvas2D);
         return WorldSpaceCanvas2D;
     }(Canvas2D));
@@ -11125,7 +12806,7 @@ var BABYLON;
             _super.call(this, scene, settings);
         }
         ScreenSpaceCanvas2D = __decorate([
-            BABYLON.className("ScreenSpaceCanvas2D")
+            BABYLON.className("ScreenSpaceCanvas2D", "BABYLON")
         ], ScreenSpaceCanvas2D);
         return ScreenSpaceCanvas2D;
     }(Canvas2D));
@@ -11159,6 +12840,1439 @@ var BABYLON;
         return WorldSpaceCanvas2DNode;
     }(BABYLON.Mesh));
     BABYLON.WorldSpaceCanvas2DNode = WorldSpaceCanvas2DNode;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    var Command = (function () {
+        function Command(execute, canExecute) {
+            if (!execute) {
+                throw Error("At least an execute lambda must be given at Command creation time");
+            }
+            this._canExecuteChanged = null;
+            this._lastCanExecuteResult = null;
+            this.execute = execute;
+            this.canExecute = canExecute;
+        }
+        Command.prototype.canExecute = function (parameter) {
+            var res = true;
+            if (this._canExecute) {
+                res = this._canExecute(parameter);
+            }
+            if (res !== this._lastCanExecuteResult) {
+                if (this._canExecuteChanged && this._canExecuteChanged.hasObservers()) {
+                    this._canExecuteChanged.notifyObservers(null);
+                }
+                this._lastCanExecuteResult = res;
+            }
+            return res;
+        };
+        Command.prototype.execute = function (parameter) {
+            this._execute(parameter);
+        };
+        Object.defineProperty(Command.prototype, "canExecuteChanged", {
+            get: function () {
+                if (!this._canExecuteChanged) {
+                    this._canExecuteChanged = new BABYLON.Observable();
+                }
+                return this._canExecuteChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Command;
+    }());
+    BABYLON.Command = Command;
+    var UIElement = (function (_super) {
+        __extends(UIElement, _super);
+        function UIElement(settings) {
+            _super.call(this);
+            if (!settings) {
+                throw Error("A settings object must be passed with at least either a parent or owner parameter");
+            }
+            var type = BABYLON.Tools.getFullClassName(this);
+            this._ownerWindow = null;
+            this._parent = null;
+            this._visualPlaceholder = null;
+            this._visualTemplateRoot = null;
+            this._visualChildrenPlaceholder = null;
+            this._hierarchyDepth = 0;
+            this._style = (settings.styleName != null) ? UIElementStyleManager.getStyle(type, settings.styleName) : null;
+            this._flags = 0;
+            this._id = (settings.id != null) ? settings.id : null;
+            this._uid = null;
+            this._width = (settings.width != null) ? settings.width : null;
+            this._height = (settings.height != null) ? settings.height : null;
+            this._minWidth = (settings.minWidth != null) ? settings.minWidth : 0;
+            this._minHeight = (settings.minHeight != null) ? settings.minHeight : 0;
+            this._maxWidth = (settings.maxWidth != null) ? settings.maxWidth : Number.MAX_VALUE;
+            this._maxHeight = (settings.maxHeight != null) ? settings.maxHeight : Number.MAX_VALUE;
+            this._margin = null;
+            this._padding = null;
+            this._marginAlignment = null;
+            this._isEnabled = true;
+            this._isFocused = false;
+            this._isMouseOver = false;
+            // Default Margin Alignment for UIElement is stretch for horizontal/vertical and not left/bottom (which is the default for Canvas2D Primitives)
+            //this.marginAlignment.horizontal = PrimitiveAlignment.AlignStretch;
+            //this.marginAlignment.vertical   = PrimitiveAlignment.AlignStretch;
+            // Set the layout/margin stuffs
+            if (settings.marginTop) {
+                this.margin.setTop(settings.marginTop);
+            }
+            if (settings.marginLeft) {
+                this.margin.setLeft(settings.marginLeft);
+            }
+            if (settings.marginRight) {
+                this.margin.setRight(settings.marginRight);
+            }
+            if (settings.marginBottom) {
+                this.margin.setBottom(settings.marginBottom);
+            }
+            if (settings.margin) {
+                if (typeof settings.margin === "string") {
+                    this.margin.fromString(settings.margin);
+                }
+                else {
+                    this.margin.fromUniformPixels(settings.margin);
+                }
+            }
+            if (settings.marginHAlignment) {
+                this.marginAlignment.horizontal = settings.marginHAlignment;
+            }
+            if (settings.marginVAlignment) {
+                this.marginAlignment.vertical = settings.marginVAlignment;
+            }
+            if (settings.marginAlignment) {
+                this.marginAlignment.fromString(settings.marginAlignment);
+            }
+            if (settings.paddingTop) {
+                this.padding.setTop(settings.paddingTop);
+            }
+            if (settings.paddingLeft) {
+                this.padding.setLeft(settings.paddingLeft);
+            }
+            if (settings.paddingRight) {
+                this.padding.setRight(settings.paddingRight);
+            }
+            if (settings.paddingBottom) {
+                this.padding.setBottom(settings.paddingBottom);
+            }
+            if (settings.padding) {
+                this.padding.fromString(settings.padding);
+            }
+            this._assignTemplate(settings.templateName);
+            if (settings.parent != null) {
+                this._parent = settings.parent;
+                this._hierarchyDepth = this._parent._hierarchyDepth + 1;
+            }
+        }
+        UIElement.prototype.dispose = function () {
+            if (this.isDisposed) {
+                return false;
+            }
+            if (this._renderingTemplate) {
+                this._renderingTemplate.detach();
+                this._renderingTemplate = null;
+            }
+            _super.prototype.dispose.call(this);
+            // Don't set to null, it may upset somebody...
+            this.animations.splice(0);
+            return true;
+        };
+        /**
+         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
+         * Look at Sprite2D for more information
+         */
+        UIElement.prototype.getAnimatables = function () {
+            return new Array();
+        };
+        Object.defineProperty(UIElement.prototype, "ownerWindows", {
+            // TODO
+            // PROPERTIES
+            // Style
+            // Id
+            // Parent/Children
+            // ActualWidth/Height, MinWidth/Height, MaxWidth/Height,
+            // Alignment/Margin
+            // Visibility, IsVisible
+            // IsEnabled (is false, control is disabled, no interaction and a specific render state)
+            // CacheMode of Visual Elements
+            // Focusable/IsFocused
+            // IsPointerCaptured, CapturePointer, IsPointerDirectlyOver, IsPointerOver. De-correlate mouse, stylus, touch?
+            // ContextMenu
+            // Cursor
+            // DesiredSize
+            // IsInputEnable ?
+            // Opacity, OpacityMask ?
+            // SnapToDevicePixels
+            // Tag
+            // ToolTip
+            // METHODS
+            // BringIntoView (for scrollable content, to move the scroll to bring the given element visible in the parent's area)
+            // Capture/ReleaseCapture (mouse, touch, stylus)
+            // Focus
+            // PointFrom/ToScreen to translate coordinates
+            // EVENTS
+            // ContextMenuOpening/Closing/Changed
+            // DragEnter/LeaveOver, Drop
+            // Got/LostFocus
+            // IsEnabledChanged
+            // IsPointerOver/DirectlyOverChanged
+            // IsVisibleChanged
+            // KeyDown/Up
+            // LayoutUpdated ?
+            // Pointer related events
+            // SizeChanged
+            // ToolTipOpening/Closing
+            get: function () {
+                return this._ownerWindow;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "style", {
+            get: function () {
+                if (!this.style) {
+                    return UIElementStyleManager.DefaultStyleName;
+                }
+                return this._style.name;
+            },
+            set: function (value) {
+                if (this._style && (this._style.name === value)) {
+                    return;
+                }
+                var newStyle = null;
+                if (value) {
+                    newStyle = UIElementStyleManager.getStyle(BABYLON.Tools.getFullClassName(this), value);
+                    if (!newStyle) {
+                        throw Error("Couldn't find Style " + value + " for UIElement " + BABYLON.Tools.getFullClassName(this));
+                    }
+                }
+                if (this._style) {
+                    this._style.removeStyle(this);
+                }
+                if (newStyle) {
+                    newStyle.applyStyle(this);
+                }
+                this._style = newStyle;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "id", {
+            /**
+             * A string that identifies the UIElement.
+             * The id is optional and there's possible collision with other UIElement's id as the uniqueness is not supported.
+             */
+            get: function () {
+                return this._id;
+            },
+            set: function (value) {
+                if (this._id === value) {
+                    return;
+                }
+                this._id = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "uid", {
+            /**
+             * Return a unique id automatically generated.
+             * This property is mainly used for serialization to ensure a perfect way of identifying a UIElement
+             */
+            get: function () {
+                if (!this._uid) {
+                    this._uid = BABYLON.Tools.RandomId();
+                }
+                return this._uid;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "hierarchyDepth", {
+            get: function () {
+                return this._hierarchyDepth;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "parent", {
+            get: function () {
+                return this._parent;
+            },
+            set: function (value) {
+                this._parent = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "width", {
+            get: function () {
+                return this._width;
+            },
+            set: function (value) {
+                this._width = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "height", {
+            get: function () {
+                return this._height;
+            },
+            set: function (value) {
+                this._height = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "minWidth", {
+            get: function () {
+                return this._minWidth;
+            },
+            set: function (value) {
+                this._minWidth = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "minHheight", {
+            get: function () {
+                return this._minHeight;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "minHeight", {
+            set: function (value) {
+                this._minHeight = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "maxWidth", {
+            get: function () {
+                return this._maxWidth;
+            },
+            set: function (value) {
+                this._maxWidth = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "maxHeight", {
+            get: function () {
+                return this._maxHeight;
+            },
+            set: function (value) {
+                this._maxHeight = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "actualWidth", {
+            get: function () {
+                return this._actualWidth;
+            },
+            set: function (value) {
+                this._actualWidth = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "actualHeight", {
+            get: function () {
+                return this._actualHeight;
+            },
+            set: function (value) {
+                this._actualHeight = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "margin", {
+            get: function () {
+                var _this = this;
+                if (!this._margin) {
+                    this._margin = new BABYLON.PrimitiveThickness(function () {
+                        if (!_this.parent) {
+                            return null;
+                        }
+                        return _this.parent.margin;
+                    });
+                }
+                return this._margin;
+            },
+            set: function (value) {
+                this.margin.copyFrom(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "_hasMargin", {
+            get: function () {
+                return (this._margin !== null && !this._margin.isDefault) || (this._marginAlignment !== null && !this._marginAlignment.isDefault);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "padding", {
+            get: function () {
+                var _this = this;
+                if (!this._padding) {
+                    this._padding = new BABYLON.PrimitiveThickness(function () {
+                        if (!_this.parent) {
+                            return null;
+                        }
+                        return _this.parent.padding;
+                    });
+                }
+                return this._padding;
+            },
+            set: function (value) {
+                this.padding.copyFrom(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "_hasPadding", {
+            get: function () {
+                return this._padding !== null && !this._padding.isDefault;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "marginAlignment", {
+            get: function () {
+                if (!this._marginAlignment) {
+                    this._marginAlignment = new BABYLON.PrimitiveAlignment();
+                }
+                return this._marginAlignment;
+            },
+            set: function (value) {
+                this.marginAlignment.copyFrom(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "_hasMarginAlignment", {
+            /**
+             * Check if there a marginAlignment specified (non null and not default)
+             */
+            get: function () {
+                return (this._marginAlignment !== null && !this._marginAlignment.isDefault);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "isEnabled", {
+            get: function () {
+                return this._isEnabled;
+            },
+            set: function (value) {
+                this._isEnabled = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "isFocused", {
+            get: function () {
+                return this._isFocused;
+            },
+            set: function (value) {
+                this._isFocused = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "isMouseOver", {
+            get: function () {
+                return this._isMouseOver;
+            },
+            set: function (value) {
+                this._isMouseOver = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Check if a given flag is set
+         * @param flag the flag value
+         * @return true if set, false otherwise
+         */
+        UIElement.prototype._isFlagSet = function (flag) {
+            return (this._flags & flag) !== 0;
+        };
+        /**
+         * Check if all given flags are set
+         * @param flags the flags ORed
+         * @return true if all the flags are set, false otherwise
+         */
+        UIElement.prototype._areAllFlagsSet = function (flags) {
+            return (this._flags & flags) === flags;
+        };
+        /**
+         * Check if at least one flag of the given flags is set
+         * @param flags the flags ORed
+         * @return true if at least one flag is set, false otherwise
+         */
+        UIElement.prototype._areSomeFlagsSet = function (flags) {
+            return (this._flags & flags) !== 0;
+        };
+        /**
+         * Clear the given flags
+         * @param flags the flags to clear
+         */
+        UIElement.prototype._clearFlags = function (flags) {
+            this._flags &= ~flags;
+        };
+        /**
+         * Set the given flags to true state
+         * @param flags the flags ORed to set
+         * @return the flags state before this call
+         */
+        UIElement.prototype._setFlags = function (flags) {
+            var cur = this._flags;
+            this._flags |= flags;
+            return cur;
+        };
+        /**
+         * Change the state of the given flags
+         * @param flags the flags ORed to change
+         * @param state true to set them, false to clear them
+         */
+        UIElement.prototype._changeFlags = function (flags, state) {
+            if (state) {
+                this._flags |= flags;
+            }
+            else {
+                this._flags &= ~flags;
+            }
+        };
+        UIElement.prototype._assignTemplate = function (templateName) {
+            if (!templateName) {
+                templateName = UIElementRenderingTemplateManager.DefaultTemplateName;
+            }
+            var className = BABYLON.Tools.getFullClassName(this);
+            if (!className) {
+                throw Error("Couldn't access class name of this UIElement, you have to decorate the type with the className decorator");
+            }
+            var factory = UIElementRenderingTemplateManager.getRenderingTemplate(className, templateName);
+            if (!factory) {
+                throw Error("Couldn't get the renderingTemplate " + templateName + " of class " + className);
+            }
+            this._renderingTemplate = factory();
+            this._renderingTemplate.attach(this);
+        };
+        UIElement.prototype._createVisualTree = function () {
+            var parentPrim = this.ownerWindows.canvas;
+            if (this.parent) {
+                parentPrim = this.parent.visualChildrenPlaceholder;
+            }
+            this._visualPlaceholder = new BABYLON.Group2D({ parent: parentPrim, id: "GUI Visual Placeholder of " + this.id });
+            var p = this._visualPlaceholder;
+            p.addExternalData("_GUIOwnerElement_", this);
+            p.dataSource = this;
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.widthProperty, "width", BABYLON.DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.heightProperty, "height", BABYLON.DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.actualWidthProperty, "actualWidth", BABYLON.DataBinding.MODE_ONEWAYTOSOURCE);
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.actualHeightProperty, "actualHeight", BABYLON.DataBinding.MODE_ONEWAYTOSOURCE);
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.marginProperty, "margin", BABYLON.DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.paddingProperty, "padding", BABYLON.DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.marginAlignmentProperty, "marginAlignment", BABYLON.DataBinding.MODE_ONEWAY);
+            this.createVisualTree();
+        };
+        UIElement.prototype._patchUIElement = function (ownerWindow, parent) {
+            if (ownerWindow) {
+                if (!this._ownerWindow) {
+                    ownerWindow._registerVisualToBuild(this);
+                }
+                this._ownerWindow = ownerWindow;
+            }
+            this._parent = parent;
+            if (parent) {
+                this._hierarchyDepth = parent.hierarchyDepth + 1;
+            }
+            var children = this._getChildren();
+            if (children) {
+                for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
+                    var curChild = children_1[_i];
+                    curChild._patchUIElement(ownerWindow, this);
+                }
+            }
+        };
+        // Overload the SmartPropertyBase's method to provide the additional logic of returning the parent's dataSource if there's no dataSource specified at this level.
+        UIElement.prototype._getDataSource = function () {
+            var levelDS = _super.prototype._getDataSource.call(this);
+            if (levelDS != null) {
+                return levelDS;
+            }
+            var p = this.parent;
+            if (p != null) {
+                return p.dataSource;
+            }
+            return null;
+        };
+        UIElement.prototype.createVisualTree = function () {
+            var res = this._renderingTemplate.createVisualTree(this, this._visualPlaceholder);
+            this._visualTemplateRoot = res.root;
+            this._visualChildrenPlaceholder = res.contentPlaceholder;
+        };
+        Object.defineProperty(UIElement.prototype, "visualPlaceholder", {
+            get: function () {
+                return this._visualPlaceholder;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "visualTemplateRoot", {
+            get: function () {
+                return this._visualTemplateRoot;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "visualChildrenPlaceholder", {
+            get: function () {
+                return this._visualChildrenPlaceholder;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "_position", {
+            get: function () { return null; } // TODO use abstract keyword when TS 2.0 will be approved
+            ,
+            enumerable: true,
+            configurable: true
+        });
+        UIElement.UIELEMENT_PROPCOUNT = 15;
+        UIElement.flagVisualToBuild = 0x0000001; // set if the UIElement visual must be updated
+        __decorate([
+            BABYLON.dependencyProperty(0, function (pi) { return UIElement.parentProperty = pi; })
+        ], UIElement.prototype, "parent", null);
+        __decorate([
+            BABYLON.dependencyProperty(1, function (pi) { return UIElement.widthProperty = pi; })
+        ], UIElement.prototype, "width", null);
+        __decorate([
+            BABYLON.dependencyProperty(2, function (pi) { return UIElement.heightProperty = pi; })
+        ], UIElement.prototype, "height", null);
+        __decorate([
+            BABYLON.dependencyProperty(3, function (pi) { return UIElement.minWidthProperty = pi; })
+        ], UIElement.prototype, "minWidth", null);
+        __decorate([
+            BABYLON.dependencyProperty(4, function (pi) { return UIElement.minHeightProperty = pi; })
+        ], UIElement.prototype, "minHheight", null);
+        __decorate([
+            BABYLON.dependencyProperty(5, function (pi) { return UIElement.maxWidthProperty = pi; })
+        ], UIElement.prototype, "maxWidth", null);
+        __decorate([
+            BABYLON.dependencyProperty(6, function (pi) { return UIElement.maxHeightProperty = pi; })
+        ], UIElement.prototype, "maxHeight", null);
+        __decorate([
+            BABYLON.dependencyProperty(7, function (pi) { return UIElement.actualWidthProperty = pi; })
+        ], UIElement.prototype, "actualWidth", null);
+        __decorate([
+            BABYLON.dependencyProperty(8, function (pi) { return UIElement.actualHeightProperty = pi; })
+        ], UIElement.prototype, "actualHeight", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(9, function (pi) { return UIElement.marginProperty = pi; })
+        ], UIElement.prototype, "margin", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(10, function (pi) { return UIElement.paddingProperty = pi; })
+        ], UIElement.prototype, "padding", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(11, function (pi) { return UIElement.marginAlignmentProperty = pi; })
+        ], UIElement.prototype, "marginAlignment", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(12, function (pi) { return UIElement.isEnabledProperty = pi; })
+        ], UIElement.prototype, "isEnabled", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(13, function (pi) { return UIElement.isFocusedProperty = pi; })
+        ], UIElement.prototype, "isFocused", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(14, function (pi) { return UIElement.isMouseOverProperty = pi; })
+        ], UIElement.prototype, "isMouseOver", null);
+        return UIElement;
+    }(BABYLON.SmartPropertyBase));
+    BABYLON.UIElement = UIElement;
+    var UIElementStyle = (function () {
+        function UIElementStyle() {
+        }
+        Object.defineProperty(UIElementStyle.prototype, "name", {
+            get: function () { return null; } // TODO use abstract keyword when TS 2.0 will be approved
+            ,
+            enumerable: true,
+            configurable: true
+        });
+        return UIElementStyle;
+    }());
+    BABYLON.UIElementStyle = UIElementStyle;
+    var UIElementStyleManager = (function () {
+        function UIElementStyleManager() {
+        }
+        UIElementStyleManager.getStyle = function (uiElType, styleName) {
+            var styles = UIElementStyleManager.stylesByUIElement.get(uiElType);
+            if (!styles) {
+                throw Error("The type " + uiElType + " is unknown, no style were registered for it.");
+            }
+            var style = styles.get(styleName);
+            if (!style) {
+                throw Error("Couldn't find Template " + styleName + " of UIElement type " + uiElType);
+            }
+            return style;
+        };
+        UIElementStyleManager.registerStyle = function (uiElType, templateName, style) {
+            var templates = UIElementStyleManager.stylesByUIElement.getOrAddWithFactory(uiElType, function () { return new BABYLON.StringDictionary(); });
+            if (templates.contains(templateName)) {
+                templates[templateName] = style;
+            }
+            else {
+                templates.add(templateName, style);
+            }
+        };
+        Object.defineProperty(UIElementStyleManager, "DefaultStyleName", {
+            get: function () {
+                return UIElementStyleManager._defaultStyleName;
+            },
+            set: function (value) {
+                UIElementStyleManager._defaultStyleName = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        UIElementStyleManager.stylesByUIElement = new BABYLON.StringDictionary();
+        UIElementStyleManager._defaultStyleName = "Default";
+        return UIElementStyleManager;
+    }());
+    BABYLON.UIElementStyleManager = UIElementStyleManager;
+    var UIElementRenderingTemplateManager = (function () {
+        function UIElementRenderingTemplateManager() {
+        }
+        UIElementRenderingTemplateManager.getRenderingTemplate = function (uiElType, templateName) {
+            var templates = UIElementRenderingTemplateManager.renderingTemplatesByUIElement.get(uiElType);
+            if (!templates) {
+                throw Error("The type " + uiElType + " is unknown, no Rendering Template were registered for it.");
+            }
+            var templateFactory = templates.get(templateName);
+            if (!templateFactory) {
+                throw Error("Couldn't find Template " + templateName + " of UI Element type " + uiElType);
+            }
+            return templateFactory;
+        };
+        UIElementRenderingTemplateManager.registerRenderingTemplate = function (uiElType, templateName, factory) {
+            var templates = UIElementRenderingTemplateManager.renderingTemplatesByUIElement.getOrAddWithFactory(uiElType, function () { return new BABYLON.StringDictionary(); });
+            if (templates.contains(templateName)) {
+                templates[templateName] = factory;
+            }
+            else {
+                templates.add(templateName, factory);
+            }
+        };
+        Object.defineProperty(UIElementRenderingTemplateManager, "DefaultTemplateName", {
+            get: function () {
+                return UIElementRenderingTemplateManager._defaultTemplateName;
+            },
+            set: function (value) {
+                UIElementRenderingTemplateManager._defaultTemplateName = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        UIElementRenderingTemplateManager.renderingTemplatesByUIElement = new BABYLON.StringDictionary();
+        UIElementRenderingTemplateManager._defaultTemplateName = "Default";
+        return UIElementRenderingTemplateManager;
+    }());
+    BABYLON.UIElementRenderingTemplateManager = UIElementRenderingTemplateManager;
+    var UIElementRenderingTemplateBase = (function () {
+        function UIElementRenderingTemplateBase() {
+        }
+        UIElementRenderingTemplateBase.prototype.attach = function (owner) {
+            this._owner = owner;
+        };
+        UIElementRenderingTemplateBase.prototype.detach = function () {
+        };
+        Object.defineProperty(UIElementRenderingTemplateBase.prototype, "owner", {
+            get: function () {
+                return this._owner;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return UIElementRenderingTemplateBase;
+    }());
+    BABYLON.UIElementRenderingTemplateBase = UIElementRenderingTemplateBase;
+    function registerWindowRenderingTemplate(uiElType, templateName, factory) {
+        return function () {
+            UIElementRenderingTemplateManager.registerRenderingTemplate(uiElType, templateName, factory);
+        };
+    }
+    BABYLON.registerWindowRenderingTemplate = registerWindowRenderingTemplate;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    var Control = (function (_super) {
+        __extends(Control, _super);
+        function Control(settings) {
+            _super.call(this, settings);
+        }
+        Object.defineProperty(Control.prototype, "background", {
+            get: function () {
+                if (!this._background) {
+                    this._background = new BABYLON.ObservableStringDictionary(false);
+                }
+                return this._background;
+            },
+            set: function (value) {
+                this.background.copyFrom(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Control.prototype, "border", {
+            get: function () {
+                return this._border;
+            },
+            set: function (value) {
+                this._border = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Control.prototype, "borderThickness", {
+            get: function () {
+                return this._borderThickness;
+            },
+            set: function (value) {
+                this._borderThickness = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Control.prototype, "fontName", {
+            get: function () {
+                return this._fontName;
+            },
+            set: function (value) {
+                this._fontName = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Control.prototype, "foreground", {
+            get: function () {
+                return this._foreground;
+            },
+            set: function (value) {
+                this._foreground = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Control.CONTROL_PROPCOUNT = BABYLON.UIElement.UIELEMENT_PROPCOUNT + 5;
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.UIElement.UIELEMENT_PROPCOUNT + 0, function (pi) { return Control.backgroundProperty = pi; })
+        ], Control.prototype, "background", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.UIElement.UIELEMENT_PROPCOUNT + 1, function (pi) { return Control.borderProperty = pi; })
+        ], Control.prototype, "border", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.UIElement.UIELEMENT_PROPCOUNT + 2, function (pi) { return Control.borderThicknessProperty = pi; })
+        ], Control.prototype, "borderThickness", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.UIElement.UIELEMENT_PROPCOUNT + 3, function (pi) { return Control.fontNameProperty = pi; })
+        ], Control.prototype, "fontName", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.UIElement.UIELEMENT_PROPCOUNT + 4, function (pi) { return Control.foregroundProperty = pi; })
+        ], Control.prototype, "foreground", null);
+        Control = __decorate([
+            BABYLON.className("Control", "BABYLON")
+        ], Control);
+        return Control;
+    }(BABYLON.UIElement));
+    BABYLON.Control = Control;
+    var ContentControl = (function (_super) {
+        __extends(ContentControl, _super);
+        function ContentControl(settings) {
+            if (!settings) {
+                settings = {};
+            }
+            _super.call(this, settings);
+            if (settings.content != null) {
+                this._content = settings.content;
+            }
+            if (settings.contentAlignment != null) {
+                this.contentAlignment.fromString(settings.contentAlignment);
+            }
+        }
+        ContentControl.prototype.dispose = function () {
+            if (this.isDisposed) {
+                return false;
+            }
+            if (this.content && this.content.dispose) {
+                this.content.dispose();
+                this.content = null;
+            }
+            if (this.__contentUIElement) {
+                this.__contentUIElement.dispose();
+                this.__contentUIElement = null;
+            }
+            _super.prototype.dispose.call(this);
+            return true;
+        };
+        Object.defineProperty(ContentControl.prototype, "content", {
+            get: function () {
+                return this._content;
+            },
+            set: function (value) {
+                this._content = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ContentControl.prototype, "contentAlignment", {
+            get: function () {
+                if (!this._contentAlignment) {
+                    this._contentAlignment = new BABYLON.PrimitiveAlignment();
+                }
+                return this._contentAlignment;
+            },
+            set: function (value) {
+                this.contentAlignment.copyFrom(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ContentControl.prototype, "_hasContentAlignment", {
+            /**
+             * Check if there a contentAlignment specified (non null and not default)
+             */
+            get: function () {
+                return (this._contentAlignment !== null && !this._contentAlignment.isDefault);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ContentControl.prototype, "_contentUIElement", {
+            get: function () {
+                if (!this.__contentUIElement) {
+                    this._buildContentUIElement();
+                }
+                return this.__contentUIElement;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ContentControl.prototype._buildContentUIElement = function () {
+            var c = this._content;
+            this.__contentUIElement = null;
+            // Already a UIElement
+            if (c instanceof BABYLON.UIElement) {
+                this.__contentUIElement = c;
+            }
+            else if ((typeof c === "string") || (typeof c === "boolean") || (typeof c === "number")) {
+                var l = new BABYLON.Label({ parent: this, id: "Content of " + this.id });
+                var binding = new BABYLON.DataBinding();
+                binding.propertyPathName = "content";
+                binding.stringFormat = function (v) { return ("" + v); };
+                binding.dataSource = this;
+                l.createDataBinding(BABYLON.Label.textProperty, binding);
+                binding = new BABYLON.DataBinding();
+                binding.propertyPathName = "contentAlignment";
+                binding.dataSource = this;
+                l.createDataBinding(BABYLON.Label.marginAlignmentProperty, binding);
+                this.__contentUIElement = l;
+            }
+            else {
+            }
+            if (this.__contentUIElement) {
+                this.__contentUIElement._patchUIElement(this.ownerWindows, this);
+            }
+        };
+        ContentControl.prototype._getChildren = function () {
+            var children = new Array();
+            if (this.content) {
+                children.push(this._contentUIElement);
+            }
+            return children;
+        };
+        ContentControl.CONTENTCONTROL_PROPCOUNT = Control.CONTROL_PROPCOUNT + 2;
+        __decorate([
+            BABYLON.dependencyProperty(Control.CONTROL_PROPCOUNT + 0, function (pi) { return ContentControl.contentProperty = pi; })
+        ], ContentControl.prototype, "content", null);
+        __decorate([
+            BABYLON.dependencyProperty(Control.CONTROL_PROPCOUNT + 1, function (pi) { return ContentControl.contentAlignmentProperty = pi; })
+        ], ContentControl.prototype, "contentAlignment", null);
+        ContentControl = __decorate([
+            BABYLON.className("ContentControl", "BABYLON")
+        ], ContentControl);
+        return ContentControl;
+    }(Control));
+    BABYLON.ContentControl = ContentControl;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    var Window = (function (_super) {
+        __extends(Window, _super);
+        function Window(scene, settings) {
+            var _this = this;
+            if (!settings) {
+                settings = {};
+            }
+            _super.call(this, settings);
+            if (!this._UIElementVisualToBuildList) {
+                this._UIElementVisualToBuildList = new Array();
+            }
+            // Patch the owner and also the parent property through the whole tree
+            this._patchUIElement(this, null);
+            // Screen Space UI
+            if (!settings.worldPosition && !settings.worldRotation) {
+                this._canvas = Window.getScreenCanvas(scene);
+                this._isWorldSpaceCanvas = false;
+                this._left = (settings.left != null) ? settings.left : 0;
+                this._bottom = (settings.bottom != null) ? settings.bottom : 0;
+            }
+            else {
+                var w = (settings.width == null) ? 100 : settings.width;
+                var h = (settings.height == null) ? 100 : settings.height;
+                var wpos = (settings.worldPosition == null) ? BABYLON.Vector3.Zero() : settings.worldPosition;
+                var wrot = (settings.worldRotation == null) ? BABYLON.Quaternion.Identity() : settings.worldRotation;
+                this._canvas = new BABYLON.WorldSpaceCanvas2D(scene, new BABYLON.Size(w, h), { id: "GUI Canvas", cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_DONTCACHE, worldPosition: wpos, worldRotation: wrot });
+                this._isWorldSpaceCanvas = true;
+            }
+            this._renderObserver = this._canvas.renderObservable.add(function (e, s) { return _this._canvasPreRender(); }, BABYLON.Canvas2D.RENDEROBSERVABLE_PRE);
+            this._disposeObserver = this._canvas.disposeObservable.add(function (e, s) { return _this._canvasDisposed(); });
+            this._canvas.propertyChanged.add(function (e, s) {
+                if (e.propertyName === "overPrim") {
+                    _this._overPrimChanged(e.oldValue, e.newValue);
+                }
+            });
+            this._mouseOverUIElement = null;
+        }
+        Object.defineProperty(Window.prototype, "canvas", {
+            get: function () {
+                return this._canvas;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Window.prototype, "left", {
+            get: function () {
+                return this._left;
+            },
+            set: function (value) {
+                var old = new BABYLON.Vector2(this._left, this._bottom);
+                this._left = value;
+                this.onPropertyChanged("_position", old, this._position);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Window.prototype, "bottom", {
+            get: function () {
+                return this._bottom;
+            },
+            set: function (value) {
+                var old = new BABYLON.Vector2(this._left, this._bottom);
+                this._bottom = value;
+                this.onPropertyChanged("_position", old, this._position);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Window.prototype, "position", {
+            get: function () {
+                return this._position;
+            },
+            set: function (value) {
+                this._left = value.x;
+                this._bottom = value.y;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Window.prototype, "_position", {
+            get: function () {
+                return new BABYLON.Vector2(this.left, this.bottom);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Window.prototype.createVisualTree = function () {
+            _super.prototype.createVisualTree.call(this);
+            var p = this._visualPlaceholder;
+            p.createSimpleDataBinding(BABYLON.Group2D.positionProperty, "position");
+        };
+        Window.prototype._registerVisualToBuild = function (uiel) {
+            if (uiel._isFlagSet(BABYLON.UIElement.flagVisualToBuild)) {
+                return;
+            }
+            if (!this._UIElementVisualToBuildList) {
+                this._UIElementVisualToBuildList = new Array();
+            }
+            this._UIElementVisualToBuildList.push(uiel);
+            uiel._setFlags(BABYLON.UIElement.flagVisualToBuild);
+        };
+        Window.prototype._overPrimChanged = function (oldPrim, newPrim) {
+            var curOverEl = this._mouseOverUIElement;
+            var newOverEl = null;
+            var curGroup = newPrim ? newPrim.traverseUp(function (p) { return p instanceof BABYLON.Group2D; }) : null;
+            while (curGroup) {
+                var uiel = curGroup.getExternalData("_GUIOwnerElement_");
+                if (uiel) {
+                    newOverEl = uiel;
+                    break;
+                }
+                curGroup = curGroup.parent ? curGroup.parent.traverseUp(function (p) { return p instanceof BABYLON.Group2D; }) : null;
+            }
+            if (curOverEl === newOverEl) {
+                return;
+            }
+            if (curOverEl) {
+                curOverEl.isMouseOver = false;
+            }
+            if (newOverEl) {
+                newOverEl.isMouseOver = true;
+            }
+            this._mouseOverUIElement = newOverEl;
+        };
+        Window.prototype._canvasPreRender = function () {
+            // Check if we have visual to create
+            if (this._UIElementVisualToBuildList.length > 0) {
+                // Sort the UI Element to get the highest (so lowest hierarchy depth) in the hierarchy tree first
+                var sortedElementList = this._UIElementVisualToBuildList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
+                for (var _i = 0, sortedElementList_1 = sortedElementList; _i < sortedElementList_1.length; _i++) {
+                    var el = sortedElementList_1[_i];
+                    el._createVisualTree();
+                }
+                this._UIElementVisualToBuildList.splice(0);
+            }
+        };
+        Window.prototype._canvasDisposed = function () {
+            this._canvas.disposeObservable.remove(this._disposeObserver);
+            this._canvas.renderObservable.remove(this._renderObserver);
+        };
+        Window.getScreenCanvas = function (scene) {
+            var canvas = BABYLON.Tools.first(Window._screenCanvasList, function (c) { return c.scene === scene; });
+            if (canvas) {
+                return canvas;
+            }
+            canvas = new BABYLON.ScreenSpaceCanvas2D(scene, { id: "GUI Canvas", cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_DONTCACHE });
+            Window._screenCanvasList.push(canvas);
+            return canvas;
+        };
+        Window.WINDOW_PROPCOUNT = BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 2;
+        Window._screenCanvasList = new Array();
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 0, function (pi) { return Window.leftProperty = pi; })
+        ], Window.prototype, "left", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 1, function (pi) { return Window.bottomProperty = pi; })
+        ], Window.prototype, "bottom", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 2, function (pi) { return Window.positionProperty = pi; })
+        ], Window.prototype, "position", null);
+        Window = __decorate([
+            BABYLON.className("Window", "BABYLON")
+        ], Window);
+        return Window;
+    }(BABYLON.ContentControl));
+    BABYLON.Window = Window;
+    var DefaultWindowRenderingTemplate = (function (_super) {
+        __extends(DefaultWindowRenderingTemplate, _super);
+        function DefaultWindowRenderingTemplate() {
+            _super.apply(this, arguments);
+        }
+        DefaultWindowRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
+            var r = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#808080FF" });
+            return { root: r, contentPlaceholder: r };
+        };
+        DefaultWindowRenderingTemplate = __decorate([
+            BABYLON.registerWindowRenderingTemplate("BABYLON.Window", "Default", function () { return new DefaultWindowRenderingTemplate(); })
+        ], DefaultWindowRenderingTemplate);
+        return DefaultWindowRenderingTemplate;
+    }(BABYLON.UIElementRenderingTemplateBase));
+    BABYLON.DefaultWindowRenderingTemplate = DefaultWindowRenderingTemplate;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    var Label = (function (_super) {
+        __extends(Label, _super);
+        function Label(settings) {
+            if (!settings) {
+                settings = {};
+            }
+            _super.call(this, settings);
+            if (settings.text != null) {
+                this.text = settings.text;
+            }
+        }
+        Object.defineProperty(Label.prototype, "_position", {
+            get: function () {
+                return BABYLON.Vector2.Zero();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Label.prototype._getChildren = function () {
+            return Label._emptyArray;
+        };
+        Label.prototype.createVisualTree = function () {
+            _super.prototype.createVisualTree.call(this);
+            var p = this._visualChildrenPlaceholder;
+        };
+        Object.defineProperty(Label.prototype, "text", {
+            get: function () {
+                return this._text;
+            },
+            set: function (value) {
+                this._text = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Label._emptyArray = new Array();
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.Control.CONTROL_PROPCOUNT + 0, function (pi) { return Label.textProperty = pi; })
+        ], Label.prototype, "text", null);
+        Label = __decorate([
+            BABYLON.className("Label", "BABYLON")
+        ], Label);
+        return Label;
+    }(BABYLON.Control));
+    BABYLON.Label = Label;
+    var DefaultLabelRenderingTemplate = (function (_super) {
+        __extends(DefaultLabelRenderingTemplate, _super);
+        function DefaultLabelRenderingTemplate() {
+            _super.apply(this, arguments);
+        }
+        DefaultLabelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
+            var r = new BABYLON.Text2D("", { parent: visualPlaceholder });
+            r.createSimpleDataBinding(BABYLON.Text2D.textProperty, "text");
+            r.dataSource = owner;
+            return { root: r, contentPlaceholder: r };
+        };
+        DefaultLabelRenderingTemplate = __decorate([
+            BABYLON.registerWindowRenderingTemplate("BABYLON.Label", "Default", function () { return new DefaultLabelRenderingTemplate(); })
+        ], DefaultLabelRenderingTemplate);
+        return DefaultLabelRenderingTemplate;
+    }(BABYLON.UIElementRenderingTemplateBase));
+    BABYLON.DefaultLabelRenderingTemplate = DefaultLabelRenderingTemplate;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    var Button = (function (_super) {
+        __extends(Button, _super);
+        function Button(settings) {
+            if (!settings) {
+                settings = {};
+            }
+            _super.call(this, settings);
+            // For a button the default contentAlignemnt is center/center
+            if (settings.contentAlignment == null) {
+                this.contentAlignment.horizontal = BABYLON.PrimitiveAlignment.AlignCenter;
+                this.contentAlignment.vertical = BABYLON.PrimitiveAlignment.AlignCenter;
+            }
+            this.normalEnabledBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#337AB7FF");
+            this.normalDisabledBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#7BA9D0FF");
+            this.normalMouseOverBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#286090FF");
+            this.normalPushedBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#1E496EFF");
+            this.normalEnabledBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#2E6DA4FF");
+            this.normalDisabledBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#77A0C4FF");
+            this.normalMouseOverBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#204D74FF");
+            this.normalPushedBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#2E5D9EFF");
+            this.defaultEnabledBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+            this.defaultDisabledBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+            this.defaultMouseOverBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#E6E6E6FF");
+            this.defaultPushedBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#D4D4D4FF");
+            this.defaultEnabledBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#CCCCCCFF");
+            this.defaultDisabledBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#DEDEDEFF");
+            this.defaultMouseOverBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#ADADADFF");
+            this.defaultPushedBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#6C8EC5FF");
+        }
+        Object.defineProperty(Button.prototype, "isPushed", {
+            get: function () {
+                return this._isPushed;
+            },
+            set: function (value) {
+                this._isPushed = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Button.prototype, "isDefault", {
+            get: function () {
+                return this._isDefault;
+            },
+            set: function (value) {
+                this._isDefault = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Button.prototype, "isOutline", {
+            get: function () {
+                return this._isOutline;
+            },
+            set: function (value) {
+                this._isOutline = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Button.prototype, "clickObservable", {
+            get: function () {
+                if (!this._clickObservable) {
+                    this._clickObservable = new BABYLON.Observable();
+                }
+                return this._clickObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Button.prototype._raiseClick = function () {
+            console.log("click");
+        };
+        Button.prototype.createVisualTree = function () {
+            var _this = this;
+            _super.prototype.createVisualTree.call(this);
+            var p = this._visualPlaceholder;
+            p.pointerEventObservable.add(function (e, s) {
+                // We reject an event coming from the placeholder because it means it's on an empty spot, so it's not valid.
+                if (e.relatedTarget === _this._visualPlaceholder) {
+                    return;
+                }
+                if (s.mask === BABYLON.PrimitivePointerInfo.PointerUp) {
+                    _this._raiseClick();
+                    _this.isPushed = false;
+                }
+                else if (s.mask === BABYLON.PrimitivePointerInfo.PointerDown) {
+                    _this.isPushed = true;
+                }
+            }, BABYLON.PrimitivePointerInfo.PointerUp | BABYLON.PrimitivePointerInfo.PointerDown);
+        };
+        Object.defineProperty(Button.prototype, "_position", {
+            get: function () {
+                return BABYLON.Vector2.Zero();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Button.BUTTON_PROPCOUNT = BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 3;
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.ContentControl.CONTROL_PROPCOUNT + 0, function (pi) { return Button.isPushedProperty = pi; })
+        ], Button.prototype, "isPushed", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.ContentControl.CONTROL_PROPCOUNT + 1, function (pi) { return Button.isDefaultProperty = pi; })
+        ], Button.prototype, "isDefault", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.ContentControl.CONTROL_PROPCOUNT + 2, function (pi) { return Button.isOutlineProperty = pi; })
+        ], Button.prototype, "isOutline", null);
+        Button = __decorate([
+            BABYLON.className("Button", "BABYLON")
+        ], Button);
+        return Button;
+    }(BABYLON.ContentControl));
+    BABYLON.Button = Button;
+    var DefaultButtonRenderingTemplate = (function (_super) {
+        __extends(DefaultButtonRenderingTemplate, _super);
+        function DefaultButtonRenderingTemplate() {
+            _super.apply(this, arguments);
+        }
+        DefaultButtonRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
+            this._rect = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#FF8080FF", border: "#FF8080FF", roundRadius: 10, borderThickness: 2 });
+            this.stateChange();
+            return { root: this._rect, contentPlaceholder: this._rect };
+        };
+        DefaultButtonRenderingTemplate.prototype.attach = function (owner) {
+            var _this = this;
+            _super.prototype.attach.call(this, owner);
+            this.owner.propertyChanged.add(function (e, s) { return _this.stateChange(); }, BABYLON.UIElement.isEnabledProperty.flagId |
+                BABYLON.UIElement.isFocusedProperty.flagId |
+                BABYLON.UIElement.isMouseOverProperty.flagId |
+                Button.isDefaultProperty.flagId |
+                Button.isOutlineProperty.flagId |
+                Button.isPushedProperty.flagId);
+        };
+        DefaultButtonRenderingTemplate.prototype.stateChange = function () {
+            var b = this.owner;
+            var bg = b.isDefault ? b.defaultEnabledBackground : b.normalEnabledBackground;
+            var bd = b.isDefault ? b.defaultEnabledBorder : b.normalEnabledBorder;
+            if (b.isPushed) {
+                if (b.isDefault) {
+                    bg = b.defaultPushedBackground;
+                    bd = b.defaultPushedBorder;
+                }
+                else {
+                    bg = b.normalPushedBackground;
+                    bd = b.normalPushedBorder;
+                }
+            }
+            else if (b.isMouseOver) {
+                console.log("MouseOver Style");
+                if (b.isDefault) {
+                    bg = b.defaultMouseOverBackground;
+                    bd = b.defaultMouseOverBorder;
+                }
+                else {
+                    bg = b.normalMouseOverBackground;
+                    bd = b.normalMouseOverBorder;
+                }
+            }
+            else if (!b.isEnabled) {
+                if (b.isDefault) {
+                    bg = b.defaultDisabledBackground;
+                    bd = b.defaultDisabledBorder;
+                }
+                else {
+                    bg = b.normalDisabledBackground;
+                    bd = b.normalDisabledBorder;
+                }
+            }
+            this._rect.fill = bg;
+            this._rect.border = bd;
+        };
+        DefaultButtonRenderingTemplate = __decorate([
+            BABYLON.registerWindowRenderingTemplate("BABYLON.Button", "Default", function () { return new DefaultButtonRenderingTemplate(); })
+        ], DefaultButtonRenderingTemplate);
+        return DefaultButtonRenderingTemplate;
+    }(BABYLON.UIElementRenderingTemplateBase));
+    BABYLON.DefaultButtonRenderingTemplate = DefaultButtonRenderingTemplate;
 })(BABYLON || (BABYLON = {}));
 
 BABYLON.Effect.ShadersStore['ellipse2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
