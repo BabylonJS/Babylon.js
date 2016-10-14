@@ -22,6 +22,8 @@
     };
 
     export class GLTFBinaryExtension extends GLTFFileLoaderExtension {
+        private _binary: IGLTFBinaryExtension;
+
         public constructor() {
             super("KHR_binary_glTF");
         }
@@ -31,20 +33,18 @@
                 return false;
             }
 
-            var binary: IGLTFBinaryExtension = this._parseBinary(<ArrayBuffer>data);
-            if (!binary) {
+            this._binary = this._parseBinary(<ArrayBuffer>data);
+            if (!this._binary) {
                 onError();
                 return true;
             }
 
-            var gltfRuntime = GLTFFileLoaderBase.CreateRuntime(binary.content, scene, rootUrl);
+            var gltfRuntime = GLTFFileLoaderBase.CreateRuntime(this._binary.content, scene, rootUrl);
 
             if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
                 Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
                 gltfRuntime.extensionsUsed.push(this.name);
             }
-
-            gltfRuntime.loadedBufferViews[BinaryExtensionBufferName] = binary.body;
 
             onSuccess(gltfRuntime);
             return true;
@@ -59,8 +59,7 @@
                 return false;
             }
 
-            // Buffer is already loaded in loadRuntimeAsync
-            onSuccess(null);
+            onSuccess(this._binary.body);
             return true;
         }
 
