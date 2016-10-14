@@ -10,6 +10,7 @@ var BABYLON;
         * `scene` (Scene) is the scene in which the SPS is added.
         * `updatable` (default true) : if the SPS must be updatable or immutable.
         * `isPickable` (default false) : if the solid particles must be pickable.
+        * `particleIntersection` (default false) : if the solid particle intersections must be computed
         */
         function SolidParticleSystem(name, scene, options) {
             // public members
@@ -87,10 +88,12 @@ var BABYLON;
             this._maximum = BABYLON.Tmp.Vector3[1];
             this._scale = BABYLON.Tmp.Vector3[2];
             this._translation = BABYLON.Tmp.Vector3[3];
+            this._particlesIntersect = false;
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
             this._pickable = options ? options.isPickable : false;
+            this._particlesIntersect = options ? options.particleIntersection : false;
             if (options && options.updatable) {
                 this._updatable = options.updatable;
             }
@@ -340,8 +343,8 @@ var BABYLON;
             return shapeUV;
         };
         // adds a new particle object in the particles array
-        SolidParticleSystem.prototype._addParticle = function (idx, idxpos, model, shapeId, idxInShape) {
-            this.particles.push(new BABYLON.SolidParticle(idx, idxpos, model, shapeId, idxInShape));
+        SolidParticleSystem.prototype._addParticle = function (idx, idxpos, model, shapeId, idxInShape, bbInfo) {
+            this.particles.push(new BABYLON.SolidParticle(idx, idxpos, model, shapeId, idxInShape, bbInfo));
         };
         /**
         * Adds some particles to the SPS from the model shape. Returns the shape id.
@@ -357,6 +360,10 @@ var BABYLON;
             var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
             var meshCol = mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
             var meshNor = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var bbInfo;
+            if (this._particlesIntersect) {
+                bbInfo = mesh.getBoundingInfo();
+            }
             var shape = this._posToShape(meshPos);
             var shapeUV = this._uvsToShapeUV(meshUV);
             var posfunc = options ? options.positionFunction : null;
@@ -367,7 +374,7 @@ var BABYLON;
             for (var i = 0; i < nb; i++) {
                 this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
                 if (this._updatable) {
-                    this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, i);
+                    this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, i, bbInfo);
                 }
                 this._index += shape.length;
                 idx++;
@@ -408,16 +415,16 @@ var BABYLON;
                 this._positions32[particle._pos + pt * 3 + 1] = this._copy.position.y + this._rotated.y;
                 this._positions32[particle._pos + pt * 3 + 2] = this._copy.position.z + this._rotated.z;
             }
-            particle.position.x = 0;
-            particle.position.y = 0;
-            particle.position.z = 0;
-            particle.rotation.x = 0;
-            particle.rotation.y = 0;
-            particle.rotation.z = 0;
+            particle.position.x = 0.0;
+            particle.position.y = 0.0;
+            particle.position.z = 0.0;
+            particle.rotation.x = 0.0;
+            particle.rotation.y = 0.0;
+            particle.rotation.z = 0.0;
             particle.rotationQuaternion = null;
-            particle.scaling.x = 1;
-            particle.scaling.y = 1;
-            particle.scaling.z = 1;
+            particle.scaling.x = 1.0;
+            particle.scaling.y = 1.0;
+            particle.scaling.z = 1.0;
         };
         /**
         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
@@ -597,6 +604,54 @@ var BABYLON;
                             this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                         }
                     }
+                }
+                // if the particle intersections must be computed : update the bbInfo
+                if (this._particlesIntersect) {
+                    var bInfo = this._particle._boundingInfo;
+                    var bBox = bInfo.boundingBox;
+                    var bSphere = bInfo.boundingSphere;
+                    // place, scale and rotate the particle bbox within the SPS local system
+                    for (var b = 0; b < bBox.vectors.length; b++) {
+                        if (this._particle.isVisible) {
+                            this._vertex.x = this._particle._modelBoundingInfo.boundingBox.vectors[b].x * this._particle.scaling.x;
+                            this._vertex.y = this._particle._modelBoundingInfo.boundingBox.vectors[b].y * this._particle.scaling.y;
+                            this._vertex.z = this._particle._modelBoundingInfo.boundingBox.vectors[b].z * this._particle.scaling.z;
+                            this._w = (this._vertex.x * this._rotMatrix.m[3]) + (this._vertex.y * this._rotMatrix.m[7]) + (this._vertex.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
+                            this._rotated.x = ((this._vertex.x * this._rotMatrix.m[0]) + (this._vertex.y * this._rotMatrix.m[4]) + (this._vertex.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
+                            this._rotated.y = ((this._vertex.x * this._rotMatrix.m[1]) + (this._vertex.y * this._rotMatrix.m[5]) + (this._vertex.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
+                            this._rotated.z = ((this._vertex.x * this._rotMatrix.m[2]) + (this._vertex.y * this._rotMatrix.m[6]) + (this._vertex.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
+                            bBox.vectors[b].x = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                            bBox.vectors[b].y = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                            bBox.vectors[b].z = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                        }
+                        else {
+                            bBox.vectors[b].x = this._camera.position.x;
+                            bBox.vectors[b].y = this._camera.position.y;
+                            bBox.vectors[b].z = this._camera.position.z;
+                        }
+                    }
+                    // place and scale the particle bouding sphere in the SPS local system
+                    if (this._particle.isVisible) {
+                        this._minimum.x = this._particle._modelBoundingInfo.minimum.x * this._particle.scaling.x;
+                        this._minimum.y = this._particle._modelBoundingInfo.minimum.y * this._particle.scaling.y;
+                        this._minimum.z = this._particle._modelBoundingInfo.minimum.z * this._particle.scaling.z;
+                        this._maximum.x = this._particle._modelBoundingInfo.maximum.x * this._particle.scaling.x;
+                        this._maximum.y = this._particle._modelBoundingInfo.maximum.y * this._particle.scaling.y;
+                        this._maximum.z = this._particle._modelBoundingInfo.maximum.z * this._particle.scaling.z;
+                        bSphere.center.x = this._particle.position.x + (this._minimum.x + this._maximum.x) * 0.5;
+                        bSphere.center.y = this._particle.position.y + (this._minimum.y + this._maximum.y) * 0.5;
+                        bSphere.center.z = this._particle.position.z + (this._minimum.z + this._maximum.z) * 0.5;
+                        bSphere.radius = BABYLON.Vector3.Distance(this._minimum, this._maximum) * 0.5;
+                    }
+                    else {
+                        bSphere.center.x = this._camera.position.x;
+                        bSphere.center.y = this._camera.position.x;
+                        bSphere.center.z = this._camera.position.x;
+                        bSphere.radius = 0.0;
+                    }
+                    // then update the bbox and the bsphere into the world system
+                    bBox._update(this.mesh.getWorldMatrix());
+                    bSphere._update(this.mesh.getWorldMatrix());
                 }
                 // increment indexes for the next particle
                 index = idx + 3;
