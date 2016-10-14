@@ -987,9 +987,9 @@
     };
 
     /**
-    * Buffers loaded, create nodes
+    * do stuff after buffers, shaders are loaded (e.g. hook up materials, load animations, etc.)
     */
-    var onBuffersLoaded = (gltfRuntime: IGLTFRuntime) => {
+    var postLoad = (gltfRuntime: IGLTFRuntime) => {
         // Nodes
         var currentScene: IGLTFScene = <IGLTFScene>gltfRuntime.currentScene;
 
@@ -1584,7 +1584,7 @@
                 this._loadBuffersAsync(gltfRuntime, () => {
                     this._loadShadersAsync(gltfRuntime, () => {
                         importMaterials(gltfRuntime);
-                        onBuffersLoaded(gltfRuntime);
+                        postLoad(gltfRuntime);
                     });
                 });
 
@@ -1610,7 +1610,7 @@
                 this._loadBuffersAsync(gltfRuntime, () => {
                     this._loadShadersAsync(gltfRuntime, () => {
                         importMaterials(gltfRuntime);
-                        onBuffersLoaded(gltfRuntime);
+                        postLoad(gltfRuntime);
                     });
                 });
 

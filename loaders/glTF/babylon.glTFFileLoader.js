@@ -896,9 +896,9 @@ var BABYLON;
         }
     };
     /**
-    * Buffers loaded, create nodes
+    * do stuff after buffers, shaders are loaded (e.g. hook up materials, load animations, etc.)
     */
-    var onBuffersLoaded = function (gltfRuntime) {
+    var postLoad = function (gltfRuntime) {
         // Nodes
         var currentScene = gltfRuntime.currentScene;
         for (var i = 0; i < currentScene.nodes.length; i++) {
@@ -1381,7 +1381,7 @@ var BABYLON;
                 _this._loadBuffersAsync(gltfRuntime, function () {
                     _this._loadShadersAsync(gltfRuntime, function () {
                         importMaterials(gltfRuntime);
-                        onBuffersLoaded(gltfRuntime);
+                        postLoad(gltfRuntime);
                     });
                 });
                 if (onSuccess) {
@@ -1403,7 +1403,7 @@ var BABYLON;
                 _this._loadBuffersAsync(gltfRuntime, function () {
                     _this._loadShadersAsync(gltfRuntime, function () {
                         importMaterials(gltfRuntime);
-                        onBuffersLoaded(gltfRuntime);
+                        postLoad(gltfRuntime);
                     });
                 });
                 onSuccess();
