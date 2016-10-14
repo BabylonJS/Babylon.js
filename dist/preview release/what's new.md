@@ -17,6 +17,7 @@
 - Several memory allocation reduction ([benaadams](https://github.com/benaadams))
 - Several GPU state change reduction ([benaadams](https://github.com/benaadams)) 
 - MapTexture: add `supersample` mode to double font quality. ([nockawa](https://github.com/nockawa))
+- New SPS feature : solid particle intersection with other solid particle or with any mesh `particle.intersectsMesh()` ([jerome](https://github.com/jbousquie))
 - New `invertUV` parameter an all ribbon based shapes : ribbon, tube, lathe, basic and custom extrusion ([jerome](https://github.com/jbousquie))
 - Text2D: new `fontSuperSample` setting to use high quality font ([nockawa](https://github.com/nockawa))
 - PerfCounter class added to monitor time/counter and expose min/max/average/lastSecondAverage/current metrics. Updated engine/scene current counter to use this class, exposing new properties as well to access the PerfCounter object ([nockawa](https://github.com/nockawa))
