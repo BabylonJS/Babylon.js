@@ -1297,7 +1297,7 @@
             var source: IGLTFImage = gltfRuntime.images[texture.source];
 
             if (GLTFUtils.IsBase64(source.uri)) {
-                setTimeout(onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(source.uri))));
+                setTimeout(() => onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(source.uri))));
             }
             else {
                 Tools.LoadFile(gltfRuntime.rootUrl + source.uri, data => onSuccess(new Uint8Array(data)), null, null, true, onError);

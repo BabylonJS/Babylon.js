@@ -1151,7 +1151,7 @@ var BABYLON;
             }
             var source = gltfRuntime.images[texture.source];
             if (BABYLON.GLTFUtils.IsBase64(source.uri)) {
-                setTimeout(onSuccess(new Uint8Array(BABYLON.GLTFUtils.DecodeBase64(source.uri))));
+                setTimeout(function () { return onSuccess(new Uint8Array(BABYLON.GLTFUtils.DecodeBase64(source.uri))); });
             }
             else {
                 BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + source.uri, function (data) { return onSuccess(new Uint8Array(data)); }, null, null, true, onError);
