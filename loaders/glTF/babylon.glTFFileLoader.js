@@ -1370,10 +1370,10 @@ var BABYLON;
                         skeletons.push(skin.babylonSkeleton);
                     }
                 }
-                // Load shaders and then buffers
-                _this._loadShadersAsync(gltfRuntime, function () {
-                    importMaterials(gltfRuntime);
-                    _this._loadBuffersAsync(gltfRuntime, function () {
+                // Load buffers, shaders, materials, etc.
+                _this._loadBuffersAsync(gltfRuntime, function () {
+                    _this._loadShadersAsync(gltfRuntime, function () {
+                        importMaterials(gltfRuntime);
                         onBuffersLoaded(gltfRuntime);
                     });
                 });
@@ -1392,10 +1392,10 @@ var BABYLON;
             BABYLON.GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
                 // Create nodes
                 _this._createNodes(gltfRuntime);
-                // Load shaders and then buffers
-                _this._loadShadersAsync(gltfRuntime, function () {
-                    importMaterials(gltfRuntime);
-                    _this._loadBuffersAsync(gltfRuntime, function () {
+                // Load buffers, shaders, materials, etc.
+                _this._loadBuffersAsync(gltfRuntime, function () {
+                    _this._loadShadersAsync(gltfRuntime, function () {
+                        importMaterials(gltfRuntime);
                         onBuffersLoaded(gltfRuntime);
                     });
                 });
