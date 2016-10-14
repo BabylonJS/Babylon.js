@@ -1838,17 +1838,16 @@ var BABYLON;
             if (!(data instanceof ArrayBuffer)) {
                 return false;
             }
-            var binary = this._parseBinary(data);
-            if (!binary) {
+            this._binary = this._parseBinary(data);
+            if (!this._binary) {
                 onError();
                 return true;
             }
-            var gltfRuntime = BABYLON.GLTFFileLoaderBase.CreateRuntime(binary.content, scene, rootUrl);
+            var gltfRuntime = BABYLON.GLTFFileLoaderBase.CreateRuntime(this._binary.content, scene, rootUrl);
             if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
                 BABYLON.Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
                 gltfRuntime.extensionsUsed.push(this.name);
             }
-            gltfRuntime.loadedBufferViews[BinaryExtensionBufferName] = binary.body;
             onSuccess(gltfRuntime);
             return true;
         };
@@ -1859,8 +1858,7 @@ var BABYLON;
             if (id !== BinaryExtensionBufferName) {
                 return false;
             }
-            // Buffer is already loaded in loadRuntimeAsync
-            onSuccess(null);
+            onSuccess(this._binary.body);
             return true;
         };
         GLTFBinaryExtension.prototype.loadTextureBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
