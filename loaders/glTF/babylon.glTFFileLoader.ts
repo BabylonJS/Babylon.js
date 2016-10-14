@@ -1349,6 +1349,13 @@
         public static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): void {
             var material: IGLTFMaterial = gltfRuntime.materials[id];
             var technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
+            if (!technique) {
+                var defaultMaterial = new StandardMaterial(id, gltfRuntime.scene);
+                defaultMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
+                defaultMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
+                onSuccess(defaultMaterial);
+                return;
+            }
 
             var program: IGLTFProgram = gltfRuntime.programs[technique.program];
             var states: IGLTFTechniqueStates = technique.states;
