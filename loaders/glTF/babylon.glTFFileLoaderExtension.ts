@@ -66,7 +66,9 @@
             GLTFFileLoaderExtension.ApplyExtensions<IGLTFRuntime>(loaderExtension => {
                 return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
             }, () => {
-                onSuccess(GLTFFileLoaderBase.CreateRuntime(JSON.parse(<string>data), scene, rootUrl));
+                setTimeout(() => {
+                    onSuccess(GLTFFileLoaderBase.CreateRuntime(JSON.parse(<string>data), scene, rootUrl));
+                });
             });
         }
 
