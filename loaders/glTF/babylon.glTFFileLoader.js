@@ -1192,6 +1192,13 @@ var BABYLON;
         GLTFFileLoaderBase.LoadMaterialAsync = function (gltfRuntime, id, onSuccess, onError) {
             var material = gltfRuntime.materials[id];
             var technique = gltfRuntime.techniques[material.technique];
+            if (!technique) {
+                var defaultMaterial = new BABYLON.StandardMaterial(id, gltfRuntime.scene);
+                defaultMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+                defaultMaterial.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
+                onSuccess(defaultMaterial);
+                return;
+            }
             var program = gltfRuntime.programs[technique.program];
             var states = technique.states;
             var vertexShader = BABYLON.Effect.ShadersStore[program.vertexShader + "VertexShader"];
