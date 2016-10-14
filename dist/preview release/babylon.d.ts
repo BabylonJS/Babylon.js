@@ -2529,6 +2529,247 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Collider {
+        radius: Vector3;
+        retry: number;
+        velocity: Vector3;
+        basePoint: Vector3;
+        epsilon: number;
+        collisionFound: boolean;
+        velocityWorldLength: number;
+        basePointWorld: Vector3;
+        velocityWorld: Vector3;
+        normalizedVelocity: Vector3;
+        initialVelocity: Vector3;
+        initialPosition: Vector3;
+        nearestDistance: number;
+        intersectionPoint: Vector3;
+        collidedMesh: AbstractMesh;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): any;
+        onMeshUpdated(mesh: AbstractMesh): any;
+        onMeshRemoved(mesh: AbstractMesh): any;
+        onGeometryAdded(geometry: Geometry): any;
+        onGeometryUpdated(geometry: Geometry): any;
+        onGeometryDeleted(geometry: Geometry): any;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: string;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Int32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId?: number;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _runningCollisionTask;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: number;
+        bv: number;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: number, bv: number, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Vector3;
+        pickedMesh: AbstractMesh;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Sprite;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
+        getTextureCoordinates(): Vector2;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -2964,247 +3205,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Collider {
-        radius: Vector3;
-        retry: number;
-        velocity: Vector3;
-        basePoint: Vector3;
-        epsilon: number;
-        collisionFound: boolean;
-        velocityWorldLength: number;
-        basePointWorld: Vector3;
-        velocityWorld: Vector3;
-        normalizedVelocity: Vector3;
-        initialVelocity: Vector3;
-        initialPosition: Vector3;
-        nearestDistance: number;
-        intersectionPoint: Vector3;
-        collidedMesh: AbstractMesh;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): any;
-        onMeshUpdated(mesh: AbstractMesh): any;
-        onMeshRemoved(mesh: AbstractMesh): any;
-        onGeometryAdded(geometry: Geometry): any;
-        onGeometryUpdated(geometry: Geometry): any;
-        onGeometryDeleted(geometry: Geometry): any;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: string;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    interface SerializedGeometry {
-        id: string;
-        positions: Float32Array;
-        indices: Int32Array;
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId?: number;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _runningCollisionTask;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (mesh: AbstractMesh) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: number;
-        bv: number;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: number, bv: number, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Vector3;
-        pickedMesh: AbstractMesh;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Sprite;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
-        getTextureCoordinates(): Vector2;
-    }
-}
-
-declare module BABYLON {
     class DebugLayer {
         private _scene;
         private _camera;
@@ -3286,112 +3286,6 @@ declare module BABYLON.Debug {
         update(): void;
         private _updateBoneMatrix(bone);
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        extendSize: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
-        intersectsPlane(plane: Plane): number;
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
     }
 }
 
@@ -3627,6 +3521,209 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        extendSize: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
+        intersectsPlane(plane: Plane): number;
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Texture;
+        alphaMode: number;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPlugin {
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+    }
+    interface ISceneLoaderPluginAsync {
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static NO_LOGGING: number;
+        static MINIMAL_LOGGING: number;
+        static SUMMARY_LOGGING: number;
+        static DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+    }
+}
+
+declare module BABYLON {
     class DirectionalLight extends Light implements IShadowLight {
         position: Vector3;
         direction: Vector3;
@@ -3784,99 +3881,665 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        alphaMode: number;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
+    class SIMDHelper {
+        private static _isEnabled;
+        static IsEnabled: boolean;
+        static DisableSIMD(): void;
+        static EnableSIMD(): void;
     }
 }
 
 declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
+    const ToGammaSpace: number;
+    const ToLinearSpace: number;
+    const Epsilon: number;
+    class MathTools {
+        static WithinEpsilon(a: number, b: number, epsilon?: number): boolean;
+        static ToHex(i: number): string;
+        static Sign(value: number): number;
+        static Clamp(value: number, min?: number, max?: number): number;
     }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
+    class Color3 {
+        r: number;
+        g: number;
+        b: number;
+        constructor(r?: number, g?: number, b?: number);
+        toString(): string;
+        getClassName(): string;
+        getHashCode(): number;
+        toArray(array: number[], index?: number): Color3;
+        toColor4(alpha?: number): Color4;
+        asArray(): number[];
+        toLuminance(): number;
+        multiply(otherColor: Color3): Color3;
+        multiplyToRef(otherColor: Color3, result: Color3): Color3;
+        equals(otherColor: Color3): boolean;
+        equalsFloats(r: number, g: number, b: number): boolean;
+        scale(scale: number): Color3;
+        scaleToRef(scale: number, result: Color3): Color3;
+        add(otherColor: Color3): Color3;
+        addToRef(otherColor: Color3, result: Color3): Color3;
+        subtract(otherColor: Color3): Color3;
+        subtractToRef(otherColor: Color3, result: Color3): Color3;
+        clone(): Color3;
+        copyFrom(source: Color3): Color3;
+        copyFromFloats(r: number, g: number, b: number): Color3;
+        toHexString(): string;
+        toLinearSpace(): Color3;
+        toLinearSpaceToRef(convertedColor: Color3): Color3;
+        toGammaSpace(): Color3;
+        toGammaSpaceToRef(convertedColor: Color3): Color3;
+        static FromHexString(hex: string): Color3;
+        static FromArray(array: number[], offset?: number): Color3;
+        static FromInts(r: number, g: number, b: number): Color3;
+        static Lerp(start: Color3, end: Color3, amount: number): Color3;
+        static Red(): Color3;
+        static Green(): Color3;
+        static Blue(): Color3;
+        static Black(): Color3;
+        static White(): Color3;
+        static Purple(): Color3;
+        static Magenta(): Color3;
+        static Yellow(): Color3;
+        static Gray(): Color3;
     }
-    interface ISceneLoaderPlugin {
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-    }
-    interface ISceneLoaderPluginAsync {
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static NO_LOGGING: number;
-        static MINIMAL_LOGGING: number;
-        static SUMMARY_LOGGING: number;
-        static DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
+    class Color4 {
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+        constructor(r: number, g: number, b: number, a: number);
+        addInPlace(right: any): Color4;
+        asArray(): number[];
+        toArray(array: number[], index?: number): Color4;
+        add(right: Color4): Color4;
+        subtract(right: Color4): Color4;
+        subtractToRef(right: Color4, result: Color4): Color4;
+        scale(scale: number): Color4;
+        scaleToRef(scale: number, result: Color4): Color4;
         /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+          * Multipy an RGBA Color4 value by another and return a new Color4 object
+          * @param color The Color4 (RGBA) value to multiply by
+          * @returns A new Color4.
+          */
+        multiply(color: Color4): Color4;
         /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
+         * Multipy an RGBA Color4 value by another and push the result in a reference value
+         * @param color The Color4 (RGBA) value to multiply by
+         * @param result The Color4 (RGBA) to fill the result in
+         * @returns the result Color4.
+         */
+        multiplyToRef(color: Color4, result: Color4): Color4;
+        toString(): string;
+        getClassName(): string;
+        getHashCode(): number;
+        clone(): Color4;
+        copyFrom(source: Color4): Color4;
+        toHexString(): string;
+        static FromHexString(hex: string): Color4;
+        static Lerp(left: Color4, right: Color4, amount: number): Color4;
+        static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
+        static FromArray(array: number[], offset?: number): Color4;
+        static FromInts(r: number, g: number, b: number, a: number): Color4;
+        static CheckColors4(colors: number[], count: number): number[];
+    }
+    class Vector2 {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+        toString(): string;
+        getClassName(): string;
+        getHashCode(): number;
+        toArray(array: number[] | Float32Array, index?: number): Vector2;
+        asArray(): number[];
+        copyFrom(source: Vector2): Vector2;
+        copyFromFloats(x: number, y: number): Vector2;
+        add(otherVector: Vector2): Vector2;
+        addToRef(otherVector: Vector2, result: Vector2): Vector2;
+        addInPlace(otherVector: Vector2): Vector2;
+        addVector3(otherVector: Vector3): Vector2;
+        subtract(otherVector: Vector2): Vector2;
+        subtractToRef(otherVector: Vector2, result: Vector2): Vector2;
+        subtractInPlace(otherVector: Vector2): Vector2;
+        multiplyInPlace(otherVector: Vector2): Vector2;
+        multiply(otherVector: Vector2): Vector2;
+        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
+        multiplyByFloats(x: number, y: number): Vector2;
+        divide(otherVector: Vector2): Vector2;
+        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
+        negate(): Vector2;
+        scaleInPlace(scale: number): Vector2;
+        scale(scale: number): Vector2;
+        equals(otherVector: Vector2): boolean;
+        equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
+        length(): number;
+        lengthSquared(): number;
+        normalize(): Vector2;
+        clone(): Vector2;
+        static Zero(): Vector2;
+        static FromArray(array: number[] | Float32Array, offset?: number): Vector2;
+        static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector2): void;
+        static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
+        static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
+        static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2;
+        static Lerp(start: Vector2, end: Vector2, amount: number): Vector2;
+        static Dot(left: Vector2, right: Vector2): number;
+        static Normalize(vector: Vector2): Vector2;
+        static Minimize(left: Vector2, right: Vector2): Vector2;
+        static Maximize(left: Vector2, right: Vector2): Vector2;
+        static Transform(vector: Vector2, transformation: Matrix): Vector2;
+        static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2): void;
+        static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2): boolean;
+        static Distance(value1: Vector2, value2: Vector2): number;
+        static DistanceSquared(value1: Vector2, value2: Vector2): number;
+        static Center(value1: Vector2, value2: Vector2): Vector2;
+        static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number;
+    }
+    class Vector3 {
+        x: number;
+        y: number;
+        z: number;
+        constructor(x: number, y: number, z: number);
+        toString(): string;
+        getClassName(): string;
+        getHashCode(): number;
+        asArray(): number[];
+        toArray(array: number[] | Float32Array, index?: number): Vector3;
+        toQuaternion(): Quaternion;
+        addInPlace(otherVector: Vector3): Vector3;
+        add(otherVector: Vector3): Vector3;
+        addToRef(otherVector: Vector3, result: Vector3): Vector3;
+        subtractInPlace(otherVector: Vector3): Vector3;
+        subtract(otherVector: Vector3): Vector3;
+        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
+        subtractFromFloats(x: number, y: number, z: number): Vector3;
+        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
+        negate(): Vector3;
+        scaleInPlace(scale: number): Vector3;
+        scale(scale: number): Vector3;
+        scaleToRef(scale: number, result: Vector3): void;
+        equals(otherVector: Vector3): boolean;
+        equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
+        equalsToFloats(x: number, y: number, z: number): boolean;
+        multiplyInPlace(otherVector: Vector3): Vector3;
+        multiply(otherVector: Vector3): Vector3;
+        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
+        multiplyByFloats(x: number, y: number, z: number): Vector3;
+        divide(otherVector: Vector3): Vector3;
+        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
+        MinimizeInPlace(other: Vector3): Vector3;
+        MaximizeInPlace(other: Vector3): Vector3;
+        length(): number;
+        lengthSquared(): number;
+        normalize(): Vector3;
+        clone(): Vector3;
+        copyFrom(source: Vector3): Vector3;
+        copyFromFloats(x: number, y: number, z: number): Vector3;
+        static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: any): number;
+        static FromArray(array: number[] | Float32Array, offset?: number): Vector3;
+        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
+        static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector3): void;
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
+        static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
+        static Zero(): Vector3;
+        static Up(): Vector3;
+        static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
+        static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
+        static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3;
+        static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3;
+        static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3;
+        static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
+        static Dot(left: Vector3, right: Vector3): number;
+        static Cross(left: Vector3, right: Vector3): Vector3;
+        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
+        static Normalize(vector: Vector3): Vector3;
+        static NormalizeToRef(vector: Vector3, result: Vector3): void;
+        private static _viewportMatrixCache;
+        private static _matrixCache;
+        static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
+        static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
+        static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
+        static Minimize(left: Vector3, right: Vector3): Vector3;
+        static Maximize(left: Vector3, right: Vector3): Vector3;
+        static Distance(value1: Vector3, value2: Vector3): number;
+        static DistanceSquared(value1: Vector3, value2: Vector3): number;
+        static Center(value1: Vector3, value2: Vector3): Vector3;
+        /**
+         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
+         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
+         * to something in order to rotate it from its local system to the given target system.
+         */
+        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
+        /**
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
+         */
+        static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void;
+    }
+    class Vector4 {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        constructor(x: number, y: number, z: number, w: number);
+        toString(): string;
+        getClassName(): string;
+        getHashCode(): number;
+        asArray(): number[];
+        toArray(array: number[], index?: number): Vector4;
+        addInPlace(otherVector: Vector4): Vector4;
+        add(otherVector: Vector4): Vector4;
+        addToRef(otherVector: Vector4, result: Vector4): Vector4;
+        subtractInPlace(otherVector: Vector4): Vector4;
+        subtract(otherVector: Vector4): Vector4;
+        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
+        subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
+        negate(): Vector4;
+        scaleInPlace(scale: number): Vector4;
+        scale(scale: number): Vector4;
+        scaleToRef(scale: number, result: Vector4): void;
+        equals(otherVector: Vector4): boolean;
+        equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
+        equalsToFloats(x: number, y: number, z: number, w: number): boolean;
+        multiplyInPlace(otherVector: Vector4): Vector4;
+        multiply(otherVector: Vector4): Vector4;
+        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
+        multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
+        divide(otherVector: Vector4): Vector4;
+        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
+        MinimizeInPlace(other: Vector4): Vector4;
+        MaximizeInPlace(other: Vector4): Vector4;
+        length(): number;
+        lengthSquared(): number;
+        normalize(): Vector4;
+        toVector3(): Vector3;
+        clone(): Vector4;
+        copyFrom(source: Vector4): Vector4;
+        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        static FromArray(array: number[], offset?: number): Vector4;
+        static FromArrayToRef(array: number[], offset: number, result: Vector4): void;
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
+        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
+        static Zero(): Vector4;
+        static Normalize(vector: Vector4): Vector4;
+        static NormalizeToRef(vector: Vector4, result: Vector4): void;
+        static Minimize(left: Vector4, right: Vector4): Vector4;
+        static Maximize(left: Vector4, right: Vector4): Vector4;
+        static Distance(value1: Vector4, value2: Vector4): number;
+        static DistanceSquared(value1: Vector4, value2: Vector4): number;
+        static Center(value1: Vector4, value2: Vector4): Vector4;
+    }
+    interface ISize {
+        width: number;
+        height: number;
+    }
+    class Size implements ISize {
+        width: number;
+        height: number;
+        constructor(width: number, height: number);
+        toString(): string;
+        getClassName(): string;
+        getHashCode(): number;
+        copyFrom(src: Size): void;
+        copyFromFloats(width: number, height: number): void;
+        multiplyByFloats(w: number, h: number): Size;
+        clone(): Size;
+        equals(other: Size): boolean;
+        surface: number;
+        static Zero(): Size;
+        add(otherSize: Size): Size;
+        substract(otherSize: Size): Size;
+        static Lerp(start: Size, end: Size, amount: number): Size;
+    }
+    class Quaternion {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        constructor(x?: number, y?: number, z?: number, w?: number);
+        toString(): string;
+        getClassName(): string;
+        getHashCode(): number;
+        asArray(): number[];
+        equals(otherQuaternion: Quaternion): boolean;
+        clone(): Quaternion;
+        copyFrom(other: Quaternion): Quaternion;
+        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
+        add(other: Quaternion): Quaternion;
+        subtract(other: Quaternion): Quaternion;
+        scale(value: number): Quaternion;
+        multiply(q1: Quaternion): Quaternion;
+        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
+        multiplyInPlace(q1: Quaternion): Quaternion;
+        conjugateToRef(ref: Quaternion): Quaternion;
+        conjugateInPlace(): Quaternion;
+        conjugate(): Quaternion;
+        length(): number;
+        normalize(): Quaternion;
+        toEulerAngles(order?: string): Vector3;
+        toEulerAnglesToRef(result: Vector3, order?: string): Quaternion;
+        toRotationMatrix(result: Matrix): Quaternion;
+        fromRotationMatrix(matrix: Matrix): Quaternion;
+        static FromRotationMatrix(matrix: Matrix): Quaternion;
+        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
+        static Inverse(q: Quaternion): Quaternion;
+        static Identity(): Quaternion;
+        static RotationAxis(axis: Vector3, angle: number): Quaternion;
+        static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion;
+        static FromArray(array: number[], offset?: number): Quaternion;
+        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
+        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
+        static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
+        static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
+        static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
+    }
+    class Matrix {
+        private static _tempQuaternion;
+        private static _xAxis;
+        private static _yAxis;
+        private static _zAxis;
+        m: Float32Array;
+        isIdentity(): boolean;
+        determinant(): number;
+        toArray(): Float32Array;
+        asArray(): Float32Array;
+        invert(): Matrix;
+        reset(): Matrix;
+        add(other: Matrix): Matrix;
+        addToRef(other: Matrix, result: Matrix): Matrix;
+        addToSelf(other: Matrix): Matrix;
+        invertToRef(other: Matrix): Matrix;
+        setTranslation(vector3: Vector3): Matrix;
+        getTranslation(): Vector3;
+        multiply(other: Matrix): Matrix;
+        copyFrom(other: Matrix): Matrix;
+        copyToArray(array: Float32Array, offset?: number): Matrix;
+        multiplyToRef(other: Matrix, result: Matrix): Matrix;
+        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
+        equals(value: Matrix): boolean;
+        clone(): Matrix;
+        getClassName(): string;
+        getHashCode(): number;
+        decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
+        static FromArray(array: number[], offset?: number): Matrix;
+        static FromArrayToRef(array: number[], offset: number, result: Matrix): void;
+        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
+        static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
+        getRow(index: number): Vector4;
+        setRow(index: number, row: Vector4): Matrix;
+        static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
+        static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
+        static Identity(): Matrix;
+        static IdentityToRef(result: Matrix): void;
+        static Zero(): Matrix;
+        static RotationX(angle: number): Matrix;
+        static Invert(source: Matrix): Matrix;
+        static RotationXToRef(angle: number, result: Matrix): void;
+        static RotationY(angle: number): Matrix;
+        static RotationYToRef(angle: number, result: Matrix): void;
+        static RotationZ(angle: number): Matrix;
+        static RotationZToRef(angle: number, result: Matrix): void;
+        static RotationAxis(axis: Vector3, angle: number): Matrix;
+        static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void;
+        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
+        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
+        static Scaling(x: number, y: number, z: number): Matrix;
+        static ScalingToRef(x: number, y: number, z: number, result: Matrix): void;
+        static Translation(x: number, y: number, z: number): Matrix;
+        static TranslationToRef(x: number, y: number, z: number, result: Matrix): void;
+        static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
+        static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
+        static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
+        static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
+        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
+        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        static OrthoOffCenterLHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        static OrthoOffCenterRHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        static PerspectiveFovWebVRToRef(fov: any, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
+        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
+        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
+        static Transpose(matrix: Matrix): Matrix;
+        static Reflection(plane: Plane): Matrix;
+        static ReflectionToRef(plane: Plane, result: Matrix): void;
+    }
+    class Plane {
+        normal: Vector3;
+        d: number;
+        constructor(a: number, b: number, c: number, d: number);
+        asArray(): number[];
+        clone(): Plane;
+        getClassName(): string;
+        getHashCode(): number;
+        normalize(): Plane;
+        transform(transformation: Matrix): Plane;
+        dotCoordinate(point: any): number;
+        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
+        isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
+        signedDistanceTo(point: Vector3): number;
+        static FromArray(array: number[]): Plane;
+        static FromPoints(point1: any, point2: any, point3: any): Plane;
+        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
+    }
+    class Viewport {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        constructor(x: number, y: number, width: number, height: number);
+        toGlobal(renderWidth: number, renderHeight: number): Viewport;
+    }
+    class Frustum {
+        static GetPlanes(transform: Matrix): Plane[];
+        static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
+    }
+    enum Space {
+        LOCAL = 0,
+        WORLD = 1,
+    }
+    class Axis {
+        static X: Vector3;
+        static Y: Vector3;
+        static Z: Vector3;
+    }
+    class BezierCurve {
+        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
+    }
+    enum Orientation {
+        CW = 0,
+        CCW = 1,
+    }
+    class Angle {
+        private _radians;
+        constructor(radians: number);
+        degrees: () => number;
+        radians: () => number;
+        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
+        static FromRadians(radians: number): Angle;
+        static FromDegrees(degrees: number): Angle;
+    }
+    class Arc2 {
+        startPoint: Vector2;
+        midPoint: Vector2;
+        endPoint: Vector2;
+        centerPoint: Vector2;
+        radius: number;
+        angle: Angle;
+        startAngle: Angle;
+        orientation: Orientation;
+        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
+    }
+    class Path2 {
+        private _points;
+        private _length;
+        closed: boolean;
+        constructor(x: number, y: number);
+        addLineTo(x: number, y: number): Path2;
+        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
+        close(): Path2;
+        length(): number;
+        getPoints(): Vector2[];
+        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
+        static StartingAt(x: number, y: number): Path2;
+    }
+    class Path3D {
+        path: Vector3[];
+        private _curve;
+        private _distances;
+        private _tangents;
+        private _normals;
+        private _binormals;
+        private _raw;
+        /**
+        * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
+        * path : an array of Vector3, the curve axis of the Path3D
+        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
         */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        constructor(path: Vector3[], firstNormal?: Vector3, raw?: boolean);
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         */
+        getCurve(): Vector3[];
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         */
+        getTangents(): Vector3[];
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         */
+        getNormals(): Vector3[];
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         */
+        getBinormals(): Vector3[];
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
+        getDistances(): number[];
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * Returns the same object updated.
+         */
+        update(path: Vector3[], firstNormal?: Vector3): Path3D;
+        private _compute(firstNormal);
+        private _getFirstNonNullVector(index);
+        private _getLastNonNullVector(index);
+        private _normalVector(v0, vt, va);
+    }
+    class Curve3 {
+        private _points;
+        private _length;
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
+        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
+        constructor(points: Vector3[]);
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
+        getPoints(): Vector3[];
+        /**
+         * Returns the computed length (float) of the curve.
+         */
+        length(): number;
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         */
+        continue(curve: Curve3): Curve3;
+        private _computeLength(path);
+    }
+    class SphericalHarmonics {
+        L00: Vector3;
+        L1_1: Vector3;
+        L10: Vector3;
+        L11: Vector3;
+        L2_2: Vector3;
+        L2_1: Vector3;
+        L20: Vector3;
+        L21: Vector3;
+        L22: Vector3;
+        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
+        scale(scale: number): void;
+    }
+    class SphericalPolynomial {
+        x: Vector3;
+        y: Vector3;
+        z: Vector3;
+        xx: Vector3;
+        yy: Vector3;
+        zz: Vector3;
+        xy: Vector3;
+        yz: Vector3;
+        zx: Vector3;
+        addAmbient(color: Color3): void;
+        static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
+    }
+    class PositionNormalVertex {
+        position: Vector3;
+        normal: Vector3;
+        constructor(position?: Vector3, normal?: Vector3);
+        clone(): PositionNormalVertex;
+    }
+    class PositionNormalTextureVertex {
+        position: Vector3;
+        normal: Vector3;
+        uv: Vector2;
+        constructor(position?: Vector3, normal?: Vector3, uv?: Vector2);
+        clone(): PositionNormalTextureVertex;
+    }
+    class Tmp {
+        static Color3: Color3[];
+        static Vector2: Vector2[];
+        static Vector3: Vector3[];
+        static Vector4: Vector4[];
+        static Quaternion: Quaternion[];
+        static Matrix: Matrix[];
     }
 }
 
@@ -4641,6 +5304,7 @@ declare module BABYLON {
         private _matrices;
         private _matrices3x3;
         private _matrices2x2;
+        private _vectors3Arrays;
         private _cachedWorldViewMatrix;
         private _renderId;
         constructor(name: string, scene: Scene, shaderPath: any, options: any);
@@ -4659,6 +5323,7 @@ declare module BABYLON {
         setMatrix(name: string, value: Matrix): ShaderMaterial;
         setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
         setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
+        setVector3Array(name: string, value: number[]): ShaderMaterial;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
         bindOnlyWorldMatrix(world: Matrix): void;
         bind(world: Matrix, mesh?: Mesh): void;
@@ -4760,1451 +5425,6 @@ declare module BABYLON {
         static LightmapTextureEnabled: boolean;
         static RefractionTextureEnabled: boolean;
         static ColorGradingTextureEnabled: boolean;
-    }
-}
-
-declare module BABYLON {
-    class SIMDHelper {
-        private static _isEnabled;
-        static IsEnabled: boolean;
-        static DisableSIMD(): void;
-        static EnableSIMD(): void;
-    }
-}
-
-declare module BABYLON {
-    const ToGammaSpace: number;
-    const ToLinearSpace: number;
-    const Epsilon: number;
-    class MathTools {
-        static WithinEpsilon(a: number, b: number, epsilon?: number): boolean;
-        static ToHex(i: number): string;
-        static Sign(value: number): number;
-        static Clamp(value: number, min?: number, max?: number): number;
-    }
-    class Color3 {
-        r: number;
-        g: number;
-        b: number;
-        constructor(r?: number, g?: number, b?: number);
-        toString(): string;
-        getClassName(): string;
-        getHashCode(): number;
-        toArray(array: number[], index?: number): Color3;
-        toColor4(alpha?: number): Color4;
-        asArray(): number[];
-        toLuminance(): number;
-        multiply(otherColor: Color3): Color3;
-        multiplyToRef(otherColor: Color3, result: Color3): Color3;
-        equals(otherColor: Color3): boolean;
-        equalsFloats(r: number, g: number, b: number): boolean;
-        scale(scale: number): Color3;
-        scaleToRef(scale: number, result: Color3): Color3;
-        add(otherColor: Color3): Color3;
-        addToRef(otherColor: Color3, result: Color3): Color3;
-        subtract(otherColor: Color3): Color3;
-        subtractToRef(otherColor: Color3, result: Color3): Color3;
-        clone(): Color3;
-        copyFrom(source: Color3): Color3;
-        copyFromFloats(r: number, g: number, b: number): Color3;
-        toHexString(): string;
-        toLinearSpace(): Color3;
-        toLinearSpaceToRef(convertedColor: Color3): Color3;
-        toGammaSpace(): Color3;
-        toGammaSpaceToRef(convertedColor: Color3): Color3;
-        static FromHexString(hex: string): Color3;
-        static FromArray(array: number[], offset?: number): Color3;
-        static FromInts(r: number, g: number, b: number): Color3;
-        static Lerp(start: Color3, end: Color3, amount: number): Color3;
-        static Red(): Color3;
-        static Green(): Color3;
-        static Blue(): Color3;
-        static Black(): Color3;
-        static White(): Color3;
-        static Purple(): Color3;
-        static Magenta(): Color3;
-        static Yellow(): Color3;
-        static Gray(): Color3;
-    }
-    class Color4 {
-        r: number;
-        g: number;
-        b: number;
-        a: number;
-        constructor(r: number, g: number, b: number, a: number);
-        addInPlace(right: any): Color4;
-        asArray(): number[];
-        toArray(array: number[], index?: number): Color4;
-        add(right: Color4): Color4;
-        subtract(right: Color4): Color4;
-        subtractToRef(right: Color4, result: Color4): Color4;
-        scale(scale: number): Color4;
-        scaleToRef(scale: number, result: Color4): Color4;
-        /**
-          * Multipy an RGBA Color4 value by another and return a new Color4 object
-          * @param color The Color4 (RGBA) value to multiply by
-          * @returns A new Color4.
-          */
-        multiply(color: Color4): Color4;
-        /**
-         * Multipy an RGBA Color4 value by another and push the result in a reference value
-         * @param color The Color4 (RGBA) value to multiply by
-         * @param result The Color4 (RGBA) to fill the result in
-         * @returns the result Color4.
-         */
-        multiplyToRef(color: Color4, result: Color4): Color4;
-        toString(): string;
-        getClassName(): string;
-        getHashCode(): number;
-        clone(): Color4;
-        copyFrom(source: Color4): Color4;
-        toHexString(): string;
-        static FromHexString(hex: string): Color4;
-        static Lerp(left: Color4, right: Color4, amount: number): Color4;
-        static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
-        static FromArray(array: number[], offset?: number): Color4;
-        static FromInts(r: number, g: number, b: number, a: number): Color4;
-        static CheckColors4(colors: number[], count: number): number[];
-    }
-    class Vector2 {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
-        toString(): string;
-        getClassName(): string;
-        getHashCode(): number;
-        toArray(array: number[] | Float32Array, index?: number): Vector2;
-        asArray(): number[];
-        copyFrom(source: Vector2): Vector2;
-        copyFromFloats(x: number, y: number): Vector2;
-        add(otherVector: Vector2): Vector2;
-        addToRef(otherVector: Vector2, result: Vector2): Vector2;
-        addInPlace(otherVector: Vector2): Vector2;
-        addVector3(otherVector: Vector3): Vector2;
-        subtract(otherVector: Vector2): Vector2;
-        subtractToRef(otherVector: Vector2, result: Vector2): Vector2;
-        subtractInPlace(otherVector: Vector2): Vector2;
-        multiplyInPlace(otherVector: Vector2): Vector2;
-        multiply(otherVector: Vector2): Vector2;
-        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
-        multiplyByFloats(x: number, y: number): Vector2;
-        divide(otherVector: Vector2): Vector2;
-        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
-        negate(): Vector2;
-        scaleInPlace(scale: number): Vector2;
-        scale(scale: number): Vector2;
-        equals(otherVector: Vector2): boolean;
-        equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
-        length(): number;
-        lengthSquared(): number;
-        normalize(): Vector2;
-        clone(): Vector2;
-        static Zero(): Vector2;
-        static FromArray(array: number[] | Float32Array, offset?: number): Vector2;
-        static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector2): void;
-        static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
-        static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
-        static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2;
-        static Lerp(start: Vector2, end: Vector2, amount: number): Vector2;
-        static Dot(left: Vector2, right: Vector2): number;
-        static Normalize(vector: Vector2): Vector2;
-        static Minimize(left: Vector2, right: Vector2): Vector2;
-        static Maximize(left: Vector2, right: Vector2): Vector2;
-        static Transform(vector: Vector2, transformation: Matrix): Vector2;
-        static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2): void;
-        static PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2): boolean;
-        static Distance(value1: Vector2, value2: Vector2): number;
-        static DistanceSquared(value1: Vector2, value2: Vector2): number;
-        static Center(value1: Vector2, value2: Vector2): Vector2;
-        static DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): number;
-    }
-    class Vector3 {
-        x: number;
-        y: number;
-        z: number;
-        constructor(x: number, y: number, z: number);
-        toString(): string;
-        getClassName(): string;
-        getHashCode(): number;
-        asArray(): number[];
-        toArray(array: number[] | Float32Array, index?: number): Vector3;
-        toQuaternion(): Quaternion;
-        addInPlace(otherVector: Vector3): Vector3;
-        add(otherVector: Vector3): Vector3;
-        addToRef(otherVector: Vector3, result: Vector3): Vector3;
-        subtractInPlace(otherVector: Vector3): Vector3;
-        subtract(otherVector: Vector3): Vector3;
-        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
-        subtractFromFloats(x: number, y: number, z: number): Vector3;
-        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
-        negate(): Vector3;
-        scaleInPlace(scale: number): Vector3;
-        scale(scale: number): Vector3;
-        scaleToRef(scale: number, result: Vector3): void;
-        equals(otherVector: Vector3): boolean;
-        equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
-        equalsToFloats(x: number, y: number, z: number): boolean;
-        multiplyInPlace(otherVector: Vector3): Vector3;
-        multiply(otherVector: Vector3): Vector3;
-        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
-        multiplyByFloats(x: number, y: number, z: number): Vector3;
-        divide(otherVector: Vector3): Vector3;
-        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
-        MinimizeInPlace(other: Vector3): Vector3;
-        MaximizeInPlace(other: Vector3): Vector3;
-        length(): number;
-        lengthSquared(): number;
-        normalize(): Vector3;
-        clone(): Vector3;
-        copyFrom(source: Vector3): Vector3;
-        copyFromFloats(x: number, y: number, z: number): Vector3;
-        static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: any): number;
-        static FromArray(array: number[] | Float32Array, offset?: number): Vector3;
-        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
-        static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector3): void;
-        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
-        static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
-        static Zero(): Vector3;
-        static Up(): Vector3;
-        static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
-        static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
-        static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3;
-        static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3;
-        static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3;
-        static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
-        static Dot(left: Vector3, right: Vector3): number;
-        static Cross(left: Vector3, right: Vector3): Vector3;
-        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
-        static Normalize(vector: Vector3): Vector3;
-        static NormalizeToRef(vector: Vector3, result: Vector3): void;
-        private static _viewportMatrixCache;
-        private static _matrixCache;
-        static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
-        static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
-        static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
-        static Minimize(left: Vector3, right: Vector3): Vector3;
-        static Maximize(left: Vector3, right: Vector3): Vector3;
-        static Distance(value1: Vector3, value2: Vector3): number;
-        static DistanceSquared(value1: Vector3, value2: Vector3): number;
-        static Center(value1: Vector3, value2: Vector3): Vector3;
-        /**
-         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
-         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
-         * to something in order to rotate it from its local system to the given target system.
-         */
-        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
-        /**
-         * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
-         */
-        static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void;
-    }
-    class Vector4 {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
-        constructor(x: number, y: number, z: number, w: number);
-        toString(): string;
-        getClassName(): string;
-        getHashCode(): number;
-        asArray(): number[];
-        toArray(array: number[], index?: number): Vector4;
-        addInPlace(otherVector: Vector4): Vector4;
-        add(otherVector: Vector4): Vector4;
-        addToRef(otherVector: Vector4, result: Vector4): Vector4;
-        subtractInPlace(otherVector: Vector4): Vector4;
-        subtract(otherVector: Vector4): Vector4;
-        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
-        subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
-        negate(): Vector4;
-        scaleInPlace(scale: number): Vector4;
-        scale(scale: number): Vector4;
-        scaleToRef(scale: number, result: Vector4): void;
-        equals(otherVector: Vector4): boolean;
-        equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
-        equalsToFloats(x: number, y: number, z: number, w: number): boolean;
-        multiplyInPlace(otherVector: Vector4): Vector4;
-        multiply(otherVector: Vector4): Vector4;
-        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
-        multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
-        divide(otherVector: Vector4): Vector4;
-        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
-        MinimizeInPlace(other: Vector4): Vector4;
-        MaximizeInPlace(other: Vector4): Vector4;
-        length(): number;
-        lengthSquared(): number;
-        normalize(): Vector4;
-        toVector3(): Vector3;
-        clone(): Vector4;
-        copyFrom(source: Vector4): Vector4;
-        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        static FromArray(array: number[], offset?: number): Vector4;
-        static FromArrayToRef(array: number[], offset: number, result: Vector4): void;
-        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
-        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
-        static Zero(): Vector4;
-        static Normalize(vector: Vector4): Vector4;
-        static NormalizeToRef(vector: Vector4, result: Vector4): void;
-        static Minimize(left: Vector4, right: Vector4): Vector4;
-        static Maximize(left: Vector4, right: Vector4): Vector4;
-        static Distance(value1: Vector4, value2: Vector4): number;
-        static DistanceSquared(value1: Vector4, value2: Vector4): number;
-        static Center(value1: Vector4, value2: Vector4): Vector4;
-    }
-    interface ISize {
-        width: number;
-        height: number;
-    }
-    class Size implements ISize {
-        width: number;
-        height: number;
-        constructor(width: number, height: number);
-        toString(): string;
-        getClassName(): string;
-        getHashCode(): number;
-        copyFrom(src: Size): void;
-        copyFromFloats(width: number, height: number): void;
-        multiplyByFloats(w: number, h: number): Size;
-        clone(): Size;
-        equals(other: Size): boolean;
-        surface: number;
-        static Zero(): Size;
-        add(otherSize: Size): Size;
-        substract(otherSize: Size): Size;
-        static Lerp(start: Size, end: Size, amount: number): Size;
-    }
-    class Quaternion {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
-        constructor(x?: number, y?: number, z?: number, w?: number);
-        toString(): string;
-        getClassName(): string;
-        getHashCode(): number;
-        asArray(): number[];
-        equals(otherQuaternion: Quaternion): boolean;
-        clone(): Quaternion;
-        copyFrom(other: Quaternion): Quaternion;
-        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
-        add(other: Quaternion): Quaternion;
-        subtract(other: Quaternion): Quaternion;
-        scale(value: number): Quaternion;
-        multiply(q1: Quaternion): Quaternion;
-        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
-        multiplyInPlace(q1: Quaternion): Quaternion;
-        conjugateToRef(ref: Quaternion): Quaternion;
-        conjugateInPlace(): Quaternion;
-        conjugate(): Quaternion;
-        length(): number;
-        normalize(): Quaternion;
-        toEulerAngles(order?: string): Vector3;
-        toEulerAnglesToRef(result: Vector3, order?: string): Quaternion;
-        toRotationMatrix(result: Matrix): Quaternion;
-        fromRotationMatrix(matrix: Matrix): Quaternion;
-        static FromRotationMatrix(matrix: Matrix): Quaternion;
-        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
-        static Inverse(q: Quaternion): Quaternion;
-        static Identity(): Quaternion;
-        static RotationAxis(axis: Vector3, angle: number): Quaternion;
-        static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion;
-        static FromArray(array: number[], offset?: number): Quaternion;
-        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
-        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
-        static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
-        static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
-        static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
-    }
-    class Matrix {
-        private static _tempQuaternion;
-        private static _xAxis;
-        private static _yAxis;
-        private static _zAxis;
-        m: Float32Array;
-        isIdentity(): boolean;
-        determinant(): number;
-        toArray(): Float32Array;
-        asArray(): Float32Array;
-        invert(): Matrix;
-        reset(): Matrix;
-        add(other: Matrix): Matrix;
-        addToRef(other: Matrix, result: Matrix): Matrix;
-        addToSelf(other: Matrix): Matrix;
-        invertToRef(other: Matrix): Matrix;
-        setTranslation(vector3: Vector3): Matrix;
-        getTranslation(): Vector3;
-        multiply(other: Matrix): Matrix;
-        copyFrom(other: Matrix): Matrix;
-        copyToArray(array: Float32Array, offset?: number): Matrix;
-        multiplyToRef(other: Matrix, result: Matrix): Matrix;
-        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
-        equals(value: Matrix): boolean;
-        clone(): Matrix;
-        getClassName(): string;
-        getHashCode(): number;
-        decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
-        static FromArray(array: number[], offset?: number): Matrix;
-        static FromArrayToRef(array: number[], offset: number, result: Matrix): void;
-        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
-        static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
-        getRow(index: number): Vector4;
-        setRow(index: number, row: Vector4): Matrix;
-        static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
-        static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
-        static Identity(): Matrix;
-        static IdentityToRef(result: Matrix): void;
-        static Zero(): Matrix;
-        static RotationX(angle: number): Matrix;
-        static Invert(source: Matrix): Matrix;
-        static RotationXToRef(angle: number, result: Matrix): void;
-        static RotationY(angle: number): Matrix;
-        static RotationYToRef(angle: number, result: Matrix): void;
-        static RotationZ(angle: number): Matrix;
-        static RotationZToRef(angle: number, result: Matrix): void;
-        static RotationAxis(axis: Vector3, angle: number): Matrix;
-        static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void;
-        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
-        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
-        static Scaling(x: number, y: number, z: number): Matrix;
-        static ScalingToRef(x: number, y: number, z: number, result: Matrix): void;
-        static Translation(x: number, y: number, z: number): Matrix;
-        static TranslationToRef(x: number, y: number, z: number, result: Matrix): void;
-        static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
-        static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
-        static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
-        static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
-        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
-        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
-        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
-        static OrthoOffCenterLHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
-        static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
-        static OrthoOffCenterRHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
-        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
-        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
-        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
-        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
-        static PerspectiveFovWebVRToRef(fov: any, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
-        static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
-        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
-        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
-        static Transpose(matrix: Matrix): Matrix;
-        static Reflection(plane: Plane): Matrix;
-        static ReflectionToRef(plane: Plane, result: Matrix): void;
-    }
-    class Plane {
-        normal: Vector3;
-        d: number;
-        constructor(a: number, b: number, c: number, d: number);
-        asArray(): number[];
-        clone(): Plane;
-        getClassName(): string;
-        getHashCode(): number;
-        normalize(): Plane;
-        transform(transformation: Matrix): Plane;
-        dotCoordinate(point: any): number;
-        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
-        isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
-        signedDistanceTo(point: Vector3): number;
-        static FromArray(array: number[]): Plane;
-        static FromPoints(point1: any, point2: any, point3: any): Plane;
-        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
-        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
-    }
-    class Viewport {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        constructor(x: number, y: number, width: number, height: number);
-        toGlobal(renderWidth: number, renderHeight: number): Viewport;
-    }
-    class Frustum {
-        static GetPlanes(transform: Matrix): Plane[];
-        static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
-    }
-    enum Space {
-        LOCAL = 0,
-        WORLD = 1,
-    }
-    class Axis {
-        static X: Vector3;
-        static Y: Vector3;
-        static Z: Vector3;
-    }
-    class BezierCurve {
-        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
-    }
-    enum Orientation {
-        CW = 0,
-        CCW = 1,
-    }
-    class Angle {
-        private _radians;
-        constructor(radians: number);
-        degrees: () => number;
-        radians: () => number;
-        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
-        static FromRadians(radians: number): Angle;
-        static FromDegrees(degrees: number): Angle;
-    }
-    class Arc2 {
-        startPoint: Vector2;
-        midPoint: Vector2;
-        endPoint: Vector2;
-        centerPoint: Vector2;
-        radius: number;
-        angle: Angle;
-        startAngle: Angle;
-        orientation: Orientation;
-        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
-    }
-    class Path2 {
-        private _points;
-        private _length;
-        closed: boolean;
-        constructor(x: number, y: number);
-        addLineTo(x: number, y: number): Path2;
-        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
-        close(): Path2;
-        length(): number;
-        getPoints(): Vector2[];
-        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
-        static StartingAt(x: number, y: number): Path2;
-    }
-    class Path3D {
-        path: Vector3[];
-        private _curve;
-        private _distances;
-        private _tangents;
-        private _normals;
-        private _binormals;
-        private _raw;
-        /**
-        * new Path3D(path, normal, raw)
-        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
-        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
-        * path : an array of Vector3, the curve axis of the Path3D
-        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
-        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
-        */
-        constructor(path: Vector3[], firstNormal?: Vector3, raw?: boolean);
-        /**
-         * Returns the Path3D array of successive Vector3 designing its curve.
-         */
-        getCurve(): Vector3[];
-        /**
-         * Returns an array populated with tangent vectors on each Path3D curve point.
-         */
-        getTangents(): Vector3[];
-        /**
-         * Returns an array populated with normal vectors on each Path3D curve point.
-         */
-        getNormals(): Vector3[];
-        /**
-         * Returns an array populated with binormal vectors on each Path3D curve point.
-         */
-        getBinormals(): Vector3[];
-        /**
-         * Returns an array populated with distances (float) of the i-th point from the first curve point.
-         */
-        getDistances(): number[];
-        /**
-         * Forces the Path3D tangent, normal, binormal and distance recomputation.
-         * Returns the same object updated.
-         */
-        update(path: Vector3[], firstNormal?: Vector3): Path3D;
-        private _compute(firstNormal);
-        private _getFirstNonNullVector(index);
-        private _getLastNonNullVector(index);
-        private _normalVector(v0, vt, va);
-    }
-    class Curve3 {
-        private _points;
-        private _length;
-        /**
-         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Quadratic Bezier
-         * @param v1 (Vector3) the control point
-         * @param v2 (Vector3) the end point of the Quadratic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Cubic Bezier
-         * @param v1 (Vector3) the first control point
-         * @param v2 (Vector3) the second control point
-         * @param v3 (Vector3) the end point of the Cubic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
-         * @param p1 (Vector3) the origin point of the Hermite Spline
-         * @param t1 (Vector3) the tangent vector at the origin point
-         * @param p2 (Vector3) the end point of the Hermite Spline
-         * @param t2 (Vector3) the tangent vector at the end point
-         * @param nbPoints (integer) the wanted number of points in the curve
-         */
-        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
-        /**
-         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
-         * A Curve3 is designed from a series of successive Vector3.
-         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
-         */
-        constructor(points: Vector3[]);
-        /**
-         * Returns the Curve3 stored array of successive Vector3
-         */
-        getPoints(): Vector3[];
-        /**
-         * Returns the computed length (float) of the curve.
-         */
-        length(): number;
-        /**
-         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
-         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
-         * curveA and curveB keep unchanged.
-         */
-        continue(curve: Curve3): Curve3;
-        private _computeLength(path);
-    }
-    class SphericalHarmonics {
-        L00: Vector3;
-        L1_1: Vector3;
-        L10: Vector3;
-        L11: Vector3;
-        L2_2: Vector3;
-        L2_1: Vector3;
-        L20: Vector3;
-        L21: Vector3;
-        L22: Vector3;
-        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
-        scale(scale: number): void;
-    }
-    class SphericalPolynomial {
-        x: Vector3;
-        y: Vector3;
-        z: Vector3;
-        xx: Vector3;
-        yy: Vector3;
-        zz: Vector3;
-        xy: Vector3;
-        yz: Vector3;
-        zx: Vector3;
-        addAmbient(color: Color3): void;
-        static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
-    }
-    class PositionNormalVertex {
-        position: Vector3;
-        normal: Vector3;
-        constructor(position?: Vector3, normal?: Vector3);
-        clone(): PositionNormalVertex;
-    }
-    class PositionNormalTextureVertex {
-        position: Vector3;
-        normal: Vector3;
-        uv: Vector2;
-        constructor(position?: Vector3, normal?: Vector3, uv?: Vector2);
-        clone(): PositionNormalTextureVertex;
-    }
-    class Tmp {
-        static Color3: Color3[];
-        static Vector2: Vector2[];
-        static Vector3: Vector3[];
-        static Vector4: Vector4[];
-        static Quaternion: Quaternion[];
-        static Matrix: Matrix[];
-    }
-}
-
-declare module BABYLON {
-    class Particle {
-        position: Vector3;
-        direction: Vector3;
-        color: Color4;
-        colorStep: Color4;
-        lifeTime: number;
-        age: number;
-        size: number;
-        angle: number;
-        angularSpeed: number;
-        copyTo(other: Particle): void;
-    }
-}
-
-declare module BABYLON {
-    class ParticleSystem implements IDisposable, IAnimatable {
-        name: string;
-        static BLENDMODE_ONEONE: number;
-        static BLENDMODE_STANDARD: number;
-        animations: Animation[];
-        id: string;
-        renderingGroupId: number;
-        emitter: any;
-        emitRate: number;
-        manualEmitCount: number;
-        updateSpeed: number;
-        targetStopDuration: number;
-        disposeOnStop: boolean;
-        minEmitPower: number;
-        maxEmitPower: number;
-        minLifeTime: number;
-        maxLifeTime: number;
-        minSize: number;
-        maxSize: number;
-        minAngularSpeed: number;
-        maxAngularSpeed: number;
-        particleTexture: Texture;
-        layerMask: number;
-        /**
-        * An event triggered when the system is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<ParticleSystem>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        updateFunction: (particles: Particle[]) => void;
-        blendMode: number;
-        forceDepthWrite: boolean;
-        gravity: Vector3;
-        direction1: Vector3;
-        direction2: Vector3;
-        minEmitBox: Vector3;
-        maxEmitBox: Vector3;
-        color1: Color4;
-        color2: Color4;
-        colorDead: Color4;
-        textureMask: Color4;
-        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
-        private particles;
-        private _capacity;
-        private _scene;
-        private _stockParticles;
-        private _newPartsExcess;
-        private _vertexData;
-        private _vertexBuffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _customEffect;
-        private _cachedDefines;
-        private _scaledColorStep;
-        private _colorDiff;
-        private _scaledDirection;
-        private _scaledGravity;
-        private _currentRenderId;
-        private _alive;
-        private _started;
-        private _stopped;
-        private _actualFrame;
-        private _scaledUpdateSpeed;
-        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
-        recycleParticle(particle: Particle): void;
-        getCapacity(): number;
-        isAlive(): boolean;
-        isStarted(): boolean;
-        start(): void;
-        stop(): void;
-        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
-        private _update(newParticles);
-        private _getEffect();
-        animate(): void;
-        render(): number;
-        dispose(): void;
-        clone(name: string, newEmitter: any): ParticleSystem;
-        serialize(): any;
-        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem;
-    }
-}
-
-declare module BABYLON {
-    class SolidParticle {
-        idx: number;
-        color: Color4;
-        position: Vector3;
-        rotation: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        uvs: Vector4;
-        velocity: Vector3;
-        alive: boolean;
-        isVisible: boolean;
-        _pos: number;
-        _model: ModelShape;
-        shapeId: number;
-        idxInShape: number;
-        constructor(particleIndex: number, positionIndex: number, model: ModelShape, shapeId: number, idxInShape: number);
-        scale: Vector3;
-        quaternion: Quaternion;
-    }
-    class ModelShape {
-        shapeID: number;
-        _shape: Vector3[];
-        _shapeUV: number[];
-        _positionFunction: (particle: SolidParticle, i: number, s: number) => void;
-        _vertexFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void;
-        constructor(id: number, shape: Vector3[], shapeUV: number[], posFunction: (particle: SolidParticle, i: number, s: number) => void, vtxFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void);
-    }
-}
-
-declare module BABYLON {
-    /**
-    * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
-    */
-    class SolidParticleSystem implements IDisposable {
-        /**
-        *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
-        *  Example : var p = SPS.particles[i];
-        */
-        particles: SolidParticle[];
-        /**
-        * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
-        */
-        nbParticles: number;
-        /**
-        * If the particles must ever face the camera (default false). Useful for planar particles.
-        */
-        billboard: boolean;
-        /**
-         * Recompute normals when adding a shape
-         */
-        recomputeNormals: boolean;
-        /**
-        * This a counter ofr your own usage. It's not set by any SPS functions.
-        */
-        counter: number;
-        /**
-        * The SPS name. This name is also given to the underlying mesh.
-        */
-        name: string;
-        /**
-        * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
-        */
-        mesh: Mesh;
-        /**
-        * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
-        * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
-        */
-        vars: any;
-        /**
-        * This array is populated when the SPS is set as 'pickable'.
-        * Each key of this array is a `faceId` value that you can get from a pickResult object.
-        * Each element of this array is an object `{idx: int, faceId: int}`.
-        * `idx` is the picked particle index in the `SPS.particles` array
-        * `faceId` is the picked face index counted within this particle.
-        * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
-        */
-        pickedParticles: {
-            idx: number;
-            faceId: number;
-        }[];
-        private _scene;
-        private _positions;
-        private _indices;
-        private _normals;
-        private _colors;
-        private _uvs;
-        private _positions32;
-        private _normals32;
-        private _fixedNormal32;
-        private _colors32;
-        private _uvs32;
-        private _index;
-        private _updatable;
-        private _pickable;
-        private _isVisibilityBoxLocked;
-        private _alwaysVisible;
-        private _shapeCounter;
-        private _copy;
-        private _shape;
-        private _shapeUV;
-        private _color;
-        private _computeParticleColor;
-        private _computeParticleTexture;
-        private _computeParticleRotation;
-        private _computeParticleVertex;
-        private _computeBoundingBox;
-        private _cam_axisZ;
-        private _cam_axisY;
-        private _cam_axisX;
-        private _axisX;
-        private _axisY;
-        private _axisZ;
-        private _camera;
-        private _particle;
-        private _camDir;
-        private _rotMatrix;
-        private _invertMatrix;
-        private _rotated;
-        private _quaternion;
-        private _vertex;
-        private _normal;
-        private _yaw;
-        private _pitch;
-        private _roll;
-        private _halfroll;
-        private _halfpitch;
-        private _halfyaw;
-        private _sinRoll;
-        private _cosRoll;
-        private _sinPitch;
-        private _cosPitch;
-        private _sinYaw;
-        private _cosYaw;
-        private _w;
-        private _minimum;
-        private _maximum;
-        private _scale;
-        private _translation;
-        /**
-        * Creates a SPS (Solid Particle System) object.
-        * `name` (String) is the SPS name, this will be the underlying mesh name.
-        * `scene` (Scene) is the scene in which the SPS is added.
-        * `updatable` (default true) : if the SPS must be updatable or immutable.
-        * `isPickable` (default false) : if the solid particles must be pickable.
-        */
-        constructor(name: string, scene: Scene, options?: {
-            updatable?: boolean;
-            isPickable?: boolean;
-        });
-        /**
-        * Builds the SPS underlying mesh. Returns a standard Mesh.
-        * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
-        */
-        buildMesh(): Mesh;
-        /**
-        * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
-        * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
-        * Thus the particles generated from `digest()` have their property `position` set yet.
-        * `mesh` ( Mesh ) is the mesh to be digested
-        * `facetNb` (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
-        * `delta` (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
-        * `number` (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
-        */
-        digest(mesh: Mesh, options?: {
-            facetNb?: number;
-            number?: number;
-            delta?: number;
-        }): SolidParticleSystem;
-        private _resetCopy();
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options);
-        private _posToShape(positions);
-        private _uvsToShapeUV(uvs);
-        private _addParticle(idx, idxpos, model, shapeId, idxInShape);
-        /**
-        * Adds some particles to the SPS from the model shape. Returns the shape id.
-        * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
-        * `mesh` is any Mesh object that will be used as a model for the solid particles.
-        * `nb` (positive integer) the number of particles to be created from this model
-        * `positionFunction` is an optional javascript function to called for each particle on SPS creation.
-        * `vertexFunction` is an optional javascript function to called for each vertex of each particle on SPS creation
-        */
-        addShape(mesh: Mesh, nb: number, options?: {
-            positionFunction?: any;
-            vertexFunction?: any;
-        }): number;
-        private _rebuildParticle(particle);
-        /**
-        * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
-        */
-        rebuildMesh(): void;
-        /**
-        *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
-        *  This method calls `updateParticle()` for each particle of the SPS.
-        *  For an animated SPS, it is usually called within the render loop.
-        * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
-        * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
-        * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
-        */
-        setParticles(start?: number, end?: number, update?: boolean): void;
-        private _quaternionRotationYPR();
-        private _quaternionToRotationMatrix();
-        /**
-        * Disposes the SPS
-        */
-        dispose(): void;
-        /**
-        * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-        */
-        refreshVisibleSize(): void;
-        /**
-        * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
-        * @param size the size (float) of the visibility box
-        * note : this doesn't lock the SPS mesh bounding box.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-        */
-        setVisibilityBox(size: number): void;
-        /**
-        * Sets the SPS as always visible or not
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-        */
-        isAlwaysVisible: boolean;
-        /**
-        * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-        */
-        isVisibilityBoxLocked: boolean;
-        /**
-        * Tells to `setParticles()` to compute the particle rotations or not.
-        * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
-        */
-        computeParticleRotation: boolean;
-        /**
-        * Tells to `setParticles()` to compute the particle colors or not.
-        * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
-        */
-        computeParticleColor: boolean;
-        /**
-        * Tells to `setParticles()` to compute the particle textures or not.
-        * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
-        */
-        computeParticleTexture: boolean;
-        /**
-        * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
-        * Default value : false. The SPS is faster when it's set to false.
-        * Note : the particle custom vertex positions aren't stored values.
-        */
-        computeParticleVertex: boolean;
-        /**
-        * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
-        */
-        computeBoundingBox: boolean;
-        /**
-        * This function does nothing. It may be overwritten to set all the particle first values.
-        * The SPS doesn't call this function, you may have to call it by your own.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-        */
-        initParticles(): void;
-        /**
-        * This function does nothing. It may be overwritten to recycle a particle.
-        * The SPS doesn't call this function, you may have to call it by your own.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-        */
-        recycleParticle(particle: SolidParticle): SolidParticle;
-        /**
-        * Updates a particle : this function should  be overwritten by the user.
-        * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-        * ex : just set a particle position or velocity and recycle conditions
-        */
-        updateParticle(particle: SolidParticle): SolidParticle;
-        /**
-        * Updates a vertex of a particle : it can be overwritten by the user.
-        * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
-        * @param particle the current particle
-        * @param vertex the current index of the current particle
-        * @param pt the index of the current vertex in the particle shape
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
-        * ex : just set a vertex particle position
-        */
-        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
-        /**
-        * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
-        * This does nothing and may be overwritten by the user.
-        * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-        * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-        * @param update the boolean update value actually passed to setParticles()
-        */
-        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
-        /**
-        * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
-        * This will be passed three parameters.
-        * This does nothing and may be overwritten by the user.
-        * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-        * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-        * @param update the boolean update value actually passed to setParticles()
-        */
-        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorJoint {
-        mainImpostor: PhysicsImpostor;
-        connectedImpostor: PhysicsImpostor;
-        joint: PhysicsJoint;
-    }
-    class PhysicsEngine {
-        private _physicsPlugin;
-        gravity: Vector3;
-        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
-        setGravity(gravity: Vector3): void;
-        /**
-         * Set the time step of the physics engine.
-         * default is 1/60.
-         * To slow it down, enter 1/600 for example.
-         * To speed it up, 1/30
-         * @param {number} newTimeStep the new timestep to apply to this world.
-         */
-        setTimeStep(newTimeStep?: number): void;
-        dispose(): void;
-        getPhysicsPluginName(): string;
-        /**
-         * @Deprecated
-         *
-         */
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static HeightmapImpostor: number;
-        static CapsuleImpostor: number;
-        static ConeImpostor: number;
-        static ConvexHullImpostor: number;
-        static Epsilon: number;
-        private _impostors;
-        private _joints;
-        /**
-         * Adding a new impostor for the impostor tracking.
-         * This will be done by the impostor itself.
-         * @param {PhysicsImpostor} impostor the impostor to add
-         */
-        addImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Remove an impostor from the engine.
-         * This impostor and its mesh will not longer be updated by the physics engine.
-         * @param {PhysicsImpostor} impostor the impostor to remove
-         */
-        removeImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Add a joint to the physics engine
-         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
-         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
-         * @param {PhysicsJoint} the joint that will connect both impostors.
-         */
-        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Called by the scene. no need to call it.
-         */
-        _step(delta: number): void;
-        getPhysicsPlugin(): IPhysicsEnginePlugin;
-        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor;
-        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
-    }
-    interface IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        setGravity(gravity: Vector3): any;
-        setTimeStep(timeStep: number): any;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        generatePhysicsBody(impostor: PhysicsImpostor): any;
-        removePhysicsBody(impostor: PhysicsImpostor): any;
-        generateJoint(joint: PhysicsImpostorJoint): any;
-        removeJoint(joint: PhysicsImpostorJoint): any;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        getLinearVelocity(impostor: PhysicsImpostor): Vector3;
-        getAngularVelocity(impostor: PhysicsImpostor): Vector3;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
-        sleepBody(impostor: PhysicsImpostor): any;
-        wakeUpBody(impostor: PhysicsImpostor): any;
-        updateDistanceJoint(joint: DistanceJoint, maxDistance: number, minDistance?: number): any;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): any;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
-        dispose(): any;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorParameters {
-        mass: number;
-        friction?: number;
-        restitution?: number;
-        nativeOptions?: any;
-    }
-    interface IPhysicsEnabledObject {
-        position: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        rotation?: Vector3;
-        parent?: any;
-        getBoundingInfo?(): BoundingInfo;
-        computeWorldMatrix?(force: boolean): void;
-        getChildMeshes?(): Array<AbstractMesh>;
-        getVerticesData?(kind: string): Array<number> | Float32Array;
-        getIndices?(): Array<number> | Int32Array;
-        getScene?(): Scene;
-    }
-    class PhysicsImpostor {
-        object: IPhysicsEnabledObject;
-        type: number;
-        private _options;
-        private _scene;
-        static DEFAULT_OBJECT_SIZE: Vector3;
-        private _physicsEngine;
-        private _physicsBody;
-        private _bodyUpdateRequired;
-        private _onBeforePhysicsStepCallbacks;
-        private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
-        private _deltaPosition;
-        private _deltaRotation;
-        private _deltaRotationConjugated;
-        private _parent;
-        uniqueId: number;
-        private _joints;
-        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene);
-        /**
-         * This function will completly initialize this impostor.
-         * It will create a new body - but only if this mesh has no parent.
-         * If it has, this impostor will not be used other than to define the impostor
-         * of the child mesh.
-         */
-        _init(): void;
-        private _getPhysicsParent();
-        /**
-         * Should a new body be generated.
-         */
-        isBodyInitRequired(): boolean;
-        setScalingUpdated(updated: boolean): void;
-        /**
-         * Force a regeneration of this or the parent's impostor's body.
-         * Use under cautious - This will remove all joints already implemented.
-         */
-        forceUpdate(): void;
-        /**
-         * Gets the body that holds this impostor. Either its own, or its parent.
-         */
-        /**
-         * Set the physics body. Used mainly by the physics engine/plugin
-         */
-        physicsBody: any;
-        parent: PhysicsImpostor;
-        resetUpdateFlags(): void;
-        getObjectExtendSize(): Vector3;
-        getObjectCenter(): Vector3;
-        /**
-         * Get a specific parametes from the options parameter.
-         */
-        getParam(paramName: string): any;
-        /**
-         * Sets a specific parameter in the options given to the physics plugin
-         */
-        setParam(paramName: string, value: number): void;
-        /**
-         * Specifically change the body's mass option. Won't recreate the physics body object
-         */
-        setMass(mass: number): void;
-        getLinearVelocity(): Vector3;
-        /**
-         * Set the body's linear velocity.
-         */
-        setLinearVelocity(velocity: Vector3): void;
-        getAngularVelocity(): Vector3;
-        /**
-         * Set the body's linear velocity.
-         */
-        setAngularVelocity(velocity: Vector3): void;
-        /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
-         */
-        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
-        /**
-         * Register a function that will be executed before the physics world is stepping forward.
-         */
-        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * Register a function that will be executed after the physics step
-         */
-        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * register a function that will be executed when this impostor collides against a different body.
-         */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
-        private _tmpPositionWithDelta;
-        private _tmpRotationWithDelta;
-        /**
-         * this function is executed by the physics engine.
-         */
-        beforeStep: () => void;
-        /**
-         * this function is executed by the physics engine.
-         */
-        afterStep: () => void;
-        onCollide: (e: {
-            body: any;
-        }) => void;
-        /**
-         * Apply a force
-         */
-        applyForce(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * Apply an impulse
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * A help function to create a joint.
-         */
-        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
-        /**
-         * Add a joint to this impostor with a different impostor.
-         */
-        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Will keep this body still, in a sleep mode.
-         */
-        sleep(): void;
-        /**
-         * Wake the body up.
-         */
-        wakeUp(): void;
-        clone(newObject: IPhysicsEnabledObject): PhysicsImpostor;
-        dispose(): void;
-        setDeltaPosition(position: Vector3): void;
-        setDeltaRotation(rotation: Quaternion): void;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static ParticleImpostor: number;
-        static HeightmapImpostor: number;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsJointData {
-        mainPivot?: Vector3;
-        connectedPivot?: Vector3;
-        mainAxis?: Vector3;
-        connectedAxis?: Vector3;
-        collision?: boolean;
-        nativeParams?: any;
-    }
-    /**
-     * This is a holder class for the physics joint created by the physics plugin.
-     * It holds a set of functions to control the underlying joint.
-     */
-    class PhysicsJoint {
-        type: number;
-        jointData: PhysicsJointData;
-        private _physicsJoint;
-        protected _physicsPlugin: IPhysicsEnginePlugin;
-        constructor(type: number, jointData: PhysicsJointData);
-        physicsJoint: any;
-        physicsPlugin: IPhysicsEnginePlugin;
-        /**
-         * Execute a function that is physics-plugin specific.
-         * @param {Function} func the function that will be executed.
-         *                        It accepts two parameters: the physics world and the physics joint.
-         */
-        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
-        static DistanceJoint: number;
-        static HingeJoint: number;
-        static BallAndSocketJoint: number;
-        static WheelJoint: number;
-        static SliderJoint: number;
-        static PrismaticJoint: number;
-        static UniversalJoint: number;
-        static Hinge2Joint: number;
-        static PointToPointJoint: number;
-        static SpringJoint: number;
-        static LockJoint: number;
-    }
-    /**
-     * A class representing a physics distance joint.
-     */
-    class DistanceJoint extends PhysicsJoint {
-        constructor(jointData: DistanceJointData);
-        /**
-         * Update the predefined distance.
-         */
-        updateDistance(maxDistance: number, minDistance?: number): void;
-    }
-    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-        constructor(type: number, jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a single hinge physics joint
-     */
-    class HingeJoint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a dual hinge physics joint (same as wheel joint)
-     */
-    class Hinge2Joint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        /**
-         * Set the motor limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} upperLimit the upper limit
-         * @param {number} lowerLimit lower limit
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface IMotorEnabledJoint {
-        physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): any;
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
-    }
-    interface DistanceJointData extends PhysicsJointData {
-        maxDistance: number;
-    }
-    interface SpringJointData extends PhysicsJointData {
-        length: number;
-        stiffness: number;
-        damping: number;
     }
 }
 
@@ -8631,6 +7851,794 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
+    }
+    class PhysicsEngine {
+        private _physicsPlugin;
+        gravity: Vector3;
+        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
+        setGravity(gravity: Vector3): void;
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep?: number): void;
+        dispose(): void;
+        getPhysicsPluginName(): string;
+        /**
+         * @Deprecated
+         *
+         */
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static HeightmapImpostor: number;
+        static CapsuleImpostor: number;
+        static ConeImpostor: number;
+        static ConvexHullImpostor: number;
+        static Epsilon: number;
+        private _impostors;
+        private _joints;
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
+        addImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
+        removeImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
+        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Called by the scene. no need to call it.
+         */
+        _step(delta: number): void;
+        getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): PhysicsImpostor;
+        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
+    }
+    interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3): any;
+        setTimeStep(timeStep: number): any;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        generatePhysicsBody(impostor: PhysicsImpostor): any;
+        removePhysicsBody(impostor: PhysicsImpostor): any;
+        generateJoint(joint: PhysicsImpostorJoint): any;
+        removeJoint(joint: PhysicsImpostorJoint): any;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        getLinearVelocity(impostor: PhysicsImpostor): Vector3;
+        getAngularVelocity(impostor: PhysicsImpostor): Vector3;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
+        sleepBody(impostor: PhysicsImpostor): any;
+        wakeUpBody(impostor: PhysicsImpostor): any;
+        updateDistanceJoint(joint: DistanceJoint, maxDistance: number, minDistance?: number): any;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): any;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
+        dispose(): any;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorParameters {
+        mass: number;
+        friction?: number;
+        restitution?: number;
+        nativeOptions?: any;
+    }
+    interface IPhysicsEnabledObject {
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        rotation?: Vector3;
+        parent?: any;
+        getBoundingInfo?(): BoundingInfo;
+        computeWorldMatrix?(force: boolean): void;
+        getChildMeshes?(): Array<AbstractMesh>;
+        getVerticesData?(kind: string): Array<number> | Float32Array;
+        getIndices?(): Array<number> | Int32Array;
+        getScene?(): Scene;
+    }
+    class PhysicsImpostor {
+        object: IPhysicsEnabledObject;
+        type: number;
+        private _options;
+        private _scene;
+        static DEFAULT_OBJECT_SIZE: Vector3;
+        private _physicsEngine;
+        private _physicsBody;
+        private _bodyUpdateRequired;
+        private _onBeforePhysicsStepCallbacks;
+        private _onAfterPhysicsStepCallbacks;
+        private _onPhysicsCollideCallbacks;
+        private _deltaPosition;
+        private _deltaRotation;
+        private _deltaRotationConjugated;
+        private _parent;
+        uniqueId: number;
+        private _joints;
+        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene);
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
+        _init(): void;
+        private _getPhysicsParent();
+        /**
+         * Should a new body be generated.
+         */
+        isBodyInitRequired(): boolean;
+        setScalingUpdated(updated: boolean): void;
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
+        forceUpdate(): void;
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
+        /**
+         * Set the physics body. Used mainly by the physics engine/plugin
+         */
+        physicsBody: any;
+        parent: PhysicsImpostor;
+        resetUpdateFlags(): void;
+        getObjectExtendSize(): Vector3;
+        getObjectCenter(): Vector3;
+        /**
+         * Get a specific parametes from the options parameter.
+         */
+        getParam(paramName: string): any;
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
+        setParam(paramName: string, value: number): void;
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        setMass(mass: number): void;
+        getLinearVelocity(): Vector3;
+        /**
+         * Set the body's linear velocity.
+         */
+        setLinearVelocity(velocity: Vector3): void;
+        getAngularVelocity(): Vector3;
+        /**
+         * Set the body's linear velocity.
+         */
+        setAngularVelocity(velocity: Vector3): void;
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
+        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
+        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * Register a function that will be executed after the physics step
+         */
+        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        private _tmpPositionWithDelta;
+        private _tmpRotationWithDelta;
+        /**
+         * this function is executed by the physics engine.
+         */
+        beforeStep: () => void;
+        /**
+         * this function is executed by the physics engine.
+         */
+        afterStep: () => void;
+        onCollide: (e: {
+            body: any;
+        }) => void;
+        /**
+         * Apply a force
+         */
+        applyForce(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Apply an impulse
+         */
+        applyImpulse(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * A help function to create a joint.
+         */
+        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
+        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        sleep(): void;
+        /**
+         * Wake the body up.
+         */
+        wakeUp(): void;
+        clone(newObject: IPhysicsEnabledObject): PhysicsImpostor;
+        dispose(): void;
+        setDeltaPosition(position: Vector3): void;
+        setDeltaRotation(rotation: Quaternion): void;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static ParticleImpostor: number;
+        static HeightmapImpostor: number;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsJointData {
+        mainPivot?: Vector3;
+        connectedPivot?: Vector3;
+        mainAxis?: Vector3;
+        connectedAxis?: Vector3;
+        collision?: boolean;
+        nativeParams?: any;
+    }
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
+    class PhysicsJoint {
+        type: number;
+        jointData: PhysicsJointData;
+        private _physicsJoint;
+        protected _physicsPlugin: IPhysicsEnginePlugin;
+        constructor(type: number, jointData: PhysicsJointData);
+        physicsJoint: any;
+        physicsPlugin: IPhysicsEnginePlugin;
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed.
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
+        static DistanceJoint: number;
+        static HingeJoint: number;
+        static BallAndSocketJoint: number;
+        static WheelJoint: number;
+        static SliderJoint: number;
+        static PrismaticJoint: number;
+        static UniversalJoint: number;
+        static Hinge2Joint: number;
+        static PointToPointJoint: number;
+        static SpringJoint: number;
+        static LockJoint: number;
+    }
+    /**
+     * A class representing a physics distance joint.
+     */
+    class DistanceJoint extends PhysicsJoint {
+        constructor(jointData: DistanceJointData);
+        /**
+         * Update the predefined distance.
+         */
+        updateDistance(maxDistance: number, minDistance?: number): void;
+    }
+    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
+        constructor(type: number, jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a single hinge physics joint
+     */
+    class HingeJoint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
+    class Hinge2Joint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface IMotorEnabledJoint {
+        physicsJoint: any;
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): any;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): any;
+    }
+    interface DistanceJointData extends PhysicsJointData {
+        maxDistance: number;
+    }
+    interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
+    }
+}
+
+declare module BABYLON {
+    class Particle {
+        position: Vector3;
+        direction: Vector3;
+        color: Color4;
+        colorStep: Color4;
+        lifeTime: number;
+        age: number;
+        size: number;
+        angle: number;
+        angularSpeed: number;
+        copyTo(other: Particle): void;
+    }
+}
+
+declare module BABYLON {
+    class ParticleSystem implements IDisposable, IAnimatable {
+        name: string;
+        static BLENDMODE_ONEONE: number;
+        static BLENDMODE_STANDARD: number;
+        animations: Animation[];
+        id: string;
+        renderingGroupId: number;
+        emitter: any;
+        emitRate: number;
+        manualEmitCount: number;
+        updateSpeed: number;
+        targetStopDuration: number;
+        disposeOnStop: boolean;
+        minEmitPower: number;
+        maxEmitPower: number;
+        minLifeTime: number;
+        maxLifeTime: number;
+        minSize: number;
+        maxSize: number;
+        minAngularSpeed: number;
+        maxAngularSpeed: number;
+        particleTexture: Texture;
+        layerMask: number;
+        /**
+        * An event triggered when the system is disposed.
+        * @type {BABYLON.Observable}
+        */
+        onDisposeObservable: Observable<ParticleSystem>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        updateFunction: (particles: Particle[]) => void;
+        blendMode: number;
+        forceDepthWrite: boolean;
+        gravity: Vector3;
+        direction1: Vector3;
+        direction2: Vector3;
+        minEmitBox: Vector3;
+        maxEmitBox: Vector3;
+        color1: Color4;
+        color2: Color4;
+        colorDead: Color4;
+        textureMask: Color4;
+        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+        private particles;
+        private _capacity;
+        private _scene;
+        private _stockParticles;
+        private _newPartsExcess;
+        private _vertexData;
+        private _vertexBuffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _customEffect;
+        private _cachedDefines;
+        private _scaledColorStep;
+        private _colorDiff;
+        private _scaledDirection;
+        private _scaledGravity;
+        private _currentRenderId;
+        private _alive;
+        private _started;
+        private _stopped;
+        private _actualFrame;
+        private _scaledUpdateSpeed;
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
+        recycleParticle(particle: Particle): void;
+        getCapacity(): number;
+        isAlive(): boolean;
+        isStarted(): boolean;
+        start(): void;
+        stop(): void;
+        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
+        private _update(newParticles);
+        private _getEffect();
+        animate(): void;
+        render(): number;
+        dispose(): void;
+        clone(name: string, newEmitter: any): ParticleSystem;
+        serialize(): any;
+        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem;
+    }
+}
+
+declare module BABYLON {
+    class SolidParticle {
+        idx: number;
+        color: Color4;
+        position: Vector3;
+        rotation: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        uvs: Vector4;
+        velocity: Vector3;
+        alive: boolean;
+        isVisible: boolean;
+        _pos: number;
+        _model: ModelShape;
+        shapeId: number;
+        idxInShape: number;
+        _modelBoundingInfo: BoundingInfo;
+        _boundingInfo: BoundingInfo;
+        constructor(particleIndex: number, positionIndex: number, model: ModelShape, shapeId: number, idxInShape: number, modelBoundingInfo?: BoundingInfo);
+        scale: Vector3;
+        quaternion: Quaternion;
+        intersectsMesh(target: Mesh | SolidParticle): boolean;
+    }
+    class ModelShape {
+        shapeID: number;
+        _shape: Vector3[];
+        _shapeUV: number[];
+        _positionFunction: (particle: SolidParticle, i: number, s: number) => void;
+        _vertexFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void;
+        constructor(id: number, shape: Vector3[], shapeUV: number[], posFunction: (particle: SolidParticle, i: number, s: number) => void, vtxFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void);
+    }
+}
+
+declare module BABYLON {
+    /**
+    * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
+    */
+    class SolidParticleSystem implements IDisposable {
+        /**
+        *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
+        *  Example : var p = SPS.particles[i];
+        */
+        particles: SolidParticle[];
+        /**
+        * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
+        */
+        nbParticles: number;
+        /**
+        * If the particles must ever face the camera (default false). Useful for planar particles.
+        */
+        billboard: boolean;
+        /**
+         * Recompute normals when adding a shape
+         */
+        recomputeNormals: boolean;
+        /**
+        * This a counter ofr your own usage. It's not set by any SPS functions.
+        */
+        counter: number;
+        /**
+        * The SPS name. This name is also given to the underlying mesh.
+        */
+        name: string;
+        /**
+        * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
+        */
+        mesh: Mesh;
+        /**
+        * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
+        * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
+        */
+        vars: any;
+        /**
+        * This array is populated when the SPS is set as 'pickable'.
+        * Each key of this array is a `faceId` value that you can get from a pickResult object.
+        * Each element of this array is an object `{idx: int, faceId: int}`.
+        * `idx` is the picked particle index in the `SPS.particles` array
+        * `faceId` is the picked face index counted within this particle.
+        * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
+        */
+        pickedParticles: {
+            idx: number;
+            faceId: number;
+        }[];
+        private _scene;
+        private _positions;
+        private _indices;
+        private _normals;
+        private _colors;
+        private _uvs;
+        private _positions32;
+        private _normals32;
+        private _fixedNormal32;
+        private _colors32;
+        private _uvs32;
+        private _index;
+        private _updatable;
+        private _pickable;
+        private _isVisibilityBoxLocked;
+        private _alwaysVisible;
+        private _shapeCounter;
+        private _copy;
+        private _shape;
+        private _shapeUV;
+        private _color;
+        private _computeParticleColor;
+        private _computeParticleTexture;
+        private _computeParticleRotation;
+        private _computeParticleVertex;
+        private _computeBoundingBox;
+        private _cam_axisZ;
+        private _cam_axisY;
+        private _cam_axisX;
+        private _axisX;
+        private _axisY;
+        private _axisZ;
+        private _camera;
+        private _particle;
+        private _camDir;
+        private _rotMatrix;
+        private _invertMatrix;
+        private _rotated;
+        private _quaternion;
+        private _vertex;
+        private _normal;
+        private _yaw;
+        private _pitch;
+        private _roll;
+        private _halfroll;
+        private _halfpitch;
+        private _halfyaw;
+        private _sinRoll;
+        private _cosRoll;
+        private _sinPitch;
+        private _cosPitch;
+        private _sinYaw;
+        private _cosYaw;
+        private _w;
+        private _minimum;
+        private _maximum;
+        private _scale;
+        private _translation;
+        private _particlesIntersect;
+        /**
+        * Creates a SPS (Solid Particle System) object.
+        * `name` (String) is the SPS name, this will be the underlying mesh name.
+        * `scene` (Scene) is the scene in which the SPS is added.
+        * `updatable` (default true) : if the SPS must be updatable or immutable.
+        * `isPickable` (default false) : if the solid particles must be pickable.
+        * `particleIntersection` (default false) : if the solid particle intersections must be computed
+        */
+        constructor(name: string, scene: Scene, options?: {
+            updatable?: boolean;
+            isPickable?: boolean;
+            particleIntersection?: boolean;
+        });
+        /**
+        * Builds the SPS underlying mesh. Returns a standard Mesh.
+        * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
+        */
+        buildMesh(): Mesh;
+        /**
+        * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
+        * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
+        * Thus the particles generated from `digest()` have their property `position` set yet.
+        * `mesh` ( Mesh ) is the mesh to be digested
+        * `facetNb` (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
+        * `delta` (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
+        * `number` (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
+        */
+        digest(mesh: Mesh, options?: {
+            facetNb?: number;
+            number?: number;
+            delta?: number;
+        }): SolidParticleSystem;
+        private _resetCopy();
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options);
+        private _posToShape(positions);
+        private _uvsToShapeUV(uvs);
+        private _addParticle(idx, idxpos, model, shapeId, idxInShape, bbInfo?);
+        /**
+        * Adds some particles to the SPS from the model shape. Returns the shape id.
+        * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
+        * `mesh` is any Mesh object that will be used as a model for the solid particles.
+        * `nb` (positive integer) the number of particles to be created from this model
+        * `positionFunction` is an optional javascript function to called for each particle on SPS creation.
+        * `vertexFunction` is an optional javascript function to called for each vertex of each particle on SPS creation
+        */
+        addShape(mesh: Mesh, nb: number, options?: {
+            positionFunction?: any;
+            vertexFunction?: any;
+        }): number;
+        private _rebuildParticle(particle);
+        /**
+        * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+        */
+        rebuildMesh(): void;
+        /**
+        *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
+        *  This method calls `updateParticle()` for each particle of the SPS.
+        *  For an animated SPS, it is usually called within the render loop.
+        * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
+        * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
+        * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+        */
+        setParticles(start?: number, end?: number, update?: boolean): void;
+        private _quaternionRotationYPR();
+        private _quaternionToRotationMatrix();
+        /**
+        * Disposes the SPS
+        */
+        dispose(): void;
+        /**
+        * Visibilty helper : Recomputes the visible size according to the mesh bounding box
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        */
+        refreshVisibleSize(): void;
+        /**
+        * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+        * @param size the size (float) of the visibility box
+        * note : this doesn't lock the SPS mesh bounding box.
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        */
+        setVisibilityBox(size: number): void;
+        /**
+        * Sets the SPS as always visible or not
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        */
+        isAlwaysVisible: boolean;
+        /**
+        * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        */
+        isVisibilityBoxLocked: boolean;
+        /**
+        * Tells to `setParticles()` to compute the particle rotations or not.
+        * Default value : true. The SPS is faster when it's set to false.
+        * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
+        */
+        computeParticleRotation: boolean;
+        /**
+        * Tells to `setParticles()` to compute the particle colors or not.
+        * Default value : true. The SPS is faster when it's set to false.
+        * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+        */
+        computeParticleColor: boolean;
+        /**
+        * Tells to `setParticles()` to compute the particle textures or not.
+        * Default value : true. The SPS is faster when it's set to false.
+        * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
+        */
+        computeParticleTexture: boolean;
+        /**
+        * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
+        * Default value : false. The SPS is faster when it's set to false.
+        * Note : the particle custom vertex positions aren't stored values.
+        */
+        computeParticleVertex: boolean;
+        /**
+        * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
+        */
+        computeBoundingBox: boolean;
+        /**
+        * This function does nothing. It may be overwritten to set all the particle first values.
+        * The SPS doesn't call this function, you may have to call it by your own.
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+        */
+        initParticles(): void;
+        /**
+        * This function does nothing. It may be overwritten to recycle a particle.
+        * The SPS doesn't call this function, you may have to call it by your own.
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+        */
+        recycleParticle(particle: SolidParticle): SolidParticle;
+        /**
+        * Updates a particle : this function should  be overwritten by the user.
+        * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+        * ex : just set a particle position or velocity and recycle conditions
+        */
+        updateParticle(particle: SolidParticle): SolidParticle;
+        /**
+        * Updates a vertex of a particle : it can be overwritten by the user.
+        * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
+        * @param particle the current particle
+        * @param vertex the current index of the current particle
+        * @param pt the index of the current vertex in the particle shape
+        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
+        * ex : just set a vertex particle position
+        */
+        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
+        /**
+        * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
+        * This does nothing and may be overwritten by the user.
+        * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+        * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+        * @param update the boolean update value actually passed to setParticles()
+        */
+        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+        /**
+        * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
+        * This will be passed three parameters.
+        * This does nothing and may be overwritten by the user.
+        * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+        * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+        * @param update the boolean update value actually passed to setParticles()
+        */
+        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+
+declare module BABYLON {
     class ReflectionProbe {
         name: string;
         private _scene;
@@ -9327,6 +9335,76 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _frameCount;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
+        /**
+        * An event triggered when the manager is disposed.
+        * @type {BABYLON.Observable}
+        */
+        onDisposeObservable: Observable<SpriteManager>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class BoundingBoxRenderer {
         frontColor: Color3;
         backColor: Color3;
@@ -9554,76 +9632,6 @@ declare module BABYLON {
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          */
         setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _frameCount;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
-        render(): void;
-        dispose(): void;
     }
 }
 
@@ -11125,6 +11133,9 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Internals {
+}
+
 declare module BABYLON {
     interface IShadowGenerator {
         getShadowMap(): RenderTargetTexture;
@@ -11186,9 +11197,6 @@ declare module BABYLON {
         serialize(): any;
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
-}
-
-declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
