@@ -33,20 +33,23 @@
                 return false;
             }
 
-            this._binary = this._parseBinary(<ArrayBuffer>data);
-            if (!this._binary) {
-                onError();
-                return true;
-            }
+            setTimeout(() => {
+                this._binary = this._parseBinary(<ArrayBuffer>data);
+                if (!this._binary) {
+                    onError();
+                    return true;
+                }
 
-            var gltfRuntime = GLTFFileLoaderBase.CreateRuntime(this._binary.content, scene, rootUrl);
+                var gltfRuntime = GLTFFileLoaderBase.CreateRuntime(this._binary.content, scene, rootUrl);
 
-            if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
-                Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
-                gltfRuntime.extensionsUsed.push(this.name);
-            }
+                if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
+                    Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
+                    gltfRuntime.extensionsUsed.push(this.name);
+                }
 
-            onSuccess(gltfRuntime);
+                onSuccess(gltfRuntime);
+            });
+
             return true;
         }
 
@@ -86,8 +89,12 @@
             var binaryExtensionShader: IGLTFBinaryExtensionShader = shader.extensions[this.name];
             var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
             var shaderBytes = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
-            var shaderString = GLTFUtils.DecodeBufferToText(shaderBytes);
-            onSuccess(shaderString);
+
+            setTimeout(() => {
+                var shaderString = GLTFUtils.DecodeBufferToText(shaderBytes);
+                onSuccess(shaderString);
+            });
+
             return true;
         }
 

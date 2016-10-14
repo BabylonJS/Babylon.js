@@ -1133,7 +1133,7 @@ var BABYLON;
         GLTFFileLoaderBase.LoadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
             var buffer = gltfRuntime.buffers[id];
             if (BABYLON.GLTFUtils.IsBase64(buffer.uri)) {
-                onSuccess(new Uint8Array(BABYLON.GLTFUtils.DecodeBase64(buffer.uri)));
+                setTimeout(function () { return onSuccess(new Uint8Array(BABYLON.GLTFUtils.DecodeBase64(buffer.uri))); });
             }
             else {
                 BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, function (data) { return onSuccess(new Uint8Array(data)); }, null, null, true, onError);
@@ -1151,7 +1151,7 @@ var BABYLON;
             }
             var source = gltfRuntime.images[texture.source];
             if (BABYLON.GLTFUtils.IsBase64(source.uri)) {
-                onSuccess(new Uint8Array(BABYLON.GLTFUtils.DecodeBase64(source.uri)));
+                setTimeout(onSuccess(new Uint8Array(BABYLON.GLTFUtils.DecodeBase64(source.uri))));
             }
             else {
                 BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + source.uri, function (data) { return onSuccess(new Uint8Array(data)); }, null, null, true, onError);
@@ -1758,7 +1758,9 @@ var BABYLON;
             GLTFFileLoaderExtension.ApplyExtensions(function (loaderExtension) {
                 return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
             }, function () {
-                onSuccess(BABYLON.GLTFFileLoaderBase.CreateRuntime(JSON.parse(data), scene, rootUrl));
+                setTimeout(function () {
+                    onSuccess(BABYLON.GLTFFileLoaderBase.CreateRuntime(JSON.parse(data), scene, rootUrl));
+                });
             });
         };
         GLTFFileLoaderExtension.LoadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
@@ -1835,20 +1837,23 @@ var BABYLON;
             _super.call(this, "KHR_binary_glTF");
         }
         GLTFBinaryExtension.prototype.loadRuntimeAsync = function (scene, data, rootUrl, onSuccess, onError) {
+            var _this = this;
             if (!(data instanceof ArrayBuffer)) {
                 return false;
             }
-            this._binary = this._parseBinary(data);
-            if (!this._binary) {
-                onError();
-                return true;
-            }
-            var gltfRuntime = BABYLON.GLTFFileLoaderBase.CreateRuntime(this._binary.content, scene, rootUrl);
-            if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
-                BABYLON.Tools.Warn("glTF binary file does not have " + this.name + " specified in extensionsUsed");
-                gltfRuntime.extensionsUsed.push(this.name);
-            }
-            onSuccess(gltfRuntime);
+            setTimeout(function () {
+                _this._binary = _this._parseBinary(data);
+                if (!_this._binary) {
+                    onError();
+                    return true;
+                }
+                var gltfRuntime = BABYLON.GLTFFileLoaderBase.CreateRuntime(_this._binary.content, scene, rootUrl);
+                if (gltfRuntime.extensionsUsed.indexOf(_this.name) === -1) {
+                    BABYLON.Tools.Warn("glTF binary file does not have " + _this.name + " specified in extensionsUsed");
+                    gltfRuntime.extensionsUsed.push(_this.name);
+                }
+                onSuccess(gltfRuntime);
+            });
             return true;
         };
         GLTFBinaryExtension.prototype.loadBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
@@ -1881,8 +1886,10 @@ var BABYLON;
             var binaryExtensionShader = shader.extensions[this.name];
             var bufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
             var shaderBytes = BABYLON.GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, BABYLON.EComponentType.UNSIGNED_BYTE);
-            var shaderString = BABYLON.GLTFUtils.DecodeBufferToText(shaderBytes);
-            onSuccess(shaderString);
+            setTimeout(function () {
+                var shaderString = BABYLON.GLTFUtils.DecodeBufferToText(shaderBytes);
+                onSuccess(shaderString);
+            });
             return true;
         };
         // Parses a glTF binary array buffer into its content and body
