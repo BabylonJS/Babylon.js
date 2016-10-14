@@ -1573,10 +1573,10 @@
                     }
                 }
 
-                // Load shaders and then buffers
-                this._loadShadersAsync(gltfRuntime, () => {
-                    importMaterials(gltfRuntime);
-                    this._loadBuffersAsync(gltfRuntime, () => {
+                // Load buffers, shaders, materials, etc.
+                this._loadBuffersAsync(gltfRuntime, () => {
+                    this._loadShadersAsync(gltfRuntime, () => {
+                        importMaterials(gltfRuntime);
                         onBuffersLoaded(gltfRuntime);
                     });
                 });
@@ -1599,10 +1599,10 @@
                 // Create nodes
                 this._createNodes(gltfRuntime);
 
-                // Load shaders and then buffers
-                this._loadShadersAsync(gltfRuntime, () => {
-                    importMaterials(gltfRuntime);
-                    this._loadBuffersAsync(gltfRuntime, () => {
+                // Load buffers, shaders, materials, etc.
+                this._loadBuffersAsync(gltfRuntime, () => {
+                    this._loadShadersAsync(gltfRuntime, () => {
+                        importMaterials(gltfRuntime);
                         onBuffersLoaded(gltfRuntime);
                     });
                 });
