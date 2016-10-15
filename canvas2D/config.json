@@ -13,8 +13,9 @@
       "!src/**/*.d.ts"
     ],
     "files": [   
-      "src/Tools/babylon.observable.js",
-      "src/Tools/babylon.stringDictionary.js",
+      "src/Tools/babylon.iPropertyChanged.js",
+      "src/Tools/babylon.observableArray.js",
+      "src/Tools/babylon.observableStringDictionary.js",
       "src/Engine/babylon.bounding2d.js",
       "src/Engine/babylon.canvas2dLayoutEngine.js",
       "src/Engine/babylon.brushes2d.js",
