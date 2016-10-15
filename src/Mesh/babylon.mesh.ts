@@ -439,7 +439,7 @@
             if (!this._geometry) {
                 var result = [];
                 if (this._delayInfo) {
-                    this._delayInfo.forEach( function(kind, index, array) {
+                    this._delayInfo.forEach(function (kind, index, array) {
                         result.push(kind);
                     });
                 }
@@ -759,7 +759,7 @@
 
             var geometry = this._geometry.copy(Geometry.RandomId());
 
-			oldGeometry.releaseForMesh(this, true);
+            oldGeometry.releaseForMesh(this, true);
             geometry.applyToMesh(this);
         }
 
@@ -1346,6 +1346,7 @@
                 let highlightLayer = highlightLayers[i];
                 if (highlightLayer) {
                     highlightLayer.removeMesh(this);
+                    highlightLayer.removeExcludedMesh(this);
                 }
             }
 
@@ -2582,7 +2583,7 @@
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector: Vector3 = null;
             var maxVector: Vector3 = null;
-            meshes.forEach( function(mesh, index, array) {
+            meshes.forEach(function (mesh, index, array) {
                 var boundingBox = mesh.getBoundingInfo().boundingBox;
                 if (!minVector) {
                     minVector = boundingBox.minimumWorld;
