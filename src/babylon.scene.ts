@@ -34,7 +34,7 @@
     export class PointerInfoBase {
         constructor(public type: number, public event: PointerEvent | MouseWheelEvent) {
         }
-        
+
     }
 
     /**
@@ -104,7 +104,7 @@
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
         public useRightHandedSystem = false;
-        
+
         public hoverCursor = "pointer";
 
         // Events
@@ -412,7 +412,7 @@
          * @type {BABYLON.ActionManager}
         */
         public actionManager: ActionManager;
-     
+
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArray<AbstractMesh>(256);
 
@@ -433,20 +433,20 @@
         private _engine: Engine;
 
         // Performance counters
-        private _totalMeshesCounter           = new PerfCounter();
-        private _totalLightsCounter           = new PerfCounter();
-        private _totalMaterialsCounter        = new PerfCounter();
-        private _totalTexturesCounter         = new PerfCounter();
-        private _totalVertices                = new PerfCounter();
-        public  _activeIndices                = new PerfCounter();
-        public  _activeParticles              = new PerfCounter();
-        private _lastFrameDuration            = new PerfCounter();
+        private _totalMeshesCounter = new PerfCounter();
+        private _totalLightsCounter = new PerfCounter();
+        private _totalMaterialsCounter = new PerfCounter();
+        private _totalTexturesCounter = new PerfCounter();
+        private _totalVertices = new PerfCounter();
+        public _activeIndices = new PerfCounter();
+        public _activeParticles = new PerfCounter();
+        private _lastFrameDuration = new PerfCounter();
         private _evaluateActiveMeshesDuration = new PerfCounter();
-        private _renderTargetsDuration        = new PerfCounter();
-        public  _particlesDuration            = new PerfCounter();
-        private _renderDuration               = new PerfCounter();
-        public  _spritesDuration              = new PerfCounter();
-        public  _activeBones                  = new PerfCounter();
+        private _renderTargetsDuration = new PerfCounter();
+        public _particlesDuration = new PerfCounter();
+        private _renderDuration = new PerfCounter();
+        public _spritesDuration = new PerfCounter();
+        public _activeBones = new PerfCounter();
 
         private _animationRatio: number;
 
@@ -1925,7 +1925,7 @@
             this._particlesDuration.endMonitoring(false);
         }
 
-        private _activeMesh(sourceMesh:AbstractMesh, mesh: AbstractMesh): void {
+        private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
             if (mesh.skeleton && this.skeletonsEnabled) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
@@ -2054,7 +2054,8 @@
             var renderhighlights = false;
             if (this.highlightLayers && this.highlightLayers.length > 0) {
                 for (let i = 0; i < this.highlightLayers.length; i++) {
-                    if (this.highlightLayers[i].shouldRender()) {
+                    let highlightLayer = this.highlightLayers[i];
+                    if ((highlightLayer.layerMask & camera.layerMask) && highlightLayer.shouldRender()) {
                         renderhighlights = true;
                         this._engine.setStencilBuffer(true);
                         break;
@@ -2229,7 +2230,7 @@
 
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
-            
+
             // Customs render targets
             this._renderTargetsDuration.beginMonitoring();
             var beforeRenderTargetDate = Tools.Now;
@@ -2989,7 +2990,7 @@
             opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
             transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null): void {
-            
+
             this._renderingManager.setRenderingOrder(renderingGroupId,
                 opaqueSortCompareFn,
                 alphaTestSortCompareFn,
@@ -3002,7 +3003,7 @@
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          */
-        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {            
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {
             this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
         }
     }
