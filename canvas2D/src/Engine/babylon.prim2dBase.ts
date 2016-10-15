@@ -1450,6 +1450,9 @@
             this._firstZDirtyIndex = Prim2DBase._bigInt;
             this._actualOpacity = 0;
             this._actualScale = Vector2.Zero();
+            this._displayDebugAreas = false;
+            this._debugAreaGroup = null;
+
             let isPickable = true;
             let isContainer = true;
             if (settings.isPickable !== undefined) {
@@ -2612,6 +2615,249 @@
             return this._actualZOrderChangedObservable;
         }
 
+        public get displayDebugAreas(): boolean {
+            return this._displayDebugAreas;
+        }
+
+        public set displayDebugAreas(value: boolean) {
+            if (this._displayDebugAreas === value) {
+                return;
+            }
+
+            if (value === false) {
+                this._debugAreaGroup.dispose();
+                this._debugAreaGroup = null;
+            } else {
+                let layoutFill    = "#F0808040";    // Red - Layout area
+                let layoutBorder  = "#F08080FF";
+                let marginFill    = "#F0F04040";    // Yellow - Margin area
+                let marginBorder  = "#F0F040FF";
+                let paddingFill   = "#F040F040";    // Magenta - Padding Area
+                let paddingBorder = "#F040F0FF";
+                let contentFill   = "#40F0F040";    // Cyan - Content area
+                let contentBorder = "#40F0F0FF";
+                let s = new Size(10, 10);
+                let p = Vector2.Zero();
+
+                this._debugAreaGroup = new Group2D
+                    (
+                    {
+                        parent: (this.parent!=null) ? this.parent : this, id: "###DEBUG AREA GROUP###", children:
+                        [
+                            new Group2D({
+                                id: "###Layout Area###", position: p, size: s, children:
+                                [
+                                    new Rectangle2D({ id: "###Layout Frame###", position: Vector2.Zero(), size: s, fill: null, border: layoutBorder }),
+                                    new Rectangle2D({ id: "###Layout Top###", position: Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new Rectangle2D({ id: "###Layout Left###", position: Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new Rectangle2D({ id: "###Layout Right###", position: Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new Rectangle2D({ id: "###Layout Bottom###", position: Vector2.Zero(), size: s, fill: layoutFill })
+                                ]
+                            }),
+                            new Group2D({
+                                id: "###Margin Area###", position: p, size: s, children:
+                                [
+                                    new Rectangle2D({ id: "###Margin Frame###", position: Vector2.Zero(), size: s, fill: null, border: marginBorder }),
+                                    new Rectangle2D({ id: "###Margin Top###", position: Vector2.Zero(), size: s, fill: marginFill }),
+                                    new Rectangle2D({ id: "###Margin Left###", position: Vector2.Zero(), size: s, fill: marginFill }),
+                                    new Rectangle2D({ id: "###Margin Right###", position: Vector2.Zero(), size: s, fill: marginFill }),
+                                    new Rectangle2D({ id: "###Margin Bottom###", position: Vector2.Zero(), size: s, fill: marginFill })
+                                ]
+                            }),
+                            new Group2D({
+                                id: "###Padding Area###", position: p, size: s, children:
+                                [
+                                    new Rectangle2D({ id: "###Padding Frame###", position: Vector2.Zero(), size: s, fill: null, border: paddingBorder }),
+                                    new Rectangle2D({ id: "###Padding Top###", position: Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new Rectangle2D({ id: "###Padding Left###", position: Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new Rectangle2D({ id: "###Padding Right###", position: Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new Rectangle2D({ id: "###Padding Bottom###", position: Vector2.Zero(), size: s, fill: paddingFill })
+                                ]
+                            }),
+                            new Group2D({
+                                id: "###Content Area###", position: p, size: s, children:
+                                [
+                                    new Rectangle2D({ id: "###Content Frame###", position: Vector2.Zero(), size: s, fill: null, border: contentBorder }),
+                                    new Rectangle2D({ id: "###Content Top###", position: Vector2.Zero(), size: s, fill: contentFill }),
+                                    new Rectangle2D({ id: "###Content Left###", position: Vector2.Zero(), size: s, fill: contentFill }),
+                                    new Rectangle2D({ id: "###Content Right###", position: Vector2.Zero(), size: s, fill: contentFill }),
+                                    new Rectangle2D({ id: "###Content Bottom###", position: Vector2.Zero(), size: s, fill: contentFill })
+                                ]
+                            })
+                        ]
+                    }
+                );
+                this._updateDebugArea();
+            }
+
+            this._displayDebugAreas = value;
+        }
+
+        private _updateDebugArea() {
+            let areaNames = ["Layout", "Margin", "Padding", "Content"];
+            let areaZones = ["Area", "Frame", "Top", "Left", "Right", "Bottom"];
+
+            let prims = new Array<Array<Prim2DBase>>(4);
+
+            // Get all the primitives used to display the areas
+            for (let i = 0; i < 4; i++) {
+                prims[i] = new Array<Prim2DBase>(6);
+                for (let j = 0; j < 6; j++) {
+                    prims[i][j] = this._debugAreaGroup.findById(`###${areaNames[i]} ${areaZones[j]}###`);
+                    if (j > 1) {
+                        prims[i][j].levelVisible = false;
+                    }
+                }
+            }
+
+            // Update the visibility status of layout/margin/padding
+            let hasLayout = (this.layoutAreaPos.x!==0) || (this.layoutAreaPos.y!==0);
+            let hasMargin = this._hasMargin;
+            let hasPadding = this._hasPadding;
+            prims[0][0].levelVisible = hasLayout;
+            prims[1][0].levelVisible = hasMargin;
+            prims[2][0].levelVisible = hasPadding;
+            prims[3][0].levelVisible = true;
+
+            // Current offset
+            let curOffset = Vector2.Zero(); 
+
+            // Store the area info of the layout area
+            let curAreaIndex = 0;
+
+            // Store data about each area
+            let areaInfo = new Array<{ off: Vector2, size: Size, min: Vector2, max: Vector2 }>(4);
+
+            let storeAreaInfo = (pos: Vector2, size: Size) => {
+                let min = pos.clone();
+                let max = pos.clone();
+                if (size.width > 0) {
+                    max.x += size.width;
+                }
+                if (size.height > 0) {
+                    max.y += size.height;
+                }
+
+                areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
+            }
+
+            {
+                let w = this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width;
+                let h = this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height;
+                storeAreaInfo(Vector2.Zero(), new Size(w, h));
+            }
+
+            // Compute the layout related data
+            if (hasLayout) {
+                let layoutOffset = this.layoutAreaPos;
+
+                let w = this.layoutArea.width - (layoutOffset.x + this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width);
+                let h = this.layoutArea.height - (layoutOffset.y + this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height);
+
+                let layoutArea = new Size(w, h);
+
+                storeAreaInfo(layoutOffset, layoutArea);
+                curOffset = this.layoutAreaPos;
+            }
+
+            // Compute margin data
+            if (hasMargin) {
+                let marginOffset = this._marginOffset.add(curOffset);
+                let marginArea = this.actualSize;
+
+                storeAreaInfo(marginOffset, marginArea);
+                curOffset.addInPlace(marginOffset);
+            }
+
+            if (hasPadding) {
+                let contentOffset = this._paddingOffset.add(curOffset);
+                let contentArea = this.contentArea;
+
+                storeAreaInfo(contentOffset, contentArea);
+                curOffset.addInPlace(contentOffset);
+            }
+
+            // Helper function that set the pos and size of a given prim
+            let setArea = (i: number, j: number, pos: Vector2, size: Size) => {
+                prims[i][j].position = pos;
+                prims[i][j].size = size;
+            }
+
+            let setFullRect = (i: number, pos: Vector2, size: Size) => {
+                let plist = prims[i];
+                plist[2].levelVisible = true;
+                plist[3].levelVisible = false;
+                plist[4].levelVisible = false;
+                plist[5].levelVisible = false;
+
+                setArea(i, 1, pos, size);
+                setArea(i, 2, pos, size);
+            }
+
+            let setQuadRect = (i: number, areaIndex: number) => {
+                let plist = prims[i];
+                plist[2].levelVisible = true;
+                plist[3].levelVisible = true;
+                plist[4].levelVisible = true;
+                plist[5].levelVisible = true;
+
+                let ca = areaInfo[areaIndex];
+                let na = areaInfo[areaIndex + 1];
+
+                let tp = new Vector2(ca.min.x, na.max.y);
+                let ts = new Size(ca.size.width, ca.max.y - tp.y);
+                let lp = new Vector2(ca.min.x, na.min.y);
+                let ls = new Size(na.min.x - ca.min.x, na.max.y - na.min.y);
+                let rp = new Vector2(na.max.x, na.min.y);
+                let rs = ls;
+                let bp = new Vector2(ca.min.x, ca.min.y);
+                let bs = ts;
+
+                // Frame
+                plist[1].position = ca.off;
+                plist[1].size = ca.size;
+
+                // Top rect
+                plist[2].position = tp;
+                plist[2].size = ts;
+
+                // Left rect
+                plist[3].position = lp;
+                plist[3].size = ls;
+
+                // Right rect
+                plist[4].position = rp;
+                plist[4].size = rs;
+
+                // Bottom rect
+                plist[5].position = bp;
+                plist[5].size = bs;
+            }
+
+            let areaCount = curAreaIndex;
+            curAreaIndex = 0;
+
+            // Available zones
+            let availableZones = [false, hasLayout, hasMargin, hasPadding, true];
+
+            for (let k = 1; k < 5; k++) {
+                if (availableZones[k]) {
+
+                    let ai = areaInfo[curAreaIndex];
+
+                    setArea(k-1, 0, Vector2.Zero(), ai.size);
+//                    setArea(k-1, 1, Vector2.Zero(), ai.size);
+
+                    if (k === 4) {
+                        setFullRect(k-1, ai.off, ai.size);
+                    } else {
+                        setQuadRect(k-1, curAreaIndex);
+                    }
+                    ++curAreaIndex;
+                }
+            }
+        }
+
         public findById(id: string): Prim2DBase {
             if (this._id === id) {
                 return this;
@@ -3202,6 +3448,10 @@
             if (isSizeAuto) {
                 this._lastAutoSizeArea = this.actualSize;
             }
+
+            if (this.displayDebugAreas) {
+                this._updateDebugArea();
+            }
         }
 
         /**
@@ -3479,6 +3729,8 @@
         protected _opacity: number;
         private _actualOpacity: number;
         private _actualScale : Vector2;
+        private _displayDebugAreas: boolean;
+        private _debugAreaGroup: Group2D;
 
         // Stores the step of the parent for which the current global transform was computed
         // If the parent has a new step, it means this prim's global transform must be updated

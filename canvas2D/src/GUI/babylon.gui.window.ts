@@ -24,6 +24,19 @@
             height          ?: number,
             worldPosition   ?: Vector3,
             worldRotation   ?: Quaternion,
+            marginTop       ?: number | string,
+            marginLeft      ?: number | string,
+            marginRight     ?: number | string,
+            marginBottom    ?: number | string,
+            margin          ?: number | string,
+            marginHAlignment?: number,
+            marginVAlignment?: number,
+            marginAlignment ?: string,
+            paddingTop      ?: number | string,
+            paddingLeft     ?: number | string,
+            paddingRight    ?: number | string,
+            paddingBottom   ?: number | string,
+            padding         ?: string,
         }) {
 
             if (!settings) {
