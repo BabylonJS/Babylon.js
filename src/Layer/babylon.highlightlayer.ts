@@ -45,6 +45,11 @@
          * Alpha blending mode used to apply the blur. Default is combine.
          */
         alphaBlendingMode?: number
+
+        /**
+         * The camera attached to the layer.
+         */
+        camera?: Camera;
     }
 
     /**
@@ -72,6 +77,10 @@
          * Else it falls back to the current color.
          */
         glowEmissiveOnly: boolean;
+        /**
+         * The camera attached to the layer.
+         */
+        camera?: Camera;
     }
 
     /**
@@ -148,11 +157,6 @@
         public outerGlow: boolean = true;
 
         /**
-         * Helps enabling disabling the highlight depending on the layers being rendered.
-         */
-        public layerMask = 0xFFFFFFFF;
-
-        /**
          * Specifies the horizontal size of the blur.
          */
         public set blurHorizontalSize(value: number) {
@@ -178,6 +182,13 @@
          */
         public get blurVerticalSize(): number {
             return this._verticalBlurPostprocess.blurWidth;
+        }
+
+        /**
+         * Gets the camera attached to the layer.
+         */
+        public get camera(): Camera {
+            return this._options.camera;
         }
 
         /**
@@ -306,6 +317,7 @@
                 false,
                 true,
                 Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._mainTexture.activeCamera = this._options.camera;
             this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._mainTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._mainTexture.anisotropicFilteringLevel = 1;
