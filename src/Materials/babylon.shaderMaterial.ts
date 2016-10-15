@@ -137,7 +137,7 @@
             return this;
         }
 
-        public setVector3Array(name: string, value: number[]): ShaderMaterial {
+        public setArray3(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._vectors3Arrays[name] = value;
 
@@ -501,7 +501,7 @@
 
             // Vector3Array
             for (name in source.vectors3Arrays) {
-                material.setVector3Array(name, source.vectors3Arrays[name]);
+                material.setArray3(name, source.vectors3Arrays[name]);
             }
             
             return material;
