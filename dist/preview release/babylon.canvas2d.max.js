@@ -14,304 +14,6 @@ d.prototype = new __();
 var BABYLON;
 (function (BABYLON) {
     /**
-     * Class for the ObservableStringDictionary.onDictionaryChanged observable
-     */
-    var DictionaryChanged = (function () {
-        function DictionaryChanged() {
-        }
-        Object.defineProperty(DictionaryChanged, "clearAction", {
-            /**
-             * The content of the dictionary was totally cleared
-             */
-            get: function () {
-                return DictionaryChanged._clearAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DictionaryChanged, "newItemAction", {
-            /**
-             * A new item was added, the newItem field contains the key/value pair
-             */
-            get: function () {
-                return DictionaryChanged._newItemAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DictionaryChanged, "removedItemAction", {
-            /**
-             * An existing item was removed, the removedKey field contains its key
-             */
-            get: function () {
-                return DictionaryChanged._removedItemAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DictionaryChanged, "itemValueChangedAction", {
-            /**
-             * An existing item had a value change, the changedItem field contains the key/value
-             */
-            get: function () {
-                return DictionaryChanged._itemValueChangedAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DictionaryChanged, "replacedAction", {
-            /**
-             * The dictionary's content was reset and replaced by the content of another dictionary.
-             * DictionaryChanged<T> contains no further information about this action
-             */
-            get: function () {
-                return DictionaryChanged._replacedAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        DictionaryChanged._clearAction = 0x1;
-        DictionaryChanged._newItemAction = 0x2;
-        DictionaryChanged._removedItemAction = 0x4;
-        DictionaryChanged._itemValueChangedAction = 0x8;
-        DictionaryChanged._replacedAction = 0x10;
-        return DictionaryChanged;
-    }());
-    BABYLON.DictionaryChanged = DictionaryChanged;
-    var OSDWatchedObjectChangedInfo = (function () {
-        function OSDWatchedObjectChangedInfo() {
-        }
-        return OSDWatchedObjectChangedInfo;
-    }());
-    BABYLON.OSDWatchedObjectChangedInfo = OSDWatchedObjectChangedInfo;
-    var ObservableStringDictionary = (function (_super) {
-        __extends(ObservableStringDictionary, _super);
-        function ObservableStringDictionary(watchObjectsPropertyChange) {
-            _super.call(this);
-            this._propertyChanged = null;
-            this._dictionaryChanged = null;
-            this.dci = new DictionaryChanged();
-            this._callingDicChanged = false;
-            this._watchedObjectChanged = null;
-            this._callingWatchedObjectChanged = false;
-            this._woci = new OSDWatchedObjectChangedInfo();
-            this._watchObjectsPropertyChange = watchObjectsPropertyChange;
-            this._watchedObjectList = this._watchObjectsPropertyChange ? new BABYLON.StringDictionary() : null;
-        }
-        /**
-         * This will clear this dictionary and copy the content from the 'source' one.
-         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
-         * @param source the dictionary to take the content from and copy to this dictionary
-         */
-        ObservableStringDictionary.prototype.copyFrom = function (source) {
-            var _this = this;
-            var oldCount = this.count;
-            // Don't rely on this class' implementation for clear/add otherwise tons of notification will be thrown
-            _super.prototype.clear.call(this);
-            source.forEach(function (t, v) { return _this._add(t, v, false, _this._watchObjectsPropertyChange); });
-            this.onDictionaryChanged(DictionaryChanged.replacedAction, null, null, null);
-            this.onPropertyChanged("count", oldCount, this.count);
-        };
-        /**
-         * Get a value from its key or add it if it doesn't exist.
-         * This method will ensure you that a given key/data will be present in the dictionary.
-         * @param key the given key to get the matching value from
-         * @param factory the factory that will create the value if the key is not present in the dictionary.
-         * The factory will only be invoked if there's no data for the given key.
-         * @return the value corresponding to the key.
-         */
-        ObservableStringDictionary.prototype.getOrAddWithFactory = function (key, factory) {
-            var _this = this;
-            var val = _super.prototype.getOrAddWithFactory.call(this, key, function (k) {
-                var v = factory(key);
-                _this._add(key, v, true, _this._watchObjectsPropertyChange);
-                return v;
-            });
-            return val;
-        };
-        /**
-         * Add a new key and its corresponding value
-         * @param key the key to add
-         * @param value the value corresponding to the key
-         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
-         */
-        ObservableStringDictionary.prototype.add = function (key, value) {
-            return this._add(key, value, true, true);
-        };
-        ObservableStringDictionary.prototype.getAndRemove = function (key) {
-            var val = _super.prototype.get.call(this, key);
-            this._remove(key, true, val);
-            return val;
-        };
-        ObservableStringDictionary.prototype._add = function (key, value, fireNotif, registerWatcher) {
-            if (_super.prototype.add.call(this, key, value)) {
-                if (fireNotif) {
-                    this.onDictionaryChanged(DictionaryChanged.newItemAction, { key: key, value: value }, null, null);
-                    this.onPropertyChanged("count", this.count - 1, this.count);
-                }
-                if (registerWatcher) {
-                    this._addWatchedElement(key, value);
-                }
-                return true;
-            }
-            return false;
-        };
-        ObservableStringDictionary.prototype._addWatchedElement = function (key, el) {
-            var _this = this;
-            if (el["propertyChanged"]) {
-                this._watchedObjectList.add(key, el.propertyChanged.add(function (e, d) {
-                    _this.onWatchedObjectChanged(key, el, e);
-                }));
-            }
-        };
-        ObservableStringDictionary.prototype._removeWatchedElement = function (key, el) {
-            var observer = this._watchedObjectList.getAndRemove(key);
-            el.propertyChanged.remove(observer);
-        };
-        ObservableStringDictionary.prototype.set = function (key, value) {
-            var oldValue = this.get(key);
-            if (this._watchObjectsPropertyChange) {
-                this._removeWatchedElement(key, oldValue);
-            }
-            if (_super.prototype.set.call(this, key, value)) {
-                this.onDictionaryChanged(DictionaryChanged.itemValueChangedAction, null, null, { key: key, oldValue: oldValue, newValue: value });
-                this._addWatchedElement(key, value);
-                return true;
-            }
-            return false;
-        };
-        /**
-         * Remove a key/value from the dictionary.
-         * @param key the key to remove
-         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
-         */
-        ObservableStringDictionary.prototype.remove = function (key) {
-            return this._remove(key, true);
-        };
-        ObservableStringDictionary.prototype._remove = function (key, fireNotif, element) {
-            if (!element) {
-                element = this.get(key);
-            }
-            if (!element) {
-                return false;
-            }
-            if (_super.prototype.remove.call(this, key) === undefined) {
-                return false;
-            }
-            this.onDictionaryChanged(DictionaryChanged.removedItemAction, null, key, null);
-            this.onPropertyChanged("count", this.count + 1, this.count);
-            if (this._watchObjectsPropertyChange) {
-                this._removeWatchedElement(key, element);
-            }
-            return true;
-        };
-        /**
-         * Clear the whole content of the dictionary
-         */
-        ObservableStringDictionary.prototype.clear = function () {
-            var _this = this;
-            this._watchedObjectList.forEach(function (k, v) {
-                var el = _this.get(k);
-                _this._removeWatchedElement(k, el);
-            });
-            this._watchedObjectList.clear();
-            var oldCount = this.count;
-            _super.prototype.clear.call(this);
-            this.onDictionaryChanged(DictionaryChanged.clearAction, null, null, null);
-            this.onPropertyChanged("count", oldCount, 0);
-        };
-        Object.defineProperty(ObservableStringDictionary.prototype, "propertyChanged", {
-            get: function () {
-                if (!this._propertyChanged) {
-                    this._propertyChanged = new BABYLON.Observable();
-                }
-                return this._propertyChanged;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ObservableStringDictionary.prototype.onPropertyChanged = function (propName, oldValue, newValue, mask) {
-            if (this._propertyChanged && this._propertyChanged.hasObservers()) {
-                var pci = ObservableStringDictionary.callingPropChanged ? new BABYLON.PropertyChangedInfo() : ObservableStringDictionary.pci;
-                pci.oldValue = oldValue;
-                pci.newValue = newValue;
-                pci.propertyName = propName;
-                try {
-                    ObservableStringDictionary.callingPropChanged = true;
-                    this.propertyChanged.notifyObservers(pci, mask);
-                }
-                finally {
-                    ObservableStringDictionary.callingPropChanged = false;
-                }
-            }
-        };
-        Object.defineProperty(ObservableStringDictionary.prototype, "dictionaryChanged", {
-            get: function () {
-                if (!this._dictionaryChanged) {
-                    this._dictionaryChanged = new BABYLON.Observable();
-                }
-                return this._dictionaryChanged;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ObservableStringDictionary.prototype.onDictionaryChanged = function (action, newItem, removedKey, changedItem) {
-            if (this._dictionaryChanged && this._dictionaryChanged.hasObservers()) {
-                var dci = this._callingDicChanged ? new DictionaryChanged() : this.dci;
-                dci.action = action;
-                dci.newItem = newItem;
-                dci.removedKey = removedKey;
-                dci.changedItem = changedItem;
-                try {
-                    this._callingDicChanged = true;
-                    this.dictionaryChanged.notifyObservers(dci, action);
-                }
-                finally {
-                    this._callingDicChanged = false;
-                }
-            }
-        };
-        Object.defineProperty(ObservableStringDictionary.prototype, "watchedObjectChanged", {
-            get: function () {
-                if (!this._watchedObjectChanged) {
-                    this._watchedObjectChanged = new BABYLON.Observable();
-                }
-                return this._watchedObjectChanged;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ObservableStringDictionary.prototype.onWatchedObjectChanged = function (key, object, propChanged) {
-            if (this._watchedObjectChanged && this._watchedObjectChanged.hasObservers()) {
-                var woci = this._callingWatchedObjectChanged ? new OSDWatchedObjectChangedInfo() : this._woci;
-                woci.key = key;
-                woci.object = object;
-                woci.propertyChanged = propChanged;
-                try {
-                    this._callingWatchedObjectChanged = true;
-                    this.watchedObjectChanged.notifyObservers(woci);
-                }
-                finally {
-                    this._callingWatchedObjectChanged = false;
-                }
-            }
-        };
-        ObservableStringDictionary.pci = new BABYLON.PropertyChangedInfo();
-        ObservableStringDictionary.callingPropChanged = false;
-        return ObservableStringDictionary;
-    }(BABYLON.StringDictionary));
-    BABYLON.ObservableStringDictionary = ObservableStringDictionary;
-})(BABYLON || (BABYLON = {}));
-
-
-
-
-
-
-
-var BABYLON;
-(function (BABYLON) {
-    /**
      * Custom type of the propertyChanged observable
      */
     var PropertyChangedInfo = (function () {
@@ -920,6 +622,304 @@ var BABYLON;
         return ObservableArray;
     }(PropertyChangedBase));
     BABYLON.ObservableArray = ObservableArray;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * Class for the ObservableStringDictionary.onDictionaryChanged observable
+     */
+    var DictionaryChanged = (function () {
+        function DictionaryChanged() {
+        }
+        Object.defineProperty(DictionaryChanged, "clearAction", {
+            /**
+             * The content of the dictionary was totally cleared
+             */
+            get: function () {
+                return DictionaryChanged._clearAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "newItemAction", {
+            /**
+             * A new item was added, the newItem field contains the key/value pair
+             */
+            get: function () {
+                return DictionaryChanged._newItemAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "removedItemAction", {
+            /**
+             * An existing item was removed, the removedKey field contains its key
+             */
+            get: function () {
+                return DictionaryChanged._removedItemAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "itemValueChangedAction", {
+            /**
+             * An existing item had a value change, the changedItem field contains the key/value
+             */
+            get: function () {
+                return DictionaryChanged._itemValueChangedAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "replacedAction", {
+            /**
+             * The dictionary's content was reset and replaced by the content of another dictionary.
+             * DictionaryChanged<T> contains no further information about this action
+             */
+            get: function () {
+                return DictionaryChanged._replacedAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        DictionaryChanged._clearAction = 0x1;
+        DictionaryChanged._newItemAction = 0x2;
+        DictionaryChanged._removedItemAction = 0x4;
+        DictionaryChanged._itemValueChangedAction = 0x8;
+        DictionaryChanged._replacedAction = 0x10;
+        return DictionaryChanged;
+    }());
+    BABYLON.DictionaryChanged = DictionaryChanged;
+    var OSDWatchedObjectChangedInfo = (function () {
+        function OSDWatchedObjectChangedInfo() {
+        }
+        return OSDWatchedObjectChangedInfo;
+    }());
+    BABYLON.OSDWatchedObjectChangedInfo = OSDWatchedObjectChangedInfo;
+    var ObservableStringDictionary = (function (_super) {
+        __extends(ObservableStringDictionary, _super);
+        function ObservableStringDictionary(watchObjectsPropertyChange) {
+            _super.call(this);
+            this._propertyChanged = null;
+            this._dictionaryChanged = null;
+            this.dci = new DictionaryChanged();
+            this._callingDicChanged = false;
+            this._watchedObjectChanged = null;
+            this._callingWatchedObjectChanged = false;
+            this._woci = new OSDWatchedObjectChangedInfo();
+            this._watchObjectsPropertyChange = watchObjectsPropertyChange;
+            this._watchedObjectList = this._watchObjectsPropertyChange ? new BABYLON.StringDictionary() : null;
+        }
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        ObservableStringDictionary.prototype.copyFrom = function (source) {
+            var _this = this;
+            var oldCount = this.count;
+            // Don't rely on this class' implementation for clear/add otherwise tons of notification will be thrown
+            _super.prototype.clear.call(this);
+            source.forEach(function (t, v) { return _this._add(t, v, false, _this._watchObjectsPropertyChange); });
+            this.onDictionaryChanged(DictionaryChanged.replacedAction, null, null, null);
+            this.onPropertyChanged("count", oldCount, this.count);
+        };
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matching value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        ObservableStringDictionary.prototype.getOrAddWithFactory = function (key, factory) {
+            var _this = this;
+            var val = _super.prototype.getOrAddWithFactory.call(this, key, function (k) {
+                var v = factory(key);
+                _this._add(key, v, true, _this._watchObjectsPropertyChange);
+                return v;
+            });
+            return val;
+        };
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        ObservableStringDictionary.prototype.add = function (key, value) {
+            return this._add(key, value, true, true);
+        };
+        ObservableStringDictionary.prototype.getAndRemove = function (key) {
+            var val = _super.prototype.get.call(this, key);
+            this._remove(key, true, val);
+            return val;
+        };
+        ObservableStringDictionary.prototype._add = function (key, value, fireNotif, registerWatcher) {
+            if (_super.prototype.add.call(this, key, value)) {
+                if (fireNotif) {
+                    this.onDictionaryChanged(DictionaryChanged.newItemAction, { key: key, value: value }, null, null);
+                    this.onPropertyChanged("count", this.count - 1, this.count);
+                }
+                if (registerWatcher) {
+                    this._addWatchedElement(key, value);
+                }
+                return true;
+            }
+            return false;
+        };
+        ObservableStringDictionary.prototype._addWatchedElement = function (key, el) {
+            var _this = this;
+            if (el["propertyChanged"]) {
+                this._watchedObjectList.add(key, el.propertyChanged.add(function (e, d) {
+                    _this.onWatchedObjectChanged(key, el, e);
+                }));
+            }
+        };
+        ObservableStringDictionary.prototype._removeWatchedElement = function (key, el) {
+            var observer = this._watchedObjectList.getAndRemove(key);
+            el.propertyChanged.remove(observer);
+        };
+        ObservableStringDictionary.prototype.set = function (key, value) {
+            var oldValue = this.get(key);
+            if (this._watchObjectsPropertyChange) {
+                this._removeWatchedElement(key, oldValue);
+            }
+            if (_super.prototype.set.call(this, key, value)) {
+                this.onDictionaryChanged(DictionaryChanged.itemValueChangedAction, null, null, { key: key, oldValue: oldValue, newValue: value });
+                this._addWatchedElement(key, value);
+                return true;
+            }
+            return false;
+        };
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        ObservableStringDictionary.prototype.remove = function (key) {
+            return this._remove(key, true);
+        };
+        ObservableStringDictionary.prototype._remove = function (key, fireNotif, element) {
+            if (!element) {
+                element = this.get(key);
+            }
+            if (!element) {
+                return false;
+            }
+            if (_super.prototype.remove.call(this, key) === undefined) {
+                return false;
+            }
+            this.onDictionaryChanged(DictionaryChanged.removedItemAction, null, key, null);
+            this.onPropertyChanged("count", this.count + 1, this.count);
+            if (this._watchObjectsPropertyChange) {
+                this._removeWatchedElement(key, element);
+            }
+            return true;
+        };
+        /**
+         * Clear the whole content of the dictionary
+         */
+        ObservableStringDictionary.prototype.clear = function () {
+            var _this = this;
+            this._watchedObjectList.forEach(function (k, v) {
+                var el = _this.get(k);
+                _this._removeWatchedElement(k, el);
+            });
+            this._watchedObjectList.clear();
+            var oldCount = this.count;
+            _super.prototype.clear.call(this);
+            this.onDictionaryChanged(DictionaryChanged.clearAction, null, null, null);
+            this.onPropertyChanged("count", oldCount, 0);
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "propertyChanged", {
+            get: function () {
+                if (!this._propertyChanged) {
+                    this._propertyChanged = new BABYLON.Observable();
+                }
+                return this._propertyChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onPropertyChanged = function (propName, oldValue, newValue, mask) {
+            if (this._propertyChanged && this._propertyChanged.hasObservers()) {
+                var pci = ObservableStringDictionary.callingPropChanged ? new BABYLON.PropertyChangedInfo() : ObservableStringDictionary.pci;
+                pci.oldValue = oldValue;
+                pci.newValue = newValue;
+                pci.propertyName = propName;
+                try {
+                    ObservableStringDictionary.callingPropChanged = true;
+                    this.propertyChanged.notifyObservers(pci, mask);
+                }
+                finally {
+                    ObservableStringDictionary.callingPropChanged = false;
+                }
+            }
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "dictionaryChanged", {
+            get: function () {
+                if (!this._dictionaryChanged) {
+                    this._dictionaryChanged = new BABYLON.Observable();
+                }
+                return this._dictionaryChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onDictionaryChanged = function (action, newItem, removedKey, changedItem) {
+            if (this._dictionaryChanged && this._dictionaryChanged.hasObservers()) {
+                var dci = this._callingDicChanged ? new DictionaryChanged() : this.dci;
+                dci.action = action;
+                dci.newItem = newItem;
+                dci.removedKey = removedKey;
+                dci.changedItem = changedItem;
+                try {
+                    this._callingDicChanged = true;
+                    this.dictionaryChanged.notifyObservers(dci, action);
+                }
+                finally {
+                    this._callingDicChanged = false;
+                }
+            }
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "watchedObjectChanged", {
+            get: function () {
+                if (!this._watchedObjectChanged) {
+                    this._watchedObjectChanged = new BABYLON.Observable();
+                }
+                return this._watchedObjectChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onWatchedObjectChanged = function (key, object, propChanged) {
+            if (this._watchedObjectChanged && this._watchedObjectChanged.hasObservers()) {
+                var woci = this._callingWatchedObjectChanged ? new OSDWatchedObjectChangedInfo() : this._woci;
+                woci.key = key;
+                woci.object = object;
+                woci.propertyChanged = propChanged;
+                try {
+                    this._callingWatchedObjectChanged = true;
+                    this.watchedObjectChanged.notifyObservers(woci);
+                }
+                finally {
+                    this._callingWatchedObjectChanged = false;
+                }
+            }
+        };
+        ObservableStringDictionary.pci = new BABYLON.PropertyChangedInfo();
+        ObservableStringDictionary.callingPropChanged = false;
+        return ObservableStringDictionary;
+    }(BABYLON.StringDictionary));
+    BABYLON.ObservableStringDictionary = ObservableStringDictionary;
 })(BABYLON || (BABYLON = {}));
 
 var BABYLON;
@@ -3960,6 +3960,8 @@ var BABYLON;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
             this._actualOpacity = 0;
             this._actualScale = BABYLON.Vector2.Zero();
+            this._displayDebugAreas = false;
+            this._debugAreaGroup = null;
             var isPickable = true;
             var isContainer = true;
             if (settings.isPickable !== undefined) {
@@ -5035,6 +5037,207 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Prim2DBase.prototype, "displayDebugAreas", {
+            get: function () {
+                return this._displayDebugAreas;
+            },
+            set: function (value) {
+                if (this._displayDebugAreas === value) {
+                    return;
+                }
+                if (value === false) {
+                    this._debugAreaGroup.dispose();
+                    this._debugAreaGroup = null;
+                }
+                else {
+                    var layoutFill = "#F0808040"; // Red - Layout area
+                    var layoutBorder = "#F08080FF";
+                    var marginFill = "#F0F04040"; // Yellow - Margin area
+                    var marginBorder = "#F0F040FF";
+                    var paddingFill = "#F040F040"; // Magenta - Padding Area
+                    var paddingBorder = "#F040F0FF";
+                    var contentFill = "#40F0F040"; // Cyan - Content area
+                    var contentBorder = "#40F0F0FF";
+                    var s = new BABYLON.Size(10, 10);
+                    var p = BABYLON.Vector2.Zero();
+                    this._debugAreaGroup = new BABYLON.Group2D({
+                        parent: (this.parent != null) ? this.parent : this, id: "###DEBUG AREA GROUP###", children: [
+                            new BABYLON.Group2D({
+                                id: "###Layout Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Layout Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: layoutBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Top###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Left###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Right###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Margin Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Margin Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: marginBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Top###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Left###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Right###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Padding Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Padding Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: paddingBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Top###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Left###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Right###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Content Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Content Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: contentBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Top###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Left###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Right###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill })
+                                ]
+                            })
+                        ]
+                    });
+                    this._updateDebugArea();
+                }
+                this._displayDebugAreas = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Prim2DBase.prototype._updateDebugArea = function () {
+            var areaNames = ["Layout", "Margin", "Padding", "Content"];
+            var areaZones = ["Area", "Frame", "Top", "Left", "Right", "Bottom"];
+            var prims = new Array(4);
+            // Get all the primitives used to display the areas
+            for (var i = 0; i < 4; i++) {
+                prims[i] = new Array(6);
+                for (var j = 0; j < 6; j++) {
+                    prims[i][j] = this._debugAreaGroup.findById("###" + areaNames[i] + " " + areaZones[j] + "###");
+                    if (j > 1) {
+                        prims[i][j].levelVisible = false;
+                    }
+                }
+            }
+            // Update the visibility status of layout/margin/padding
+            var hasLayout = (this.layoutAreaPos.x !== 0) || (this.layoutAreaPos.y !== 0);
+            var hasMargin = this._hasMargin;
+            var hasPadding = this._hasPadding;
+            prims[0][0].levelVisible = hasLayout;
+            prims[1][0].levelVisible = hasMargin;
+            prims[2][0].levelVisible = hasPadding;
+            prims[3][0].levelVisible = true;
+            // Current offset
+            var curOffset = BABYLON.Vector2.Zero();
+            // Store the area info of the layout area
+            var curAreaIndex = 0;
+            // Store data about each area
+            var areaInfo = new Array(4);
+            var storeAreaInfo = function (pos, size) {
+                var min = pos.clone();
+                var max = pos.clone();
+                if (size.width > 0) {
+                    max.x += size.width;
+                }
+                if (size.height > 0) {
+                    max.y += size.height;
+                }
+                areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
+            };
+            {
+                var w = this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width;
+                var h = this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height;
+                storeAreaInfo(BABYLON.Vector2.Zero(), new BABYLON.Size(w, h));
+            }
+            // Compute the layout related data
+            if (hasLayout) {
+                var layoutOffset = this.layoutAreaPos;
+                var w = this.layoutArea.width - (layoutOffset.x + this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width);
+                var h = this.layoutArea.height - (layoutOffset.y + this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height);
+                var layoutArea = new BABYLON.Size(w, h);
+                storeAreaInfo(layoutOffset, layoutArea);
+                curOffset = this.layoutAreaPos;
+            }
+            // Compute margin data
+            if (hasMargin) {
+                var marginOffset = this._marginOffset.add(curOffset);
+                var marginArea = this.actualSize;
+                storeAreaInfo(marginOffset, marginArea);
+                curOffset.addInPlace(marginOffset);
+            }
+            if (hasPadding) {
+                var contentOffset = this._paddingOffset.add(curOffset);
+                var contentArea = this.contentArea;
+                storeAreaInfo(contentOffset, contentArea);
+                curOffset.addInPlace(contentOffset);
+            }
+            // Helper function that set the pos and size of a given prim
+            var setArea = function (i, j, pos, size) {
+                prims[i][j].position = pos;
+                prims[i][j].size = size;
+            };
+            var setFullRect = function (i, pos, size) {
+                var plist = prims[i];
+                plist[2].levelVisible = true;
+                plist[3].levelVisible = false;
+                plist[4].levelVisible = false;
+                plist[5].levelVisible = false;
+                setArea(i, 1, pos, size);
+                setArea(i, 2, pos, size);
+            };
+            var setQuadRect = function (i, areaIndex) {
+                var plist = prims[i];
+                plist[2].levelVisible = true;
+                plist[3].levelVisible = true;
+                plist[4].levelVisible = true;
+                plist[5].levelVisible = true;
+                var ca = areaInfo[areaIndex];
+                var na = areaInfo[areaIndex + 1];
+                var tp = new BABYLON.Vector2(ca.min.x, na.max.y);
+                var ts = new BABYLON.Size(ca.size.width, ca.max.y - tp.y);
+                var lp = new BABYLON.Vector2(ca.min.x, na.min.y);
+                var ls = new BABYLON.Size(na.min.x - ca.min.x, na.max.y - na.min.y);
+                var rp = new BABYLON.Vector2(na.max.x, na.min.y);
+                var rs = ls;
+                var bp = new BABYLON.Vector2(ca.min.x, ca.min.y);
+                var bs = ts;
+                // Frame
+                plist[1].position = ca.off;
+                plist[1].size = ca.size;
+                // Top rect
+                plist[2].position = tp;
+                plist[2].size = ts;
+                // Left rect
+                plist[3].position = lp;
+                plist[3].size = ls;
+                // Right rect
+                plist[4].position = rp;
+                plist[4].size = rs;
+                // Bottom rect
+                plist[5].position = bp;
+                plist[5].size = bs;
+            };
+            var areaCount = curAreaIndex;
+            curAreaIndex = 0;
+            // Available zones
+            var availableZones = [false, hasLayout, hasMargin, hasPadding, true];
+            for (var k = 1; k < 5; k++) {
+                if (availableZones[k]) {
+                    var ai = areaInfo[curAreaIndex];
+                    setArea(k - 1, 0, BABYLON.Vector2.Zero(), ai.size);
+                    //                    setArea(k-1, 1, Vector2.Zero(), ai.size);
+                    if (k === 4) {
+                        setFullRect(k - 1, ai.off, ai.size);
+                    }
+                    else {
+                        setQuadRect(k - 1, curAreaIndex);
+                    }
+                    ++curAreaIndex;
+                }
+            }
+        };
         Prim2DBase.prototype.findById = function (id) {
             if (this._id === id) {
                 return this;
@@ -5529,6 +5732,9 @@ var BABYLON;
             }
             if (isSizeAuto) {
                 this._lastAutoSizeArea = this.actualSize;
+            }
+            if (this.displayDebugAreas) {
+                this._updateDebugArea();
             }
         };
         Object.defineProperty(Prim2DBase.prototype, "contentArea", {

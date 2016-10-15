@@ -1734,7 +1734,8 @@ var BABYLON;
             var renderhighlights = false;
             if (this.highlightLayers && this.highlightLayers.length > 0) {
                 for (var i = 0; i < this.highlightLayers.length; i++) {
-                    if (this.highlightLayers[i].shouldRender()) {
+                    var highlightLayer = this.highlightLayers[i];
+                    if ((highlightLayer.layerMask & camera.layerMask) && highlightLayer.shouldRender()) {
                         renderhighlights = true;
                         this._engine.setStencilBuffer(true);
                         break;

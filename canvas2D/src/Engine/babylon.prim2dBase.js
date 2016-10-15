@@ -1299,6 +1299,8 @@ var BABYLON;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
             this._actualOpacity = 0;
             this._actualScale = BABYLON.Vector2.Zero();
+            this._displayDebugAreas = false;
+            this._debugAreaGroup = null;
             var isPickable = true;
             var isContainer = true;
             if (settings.isPickable !== undefined) {
@@ -2374,6 +2376,207 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Prim2DBase.prototype, "displayDebugAreas", {
+            get: function () {
+                return this._displayDebugAreas;
+            },
+            set: function (value) {
+                if (this._displayDebugAreas === value) {
+                    return;
+                }
+                if (value === false) {
+                    this._debugAreaGroup.dispose();
+                    this._debugAreaGroup = null;
+                }
+                else {
+                    var layoutFill = "#F0808040"; // Red - Layout area
+                    var layoutBorder = "#F08080FF";
+                    var marginFill = "#F0F04040"; // Yellow - Margin area
+                    var marginBorder = "#F0F040FF";
+                    var paddingFill = "#F040F040"; // Magenta - Padding Area
+                    var paddingBorder = "#F040F0FF";
+                    var contentFill = "#40F0F040"; // Cyan - Content area
+                    var contentBorder = "#40F0F0FF";
+                    var s = new BABYLON.Size(10, 10);
+                    var p = BABYLON.Vector2.Zero();
+                    this._debugAreaGroup = new BABYLON.Group2D({
+                        parent: (this.parent != null) ? this.parent : this, id: "###DEBUG AREA GROUP###", children: [
+                            new BABYLON.Group2D({
+                                id: "###Layout Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Layout Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: layoutBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Top###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Left###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Right###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Margin Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Margin Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: marginBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Top###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Left###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Right###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Padding Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Padding Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: paddingBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Top###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Left###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Right###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Content Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Content Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: contentBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Top###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Left###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Right###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill })
+                                ]
+                            })
+                        ]
+                    });
+                    this._updateDebugArea();
+                }
+                this._displayDebugAreas = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Prim2DBase.prototype._updateDebugArea = function () {
+            var areaNames = ["Layout", "Margin", "Padding", "Content"];
+            var areaZones = ["Area", "Frame", "Top", "Left", "Right", "Bottom"];
+            var prims = new Array(4);
+            // Get all the primitives used to display the areas
+            for (var i = 0; i < 4; i++) {
+                prims[i] = new Array(6);
+                for (var j = 0; j < 6; j++) {
+                    prims[i][j] = this._debugAreaGroup.findById("###" + areaNames[i] + " " + areaZones[j] + "###");
+                    if (j > 1) {
+                        prims[i][j].levelVisible = false;
+                    }
+                }
+            }
+            // Update the visibility status of layout/margin/padding
+            var hasLayout = (this.layoutAreaPos.x !== 0) || (this.layoutAreaPos.y !== 0);
+            var hasMargin = this._hasMargin;
+            var hasPadding = this._hasPadding;
+            prims[0][0].levelVisible = hasLayout;
+            prims[1][0].levelVisible = hasMargin;
+            prims[2][0].levelVisible = hasPadding;
+            prims[3][0].levelVisible = true;
+            // Current offset
+            var curOffset = BABYLON.Vector2.Zero();
+            // Store the area info of the layout area
+            var curAreaIndex = 0;
+            // Store data about each area
+            var areaInfo = new Array(4);
+            var storeAreaInfo = function (pos, size) {
+                var min = pos.clone();
+                var max = pos.clone();
+                if (size.width > 0) {
+                    max.x += size.width;
+                }
+                if (size.height > 0) {
+                    max.y += size.height;
+                }
+                areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
+            };
+            {
+                var w = this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width;
+                var h = this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height;
+                storeAreaInfo(BABYLON.Vector2.Zero(), new BABYLON.Size(w, h));
+            }
+            // Compute the layout related data
+            if (hasLayout) {
+                var layoutOffset = this.layoutAreaPos;
+                var w = this.layoutArea.width - (layoutOffset.x + this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width);
+                var h = this.layoutArea.height - (layoutOffset.y + this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height);
+                var layoutArea = new BABYLON.Size(w, h);
+                storeAreaInfo(layoutOffset, layoutArea);
+                curOffset = this.layoutAreaPos;
+            }
+            // Compute margin data
+            if (hasMargin) {
+                var marginOffset = this._marginOffset.add(curOffset);
+                var marginArea = this.actualSize;
+                storeAreaInfo(marginOffset, marginArea);
+                curOffset.addInPlace(marginOffset);
+            }
+            if (hasPadding) {
+                var contentOffset = this._paddingOffset.add(curOffset);
+                var contentArea = this.contentArea;
+                storeAreaInfo(contentOffset, contentArea);
+                curOffset.addInPlace(contentOffset);
+            }
+            // Helper function that set the pos and size of a given prim
+            var setArea = function (i, j, pos, size) {
+                prims[i][j].position = pos;
+                prims[i][j].size = size;
+            };
+            var setFullRect = function (i, pos, size) {
+                var plist = prims[i];
+                plist[2].levelVisible = true;
+                plist[3].levelVisible = false;
+                plist[4].levelVisible = false;
+                plist[5].levelVisible = false;
+                setArea(i, 1, pos, size);
+                setArea(i, 2, pos, size);
+            };
+            var setQuadRect = function (i, areaIndex) {
+                var plist = prims[i];
+                plist[2].levelVisible = true;
+                plist[3].levelVisible = true;
+                plist[4].levelVisible = true;
+                plist[5].levelVisible = true;
+                var ca = areaInfo[areaIndex];
+                var na = areaInfo[areaIndex + 1];
+                var tp = new BABYLON.Vector2(ca.min.x, na.max.y);
+                var ts = new BABYLON.Size(ca.size.width, ca.max.y - tp.y);
+                var lp = new BABYLON.Vector2(ca.min.x, na.min.y);
+                var ls = new BABYLON.Size(na.min.x - ca.min.x, na.max.y - na.min.y);
+                var rp = new BABYLON.Vector2(na.max.x, na.min.y);
+                var rs = ls;
+                var bp = new BABYLON.Vector2(ca.min.x, ca.min.y);
+                var bs = ts;
+                // Frame
+                plist[1].position = ca.off;
+                plist[1].size = ca.size;
+                // Top rect
+                plist[2].position = tp;
+                plist[2].size = ts;
+                // Left rect
+                plist[3].position = lp;
+                plist[3].size = ls;
+                // Right rect
+                plist[4].position = rp;
+                plist[4].size = rs;
+                // Bottom rect
+                plist[5].position = bp;
+                plist[5].size = bs;
+            };
+            var areaCount = curAreaIndex;
+            curAreaIndex = 0;
+            // Available zones
+            var availableZones = [false, hasLayout, hasMargin, hasPadding, true];
+            for (var k = 1; k < 5; k++) {
+                if (availableZones[k]) {
+                    var ai = areaInfo[curAreaIndex];
+                    setArea(k - 1, 0, BABYLON.Vector2.Zero(), ai.size);
+                    //                    setArea(k-1, 1, Vector2.Zero(), ai.size);
+                    if (k === 4) {
+                        setFullRect(k - 1, ai.off, ai.size);
+                    }
+                    else {
+                        setQuadRect(k - 1, curAreaIndex);
+                    }
+                    ++curAreaIndex;
+                }
+            }
+        };
         Prim2DBase.prototype.findById = function (id) {
             if (this._id === id) {
                 return this;
@@ -2868,6 +3071,9 @@ var BABYLON;
             }
             if (isSizeAuto) {
                 this._lastAutoSizeArea = this.actualSize;
+            }
+            if (this.displayDebugAreas) {
+                this._updateDebugArea();
             }
         };
         Object.defineProperty(Prim2DBase.prototype, "contentArea", {
