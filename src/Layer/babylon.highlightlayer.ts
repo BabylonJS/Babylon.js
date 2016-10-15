@@ -616,7 +616,12 @@
                     color: color,
                     // Lambda required for capture due to Observable this context
                     observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
-                        mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                        if (this.excludedMeshes.indexOf(mesh) > -1) {
+                            this.defaultStencilReference(mesh);
+                        }
+                        else {
+                            mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                        }
                     }),
                     observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference),
                     glowEmissiveOnly: glowEmissiveOnly
