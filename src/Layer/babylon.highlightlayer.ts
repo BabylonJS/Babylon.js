@@ -77,10 +77,6 @@
          * Else it falls back to the current color.
          */
         glowEmissiveOnly: boolean;
-        /**
-         * The camera attached to the layer.
-         */
-        camera?: Camera;
     }
 
     /**
