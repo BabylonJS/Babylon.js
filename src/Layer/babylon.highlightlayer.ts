@@ -616,7 +616,7 @@
                     color: color,
                     // Lambda required for capture due to Observable this context
                     observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
-                        if (this.excludedMeshes.indexOf(mesh) > 0) {
+                        if (this.excludedMeshes.indexOf(mesh) > -1) {
                             this.defaultStencilReference(mesh);
                         }
                         else {
