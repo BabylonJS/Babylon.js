@@ -777,7 +777,7 @@
                     meshHighlight.mesh.onAfterRenderObservable.remove(meshHighlight.afterRender);
                 }
             }
-            this._meshes = null;
+            this._excludedMeshes = null;
 
             // Remove from scene
             var index = this._scene.highlightLayers.indexOf(this, 0);
