@@ -234,9 +234,7 @@
                 }
 
                 // Bones
-                if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-                }
+                MaterialHelper.BindBonesParameters(mesh, this._effect);
 
                 var name: string;
                 // Texture
