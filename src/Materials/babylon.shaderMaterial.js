@@ -179,9 +179,7 @@ var BABYLON;
                     this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 }
                 // Bones
-                if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-                }
+                BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
                 var name;
                 // Texture
                 for (name in this._textures) {

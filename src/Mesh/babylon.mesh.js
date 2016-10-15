@@ -1202,6 +1202,7 @@ var BABYLON;
                 var highlightLayer = highlightLayers[i];
                 if (highlightLayer) {
                     highlightLayer.removeMesh(this);
+                    highlightLayer.removeExcludedMesh(this);
                 }
             }
             _super.prototype.dispose.call(this, doNotRecurse);
