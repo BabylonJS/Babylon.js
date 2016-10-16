@@ -1542,36 +1542,21 @@ var BABYLON;
         };
         Quaternion.prototype.toEulerAnglesToRef = function (result, order) {
             if (order === void 0) { order = "YZX"; }
-            var heading, attitude, bank;
-            var x = this.x, y = this.y, z = this.z, w = this.w;
-            switch (order) {
-                case "YZX":
-                    var test = x * y + z * w;
-                    if (test > 0.499) {
-                        heading = 2 * Math.atan2(x, w);
-                        attitude = Math.PI / 2;
-                        bank = 0;
-                    }
-                    if (test < -0.499) {
-                        heading = -2 * Math.atan2(x, w);
-                        attitude = -Math.PI / 2;
-                        bank = 0;
-                    }
-                    if (isNaN(heading)) {
-                        var sqx = x * x;
-                        var sqy = y * y;
-                        var sqz = z * z;
-                        heading = Math.atan2(2 * y * w - 2 * x * z, 1 - 2 * sqy - 2 * sqz); // Heading
-                        attitude = Math.asin(2 * test); // attitude
-                        bank = Math.atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz); // bank
-                    }
-                    break;
-                default:
-                    throw new Error("Euler order " + order + " not supported yet.");
-            }
-            result.y = heading;
-            result.z = attitude;
-            result.x = bank;
+            var qx = this.x;
+            var qy = this.y;
+            var qz = this.z;
+            var qw = this.w;
+            var xsqr = qx * qx;
+            var t0 = -2.0 * (xsqr + qy * qy) + 1.0;
+            var t1 = 2.0 * (qz * qx + qw * qy);
+            var t2 = -2.0 * (qz * qy - qw * qx);
+            var t3 = 2.0 * (qx * qy + qw * qz);
+            var t4 = -2.0 * (qz * qz + xsqr) + 1.0;
+            t2 = t2 > 1.0 ? 1.0 : t2;
+            t2 = t2 < -1.0 ? -1.0 : t2;
+            result.x = Math.asin(t2);
+            result.z = Math.atan2(t3, t4);
+            result.y = Math.atan2(t1, t0);
             return this;
         };
         ;

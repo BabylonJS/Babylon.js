@@ -57,10 +57,6 @@ var BABYLON;
              */
             this.outerGlow = true;
             /**
-             * Helps enabling disabling the highlight depending on the layers being rendered.
-             */
-            this.layerMask = 0xFFFFFFFF;
-            /**
              * An event triggered when the highlight layer has been disposed.
              * @type {BABYLON.Observable}
              */
@@ -173,6 +169,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(HighlightLayer.prototype, "camera", {
+            /**
+             * Gets the camera attached to the layer.
+             */
+            get: function () {
+                return this._options.camera;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Creates the render target textures and post processes used in the highlight layer.
          */
@@ -186,6 +192,7 @@ var BABYLON;
                 width: this._mainTextureDesiredSize.width,
                 height: this._mainTextureDesiredSize.height
             }, this._scene, false, true, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._mainTexture.activeCamera = this._options.camera;
             this._mainTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._mainTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._mainTexture.anisotropicFilteringLevel = 1;
