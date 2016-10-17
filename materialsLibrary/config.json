@@ -1,14 +1,13 @@
 {
   "materials": [
+
      {
-      "file": "materials/pbr/babylon.pbrMaterial.ts",
+      "file": "materials/gradient/babylon.gradientMaterial.ts",
       "shaderFiles": [
-        "materials/pbr/pbr.vertex.fx",
-        "materials/pbr/pbr.fragment.fx",
-        "materials/pbr/legacypbr.vertex.fx",
-        "materials/pbr/legacypbr.fragment.fx"
+        "materials/gradient/gradient.vertex.fx",
+        "materials/gradient/gradient.fragment.fx"
       ],
-      "output": "babylon.pbrMaterial.js"
+      "output": "babylon.gradientMaterial.js"
     },
     {
       "file": "materials/normal/babylon.normalMaterial.ts",
@@ -73,6 +72,25 @@
         "materials/triPlanar/triplanar.fragment.fx"
       ],
       "output": "babylon.triPlanarMaterial.js"
+    },
+    {
+      "file": "materials/sky/babylon.skyMaterial.ts",
+      "shaderFiles": [
+        "materials/sky/sky.vertex.fx",
+        "materials/sky/sky.fragment.fx"
+      ],
+      "output": "babylon.skyMaterial.js"
+    },
+    {
+      "file": "materials/grid/babylon.gridMaterial.ts",
+      "shaderFiles": [
+        "materials/grid/grid.vertex.fx",
+        "materials/grid/grid.fragment.fx",
+        "materials/grid/legacygrid.vertex.fx",
+        "materials/grid/legacygrid.fragment.fx"
+      ],
+      "output": "babylon.gridMaterial.js",
+      "declarationFilename": "babylon.gridMaterial.d.ts"
     }
   ],
   "build": {

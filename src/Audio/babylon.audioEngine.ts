@@ -7,6 +7,11 @@
 
         private _connectedAnalyser: Analyser;
         public WarnedWebAudioUnsupported: boolean = false;
+        public unlocked: boolean = false;
+        public onAudioUnlocked: () => any;
+
+        public isMP3supported: boolean = false;
+        public isOGGsupported: boolean = false;
 
         public get audioContext(): AudioContext {
             if (!this._audioContextInitialized) {
@@ -20,6 +25,45 @@
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 this.canUseWebAudio = true;
             }
+
+            var audioElem = document.createElement('audio');
+
+            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
+                this.isMP3supported = true;
+            }
+
+            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, '')) {
+                this.isOGGsupported = true;
+            }
+
+            if (/iPad|iPhone|iPod/.test(navigator.platform)) {
+                this._unlockiOSaudio();
+            }
+            else {
+                this.unlocked = true;
+            }
+        }
+
+        private _unlockiOSaudio() {
+            var unlockaudio = () => {
+                var buffer = this.audioContext.createBuffer(1, 1, 22050);
+                var source = this.audioContext.createBufferSource();
+                source.buffer = buffer;
+                source.connect(this.audioContext.destination);
+                source.start(0);
+  
+                setTimeout(() => {
+                    if (((<any>source).playbackState === (<any>source).PLAYING_STATE || (<any>source).playbackState === (<any>source).FINISHED_STATE)) { 
+                        this.unlocked = true;
+                        window.removeEventListener('touchend', unlockaudio, false);
+                        if (this.onAudioUnlocked) {
+                            this.onAudioUnlocked();
+                        }
+                    }
+                }, 0);
+            };
+
+            window.addEventListener('touchend', unlockaudio, false);
         }
 
         private _initializeAudioContext() {

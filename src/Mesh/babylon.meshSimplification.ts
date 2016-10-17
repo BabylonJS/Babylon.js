@@ -243,7 +243,7 @@
         constructor(private _mesh: Mesh) {
             this.aggressiveness = 7;
             this.decimationIterations = 100;
-            this.boundingBoxEpsilon = Engine.Epsilon;
+            this.boundingBoxEpsilon = Epsilon;
         }
 
         public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
@@ -320,7 +320,7 @@
                                 var v0 = t.vertices[j];
                                 var v1 = t.vertices[(j + 1) % 3];
 
-                                if (v0.isBorder !== v1.isBorder) continue;
+                                if (v0.isBorder || v1.isBorder) continue;
 
                                 var p = Vector3.Zero();
                                 var n = Vector3.Zero();
@@ -574,6 +574,7 @@
             this._reconstructedMesh.material = this._mesh.material;
             this._reconstructedMesh.parent = this._mesh.parent;
             this._reconstructedMesh.isVisible = false;
+            this._reconstructedMesh.renderingGroupId = this._mesh.renderingGroupId; 
         }
 
         private isFlipped(vertex1: DecimationVertex, vertex2: DecimationVertex, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {

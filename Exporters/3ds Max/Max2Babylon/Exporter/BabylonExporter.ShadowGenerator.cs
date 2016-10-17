@@ -18,6 +18,7 @@ namespace Max2Babylon
             babylonShadowGenerator.mapSize = maxLight.GetMapSize(0, Tools.Forever);
 
             babylonShadowGenerator.bias = lightNode.GetFloatProperty("babylonjs_shadows_bias", 0.00005f);
+            babylonShadowGenerator.forceBackFacesOnly = lightNode.GetBoolProperty("babylonjs_forcebackfaces");
 
             var shadowsType = lightNode.GetStringProperty("babylonjs_shadows_type", "Blurred Variance");
 
@@ -46,7 +47,11 @@ namespace Max2Babylon
 
             foreach (var meshNode in Loader.Core.RootNode.NodesListBySuperClass(SClass_ID.Geomobject))
             {
+#if MAX2017
+                if (meshNode.CastShadows)
+#else
                 if (meshNode.CastShadows == 1)
+#endif
                 {
                     var inList = maxLight.ExclList.FindNode(meshNode) != -1;
 

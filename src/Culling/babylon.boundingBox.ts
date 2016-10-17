@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class BoundingBox {
+    export class BoundingBox implements ICullable {
         public vectors: Vector3[] = new Array<Vector3>();
         public center: Vector3;
         public extendSize: Vector3;
@@ -11,7 +11,7 @@
         private _worldMatrix: Matrix;
 
         constructor(public minimum: Vector3, public maximum: Vector3) {
-            // Bounding vectors            
+            // Bounding vectors
             this.vectors.push(this.minimum.clone());
             this.vectors.push(this.maximum.clone());
 
@@ -32,7 +32,7 @@
 
             this.vectors.push(this.maximum.clone());
             this.vectors[7].y = this.minimum.y;
-            
+
             // OBB
             this.center = this.maximum.add(this.minimum).scale(0.5);
             this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
@@ -51,6 +51,11 @@
         // Methods
         public getWorldMatrix(): Matrix {
             return this._worldMatrix;
+        }
+
+        public setWorldMatrix(matrix: Matrix): BoundingBox {
+            this._worldMatrix.copyFrom(matrix);
+            return this;
         }
 
         public _update(world: Matrix): void {
@@ -96,7 +101,7 @@
         }
 
         public intersectsPoint(point: Vector3): boolean {
-            var delta = -Engine.Epsilon;
+            var delta = -Epsilon;
 
             if (this.maximumWorld.x - point.x < delta || delta > point.x - this.minimumWorld.x)
                 return false;
@@ -175,4 +180,4 @@
             return true;
         }
     }
-} 
+}

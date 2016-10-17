@@ -3,6 +3,7 @@
         private _shaderPath: any;
         private _options: any;
         private _textures: { [name: string]: Texture } = {};
+        private _textureArrays: { [name: string]: Texture[] } = {};
         private _floats: { [name: string]: number } = {};
         private _floatsArrays: { [name: string]: number[] } = {};
         private _colors3: { [name: string]: Color3 } = {};
@@ -13,6 +14,7 @@
         private _matrices: { [name: string]: Matrix } = {};
         private _matrices3x3: { [name: string]: Float32Array } = {};
         private _matrices2x2: { [name: string]: Float32Array } = {};
+        private _vectors3Arrays: { [name: string]: number[] } = {};
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
@@ -49,6 +51,18 @@
                 this._options.samplers.push(name);
             }
             this._textures[name] = texture;
+
+            return this;
+        }
+
+        public setTextureArray(name: string, textures: Texture[]): ShaderMaterial {
+            if (this._options.samplers.indexOf(name) === -1) {
+                this._options.samplers.push(name);
+            }
+
+            this._checkUniform(name);
+
+            this._textureArrays[name] = textures;
 
             return this;
         }
@@ -123,6 +137,13 @@
             return this;
         }
 
+        public setArray3(name: string, value: number[]): ShaderMaterial {
+            this._checkUniform(name);
+            this._vectors3Arrays[name] = value;
+
+            return this;
+        }
+        
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             var scene = this.getScene();
             var engine = scene.getEngine();
@@ -213,13 +234,17 @@
                 }
 
                 // Bones
-                if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                MaterialHelper.BindBonesParameters(mesh, this._effect);
+
+                var name: string;
+                // Texture
+                for (name in this._textures) {
+                    this._effect.setTexture(name, this._textures[name]);
                 }
 
-                // Texture
-                for (var name in this._textures) {
-                    this._effect.setTexture(name, this._textures[name]);
+                // Texture arrays
+                for (name in this._textureArrays) {
+                    this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
 
                 // Float    
@@ -272,6 +297,11 @@
                 for (name in this._matrices2x2) {
                     this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
+                
+                // Vector3Array   
+                for (name in this._vectors3Arrays) {
+                    this._effect.setArray3(name, this._vectors3Arrays[name]);
+                }
             }
 
             super.bind(world, mesh);
@@ -283,26 +313,50 @@
             return newShaderMaterial;
         }
 
-        public dispose(forceDisposeEffect?: boolean): void {
-            for (var name in this._textures) {
-                this._textures[name].dispose();
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+
+            if (forceDisposeTextures) {
+                var name: string;
+                for (name in this._textures) {
+                    this._textures[name].dispose();
+                }
+
+                for (name in this._textureArrays) {
+                    var array = this._textureArrays[name];
+                    for (var index = 0; index < array.length; index++) {
+                        array[index].dispose();
+                    }
+                }
             }
 
             this._textures = {};
 
-            super.dispose(forceDisposeEffect);
+            super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
 
         public serialize(): any {
-            var serializationObject = super.serialize();
-            serializationObject.options = this._options;
-            serializationObject.shaderPath = this._shaderPath;
+            var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.ShaderMaterial";
 			
+            serializationObject.options = this._options;
+            serializationObject.shaderPath = this._shaderPath;
+
+            var name: string;
+
             // Texture
             serializationObject.textures = {};
-            for (var name in this._textures) {
+            for (name in this._textures) {
                 serializationObject.textures[name] = this._textures[name].serialize();
+            }
+
+            // Texture arrays
+            serializationObject.textureArrays = {};
+            for (name in this._textureArrays) {
+                serializationObject.textureArrays[name] = [];
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    serializationObject.textureArrays[name].push(array[index].serialize());
+                }
             }
 
             // Float    
@@ -365,15 +419,34 @@
                 serializationObject.matrices2x2[name] = this._matrices2x2[name];
             }
 
+            // Vector3Array
+            serializationObject.vectors3Arrays = {};
+            for (name in this._vectors3Arrays) {
+                serializationObject.vectors3Arrays[name] = this._vectors3Arrays[name];
+            }
+            
             return serializationObject;
         }
 
         public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
-            var material = new ShaderMaterial(source.name, scene, source.shaderPath, source.options);
-			
+            var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
+
+            var name: string;
+
             // Texture
-            for (var name in source.textures) {
+            for (name in source.textures) {
                 material.setTexture(name, <Texture>Texture.Parse(source.textures[name], scene, rootUrl));
+            }
+
+            // Texture arrays
+            for (name in source.textureArrays) {
+                var array = source.textureArrays[name];
+                var textureArray = new Array<Texture>();
+
+                for (var index = 0; index < array.length; index++) {
+                    textureArray.push(<Texture>Texture.Parse(array[index], scene, rootUrl));
+                }
+                material.setTextureArray(name, textureArray);
             }
 
             // Float    
@@ -426,6 +499,11 @@
                 material.setMatrix2x2(name, source.matrices2x2[name]);
             }
 
+            // Vector3Array
+            for (name in source.vectors3Arrays) {
+                material.setArray3(name, source.vectors3Arrays[name]);
+            }
+            
             return material;
         }
     }

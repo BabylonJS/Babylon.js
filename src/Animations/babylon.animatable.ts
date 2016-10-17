@@ -52,7 +52,23 @@
 
             this._localDelayOffset = null;
             this._pausedDelay = null;
+        }
 
+        public enableBlending(blendingSpeed: number): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = true;
+                animations[index].blendingSpeed = blendingSpeed;
+            }
+        }
+
+        public disableBlending(): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = false;
+            }
         }
 
         public goToFrame(frame: number): void {
@@ -74,15 +90,28 @@
             this._paused = false;
         }
 
-        public stop(): void {
+        public stop(animationName?: string): void {
             var index = this._scene._activeAnimatables.indexOf(this);
 
             if (index > -1) {
-                this._scene._activeAnimatables.splice(index, 1);
-            }
+                var animations = this._animations;
+                var numberOfAnimationsStopped = 0;
+                for (var index = animations.length - 1; index >= 0; index--) {
+                    if (typeof animationName === "string" && animations[index].name != animationName) {
+                        continue;
+                    }
+                    animations[index].reset();
+                    animations.splice(index, 1);
+                    numberOfAnimationsStopped ++;
+                }
 
-            if (this.onAnimationEnd) {
-                this.onAnimationEnd();
+                if (animations.length == numberOfAnimationsStopped) {
+                    this._scene._activeAnimatables.splice(index, 1);
+
+                    if (this.onAnimationEnd) {
+                        this.onAnimationEnd();
+                    }
+                }
             }
         }
 
@@ -123,6 +152,7 @@
 
             if (!running && this.onAnimationEnd) {
                 this.onAnimationEnd();
+                this.onAnimationEnd = null;
             }
 
             return running;

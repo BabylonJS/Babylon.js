@@ -51,6 +51,12 @@ namespace BabylonExport.Entities
         public float[] matricesWeights { get; set; }
 
         [DataMember]
+        public int[] matricesIndicesExtra { get; set; }
+
+        [DataMember]
+        public float[] matricesWeightsExtra { get; set; }
+
+        [DataMember]
         public int[] indices { get; set; }
 
         [DataMember]
@@ -76,6 +82,9 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public int skeletonId { get; set; }
+
+        [DataMember]
+        public int numBoneInfluencers { get; set; }
 
         [DataMember]
         public bool showBoundingBox { get; set; }

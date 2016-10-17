@@ -15,31 +15,35 @@ var BABYLON;
             return false;
         return true;
     };
-    var getLowestRoot = function (a, b, c, maxR) {
-        var determinant = b * b - 4.0 * a * c;
+    var getLowestRoot = (function () {
         var result = { root: 0, found: false };
-        if (determinant < 0)
+        return function (a, b, c, maxR) {
+            result.root = 0;
+            result.found = false;
+            var determinant = b * b - 4.0 * a * c;
+            if (determinant < 0)
+                return result;
+            var sqrtD = Math.sqrt(determinant);
+            var r1 = (-b - sqrtD) / (2.0 * a);
+            var r2 = (-b + sqrtD) / (2.0 * a);
+            if (r1 > r2) {
+                var temp = r2;
+                r2 = r1;
+                r1 = temp;
+            }
+            if (r1 > 0 && r1 < maxR) {
+                result.root = r1;
+                result.found = true;
+                return result;
+            }
+            if (r2 > 0 && r2 < maxR) {
+                result.root = r2;
+                result.found = true;
+                return result;
+            }
             return result;
-        var sqrtD = Math.sqrt(determinant);
-        var r1 = (-b - sqrtD) / (2.0 * a);
-        var r2 = (-b + sqrtD) / (2.0 * a);
-        if (r1 > r2) {
-            var temp = r2;
-            r2 = r1;
-            r1 = temp;
-        }
-        if (r1 > 0 && r1 < maxR) {
-            result.root = r1;
-            result.found = true;
-            return result;
-        }
-        if (r2 > 0 && r2 < maxR) {
-            result.root = r2;
-            result.found = true;
-            return result;
-        }
-        return result;
-    };
+        };
+    })();
     var Collider = (function () {
         function Collider() {
             this.radius = new BABYLON.Vector3(1, 1, 1);
@@ -267,6 +271,6 @@ var BABYLON;
             this._destinationPoint.subtractToRef(this.intersectionPoint, vel);
         };
         return Collider;
-    })();
+    }());
     BABYLON.Collider = Collider;
 })(BABYLON || (BABYLON = {}));

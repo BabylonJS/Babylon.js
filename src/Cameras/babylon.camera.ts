@@ -1,71 +1,7 @@
 ﻿module BABYLON {
-
-    export class VRCameraMetrics {
-        public hResolution: number;
-        public vResolution: number;
-        public hScreenSize: number;
-        public vScreenSize: number;
-        public vScreenCenter: number;
-        public eyeToScreenDistance: number;
-        public lensSeparationDistance: number;
-        public interpupillaryDistance: number;
-        public distortionK: number[];
-        public chromaAbCorrection: number[];
-        public postProcessScaleFactor: number;
-        public lensCenterOffset: number;
-        public compensateDistortion = true;
-
-        public get aspectRatio(): number {
-            return this.hResolution / (2 * this.vResolution);
-        }
-
-        public get aspectRatioFov(): number {
-            return (2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance)));
-        }
-
-        public get leftHMatrix(): Matrix {
-            var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
-            var h = (4 * meters) / this.hScreenSize;
-
-            return Matrix.Translation(h, 0, 0);
-        }
-
-        public get rightHMatrix(): Matrix {
-            var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
-            var h = (4 * meters) / this.hScreenSize;
-
-            return Matrix.Translation(-h, 0, 0);
-        }
-
-        public get leftPreViewMatrix(): Matrix {
-            return Matrix.Translation(0.5 * this.interpupillaryDistance, 0, 0);
-        }
-
-        public get rightPreViewMatrix(): Matrix {
-            return Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);
-        }
-
-        public static GetDefault(): VRCameraMetrics {
-            var result = new VRCameraMetrics();
-
-            result.hResolution = 1280;
-            result.vResolution = 800;
-            result.hScreenSize = 0.149759993;
-            result.vScreenSize = 0.0935999975;
-            result.vScreenCenter = 0.0467999987,
-            result.eyeToScreenDistance = 0.0410000011;
-            result.lensSeparationDistance = 0.0635000020;
-            result.interpupillaryDistance = 0.0640000030;
-            result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
-            result.chromaAbCorrection = [0.995999992, -0.00400000019, 1.01400006, 0.0];
-            result.postProcessScaleFactor = 1.714605507808412;
-            result.lensCenterOffset = 0.151976421;
-
-            return result;
-        }
-    }
-
     export class Camera extends Node {
+        public inputs: CameraInputsManager<Camera>;
+
         // Statics
         private static _PERSPECTIVE_CAMERA = 0;
         private static _ORTHOGRAPHIC_CAMERA = 1;
@@ -79,6 +15,7 @@
         private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
         private static _RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
         private static _RIG_MODE_VR = 20;
+        private static _RIG_MODE_WEBVR = 21;
 
         public static get PERSPECTIVE_CAMERA(): number {
             return Camera._PERSPECTIVE_CAMERA;
@@ -119,40 +56,84 @@
         public static get RIG_MODE_VR(): number {
             return Camera._RIG_MODE_VR;
         }
-        
+
+        public static get RIG_MODE_WEBVR(): number {
+            return Camera._RIG_MODE_WEBVR;
+        }
+
+        public static ForceAttachControlToAlwaysPreventDefault = false;
+
         // Members
+        @serializeAsVector3()
+        public position: Vector3;
+
+        @serializeAsVector3()
         public upVector = Vector3.Up();
+
+        @serialize()
         public orthoLeft = null;
+
+        @serialize()
         public orthoRight = null;
+
+        @serialize()
         public orthoBottom = null;
+
+        @serialize()
         public orthoTop = null;
+
+        @serialize()
         public fov = 0.8;
+
+        @serialize()
         public minZ = 1.0;
+
+        @serialize()
         public maxZ = 10000.0;
+
+        @serialize()
         public inertia = 0.9;
+
+        @serialize()
         public mode = Camera.PERSPECTIVE_CAMERA;
         public isIntermediate = false;
+
         public viewport = new Viewport(0, 0, 1.0, 1.0);
+
+        @serialize()
         public layerMask: number = 0x0FFFFFFF;
+
+        @serialize()
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
-   
+
         // Camera rig members
+        @serialize()
         public cameraRigMode = Camera.RIG_MODE_NONE;
+
+        @serialize()
+        public interaxialDistance: number
+
+        @serialize()
+        public isStereoscopicSideBySide: boolean
+
         public _cameraRigParams: any;
         public _rigCameras = new Array<Camera>();
+        public _rigPostProcess: PostProcess;
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();
         public _projectionMatrix = new Matrix();
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
-        public _postProcessesTakenIndices = [];
+        private _transformMatrix = Matrix.Zero();
 
         public _activeMeshes = new SmartArray<Mesh>(256);
 
         private _globalPosition = Vector3.Zero();
+        private _frustumPlanes: Plane[];
+        private _refreshFrustumPlanes = true;
 
-        constructor(name: string, public position: Vector3, scene: Scene) {
+        constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
 
             scene.addCamera(this);
@@ -160,6 +141,24 @@
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }
+
+            this.position = position;
+        }
+
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails?: boolean): string {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getTypeName();
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+            }
+            return ret;
         }
 
         public get globalPosition(): Vector3 {
@@ -186,6 +185,7 @@
             this._cache.maxZ = undefined;
 
             this._cache.fov = undefined;
+            this._cache.fovMode = undefined;
             this._cache.aspectRatio = undefined;
 
             this._cache.orthoLeft = undefined;
@@ -211,6 +211,7 @@
             this._cache.maxZ = this.maxZ;
 
             this._cache.fov = this.fov;
+            this._cache.fovMode = this.fovMode;
             this._cache.aspectRatio = engine.getAspectRatio(this);
 
             this._cache.orthoLeft = this.orthoLeft;
@@ -223,7 +224,7 @@
 
         public _updateFromScene(): void {
             this.updateCache();
-            this._update();
+            this.update();
         }
 
         // Synchronized
@@ -253,28 +254,29 @@
 
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 check = this._cache.fov === this.fov
-                && this._cache.aspectRatio === engine.getAspectRatio(this);
+                    && this._cache.fovMode === this.fovMode
+                    && this._cache.aspectRatio === engine.getAspectRatio(this);
             }
             else {
                 check = this._cache.orthoLeft === this.orthoLeft
-                && this._cache.orthoRight === this.orthoRight
-                && this._cache.orthoBottom === this.orthoBottom
-                && this._cache.orthoTop === this.orthoTop
-                && this._cache.renderWidth === engine.getRenderWidth()
-                && this._cache.renderHeight === engine.getRenderHeight();
+                    && this._cache.orthoRight === this.orthoRight
+                    && this._cache.orthoBottom === this.orthoBottom
+                    && this._cache.orthoTop === this.orthoTop
+                    && this._cache.renderWidth === engine.getRenderWidth()
+                    && this._cache.renderHeight === engine.getRenderHeight();
             }
 
             return check;
         }
 
         // Controls
-        public attachControl(element: HTMLElement): void {
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
         }
 
         public detachControl(element: HTMLElement): void {
         }
 
-        public _update(): void {
+        public update(): void {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
@@ -282,6 +284,33 @@
         }
 
         public _checkInputs(): void {
+        }
+
+        private _cascadePostProcessesToRigCams(): void {
+            // invalidate framebuffer
+            if (this._postProcesses.length > 0) {
+                this._postProcesses[0].markTextureDirty();
+            }
+
+            // glue the rigPostProcess to the end of the user postprocesses & assign to each sub-camera
+            for (var i = 0, len = this._rigCameras.length; i < len; i++) {
+                var cam = this._rigCameras[i];
+                var rigPostProcess = cam._rigPostProcess;
+
+                // for VR rig, there does not have to be a post process 
+                if (rigPostProcess) {
+                    var isPass = rigPostProcess instanceof PassPostProcess;
+                    if (isPass) {
+                        // any rig which has a PassPostProcess for rig[0], cannot be isIntermediate when there are also user postProcesses
+                        cam.isIntermediate = this._postProcesses.length === 0;
+                    }
+                    cam._postProcesses = this._postProcesses.slice(0).concat(rigPostProcess);
+                    rigPostProcess.markTextureDirty();
+
+                } else {
+                    cam._postProcesses = this._postProcesses.slice(0);
+                }
+            }
         }
 
         public attachPostProcess(postProcess: PostProcess, insertAt: number = null): number {
@@ -292,83 +321,36 @@
 
             if (insertAt == null || insertAt < 0) {
                 this._postProcesses.push(postProcess);
-                this._postProcessesTakenIndices.push(this._postProcesses.length - 1);
 
-                return this._postProcesses.length - 1;
+            } else {
+                this._postProcesses.splice(insertAt, 0, postProcess);
             }
-
-            var add = 0;
-            var i: number;
-            var start: number;
-            if (this._postProcesses[insertAt]) {
-                start = this._postProcesses.length - 1;
-                for (i = start; i >= insertAt + 1; --i) {
-                    this._postProcesses[i + 1] = this._postProcesses[i];
-                }
-
-                add = 1;
-            }
-
-            for (i = 0; i < this._postProcessesTakenIndices.length; ++i) {
-                if (this._postProcessesTakenIndices[i] < insertAt) {
-                    continue;
-                }
-
-                start = this._postProcessesTakenIndices.length - 1;
-                for (var j = start; j >= i; --j) {
-                    this._postProcessesTakenIndices[j + 1] = this._postProcessesTakenIndices[j] + add;
-                }
-                this._postProcessesTakenIndices[i] = insertAt;
-                break;
-            }
-
-            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) === -1) {
-                this._postProcessesTakenIndices.push(insertAt);
-            }
-
-            var result = insertAt + add;
-
-            this._postProcesses[result] = postProcess;
-
-            return result;
+            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated            
+            return this._postProcesses.indexOf(postProcess);
         }
 
         public detachPostProcess(postProcess: PostProcess, atIndices: any = null): number[] {
             var result = [];
             var i: number;
             var index: number;
+
             if (!atIndices) {
-
-                var length = this._postProcesses.length;
-
-                for (i = 0; i < length; i++) {
-
-                    if (this._postProcesses[i] !== postProcess) {
-                        continue;
-                    }
-
-                    delete this._postProcesses[i];
-                    index = this._postProcessesTakenIndices.indexOf(i);
-                    this._postProcessesTakenIndices.splice(index, 1);
+                var idx = this._postProcesses.indexOf(postProcess);
+                if (idx !== -1) {
+                    this._postProcesses.splice(idx, 1);
                 }
-
-            }
-            else {
+            } else {
                 atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
-                for (i = 0; i < atIndices.length; i++) {
-                    var foundPostProcess = this._postProcesses[atIndices[i]];
-
-                    if (foundPostProcess !== postProcess) {
+                // iterate descending, so can just splice as we go
+                for (i = atIndices.length - 1; i >= 0; i--) {
+                    if (this._postProcesses[atIndices[i]] !== postProcess) {
                         result.push(i);
                         continue;
                     }
-
-                    delete this._postProcesses[atIndices[i]];
-
-                    index = this._postProcessesTakenIndices.indexOf(atIndices[i]);
-                    this._postProcessesTakenIndices.splice(index, 1);
+                    this._postProcesses.splice(index, 1);
                 }
             }
+            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
             return result;
         }
 
@@ -394,6 +376,8 @@
             if (!force && this._isSynchronizedViewMatrix()) {
                 return this._computedViewMatrix;
             }
+
+            this._refreshFrustumPlanes = true;
 
             if (!this.parent || !this.parent.getWorldMatrix) {
                 this._globalPosition.copyFrom(this.position);
@@ -433,20 +417,86 @@
                 return this._projectionMatrix;
             }
 
+            this._refreshFrustumPlanes = true;
+
             var engine = this.getEngine();
+            var scene = this.getScene();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
 
-                Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, this.fovMode);
+                if (scene.useRightHandedSystem) {
+                    Matrix.PerspectiveFovRHToRef(this.fov,
+                        engine.getAspectRatio(this),
+                        this.minZ,
+                        this.maxZ,
+                        this._projectionMatrix,
+                        this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+                } else {
+                    Matrix.PerspectiveFovLHToRef(this.fov,
+                        engine.getAspectRatio(this),
+                        this.minZ,
+                        this.maxZ,
+                        this._projectionMatrix,
+                        this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+                }
                 return this._projectionMatrix;
             }
 
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
-            Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
+            if (scene.useRightHandedSystem) {
+                Matrix.OrthoOffCenterRHToRef(this.orthoLeft || -halfWidth,
+                    this.orthoRight || halfWidth,
+                    this.orthoBottom || -halfHeight,
+                    this.orthoTop || halfHeight,
+                    this.minZ,
+                    this.maxZ,
+                    this._projectionMatrix);
+            } else {
+                Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth,
+                    this.orthoRight || halfWidth,
+                    this.orthoBottom || -halfHeight,
+                    this.orthoTop || halfHeight,
+                    this.minZ,
+                    this.maxZ,
+                    this._projectionMatrix);
+            }
             return this._projectionMatrix;
+        }
+
+        public getTranformationMatrix(): Matrix {
+            this._computedViewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+            return this._transformMatrix;
+        }
+
+        private updateFrustumPlanes(): void {
+            if (!this._refreshFrustumPlanes) {
+                return;
+            }
+
+            this.getTranformationMatrix();
+
+            if (!this._frustumPlanes) {
+                this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
+            } else {
+                Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            }
+
+            this._refreshFrustumPlanes = false;
+        }
+
+        public isInFrustum(target: ICullable): boolean {
+            this.updateFrustumPlanes();
+
+            return target.isInFrustum(this._frustumPlanes);
+        }
+
+        public isCompletelyInFrustum(target: ICullable): boolean {
+            this.updateFrustumPlanes();
+
+            return target.isCompletelyInFrustum(this._frustumPlanes);
         }
 
         public dispose(): void {
@@ -460,11 +510,13 @@
             }
 
             // Postprocesses
-            for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
-                this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
+            for (var i = 0; i < this._postProcesses.length; ++i) {
+                this._postProcesses[i].dispose(this);
             }
+
+            super.dispose();
         }
-        
+
         // ---- Camera rigs section ----
         public setCameraRigMode(mode: number, rigParams: any): void {
             while (this._rigCameras.length > 0) {
@@ -472,80 +524,76 @@
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
+            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+            //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
+            this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
+            this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
 
-            switch (this.cameraRigMode) {
-                case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-                case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
-                case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-                    this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
-                    //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
-                    //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
-                    this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
-
-                    this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
-                    this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
-                    break;
+            // create the rig cameras, unless none
+            if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
+                this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
             }
 
-            var postProcesses = new Array<PostProcess>();
-
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-                    postProcesses.push(new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]));
-                    this._rigCameras[0].isIntermediate = true;
-
-                    postProcesses.push(new AnaglyphPostProcess(this.name + "_anaglyph", 1.0, this._rigCameras[1]));
-                    postProcesses[1].onApply = effect => {
-                        effect.setTextureFromPostProcess("leftSampler", postProcesses[0]);
-                    };
+                    this._rigCameras[0]._rigPostProcess = new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]);
+                    this._rigCameras[1]._rigPostProcess = new AnaglyphPostProcess(this.name + "_anaglyph", 1.0, this._rigCameras);
                     break;
 
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-                    var isStereoscopicHoriz = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED);
-                    var firstCamIndex = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? 1 : 0;
-                    var secondCamIndex = 1 - firstCamIndex;
+                    var isStereoscopicHoriz = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
 
-                    postProcesses.push(new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[firstCamIndex]));
-                    this._rigCameras[firstCamIndex].isIntermediate = true;
-
-                    postProcesses.push(new StereoscopicInterlacePostProcess(this.name + "_stereoInterlace", this._rigCameras[secondCamIndex], postProcesses[0], isStereoscopicHoriz));
+                    this._rigCameras[0]._rigPostProcess = new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]);
+                    this._rigCameras[1]._rigPostProcess = new StereoscopicInterlacePostProcess(this.name + "_stereoInterlace", this._rigCameras, isStereoscopicHoriz);
                     break;
 
                 case Camera.RIG_MODE_VR:
-                    this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
-                    this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
-
                     var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
+
                     this._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
                     this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
                     this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
-
                     this._rigCameras[0]._cameraRigParams.vrHMatrix = metrics.leftHMatrix;
                     this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
                     this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
 
-                    if (metrics.compensateDistortion) {
-                        postProcesses.push(new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics));
-                    }
-
-                    this._rigCameras[1]._cameraRigParams.vrMetrics = this._rigCameras[0]._cameraRigParams.vrMetrics;
+                    this._rigCameras[1]._cameraRigParams.vrMetrics = metrics;
                     this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
                     this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
                     this._rigCameras[1]._cameraRigParams.vrHMatrix = metrics.rightHMatrix;
                     this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
-
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
 
                     if (metrics.compensateDistortion) {
-                        postProcesses.push(new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics));
+                        this._rigCameras[0]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics);
+                        this._rigCameras[1]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics);
                     }
                     break;
+                case Camera.RIG_MODE_WEBVR:
+                    if (rigParams.vrDisplay) {
+                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
+                        this._rigCameras[0].setCameraRigParameter("vrFieldOfView", leftEye.fieldOfView);
+                        this._rigCameras[0].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-leftEye.offset[0], leftEye.offset[1], -leftEye.offset[2]));
+                        this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
+                        this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
+                        this._rigCameras[1].setCameraRigParameter("vrFieldOfView", rightEye.fieldOfView);
+                        this._rigCameras[1].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-rightEye.offset[0], rightEye.offset[1], -rightEye.offset[2]));
+                        this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
+                        this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                    }
+                    break;
+
             }
 
-            this._update();
+            this._cascadePostProcessesToRigCams();
+            this.
+                update();
         }
 
         private _getVRProjectionMatrix(): Matrix {
@@ -554,23 +602,32 @@
             return this._projectionMatrix;
         }
 
+        private _getWebVRProjectionMatrix(): Matrix {
+            Matrix.PerspectiveFovWebVRToRef(this._cameraRigParams['vrFieldOfView'], this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams['vrOffsetMatrix'], this._projectionMatrix);
+            return this._projectionMatrix;
+        }
+
         public setCameraRigParameter(name: string, value: any) {
+            if (!this._cameraRigParams) {
+                this._cameraRigParams = {};
+            }
             this._cameraRigParams[name] = value;
             //provisionnally:
             if (name === "interaxialDistance") {
                 this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value / 0.0637);
             }
         }
-        
+
         /**
-         * May needs to be overridden by children so sub has required properties to be copied
+         * needs to be overridden by children so sub has required properties to be copied
          */
         public createRigCamera(name: string, cameraIndex: number): Camera {
             return null;
         }
-        
+
         /**
-         * May needs to be overridden by children
+         * May need to be overridden by children
          */
         public _updateRigCameras() {
             for (var i = 0; i < this._rigCameras.length; i++) {
@@ -578,137 +635,117 @@
                 this._rigCameras[i].maxZ = this.maxZ;
                 this._rigCameras[i].fov = this.fov;
             }
-            
+
             // only update viewport when ANAGLYPH
             if (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH) {
                 this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
         }
 
-        public serialize(): any {
-            var serializationObject: any = {};
-            serializationObject.name = this.name;
-            serializationObject.tags = Tags.GetTags(this);
-            serializationObject.id = this.id;
-            serializationObject.position = this.position.asArray();
+        public _setupInputs() {
+        }
 
-            serializationObject.type = Tools.GetConstructorName(this);
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+
+            // Type
+            serializationObject.type = this.getTypeName();
 
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
 
-            serializationObject.fov = this.fov;
-            serializationObject.minZ = this.minZ;
-            serializationObject.maxZ = this.maxZ;
-
-            serializationObject.inertia = this.inertia;
-            
+            if (this.inputs) {
+                this.inputs.serialize(serializationObject);
+            }
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
-
-            // Layer mask
-            serializationObject.layerMask = this.layerMask;
+            serializationObject.ranges = this.serializeAnimationRanges();
 
             return serializationObject;
         }
 
+        public getTypeName(): string {
+            return "Camera";
+        }
+
+        public clone(name: string): Camera {
+            return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getTypeName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+        }
+
+        static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
+            switch (type) {
+                case "ArcRotateCamera":
+                    return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
+                case "DeviceOrientationCamera":
+                    return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
+                case "FollowCamera":
+                    return () => new FollowCamera(name, Vector3.Zero(), scene);
+                case "ArcFollowCamera":
+                    return () => new ArcFollowCamera(name, 0, 0, 1.0, null, scene);
+                case "GamepadCamera":
+                    return () => new GamepadCamera(name, Vector3.Zero(), scene);
+                case "TouchCamera":
+                    return () => new TouchCamera(name, Vector3.Zero(), scene);
+                case "VirtualJoysticksCamera":
+                    return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
+                case "WebVRFreeCamera":
+                    return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
+                case "VRDeviceOrientationFreeCamera":
+                    return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
+                case "AnaglyphArcRotateCamera":
+                    return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, scene);
+                case "AnaglyphFreeCamera":
+                    return () => new AnaglyphFreeCamera(name, Vector3.Zero(), interaxial_distance, scene);
+                case "AnaglyphGamepadCamera":
+                    return () => new AnaglyphGamepadCamera(name, Vector3.Zero(), interaxial_distance, scene);
+                case "AnaglyphUniversalCamera":
+                    return () => new AnaglyphUniversalCamera(name, Vector3.Zero(), interaxial_distance, scene);
+                case "StereoscopicArcRotateCamera":
+                    return () => new StereoscopicArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
+                case "StereoscopicFreeCamera":
+                    return () => new StereoscopicFreeCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
+                case "StereoscopicGamepadCamera":
+                    return () => new StereoscopicGamepadCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
+                case "StereoscopicUniversalCamera":
+                    return () => new StereoscopicUniversalCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
+                case "FreeCamera": // Forcing Universal here
+                    return () => new UniversalCamera(name, Vector3.Zero(), scene);
+                default: // Universal Camera is the default value
+                    return () => new UniversalCamera(name, Vector3.Zero(), scene);
+            }
+        }
+
         public static Parse(parsedCamera: any, scene: Scene): Camera {
-            var camera;
-            var position = Vector3.FromArray(parsedCamera.position);
-            var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
-            var interaxial_distance: number;
+            var type = parsedCamera.type;
+            var construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);
 
-            if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
-                var alpha = parsedCamera.alpha;
-                var beta = parsedCamera.beta;
-                var radius = parsedCamera.radius;
-                if (parsedCamera.type === "AnaglyphArcRotateCamera") {
-                    interaxial_distance = parsedCamera.interaxial_distance;
-                    camera = new AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
-                } else {
-                    camera = new ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
-                }
-
-            } else if (parsedCamera.type === "AnaglyphFreeCamera") {
-                interaxial_distance = parsedCamera.interaxial_distance;
-                camera = new AnaglyphFreeCamera(parsedCamera.name, position, interaxial_distance, scene);
-
-            } else if (parsedCamera.type === "DeviceOrientationCamera") {
-                camera = new DeviceOrientationCamera(parsedCamera.name, position, scene);
-
-            } else if (parsedCamera.type === "FollowCamera") {
-                camera = new FollowCamera(parsedCamera.name, position, scene);
-                camera.heightOffset = parsedCamera.heightOffset;
-                camera.radius = parsedCamera.radius;
-                camera.rotationOffset = parsedCamera.rotationOffset;
-                if (lockedTargetMesh)
-                    (<FollowCamera>camera).target = lockedTargetMesh;
-
-            } else if (parsedCamera.type === "GamepadCamera") {
-                camera = new GamepadCamera(parsedCamera.name, position, scene);
-
-            } else if (parsedCamera.type === "TouchCamera") {
-                camera = new TouchCamera(parsedCamera.name, position, scene);
-
-            } else if (parsedCamera.type === "VirtualJoysticksCamera") {
-                camera = new VirtualJoysticksCamera(parsedCamera.name, position, scene);
-
-            } else if (parsedCamera.type === "WebVRFreeCamera") {
-                camera = new WebVRFreeCamera(parsedCamera.name, position, scene);
-
-            } else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
-                camera = new VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
-
-            } else {
-                // Free Camera is the default value
-                camera = new FreeCamera(parsedCamera.name, position, scene);
-            }
-
-            // apply 3d rig, when found
-            if (parsedCamera.cameraRigMode) {
-                var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
-                camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
-            }
-
-            // Test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
-            if (lockedTargetMesh && camera instanceof FreeCamera) {
-                (<FreeCamera>camera).lockedTarget = lockedTargetMesh;
-            }
-
-            camera.id = parsedCamera.id;
-
-            Tags.AddTagsTo(camera, parsedCamera.tags);
+            var camera = SerializationHelper.Parse(construct, parsedCamera, scene);
 
             // Parent
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
             }
 
-            // Target
-            if (parsedCamera.target) {
-                if (camera.setTarget) {
-                    camera.setTarget(Vector3.FromArray(parsedCamera.target));
-                } else {
-                    //For ArcRotate
-                    camera.target = Vector3.FromArray(parsedCamera.target);
-                }
-            } else {
-                camera.rotation = Vector3.FromArray(parsedCamera.rotation);
+            //If camera has an input manager, let it parse inputs settings
+            if (camera.inputs) {
+                camera.inputs.parse(parsedCamera);
+
+                camera._setupInputs();
             }
 
-            camera.fov = parsedCamera.fov;
-            camera.minZ = parsedCamera.minZ;
-            camera.maxZ = parsedCamera.maxZ;
+            // Target
+            if (parsedCamera.target) {
+                if ((<any>camera).setTarget) {
+                    (<any>camera).setTarget(Vector3.FromArray(parsedCamera.target));
+                }
+            }
 
-            camera.speed = parsedCamera.speed;
-            camera.inertia = parsedCamera.inertia;
-
-            camera.checkCollisions = parsedCamera.checkCollisions;
-            camera.applyGravity = parsedCamera.applyGravity;
-            if (parsedCamera.ellipsoid) {
-                camera.ellipsoid = Vector3.FromArray(parsedCamera.ellipsoid);
+            // Apply 3d rig, when found
+            if (parsedCamera.cameraRigMode) {
+                var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+                camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
             }
 
             // Animations
@@ -718,21 +755,14 @@
 
                     camera.animations.push(Animation.Parse(parsedAnimation));
                 }
+                Node.ParseAnimationRanges(camera, parsedCamera, scene);
             }
 
             if (parsedCamera.autoAnimate) {
-                scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
-            }
-
-            // Layer Mask
-            if (parsedCamera.layerMask && (!isNaN(parsedCamera.layerMask))) {
-                camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
-            } else {
-                camera.layerMask = 0x0FFFFFFF;
+                scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
             }
 
             return camera;
         }
     }
 }
-

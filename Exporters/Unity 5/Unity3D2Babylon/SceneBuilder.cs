@@ -7,7 +7,6 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using JsonFx.Serialization;
 using JsonFx.Serialization.Resolvers;
-using UnityEditor;
 
 namespace Unity3D2Babylon
 {
@@ -26,6 +25,8 @@ namespace Unity3D2Babylon
 
         readonly ExportationOptions exportationOptions;
 
+        BabylonTexture sceneReflectionTexture;
+
         public SceneBuilder(string outputPath, string sceneName, ExportationOptions exportationOptions)
         {
             OutputPath = outputPath;
@@ -37,22 +38,35 @@ namespace Unity3D2Babylon
 
             babylonScene = new BabylonScene(OutputPath);
 
+            babylonScene.producer = new BabylonProducer
+            {
+                file = Path.GetFileName(outputPath),
+                version = "Unity3D",
+                name = SceneName,
+                exporter_version = "0.8"
+            };
+
             this.exportationOptions = exportationOptions;
         }
 
-        public void WriteToBabylonFile()
+        public string WriteToBabylonFile()
         {
             babylonScene.Prepare();
 
             var outputFile = Path.Combine(OutputPath, SceneName + ".babylon");
 
-            var jsWriter = new JsonWriter(new DataWriterSettings(new DataContractResolverStrategy()));
+            var settings = new DataWriterSettings(new DataContractResolverStrategy()) {PrettyPrint = true};
+
+            var jsWriter = new JsonWriter(settings);
+
             string babylonJSformat = jsWriter.Write(babylonScene);
             using (var sw = new StreamWriter(outputFile))
             {
                 sw.Write(babylonJSformat);
                 sw.Close();
             }
+
+            return outputFile;
         }
 
         public void GenerateStatus(List<string> logs)
@@ -109,19 +123,29 @@ namespace Unity3D2Babylon
             var itemsCount = gameObjects.Length;
 
             var index = 0;
-
-            //Dictionary to store prefabs and their instances
-            Dictionary<GameObject, List<BabylonAbstractMesh>> dicPrefabs = new Dictionary<GameObject, List<BabylonAbstractMesh>>();
-
             foreach (var gameObject in gameObjects)
             {
                 var progress = ((float)index / itemsCount);
                 index++;
+                // Static meshes
+                var meshFilter = gameObject.GetComponent<MeshFilter>();
+                if (meshFilter != null)
+                {                    
+                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, gameObject, progress);
+                    continue;
+                }
 
-                /* 
-                    The order of processing is important here.
-                    We will only check if this is a mesh prefab if it is not a light or camera
-                */
+                // Skinned meshes
+                var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
+                if (skinnedMesh != null)
+                {
+                    var babylonMesh = ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
+                    var skeleton = ConvertUnitySkeletonToBabylon(skinnedMesh.bones, skinnedMesh.sharedMesh.bindposes, skinnedMesh.transform, gameObject, progress);
+                    babylonMesh.skeletonId = skeleton.id;
+
+                    ExportSkeletonAnimation(skinnedMesh, babylonMesh, skeleton);
+                    continue;
+                }
 
                 // Light
                 var light = gameObject.GetComponent<Light>();
@@ -136,76 +160,12 @@ namespace Unity3D2Babylon
                 if (camera != null)
                 {
                     ConvertUnityCameraToBabylon(camera, progress);
-                    continue;
-                }
-
-                // Check if this is a prefab instance
-                GameObject gobjPrefab = (GameObject)PrefabUtility.GetPrefabParent(gameObject);
-                if (gobjPrefab != null)
-                {
-                    //Add prefab to dictionary if it doesn't already exist
-                    if (!dicPrefabs.ContainsKey(gobjPrefab))
-                    {
-                        dicPrefabs[gobjPrefab] = new List<BabylonAbstractMesh>();
-                    }
-
-                    List<BabylonAbstractMesh> lstInstances = dicPrefabs[gobjPrefab];
-                    BabylonAbstractMesh instance = ConvertUnityMeshToInstance(gameObject);
-                    lstInstances.Add(instance);
-                    continue;
-                }
-
-                // Static meshes
-                var meshFilter = gameObject.GetComponent<MeshFilter>();
-                if (meshFilter != null)
-                {                    
-                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, gameObject, progress);
-                    continue;
-                }
-
-                // Skinned meshes
-                var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
-                if (skinnedMesh != null)
-                {
-                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
+                    ConvertUnitySkyboxToBabylon(camera, progress);
                     continue;
                 }
 
                 // Empty
                 ConvertUnityEmptyObjectToBabylon(gameObject);
-            }
-
-            index = 0;
-            itemsCount = dicPrefabs.Count;
-
-            //Convert prefabs
-            foreach (KeyValuePair<GameObject, List<BabylonAbstractMesh>> pair in dicPrefabs)
-            {
-                var progress = ((float)index / itemsCount);
-                index++;
-
-                List<BabylonAbstractMesh> lstValue = pair.Value;
-                GameObject prefab = pair.Key;
-                BabylonAbstractMesh[] lstInstance = lstValue.ToArray();
-
-                // Static meshes
-                var meshFilter = prefab.GetComponent<MeshFilter>();
-                if (meshFilter != null)
-                {
-                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, prefab, progress, lstInstance);
-                    continue;
-                }
-
-                // Skinned meshes
-                var skinnedMesh = prefab.GetComponent<SkinnedMeshRenderer>();
-                if (skinnedMesh != null)
-                {
-                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, prefab, progress, lstInstance);
-                    continue;
-                }
-
-                // Empty
-                ConvertUnityEmptyObjectToBabylon(prefab, lstInstance);
             }
 
             // Materials
@@ -224,6 +184,30 @@ namespace Unity3D2Babylon
             {
                 babylonScene.gravity = exportationOptions.Gravity.ToFloat();
             }
-        }     
+        }
+
+        private static void ExportSkeletonAnimation(SkinnedMeshRenderer skinnedMesh, BabylonMesh babylonMesh, BabylonSkeleton skeleton)
+        {
+            var animator = skinnedMesh.rootBone.gameObject.GetComponent<Animator>();
+            if (animator != null)
+            {
+                ExportSkeletonAnimationClips(animator, true, skeleton, skinnedMesh.bones, babylonMesh);
+            }
+            else
+            {
+                var parent = skinnedMesh.rootBone.parent;
+                while (parent != null)
+                {
+                    animator = parent.gameObject.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        ExportSkeletonAnimationClips(animator, true, skeleton, skinnedMesh.bones, babylonMesh);
+                        break;
+                    }
+
+                    parent = parent.parent;
+                }
+            }
+        }
     }
 }

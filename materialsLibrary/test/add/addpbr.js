@@ -1,12 +1,40 @@
 window.preparePBR = function() {
 	var pbr = new BABYLON.PBRMaterial("pbr", scene);
+
 	pbr.albedoTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
 	pbr.albedoTexture.uScale = 5;
 	pbr.albedoTexture.vScale = 5;
-	pbr.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/TropicalSunnyDay", scene);	
+    
+    var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 512);
+
+    var colorGradingTexture = new BABYLON.ColorGradingTexture("textures/ColorGrading.3DL", scene);
+    
+    // Uncomment for PMREM Generation
+    // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);
+    pbr.reflectionTexture = hdrTexture;
+    pbr.refractionTexture = hdrTexture;
+    pbr.linkRefractionWithTransparency = true;
+    pbr.indexOfRefraction = 0.52;
+    
 	pbr.reflectivityColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 	pbr.microSurface = 0.9;
-	
+    
+    // Skybox
+    var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
+    var hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
+    hdrSkyboxMaterial.backFaceCulling = false;
+    hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
+    hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+    hdrSkyboxMaterial.microSurface = 1;
+    hdrSkyboxMaterial.specularColor = new BABYLON.Color3(1, 1, 1);
+    hdrSkyboxMaterial.disableLighting = true;
+    hdrSkyboxMaterial.cameraExposure = 0.6;
+    hdrSkyboxMaterial.cameraContrast = 1.6;
+    hdrSkyboxMaterial.directIntensity = 0;
+    hdrSkybox.material = hdrSkyboxMaterial;
+    hdrSkybox.infiniteDistance = true;
+    hdrSkybox.setEnabled(false);
+    
 	registerButtonUI("pbr", "Default", function() {
 		setRangeValues({
 		  "directIntensity": 1,
@@ -26,6 +54,28 @@ window.preparePBR = function() {
 		  "albedoColorB": 1,
 		  "albedoColorLevel": 0
 		});
+	});
+    registerButtonUI("pbr", "Env Irradiance", function() {
+		setRangeValues({
+		  "directIntensity": 0,
+		  "emissiveIntensity": 1,
+		  "environmentIntensity": 1,
+		  "specularIntensity": 1,
+		  "ShadowIntensity": 1,
+		  "ShadeIntensity": 1,
+		  "cameraExposure": 1,
+		  "cameraContrast": 1,
+		  "microSurface": 0,
+		  "reflectivityColorR": 0,
+		  "reflectivityColorG": 0,
+		  "reflectivityColorB": 0,
+		  "albedoColorR": 1,
+		  "albedoColorG": 1,
+		  "albedoColorB": 1,
+		  "albedoColorLevel": 1
+		});
+        
+        hdrSkybox.setEnabled(true);
 	});
 	registerButtonUI("pbr", "Rough Gold", function() {
 		setRangeValues({
@@ -67,33 +117,25 @@ window.preparePBR = function() {
 		  "albedoColorLevel": 1
 		});
 	});
-	registerButtonUI("pbr", "Shiny Copper", function() {
-		setRangeValues({
-		  "directIntensity": 1.2355634169181153,
-		  "emissiveIntensity": 0.910415149308085,
-		  "environmentIntensity": 0.21676551174002023,
-		  "specularIntensity": 1,
-		  "ShadowIntensity": 1.018797905178095,
-		  "ShadeIntensity": 0.975444802830091,
-		  "cameraExposure": 1.0621510075260991,
-		  "cameraContrast": 1.0404744563520971,
-		  "microSurface": 0.888738598134083,
-		  "reflectivityColorR": 0.98,
-		  "reflectivityColorG": 0.78,
-		  "reflectivityColorB": 0.706,
-		  "albedoColorR": 0.1,
-		  "albedoColorG": 0.1,
-		  "albedoColorB": 0.1,
-		  "albedoColorLevel": 1
-		});
+	
+    registerRangeUI("pbr", "indiceOfRefraction", 0, 2, function(value) {
+		pbr.indexOfRefraction = value;
+	}, function() {
+		return pbr.indexOfRefraction;
 	});
-
-	registerRangeUI("pbr", "directIntensity", 0, 2, function(value) {
+    
+    registerRangeUI("pbr", "alpha", 0, 1, function(value) {
+		pbr.alpha = value;
+	}, function() {
+		return pbr.alpha;
+	});
+    
+    registerRangeUI("pbr", "directIntensity", 0, 2, function(value) {
 		pbr.directIntensity = value;
 	}, function() {
 		return pbr.directIntensity;
 	});
-	
+    
 	registerRangeUI("pbr", "emissiveIntensity", 0, 2, function(value) {
 		pbr.emissiveIntensity = value;
 	}, function() {
@@ -182,6 +224,14 @@ window.preparePBR = function() {
 		pbr.overloadedAlbedoIntensity = value;
 	}, function() {
 		return pbr.overloadedAlbedoIntensity;
+	});
+    
+    registerButtonUI("pbr", "Toggle Skybox", function() {
+        hdrSkybox.setEnabled(!hdrSkybox.isEnabled());
+	});
+
+    registerButtonUI("pbr", "Color Grading", function() {
+        pbr.cameraColorGradingTexture = pbr.cameraColorGradingTexture ? null : colorGradingTexture; 
 	});
 
 	return pbr;

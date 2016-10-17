@@ -5,8 +5,8 @@
         private _currentRank = 32;
         private _maxRank = -1;
 
-        private _mesh : AbstractMesh;
-        private _meshRank : number;
+        private _mesh: AbstractMesh;
+        private _meshRank: number;
 
         public addFallback(rank: number, define: string): void {
             if (!this._defines[rank]) {
@@ -24,14 +24,14 @@
             this._defines[rank].push(define);
         }
 
-            public addCPUSkinningFallback(rank: number, mesh : BABYLON.AbstractMesh){
-                this._meshRank = rank;
-                this._mesh = mesh;
-    
-                if (rank > this._maxRank) {
-                    this._maxRank = rank;
-                }
+        public addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh) {
+            this._meshRank = rank;
+            this._mesh = mesh;
+
+            if (rank > this._maxRank) {
+                this._maxRank = rank;
             }
+        }
 
         public get isMoreFallbacks(): boolean {
             return this._currentRank <= this._maxRank;
@@ -45,7 +45,7 @@
                 currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
             }
 
-            if (this._mesh && this._currentRank === this._meshRank){
+            if (this._mesh && this._currentRank === this._meshRank) {
                 this._mesh.computeBonesUsingShaders = false;
                 currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
                 Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
@@ -73,11 +73,12 @@
         private _attributes: number[];
         private _uniforms: WebGLUniformLocation[];
         public _key: string;
+        private _indexParameters: any;
 
         private _program: WebGLProgram;
-        private _valueCache = [];
+        private _valueCache: { [key: string]: any } = {};
 
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
             this._engine = engine;
             this.name = baseName;
             this.defines = defines;
@@ -87,6 +88,8 @@
 
             this.onError = onError;
             this.onCompiled = onCompiled;
+
+            this._indexParameters = indexParameters;
 
             var vertexSource;
             var fragmentSource;
@@ -112,8 +115,12 @@
             }
 
             this._loadVertexShader(vertexSource, vertexCode => {
-                this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                    this._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, fallbacks);
+                this._processIncludes(vertexCode, vertexCodeWithIncludes => {
+                    this._loadFragmentShader(fragmentSource, (fragmentCode) => {
+                        this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
+                            this._prepareEffect(vertexCodeWithIncludes, fragmentCodeWithIncludes, attributesNames, defines, fallbacks);
+                        });
+                    });
                 });
             });
         }
@@ -178,7 +185,7 @@
 
             var vertexShaderUrl;
 
-            if (vertex[0] === "." || vertex[0] === "/") {
+            if (vertex[0] === "." || vertex[0] === "/" || vertex.indexOf("http") > -1) {
                 vertexShaderUrl = vertex;
             } else {
                 vertexShaderUrl = Engine.ShadersRepository + vertex;
@@ -209,7 +216,7 @@
 
             var fragmentShaderUrl;
 
-            if (fragment[0] === "." || fragment[0] === "/") {
+            if (fragment[0] === "." || fragment[0] === "/" || fragment.indexOf("http") > -1) {
                 fragmentShaderUrl = fragment;
             } else {
                 fragmentShaderUrl = Engine.ShadersRepository + fragment;
@@ -232,21 +239,100 @@
             }
         }
 
+        private _processIncludes(sourceCode: string, callback: (data: any) => void): void {
+            var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+            var match = regex.exec(sourceCode);
+
+            var returnValue = new String(sourceCode);
+
+            while (match != null) {
+                var includeFile = match[1];
+
+                if (Effect.IncludesShadersStore[includeFile]) {
+                    // Substitution
+                    var includeContent = Effect.IncludesShadersStore[includeFile];
+                    if (match[2]) {
+                        var splits = match[3].split(",");
+
+                        for (var index = 0; index < splits.length; index += 2) {
+                            var source = new RegExp(splits[index], "g");
+                            var dest = splits[index + 1];
+
+                            includeContent = includeContent.replace(source, dest);
+                        }
+                    }
+
+                    if (match[4]) {
+                        var indexString = match[5];
+
+                        if (indexString.indexOf("..") !== -1) {
+                            var indexSplits = indexString.split("..");
+                            var minIndex = parseInt(indexSplits[0]);
+                            var maxIndex = parseInt(indexSplits[1]);
+                            var sourceIncludeContent = includeContent.slice(0);
+                            includeContent = "";
+
+                            if (isNaN(maxIndex)) {
+                                maxIndex = this._indexParameters[indexSplits[1]];
+                            }
+
+                            for (var i = minIndex; i <= maxIndex; i++) {
+                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
+                            }
+                        } else {
+                            includeContent = includeContent.replace(/\{X\}/g, indexString);
+                        }
+                    }
+
+                    // Replace
+                    returnValue = returnValue.replace(match[0], includeContent);
+                } else {
+                    var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+
+                    Tools.LoadFile(includeShaderUrl, (fileContent) => {
+                        Effect.IncludesShadersStore[includeFile] = fileContent;
+                        this._processIncludes(<string>returnValue, callback);
+                    });
+                    return;
+                }
+
+                match = regex.exec(sourceCode);
+            }
+
+            callback(returnValue);
+        }
+
+        private _processPrecision(source: string): string {
+            if (source.indexOf("precision highp float") === -1) {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) {
+                    source = "precision mediump float;\n" + source;
+                } else {
+                    source = "precision highp float;\n" + source;
+                }
+            } else {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
+                    source = source.replace("precision highp float", "precision mediump float");
+                }
+            }
+
+            return source;
+        }
+
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
                 var engine = this._engine;
 
-                if (!engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
-                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
-                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
-                }
+                // Precision
+                vertexSourceCode = this._processPrecision(vertexSourceCode);
+                fragmentSourceCode = this._processPrecision(fragmentSourceCode);
 
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
 
-                for (var index = 0; index < this._samplers.length; index++) {
+                var index: number;
+                for (index = 0; index < this._samplers.length; index++) {
                     var sampler = this.getUniform(this._samplers[index]);
 
                     if (sampler == null) {
@@ -254,6 +340,7 @@
                         index--;
                     }
                 }
+
                 engine.bindSamplers(this);
 
                 this._isReady = true;
@@ -261,15 +348,6 @@
                     this.onCompiled(this);
                 }
             } catch (e) {
-                // Is it a problem with precision?
-                if (e.message.indexOf("highp") !== -1) {
-                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
-                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
-
-                    this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
-
-                    return;
-                }
                 // Let's go through fallbacks then
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Unable to compile effect with current defines. Trying next fallback.");
@@ -299,110 +377,235 @@
         }
 
         public setTexture(channel: string, texture: BaseTexture): void {
-            this._engine.setTexture(this._samplers.indexOf(channel), texture);
+            this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        }
+
+        public setTextureArray(channel: string, textures: BaseTexture[]): void {
+            if (this._samplers.indexOf(channel + "Ex") === -1) {
+                var initialPos = this._samplers.indexOf(channel);
+                for (var index = 1; index < textures.length; index++) {
+                    this._samplers.splice(initialPos + index, 0, channel + "Ex");
+                }
+            }
+
+            this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
         }
 
         public setTextureFromPostProcess(channel: string, postProcess: PostProcess): void {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 
-        public _cacheMatrix(uniformName, matrix) {
-            if (!this._valueCache[uniformName]) {
-                this._valueCache[uniformName] = new Matrix();
+        public _cacheMatrix(uniformName: string, matrix: Matrix): boolean {
+            var changed = false;
+            var cache: Matrix = this._valueCache[uniformName];
+            if (!cache || !(cache instanceof Matrix)) {
+                changed = true;
+                cache = new Matrix();
             }
 
+            var tm = cache.m;
+            var om = matrix.m;
             for (var index = 0; index < 16; index++) {
-                this._valueCache[uniformName].m[index] = matrix.m[index];
+                if (tm[index] !== om[index]) {
+                    tm[index] = om[index];
+                    changed = true;
+                }
             }
+
+            this._valueCache[uniformName] = cache;
+            return changed;
         }
 
-        public _cacheFloat2(uniformName: string, x: number, y: number): void {
-            if (!this._valueCache[uniformName]) {
-                this._valueCache[uniformName] = [x, y];
-                return;
+        public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
+            var cache = this._valueCache[uniformName];
+            if (!cache) {
+                cache = [x, y];
+                this._valueCache[uniformName] = cache;
+                return true;
             }
 
-            this._valueCache[uniformName][0] = x;
-            this._valueCache[uniformName][1] = y;
+            var changed = false;
+            if (cache[0] !== x) {
+                cache[0] = x;
+                changed = true;
+            }
+            if (cache[1] !== y) {
+                cache[1] = y;
+                changed = true;
+            }
+
+            return changed;
         }
 
-        public _cacheFloat3(uniformName: string, x: number, y: number, z: number): void {
-            if (!this._valueCache[uniformName]) {
-                this._valueCache[uniformName] = [x, y, z];
-                return;
+        public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
+            var cache = this._valueCache[uniformName];
+            if (!cache) {
+                cache = [x, y, z];
+                this._valueCache[uniformName] = cache;
+                return true;
             }
 
-            this._valueCache[uniformName][0] = x;
-            this._valueCache[uniformName][1] = y;
-            this._valueCache[uniformName][2] = z;
+            var changed = false;
+            if (cache[0] !== x) {
+                cache[0] = x;
+                changed = true;
+            }
+            if (cache[1] !== y) {
+                cache[1] = y;
+                changed = true;
+            }
+            if (cache[2] !== z) {
+                cache[2] = z;
+                changed = true;
+            }
+
+            return changed;
         }
 
-        public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
-            if (!this._valueCache[uniformName]) {
-                this._valueCache[uniformName] = [x, y, z, w];
-                return;
+        public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
+            var cache = this._valueCache[uniformName];
+            if (!cache) {
+                cache = [x, y, z, w];
+                this._valueCache[uniformName] = cache;
+                return true;
             }
 
-            this._valueCache[uniformName][0] = x;
-            this._valueCache[uniformName][1] = y;
-            this._valueCache[uniformName][2] = z;
-            this._valueCache[uniformName][3] = w;
+            var changed = false;
+            if (cache[0] !== x) {
+                cache[0] = x;
+                changed = true;
+            }
+            if (cache[1] !== y) {
+                cache[1] = y;
+                changed = true;
+            }
+            if (cache[2] !== z) {
+                cache[2] = z;
+                changed = true;
+            }
+            if (cache[3] !== w) {
+                cache[3] = w;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        public setIntArray(uniformName: string, array: Int32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setIntArray2(uniformName: string, array: Int32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray2(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setIntArray3(uniformName: string, array: Int32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray3(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setIntArray4(uniformName: string, array: Int32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray4(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setFloatArray(uniformName: string, array: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setFloatArray2(uniformName: string, array: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray2(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setFloatArray3(uniformName: string, array: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray3(this.getUniform(uniformName), array);
+
+            return this;
+        }
+
+        public setFloatArray4(uniformName: string, array: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray4(this.getUniform(uniformName), array);
+
+            return this;
         }
 
         public setArray(uniformName: string, array: number[]): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setArray(this.getUniform(uniformName), array);
 
             return this;
         }
 
         public setArray2(uniformName: string, array: number[]): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setArray2(this.getUniform(uniformName), array);
 
             return this;
         }
 
         public setArray3(uniformName: string, array: number[]): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setArray3(this.getUniform(uniformName), array);
 
             return this;
         }
 
         public setArray4(uniformName: string, array: number[]): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setArray4(this.getUniform(uniformName), array);
 
             return this;
         }
 
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setMatrices(this.getUniform(uniformName), matrices);
 
             return this;
         }
 
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-                return this;
-
-            this._cacheMatrix(uniformName, matrix);
-            this._engine.setMatrix(this.getUniform(uniformName), matrix);
-
+            if (this._cacheMatrix(uniformName, matrix)) {
+                this._engine.setMatrix(this.getUniform(uniformName), matrix);
+            }
             return this;
         }
 
         public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
             this._engine.setMatrix3x3(this.getUniform(uniformName), matrix);
 
             return this;
         }
 
-        public setMatrix2x2(uniformname: string, matrix: Float32Array): Effect {
-            this._engine.setMatrix2x2(this.getUniform(uniformname), matrix);
+        public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
+            this._valueCache[uniformName] = null;
+            this._engine.setMatrix2x2(this.getUniform(uniformName), matrix);
 
             return this;
         }
 
         public setFloat(uniformName: string, value: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName] === value)
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === value)
                 return this;
 
             this._valueCache[uniformName] = value;
@@ -413,7 +616,8 @@
         }
 
         public setBool(uniformName: string, bool: boolean): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName] === bool)
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === bool)
                 return this;
 
             this._valueCache[uniformName] = bool;
@@ -424,88 +628,63 @@
         }
 
         public setVector2(uniformName: string, vector2: Vector2): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector2.x && this._valueCache[uniformName][1] === vector2.y)
-                return this;
-
-            this._cacheFloat2(uniformName, vector2.x, vector2.y);
-            this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
-
+            if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
+                this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
+            }
             return this;
         }
 
         public setFloat2(uniformName: string, x: number, y: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y)
-                return this;
-
-            this._cacheFloat2(uniformName, x, y);
-            this._engine.setFloat2(this.getUniform(uniformName), x, y);
-
+            if (this._cacheFloat2(uniformName, x, y)) {
+                this._engine.setFloat2(this.getUniform(uniformName), x, y);
+            }
             return this;
         }
 
         public setVector3(uniformName: string, vector3: Vector3): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector3.x && this._valueCache[uniformName][1] === vector3.y && this._valueCache[uniformName][2] === vector3.z)
-                return this;
-
-            this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z);
-
-            this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
-
+            if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
+                this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
+            }
             return this;
         }
 
         public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z)
-                return this;
-
-            this._cacheFloat3(uniformName, x, y, z);
-            this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
-
+            if (this._cacheFloat3(uniformName, x, y, z)) {
+                this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
+            }
             return this;
         }
 
         public setVector4(uniformName: string, vector4: Vector4): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector4.x && this._valueCache[uniformName][1] === vector4.y && this._valueCache[uniformName][2] === vector4.z && this._valueCache[uniformName][3] === vector4.w)
-                return this;
-
-            this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w);
-
-            this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
-
+            if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
+                this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
+            }
             return this;
         }
 
         public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z && this._valueCache[uniformName][3] === w)
-                return this;
-
-            this._cacheFloat4(uniformName, x, y, z, w);
-            this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
-
+            if (this._cacheFloat4(uniformName, x, y, z, w)) {
+                this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
+            }
             return this;
         }
 
         public setColor3(uniformName: string, color3: Color3): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === color3.r && this._valueCache[uniformName][1] === color3.g && this._valueCache[uniformName][2] === color3.b)
-                return this;
-
-            this._cacheFloat3(uniformName, color3.r, color3.g, color3.b);
-            this._engine.setColor3(this.getUniform(uniformName), color3);
-
+            if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
+                this._engine.setColor3(this.getUniform(uniformName), color3);
+            }
             return this;
         }
 
         public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === color3.r && this._valueCache[uniformName][1] === color3.g && this._valueCache[uniformName][2] === color3.b && this._valueCache[uniformName][3] === alpha)
-                return this;
-
-            this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha);
-            this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
-
+            if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
+                this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
+            }
             return this;
         }
 
         // Statics
         public static ShadersStore = {};
+        public static IncludesShadersStore = {};
     }
 } 

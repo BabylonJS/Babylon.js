@@ -9,12 +9,14 @@
         return ((random * (max - min)) + min);
     }
 
-    export class ParticleSystem implements IDisposable {
+    export class ParticleSystem implements IDisposable, IAnimatable {
         // Statics
         public static BLENDMODE_ONEONE = 0;
         public static BLENDMODE_STANDARD = 1;
 
         // Members
+        public animations: Animation[] = [];
+
         public id: string;
         public renderingGroupId = 0;
         public emitter = null;
@@ -39,7 +41,20 @@
 
         public layerMask: number = 0x0FFFFFFF;
 
-        public onDispose: () => void;
+        /**
+        * An event triggered when the system is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<ParticleSystem>();
+
+        private _onDisposeObserver: Observer<ParticleSystem>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
         public updateFunction: (particles: Particle[]) => void;
 
         public blendMode = ParticleSystem.BLENDMODE_ONEONE;
@@ -62,13 +77,12 @@
 
         private _capacity: number;
         private _scene: Scene;
-        private _vertexDeclaration = [3, 4, 4];
-        private _vertexStrideSize = 11 * 4; // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY)
         private _stockParticles = new Array<Particle>();
         private _newPartsExcess = 0;
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexData: Float32Array;
+        private _vertexBuffer: Buffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
-        private _vertices: Float32Array;
         private _effect: Effect;
         private _customEffect: Effect;
         private _cachedDefines: string;
@@ -95,9 +109,6 @@
 
             scene.particleSystems.push(this);
 
-            // VBO
-            this._vertexBuffer = scene.getEngine().createDynamicVertexBuffer(capacity * this._vertexStrideSize * 4);
-
             var indices = [];
             var index = 0;
             for (var count = 0; count < capacity; count++) {
@@ -112,7 +123,17 @@
 
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
-            this._vertices = new Float32Array(capacity * this._vertexStrideSize);
+            // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
+            this._vertexData = new Float32Array(capacity * 11 * 4);
+            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 11);
+
+            var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
+            var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
+            var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
+
+            this._vertexBuffers[VertexBuffer.PositionKind] = positions;
+            this._vertexBuffers[VertexBuffer.ColorKind] = colors;
+            this._vertexBuffers["options"] = options;
 
             // Default behaviors
             this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
@@ -193,17 +214,17 @@
 
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
             var offset = index * 11;
-            this._vertices[offset] = particle.position.x;
-            this._vertices[offset + 1] = particle.position.y;
-            this._vertices[offset + 2] = particle.position.z;
-            this._vertices[offset + 3] = particle.color.r;
-            this._vertices[offset + 4] = particle.color.g;
-            this._vertices[offset + 5] = particle.color.b;
-            this._vertices[offset + 6] = particle.color.a;
-            this._vertices[offset + 7] = particle.angle;
-            this._vertices[offset + 8] = particle.size;
-            this._vertices[offset + 9] = offsetX;
-            this._vertices[offset + 10] = offsetY;
+            this._vertexData[offset] = particle.position.x;
+            this._vertexData[offset + 1] = particle.position.y;
+            this._vertexData[offset + 2] = particle.position.z;
+            this._vertexData[offset + 3] = particle.color.r;
+            this._vertexData[offset + 4] = particle.color.g;
+            this._vertexData[offset + 5] = particle.color.b;
+            this._vertexData[offset + 6] = particle.color.a;
+            this._vertexData[offset + 7] = particle.angle;
+            this._vertexData[offset + 8] = particle.size;
+            this._vertexData[offset + 9] = offsetX;
+            this._vertexData[offset + 10] = offsetY;
         }
 
         private _update(newParticles: number): void {
@@ -272,7 +293,7 @@
 
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
-                    ["position", "color", "options"],
+                    [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"],
                     ["invView", "view", "projection", "vClipPlane", "textureMask"],
                     ["diffuseSampler"], join);
             }
@@ -299,17 +320,16 @@
             this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
 
             // determine the number of particles we need to create   
-            var emitCout;
+            var newParticles;
 
             if (this.manualEmitCount > -1) {
-                emitCout = this.manualEmitCount;
+                newParticles = this.manualEmitCount;
+                this._newPartsExcess = 0;
                 this.manualEmitCount = 0;
             } else {
-                emitCout = this.emitRate;
+                newParticles = ((this.emitRate * this._scaledUpdateSpeed) >> 0);
+                this._newPartsExcess += this.emitRate * this._scaledUpdateSpeed - newParticles;
             }
-
-            var newParticles = ((emitCout * this._scaledUpdateSpeed) >> 0);
-            this._newPartsExcess += emitCout * this._scaledUpdateSpeed - newParticles;
 
             if (this._newPartsExcess > 1.0) {
                 newParticles += this._newPartsExcess >> 0;
@@ -349,8 +369,8 @@
                 this._appendParticleVertex(offset++, particle, 1, 1);
                 this._appendParticleVertex(offset++, particle, 0, 1);
             }
-            var engine = this._scene.getEngine();
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
+
+            this._vertexBuffer.update(this._vertexData);
         }
 
         public render(): number {
@@ -381,7 +401,7 @@
             }
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
             // Draw order
             if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
@@ -402,7 +422,7 @@
 
         public dispose(): void {
             if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
+                this._vertexBuffer.dispose();
                 this._vertexBuffer = null;
             }
 
@@ -421,16 +441,15 @@
             this._scene.particleSystems.splice(index, 1);
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
 
         // Clone
         public clone(name: string, newEmitter: any): ParticleSystem {
             var result = new ParticleSystem(name, this._capacity, this._scene);
 
-            Tools.DeepCopy(this, result, ["particles"], ["_vertexDeclaration", "_vertexStrideSize"]);
+            Tools.DeepCopy(this, result, ["particles"]);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;
@@ -450,17 +469,25 @@
             var serializationObject: any = {};
 
             serializationObject.name = this.name;
+            serializationObject.id = this.id;
+
+            // Emitter
             if (this.emitter.position) {
                 serializationObject.emitterId = this.emitter.id;
             } else {
-                serializationObject.emitter = this.emitter.asArray();;
+                serializationObject.emitter = this.emitter.asArray();
             }
+
             serializationObject.capacity = this.getCapacity();
 
             if (this.particleTexture) {
                 serializationObject.textureName = this.particleTexture.name;
             }
 
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+
+            // Particle system
             serializationObject.minAngularSpeed = this.minAngularSpeed;
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
@@ -489,15 +516,37 @@
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var name = parsedParticleSystem.name;
             var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+
+            if (parsedParticleSystem.id) {
+                particleSystem.id = parsedParticleSystem.id;
+            }
+
+            // Texture
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
+
+            // Emitter
             if (parsedParticleSystem.emitterId) {
                 particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
             } else {
                 particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
             }
+
+            // Animations
+            if (parsedParticleSystem.animations) {
+                for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedParticleSystem.animations[animationIndex];
+                    particleSystem.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
+            if (parsedParticleSystem.autoAnimate) {
+                scene.beginAnimation(particleSystem, parsedParticleSystem.autoAnimateFrom, parsedParticleSystem.autoAnimateTo, parsedParticleSystem.autoAnimateLoop, parsedParticleSystem.autoAnimateSpeed || 1.0);
+            }
+
+            // Particle system
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
@@ -519,10 +568,12 @@
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
-            particleSystem.start();
+
+            if (!parsedParticleSystem.preventAutoStart) {
+                particleSystem.start();
+            }
 
             return particleSystem;
         }
     }
-}  
-
+}

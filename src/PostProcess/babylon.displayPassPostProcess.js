@@ -7,10 +7,10 @@ var BABYLON;
 (function (BABYLON) {
     var DisplayPassPostProcess = (function (_super) {
         __extends(DisplayPassPostProcess, _super);
-        function DisplayPassPostProcess(name, ratio, camera, samplingMode, engine, reusable) {
-            _super.call(this, name, "displayPass", ["passSampler"], ["passSampler"], ratio, camera, samplingMode, engine, reusable);
+        function DisplayPassPostProcess(name, options, camera, samplingMode, engine, reusable) {
+            _super.call(this, name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable);
         }
         return DisplayPassPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.DisplayPassPostProcess = DisplayPassPostProcess;
 })(BABYLON || (BABYLON = {}));

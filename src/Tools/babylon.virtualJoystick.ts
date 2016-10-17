@@ -40,7 +40,7 @@ module BABYLON {
         private _deltaJoystickVector: Vector2;
         private _leftJoystick: boolean;
         private _joystickIndex: number;
-        private _touches: SmartCollection;
+        private _touches: StringDictionary<{ x: number, y: number, prevX: number, prevY: number } | PointerEvent>;
 
         private _onPointerDownHandlerRef: (e: PointerEvent) => any;
         private _onPointerMoveHandlerRef: (e: PointerEvent) => any;
@@ -68,7 +68,7 @@ module BABYLON {
             this.reverseUpDown = false;
 
             // collections of pointers
-            this._touches = new SmartCollection();
+            this._touches = new StringDictionary<{ x: number, y: number, prevX: number, prevY: number } | PointerEvent>();
             this.deltaPosition = Vector3.Zero();
 
             this._joystickSensibility = 25;
@@ -220,9 +220,10 @@ module BABYLON {
                 }
             }
             else {
-                if (this._touches.item(e.pointerId.toString())) {
-                    this._touches.item(e.pointerId.toString()).x = e.clientX;
-                    this._touches.item(e.pointerId.toString()).y = e.clientY;                     
+                let data = this._touches.get(e.pointerId.toString());
+                if (data) {
+                    (data as any).x = e.clientX;
+                    (data as any).y = e.clientY;                     
                 }
             }
         }
@@ -235,7 +236,7 @@ module BABYLON {
                 this.pressed = false;
             }
             else {
-                var touch = this._touches.item(e.pointerId.toString());
+                var touch = <{ x: number, y: number, prevX: number, prevY: number }>this._touches.get(e.pointerId.toString());
                 if (touch) {
                     VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
                 }

@@ -46,8 +46,11 @@ var BABYLON;
         ActionEvent.CreateNewFromScene = function (scene, evt) {
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
+        ActionEvent.CreateNewFromPrimitive = function (prim, pointerPos, evt, additionalData) {
+            return new ActionEvent(prim, pointerPos.x, pointerPos.y, null, evt, additionalData);
+        };
         return ActionEvent;
-    })();
+    }());
     BABYLON.ActionEvent = ActionEvent;
     /**
      * Action Manager manages all events to be triggered on a given mesh or the global scene.
@@ -91,6 +94,35 @@ var BABYLON;
         Object.defineProperty(ActionManager, "OnCenterPickTrigger", {
             get: function () {
                 return ActionManager._OnCenterPickTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "OnPickDownTrigger", {
+            get: function () {
+                return ActionManager._OnPickDownTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
+            get: function () {
+                return ActionManager._OnPickUpTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "OnPickOutTrigger", {
+            /// This trigger will only be raised if you also declared a OnPickDown
+            get: function () {
+                return ActionManager._OnPickOutTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "OnLongPressTrigger", {
+            get: function () {
+                return ActionManager._OnLongPressTrigger;
             },
             enumerable: true,
             configurable: true
@@ -144,13 +176,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
-            get: function () {
-                return ActionManager._OnPickUpTrigger;
-            },
-            enumerable: true,
-            configurable: true
-        });
         // Methods
         ActionManager.prototype.dispose = function () {
             var index = this._scene._actionManagers.indexOf(this);
@@ -200,9 +225,6 @@ var BABYLON;
                     if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
                         return true;
                     }
-                    if (action.trigger === ActionManager._OnPickUpTrigger) {
-                        return true;
-                    }
                 }
                 return false;
             },
@@ -217,10 +239,7 @@ var BABYLON;
             get: function () {
                 for (var index = 0; index < this.actions.length; index++) {
                     var action = this.actions[index];
-                    if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
-                        return true;
-                    }
-                    if (action.trigger === ActionManager._OnPickUpTrigger) {
+                    if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPickUpTrigger) {
                         return true;
                     }
                 }
@@ -280,6 +299,36 @@ var BABYLON;
         ActionManager.prototype._getProperty = function (propertyPath) {
             var properties = propertyPath.split(".");
             return properties[properties.length - 1];
+        };
+        ActionManager.prototype.serialize = function (name) {
+            var root = {
+                children: [],
+                name: name,
+                type: 3,
+                properties: [] // Empty for root but required
+            };
+            for (var i = 0; i < this.actions.length; i++) {
+                var triggerObject = {
+                    type: 0,
+                    children: [],
+                    name: ActionManager.GetTriggerName(this.actions[i].trigger),
+                    properties: []
+                };
+                var triggerOptions = this.actions[i].triggerOptions;
+                if (triggerOptions && typeof triggerOptions !== "number") {
+                    if (triggerOptions.parameter instanceof BABYLON.Node) {
+                        triggerObject.properties.push(BABYLON.Action._GetTargetProperty(triggerOptions.parameter));
+                    }
+                    else {
+                        triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
+                    }
+                }
+                // Serialize child action, recursively
+                this.actions[i].serialize(triggerObject);
+                // Add serialized trigger
+                root.children.push(triggerObject);
+            }
+            return root;
         };
         ActionManager.Parse = function (parsedActions, object, scene) {
             var actionManager = new BABYLON.ActionManager(scene);
@@ -432,21 +481,47 @@ var BABYLON;
                 }
             }
         };
+        ActionManager.GetTriggerName = function (trigger) {
+            switch (trigger) {
+                case 0: return "NothingTrigger";
+                case 1: return "OnPickTrigger";
+                case 2: return "OnLeftPickTrigger";
+                case 3: return "OnRightPickTrigger";
+                case 4: return "OnCenterPickTrigger";
+                case 5: return "OnPickDownTrigger";
+                case 6: return "OnPickUpTrigger";
+                case 7: return "OnLongPressTrigger";
+                case 8: return "OnPointerOverTrigger";
+                case 9: return "OnPointerOutTrigger";
+                case 10: return "OnEveryFrameTrigger";
+                case 11: return "OnIntersectionEnterTrigger";
+                case 12: return "OnIntersectionExitTrigger";
+                case 13: return "OnKeyDownTrigger";
+                case 14: return "OnKeyUpTrigger";
+                case 15: return "OnPickOutTrigger";
+                default: return "";
+            }
+        };
         // Statics
         ActionManager._NothingTrigger = 0;
         ActionManager._OnPickTrigger = 1;
         ActionManager._OnLeftPickTrigger = 2;
         ActionManager._OnRightPickTrigger = 3;
         ActionManager._OnCenterPickTrigger = 4;
-        ActionManager._OnPointerOverTrigger = 5;
-        ActionManager._OnPointerOutTrigger = 6;
-        ActionManager._OnEveryFrameTrigger = 7;
-        ActionManager._OnIntersectionEnterTrigger = 8;
-        ActionManager._OnIntersectionExitTrigger = 9;
-        ActionManager._OnKeyDownTrigger = 10;
-        ActionManager._OnKeyUpTrigger = 11;
-        ActionManager._OnPickUpTrigger = 12;
+        ActionManager._OnPickDownTrigger = 5;
+        ActionManager._OnPickUpTrigger = 6;
+        ActionManager._OnLongPressTrigger = 7;
+        ActionManager._OnPointerOverTrigger = 8;
+        ActionManager._OnPointerOutTrigger = 9;
+        ActionManager._OnEveryFrameTrigger = 10;
+        ActionManager._OnIntersectionEnterTrigger = 11;
+        ActionManager._OnIntersectionExitTrigger = 12;
+        ActionManager._OnKeyDownTrigger = 13;
+        ActionManager._OnKeyUpTrigger = 14;
+        ActionManager._OnPickOutTrigger = 15;
+        ActionManager.DragMovementThreshold = 10; // in pixels
+        ActionManager.LongPressDelay = 500; // in milliseconds
         return ActionManager;
-    })();
+    }());
     BABYLON.ActionManager = ActionManager;
 })(BABYLON || (BABYLON = {}));

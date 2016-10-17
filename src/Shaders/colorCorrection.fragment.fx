@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// samplers
+﻿// samplers
 uniform sampler2D textureSampler;	// screen render
 uniform sampler2D colorTable;		// color table with modified colors
 

@@ -21,37 +21,41 @@
         return true;
     };
 
-    var getLowestRoot = (a: number, b: number, c: number, maxR: number) => {
-        var determinant = b * b - 4.0 * a * c;
-        var result = { root: 0, found: false };
+    var getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: number, found: boolean } =
+        (function () {
+            var result = { root: 0, found: false };
+            return function (a: number, b: number, c: number, maxR: number) {
+                result.root = 0; result.found = false;
+                var determinant = b * b - 4.0 * a * c;
+                if (determinant < 0)
+                    return result;
 
-        if (determinant < 0)
-            return result;
+                var sqrtD = Math.sqrt(determinant);
+                var r1 = (-b - sqrtD) / (2.0 * a);
+                var r2 = (-b + sqrtD) / (2.0 * a);
 
-        var sqrtD = Math.sqrt(determinant);
-        var r1 = (-b - sqrtD) / (2.0 * a);
-        var r2 = (-b + sqrtD) / (2.0 * a);
+                if (r1 > r2) {
+                    var temp = r2;
+                    r2 = r1;
+                    r1 = temp;
+                }
 
-        if (r1 > r2) {
-            var temp = r2;
-            r2 = r1;
-            r1 = temp;
+                if (r1 > 0 && r1 < maxR) {
+                    result.root = r1;
+                    result.found = true;
+                    return result;
+                }
+
+                if (r2 > 0 && r2 < maxR) {
+                    result.root = r2;
+                    result.found = true;
+                    return result;
+                }
+
+                return result;
+            }
         }
-
-        if (r1 > 0 && r1 < maxR) {
-            result.root = r1;
-            result.found = true;
-            return result;
-        }
-
-        if (r2 > 0 && r2 < maxR) {
-            result.root = r2;
-            result.found = true;
-            return result;
-        }
-
-        return result;
-    };
+    )();
 
     export class Collider {
         public radius = new Vector3(1, 1, 1);

@@ -41,7 +41,7 @@ namespace Max2Babylon
             }
             _objectName = _node.Name;
 
-            // Set url (webview)
+            // Set url (web view)
             string assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
             ActionsBuilderWebView.Url = new Uri(string.Format("{0}/BabylonActionsBuilder/index.html", assemblyPath), System.UriKind.Absolute);
         }
@@ -56,7 +56,11 @@ namespace Max2Babylon
             object[] names = new object[list.Count];
             for (int i = 0; i < list.Count; i++)
             {
+#if MAX2017
+                var indexer = i;
+#else
                 var indexer = new IntPtr(i);
+#endif
                 var node = list[indexer];
                 names[i] = node.MaxNode.Name;
             }
@@ -68,7 +72,11 @@ namespace Max2Babylon
             object[] names = new object[list.Count];
             for (int i = 0; i < list.Count; i++)
             {
+#if MAX2017
+                var indexer = i;
+#else
                 var indexer = new IntPtr(i);
+#endif
                 var node = list[indexer].MaxNode;
                 string soundFile = "";
 
@@ -83,7 +91,7 @@ namespace Max2Babylon
             // Set common properties (name, is scene or object, etc.)
             _document = ActionsBuilderWebView.Document;
 
-            // Update screen
+            // Update version (no buttons for 3ds Max)
             _document.InvokeScript("hideButtons");
 
             // Set object name

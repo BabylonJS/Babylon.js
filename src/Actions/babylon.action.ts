@@ -53,6 +53,14 @@
 
             this._nextActiveAction.execute(evt);
 
+            this.skipToNextActiveAction();
+        }
+
+        public execute(evt: ActionEvent): void {
+
+        }
+
+        public skipToNextActiveAction(): void {
             if (this._nextActiveAction._child) {
 
                 if (!this._nextActiveAction._child._actionManager) {
@@ -63,10 +71,6 @@
             } else {
                 this._nextActiveAction = this;
             }
-        }
-
-        public execute(evt: ActionEvent): void {
-
         }
 
         public then(action: Action): Action {
@@ -85,5 +89,76 @@
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
         }
+        
+        public serialize(parent: any): any {
+        }
+        
+        // Called by BABYLON.Action objects in serialize(...). Internal use
+        protected _serialize(serializedAction: any, parent?: any): any {
+            var serializationObject: any = { 
+                type: 1,
+                children: [],
+                name: serializedAction.name,
+                properties: serializedAction.properties || []
+            };
+            
+            // Serialize child
+            if (this._child) {
+                this._child.serialize(serializationObject);
+            }
+            
+            // Check if "this" has a condition
+            if (this._condition) {
+                var serializedCondition = this._condition.serialize();
+                serializedCondition.children.push(serializationObject);
+                
+                if (parent) {
+                    parent.children.push(serializedCondition);
+                }
+                return serializedCondition;
+            }
+            
+            if (parent) {
+                parent.children.push(serializationObject);
+            }
+            return serializationObject;
+        }
+        
+        public static _SerializeValueAsString = (value: any): string => {
+            if (typeof value === "number") {
+                return value.toString();
+            }
+            
+            if (typeof value === "boolean") {
+                return value ? "true" : "false";
+            }
+            
+            if (value instanceof Vector2) {
+                return value.x + ", " + value.y;
+            }
+            if (value instanceof Vector3) {
+                return value.x + ", " + value.y + ", " + value.z;
+            }
+            
+            if (value instanceof Color3) {
+                return value.r + ", " + value.g + ", " + value.b;
+            }
+            if (value instanceof Color4) {
+                return value.r + ", " + value.g + ", " + value.b + ", " + value.a;
+            }
+            
+            return value; // string
+        };
+    
+        public static _GetTargetProperty = (target: Scene | Node) => {
+            return {
+                name: "target",
+                targetType: target instanceof Mesh ? "MeshProperties"
+                            : target instanceof Light ? "LightProperties"
+                            : target instanceof Camera ? "CameraProperties"
+                            : "SceneProperties",
+                value: target instanceof Scene ? "Scene" : (<Node>target).name
+            }  
+        };
     }
 }

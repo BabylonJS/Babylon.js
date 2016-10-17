@@ -2,7 +2,18 @@
     export class MaterialDefines {
         _keys: string[];
 
+        public rebuild() {
+            if (this._keys) {
+                delete this._keys;
+            }
+            this._keys = Object.keys(this);
+        } 
+
         public isEqual(other: MaterialDefines): boolean {
+            if (this._keys.length !== other._keys.length) {
+                return false;
+            }
+
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
@@ -15,6 +26,10 @@
         }
 
         public cloneTo(other: MaterialDefines): void {
+            if (this._keys.length !== other._keys.length) {
+                other._keys = this._keys.slice(0);
+            }
+
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
@@ -80,32 +95,82 @@
             return Material._CounterClockWiseSideOrientation;
         }
 
+        @serialize()
         public id: string;
+
+        @serialize()
         public checkReadyOnEveryCall = false;
+
+        @serialize()
         public checkReadyOnlyOnce = false;
+
+        @serialize()
         public state = "";
+
+        @serialize()
         public alpha = 1.0;
+
+        @serialize()
         public backFaceCulling = true;
-        public sideOrientation = Material.CounterClockWiseSideOrientation;
+
+        @serialize()
+        public sideOrientation: number;
+
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
-        public onDispose: () => void;
-        public onBind: (material: Material, mesh: Mesh) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+
+        /**
+        * An event triggered when the material is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Material>();
+
+        private _onDisposeObserver: Observer<Material>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when the material is bound.
+        * @type {BABYLON.Observable}
+        */
+        public onBindObservable = new Observable<AbstractMesh>();
+
+        private _onBindObserver: Observer<AbstractMesh>;
+        public set onBind(callback: (Mesh: AbstractMesh) => void) {
+            if (this._onBindObserver) {
+                this.onBindObservable.remove(this._onBindObserver);
+            }
+            this._onBindObserver = this.onBindObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when the material is unbound.
+        * @type {BABYLON.Observable}
+        */
+        public onUnBindObservable = new Observable<Material>();
+
+
+        @serialize()
         public alphaMode = Engine.ALPHA_COMBINE;
+
+        @serialize()
         public disableDepthWrite = false;
+
+        @serialize()
         public fogEnabled = true;
 
-        public _effect: Effect;
-        public _wasPreviouslyReady = false;
-        private _scene: Scene;
-        private _fillMode = Material.TriangleFillMode;
-        private _cachedDepthWriteState: boolean;
-
+        @serialize()
         public pointSize = 1.0;
 
+        @serialize()
         public zOffset = 0;
 
+        @serialize()
         public get wireframe(): boolean {
             return this._fillMode === Material.WireFrameFillMode;
         }
@@ -114,6 +179,7 @@
             this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
         }
 
+        @serialize()
         public get pointsCloud(): boolean {
             return this._fillMode === Material.PointFillMode;
         }
@@ -122,6 +188,7 @@
             this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
         }
 
+        @serialize()
         public get fillMode(): number {
             return this._fillMode;
         }
@@ -130,14 +197,50 @@
             this._fillMode = value;
         }
 
+        public _effect: Effect;
+        public _wasPreviouslyReady = false;
+        private _scene: Scene;
+        private _fillMode = Material.TriangleFillMode;
+        private _cachedDepthWriteState: boolean;
+
+
         constructor(public name: string, scene: Scene, doNotAdd?: boolean) {
             this.id = name;
 
             this._scene = scene;
 
+            if (scene.useRightHandedSystem) {
+                this.sideOrientation = Material.ClockWiseSideOrientation;
+            } else {
+                this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            }
+
             if (!doNotAdd) {
                 scene.materials.push(this);
             }
+        }
+
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * subclasses should override adding information pertainent to themselves
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = "Name: " + this.name;
+            if (fullDetails){
+            }
+            return ret;
+        } 
+        
+        public get isFrozen(): boolean {
+            return this.checkReadyOnlyOnce;
+        }
+
+        public freeze(): void {
+            this.checkReadyOnlyOnce = true;
+        }
+
+        public unfreeze(): void {
+            this.checkReadyOnlyOnce = false;
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
@@ -163,10 +266,7 @@
         public getAlphaTestTexture(): BaseTexture {
             return null;
         }
-
-        public trackCreation(onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void) {
-        }
-
+        
         public markDirty(): void {
             this._wasPreviouslyReady = false;
         }
@@ -174,16 +274,16 @@
         public _preBind(): void {
             var engine = this._scene.getEngine();
 
+            var reverse = this.sideOrientation === Material.ClockWiseSideOrientation;
+
             engine.enableEffect(this._effect);
-            engine.setState(this.backFaceCulling, this.zOffset, false, this.sideOrientation === Material.ClockWiseSideOrientation);
+            engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {
             this._scene._cachedMaterial = this;
 
-            if (this.onBind) {
-                this.onBind(this, mesh);
-            }
+            this.onBindObservable.notifyObservers(mesh);
 
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
@@ -196,6 +296,9 @@
         }
 
         public unbind(): void {
+
+            this.onUnBindObservable.notifyObservers(this);
+
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
                 engine.setDepthWrite(this._cachedDepthWriteState);
@@ -220,7 +323,7 @@
             return result;
         }
 
-        public dispose(forceDisposeEffect?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             // Animations
             this.getScene().stopAnimation(this);
 
@@ -246,40 +349,15 @@
             }
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
-        }
+            this.onDisposeObservable.notifyObservers(this);
 
-        public copyTo(other: Material): void {
-            other.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            other.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
-            other.alpha = this.alpha;
-            other.fillMode = this.fillMode;
-            other.backFaceCulling = this.backFaceCulling;
-            other.fogEnabled = this.fogEnabled;
-            other.wireframe = this.wireframe;
-            other.zOffset = this.zOffset;
-            other.alphaMode = this.alphaMode;
-            other.sideOrientation = this.sideOrientation;
-            other.disableDepthWrite = this.disableDepthWrite;
-            other.pointSize = this.pointSize;
-            other.pointsCloud = this.pointsCloud;
+            this.onDisposeObservable.clear();
+            this.onBindObservable.clear();
+            this.onUnBindObservable.clear();
         }
 
         public serialize(): any {
-            var serializationObject: any = {};
-
-            serializationObject.name = this.name;
-            serializationObject.alpha = this.alpha;
-
-            serializationObject.id = this.id;
-            serializationObject.tags = Tags.GetTags(this);
-            serializationObject.backFaceCulling = this.backFaceCulling;
-            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            serializationObject.disableDepthWrite = this.disableDepthWrite;
-
-            return serializationObject;
+            return SerializationHelper.Serialize(this);
         }
 
         public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {

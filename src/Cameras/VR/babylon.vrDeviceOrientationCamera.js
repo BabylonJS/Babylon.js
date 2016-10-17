@@ -7,41 +7,33 @@ var BABYLON;
 (function (BABYLON) {
     var VRDeviceOrientationFreeCamera = (function (_super) {
         __extends(VRDeviceOrientationFreeCamera, _super);
-        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion) {
+        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion, vrCameraMetrics) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
+            if (vrCameraMetrics === void 0) { vrCameraMetrics = BABYLON.VRCameraMetrics.GetDefault(); }
             _super.call(this, name, position, scene);
-            this._alpha = 0;
-            this._beta = 0;
-            this._gamma = 0;
-            var metrics = BABYLON.VRCameraMetrics.GetDefault();
-            metrics.compensateDistortion = compensateDistortion;
-            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
-            this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
+            vrCameraMetrics.compensateDistortion = compensateDistortion;
+            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
         }
-        VRDeviceOrientationFreeCamera.prototype._onOrientationEvent = function (evt) {
-            this._alpha = +evt.alpha | 0;
-            this._beta = +evt.beta | 0;
-            this._gamma = +evt.gamma | 0;
-            if (this._gamma < 0) {
-                this._gamma = 90 + this._gamma;
-            }
-            else {
-                // Incline it in the correct angle.
-                this._gamma = 270 - this._gamma;
-            }
-            this.rotation.x = this._gamma / 180.0 * Math.PI;
-            this.rotation.y = -this._alpha / 180.0 * Math.PI;
-            this.rotation.z = this._beta / 180.0 * Math.PI;
-        };
-        VRDeviceOrientationFreeCamera.prototype.attachControl = function (element, noPreventDefault) {
-            _super.prototype.attachControl.call(this, element, noPreventDefault);
-            window.addEventListener("deviceorientation", this._deviceOrientationHandler);
-        };
-        VRDeviceOrientationFreeCamera.prototype.detachControl = function (element) {
-            _super.prototype.detachControl.call(this, element);
-            window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
+        VRDeviceOrientationFreeCamera.prototype.getTypeName = function () {
+            return "VRDeviceOrientationFreeCamera";
         };
         return VRDeviceOrientationFreeCamera;
-    })(BABYLON.FreeCamera);
+    }(BABYLON.DeviceOrientationCamera));
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;
+    var VRDeviceOrientationArcRotateCamera = (function (_super) {
+        __extends(VRDeviceOrientationArcRotateCamera, _super);
+        function VRDeviceOrientationArcRotateCamera(name, alpha, beta, radius, target, scene, compensateDistortion, vrCameraMetrics) {
+            if (compensateDistortion === void 0) { compensateDistortion = true; }
+            if (vrCameraMetrics === void 0) { vrCameraMetrics = BABYLON.VRCameraMetrics.GetDefault(); }
+            _super.call(this, name, alpha, beta, radius, target, scene);
+            vrCameraMetrics.compensateDistortion = compensateDistortion;
+            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
+            this.inputs.addVRDeviceOrientation();
+        }
+        VRDeviceOrientationArcRotateCamera.prototype.getTypeName = function () {
+            return "VRDeviceOrientationArcRotateCamera";
+        };
+        return VRDeviceOrientationArcRotateCamera;
+    }(BABYLON.ArcRotateCamera));
+    BABYLON.VRDeviceOrientationArcRotateCamera = VRDeviceOrientationArcRotateCamera;
 })(BABYLON || (BABYLON = {}));

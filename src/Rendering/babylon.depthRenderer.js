@@ -18,9 +18,9 @@ var BABYLON;
             this._depthMap.renderParticles = false;
             this._depthMap.renderList = null;
             // set default depth value to 1.0 (far away)
-            this._depthMap.onClear = function (engine) {
-                engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true);
-            };
+            this._depthMap.onClearObservable.add(function (engine) {
+                engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+            });
             // Custom render function
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();
@@ -48,7 +48,7 @@ var BABYLON;
                     }
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
                     // Draw
                     mesh._processRendering(subMesh, _this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._effect.setMatrix("world", world); });
@@ -65,11 +65,14 @@ var BABYLON;
             };
         }
         DepthRenderer.prototype.isReady = function (subMesh, useInstances) {
+            var material = subMesh.getMaterial();
+            if (material.disableDepthWrite) {
+                return false;
+            }
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
-            var material = subMesh.getMaterial();
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
@@ -120,6 +123,6 @@ var BABYLON;
             this._depthMap.dispose();
         };
         return DepthRenderer;
-    })();
+    }());
     BABYLON.DepthRenderer = DepthRenderer;
 })(BABYLON || (BABYLON = {}));

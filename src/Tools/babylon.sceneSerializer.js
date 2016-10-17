@@ -96,18 +96,12 @@ var BABYLON;
             serializationObject.skeletonId = mesh.skeleton.id;
         }
         // Physics
-        if (mesh.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
+        //TODO implement correct serialization for physics impostors.
+        if (mesh.getPhysicsImpostor()) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
-            switch (mesh.getPhysicsImpostor()) {
-                case BABYLON.PhysicsEngine.BoxImpostor:
-                    serializationObject.physicsImpostor = 1;
-                    break;
-                case BABYLON.PhysicsEngine.SphereImpostor:
-                    serializationObject.physicsImpostor = 2;
-                    break;
-            }
+            serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
         // Instances
         serializationObject.instances = [];
@@ -127,11 +121,17 @@ var BABYLON;
             serializationObject.instances.push(serializationInstance);
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(instance, serializationInstance);
+            serializationInstance.ranges = instance.serializeAnimationRanges();
         }
         // Animations
         BABYLON.Animation.AppendSerializedAnimations(mesh, serializationObject);
+        serializationObject.ranges = mesh.serializeAnimationRanges();
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
+        // Action Manager
+        if (mesh.actionManager) {
+            serializationObject.actions = mesh.actionManager.serialize(mesh.name);
+        }
         return serializationObject;
     };
     var finalizeSingleMesh = function (mesh, serializationObject) {
@@ -181,6 +181,9 @@ var BABYLON;
     var SceneSerializer = (function () {
         function SceneSerializer() {
         }
+        SceneSerializer.ClearCache = function () {
+            serializedGeometries = [];
+        };
         SceneSerializer.Serialize = function (scene) {
             var serializationObject = {};
             // Scene
@@ -202,7 +205,7 @@ var BABYLON;
             //Physics
             if (scene.isPhysicsEnabled()) {
                 serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
+                serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
             // Lights
@@ -222,6 +225,8 @@ var BABYLON;
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(scene, serializationObject);
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
@@ -284,8 +289,22 @@ var BABYLON;
             serializationObject.shadowGenerators = [];
             for (index = 0; index < scene.lights.length; index++) {
                 light = scene.lights[index];
-                if (light.getShadowGenerator()) {
-                    serializationObject.shadowGenerators.push(light.getShadowGenerator().serialize());
+                var shadowGenerator = light.getShadowGenerator();
+                // Only support serialization for official generator so far.
+                if (shadowGenerator && shadowGenerator instanceof BABYLON.ShadowGenerator) {
+                    serializationObject.shadowGenerators.push(shadowGenerator.serialize());
+                }
+            }
+            // Action Manager
+            if (scene.actionManager) {
+                serializationObject.actions = scene.actionManager.serialize("scene");
+            }
+            // Audio
+            serializationObject.sounds = [];
+            for (index = 0; index < scene.soundTracks.length; index++) {
+                var soundtrack = scene.soundTracks[index];
+                for (var soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
+                    serializationObject.sounds.push(soundtrack.soundCollection[soundId].serialize());
                 }
             }
             return serializationObject;
@@ -317,6 +336,6 @@ var BABYLON;
             return serializationObject;
         };
         return SceneSerializer;
-    })();
+    }());
     BABYLON.SceneSerializer = SceneSerializer;
 })(BABYLON || (BABYLON = {}));

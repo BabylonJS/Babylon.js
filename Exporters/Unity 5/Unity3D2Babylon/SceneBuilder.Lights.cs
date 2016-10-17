@@ -23,14 +23,14 @@ namespace Unity3D2Babylon
             {
                 var meshFilter = gameObject.GetComponent<MeshFilter>();
                 var renderer = gameObject.GetComponent<Renderer>();
-                if (meshFilter != null && renderer.shadowCastingMode != ShadowCastingMode.Off)
+                if (meshFilter != null && renderer != null && renderer.shadowCastingMode != ShadowCastingMode.Off)
                 {
                     renderList.Add(GetID(gameObject));
                     continue;
                 }
 
                 var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
-                if (skinnedMesh != null && renderer.shadowCastingMode != ShadowCastingMode.Off)
+                if (skinnedMesh != null && renderer != null && renderer.shadowCastingMode != ShadowCastingMode.Off)
                 {
                     renderList.Add(GetID(gameObject));
                 }
@@ -43,6 +43,11 @@ namespace Unity3D2Babylon
 
         private void ConvertUnityLightToBabylon(Light light, float progress)
         {
+            if (!light.isActiveAndEnabled || light.alreadyLightmapped)
+            {
+                return;
+            }
+
             ExporterWindow.ReportProgress(progress, "Exporting light: " + light.name);
 
             BabylonLight babylonLight = new BabylonLight
@@ -88,9 +93,12 @@ namespace Unity3D2Babylon
             ExportAnimations(light.transform, babylonLight);
 
             // Shadows
-            if ((light.type == LightType.Directional || light.type == LightType.Spot) && light.shadows != LightShadows.None)
+            if (exportationOptions.ExportShadows)
             {
-                GenerateShadowsGenerator(light);
+                if ((light.type == LightType.Directional || light.type == LightType.Spot) && light.shadows != LightShadows.None)
+                {
+                    GenerateShadowsGenerator(light);
+                }
             }
         }
     }

@@ -21,6 +21,8 @@
         private _drawingContext: CanvasRenderingContext2D;
         private _rootElement: HTMLElement;
 
+        private _skeletonViewers = new Array<Debug.SkeletonViewer>();
+
         public _syncPositions: () => void;
         private _syncData: () => void;
         private _syncUI: () => void;
@@ -143,7 +145,7 @@
 
                     var engine = this._scene.getEngine();
                     var viewport = this._camera.viewport;
-                    var globalViewport = viewport.toGlobal(engine);
+                    var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
                     // Meshes
                     var meshes = this._camera.getActiveMeshes();
@@ -353,7 +355,9 @@
             StandardMaterial.BumpTextureEnabled = true;
             StandardMaterial.OpacityTextureEnabled = true;
             StandardMaterial.ReflectionTextureEnabled = true;
-            StandardMaterial.LightmapEnabled = true;
+            StandardMaterial.LightmapTextureEnabled = true;
+            StandardMaterial.RefractionTextureEnabled = true;            
+            StandardMaterial.ColorGradingTextureEnabled = true;
 
             this._scene.shadowsEnabled = true;
             this._scene.particlesEnabled = true;
@@ -367,6 +371,16 @@
             this._scene.probesEnabled = true;
 
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
+
+            this._clearSkeletonViewers();
+        }
+
+        private _clearSkeletonViewers(): void {
+            for (var index = 0; index < this._skeletonViewers.length; index++) {
+                this._skeletonViewers[index].dispose();
+            }
+
+            this._skeletonViewers = [];
         }
 
         public show(showUI: boolean = true, camera: Camera = null, rootElement: HTMLElement = null) {
@@ -427,6 +441,7 @@
 
         private _generateTexBox(root: HTMLDivElement, title: string, color: string): void {
             var label = document.createElement("label");
+            label.style.display = "inline";
             label.innerHTML = title;
             label.style.color = color;
 
@@ -436,10 +451,14 @@
 
         private _generateAdvancedCheckBox(root: HTMLDivElement, leftTitle: string, rightTitle: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
+            label.style.display = "inline";
 
             var boundingBoxesCheckbox = document.createElement("input");
             boundingBoxesCheckbox.type = "checkbox";
             boundingBoxesCheckbox.checked = initialState;
+            boundingBoxesCheckbox.style.display = "inline";
+            boundingBoxesCheckbox.style.margin = "0px 5px 0px 0px";
+            boundingBoxesCheckbox.style.verticalAlign = "sub";
 
             boundingBoxesCheckbox.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
@@ -467,10 +486,14 @@
 
         private _generateCheckBox(root: HTMLDivElement, title: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
+            label.style.display = "inline";
 
             var checkBox = document.createElement("input");
             checkBox.type = "checkbox";
             checkBox.checked = initialState;
+            checkBox.style.display = "inline";
+            checkBox.style.margin = "0px 5px 0px 0px";
+            checkBox.style.verticalAlign = "sub";
 
             checkBox.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
@@ -503,10 +526,15 @@
         private _generateRadio(root: HTMLDivElement, title: string, name: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
 
+            label.style.display = "inline";
+
             var boundingBoxesRadio = document.createElement("input");
             boundingBoxesRadio.type = "radio";
             boundingBoxesRadio.name = name;
             boundingBoxesRadio.checked = initialState;
+            boundingBoxesRadio.style.display = "inline";
+            boundingBoxesRadio.style.margin = "0px 5px 0px 0px";
+            boundingBoxesRadio.style.verticalAlign = "sub";
 
             boundingBoxesRadio.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
@@ -661,8 +689,10 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Bump", StandardMaterial.BumpTextureEnabled, (element) => { StandardMaterial.BumpTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Opacity", StandardMaterial.OpacityTextureEnabled, (element) => { StandardMaterial.OpacityTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", StandardMaterial.ReflectionTextureEnabled, (element) => { StandardMaterial.ReflectionTextureEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Refraction", StandardMaterial.RefractionTextureEnabled, (element) => { StandardMaterial.RefractionTextureEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "ColorGrading", StandardMaterial.ColorGradingTextureEnabled, (element) => { StandardMaterial.ColorGradingTextureEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", StandardMaterial.LightmapTextureEnabled, (element) => { StandardMaterial.LightmapTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", StandardMaterial.FresnelEnabled, (element) => { StandardMaterial.FresnelEnabled = element.checked });
-                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", StandardMaterial.LightmapEnabled, (element) => { StandardMaterial.LightmapEnabled = element.checked });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Animations", this._scene.animationsEnabled, (element) => { this._scene.animationsEnabled = element.checked });
@@ -697,6 +727,37 @@
                     });
                 }
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Viewers:</b>", this.accentColor);
+                this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", false, (element) => {
+
+                    if (!element.checked) {
+                        this._clearSkeletonViewers();
+                        return;
+                    }
+
+                    for (var index = 0; index < this._scene.meshes.length; index++) {
+                        var mesh = this._scene.meshes[index];
+
+                        if (mesh.skeleton) {
+                            var found = false;
+                            for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
+                                if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (found) {
+                                continue;
+                            }
+
+                            var viewer = new BABYLON.Debug.SkeletonViewer(mesh.skeleton, mesh, this._scene);
+                            viewer.isEnabled = true;
+                            this._skeletonViewers.push(viewer);
+                        }
+                    }
+                });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
                 this._generateButton(this._optionsSubsetDiv, "Run SceneOptimizer", (element) => { SceneOptimizer.OptimizeAsync(this._scene); });
@@ -722,45 +783,53 @@
             var glInfo = engine.getGlInfo();
 
             this._statsSubsetDiv.innerHTML = "Babylon.js v" + Engine.Version + " - <b>" + Tools.Format(engine.getFps(), 0) + " fps</b><br><br>"
-            + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
-            + "<b>Count</b><br>"
-            + "Total meshes: " + scene.meshes.length + "<br>"
-            + "Total vertices: " + scene.getTotalVertices() + "<br>"
-            + "Total materials: " + scene.materials.length + "<br>"
-            + "Total textures: " + scene.textures.length + "<br>"
-            + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
-            + "Active indices: " + scene.getActiveIndices() + "<br>"
-            + "Active bones: " + scene.getActiveBones() + "<br>"
-            + "Active particles: " + scene.getActiveParticles() + "<br>"
-            + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
-            + "<b>Duration</b><br>"
-            + "Meshes selection:</i> " + Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
-            + "Render Targets: " + Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
-            + "Particles: " + Tools.Format(scene.getParticlesDuration()) + " ms<br>"
-            + "Sprites: " + Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
-            + "Render: <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
-            + "Frame: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
-            + "Potential FPS: " + Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
-            + "</div>"
-            + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
-            + "<b>Extensions</b><br>"
-            + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
-            + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
-            + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
-            + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
-            + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
-            + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
-            + "<b>Caps.</b><br>"
-            + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
-            + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
-            + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>"
-            + "</div><br>"
-            + "<b>Info</b><br>"
-            + glInfo.version + "<br>"
-            + glInfo.renderer + "<br>";
+                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+                + "<b>Count</b><br>"
+                + "Total meshes: " + scene.meshes.length + "<br>"
+                + "Total lights: " + scene.lights.length + "<br>"
+                + "Total vertices: " + scene.getTotalVertices() + "<br>"
+                + "Total materials: " + scene.materials.length + "<br>"
+                + "Total textures: " + scene.textures.length + "<br>"
+                + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
+                + "Active indices: " + scene.getActiveIndices() + "<br>"
+                + "Active bones: " + scene.getActiveBones() + "<br>"
+                + "Active particles: " + scene.getActiveParticles() + "<br>"
+                + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
+                + "<b>Duration</b><br>"
+                + "Meshes selection:</i> " + Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
+                + "Render Targets: " + Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
+                + "Particles: " + Tools.Format(scene.getParticlesDuration()) + " ms<br>"
+                + "Sprites: " + Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
+                + "Render: <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
+                + "Frame: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
+                + "Potential FPS: " + Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br>"
+                + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br><br>"
+                + "</div>"
+                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+                + "<b>Extensions</b><br>"
+                + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
+                + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
+                + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
+                + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br><br>"
+                + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
+                + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
+                + "High precision shaders: " + (engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No") + "<br>"
+                + "Draw buffers: " + (engine.getCaps().drawBuffersExtension ? "Yes" : "No") + "<br>"
+                + "</div><br>"
+                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+                + "<b>Caps.</b><br>"
+                + "Stencil: " + (engine.isStencilEnable ? "Enabled" : "Disabled") + "<br>"
+                + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
+                + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
+                + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br>"
+                + "<b>Info</b><br>"
+                + "WebGL feature level: " + engine.webGLVersion + "<br>"
+                + glInfo.version + "<br>"
+                + "</div><br>"
+                + glInfo.renderer + "<br>";
 
             if (this.customStatsFunction) {
-                this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;
+                this._statsSubsetDiv.innerHTML += this.customStatsFunction();
             }
         }
     }

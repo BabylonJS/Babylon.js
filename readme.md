@@ -5,16 +5,20 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 
 [![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
 
+**Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
+
 ## CDN
-- http://cdn.babylonjs.com/2-2/babylon.js 
-- http://cdn.babylonjs.com/2-2/babylon.max.js 
-- http://cdn.babylonjs.com/2-2/babylon.noworker.js 
+- http://cdn.babylonjs.com/2-4/babylon.js 
+- http://cdn.babylonjs.com/2-4/babylon.max.js 
+- http://cdn.babylonjs.com/2-4/babylon.noworker.js 
+- http://cdn.babylonjs.com/2-4/babylon.core.js 
 
 ## Preview release
 You can help by testing or contributing to the next version.
-- **2.3-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
+- **2.5-beta** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
 - We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
 - Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
+- Need help to contribute? We have a [general purpose documentation for you](http://pixelcodr.com/tutos/contribute/contribute.html) and a [Visual Studio specific one](http://doc.babylonjs.com/generals/setup_visualStudio)
 
 ## Documentation
 - [Documentation](http://doc.babylonjs.com)
@@ -26,7 +30,6 @@ You can help by testing or contributing to the next version.
 ## Useful links
 
  - Official web site: [www.babylonjs.com](http://www.babylonjs.com/)
- - Official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com
  - Online [sandbox](http://www.babylonjs.com/sandbox) where you can test your .babylon scenes with a simple drag'n'drop
  - Online [shader creation tool](http://www.babylonjs.com/cyos/) where you can learn how to create GLSL shaders
  - 3DS Max [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/3ds%20Max) can be used to generate a .babylon file from 3DS Max

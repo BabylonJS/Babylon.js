@@ -8,21 +8,11 @@ attribute vec3 normal;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-#ifdef BONES
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
-#endif
+
+#include<bonesDeclaration>
 
 // Uniforms
-
-#ifdef INSTANCES
-attribute vec4 world0;
-attribute vec4 world1;
-attribute vec4 world2;
-attribute vec4 world3;
-#else
-uniform mat4 world;
-#endif
+#include<instancesDeclaration>
 
 uniform mat4 view;
 uniform mat4 viewProjection;
@@ -41,10 +31,6 @@ varying vec2 vTextureUVZ;
 
 uniform float tileSize;
 
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
-#endif
-
 #ifdef POINTSIZE
 uniform float pointSize;
 #endif
@@ -59,56 +45,17 @@ varying mat3 tangentSpace;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
+#include<clipPlaneVertexDeclaration>
 
-#ifdef FOG
-varying float fFogDistance;
-#endif
+#include<fogVertexDeclaration>
+#include<shadowsVertexDeclaration>[0..maxSimultaneousLights]
 
-#ifdef SHADOWS
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-uniform mat4 lightMatrix0;
-varying vec4 vPositionFromLight0;
-#endif
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-uniform mat4 lightMatrix1;
-varying vec4 vPositionFromLight1;
-#endif
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-uniform mat4 lightMatrix2;
-varying vec4 vPositionFromLight2;
-#endif
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-uniform mat4 lightMatrix3;
-varying vec4 vPositionFromLight3;
-#endif
-#endif
+void main(void)
+{
 
-void main(void) {
-	mat4 finalWorld;
-
-#ifdef INSTANCES
-	finalWorld = mat4(world0, world1, world2, world3);
-#else
-	finalWorld = world;
-#endif
-
-#ifdef BONES
-	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
-	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
-	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
-
-#ifdef BONES4
-	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
-#else
-	finalWorld = finalWorld * (m0 + m1 + m2);
-#endif 
-
-#endif
+	#include<instancesVertex>
+    #include<bonesVertex>
+	
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
@@ -153,30 +100,13 @@ void main(void) {
 #endif
 
 	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
+	#include<clipPlaneVertex>
 
 	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
+	#include<fogVertex>
 
 	// Shadows
-#ifdef SHADOWS
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-	vPositionFromLight0 = lightMatrix0 * worldPos;
-#endif
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-	vPositionFromLight1 = lightMatrix1 * worldPos;
-#endif
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-	vPositionFromLight2 = lightMatrix2 * worldPos;
-#endif
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-	vPositionFromLight3 = lightMatrix3 * worldPos;
-#endif
-#endif
+	#include<shadowsVertex>[0..maxSimultaneousLights]
 
 	// Vertex color
 #ifdef VERTEXCOLOR

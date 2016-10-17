@@ -49,6 +49,19 @@ var BABYLON;
             this._localDelayOffset = null;
             this._pausedDelay = null;
         };
+        Animatable.prototype.enableBlending = function (blendingSpeed) {
+            var animations = this._animations;
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = true;
+                animations[index].blendingSpeed = blendingSpeed;
+            }
+        };
+        Animatable.prototype.disableBlending = function () {
+            var animations = this._animations;
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = false;
+            }
+        };
         Animatable.prototype.goToFrame = function (frame) {
             var animations = this._animations;
             for (var index = 0; index < animations.length; index++) {
@@ -64,13 +77,25 @@ var BABYLON;
         Animatable.prototype.restart = function () {
             this._paused = false;
         };
-        Animatable.prototype.stop = function () {
+        Animatable.prototype.stop = function (animationName) {
             var index = this._scene._activeAnimatables.indexOf(this);
             if (index > -1) {
-                this._scene._activeAnimatables.splice(index, 1);
-            }
-            if (this.onAnimationEnd) {
-                this.onAnimationEnd();
+                var animations = this._animations;
+                var numberOfAnimationsStopped = 0;
+                for (var index = animations.length - 1; index >= 0; index--) {
+                    if (typeof animationName === "string" && animations[index].name != animationName) {
+                        continue;
+                    }
+                    animations[index].reset();
+                    animations.splice(index, 1);
+                    numberOfAnimationsStopped++;
+                }
+                if (animations.length == numberOfAnimationsStopped) {
+                    this._scene._activeAnimatables.splice(index, 1);
+                    if (this.onAnimationEnd) {
+                        this.onAnimationEnd();
+                    }
+                }
             }
         };
         Animatable.prototype._animate = function (delay) {
@@ -105,10 +130,11 @@ var BABYLON;
             }
             if (!running && this.onAnimationEnd) {
                 this.onAnimationEnd();
+                this.onAnimationEnd = null;
             }
             return running;
         };
         return Animatable;
-    })();
+    }());
     BABYLON.Animatable = Animatable;
 })(BABYLON || (BABYLON = {}));

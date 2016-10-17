@@ -9,6 +9,7 @@ var BABYLON;
             this._blurBoxOffset = 0;
             this._bias = 0.00005;
             this._lightDirection = BABYLON.Vector3.Zero();
+            this.forceBackFacesOnly = false;
             this._darkness = 0;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
@@ -17,37 +18,49 @@ var BABYLON;
             this._worldViewProjection = BABYLON.Matrix.Zero();
             this._currentFaceIndex = 0;
             this._currentFaceIndexCache = 0;
+            this._useFullFloat = true;
             this._light = light;
             this._scene = light.getScene();
             this._mapSize = mapSize;
             light._shadowGenerator = this;
+            // Texture type fallback from float to int if not supported.
+            var textureType;
+            var caps = this._scene.getEngine().getCaps();
+            if (caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
+                this._useFullFloat = true;
+                textureType = BABYLON.Engine.TEXTURETYPE_FLOAT;
+            }
+            else {
+                this._useFullFloat = false;
+                textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT;
+            }
             // Render target
-            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
+            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, textureType, light.needCube());
             this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
-            this._shadowMap.onBeforeRender = function (faceIndex) {
+            this._shadowMap.onBeforeRenderObservable.add(function (faceIndex) {
                 _this._currentFaceIndex = faceIndex;
-            };
-            this._shadowMap.onAfterUnbind = function () {
+            });
+            this._shadowMap.onAfterUnbindObservable.add(function () {
                 if (!_this.useBlurVarianceShadowMap) {
                     return;
                 }
                 if (!_this._shadowMap2) {
-                    _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false);
+                    _this._shadowMap2 = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, _this._scene, false, true, textureType);
                     _this._shadowMap2.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
                     _this._shadowMap2.updateSamplingMode(BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
                     _this._downSamplePostprocess = new BABYLON.PassPostProcess("downScale", 1.0 / _this.blurScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, _this._scene.getEngine());
-                    _this._downSamplePostprocess.onApply = function (effect) {
+                    _this._downSamplePostprocess.onApplyObservable.add(function (effect) {
                         effect.setTexture("textureSampler", _this._shadowMap);
-                    };
+                    });
                     _this.blurBoxOffset = 1;
                 }
                 _this._scene.postProcessManager.directRender([_this._downSamplePostprocess, _this._boxBlurPostprocess], _this._shadowMap2.getInternalTexture());
-            };
+            });
             // Custom render function
             var renderSubMesh = function (subMesh) {
                 var mesh = subMesh.getRenderingMesh();
@@ -60,7 +73,7 @@ var BABYLON;
                 if (batch.mustReturn) {
                     return;
                 }
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
                 if (_this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(_this._effect);
                     mesh._bind(subMesh, _this._effect, BABYLON.Material.TriangleFillMode);
@@ -78,10 +91,16 @@ var BABYLON;
                     }
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                    }
+                    if (_this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, true);
                     }
                     // Draw
                     mesh._processRendering(subMesh, _this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._effect.setMatrix("world", world); });
+                    if (_this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, false);
+                    }
                 }
                 else {
                     // Need to reset refresh rate of the shadowMap
@@ -102,14 +121,14 @@ var BABYLON;
                     }
                 }
             };
-            this._shadowMap.onClear = function (engine) {
+            this._shadowMap.onClearObservable.add(function (engine) {
                 if (_this.useBlurVarianceShadowMap || _this.useVarianceShadowMap) {
-                    engine.clear(new BABYLON.Color4(0, 0, 0, 0), true, true);
+                    engine.clear(new BABYLON.Color4(0, 0, 0, 0), true, true, true);
                 }
                 else {
-                    engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true);
+                    engine.clear(new BABYLON.Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
                 }
-            };
+            });
         }
         Object.defineProperty(ShadowGenerator, "FILTER_NONE", {
             // Static
@@ -164,9 +183,9 @@ var BABYLON;
                     this._boxBlurPostprocess.dispose();
                 }
                 this._boxBlurPostprocess = new BABYLON.PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value);
-                this._boxBlurPostprocess.onApply = function (effect) {
+                this._boxBlurPostprocess.onApplyObservable.add(function (effect) {
                     effect.setFloat2("screenSize", _this._mapSize / _this.blurScale, _this._mapSize / _this.blurScale);
-                };
+                });
             },
             enumerable: true,
             configurable: true
@@ -226,6 +245,9 @@ var BABYLON;
         });
         ShadowGenerator.prototype.isReady = function (subMesh, useInstances) {
             var defines = [];
+            if (this._useFullFloat) {
+                defines.push("#define FULLFLOAT");
+            }
             if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
                 defines.push("#define VSM");
             }
@@ -243,8 +265,11 @@ var BABYLON;
                     defines.push("#define UV1");
                 }
                 if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                    var alphaTexture = material.getAlphaTestTexture();
+                    if (alphaTexture.coordinatesIndex === 1) {
+                        attribs.push(BABYLON.VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
             }
             // Bones
@@ -351,6 +376,7 @@ var BABYLON;
             serializationObject.mapSize = this.getShadowMap().getRenderSize();
             serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
+            serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
                 var mesh = this.getShadowMap().renderList[meshIndex];
@@ -363,8 +389,10 @@ var BABYLON;
             var light = scene.getLightByID(parsedShadowGenerator.lightId);
             var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
-                shadowGenerator.getShadowMap().renderList.push(mesh);
+                var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
+                meshes.forEach(function (mesh) {
+                    shadowGenerator.getShadowMap().renderList.push(mesh);
+                });
             }
             if (parsedShadowGenerator.usePoissonSampling) {
                 shadowGenerator.usePoissonSampling = true;
@@ -384,6 +412,7 @@ var BABYLON;
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
             }
+            shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;
             return shadowGenerator;
         };
         ShadowGenerator._FILTER_NONE = 0;
@@ -391,6 +420,6 @@ var BABYLON;
         ShadowGenerator._FILTER_POISSONSAMPLING = 2;
         ShadowGenerator._FILTER_BLURVARIANCESHADOWMAP = 3;
         return ShadowGenerator;
-    })();
+    }());
     BABYLON.ShadowGenerator = ShadowGenerator;
 })(BABYLON || (BABYLON = {}));

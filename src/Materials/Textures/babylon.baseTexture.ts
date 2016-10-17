@@ -1,19 +1,60 @@
 ﻿module BABYLON {
     export class BaseTexture {
+        @serialize()
         public name: string;
-        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
+
+        @serialize()
         public hasAlpha = false;
+
+        @serialize()
         public getAlphaFromRGB = false;
+
+        @serialize()
         public level = 1;
-        public isCube = false;
-        public isRenderTarget = false;
-        public animations = new Array<Animation>();
-        public onDispose: () => void;
+
+        @serialize()
         public coordinatesIndex = 0;
+
+        @serialize()
         public coordinatesMode = Texture.EXPLICIT_MODE;
+
+        @serialize()
         public wrapU = Texture.WRAP_ADDRESSMODE;
+
+        @serialize()
         public wrapV = Texture.WRAP_ADDRESSMODE;
+
+        @serialize()
         public anisotropicFilteringLevel = 4;
+
+        @serialize()
+        public isCube = false;
+
+        @serialize()
+        public isRenderTarget = false;
+
+        public toString(): string {
+            return this.name;
+        }
+
+        public animations = new Array<Animation>();
+
+        /**
+        * An event triggered when the texture is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<BaseTexture>();
+
+        private _onDisposeObserver: Observer<BaseTexture>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        public delayLoadState = Engine.DELAYLOADSTATE_NONE;
+
         public _cachedAnisotropicFilteringLevel: number;
 
         private _scene: Scene;
@@ -52,27 +93,27 @@
             return false;
         }
 
-        public getSize(): ISize  {
+        public getSize(): ISize {
             if (this._texture._width) {
-                return { width: this._texture._width, height: this._texture._height };
+                return new Size(this._texture._width, this._texture._height);
             }
 
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new Size(this._texture._size, this._texture._size);
             }
 
-            return { width: 0, height: 0 };
+            return Size.Zero();
         }
 
         public getBaseSize(): ISize {
-            if (!this.isReady())
-                return { width: 0, height: 0 };
+            if (!this.isReady() || !this._texture)
+                return Size.Zero();
 
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new Size(this._texture._size, this._texture._size);
             }
 
-            return { width: this._texture._baseWidth, height: this._texture._baseHeight };
+            return new Size(this._texture._baseWidth, this._texture._baseHeight);
         }
 
         public scale(ratio: number): void {
@@ -111,7 +152,7 @@
         }
 
         public delayLoad(): void {
-        }        
+        }
 
         public clone(): BaseTexture {
             return null;
@@ -143,31 +184,21 @@
             this.releaseInternalTexture();
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
 
         public serialize(): any {
-            var serializationObject: any = {};
-
             if (!this.name) {
                 return null;
             }
-            
-            serializationObject.name = this.name;
-            serializationObject.hasAlpha = this.hasAlpha;
-            serializationObject.level = this.level;
 
-            serializationObject.coordinatesIndex = this.coordinatesIndex;
-            serializationObject.coordinatesMode = this.coordinatesMode;
-            serializationObject.wrapU = this.wrapU;
-            serializationObject.wrapV = this.wrapV;
+            var serializationObject = SerializationHelper.Serialize(this);
 
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
 
             return serializationObject;
-        }      
+        }
     }
 } 
