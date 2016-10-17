@@ -479,7 +479,7 @@
         }
 
         // We override this method because if there's a roundRadius set, we will reduce the initial Content Area to make sure the computed area won't intersect with the shape contour. The formula is simple: we shrink the incoming size by the amount of the roundRadius
-        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size) {
+        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size) {
             // Fall back to default implementation if there's no round Radius
             if (this._notRounded) {
                 super._getInitialContentAreaToRef(primSize, initialContentPosition, initialContentArea);
@@ -488,6 +488,8 @@
                 initialContentPosition.x = initialContentPosition.y = rr;
                 initialContentArea.width = Math.max(0, primSize.width - (rr * 2));
                 initialContentArea.height = Math.max(0, primSize.height - (rr * 2));
+                initialContentPosition.z = primSize.width - (initialContentPosition.x + initialContentArea.width);
+                initialContentPosition.w = primSize.height - (initialContentPosition.y + initialContentArea.height);
             }
         }
 
