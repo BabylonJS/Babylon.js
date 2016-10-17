@@ -49,6 +49,9 @@ module BABYLON {
         }
 
         public intersectsMesh(target: Mesh | SolidParticle): boolean {
+            if (!(this.isVisible && target.isVisible)) {
+                return false;       // only visible particle and target can intersect
+            }
             if (!this._boundingInfo || !target._boundingInfo) {
                 return false;
             }

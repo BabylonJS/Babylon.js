@@ -794,7 +794,7 @@
             return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
         }
 
-        public intersectsMesh(mesh: AbstractMesh, precise?: boolean): boolean {
+        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise?: boolean): boolean {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
