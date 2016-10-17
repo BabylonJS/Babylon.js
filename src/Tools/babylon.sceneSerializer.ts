@@ -112,19 +112,12 @@
         }
 
         // Physics
-        if (mesh.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
+        //TODO implement correct serialization for physics impostors.
+        if (mesh.getPhysicsImpostor()) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
-
-            switch (mesh.getPhysicsImpostor()) {
-                case PhysicsEngine.BoxImpostor:
-                    serializationObject.physicsImpostor = 1;
-                    break;
-                case PhysicsEngine.SphereImpostor:
-                    serializationObject.physicsImpostor = 2;
-                    break;
-            }
+            serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
 
         // Instances
@@ -145,13 +138,20 @@
 
             // Animations
             Animation.AppendSerializedAnimations(instance, serializationInstance);
+            serializationInstance.ranges = instance.serializeAnimationRanges();
         }
 
         // Animations
         Animation.AppendSerializedAnimations(mesh, serializationObject);
+        serializationObject.ranges = mesh.serializeAnimationRanges();
 
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
+
+        // Action Manager
+        if (mesh.actionManager) {
+            serializationObject.actions = mesh.actionManager.serialize(mesh.name);
+        }
 
         return serializationObject;
     };
@@ -205,6 +205,10 @@
     }
 
     export class SceneSerializer {
+        public static ClearCache(): void {
+            serializedGeometries = [];
+        }
+
         public static Serialize(scene: Scene): any {
             var serializationObject: any = {};
 
@@ -216,7 +220,7 @@
             serializationObject.gravity = scene.gravity.asArray();
             serializationObject.collisionsEnabled = scene.collisionsEnabled;
             serializationObject.workerCollisions = scene.workerCollisions;
-            
+
             // Fog
             if (scene.fogMode && scene.fogMode !== 0) {
                 serializationObject.fogMode = scene.fogMode;
@@ -225,11 +229,11 @@
                 serializationObject.fogEnd = scene.fogEnd;
                 serializationObject.fogDensity = scene.fogDensity;
             }
-            
+
             //Physics
             if (scene.isPhysicsEnabled()) {
                 serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
+                serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
 
@@ -253,6 +257,9 @@
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
 
+            // Animations
+            Animation.AppendSerializedAnimations(scene, serializationObject);
+
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
@@ -268,7 +275,7 @@
                 var multiMaterial = scene.multiMaterials[index];
                 serializationObject.multiMaterials.push(multiMaterial.serialize());
             }
-            
+
             // Skeletons
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
@@ -327,8 +334,26 @@
             for (index = 0; index < scene.lights.length; index++) {
                 light = scene.lights[index];
 
-                if (light.getShadowGenerator()) {
-                    serializationObject.shadowGenerators.push(light.getShadowGenerator().serialize());
+                let shadowGenerator = light.getShadowGenerator();
+                // Only support serialization for official generator so far.
+                if (shadowGenerator && shadowGenerator instanceof ShadowGenerator) {
+                     serializationObject.shadowGenerators.push(<ShadowGenerator>shadowGenerator.serialize());
+                }
+            }
+
+            // Action Manager
+            if (scene.actionManager) {
+                serializationObject.actions = scene.actionManager.serialize("scene");
+            }
+
+            // Audio
+            serializationObject.sounds = [];
+
+            for (index = 0; index < scene.soundTracks.length; index++) {
+                var soundtrack = scene.soundTracks[index];
+
+                for (var soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
+                    serializationObject.sounds.push(soundtrack.soundCollection[soundId].serialize());
                 }
             }
 

@@ -16,6 +16,7 @@ namespace Max2Babylon
         {
             Tools.UpdateVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity");
             Tools.UpdateCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions");
+            Tools.UpdateCheckBox(chkAnimations, Loader.Core.RootNode, "babylonjs_exportnonoptimizedanimations");
 
             Tools.UpdateCheckBox(chkAutoPlay, Loader.Core.RootNode, "babylonjs_sound_autoplay");
             Tools.UpdateCheckBox(chkLoop, Loader.Core.RootNode, "babylonjs_sound_loop");
@@ -28,6 +29,7 @@ namespace Max2Babylon
         {
             Tools.PrepareVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity", 0, -0.9f);
             Tools.PrepareCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions", 1);
+            Tools.PrepareCheckBox(chkAnimations, Loader.Core.RootNode, "babylonjs_exportnonoptimizedanimations", 0);
 
             Tools.PrepareCheckBox(chkAutoPlay, Loader.Core.RootNode, "babylonjs_sound_autoplay", 1);
             Tools.PrepareCheckBox(chkLoop, Loader.Core.RootNode, "babylonjs_sound_loop", 1);

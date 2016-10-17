@@ -1,0 +1,48 @@
+{
+  "build": {
+    "filename": "babylon.canvas2d.max.js",
+    "minFilename": "babylon.canvas2d.js",
+    "declarationFilename": "babylon.canvas2d.d.ts",
+    "outputDirectory": "../dist/preview release",
+    "srcOutputDirectory": "src/"
+  },
+  "core": {
+    "typescript": [
+      "src/**/*.ts",
+      "../dist/preview release/babylon.d.ts", 
+      "!src/**/*.d.ts"
+    ],
+    "files": [   
+      "src/Tools/babylon.iPropertyChanged.js",
+      "src/Tools/babylon.observableArray.js",
+      "src/Tools/babylon.observableStringDictionary.js",
+      "src/Engine/babylon.bounding2d.js",
+      "src/Engine/babylon.canvas2dLayoutEngine.js",
+      "src/Engine/babylon.brushes2d.js",
+      "src/Engine/babylon.smartPropertyPrim.js",
+      "src/Engine/babylon.prim2dBase.js",
+      "src/Engine/babylon.modelRenderCache.js",
+      "src/Engine/babylon.renderablePrim2d.js",
+      "src/Engine/babylon.shape2d.js",
+      "src/Engine/babylon.group2d.js",
+      "src/Engine/babylon.rectangle2d.js",
+      "src/Engine/babylon.ellipse2d.js",
+      "src/Engine/babylon.sprite2d.js",
+      "src/Engine/babylon.text2d.js",
+      "src/Engine/babylon.lines2d.js",
+      "src/Engine/babylon.canvas2d.js",
+      "src/Engine/babylon.worldSpaceCanvas2dNode.js",
+      "src/GUI/babylon.gui.UIElement.js",
+      "src/GUI/babylon.gui.control.js",
+      "src/GUI/babylon.gui.window.js",
+      "src/GUI/babylon.gui.label.js",
+      "src/GUI/babylon.gui.button.js"
+    ]
+  },
+  "shadersDirectories": [
+    {
+      "variable": "BABYLON.Effect.ShadersStore",
+      "files": "src/Shaders/*.fx"
+    }
+  ]
+}

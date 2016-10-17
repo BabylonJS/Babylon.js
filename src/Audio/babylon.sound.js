@@ -6,7 +6,7 @@ var BABYLON;
         * @param name Name of your sound
         * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
         */
         function Sound(name, urlOrArrayBuffer, scene, readyToPlayCallback, options) {
             var _this = this;
@@ -37,6 +37,7 @@ var BABYLON;
             this._coneOuterAngle = 360;
             this._coneOuterGain = 0;
             this._isOutputConnected = false;
+            this._urlType = "Unknown";
             this.name = name;
             this._scene = scene;
             this._readyToPlayCallback = readyToPlayCallback;
@@ -74,39 +75,83 @@ var BABYLON;
                     this._createSpatialParameters();
                 }
                 this._scene.mainSoundTrack.AddSound(this);
+                var validParameter = true;
                 // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
                 if (urlOrArrayBuffer) {
-                    // If it's an URL
-                    if (typeof (urlOrArrayBuffer) === "string") {
-                        // Loading sound using XHR2
-                        if (!this._streaming) {
-                            BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) { _this._soundLoaded(data); }, null, null, true);
-                        }
-                        else {
-                            this._htmlAudioElement = new Audio();
-                            this._htmlAudioElement.src = urlOrArrayBuffer;
-                            this._htmlAudioElement.controls = false;
-                            this._htmlAudioElement.loop = this.loop;
-                            this._htmlAudioElement.crossOrigin = "anonymous";
+                    if (typeof (urlOrArrayBuffer) === "string")
+                        this._urlType = "String";
+                    if (Array.isArray(urlOrArrayBuffer))
+                        this._urlType = "Array";
+                    if (urlOrArrayBuffer instanceof ArrayBuffer)
+                        this._urlType = "ArrayBuffer";
+                    var urls = [];
+                    var codecSupportedFound = false;
+                    switch (this._urlType) {
+                        case "ArrayBuffer":
+                            if (urlOrArrayBuffer.byteLength > 0) {
+                                codecSupportedFound = true;
+                                this._soundLoaded(urlOrArrayBuffer);
+                            }
+                            break;
+                        case "String":
+                            urls.push(urlOrArrayBuffer);
+                        case "Array":
+                            if (urls.length === 0)
+                                urls = urlOrArrayBuffer;
+                            // If we found a supported format, we load it immediately and stop the loop
+                            for (var i = 0; i < urls.length; i++) {
+                                var url = urls[i];
+                                if (url.indexOf(".mp3", url.length - 4) !== -1 && BABYLON.Engine.audioEngine.isMP3supported) {
+                                    codecSupportedFound = true;
+                                }
+                                if (url.indexOf(".ogg", url.length - 4) !== -1 && BABYLON.Engine.audioEngine.isOGGsupported) {
+                                    codecSupportedFound = true;
+                                }
+                                if (url.indexOf(".wav", url.length - 4) !== -1) {
+                                    codecSupportedFound = true;
+                                }
+                                if (codecSupportedFound) {
+                                    // Loading sound using XHR2
+                                    if (!this._streaming) {
+                                        BABYLON.Tools.LoadFile(url, function (data) { _this._soundLoaded(data); }, null, this._scene.database, true);
+                                    }
+                                    else {
+                                        this._htmlAudioElement = new Audio(url);
+                                        this._htmlAudioElement.controls = false;
+                                        this._htmlAudioElement.loop = this.loop;
+                                        this._htmlAudioElement.crossOrigin = "anonymous";
+                                        this._htmlAudioElement.preload = "auto";
+                                        this._htmlAudioElement.addEventListener("canplaythrough", function () {
+                                            _this._isReadyToPlay = true;
+                                            if (_this.autoplay) {
+                                                _this.play();
+                                            }
+                                            if (_this._readyToPlayCallback) {
+                                                _this._readyToPlayCallback();
+                                            }
+                                        });
+                                        document.body.appendChild(this._htmlAudioElement);
+                                    }
+                                    break;
+                                }
+                            }
+                            break;
+                        default:
+                            validParameter = false;
+                            break;
+                    }
+                    if (!validParameter) {
+                        BABYLON.Tools.Error("Parameter must be a URL to the sound, an Array of URLs (.mp3 & .ogg) or an ArrayBuffer of the sound.");
+                    }
+                    else {
+                        if (!codecSupportedFound) {
                             this._isReadyToPlay = true;
-                            document.body.appendChild(this._htmlAudioElement);
-                            // Simulating a ready to play event for consistent behavior with non streamed audio source
+                            // Simulating a ready to play event to avoid breaking code path
                             if (this._readyToPlayCallback) {
                                 window.setTimeout(function () {
                                     _this._readyToPlayCallback();
                                 }, 1000);
                             }
-                            if (this.autoplay) {
-                                this.play();
-                            }
-                        }
-                    }
-                    else {
-                        if (urlOrArrayBuffer instanceof ArrayBuffer) {
-                            this._soundLoaded(urlOrArrayBuffer);
-                        }
-                        else {
-                            BABYLON.Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
                         }
                     }
                 }
@@ -174,7 +219,7 @@ var BABYLON;
                 if (_this._readyToPlayCallback) {
                     _this._readyToPlayCallback();
                 }
-            }, function () { BABYLON.Tools.Error("Error while decoding audio data for: " + _this.name); });
+            }, function (err) { BABYLON.Tools.Error("Error while decoding audio data for: " + _this.name + " / Error: " + err); });
         };
         Sound.prototype.setAudioBuffer = function (audioBuffer) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
@@ -304,11 +349,16 @@ var BABYLON;
         /**
         * Play the sound
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+        * @param offset (optional) Start the sound setting it at a specific time
         */
-        Sound.prototype.play = function (time) {
+        Sound.prototype.play = function (time, offset) {
             var _this = this;
             if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
+                    if (this._startOffset < 0) {
+                        time = -this._startOffset;
+                        this._startOffset = 0;
+                    }
                     var startTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound) {
@@ -343,7 +393,7 @@ var BABYLON;
                         this._soundSource.loop = this.loop;
                         this._soundSource.playbackRate.value = this._playbackRate;
                         this._soundSource.onended = function () { _this._onended(); };
-                        this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
+                        this._soundSource.start(startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : offset ? offset : 0);
                     }
                     this._startTime = startTime;
                     this.isPlaying = true;
@@ -376,12 +426,17 @@ var BABYLON;
                 else {
                     var stopTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
                     this._soundSource.stop(stopTime);
+                    this._soundSource.onended = null;
+                    if (!this.isPaused) {
+                        this._startOffset = 0;
+                    }
                 }
                 this.isPlaying = false;
             }
         };
         Sound.prototype.pause = function () {
             if (this.isPlaying) {
+                this.isPaused = true;
                 if (this._streaming) {
                     this._htmlAudioElement.pause();
                 }
@@ -389,14 +444,14 @@ var BABYLON;
                     this.stop(0);
                     this._startOffset += BABYLON.Engine.audioEngine.audioContext.currentTime - this._startTime;
                 }
-                this.isPaused = true;
             }
         };
         Sound.prototype.setVolume = function (newVolume, time) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 if (time) {
-                    this._soundGain.gain.linearRampToValueAtTime(this._volume, BABYLON.Engine.audioEngine.audioContext.currentTime);
-                    this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
+                    this._soundGain.gain.cancelScheduledValues(BABYLON.Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, BABYLON.Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.linearRampToValueAtTime(newVolume, BABYLON.Engine.audioEngine.audioContext.currentTime + time);
                 }
                 else {
                     this._soundGain.gain.value = newVolume;
@@ -420,6 +475,10 @@ var BABYLON;
         };
         Sound.prototype.attachToMesh = function (meshToConnectTo) {
             var _this = this;
+            if (this._connectedMesh) {
+                this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+                this._registerFunc = null;
+            }
             this._connectedMesh = meshToConnectTo;
             if (!this.spatialSound) {
                 this.spatialSound = true;
@@ -433,15 +492,95 @@ var BABYLON;
             this._registerFunc = function (connectedMesh) { return _this._onRegisterAfterWorldMatrixUpdate(connectedMesh); };
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         };
+        Sound.prototype.detachFromMesh = function () {
+            if (this._connectedMesh) {
+                this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+                this._registerFunc = null;
+                this._connectedMesh = null;
+            }
+        };
         Sound.prototype._onRegisterAfterWorldMatrixUpdate = function (connectedMesh) {
             this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
             if (BABYLON.Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
         };
-        Sound.Parse = function (parsedSound, scene, rootUrl) {
+        Sound.prototype.clone = function () {
+            var _this = this;
+            if (!this._streaming) {
+                var setBufferAndRun = function () {
+                    if (_this._isReadyToPlay) {
+                        clonedSound._audioBuffer = _this.getAudioBuffer();
+                        clonedSound._isReadyToPlay = true;
+                        if (clonedSound.autoplay) {
+                            clonedSound.play();
+                        }
+                    }
+                    else {
+                        window.setTimeout(setBufferAndRun, 300);
+                    }
+                };
+                var currentOptions = {
+                    autoplay: this.autoplay, loop: this.loop,
+                    volume: this._volume, spatialSound: this.spatialSound, maxDistance: this.maxDistance,
+                    useCustomAttenuation: this.useCustomAttenuation, rolloffFactor: this.rolloffFactor,
+                    refDistance: this.refDistance, distanceModel: this.distanceModel
+                };
+                var clonedSound = new Sound(this.name + "_cloned", new ArrayBuffer(0), this._scene, null, currentOptions);
+                if (this.useCustomAttenuation) {
+                    clonedSound.setAttenuationFunction(this._customAttenuationFunction);
+                }
+                clonedSound.setPosition(this._position);
+                clonedSound.setPlaybackRate(this._playbackRate);
+                setBufferAndRun();
+                return clonedSound;
+            }
+            else {
+                return null;
+            }
+        };
+        Sound.prototype.getAudioBuffer = function () {
+            return this._audioBuffer;
+        };
+        Sound.prototype.serialize = function () {
+            var serializationObject = {
+                name: this.name,
+                url: this.name,
+                autoplay: this.autoplay,
+                loop: this.loop,
+                volume: this._volume,
+                spatialSound: this.spatialSound,
+                maxDistance: this.maxDistance,
+                rolloffFactor: this.rolloffFactor,
+                refDistance: this.refDistance,
+                distanceModel: this.distanceModel,
+                playbackRate: this._playbackRate,
+                panningModel: this._panningModel,
+                soundTrackId: this.soundTrackId
+            };
+            if (this.spatialSound) {
+                if (this._connectedMesh)
+                    serializationObject.connectedMeshId = this._connectedMesh.id;
+                serializationObject.position = this._position.asArray();
+                serializationObject.refDistance = this.refDistance;
+                serializationObject.distanceModel = this.distanceModel;
+                serializationObject.isDirectional = this._isDirectional;
+                serializationObject.localDirectionToMesh = this._localDirection.asArray();
+                serializationObject.coneInnerAngle = this._coneInnerAngle;
+                serializationObject.coneOuterAngle = this._coneOuterAngle;
+                serializationObject.coneOuterGain = this._coneOuterGain;
+            }
+            return serializationObject;
+        };
+        Sound.Parse = function (parsedSound, scene, rootUrl, sourceSound) {
             var soundName = parsedSound.name;
-            var soundUrl = rootUrl + soundName;
+            var soundUrl;
+            if (parsedSound.url) {
+                soundUrl = rootUrl + parsedSound.url;
+            }
+            else {
+                soundUrl = rootUrl + soundName;
+            }
             var options = {
                 autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
                 spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
@@ -450,8 +589,27 @@ var BABYLON;
                 distanceModel: parsedSound.distanceModel,
                 playbackRate: parsedSound.playbackRate
             };
-            var newSound = new Sound(soundName, soundUrl, scene, function () { scene._removePendingData(newSound); }, options);
-            scene._addPendingData(newSound);
+            var newSound;
+            if (!sourceSound) {
+                newSound = new Sound(soundName, soundUrl, scene, function () { scene._removePendingData(newSound); }, options);
+                scene._addPendingData(newSound);
+            }
+            else {
+                var setBufferAndRun = function () {
+                    if (sourceSound._isReadyToPlay) {
+                        newSound._audioBuffer = sourceSound.getAudioBuffer();
+                        newSound._isReadyToPlay = true;
+                        if (newSound.autoplay) {
+                            newSound.play();
+                        }
+                    }
+                    else {
+                        window.setTimeout(setBufferAndRun, 300);
+                    }
+                };
+                newSound = new Sound(soundName, new ArrayBuffer(0), scene, null, options);
+                setBufferAndRun();
+            }
             if (parsedSound.position) {
                 var soundPosition = BABYLON.Vector3.FromArray(parsedSound.position);
                 newSound.setPosition(soundPosition);
@@ -472,6 +630,6 @@ var BABYLON;
             return newSound;
         };
         return Sound;
-    })();
+    }());
     BABYLON.Sound = Sound;
 })(BABYLON || (BABYLON = {}));

@@ -3,15 +3,61 @@
         public texture: Texture;
         public isBackground: boolean;
         public color: Color4;
-        public onDispose: () => void;
+        public scale = new Vector2(1, 1);
+        public offset = new Vector2(0, 0);
         public alphaBlendingMode = Engine.ALPHA_COMBINE;
+        public alphaTest: boolean;
 
         private _scene: Scene;
-        private _vertexDeclaration = [2];
-        private _vertexStrideSize = 2 * 4;
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
+        private _alphaTestEffect: Effect;
+
+
+        // Events
+
+        /**
+        * An event triggered when the layer is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Layer>();
+
+        private _onDisposeObserver: Observer<Layer>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        /**
+        * An event triggered before rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeRenderObservable = new Observable<Layer>();
+
+        private _onBeforeRenderObserver: Observer<Layer>;
+        public set onBeforeRender(callback: () => void) {
+            if (this._onBeforeRenderObserver) {
+                this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            }
+            this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        public onAfterRenderObservable = new Observable<Layer>();
+
+        private _onAfterRenderObserver: Observer<Layer>;
+        public set onAfterRender(callback: () => void) {
+            if (this._onAfterRenderObserver) {
+                this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+            }
+            this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+        }
 
         constructor(public name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4) {
             this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
@@ -21,6 +67,8 @@
             this._scene = scene;
             this._scene.layers.push(this);
 
+            var engine = scene.getEngine();
+
             // VBO
             var vertices = [];
             vertices.push(1, 1);
@@ -28,7 +76,8 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            var vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+            this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
 
             // Indices
             var indices = [];
@@ -40,46 +89,68 @@
             indices.push(2);
             indices.push(3);
 
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
 
             // Effects
-            this._effect = this._scene.getEngine().createEffect("layer",
-                ["position"],
-                ["textureMatrix", "color"],
+            this._effect = engine.createEffect("layer",
+                [VertexBuffer.PositionKind],
+                ["textureMatrix", "color", "scale", "offset"],
                 ["textureSampler"], "");
+
+            this._alphaTestEffect = engine.createEffect("layer",
+                [VertexBuffer.PositionKind],
+                ["textureMatrix", "color", "scale", "offset"],
+                ["textureSampler"], "#define ALPHATEST");
         }
 
         public render(): void {
+            var currentEffect = this.alphaTest ? this._alphaTestEffect : this._effect;
+
             // Check
-            if (!this._effect.isReady() || !this.texture || !this.texture.isReady())
+            if (!currentEffect.isReady() || !this.texture || !this.texture.isReady())
                 return;
 
             var engine = this._scene.getEngine();
 
+            this.onBeforeRenderObservable.notifyObservers(this);
+
             // Render
-            engine.enableEffect(this._effect);
+            engine.enableEffect(currentEffect);
             engine.setState(false);
 
+
             // Texture
-            this._effect.setTexture("textureSampler", this.texture);
-            this._effect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
+            currentEffect.setTexture("textureSampler", this.texture);
+            currentEffect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
 
             // Color
-            this._effect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
+            currentEffect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
+
+            // Scale / offset
+            currentEffect.setVector2("offset", this.offset);
+            currentEffect.setVector2("scale", this.scale);
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, currentEffect);
 
             // Draw order
-            engine.setAlphaMode(this.alphaBlendingMode);
-            engine.draw(true, 0, 6);
-            engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            if (!this.alphaTest) {
+                engine.setAlphaMode(this.alphaBlendingMode);
+                engine.draw(true, 0, 6);
+                engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            }
+            else {
+                engine.draw(true, 0, 6);
+            }
+
+            this.onAfterRenderObservable.notifyObservers(this);
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
             }
 
             if (this._indexBuffer) {
@@ -97,9 +168,11 @@
             this._scene.layers.splice(index, 1);
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+
+            this.onDisposeObservable.clear();
+            this.onAfterRenderObservable.clear();
+            this.onBeforeRenderObservable.clear();
         }
     }
 } 

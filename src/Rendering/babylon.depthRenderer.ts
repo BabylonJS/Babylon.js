@@ -24,9 +24,9 @@
             this._depthMap.renderList = null;
             
             // set default depth value to 1.0 (far away)
-            this._depthMap.onClear = (engine: Engine) => {
-                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true);
-            }
+            this._depthMap.onClearObservable.add((engine: Engine) => {
+                engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+            });
 
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
@@ -64,7 +64,7 @@
 
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
                     // Draw
@@ -87,13 +87,17 @@
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+            var material: any = subMesh.getMaterial();
+            if (material.disableDepthWrite) {
+                return false;
+            }
+
             var defines = [];
 
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
-            var material = subMesh.getMaterial();
 
             // Alpha test
             if (material && material.needAlphaTesting()) {

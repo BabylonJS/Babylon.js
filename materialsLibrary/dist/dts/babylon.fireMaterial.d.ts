@@ -5,7 +5,6 @@ declare module BABYLON {
         distortionTexture: BaseTexture;
         opacityTexture: BaseTexture;
         diffuseColor: Color3;
-        disableLighting: boolean;
         speed: number;
         private _scaledDiffuse;
         private _renderId;

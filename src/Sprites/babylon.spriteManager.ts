@@ -3,9 +3,24 @@
         public sprites = new Array<Sprite>();
         public renderingGroupId = 0;
         public layerMask: number = 0x0FFFFFFF;
-        public onDispose: () => void;
         public fogEnabled = true;
         public isPickable = false;
+        public cellWidth: number;
+        public cellHeight: number;
+
+        /**
+        * An event triggered when the manager is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<SpriteManager>();
+
+        private _onDisposeObserver: Observer<SpriteManager>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
 
         private _capacity: number;
         private _spriteTexture: Texture;
@@ -13,15 +28,22 @@
 
         private _scene: Scene;
 
-        private _vertexDeclaration = [4, 4, 4, 4];
-        private _vertexStrideSize = 16 * 4; // 15 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexData: Float32Array;
+        private _buffer: Buffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
-        private _vertices: Float32Array;
         private _effectBase: Effect;
         private _effectFog: Effect;
 
-        constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        public get texture(): Texture {
+            return this._spriteTexture;
+        }
+
+        public set texture(value: Texture) {
+            this._spriteTexture = value;
+        }
+
+        constructor(public name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             this._capacity = capacity;
             this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -29,11 +51,16 @@
 
             this._epsilon = epsilon === undefined ? 0.01 : epsilon;
 
+            if (cellSize.width) {
+                this.cellWidth = cellSize.width;
+                this.cellHeight = cellSize.height;
+            } else {
+                this.cellWidth = cellSize;
+                this.cellHeight = cellSize;
+            }
+
             this._scene = scene;
             this._scene.spriteManagers.push(this);
-
-            // VBO
-            this._vertexBuffer = scene.getEngine().createDynamicVertexBuffer(capacity * this._vertexStrideSize * 4);
 
             var indices = [];
             var index = 0;
@@ -48,16 +75,30 @@
             }
 
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
-            this._vertices = new Float32Array(capacity * this._vertexStrideSize);
+
+            // VBO
+            // 16 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color r, color g, color b, color a)
+            this._vertexData = new Float32Array(capacity * 16 * 4);
+            this._buffer = new Buffer(scene.getEngine(), this._vertexData, true, 16);
+
+            var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4);
+            var options = this._buffer.createVertexBuffer("options", 4, 4);
+            var cellInfo = this._buffer.createVertexBuffer("cellInfo", 8, 4);
+            var colors = this._buffer.createVertexBuffer(VertexBuffer.ColorKind, 12, 4);
+
+            this._vertexBuffers[VertexBuffer.PositionKind] = positions;
+            this._vertexBuffers["options"] = options;
+            this._vertexBuffers["cellInfo"] = cellInfo;
+            this._vertexBuffers[VertexBuffer.ColorKind] = colors;
 
             // Effects
             this._effectBase = this._scene.getEngine().createEffect("sprites",
-                ["position", "options", "cellInfo", "color"],
+                [VertexBuffer.PositionKind, "options", "cellInfo", VertexBuffer.ColorKind],
                 ["view", "projection", "textureInfos", "alphaTest"],
                 ["diffuseSampler"], "");
 
             this._effectFog = this._scene.getEngine().createEffect("sprites",
-                ["position", "options", "cellInfo", "color"],
+                [VertexBuffer.PositionKind, "options", "cellInfo", VertexBuffer.ColorKind],
                 ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
                 ["diffuseSampler"], "#define FOG");
         }
@@ -75,24 +116,24 @@
             else if (offsetY === 1)
                 offsetY = 1 - this._epsilon;
 
-            this._vertices[arrayOffset] = sprite.position.x;
-            this._vertices[arrayOffset + 1] = sprite.position.y;
-            this._vertices[arrayOffset + 2] = sprite.position.z;
-            this._vertices[arrayOffset + 3] = sprite.angle;
-            this._vertices[arrayOffset + 4] = sprite.width;
-            this._vertices[arrayOffset + 5] = sprite.height;
-            this._vertices[arrayOffset + 6] = offsetX;
-            this._vertices[arrayOffset + 7] = offsetY;
-            this._vertices[arrayOffset + 8] = sprite.invertU ? 1 : 0;
-            this._vertices[arrayOffset + 9] = sprite.invertV ? 1 : 0;
+            this._vertexData[arrayOffset] = sprite.position.x;
+            this._vertexData[arrayOffset + 1] = sprite.position.y;
+            this._vertexData[arrayOffset + 2] = sprite.position.z;
+            this._vertexData[arrayOffset + 3] = sprite.angle;
+            this._vertexData[arrayOffset + 4] = sprite.width;
+            this._vertexData[arrayOffset + 5] = sprite.height;
+            this._vertexData[arrayOffset + 6] = offsetX;
+            this._vertexData[arrayOffset + 7] = offsetY;
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+            this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
             var offset = (sprite.cellIndex / rowSize) >> 0;
-            this._vertices[arrayOffset + 10] = sprite.cellIndex - offset * rowSize;
-            this._vertices[arrayOffset + 11] = offset;
+            this._vertexData[arrayOffset + 10] = sprite.cellIndex - offset * rowSize;
+            this._vertexData[arrayOffset + 11] = offset;
             // Color
-            this._vertices[arrayOffset + 12] = sprite.color.r;
-            this._vertices[arrayOffset + 13] = sprite.color.g;
-            this._vertices[arrayOffset + 14] = sprite.color.b;
-            this._vertices[arrayOffset + 15] = sprite.color.a;
+            this._vertexData[arrayOffset + 12] = sprite.color.r;
+            this._vertexData[arrayOffset + 13] = sprite.color.g;
+            this._vertexData[arrayOffset + 14] = sprite.color.b;
+            this._vertexData[arrayOffset + 15] = sprite.color.a;
         }
 
         public intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo {
@@ -142,7 +183,7 @@
 
                 result.hit = true;
                 result.pickedSprite = currentSprite;
-                result.distance = distance
+                result.distance = distance;
 
                 return result;
             }
@@ -161,7 +202,7 @@
             // Sprites
             var deltaTime = engine.getDeltaTime();
             var max = Math.min(this._capacity, this.sprites.length);
-            var rowSize = baseSize.width / this.cellSize;
+            var rowSize = baseSize.width / this.cellWidth;
 
             var offset = 0;
             for (var index = 0; index < max; index++) {
@@ -177,7 +218,7 @@
                 this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
                 this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
             }
-            engine.updateDynamicVertexBuffer(this._vertexBuffer, this._vertices);
+            this._buffer.update(this._vertexData);
 
             // Render
             var effect = this._effectBase;
@@ -193,7 +234,7 @@
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            effect.setFloat2("textureInfos", this.cellSize / baseSize.width, this.cellSize / baseSize.height);
+            effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
 
             // Fog
             if (this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
@@ -202,7 +243,7 @@
             }
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
             // Draw order
             engine.setDepthFunctionToLessOrEqual();
@@ -218,9 +259,9 @@
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            if (this._buffer) {
+                this._buffer.dispose();
+                this._buffer = null;
             }
 
             if (this._indexBuffer) {
@@ -238,9 +279,8 @@
             this._scene.spriteManagers.splice(index, 1);
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
     }
 } 

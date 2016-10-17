@@ -3,8 +3,13 @@
         private _worldMatrix: Matrix;
         public transformedPosition: Vector3;
 
-        constructor(name: string, public position: Vector3, scene: Scene) {
+        @serializeAsVector3()
+        public position: Vector3;
+
+        constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
+
+            this.position = position;
         }
 
         public getAbsolutePosition(): Vector3 {
@@ -29,7 +34,11 @@
             if (this.parent && this.parent.getWorldMatrix) {
                 this.computeTransformedPosition();
 
-                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0);
+                effect.setFloat4(positionUniformName,
+                    this.transformedPosition.x,
+                    this.transformedPosition.y,
+                    this.transformedPosition.z,
+                    0); 
 
                 return;
             }
@@ -83,13 +92,8 @@
             return this._worldMatrix;
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = 0;
-            serializationObject.position = this.position.asArray();
-
-            return serializationObject;
+        public getTypeID(): number {
+            return 0;
         }
     }
 } 

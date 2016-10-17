@@ -6,7 +6,7 @@ var BABYLON;
             this.maximum = maximum;
             this.vectors = new Array();
             this.vectorsWorld = new Array();
-            // Bounding vectors            
+            // Bounding vectors
             this.vectors.push(this.minimum.clone());
             this.vectors.push(this.maximum.clone());
             this.vectors.push(this.minimum.clone());
@@ -36,6 +36,10 @@ var BABYLON;
         // Methods
         BoundingBox.prototype.getWorldMatrix = function () {
             return this._worldMatrix;
+        };
+        BoundingBox.prototype.setWorldMatrix = function (matrix) {
+            this._worldMatrix.copyFrom(matrix);
+            return this;
         };
         BoundingBox.prototype._update = function (world) {
             BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
@@ -71,7 +75,7 @@ var BABYLON;
             return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
         };
         BoundingBox.prototype.intersectsPoint = function (point) {
-            var delta = -BABYLON.Engine.Epsilon;
+            var delta = -BABYLON.Epsilon;
             if (this.maximumWorld.x - point.x < delta || delta > point.x - this.minimumWorld.x)
                 return false;
             if (this.maximumWorld.y - point.y < delta || delta > point.y - this.minimumWorld.y)
@@ -134,6 +138,6 @@ var BABYLON;
             return true;
         };
         return BoundingBox;
-    })();
+    }());
     BABYLON.BoundingBox = BoundingBox;
 })(BABYLON || (BABYLON = {}));

@@ -27,7 +27,7 @@ var BABYLON;
             });
         };
         return MeshAssetTask;
-    })();
+    }());
     BABYLON.MeshAssetTask = MeshAssetTask;
     var TextFileAssetTask = (function () {
         function TextFileAssetTask(name, url) {
@@ -52,7 +52,7 @@ var BABYLON;
             });
         };
         return TextFileAssetTask;
-    })();
+    }());
     BABYLON.TextFileAssetTask = TextFileAssetTask;
     var BinaryFileAssetTask = (function () {
         function BinaryFileAssetTask(name, url) {
@@ -77,7 +77,7 @@ var BABYLON;
             });
         };
         return BinaryFileAssetTask;
-    })();
+    }());
     BABYLON.BinaryFileAssetTask = BinaryFileAssetTask;
     var ImageAssetTask = (function () {
         function ImageAssetTask(name, url) {
@@ -88,6 +88,7 @@ var BABYLON;
         ImageAssetTask.prototype.run = function (scene, onSuccess, onError) {
             var _this = this;
             var img = new Image();
+            BABYLON.Tools.SetCorsBehavior(this.url, img);
             img.onload = function () {
                 _this.image = img;
                 _this.isCompleted = true;
@@ -105,7 +106,7 @@ var BABYLON;
             img.src = this.url;
         };
         return ImageAssetTask;
-    })();
+    }());
     BABYLON.ImageAssetTask = ImageAssetTask;
     var TextureAssetTask = (function () {
         function TextureAssetTask(name, url, noMipmap, invertY, samplingMode) {
@@ -132,49 +133,78 @@ var BABYLON;
                 }
                 onError();
             };
-            this.texture = new BABYLON.Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onError);
+            this.texture = new BABYLON.Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
         };
         return TextureAssetTask;
-    })();
+    }());
     BABYLON.TextureAssetTask = TextureAssetTask;
+    var CubeTextureAssetTask = (function () {
+        function CubeTextureAssetTask(name, url, extensions, noMipmap, files) {
+            this.name = name;
+            this.url = url;
+            this.extensions = extensions;
+            this.noMipmap = noMipmap;
+            this.files = files;
+            this.isCompleted = false;
+        }
+        CubeTextureAssetTask.prototype.run = function (scene, onSuccess, onError) {
+            var _this = this;
+            var onload = function () {
+                _this.isCompleted = true;
+                if (_this.onSuccess) {
+                    _this.onSuccess(_this);
+                }
+                onSuccess();
+            };
+            var onerror = function () {
+                if (_this.onError) {
+                    _this.onError(_this);
+                }
+                onError();
+            };
+            this.texture = new BABYLON.CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
+        };
+        return CubeTextureAssetTask;
+    }());
+    BABYLON.CubeTextureAssetTask = CubeTextureAssetTask;
     var AssetsManager = (function () {
         function AssetsManager(scene) {
-            this._tasks = new Array();
-            this._waitingTasksCount = 0;
+            this.tasks = new Array();
+            this.waitingTasksCount = 0;
             this.useDefaultLoadingScreen = true;
             this._scene = scene;
         }
         AssetsManager.prototype.addMeshTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
             var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
-            this._tasks.push(task);
+            this.tasks.push(task);
             return task;
         };
         AssetsManager.prototype.addTextFileTask = function (taskName, url) {
             var task = new TextFileAssetTask(taskName, url);
-            this._tasks.push(task);
+            this.tasks.push(task);
             return task;
         };
         AssetsManager.prototype.addBinaryFileTask = function (taskName, url) {
             var task = new BinaryFileAssetTask(taskName, url);
-            this._tasks.push(task);
+            this.tasks.push(task);
             return task;
         };
         AssetsManager.prototype.addImageTask = function (taskName, url) {
             var task = new ImageAssetTask(taskName, url);
-            this._tasks.push(task);
+            this.tasks.push(task);
             return task;
         };
         AssetsManager.prototype.addTextureTask = function (taskName, url, noMipmap, invertY, samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
-            this._tasks.push(task);
+            this.tasks.push(task);
             return task;
         };
         AssetsManager.prototype._decreaseWaitingTasksCount = function () {
-            this._waitingTasksCount--;
-            if (this._waitingTasksCount === 0) {
+            this.waitingTasksCount--;
+            if (this.waitingTasksCount === 0) {
                 if (this.onFinish) {
-                    this.onFinish(this._tasks);
+                    this.onFinish(this.tasks);
                 }
                 this._scene.getEngine().hideLoadingUI();
             }
@@ -194,27 +224,27 @@ var BABYLON;
             });
         };
         AssetsManager.prototype.reset = function () {
-            this._tasks = new Array();
+            this.tasks = new Array();
             return this;
         };
         AssetsManager.prototype.load = function () {
-            this._waitingTasksCount = this._tasks.length;
-            if (this._waitingTasksCount === 0) {
+            this.waitingTasksCount = this.tasks.length;
+            if (this.waitingTasksCount === 0) {
                 if (this.onFinish) {
-                    this.onFinish(this._tasks);
+                    this.onFinish(this.tasks);
                 }
                 return this;
             }
             if (this.useDefaultLoadingScreen) {
                 this._scene.getEngine().displayLoadingUI();
             }
-            for (var index = 0; index < this._tasks.length; index++) {
-                var task = this._tasks[index];
+            for (var index = 0; index < this.tasks.length; index++) {
+                var task = this.tasks[index];
                 this._runTask(task);
             }
             return this;
         };
         return AssetsManager;
-    })();
+    }());
     BABYLON.AssetsManager = AssetsManager;
 })(BABYLON || (BABYLON = {}));

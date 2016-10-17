@@ -1,13 +1,29 @@
 ﻿module BABYLON {
     export class SpotLight extends Light implements IShadowLight {
+        @serializeAsVector3()
+        public position: Vector3;
+
+        @serializeAsVector3()
+        public direction: Vector3;
+
+        @serialize()
+        public angle: number;
+
+        @serialize()
+        public exponent: number
 
         public transformedPosition: Vector3;
 
         private _transformedDirection: Vector3;
         private _worldMatrix: Matrix;
 
-        constructor(name: string, public position: Vector3, public direction: Vector3, public angle: number, public exponent: number, scene: Scene) {
+        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene) {
             super(name, scene);
+
+            this.position = position;
+            this.direction = direction;
+            this.angle = angle;
+            this.exponent = exponent;
         }
 
         public getAbsolutePosition(): Vector3 {
@@ -65,14 +81,28 @@
                 
                 Vector3.TransformNormalToRef(this.direction, this.parent.getWorldMatrix(), this._transformedDirection);
 
-                effect.setFloat4(positionUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent);
+                effect.setFloat4(positionUniformName,
+                    this.transformedPosition.x,
+                    this.transformedPosition.y,
+                    this.transformedPosition.z,
+                    this.exponent);
+
                 normalizeDirection = Vector3.Normalize(this._transformedDirection);
             } else {
-                effect.setFloat4(positionUniformName, this.position.x, this.position.y, this.position.z, this.exponent);
+                effect.setFloat4(positionUniformName,
+                    this.position.x,
+                    this.position.y,
+                    this.position.z,
+                    this.exponent);                    
+
                 normalizeDirection = Vector3.Normalize(this.direction);
             }
 
-            effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(this.angle * 0.5));
+            effect.setFloat4(directionUniformName,
+                normalizeDirection.x,
+                normalizeDirection.y,
+                normalizeDirection.z,
+                Math.cos(this.angle * 0.5));
         }
 
         public _getWorldMatrix(): Matrix {
@@ -85,16 +115,8 @@
             return this._worldMatrix;
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = 2;
-            serializationObject.position = this.position.asArray();
-            serializationObject.direction = this.position.asArray();
-            serializationObject.angle = this.angle;
-            serializationObject.exponent = this.exponent;
-
-            return serializationObject;
+        public getTypeID(): number {
+            return 2;
         }
     }
 }

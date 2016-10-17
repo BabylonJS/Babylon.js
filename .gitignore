@@ -44,6 +44,8 @@ ipch/
 *.ncb
 *.opensdf
 *.sdf
+*.VC.db
+*.VC.opendb
 
 # Visual Studio profiler
 *.psess
@@ -123,3 +125,6 @@ node_modules
 
 # for JetBrains IDE
 .idea
+
+# for VSCode
+.vscode

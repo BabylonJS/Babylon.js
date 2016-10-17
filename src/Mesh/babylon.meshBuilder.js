@@ -3,42 +3,117 @@ var BABYLON;
     var MeshBuilder = (function () {
         function MeshBuilder() {
         }
+        MeshBuilder.updateSideOrientation = function (orientation, scene) {
+            if (orientation == BABYLON.Mesh.DOUBLESIDE) {
+                return BABYLON.Mesh.DOUBLESIDE;
+            }
+            if (orientation === undefined || orientation === null) {
+                return BABYLON.Mesh.FRONTSIDE;
+            }
+            return orientation;
+        };
+        /**
+         * Creates a box mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#box
+         * The parameter `size` sets the size (float) of each box side (default 1).
+         * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value than `size`).
+         * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements).
+         * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateBox = function (name, options, scene) {
             var box = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, options.updatable);
             return box;
         };
+        /**
+         * Creates a sphere mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#sphere
+         * The parameter `diameter` sets the diameter size (float) of the sphere (default 1).
+         * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value than `diameter`).
+         * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32).
+         * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
+         * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude).
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
         };
+        /**
+         * Creates a plane polygonal mesh.  By default, this is a disc.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#disc
+         * The parameter `radius` sets the radius size (float) of the polygon (default 0.5).
+         * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc.
+         * You can create an unclosed polygon with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateDisc = function (name, options, scene) {
             var disc = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateDisc(options);
             vertexData.applyToMesh(disc, options.updatable);
             return disc;
         };
+        /**
+         * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#icosphere
+         * The parameter `radius` sets the radius size (float) of the icosphere (default 1).
+         * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`).
+         * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size.
+         * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateIcoSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateIcoSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
         };
         ;
+        /**
+         * Creates a ribbon mesh.
+         * The ribbon is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
+         *
+         * Please read this full tutorial to understand how to design a ribbon : http://doc.babylonjs.com/tutorials/Ribbon_Tutorial
+         * The parameter `pathArray` is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
+         * The parameter `closeArray` (boolean, default false) creates a seam between the first and the last paths of the path array.
+         * The parameter `closePath` (boolean, default false) creates a seam between the first and the last points of each path of the path array.
+         * The parameter `offset` (positive integer, default : rounded half size of the pathArray length), is taken in account only if the `pathArray` is containing a single path.
+         * It's the offset to join the points from the same path. Ex : offset = 10 means the point 1 is joined to the point 11.
+         * The optional parameter `instance` is an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#ribbon
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateRibbon = function (name, options, scene) {
             var pathArray = options.pathArray;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
             var offset = options.offset;
-            var sideOrientation = options.sideOrientation;
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var updatable = options.updatable;
             if (instance) {
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
+                BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, BABYLON.Tmp.Vector3[0]); // minimum
+                BABYLON.Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, BABYLON.Tmp.Vector3[1]);
                 var positionFunction = function (positions) {
                     var minlg = pathArray[0].length;
                     var i = 0;
@@ -53,6 +128,24 @@ var BABYLON;
                                 positions[i] = path[j].x;
                                 positions[i + 1] = path[j].y;
                                 positions[i + 2] = path[j].z;
+                                if (path[j].x < BABYLON.Tmp.Vector3[0].x) {
+                                    BABYLON.Tmp.Vector3[0].x = path[j].x;
+                                }
+                                if (path[j].x > BABYLON.Tmp.Vector3[1].x) {
+                                    BABYLON.Tmp.Vector3[1].x = path[j].x;
+                                }
+                                if (path[j].y < BABYLON.Tmp.Vector3[0].y) {
+                                    BABYLON.Tmp.Vector3[0].y = path[j].y;
+                                }
+                                if (path[j].y > BABYLON.Tmp.Vector3[1].y) {
+                                    BABYLON.Tmp.Vector3[1].y = path[j].y;
+                                }
+                                if (path[j].z < BABYLON.Tmp.Vector3[0].z) {
+                                    BABYLON.Tmp.Vector3[0].z = path[j].z;
+                                }
+                                if (path[j].z > BABYLON.Tmp.Vector3[1].z) {
+                                    BABYLON.Tmp.Vector3[1].z = path[j].z;
+                                }
                                 j++;
                                 i += 3;
                             }
@@ -67,6 +160,8 @@ var BABYLON;
                 };
                 var positions = instance.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                 positionFunction(positions);
+                instance._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Tmp.Vector3[0], BABYLON.Tmp.Vector3[1]);
+                instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
                 if (!(instance.areNormalsFrozen)) {
                     var indices = instance.getIndices();
@@ -108,46 +203,135 @@ var BABYLON;
                 return ribbon;
             }
         };
+        /**
+         * Creates a cylinder or a cone mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#cylinder-or-cone
+         * The parameter `height` sets the height size (float) of the cylinder/cone (float, default 2).
+         * The parameter `diameter` sets the diameter of the top and bottom cap at once (float, default 1).
+         * The parameters `diameterTop` and `diameterBottom` overwrite the parameter `diameter` and set respectively the top cap and bottom cap diameter (floats, default 1). The parameter "diameterBottom" can't be zero.
+         * The parameter `tessellation` sets the number of cylinder sides (positive integer, default 24). Set it to 3 to get a prism for instance.
+         * The parameter `subdivisions` sets the number of rings along the cylinder height (positive integer, default 1).
+         * The parameter `hasRings` (boolean, default false) makes the subdivisions independent from each other, so they become different faces.
+         * The parameter `enclose`  (boolean, default false) adds two extra faces per subdivision to a sliced cylinder to close it around its height axis.
+         * The parameter `arc` (float, default 1) is the ratio (max 1) to apply to the circumference to slice the cylinder.
+         * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of n Color3 elements) and `faceUV` (an array of n Vector4 elements).
+         * The value of n is the number of cylinder faces. If the cylinder has only 1 subdivisions, n equals : top face + cylinder surface + bottom face = 3
+         * Now, if the cylinder has 5 independent subdivisions (hasRings = true), n equals : top face + 5 stripe surfaces + bottom face = 2 + 5 = 7
+         * Finally, if the cylinder has 5 independent subdivisions and is enclose, n equals : top face + 5 x (stripe surface + 2 closing faces) + bottom face = 2 + 5 * 3 = 17
+         * Each array (color or UVs) is always ordered the same way : the first element is the bottom cap, the last element is the top cap. The other elements are each a ring surface.
+         * If `enclose` is false, a ring surface is one element.
+         * If `enclose` is true, a ring surface is 3 successive elements in the array : the tubular surface, then the two closing faces.
+         * Example how to set colors and textures on a sliced cylinder : http://www.html5gamedevs.com/topic/17945-creating-a-closed-slice-of-a-cylinder/#comment-106379
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateCylinder = function (name, options, scene) {
             var cylinder = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateCylinder(options);
             vertexData.applyToMesh(cylinder, options.updatable);
             return cylinder;
         };
+        /**
+         * Creates a torus mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#torus
+         * The parameter `diameter` sets the diameter size (float) of the torus (default 1).
+         * The parameter `thickness` sets the diameter size of the tube of the torus (float, default 0.5).
+         * The parameter `tessellation` sets the number of torus sides (postive integer, default 16).
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateTorus = function (name, options, scene) {
             var torus = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateTorus(options);
             vertexData.applyToMesh(torus, options.updatable);
             return torus;
         };
+        /**
+         * Creates a torus knot mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#torus-knot
+         * The parameter `radius` sets the global radius size (float) of the torus knot (default 2).
+         * The parameter `radialSegments` sets the number of sides on each tube segments (positive integer, default 32).
+         * The parameter `tubularSegments` sets the number of tubes to decompose the knot into (positive integer, default 32).
+         * The parameters `p` and `q` are the number of windings on each axis (positive integers, default 2 and 3).
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateTorusKnot = function (name, options, scene) {
             var torusKnot = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
         };
-        MeshBuilder.CreateLines = function (name, options, scene) {
+        /**
+         * Creates a line system mesh.
+         * A line system is a pool of many lines gathered in a single mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#linesystem
+         * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function.
+         * The parameter `lines` is an array of lines, each line being an array of successive Vector3.
+         * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter. The way to update it is the same than for
+         * updating a simple Line mesh, you just need to update every line in the `lines` array : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
+        MeshBuilder.CreateLineSystem = function (name, options, scene) {
             var instance = options.instance;
-            var points = options.points;
+            var lines = options.lines;
             if (instance) {
                 var positionFunction = function (positions) {
                     var i = 0;
-                    for (var p = 0; p < points.length; p++) {
-                        positions[i] = points[p].x;
-                        positions[i + 1] = points[p].y;
-                        positions[i + 2] = points[p].z;
-                        i += 3;
+                    for (var l = 0; l < lines.length; l++) {
+                        var points = lines[l];
+                        for (var p = 0; p < points.length; p++) {
+                            positions[i] = points[p].x;
+                            positions[i + 1] = points[p].y;
+                            positions[i + 2] = points[p].z;
+                            i += 3;
+                        }
                     }
                 };
                 instance.updateMeshPositions(positionFunction, false);
                 return instance;
             }
-            // lines creation
-            var lines = new BABYLON.LinesMesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateLines(options);
-            vertexData.applyToMesh(lines, options.updatable);
+            // line system creation
+            var lineSystem = new BABYLON.LinesMesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateLineSystem(options);
+            vertexData.applyToMesh(lineSystem, options.updatable);
+            return lineSystem;
+        };
+        /**
+         * Creates a line mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#lines
+         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
+         * The parameter `points` is an array successive Vector3.
+         * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only point positions can change, not the number of points.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
+        MeshBuilder.CreateLines = function (name, options, scene) {
+            var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
             return lines;
         };
+        /**
+         * Creates a dashed line mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#dashed-lines
+         * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
+         * The parameter `points` is an array successive Vector3.
+         * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200).
+         * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3).
+         * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1).
+         * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only point positions can change, not the number of points.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateDashedLines = function (name, options, scene) {
             var points = options.points;
             var instance = options.instance;
@@ -207,6 +391,25 @@ var BABYLON;
             dashedLines.gapSize = gapSize;
             return dashedLines;
         };
+        /**
+         * Creates an extruded shape mesh.
+         * The extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#extruded-shapes
+         *
+         * Please read this full tutorial to understand how to design an extruded shape : http://doc.babylonjs.com/tutorials/Parametric_Shapes#extrusion
+         * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be
+         * extruded along the Z axis.
+         * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
+         * The parameter `rotation` (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
+         * The parameter `scale` (float, default 1) is the value to scale the shape.
+         * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape
+         * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.ExtrudeShape = function (name, options, scene) {
             var path = options.path;
             var shape = options.shape;
@@ -214,10 +417,46 @@ var BABYLON;
             var rotation = options.rotation || 0;
             var cap = (options.cap === 0) ? 0 : options.cap || BABYLON.Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
-            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance);
+            var invertUV = options.invertUV || false;
+            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV);
         };
+        /**
+         * Creates an custom extruded shape mesh.
+         * The custom extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
+         * tuto :http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#custom-extruded-shapes
+         *
+         * Please read this full tutorial to understand how to design a custom extruded shape : http://doc.babylonjs.com/tutorials/Parametric_Shapes#extrusion
+         * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be
+         * extruded along the Z axis.
+         * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
+         * The parameter `rotationFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path
+         * and the distance of this point from the begining of the path :
+         * ```javascript
+         * var rotationFunction = function(i, distance) {
+         *     // do things
+         *     return rotationValue; }
+         * ```
+         * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
+         * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path
+         * and the distance of this point from the begining of the path :
+         * ```javascript
+         * var scaleFunction = function(i, distance) {
+         *     // do things
+         *     return scaleValue;}
+         * ```
+         * It must returns a float value that will be the scale value applied to the shape on each path point.
+         * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray`.
+         * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray`.
+         * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape
+         * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.ExtrudeShapeCustom = function (name, options, scene) {
             var path = options.path;
             var shape = options.shape;
@@ -227,10 +466,28 @@ var BABYLON;
             var ribbonClosePath = options.ribbonClosePath || false;
             var cap = (options.cap === 0) ? 0 : options.cap || BABYLON.Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
-            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance);
+            var invertUV = options.invertUV || false;
+            return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV);
         };
+        /**
+         * Creates lathe mesh.
+         * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#lathe
+         *
+         * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be
+         * rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero.
+         * The parameter `radius` (positive float, default 1) is the radius value of the lathe.
+         * The parameter `tessellation` (positive integer, default 64) is the side number of the lathe.
+         * The parameter `arc` (positive float, default 1) is the ratio of the lathe. 0.5 builds for instance half a lathe, so an opened shape.
+         * The parameter `closed` (boolean, default true) opens/closes the lathe circumference. This should be set to false when used with the parameter "arc".
+         * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateLathe = function (name, options, scene) {
             var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var closed = (options.closed === undefined) ? true : options.closed;
@@ -238,38 +495,50 @@ var BABYLON;
             var radius = options.radius || 1;
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
-            var shapeLathe = new Array();
-            // first rotatable point
+            var paths = new Array();
+            var invertUV = options.invertUV || false;
             var i = 0;
-            while (shape[i].x === 0) {
-                i++;
-            }
-            var pt = shape[i];
-            for (i = 0; i < shape.length; i++) {
-                shapeLathe.push(shape[i].subtract(pt));
-            }
-            // circle path
+            var p = 0;
             var step = pi2 / tessellation * arc;
             var rotated;
             var path = new Array();
             ;
             for (i = 0; i <= tessellation; i++) {
-                rotated = new BABYLON.Vector3(Math.cos(i * step) * radius, 0, Math.sin(i * step) * radius);
-                path.push(rotated);
+                var path = [];
+                if (cap == BABYLON.Mesh.CAP_START || cap == BABYLON.Mesh.CAP_ALL) {
+                    path.push(new BABYLON.Vector3(0, shape[0].y, 0));
+                    path.push(new BABYLON.Vector3(Math.cos(i * step) * shape[0].x * radius, shape[0].y, Math.sin(i * step) * shape[0].x * radius));
+                }
+                for (p = 0; p < shape.length; p++) {
+                    rotated = new BABYLON.Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y, Math.sin(i * step) * shape[p].x * radius);
+                    path.push(rotated);
+                }
+                if (cap == BABYLON.Mesh.CAP_END || cap == BABYLON.Mesh.CAP_ALL) {
+                    path.push(new BABYLON.Vector3(Math.cos(i * step) * shape[shape.length - 1].x * radius, shape[shape.length - 1].y, Math.sin(i * step) * shape[shape.length - 1].x * radius));
+                    path.push(new BABYLON.Vector3(0, shape[shape.length - 1].y, 0));
+                }
+                paths.push(path);
             }
-            if (closed) {
-                path.push(path[0]);
-            }
-            // extrusion
-            var scaleFunction = function () { return 1; };
-            var rotateFunction = function () { return 0; };
-            var lathe = BABYLON.Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, closed, false, BABYLON.Mesh.NO_CAP, scene, updatable, sideOrientation);
+            // lathe ribbon
+            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV }, scene);
             return lathe;
         };
+        /**
+         * Creates a plane mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#plane
+         * The parameter `size` sets the size (float) of both sides of the plane at once (default 1).
+         * You can set some different plane dimensions by using the parameters `width` and `height` (both by default have the same value than `size`).
+         * The parameter `sourcePlane` is a Plane instance. It builds a mesh plane from a Math plane.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreatePlane = function (name, options, scene) {
             var plane = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, options.updatable);
             if (options.sourcePlane) {
@@ -280,31 +549,80 @@ var BABYLON;
             }
             return plane;
         };
+        /**
+         * Creates a ground mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#plane
+         * The parameters `width` and `height` (floats, default 1) set the width and height sizes of the ground.
+         * The parameter `subdivisions` (positive integer) sets the number of subdivisions per side.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateGround = function (name, options, scene) {
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._setReady(false);
-            ground._subdivisions = options.subdivisions || 1;
+            ground._subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
+            ground._subdivisionsY = options.subdivisionsY || options.subdivisions || 1;
+            ground._width = options.width || 1;
+            ground._height = options.height || 1;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
             var vertexData = BABYLON.VertexData.CreateGround(options);
             vertexData.applyToMesh(ground, options.updatable);
             ground._setReady(true);
             return ground;
         };
+        /**
+         * Creates a tiled ground mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#tiled-ground
+         * The parameters `xmin` and `xmax` (floats, default -1 and 1) set the ground minimum and maximum X coordinates.
+         * The parameters `zmin` and `zmax` (floats, default -1 and 1) set the ground minimum and maximum Z coordinates.
+         * The parameter `subdivisions` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the
+         * numbers of subdivisions on the ground width and height. Each subdivision is called a tile.
+         * The parameter `precision` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the
+         * numbers of subdivisions on the ground width and height of each tile.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateTiledGround = function (name, options, scene) {
             var tiledGround = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateTiledGround(options);
             vertexData.applyToMesh(tiledGround, options.updatable);
             return tiledGround;
         };
+        /**
+         * Creates a ground mesh from a height map.
+         * tuto : http://doc.babylonjs.com/tutorials/14._Height_Map
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#ground-from-a-height-map
+         * The parameter `url` sets the URL of the height map image resource.
+         * The parameters `width` and `height` (positive floats, default 10) set the ground width and height sizes.
+         * The parameter `subdivisions` (positive integer, default 1) sets the number of subdivision per side.
+         * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.
+         * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.
+         * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).
+         * This function is passed the newly built mesh :
+         * ```javascript
+         * function(mesh) { // do things
+         *     return; }
+         * ```
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateGroundFromHeightMap = function (name, url, options, scene) {
-            var width = options.width || 10;
-            var height = options.height || 10;
-            var subdivisions = options.subdivisions || 1;
-            var minHeight = options.minHeight;
-            var maxHeight = options.maxHeight || 10;
+            var width = options.width || 10.0;
+            var height = options.height || 10.0;
+            var subdivisions = options.subdivisions || 1 | 0;
+            var minHeight = options.minHeight || 0.0;
+            var maxHeight = options.maxHeight || 10.0;
             var updatable = options.updatable;
             var onReady = options.onReady;
             var ground = new BABYLON.GroundMesh(name, scene);
-            ground._subdivisions = subdivisions;
+            ground._subdivisionsX = subdivisions;
+            ground._subdivisionsY = subdivisions;
+            ground._width = width;
+            ground._height = height;
+            ground._maxX = ground._width / 2.0;
+            ground._maxZ = ground._height / 2.0;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
             ground._setReady(false);
             var onload = function (img) {
                 // Getting height map data
@@ -334,16 +652,41 @@ var BABYLON;
             BABYLON.Tools.LoadImage(url, onload, function () { }, scene.database);
             return ground;
         };
+        /**
+         * Creates a tube mesh.
+         * The tube is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
+         *
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#tube
+         * The parameter `path` is a required array of successive Vector3. It is the curve used as the axis of the tube.
+         * The parameter `radius` (positive float, default 1) sets the tube radius size.
+         * The parameter `tessellation` (positive float, default 64) is the number of sides on the tubular surface.
+         * The parameter `radiusFunction` (javascript function, default null) is a vanilla javascript function. If it is not null, it overwrittes the parameter `radius`.
+         * This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path.
+         * It must return a radius value (positive float) :
+         * ```javascript
+         * var radiusFunction = function(i, distance) {
+         *     // do things
+         *     return radius; }
+         * ```
+         * The parameter `arc` (positive float, maximum 1, default 1) is the ratio to apply to the tube circumference : 2 x PI x arc.
+         * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * The optional parameter `instance` is an instance of an existing Tube object to be updated with the passed `pathArray` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#tube
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateTube = function (name, options, scene) {
             var path = options.path;
-            var radius = options.radius || 1;
-            var tessellation = options.tessellation || 64;
+            var radius = options.radius || 1.0;
+            var tessellation = options.tessellation || 64 | 0;
             var radiusFunction = options.radiusFunction;
             var cap = options.cap || BABYLON.Mesh.NO_CAP;
+            var invertUV = options.invertUV || false;
             var updatable = options.updatable;
-            var sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
-            options.arc = (options.arc <= 0 || options.arc > 1) ? 1 : options.arc || 1;
+            options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
             // tube geometry
             var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) {
                 var tangents = path3D.getTangents();
@@ -357,7 +700,7 @@ var BABYLON;
                 var rad;
                 var normal;
                 var rotated;
-                var rotationMatrix = BABYLON.Matrix.Zero();
+                var rotationMatrix = BABYLON.Tmp.Matrix[0];
                 var index = (cap === BABYLON.Mesh._NO_CAP || cap === BABYLON.Mesh.CAP_END) ? 0 : 2;
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
@@ -365,8 +708,10 @@ var BABYLON;
                     normal = normals[i]; // current normal
                     for (var t = 0; t < tessellation; t++) {
                         BABYLON.Matrix.RotationAxisToRef(tangents[i], step * t, rotationMatrix);
-                        rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
-                        circlePath.push(rotated);
+                        rotated = circlePath[t] ? circlePath[t] : BABYLON.Vector3.Zero();
+                        BABYLON.Vector3.TransformCoordinatesToRef(normal, rotationMatrix, rotated);
+                        rotated.scaleInPlace(rad).addInPlace(path[i]);
+                        circlePath[t] = rotated;
                     }
                     circlePaths[index] = circlePath;
                     index++;
@@ -418,7 +763,7 @@ var BABYLON;
             var newPathArray = new Array();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, options.arc);
-            var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation }, scene);
+            var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation, invertUV: invertUV }, scene);
             tube.pathArray = pathArray;
             tube.path3D = path3D;
             tube.tessellation = tessellation;
@@ -426,12 +771,39 @@ var BABYLON;
             tube.arc = options.arc;
             return tube;
         };
+        /**
+         * Creates a polyhedron mesh.
+         *
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#polyhedron
+         * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial
+         *  to choose the wanted type.
+         * The parameter `size` (positive float, default 1) sets the polygon size.
+         * You can overwrite the `size` on each dimension bu using the parameters `sizeX`, `sizeY` or `sizeZ` (positive floats, default to `size` value).
+         * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`.
+         * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
+         * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`).
+         * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
+         * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreatePolyhedron = function (name, options, scene) {
             var polyhedron = new BABYLON.Mesh(name, scene);
+            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
             var vertexData = BABYLON.VertexData.CreatePolyhedron(options);
             vertexData.applyToMesh(polyhedron, options.updatable);
             return polyhedron;
         };
+        /**
+         * Creates a decal mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#decals
+         * A decal is a mesh usually applied as a model onto the surface of another mesh. So don't forget the parameter `sourceMesh` depicting the decal.
+         * The parameter `position` (Vector3, default `(0, 0, 0)`) sets the position of the decal in World coordinates.
+         * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates.
+         * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling.
+         * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal.
+         */
         MeshBuilder.CreateDecal = function (name, sourceMesh, options) {
             var indices = sourceMesh.getIndices();
             var positions = sourceMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -600,7 +972,7 @@ var BABYLON;
             return decal;
         };
         // Privates
-        MeshBuilder._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance) {
+        MeshBuilder._ExtrudeShapeGeneric = function (name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance, invertUV) {
             // extrusion geometry
             var extrusionPathArray = function (shape, curve, path3D, shapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom) {
                 var tangents = path3D.getTangents();
@@ -613,7 +985,7 @@ var BABYLON;
                 var rotate = custom ? rotateFunction : returnRotation;
                 var scl = custom ? scaleFunction : returnScale;
                 var index = (cap === BABYLON.Mesh.NO_CAP || cap === BABYLON.Mesh.CAP_END) ? 0 : 2;
-                var rotationMatrix = BABYLON.Matrix.Zero();
+                var rotationMatrix = BABYLON.Tmp.Matrix[0];
                 for (var i = 0; i < curve.length; i++) {
                     var shapePath = new Array();
                     var angleStep = rotate(i, distances[i]);
@@ -621,8 +993,10 @@ var BABYLON;
                     for (var p = 0; p < shape.length; p++) {
                         BABYLON.Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
                         var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
-                        var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
-                        shapePath.push(rotated);
+                        var rotated = shapePath[p] ? shapePath[p] : BABYLON.Vector3.Zero();
+                        BABYLON.Vector3.TransformCoordinatesToRef(planed, rotationMatrix, rotated);
+                        rotated.scaleInPlace(scaleRatio).addInPlace(curve[i]);
+                        shapePath[p] = rotated;
                     }
                     shapePaths[index] = shapePath;
                     angle += angleStep;
@@ -669,7 +1043,7 @@ var BABYLON;
             if (instance) {
                 path3D = (instance.path3D).update(curve);
                 pathArray = extrusionPathArray(shape, curve, instance.path3D, instance.pathArray, scale, rotation, scaleFunction, rotateFunction, instance.cap, custom);
-                instance = BABYLON.Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+                instance = BABYLON.Mesh.CreateRibbon(null, pathArray, null, null, null, scene, null, null, instance);
                 return instance;
             }
             // extruded shape creation
@@ -677,13 +1051,13 @@ var BABYLON;
             var newShapePaths = new Array();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
-            var extrudedGeneric = BABYLON.Mesh.CreateRibbon(name, pathArray, rbCA, rbCP, 0, scene, updtbl, side);
+            var extrudedGeneric = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV }, scene);
             extrudedGeneric.pathArray = pathArray;
             extrudedGeneric.path3D = path3D;
             extrudedGeneric.cap = cap;
             return extrudedGeneric;
         };
         return MeshBuilder;
-    })();
+    }());
     BABYLON.MeshBuilder = MeshBuilder;
 })(BABYLON || (BABYLON = {}));

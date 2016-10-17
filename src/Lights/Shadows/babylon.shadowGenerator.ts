@@ -1,5 +1,11 @@
 ﻿module BABYLON {
-    export class ShadowGenerator {
+    export interface IShadowGenerator {
+        getShadowMap(): RenderTargetTexture;
+ 
+        dispose(): void;
+    }
+ 
+    export class ShadowGenerator implements IShadowGenerator {
         private static _FILTER_NONE = 0;
         private static _FILTER_VARIANCESHADOWMAP = 1;
         private static _FILTER_POISSONSAMPLING = 2;
@@ -29,6 +35,8 @@
         private _bias = 0.00005;
         private _lightDirection = Vector3.Zero();
 
+        public forceBackFacesOnly = false;
+
         public get bias(): number {
             return this._bias;
         }
@@ -52,9 +60,9 @@
             }
 
             this._boxBlurPostprocess = new PostProcess("DepthBoxBlur", "depthBoxBlur", ["screenSize", "boxOffset"], [], 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define OFFSET " + value);
-            this._boxBlurPostprocess.onApply = effect => {
+            this._boxBlurPostprocess.onApplyObservable.add(effect => {
                 effect.setFloat2("screenSize", this._mapSize / this.blurScale, this._mapSize / this.blurScale);
-            };
+            });
         }
 
         public get filter(): number {
@@ -124,6 +132,8 @@
         private _currentFaceIndex = 0;
         private _currentFaceIndexCache = 0;
 
+        private _useFullFloat = true;
+
         constructor(mapSize: number, light: IShadowLight) {
             this._light = light;
             this._scene = light.getScene();
@@ -131,40 +141,51 @@
 
             light._shadowGenerator = this;
 
+            // Texture type fallback from float to int if not supported.
+            var textureType: number;
+            var caps = this._scene.getEngine().getCaps();
+            if (caps.textureFloat && caps.textureFloatLinearFiltering && caps.textureFloatRender) {
+                this._useFullFloat = true;
+                textureType = Engine.TEXTURETYPE_FLOAT;
+            }
+            else {
+                this._useFullFloat = false;
+                textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            }
+            
             // Render target
-            this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
+            this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, textureType, light.needCube());
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
 
-
-            this._shadowMap.onBeforeRender = (faceIndex: number) => {
+            this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
                 this._currentFaceIndex = faceIndex;
-            }
+            });
 
-            this._shadowMap.onAfterUnbind = () => {
+            this._shadowMap.onAfterUnbindObservable.add(() => {
                 if (!this.useBlurVarianceShadowMap) {
                     return;
                 }
 
                 if (!this._shadowMap2) {
-                    this._shadowMap2 = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
+                    this._shadowMap2 = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, textureType);
                     this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
                     this._shadowMap2.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
 
                     this._downSamplePostprocess = new PassPostProcess("downScale", 1.0 / this.blurScale, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-                    this._downSamplePostprocess.onApply = effect => {
+                    this._downSamplePostprocess.onApplyObservable.add(effect => {
                         effect.setTexture("textureSampler", this._shadowMap);
-                    };
+                    });
 
                     this.blurBoxOffset = 1;
                 }
 
                 this._scene.postProcessManager.directRender([this._downSamplePostprocess, this._boxBlurPostprocess], this._shadowMap2.getInternalTexture());
-            }
+            });
 
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {
@@ -182,7 +203,7 @@
                     return;
                 }
 
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);
@@ -205,12 +226,20 @@
 
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                    }
+
+                    if (this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, true);
                     }
 
                     // Draw
                     mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                         (isInstance, world) => this._effect.setMatrix("world", world));
+
+                    if (this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, false);
+                    }
                 } else {
                     // Need to reset refresh rate of the shadowMap
                     this._shadowMap.resetRefreshCounter();
@@ -235,17 +264,21 @@
                 }
             };
 
-            this._shadowMap.onClear = (engine: Engine) => {
+            this._shadowMap.onClearObservable.add((engine: Engine) => {
                 if (this.useBlurVarianceShadowMap || this.useVarianceShadowMap) {
-                    engine.clear(new Color4(0, 0, 0, 0), true, true);
+                    engine.clear(new Color4(0, 0, 0, 0), true, true, true);
                 } else {
-                    engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true);
+                    engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
                 }
-            }
+            });
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var defines = [];
+
+            if (this._useFullFloat) {
+                defines.push("#define FULLFLOAT");
+            }
 
             if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
                 defines.push("#define VSM");
@@ -268,8 +301,12 @@
                     defines.push("#define UV1");
                 }
                 if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                    var alphaTexture = material.getAlphaTestTexture();
+
+                    if (alphaTexture.coordinatesIndex === 1) {
+                        attribs.push(VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
             }
 
@@ -408,6 +445,7 @@
             serializationObject.mapSize = this.getShadowMap().getRenderSize();
             serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
+            serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
 
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
@@ -425,9 +463,10 @@
             var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
 
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
-
-                shadowGenerator.getShadowMap().renderList.push(mesh);
+                var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
+                meshes.forEach(function (mesh) {
+                    shadowGenerator.getShadowMap().renderList.push(mesh);
+                });
             }
 
             if (parsedShadowGenerator.usePoissonSampling) {
@@ -449,6 +488,8 @@
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
             }
+
+            shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;
 
             return shadowGenerator;
         }

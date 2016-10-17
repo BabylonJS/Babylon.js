@@ -418,10 +418,11 @@
             return result;
         }
 
-        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData {
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
+            var invertUV: boolean = options.invertUV || false;
             var defaultOffset: number = Math.floor(pathArray[0].length / 2);
             var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
@@ -539,7 +540,11 @@
                 for (i = 0; i < minlg + closePathCorr; i++) {
                     u = us[p][i] / uTotalDistance[p];
                     v = vs[i][p] / vTotalDistance[i];
-                    uvs.push(u, v);
+                    if (invertUV) {
+                        uvs.push(v, u);
+                    } else {
+                        uvs.push(u, v);
+                    }
                 }
             }
 
@@ -795,7 +800,7 @@
         public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
-            var diameterBottom: number = options.diameterBottom || options.diameter || 1;
+            var diameterBottom: number = (options.diameterBottom === 0) ? 0 : options.diameterBottom || options.diameter || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
             var hasRings: boolean = options.hasRings;
@@ -804,12 +809,12 @@
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
             var faceColors: Color4[] = options.faceColors;
-
             // default face colors and UV if undefined
             var quadNb: number = (arc !== 1 && enclose) ? 2 : 0;
             var ringNb: number = (hasRings) ? subdivisions : 1;
             var surfaceNb: number = 2 + (1 + quadNb) * ringNb;
             var f: number;
+
             for (f = 0; f < surfaceNb; f++) {
                 if (faceColors && faceColors[f] === undefined) {
                     faceColors[f] = new Color4(1, 1, 1, 1);
@@ -1107,26 +1112,27 @@
             return vertexData;
         }
 
-        public static CreateLines(options: { points: Vector3[] }): VertexData {
+        public static CreateLineSystem(options: { lines: Vector3[][] }): VertexData {
             var indices = [];
             var positions = [];
-            var points = options.points;
+            var lines = options.lines;
+            var idx = 0;
 
-            for (var index = 0; index < points.length; index++) {
-                positions.push(points[index].x, points[index].y, points[index].z);
+            for (var l = 0; l < lines.length; l++) {
+                var points = lines[l];
+                for (var index = 0; index < points.length; index++) {
+                    positions.push(points[index].x, points[index].y, points[index].z);
 
-                if (index > 0) {
-                    indices.push(index - 1);
-                    indices.push(index);
+                    if (index > 0) {
+                        indices.push(idx - 1);
+                        indices.push(idx);
+                    }
+                    idx++;
                 }
             }
-
-            // Result
             var vertexData = new VertexData();
-
             vertexData.indices = indices;
             vertexData.positions = positions;
-
             return vertexData;
         }
 
@@ -1174,7 +1180,7 @@
             return vertexData;
         }
 
-        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number }): VertexData {
+        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1183,28 +1189,29 @@
 
             var width: number = options.width || 1;
             var height: number = options.height || 1;
-            var subdivisions: number = options.subdivisions || 1;
+            var subdivisionsX: number = options.subdivisionsX || options.subdivisions || 1;
+            var subdivisionsY: number = options.subdivisionsY || options.subdivisions || 1;
 
-            for (row = 0; row <= subdivisions; row++) {
-                for (col = 0; col <= subdivisions; col++) {
-                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+            for (row = 0; row <= subdivisionsY; row++) {
+                for (col = 0; col <= subdivisionsX; col++) {
+                    var position = new Vector3((col * width) / subdivisionsX - (width / 2.0), 0, ((subdivisionsY - row) * height) / subdivisionsY - (height / 2.0));
                     var normal = new Vector3(0, 1.0, 0);
 
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
-                    uvs.push(col / subdivisions, 1.0 - row / subdivisions);
+                    uvs.push(col / subdivisionsX, 1.0 - row / subdivisionsX);
                 }
             }
 
-            for (row = 0; row < subdivisions; row++) {
-                for (col = 0; col < subdivisions; col++) {
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + row * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
+            for (row = 0; row < subdivisionsY; row++) {
+                for (col = 0; col < subdivisionsX; col++) {
+                    indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + 1 + row * (subdivisionsX + 1));
+                    indices.push(col + row * (subdivisionsX + 1));
 
-                    indices.push(col + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
+                    indices.push(col + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + row * (subdivisionsX + 1));
                 }
             }
 
@@ -1220,10 +1227,10 @@
         }
 
         public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
-            var xmin = options.xmin;
-            var zmin = options.zmin;
-            var xmax = options.xmax;
-            var zmax = options.zmax;
+            var xmin = options.xmin || -1.0;
+            var zmin = options.zmin || -1.0;
+            var xmax = options.xmax || 1.0;
+            var zmax = options.zmax || 1.0;
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
 
@@ -1233,7 +1240,7 @@
             var uvs = [];
             var row: number, col: number, tileRow: number, tileCol: number;
 
-            subdivisions.h = (subdivisions.w < 1) ? 1 : subdivisions.h;
+            subdivisions.h = (subdivisions.h < 1) ? 1 : subdivisions.h;
             subdivisions.w = (subdivisions.w < 1) ? 1 : subdivisions.w;
             precision.w = (precision.w < 1) ? 1 : precision.w;
             precision.h = (precision.h < 1) ? 1 : precision.h;
@@ -1465,7 +1472,7 @@
             return vertexData;
         }
 
-        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
+        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number }): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
             var flat = (options.flat === undefined) ? true : options.flat;

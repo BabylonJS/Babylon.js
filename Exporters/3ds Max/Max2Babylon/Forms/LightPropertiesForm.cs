@@ -29,6 +29,7 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkNoExport, lights, "babylonjs_noexport");
             Tools.PrepareCheckBox(chkAutoAnimate, lights, "babylonjs_autoanimate");
             Tools.PrepareCheckBox(chkLoop, lights, "babylonjs_autoanimateloop");
+            Tools.PrepareCheckBox(ckForceBackFaces, lights, "babylonjs_forcebackfaces");
             Tools.PrepareNumericUpDown(nupFrom, lights, "babylonjs_autoanimate_from");
             Tools.PrepareNumericUpDown(nupTo, lights, "babylonjs_autoanimate_to", 100.0f);
 
@@ -43,6 +44,7 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkNoExport, lights, "babylonjs_noexport");
             Tools.UpdateCheckBox(chkAutoAnimate, lights, "babylonjs_autoanimate");
             Tools.UpdateCheckBox(chkLoop, lights, "babylonjs_autoanimateloop");
+            Tools.UpdateCheckBox(ckForceBackFaces, lights, "babylonjs_forcebackfaces");
             Tools.UpdateNumericUpDown(nupFrom, lights, "babylonjs_autoanimate_from");
             Tools.UpdateNumericUpDown(nupTo, lights, "babylonjs_autoanimate_to");
 

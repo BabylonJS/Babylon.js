@@ -34,15 +34,16 @@
             this.butCancel = new System.Windows.Forms.Button();
             this.butOK = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.chkAnimations = new System.Windows.Forms.CheckBox();
             this.chkQuaternions = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.nupVolume = new System.Windows.Forms.NumericUpDown();
+            this.lblVolume = new System.Windows.Forms.Label();
             this.cmdBrowse = new System.Windows.Forms.Button();
             this.txtSound = new System.Windows.Forms.TextBox();
             this.chkLoop = new System.Windows.Forms.CheckBox();
             this.chkAutoPlay = new System.Windows.Forms.CheckBox();
             this.ofdOpenSound = new System.Windows.Forms.OpenFileDialog();
-            this.nupVolume = new System.Windows.Forms.NumericUpDown();
-            this.lblVolume = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -107,6 +108,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.chkAnimations);
             this.groupBox2.Controls.Add(this.chkQuaternions);
             this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox2.Location = new System.Drawing.Point(12, 105);
@@ -115,6 +117,17 @@
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Advanced";
+            // 
+            // chkAnimations
+            // 
+            this.chkAnimations.AutoSize = true;
+            this.chkAnimations.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkAnimations.Location = new System.Drawing.Point(21, 51);
+            this.chkAnimations.Name = "chkAnimations";
+            this.chkAnimations.Size = new System.Drawing.Size(149, 17);
+            this.chkAnimations.TabIndex = 3;
+            this.chkAnimations.Text = "Do not optimize animations";
+            this.chkAnimations.UseVisualStyleBackColor = true;
             // 
             // chkQuaternions
             // 
@@ -142,6 +155,38 @@
             this.groupBox3.TabIndex = 6;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Sound";
+            // 
+            // nupVolume
+            // 
+            this.nupVolume.DecimalPlaces = 2;
+            this.nupVolume.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.nupVolume.Location = new System.Drawing.Point(150, 108);
+            this.nupVolume.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.nupVolume.Name = "nupVolume";
+            this.nupVolume.Size = new System.Drawing.Size(120, 20);
+            this.nupVolume.TabIndex = 10;
+            this.nupVolume.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // lblVolume
+            // 
+            this.lblVolume.AutoSize = true;
+            this.lblVolume.Location = new System.Drawing.Point(18, 110);
+            this.lblVolume.Name = "lblVolume";
+            this.lblVolume.Size = new System.Drawing.Size(45, 13);
+            this.lblVolume.TabIndex = 9;
+            this.lblVolume.Text = "Volume:";
             // 
             // cmdBrowse
             // 
@@ -192,38 +237,6 @@
             // 
             this.ofdOpenSound.Filter = "Sound files|*.wav;*.mp3";
             // 
-            // nupVolume
-            // 
-            this.nupVolume.DecimalPlaces = 2;
-            this.nupVolume.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.nupVolume.Location = new System.Drawing.Point(150, 108);
-            this.nupVolume.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.nupVolume.Name = "nupVolume";
-            this.nupVolume.Size = new System.Drawing.Size(120, 20);
-            this.nupVolume.TabIndex = 10;
-            this.nupVolume.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // lblVolume
-            // 
-            this.lblVolume.AutoSize = true;
-            this.lblVolume.Location = new System.Drawing.Point(18, 110);
-            this.lblVolume.Name = "lblVolume";
-            this.lblVolume.Size = new System.Drawing.Size(45, 13);
-            this.lblVolume.TabIndex = 9;
-            this.lblVolume.Text = "Volume:";
-            // 
             // ScenePropertiesForm
             // 
             this.AcceptButton = this.butOK;
@@ -269,5 +282,6 @@
         private System.Windows.Forms.OpenFileDialog ofdOpenSound;
         private System.Windows.Forms.NumericUpDown nupVolume;
         private System.Windows.Forms.Label lblVolume;
+        private System.Windows.Forms.CheckBox chkAnimations;
     }
 }

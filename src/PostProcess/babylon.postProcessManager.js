@@ -2,12 +2,11 @@ var BABYLON;
 (function (BABYLON) {
     var PostProcessManager = (function () {
         function PostProcessManager(scene) {
-            this._vertexDeclaration = [2];
-            this._vertexStrideSize = 2 * 4;
+            this._vertexBuffers = {};
             this._scene = scene;
         }
         PostProcessManager.prototype._prepareBuffers = function () {
-            if (this._vertexBuffer) {
+            if (this._vertexBuffers[BABYLON.VertexBuffer.PositionKind]) {
                 return;
             }
             // VBO
@@ -16,7 +15,7 @@ var BABYLON;
             vertices.push(-1, 1);
             vertices.push(-1, -1);
             vertices.push(1, -1);
-            this._vertexBuffer = this._scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(this._scene.getEngine(), vertices, BABYLON.VertexBuffer.PositionKind, false, false, 2);
             // Indices
             var indices = [];
             indices.push(0);
@@ -30,11 +29,10 @@ var BABYLON;
         // Methods
         PostProcessManager.prototype._prepareFrame = function (sourceTexture) {
             var postProcesses = this._scene.activeCamera._postProcesses;
-            var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
-            if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
+            if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
             }
-            postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera, sourceTexture);
+            postProcesses[0].activate(this._scene.activeCamera, sourceTexture);
             return true;
         };
         PostProcessManager.prototype.directRender = function (postProcesses, targetTexture) {
@@ -54,17 +52,13 @@ var BABYLON;
                 var pp = postProcesses[index];
                 var effect = pp.apply();
                 if (effect) {
-                    if (pp.onBeforeRender) {
-                        pp.onBeforeRender(effect);
-                    }
+                    pp.onBeforeRenderObservable.notifyObservers(effect);
                     // VBOs
                     this._prepareBuffers();
-                    engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+                    engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
                     // Draw order
                     engine.draw(true, 0, 6);
-                    if (pp.onAfterRender) {
-                        pp.onAfterRender(effect);
-                    }
+                    pp.onAfterRenderObservable.notifyObservers(effect);
                 }
             }
             // Restore depth buffer
@@ -73,14 +67,13 @@ var BABYLON;
         };
         PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, faceIndex, postProcesses) {
             postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
-            var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
-            if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
+            if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
             }
             var engine = this._scene.getEngine();
-            for (var index = 0; index < postProcessesTakenIndices.length; index++) {
-                if (index < postProcessesTakenIndices.length - 1) {
-                    postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
+            for (var index = 0, len = postProcesses.length; index < len; index++) {
+                if (index < len - 1) {
+                    postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
                 }
                 else {
                     if (targetTexture) {
@@ -93,20 +86,16 @@ var BABYLON;
                 if (doNotPresent) {
                     break;
                 }
-                var pp = postProcesses[postProcessesTakenIndices[index]];
+                var pp = postProcesses[index];
                 var effect = pp.apply();
                 if (effect) {
-                    if (pp.onBeforeRender) {
-                        pp.onBeforeRender(effect);
-                    }
+                    pp.onBeforeRenderObservable.notifyObservers(effect);
                     // VBOs
                     this._prepareBuffers();
-                    engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
+                    engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
                     // Draw order
                     engine.draw(true, 0, 6);
-                    if (pp.onAfterRender) {
-                        pp.onAfterRender(effect);
-                    }
+                    pp.onAfterRenderObservable.notifyObservers(effect);
                 }
             }
             // Restore depth buffer
@@ -114,9 +103,10 @@ var BABYLON;
             engine.setDepthWrite(true);
         };
         PostProcessManager.prototype.dispose = function () {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            var buffer = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = null;
             }
             if (this._indexBuffer) {
                 this._scene.getEngine()._releaseBuffer(this._indexBuffer);
@@ -124,6 +114,6 @@ var BABYLON;
             }
         };
         return PostProcessManager;
-    })();
+    }());
     BABYLON.PostProcessManager = PostProcessManager;
 })(BABYLON || (BABYLON = {}));

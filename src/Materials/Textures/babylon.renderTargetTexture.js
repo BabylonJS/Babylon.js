@@ -7,16 +7,43 @@ var BABYLON;
 (function (BABYLON) {
     var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
-        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube) {
+        function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube, samplingMode, generateDepthBuffer, generateStencilBuffer) {
             if (doNotChangeAspectRatio === void 0) { doNotChangeAspectRatio = true; }
             if (type === void 0) { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             if (isCube === void 0) { isCube = false; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            if (generateDepthBuffer === void 0) { generateDepthBuffer = true; }
+            if (generateStencilBuffer === void 0) { generateStencilBuffer = false; }
             _super.call(this, null, scene, !generateMipMaps);
             this.isCube = isCube;
+            /**
+            * Use this list to define the list of mesh you want to render.
+            */
             this.renderList = new Array();
             this.renderParticles = true;
             this.renderSprites = false;
             this.coordinatesMode = BABYLON.Texture.PROJECTION_MODE;
+            // Events
+            /**
+            * An event triggered when the texture is unbind.
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterUnbindObservable = new BABYLON.Observable();
+            /**
+            * An event triggered before rendering the texture
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after rendering the texture
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after the texture clear
+            * @type {BABYLON.Observable}
+            */
+            this.onClearObservable = new BABYLON.Observable();
             this._currentRefreshId = -1;
             this._refreshRate = 1;
             this.name = name;
@@ -24,13 +51,28 @@ var BABYLON;
             this._size = size;
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
+            if (samplingMode === BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            }
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, {
+                    generateMipMaps: generateMipMaps,
+                    samplingMode: samplingMode,
+                    generateDepthBuffer: generateDepthBuffer,
+                    generateStencilBuffer: generateStencilBuffer
+                });
                 this.coordinatesMode = BABYLON.Texture.INVCUBIC_MODE;
                 this._textureMatrix = BABYLON.Matrix.Identity();
             }
             else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
+                this._texture = scene.getEngine().createRenderTargetTexture(size, {
+                    generateMipMaps: generateMipMaps,
+                    type: type,
+                    samplingMode: samplingMode,
+                    generateDepthBuffer: generateDepthBuffer,
+                    generateStencilBuffer: generateStencilBuffer
+                });
             }
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
@@ -52,6 +94,46 @@ var BABYLON;
         Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDER_ONEVERYTWOFRAMES", {
             get: function () {
                 return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "onAfterUnbind", {
+            set: function (callback) {
+                if (this._onAfterUnbindObserver) {
+                    this.onAfterUnbindObservable.remove(this._onAfterUnbindObserver);
+                }
+                this._onAfterUnbindObserver = this.onAfterUnbindObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "onBeforeRender", {
+            set: function (callback) {
+                if (this._onBeforeRenderObserver) {
+                    this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+                }
+                this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "onAfterRender", {
+            set: function (callback) {
+                if (this._onAfterRenderObserver) {
+                    this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+                }
+                this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture.prototype, "onClear", {
+            set: function (callback) {
+                if (this._onClearObserver) {
+                    this.onClearObservable.remove(this._onClearObserver);
+                }
+                this._onClearObserver = this.onClearObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -120,6 +202,9 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
+            if (this.useCameraPostProcesses !== undefined) {
+                useCameraPostProcess = this.useCameraPostProcesses;
+            }
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
             }
@@ -131,13 +216,26 @@ var BABYLON;
                 }
                 delete this._waitingRenderList;
             }
+            // Is predicate defined?
+            if (this.renderListPredicate) {
+                this.renderList.splice(0); // Clear previous renderList
+                var sceneMeshes = this.getScene().meshes;
+                for (var index = 0; index < sceneMeshes.length; index++) {
+                    var mesh = sceneMeshes[index];
+                    if (this.renderListPredicate(mesh)) {
+                        this.renderList.push(mesh);
+                    }
+                }
+            }
             if (this.renderList && this.renderList.length === 0) {
                 return;
             }
             // Prepare renderingManager
             this._renderingManager.reset();
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-            for (var meshIndex = 0; meshIndex < currentRenderList.length; meshIndex++) {
+            var currentRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
+            var sceneRenderId = scene.getRenderId();
+            for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
                 var mesh = currentRenderList[meshIndex];
                 if (mesh) {
                     if (!mesh.isReady()) {
@@ -145,11 +243,12 @@ var BABYLON;
                         this.resetRefreshCounter();
                         continue;
                     }
+                    mesh._preActivateForIntermediateRendering(sceneRenderId);
                     if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
-                        mesh._activate(scene.getRenderId());
+                        mesh._activate(sceneRenderId);
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeIndices += subMesh.indexCount;
+                            scene._activeIndices.addCount(subMesh.indexCount, false);
                             this._renderingManager.dispatch(subMesh);
                         }
                     }
@@ -157,21 +256,21 @@ var BABYLON;
             }
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
-                    this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
+                    this.renderToTarget(face, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
+                    scene.incrementRenderId();
+                    scene.resetCachedMaterial();
                 }
             }
             else {
-                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
+                this.renderToTarget(0, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug);
             }
-            if (this.onAfterUnbind) {
-                this.onAfterUnbind();
-            }
+            this.onAfterUnbindObservable.notifyObservers(this);
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
             scene.resetCachedMaterial();
         };
-        RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, useCameraPostProcess, dumpForDebug) {
+        RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
             var engine = scene.getEngine();
             // Bind
@@ -183,15 +282,13 @@ var BABYLON;
                     engine.bindFramebuffer(this._texture);
                 }
             }
-            if (this.onBeforeRender) {
-                this.onBeforeRender(faceIndex);
-            }
+            this.onBeforeRenderObservable.notifyObservers(faceIndex);
             // Clear
-            if (this.onClear) {
-                this.onClear(engine);
+            if (this.onClearObservable.hasObservers()) {
+                this.onClearObservable.notifyObservers(engine);
             }
             else {
-                engine.clear(scene.clearColor, true, true);
+                engine.clear(scene.clearColor, true, true, true);
             }
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
@@ -204,9 +301,7 @@ var BABYLON;
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
-            if (this.onAfterRender) {
-                this.onAfterRender(faceIndex);
-            }
+            this.onAfterRenderObservable.notifyObservers(faceIndex);
             // Dump ?
             if (dumpForDebug) {
                 BABYLON.Tools.DumpFramebuffer(this._size, this._size, engine);
@@ -220,6 +315,30 @@ var BABYLON;
                 }
                 engine.unBindFramebuffer(this._texture, this.isCube);
             }
+        };
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        RenderTargetTexture.prototype.setRenderingOrder = function (renderingGroupId, opaqueSortCompareFn, alphaTestSortCompareFn, transparentSortCompareFn) {
+            if (opaqueSortCompareFn === void 0) { opaqueSortCompareFn = null; }
+            if (alphaTestSortCompareFn === void 0) { alphaTestSortCompareFn = null; }
+            if (transparentSortCompareFn === void 0) { transparentSortCompareFn = null; }
+            this._renderingManager.setRenderingOrder(renderingGroupId, opaqueSortCompareFn, alphaTestSortCompareFn, transparentSortCompareFn);
+        };
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        RenderTargetTexture.prototype.setRenderingAutoClearDepthStencil = function (renderingGroupId, autoClearDepthStencil) {
+            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
         };
         RenderTargetTexture.prototype.clone = function () {
             var textureSize = this.getSize();
@@ -248,6 +367,6 @@ var BABYLON;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES = 2;
         return RenderTargetTexture;
-    })(BABYLON.Texture);
+    }(BABYLON.Texture));
     BABYLON.RenderTargetTexture = RenderTargetTexture;
 })(BABYLON || (BABYLON = {}));

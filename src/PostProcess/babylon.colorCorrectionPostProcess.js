@@ -20,9 +20,9 @@ var BABYLON;
 (function (BABYLON) {
     var ColorCorrectionPostProcess = (function (_super) {
         __extends(ColorCorrectionPostProcess, _super);
-        function ColorCorrectionPostProcess(name, colorTableUrl, ratio, camera, samplingMode, engine, reusable) {
+        function ColorCorrectionPostProcess(name, colorTableUrl, options, camera, samplingMode, engine, reusable) {
             var _this = this;
-            _super.call(this, name, 'colorCorrection', null, ['colorTable'], ratio, camera, samplingMode, engine, reusable);
+            _super.call(this, name, 'colorCorrection', null, ['colorTable'], options, camera, samplingMode, engine, reusable);
             this._colorTableTexture = new BABYLON.Texture(colorTableUrl, camera.getScene(), true, false, BABYLON.Texture.TRILINEAR_SAMPLINGMODE);
             this._colorTableTexture.anisotropicFilteringLevel = 1;
             this._colorTableTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
@@ -32,6 +32,6 @@ var BABYLON;
             };
         }
         return ColorCorrectionPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.ColorCorrectionPostProcess = ColorCorrectionPostProcess;
 })(BABYLON || (BABYLON = {}));

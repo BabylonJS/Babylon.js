@@ -1,7 +1,39 @@
 var BABYLON;
 (function (BABYLON) {
-    var ToGammaSpace = 1 / 2.2;
-    var ToLinearSpace = 2.2;
+    BABYLON.ToGammaSpace = 1 / 2.2;
+    BABYLON.ToLinearSpace = 2.2;
+    BABYLON.Epsilon = 0.001;
+    var MathTools = (function () {
+        function MathTools() {
+        }
+        MathTools.WithinEpsilon = function (a, b, epsilon) {
+            if (epsilon === void 0) { epsilon = 1.401298E-45; }
+            var num = a - b;
+            return -epsilon <= num && num <= epsilon;
+        };
+        MathTools.ToHex = function (i) {
+            var str = i.toString(16);
+            if (i <= 15) {
+                return ("0" + str).toUpperCase();
+            }
+            return str.toUpperCase();
+        };
+        // Returns -1 when value is a negative number and
+        // +1 when value is a positive number. 
+        MathTools.Sign = function (value) {
+            value = +value; // convert to a number
+            if (value === 0 || isNaN(value))
+                return value;
+            return value > 0 ? 1 : -1;
+        };
+        MathTools.Clamp = function (value, min, max) {
+            if (min === void 0) { min = 0; }
+            if (max === void 0) { max = 1; }
+            return Math.min(max, Math.max(min, value));
+        };
+        return MathTools;
+    }());
+    BABYLON.MathTools = MathTools;
     var Color3 = (function () {
         function Color3(r, g, b) {
             if (r === void 0) { r = 0; }
@@ -13,6 +45,15 @@ var BABYLON;
         }
         Color3.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
+        };
+        Color3.prototype.getClassName = function () {
+            return "Color3";
+        };
+        Color3.prototype.getHashCode = function () {
+            var hash = this.r || 0;
+            hash = (hash * 397) ^ (this.g || 0);
+            hash = (hash * 397) ^ (this.b || 0);
+            return hash;
         };
         // Operators
         Color3.prototype.toArray = function (array, index) {
@@ -97,7 +138,7 @@ var BABYLON;
             var intR = (this.r * 255) | 0;
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
-            return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB);
+            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB);
         };
         Color3.prototype.toLinearSpace = function () {
             var convertedColor = new Color3();
@@ -105,9 +146,9 @@ var BABYLON;
             return convertedColor;
         };
         Color3.prototype.toLinearSpaceToRef = function (convertedColor) {
-            convertedColor.r = Math.pow(this.r, ToLinearSpace);
-            convertedColor.g = Math.pow(this.g, ToLinearSpace);
-            convertedColor.b = Math.pow(this.b, ToLinearSpace);
+            convertedColor.r = Math.pow(this.r, BABYLON.ToLinearSpace);
+            convertedColor.g = Math.pow(this.g, BABYLON.ToLinearSpace);
+            convertedColor.b = Math.pow(this.b, BABYLON.ToLinearSpace);
             return this;
         };
         Color3.prototype.toGammaSpace = function () {
@@ -116,15 +157,15 @@ var BABYLON;
             return convertedColor;
         };
         Color3.prototype.toGammaSpaceToRef = function (convertedColor) {
-            convertedColor.r = Math.pow(this.r, ToGammaSpace);
-            convertedColor.g = Math.pow(this.g, ToGammaSpace);
-            convertedColor.b = Math.pow(this.b, ToGammaSpace);
+            convertedColor.r = Math.pow(this.r, BABYLON.ToGammaSpace);
+            convertedColor.g = Math.pow(this.g, BABYLON.ToGammaSpace);
+            convertedColor.b = Math.pow(this.b, BABYLON.ToGammaSpace);
             return this;
         };
         // Statics
         Color3.FromHexString = function (hex) {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
-                BABYLON.Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
+                //Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
             var r = parseInt(hex.substring(1, 3), 16);
@@ -155,7 +196,7 @@ var BABYLON;
         Color3.Yellow = function () { return new Color3(1, 1, 0); };
         Color3.Gray = function () { return new Color3(0.5, 0.5, 0.5); };
         return Color3;
-    })();
+    }());
     BABYLON.Color3 = Color3;
     var Color4 = (function () {
         function Color4(r, g, b, a) {
@@ -210,8 +251,39 @@ var BABYLON;
             result.a = this.a * scale;
             return this;
         };
+        /**
+          * Multipy an RGBA Color4 value by another and return a new Color4 object
+          * @param color The Color4 (RGBA) value to multiply by
+          * @returns A new Color4.
+          */
+        Color4.prototype.multiply = function (color) {
+            return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
+        };
+        /**
+         * Multipy an RGBA Color4 value by another and push the result in a reference value
+         * @param color The Color4 (RGBA) value to multiply by
+         * @param result The Color4 (RGBA) to fill the result in
+         * @returns the result Color4.
+         */
+        Color4.prototype.multiplyToRef = function (color, result) {
+            result.r = this.r * color.r;
+            result.g = this.g * color.g;
+            result.b = this.b * color.b;
+            result.a = this.a * color.a;
+            return result;
+        };
         Color4.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
+        };
+        Color4.prototype.getClassName = function () {
+            return "Color4";
+        };
+        Color4.prototype.getHashCode = function () {
+            var hash = this.r || 0;
+            hash = (hash * 397) ^ (this.g || 0);
+            hash = (hash * 397) ^ (this.b || 0);
+            hash = (hash * 397) ^ (this.a || 0);
+            return hash;
         };
         Color4.prototype.clone = function () {
             return new Color4(this.r, this.g, this.b, this.a);
@@ -228,12 +300,12 @@ var BABYLON;
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
             var intA = (this.a * 255) | 0;
-            return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB) + BABYLON.Tools.ToHex(intA);
+            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
         };
         // Statics
         Color4.FromHexString = function (hex) {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
-                BABYLON.Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
+                //Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0, 0, 0, 0);
             }
             var r = parseInt(hex.substring(1, 3), 16);
@@ -276,7 +348,7 @@ var BABYLON;
             return colors;
         };
         return Color4;
-    })();
+    }());
     BABYLON.Color4 = Color4;
     var Vector2 = (function () {
         function Vector2(x, y) {
@@ -285,6 +357,14 @@ var BABYLON;
         }
         Vector2.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + "}";
+        };
+        Vector2.prototype.getClassName = function () {
+            return "Vector2";
+        };
+        Vector2.prototype.getHashCode = function () {
+            var hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            return hash;
         };
         // Operators
         Vector2.prototype.toArray = function (array, index) {
@@ -311,11 +391,26 @@ var BABYLON;
         Vector2.prototype.add = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
+        Vector2.prototype.addToRef = function (otherVector, result) {
+            result.x = this.x + otherVector.x;
+            result.y = this.y + otherVector.y;
+            return this;
+        };
+        Vector2.prototype.addInPlace = function (otherVector) {
+            this.x += otherVector.x;
+            this.y += otherVector.y;
+            return this;
+        };
         Vector2.prototype.addVector3 = function (otherVector) {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         };
         Vector2.prototype.subtract = function (otherVector) {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
+        };
+        Vector2.prototype.subtractToRef = function (otherVector, result) {
+            result.x = this.x - otherVector.x;
+            result.y = this.y - otherVector.y;
+            return this;
         };
         Vector2.prototype.subtractInPlace = function (otherVector) {
             this.x -= otherVector.x;
@@ -361,8 +456,8 @@ var BABYLON;
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         };
         Vector2.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
-            if (epsilon === void 0) { epsilon = BABYLON.Engine.Epsilon; }
-            return otherVector && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y, epsilon);
+            if (epsilon === void 0) { epsilon = BABYLON.Epsilon; }
+            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon);
         };
         // Properties
         Vector2.prototype.length = function () {
@@ -451,9 +546,22 @@ var BABYLON;
             return new Vector2(x, y);
         };
         Vector2.Transform = function (vector, transformation) {
-            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]);
-            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]);
-            return new Vector2(x, y);
+            var r = Vector2.Zero();
+            Vector2.TransformToRef(vector, transformation, r);
+            return r;
+        };
+        Vector2.TransformToRef = function (vector, transformation, result) {
+            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + transformation.m[12];
+            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + transformation.m[13];
+            result.x = x;
+            result.y = y;
+        };
+        Vector2.PointInTriangle = function (p, p0, p1, p2) {
+            var a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+            var sign = a < 0 ? -1 : 1;
+            var s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
+            var t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
+            return s > 0 && t > 0 && (s + t) < 2 * a * sign;
         };
         Vector2.Distance = function (value1, value2) {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));
@@ -463,8 +571,23 @@ var BABYLON;
             var y = value1.y - value2.y;
             return (x * x) + (y * y);
         };
+        Vector2.Center = function (value1, value2) {
+            var center = value1.add(value2);
+            center.scaleInPlace(0.5);
+            return center;
+        };
+        Vector2.DistanceOfPointFromSegment = function (p, segA, segB) {
+            var l2 = Vector2.DistanceSquared(segA, segB);
+            if (l2 === 0.0) {
+                return Vector2.Distance(p, segA);
+            }
+            var v = segB.subtract(segA);
+            var t = Math.max(0, Math.min(1, Vector2.Dot(p.subtract(segA), v) / l2));
+            var proj = segA.add(v.multiplyByFloats(t, t));
+            return Vector2.Distance(p, proj);
+        };
         return Vector2;
-    })();
+    }());
     BABYLON.Vector2 = Vector2;
     var Vector3 = (function () {
         function Vector3(x, y, z) {
@@ -474,6 +597,15 @@ var BABYLON;
         }
         Vector3.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
+        };
+        Vector3.prototype.getClassName = function () {
+            return "Vector3";
+        };
+        Vector3.prototype.getHashCode = function () {
+            var hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            return hash;
         };
         // Operators
         Vector3.prototype.asArray = function () {
@@ -562,8 +694,8 @@ var BABYLON;
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         };
         Vector3.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
-            if (epsilon === void 0) { epsilon = BABYLON.Engine.Epsilon; }
-            return otherVector && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y, epsilon) && BABYLON.Tools.WithinEpsilon(this.z, otherVector.z, epsilon);
+            if (epsilon === void 0) { epsilon = BABYLON.Epsilon; }
+            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon) && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon);
         };
         Vector3.prototype.equalsToFloats = function (x, y, z) {
             return this.x === x && this.y === y && this.z === z;
@@ -777,9 +909,10 @@ var BABYLON;
             return result;
         };
         Vector3.CrossToRef = function (left, right, result) {
-            result.x = left.y * right.z - left.z * right.y;
-            result.y = left.z * right.x - left.x * right.z;
-            result.z = left.x * right.y - left.y * right.x;
+            Tmp.Vector3[0].x = left.y * right.z - left.z * right.y;
+            Tmp.Vector3[0].y = left.z * right.x - left.x * right.z;
+            Tmp.Vector3[0].z = left.x * right.y - left.y * right.x;
+            result.copyFrom(Tmp.Vector3[0]);
         };
         Vector3.Normalize = function (vector) {
             var result = Vector3.Zero();
@@ -795,29 +928,35 @@ var BABYLON;
             var ch = viewport.height;
             var cx = viewport.x;
             var cy = viewport.y;
-            var viewportMatrix = Matrix.FromValues(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 1, 0, cx + cw / 2.0, ch / 2.0 + cy, 0, 1);
-            var finalMatrix = world.multiply(transform).multiply(viewportMatrix);
-            return Vector3.TransformCoordinates(vector, finalMatrix);
+            var viewportMatrix = Vector3._viewportMatrixCache ? Vector3._viewportMatrixCache : (Vector3._viewportMatrixCache = new Matrix());
+            Matrix.FromValuesToRef(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 1, 0, cx + cw / 2.0, ch / 2.0 + cy, 0, 1, viewportMatrix);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(transform, matrix);
+            matrix.multiplyToRef(viewportMatrix, matrix);
+            return Vector3.TransformCoordinates(vector, matrix);
         };
         Vector3.UnprojectFromTransform = function (source, viewportWidth, viewportHeight, world, transform) {
-            var matrix = world.multiply(transform);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(transform, matrix);
             matrix.invert();
             source.x = source.x / viewportWidth * 2 - 1;
             source.y = -(source.y / viewportHeight * 2 - 1);
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
-            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+            if (MathTools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
             return vector;
         };
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
-            var matrix = world.multiply(view).multiply(projection);
+            var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
+            world.multiplyToRef(view, matrix);
+            matrix.multiplyToRef(projection, matrix);
             matrix.invert();
             var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), source.z);
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
-            if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
+            if (MathTools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
             return vector;
@@ -847,7 +986,7 @@ var BABYLON;
             return center;
         };
         /**
-         * Given three orthogonal left-handed oriented Vector3 axis in space (target system),
+         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
          * to something in order to rotate it from its local system to the given target system.
          */
@@ -860,8 +999,8 @@ var BABYLON;
          * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
          */
         Vector3.RotationFromAxisToRef = function (axis1, axis2, axis3, ref) {
-            var u = Vector3.Normalize(axis1);
-            var w = Vector3.Normalize(axis3);
+            var u = axis1.normalize();
+            var w = axis3.normalize();
             // world axis
             var X = Axis.X;
             var Y = Axis.Y;
@@ -875,17 +1014,16 @@ var BABYLON;
             var t = 0.0;
             var sign = -1.0;
             var nbRevert = 0;
-            var cross;
+            var cross = Tmp.Vector3[0];
             var dot = 0.0;
             // step 1  : rotation around w
             // Rv3(u) = u1, and u1 belongs to plane xOz
             // Rv3(w) = w1 = w invariant
-            var u1;
-            var v1;
-            if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
+            var u1 = Tmp.Vector3[1];
+            if (MathTools.WithinEpsilon(w.z, 0, BABYLON.Epsilon)) {
                 z = 1.0;
             }
-            else if (BABYLON.Tools.WithinEpsilon(w.x, 0, BABYLON.Engine.Epsilon)) {
+            else if (MathTools.WithinEpsilon(w.x, 0, BABYLON.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -893,11 +1031,11 @@ var BABYLON;
                 x = -t * Math.sqrt(1 / (1 + t * t));
                 z = Math.sqrt(1 / (1 + t * t));
             }
-            u1 = new Vector3(x, y, z);
+            u1.x = x;
+            u1.y = y;
+            u1.z = z;
             u1.normalize();
-            v1 = Vector3.Cross(w, u1); // v1 image of v through rotation around w
-            v1.normalize();
-            cross = Vector3.Cross(u, u1); // returns same direction as w (=local z) if positive angle : cross(source, image)
+            Vector3.CrossToRef(u, u1, cross); // returns same direction as w (=local z) if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(w, cross) < 0) {
                 sign = 1.0;
@@ -908,19 +1046,18 @@ var BABYLON;
             if (Vector3.Dot(u1, X) < 0) {
                 roll = Math.PI + roll;
                 u1 = u1.scaleInPlace(-1);
-                v1 = v1.scaleInPlace(-1);
                 nbRevert++;
             }
             // step 2 : rotate around u1
             // Ru1(w1) = Ru1(w) = w2, and w2 belongs to plane xOz
             // u1 is yet in xOz and invariant by Ru1, so after this step u1 and w2 will be in xOz
-            var w2;
-            var v2;
+            var w2 = Tmp.Vector3[2];
+            var v2 = Tmp.Vector3[3];
             x = 0.0;
             y = 0.0;
             z = 0.0;
-            sign = -1;
-            if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
+            sign = -1.0;
+            if (MathTools.WithinEpsilon(w.z, 0, BABYLON.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -928,11 +1065,13 @@ var BABYLON;
                 x = -t * Math.sqrt(1 / (1 + t * t));
                 z = Math.sqrt(1 / (1 + t * t));
             }
-            w2 = new Vector3(x, y, z);
+            w2.x = x;
+            w2.y = y;
+            w2.z = z;
             w2.normalize();
-            v2 = Vector3.Cross(w2, u1); // v2 image of v1 through rotation around u1
+            Vector3.CrossToRef(w2, u1, v2); // v2 image of v1 through rotation around u1
             v2.normalize();
-            cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            Vector3.CrossToRef(w, w2, cross); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(u1, cross) < 0) {
                 sign = 1.0;
@@ -942,14 +1081,12 @@ var BABYLON;
             pitch = Math.acos(dot) * sign;
             if (Vector3.Dot(v2, Y) < 0) {
                 pitch = Math.PI + pitch;
-                v2 = v2.scaleInPlace(-1);
-                w2 = w2.scaleInPlace(-1);
                 nbRevert++;
             }
             // step 3 : rotate around v2
             // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
-            sign = -1;
-            cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            sign = -1.0;
+            Vector3.CrossToRef(X, u1, cross); // returns same direction as Y if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(cross, Y) < 0) {
                 sign = 1.0;
@@ -965,7 +1102,7 @@ var BABYLON;
             ref.z = roll;
         };
         return Vector3;
-    })();
+    }());
     BABYLON.Vector3 = Vector3;
     //Vector4 class created for EulerAngle class conversion to Quaternion
     var Vector4 = (function () {
@@ -977,6 +1114,16 @@ var BABYLON;
         }
         Vector4.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}";
+        };
+        Vector4.prototype.getClassName = function () {
+            return "Vector4";
+        };
+        Vector4.prototype.getHashCode = function () {
+            var hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            hash = (hash * 397) ^ (this.w || 0);
+            return hash;
         };
         // Operators
         Vector4.prototype.asArray = function () {
@@ -1061,12 +1208,12 @@ var BABYLON;
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         };
         Vector4.prototype.equalsWithEpsilon = function (otherVector, epsilon) {
-            if (epsilon === void 0) { epsilon = BABYLON.Engine.Epsilon; }
+            if (epsilon === void 0) { epsilon = BABYLON.Epsilon; }
             return otherVector
-                && BABYLON.Tools.WithinEpsilon(this.x, otherVector.x, epsilon)
-                && BABYLON.Tools.WithinEpsilon(this.y, otherVector.y, epsilon)
-                && BABYLON.Tools.WithinEpsilon(this.z, otherVector.z, epsilon)
-                && BABYLON.Tools.WithinEpsilon(this.w, otherVector.w, epsilon);
+                && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon)
+                && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon)
+                && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon)
+                && MathTools.WithinEpsilon(this.w, otherVector.w, epsilon);
         };
         Vector4.prototype.equalsToFloats = function (x, y, z, w) {
             return this.x === x && this.y === y && this.z === z && this.w === w;
@@ -1141,6 +1288,9 @@ var BABYLON;
             this.z *= num;
             this.w *= num;
             return this;
+        };
+        Vector4.prototype.toVector3 = function () {
+            return new Vector3(this.x, this.y, this.z);
         };
         Vector4.prototype.clone = function () {
             return new Vector4(this.x, this.y, this.z, this.w);
@@ -1222,8 +1372,70 @@ var BABYLON;
             return center;
         };
         return Vector4;
-    })();
+    }());
     BABYLON.Vector4 = Vector4;
+    var Size = (function () {
+        function Size(width, height) {
+            this.width = width;
+            this.height = height;
+        }
+        Size.prototype.toString = function () {
+            return "{W: " + this.width + ", H: " + this.height + "}";
+        };
+        Size.prototype.getClassName = function () {
+            return "Size";
+        };
+        Size.prototype.getHashCode = function () {
+            var hash = this.width || 0;
+            hash = (hash * 397) ^ (this.height || 0);
+            return hash;
+        };
+        Size.prototype.copyFrom = function (src) {
+            this.width = src.width;
+            this.height = src.height;
+        };
+        Size.prototype.copyFromFloats = function (width, height) {
+            this.width = width;
+            this.height = height;
+        };
+        Size.prototype.multiplyByFloats = function (w, h) {
+            return new Size(this.width * w, this.height * h);
+        };
+        Size.prototype.clone = function () {
+            return new Size(this.width, this.height);
+        };
+        Size.prototype.equals = function (other) {
+            if (!other) {
+                return false;
+            }
+            return (this.width === other.width) && (this.height === other.height);
+        };
+        Object.defineProperty(Size.prototype, "surface", {
+            get: function () {
+                return this.width * this.height;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Size.Zero = function () {
+            return new Size(0, 0);
+        };
+        Size.prototype.add = function (otherSize) {
+            var r = new Size(this.width + otherSize.width, this.height + otherSize.height);
+            return r;
+        };
+        Size.prototype.substract = function (otherSize) {
+            var r = new Size(this.width - otherSize.width, this.height - otherSize.height);
+            return r;
+        };
+        Size.Lerp = function (start, end, amount) {
+            var w = start.width + ((end.width - start.width) * amount);
+            var h = start.height + ((end.height - start.height) * amount);
+            return new Size(w, h);
+        };
+        return Size;
+    }());
+    BABYLON.Size = Size;
     var Quaternion = (function () {
         function Quaternion(x, y, z, w) {
             if (x === void 0) { x = 0; }
@@ -1237,6 +1449,16 @@ var BABYLON;
         }
         Quaternion.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
+        };
+        Quaternion.prototype.getClassName = function () {
+            return "Quaternion";
+        };
+        Quaternion.prototype.getHashCode = function () {
+            var hash = this.x || 0;
+            hash = (hash * 397) ^ (this.y || 0);
+            hash = (hash * 397) ^ (this.z || 0);
+            hash = (hash * 397) ^ (this.w || 0);
+            return hash;
         };
         Quaternion.prototype.asArray = function () {
             return [this.x, this.y, this.z, this.w];
@@ -1287,6 +1509,20 @@ var BABYLON;
             this.multiplyToRef(q1, this);
             return this;
         };
+        Quaternion.prototype.conjugateToRef = function (ref) {
+            ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
+            return this;
+        };
+        Quaternion.prototype.conjugateInPlace = function () {
+            this.x *= -1;
+            this.y *= -1;
+            this.z *= -1;
+            return this;
+        };
+        Quaternion.prototype.conjugate = function () {
+            var result = new Quaternion(-this.x, -this.y, -this.z, this.w);
+            return result;
+        };
         Quaternion.prototype.length = function () {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
         };
@@ -1298,45 +1534,32 @@ var BABYLON;
             this.w *= length;
             return this;
         };
-        Quaternion.prototype.toEulerAngles = function () {
+        Quaternion.prototype.toEulerAngles = function (order) {
+            if (order === void 0) { order = "YZX"; }
             var result = Vector3.Zero();
-            this.toEulerAnglesToRef(result);
+            this.toEulerAnglesToRef(result, order);
             return result;
         };
-        Quaternion.prototype.toEulerAnglesToRef = function (result) {
-            //result is an EulerAngles in the in the z-x-z convention
+        Quaternion.prototype.toEulerAnglesToRef = function (result, order) {
+            if (order === void 0) { order = "YZX"; }
             var qx = this.x;
             var qy = this.y;
             var qz = this.z;
             var qw = this.w;
-            var qxy = qx * qy;
-            var qxz = qx * qz;
-            var qwy = qw * qy;
-            var qwz = qw * qz;
-            var qwx = qw * qx;
-            var qyz = qy * qz;
-            var sqx = qx * qx;
-            var sqy = qy * qy;
-            var determinant = sqx + sqy;
-            if (determinant !== 0.000 && determinant !== 1.000) {
-                result.x = Math.atan2(qxz + qwy, qwx - qyz);
-                result.y = Math.acos(1 - 2 * determinant);
-                result.z = Math.atan2(qxz - qwy, qwx + qyz);
-            }
-            else {
-                if (determinant === 0.0) {
-                    result.x = 0.0;
-                    result.y = 0.0;
-                    result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                }
-                else {
-                    result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x-z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                    result.y = Math.PI;
-                    result.z = 0.0;
-                }
-            }
+            var xsqr = qx * qx;
+            var t0 = -2.0 * (xsqr + qy * qy) + 1.0;
+            var t1 = 2.0 * (qz * qx + qw * qy);
+            var t2 = -2.0 * (qz * qy - qw * qx);
+            var t3 = 2.0 * (qx * qy + qw * qz);
+            var t4 = -2.0 * (qz * qz + xsqr) + 1.0;
+            t2 = t2 > 1.0 ? 1.0 : t2;
+            t2 = t2 < -1.0 ? -1.0 : t2;
+            result.x = Math.asin(t2);
+            result.z = Math.atan2(t3, t4);
+            result.y = Math.atan2(t1, t0);
             return this;
         };
+        ;
         Quaternion.prototype.toRotationMatrix = function (result) {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
@@ -1418,7 +1641,9 @@ var BABYLON;
             return new Quaternion(0, 0, 0, 1);
         };
         Quaternion.RotationAxis = function (axis, angle) {
-            var result = new Quaternion();
+            return Quaternion.RotationAxisToRef(axis, angle, new Quaternion());
+        };
+        Quaternion.RotationAxisToRef = function (axis, angle, result) {
             var sin = Math.sin(angle / 2);
             axis.normalize();
             result.w = Math.cos(angle / 2);
@@ -1434,9 +1659,9 @@ var BABYLON;
             return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         };
         Quaternion.RotationYawPitchRoll = function (yaw, pitch, roll) {
-            var result = new Quaternion();
-            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, result);
-            return result;
+            var q = new Quaternion();
+            Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, q);
+            return q;
         };
         Quaternion.RotationYawPitchRollToRef = function (yaw, pitch, roll, result) {
             // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
@@ -1492,7 +1717,7 @@ var BABYLON;
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         };
         return Quaternion;
-    })();
+    }());
     BABYLON.Quaternion = Quaternion;
     var Matrix = (function () {
         function Matrix() {
@@ -1618,6 +1843,9 @@ var BABYLON;
             this.m[14] = vector3.z;
             return this;
         };
+        Matrix.prototype.getTranslation = function () {
+            return new Vector3(this.m[12], this.m[13], this.m[14]);
+        };
         Matrix.prototype.multiply = function (other) {
             var result = new Matrix();
             this.multiplyToRef(other, result);
@@ -1701,13 +1929,23 @@ var BABYLON;
         Matrix.prototype.clone = function () {
             return Matrix.FromValues(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5], this.m[6], this.m[7], this.m[8], this.m[9], this.m[10], this.m[11], this.m[12], this.m[13], this.m[14], this.m[15]);
         };
+        Matrix.prototype.getClassName = function () {
+            return "Matrix";
+        };
+        Matrix.prototype.getHashCode = function () {
+            var hash = this.m[0] || 0;
+            for (var i = 1; i < 16; i++) {
+                hash = (hash * 397) ^ (this.m[i] || 0);
+            }
+            return hash;
+        };
         Matrix.prototype.decompose = function (scale, rotation, translation) {
             translation.x = this.m[12];
             translation.y = this.m[13];
             translation.z = this.m[14];
-            var xs = BABYLON.Tools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
-            var ys = BABYLON.Tools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
-            var zs = BABYLON.Tools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
+            var xs = MathTools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
+            var ys = MathTools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
+            var zs = MathTools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
             scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
             scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
@@ -1718,8 +1956,8 @@ var BABYLON;
                 rotation.w = 1;
                 return false;
             }
-            var rotationMatrix = Matrix.FromValues(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1);
-            Quaternion.FromRotationMatrixToRef(rotationMatrix, rotation);
+            Matrix.FromValuesToRef(this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0, this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0, this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0, 0, 0, 0, 1, Tmp.Matrix[0]);
+            Quaternion.FromRotationMatrixToRef(Tmp.Matrix[0], rotation);
             return true;
         };
         // Statics
@@ -1758,6 +1996,24 @@ var BABYLON;
             result.m[13] = initialM42;
             result.m[14] = initialM43;
             result.m[15] = initialM44;
+        };
+        Matrix.prototype.getRow = function (index) {
+            if (index < 0 || index > 3) {
+                return null;
+            }
+            var i = index * 4;
+            return new Vector4(this.m[i + 0], this.m[i + 1], this.m[i + 2], this.m[i + 3]);
+        };
+        Matrix.prototype.setRow = function (index, row) {
+            if (index < 0 || index > 3) {
+                return this;
+            }
+            var i = index * 4;
+            this.m[i + 0] = row.x;
+            this.m[i + 1] = row.y;
+            this.m[i + 2] = row.z;
+            this.m[i + 3] = row.w;
+            return this;
         };
         Matrix.FromValues = function (initialM11, initialM12, initialM13, initialM14, initialM21, initialM22, initialM23, initialM24, initialM31, initialM32, initialM33, initialM34, initialM41, initialM42, initialM43, initialM44) {
             var result = new Matrix();
@@ -1941,6 +2197,13 @@ var BABYLON;
             Matrix.FromValuesToRef(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, x, y, z, 1.0, result);
         };
         Matrix.Lerp = function (startValue, endValue, gradient) {
+            var result = Matrix.Zero();
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
+            }
+            return result;
+        };
+        Matrix.DecomposeLerp = function (startValue, endValue, gradient) {
             var startScale = new Vector3(0, 0, 0);
             var startRotation = new Quaternion();
             var startTranslation = new Vector3(0, 0, 0);
@@ -1963,7 +2226,33 @@ var BABYLON;
             // Z axis
             target.subtractToRef(eye, this._zAxis);
             this._zAxis.normalize();
-            // X axis            
+            // X axis
+            Vector3.CrossToRef(up, this._zAxis, this._xAxis);
+            if (this._xAxis.lengthSquared() === 0) {
+                this._xAxis.x = 1.0;
+            }
+            else {
+                this._xAxis.normalize();
+            }
+            // Y axis
+            Vector3.CrossToRef(this._zAxis, this._xAxis, this._yAxis);
+            this._yAxis.normalize();
+            // Eye angles
+            var ex = -Vector3.Dot(this._xAxis, eye);
+            var ey = -Vector3.Dot(this._yAxis, eye);
+            var ez = -Vector3.Dot(this._zAxis, eye);
+            return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
+        };
+        Matrix.LookAtRH = function (eye, target, up) {
+            var result = Matrix.Zero();
+            Matrix.LookAtRHToRef(eye, target, up, result);
+            return result;
+        };
+        Matrix.LookAtRHToRef = function (eye, target, up, result) {
+            // Z axis
+            eye.subtractToRef(target, this._zAxis);
+            this._zAxis.normalize();
+            // X axis
             Vector3.CrossToRef(up, this._zAxis, this._xAxis);
             if (this._xAxis.lengthSquared() === 0) {
                 this._xAxis.x = 1.0;
@@ -2002,12 +2291,21 @@ var BABYLON;
             result.m[1] = result.m[2] = result.m[3] = 0;
             result.m[5] = 2.0 / (top - bottom);
             result.m[4] = result.m[6] = result.m[7] = 0;
-            result.m[10] = -1.0 / (znear - zfar);
+            result.m[10] = 1.0 / (zfar - znear);
             result.m[8] = result.m[9] = result.m[11] = 0;
             result.m[12] = (left + right) / (left - right);
             result.m[13] = (top + bottom) / (bottom - top);
-            result.m[14] = znear / (znear - zfar);
+            result.m[14] = -znear / (zfar - znear);
             result.m[15] = 1.0;
+        };
+        Matrix.OrthoOffCenterRH = function (left, right, bottom, top, znear, zfar) {
+            var matrix = Matrix.Zero();
+            Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
+            return matrix;
+        };
+        Matrix.OrthoOffCenterRHToRef = function (left, right, bottom, top, znear, zfar, result) {
+            Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
+            result.m[10] *= -1.0;
         };
         Matrix.PerspectiveLH = function (width, height, znear, zfar) {
             var matrix = Matrix.Zero();
@@ -2027,18 +2325,17 @@ var BABYLON;
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         };
-        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result, fovMode) {
-            if (fovMode === void 0) { fovMode = BABYLON.Camera.FOVMODE_VERTICAL_FIXED; }
+        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result, isVerticalFovFixed) {
+            if (isVerticalFovFixed === void 0) { isVerticalFovFixed = true; }
             var tan = 1.0 / (Math.tan(fov * 0.5));
-            var v_fixed = (fovMode === BABYLON.Camera.FOVMODE_VERTICAL_FIXED);
-            if (v_fixed) {
+            if (isVerticalFovFixed) {
                 result.m[0] = tan / aspect;
             }
             else {
                 result.m[0] = tan;
             }
             result.m[1] = result.m[2] = result.m[3] = 0.0;
-            if (v_fixed) {
+            if (isVerticalFovFixed) {
                 result.m[5] = tan;
             }
             else {
@@ -2046,9 +2343,58 @@ var BABYLON;
             }
             result.m[4] = result.m[6] = result.m[7] = 0.0;
             result.m[8] = result.m[9] = 0.0;
+            result.m[10] = zfar / (zfar - znear);
+            result.m[11] = 1.0;
+            result.m[12] = result.m[13] = result.m[15] = 0.0;
+            result.m[14] = -(znear * zfar) / (zfar - znear);
+        };
+        Matrix.PerspectiveFovRH = function (fov, aspect, znear, zfar) {
+            var matrix = Matrix.Zero();
+            Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
+            return matrix;
+        };
+        Matrix.PerspectiveFovRHToRef = function (fov, aspect, znear, zfar, result, isVerticalFovFixed) {
+            if (isVerticalFovFixed === void 0) { isVerticalFovFixed = true; }
+            var tan = 1.0 / (Math.tan(fov * 0.5));
+            if (isVerticalFovFixed) {
+                result.m[0] = tan / aspect;
+            }
+            else {
+                result.m[0] = tan;
+            }
+            result.m[1] = result.m[2] = result.m[3] = 0.0;
+            if (isVerticalFovFixed) {
+                result.m[5] = tan;
+            }
+            else {
+                result.m[5] = tan * aspect;
+            }
+            result.m[4] = result.m[6] = result.m[7] = 0.0;
+            result.m[8] = result.m[9] = 0.0;
+            result.m[10] = zfar / (znear - zfar);
+            result.m[11] = -1.0;
+            result.m[12] = result.m[13] = result.m[15] = 0.0;
+            result.m[14] = (znear * zfar) / (znear - zfar);
+        };
+        Matrix.PerspectiveFovWebVRToRef = function (fov, znear, zfar, result, isVerticalFovFixed) {
+            if (isVerticalFovFixed === void 0) { isVerticalFovFixed = true; }
+            var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
+            var downTan = Math.tan(fov.downDegrees * Math.PI / 180.0);
+            var leftTan = Math.tan(fov.leftDegrees * Math.PI / 180.0);
+            var rightTan = Math.tan(fov.rightDegrees * Math.PI / 180.0);
+            var xScale = 2.0 / (leftTan + rightTan);
+            var yScale = 2.0 / (upTan + downTan);
+            result.m[0] = xScale;
+            result.m[1] = result.m[2] = result.m[3] = result.m[4] = 0.0;
+            result.m[5] = yScale;
+            result.m[6] = result.m[7] = 0.0;
+            result.m[8] = ((leftTan - rightTan) * xScale * 0.5);
+            result.m[9] = -((upTan - downTan) * yScale * 0.5);
+            //result.m[10] = -(znear + zfar) / (zfar - znear);
             result.m[10] = -zfar / (znear - zfar);
             result.m[11] = 1.0;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
+            //result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
             result.m[14] = (znear * zfar) / (znear - zfar);
         };
         Matrix.GetFinalMatrix = function (viewport, world, view, projection, zmin, zmax) {
@@ -2127,7 +2473,7 @@ var BABYLON;
         Matrix._yAxis = Vector3.Zero();
         Matrix._zAxis = Vector3.Zero();
         return Matrix;
-    })();
+    }());
     BABYLON.Matrix = Matrix;
     var Plane = (function () {
         function Plane(a, b, c, d) {
@@ -2140,6 +2486,14 @@ var BABYLON;
         // Methods
         Plane.prototype.clone = function () {
             return new Plane(this.normal.x, this.normal.y, this.normal.z, this.d);
+        };
+        Plane.prototype.getClassName = function () {
+            return "Plane";
+        };
+        Plane.prototype.getHashCode = function () {
+            var hash = this.normal.getHashCode();
+            hash = (hash * 397) ^ (this.d || 0);
+            return hash;
         };
         Plane.prototype.normalize = function () {
             var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
@@ -2220,7 +2574,7 @@ var BABYLON;
             return Vector3.Dot(point, normal) + d;
         };
         return Plane;
-    })();
+    }());
     BABYLON.Plane = Plane;
     var Viewport = (function () {
         function Viewport(x, y, width, height) {
@@ -2229,18 +2583,11 @@ var BABYLON;
             this.width = width;
             this.height = height;
         }
-        Viewport.prototype.toGlobal = function (engine) {
-            var width = engine.getRenderWidth();
-            var height = engine.getRenderHeight();
-            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
-        };
-        Viewport.prototype.toScreenGlobal = function (engine) {
-            var width = engine.getRenderWidth(true);
-            var height = engine.getRenderHeight(true);
-            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
+        Viewport.prototype.toGlobal = function (renderWidth, renderHeight) {
+            return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         };
         return Viewport;
-    })();
+    }());
     BABYLON.Viewport = Viewport;
     var Frustum = (function () {
         function Frustum() {
@@ -2292,176 +2639,8 @@ var BABYLON;
             frustumPlanes[5].normalize();
         };
         return Frustum;
-    })();
+    }());
     BABYLON.Frustum = Frustum;
-    var Ray = (function () {
-        function Ray(origin, direction, length) {
-            if (length === void 0) { length = Number.MAX_VALUE; }
-            this.origin = origin;
-            this.direction = direction;
-            this.length = length;
-        }
-        // Methods
-        Ray.prototype.intersectsBoxMinMax = function (minimum, maximum) {
-            var d = 0.0;
-            var maxValue = Number.MAX_VALUE;
-            var inv;
-            var min;
-            var max;
-            var temp;
-            if (Math.abs(this.direction.x) < 0.0000001) {
-                if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.x;
-                min = (minimum.x - this.origin.x) * inv;
-                max = (maximum.x - this.origin.x) * inv;
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-            if (Math.abs(this.direction.y) < 0.0000001) {
-                if (this.origin.y < minimum.y || this.origin.y > maximum.y) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.y;
-                min = (minimum.y - this.origin.y) * inv;
-                max = (maximum.y - this.origin.y) * inv;
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-            if (Math.abs(this.direction.z) < 0.0000001) {
-                if (this.origin.z < minimum.z || this.origin.z > maximum.z) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.z;
-                min = (minimum.z - this.origin.z) * inv;
-                max = (maximum.z - this.origin.z) * inv;
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        Ray.prototype.intersectsBox = function (box) {
-            return this.intersectsBoxMinMax(box.minimum, box.maximum);
-        };
-        Ray.prototype.intersectsSphere = function (sphere) {
-            var x = sphere.center.x - this.origin.x;
-            var y = sphere.center.y - this.origin.y;
-            var z = sphere.center.z - this.origin.z;
-            var pyth = (x * x) + (y * y) + (z * z);
-            var rr = sphere.radius * sphere.radius;
-            if (pyth <= rr) {
-                return true;
-            }
-            var dot = (x * this.direction.x) + (y * this.direction.y) + (z * this.direction.z);
-            if (dot < 0.0) {
-                return false;
-            }
-            var temp = pyth - (dot * dot);
-            return temp <= rr;
-        };
-        Ray.prototype.intersectsTriangle = function (vertex0, vertex1, vertex2) {
-            if (!this._edge1) {
-                this._edge1 = Vector3.Zero();
-                this._edge2 = Vector3.Zero();
-                this._pvec = Vector3.Zero();
-                this._tvec = Vector3.Zero();
-                this._qvec = Vector3.Zero();
-            }
-            vertex1.subtractToRef(vertex0, this._edge1);
-            vertex2.subtractToRef(vertex0, this._edge2);
-            Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
-            var det = Vector3.Dot(this._edge1, this._pvec);
-            if (det === 0) {
-                return null;
-            }
-            var invdet = 1 / det;
-            this.origin.subtractToRef(vertex0, this._tvec);
-            var bu = Vector3.Dot(this._tvec, this._pvec) * invdet;
-            if (bu < 0 || bu > 1.0) {
-                return null;
-            }
-            Vector3.CrossToRef(this._tvec, this._edge1, this._qvec);
-            var bv = Vector3.Dot(this.direction, this._qvec) * invdet;
-            if (bv < 0 || bu + bv > 1.0) {
-                return null;
-            }
-            //check if the distance is longer than the predefined length.
-            var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
-            if (distance > this.length) {
-                return null;
-            }
-            return new BABYLON.IntersectionInfo(bu, bv, distance);
-        };
-        // Statics
-        Ray.CreateNew = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
-            var start = Vector3.Unproject(new Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
-            var end = Vector3.Unproject(new Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
-            var direction = end.subtract(start);
-            direction.normalize();
-            return new Ray(start, direction);
-        };
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        Ray.CreateNewFromTo = function (origin, end, world) {
-            if (world === void 0) { world = Matrix.Identity(); }
-            var direction = end.subtract(origin);
-            var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
-            direction.normalize();
-            return Ray.Transform(new Ray(origin, direction, length), world);
-        };
-        Ray.Transform = function (ray, matrix) {
-            var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
-            var newDirection = Vector3.TransformNormal(ray.direction, matrix);
-            return new Ray(newOrigin, newDirection, ray.length);
-        };
-        return Ray;
-    })();
-    BABYLON.Ray = Ray;
     (function (Space) {
         Space[Space["LOCAL"] = 0] = "LOCAL";
         Space[Space["WORLD"] = 1] = "WORLD";
@@ -2474,7 +2653,7 @@ var BABYLON;
         Axis.Y = new Vector3(0, 1, 0);
         Axis.Z = new Vector3(0, 0, 1);
         return Axis;
-    })();
+    }());
     BABYLON.Axis = Axis;
     ;
     var BezierCurve = (function () {
@@ -2500,7 +2679,7 @@ var BABYLON;
                 Math.pow(refinedT, 3);
         };
         return BezierCurve;
-    })();
+    }());
     BABYLON.BezierCurve = BezierCurve;
     (function (Orientation) {
         Orientation[Orientation["CW"] = 0] = "CW";
@@ -2528,7 +2707,7 @@ var BABYLON;
             return new Angle(degrees * Math.PI / 180);
         };
         return Angle;
-    })();
+    }());
     BABYLON.Angle = Angle;
     var Arc2 = (function () {
         function Arc2(startPoint, midPoint, endPoint) {
@@ -2558,65 +2737,8 @@ var BABYLON;
             this.angle = Angle.FromDegrees(this.orientation === Orientation.CW ? a1 - a3 : a3 - a1);
         }
         return Arc2;
-    })();
+    }());
     BABYLON.Arc2 = Arc2;
-    var PathCursor = (function () {
-        function PathCursor(path) {
-            this.path = path;
-            this._onchange = new Array();
-            this.value = 0;
-            this.animations = new Array();
-        }
-        PathCursor.prototype.getPoint = function () {
-            var point = this.path.getPointAtLengthPosition(this.value);
-            return new Vector3(point.x, 0, point.y);
-        };
-        PathCursor.prototype.moveAhead = function (step) {
-            if (step === void 0) { step = 0.002; }
-            this.move(step);
-            return this;
-        };
-        PathCursor.prototype.moveBack = function (step) {
-            if (step === void 0) { step = 0.002; }
-            this.move(-step);
-            return this;
-        };
-        PathCursor.prototype.move = function (step) {
-            if (Math.abs(step) > 1) {
-                throw "step size should be less than 1.";
-            }
-            this.value += step;
-            this.ensureLimits();
-            this.raiseOnChange();
-            return this;
-        };
-        PathCursor.prototype.ensureLimits = function () {
-            while (this.value > 1) {
-                this.value -= 1;
-            }
-            while (this.value < 0) {
-                this.value += 1;
-            }
-            return this;
-        };
-        // used by animation engine
-        PathCursor.prototype.markAsDirty = function (propertyName) {
-            this.ensureLimits();
-            this.raiseOnChange();
-            return this;
-        };
-        PathCursor.prototype.raiseOnChange = function () {
-            var _this = this;
-            this._onchange.forEach(function (f) { return f(_this); });
-            return this;
-        };
-        PathCursor.prototype.onchange = function (f) {
-            this._onchange.push(f);
-            return this;
-        };
-        return PathCursor;
-    })();
-    BABYLON.PathCursor = PathCursor;
     var Path2 = (function () {
         function Path2(x, y) {
             this._points = new Array();
@@ -2626,7 +2748,7 @@ var BABYLON;
         }
         Path2.prototype.addLineTo = function (x, y) {
             if (closed) {
-                BABYLON.Tools.Error("cannot add lines to closed paths");
+                //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
             var newPoint = new Vector2(x, y);
@@ -2638,7 +2760,7 @@ var BABYLON;
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (numberOfSegments === void 0) { numberOfSegments = 36; }
             if (closed) {
-                BABYLON.Tools.Error("cannot add arcs to closed paths");
+                //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
             var startPoint = this._points[this._points.length - 1];
@@ -2675,7 +2797,7 @@ var BABYLON;
         };
         Path2.prototype.getPointAtLengthPosition = function (normalizedLengthPosition) {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
-                BABYLON.Tools.Error("normalized length position should be between 0 and 1.");
+                //Tools.Error("normalized length position should be between 0 and 1.");
                 return Vector2.Zero();
             }
             var lengthPosition = normalizedLengthPosition * this.length();
@@ -2693,18 +2815,20 @@ var BABYLON;
                 }
                 previousOffset = nextOffset;
             }
-            BABYLON.Tools.Error("internal error");
+            //Tools.Error("internal error");
             return Vector2.Zero();
         };
         Path2.StartingAt = function (x, y) {
             return new Path2(x, y);
         };
         return Path2;
-    })();
+    }());
     BABYLON.Path2 = Path2;
     var Path3D = (function () {
         /**
         * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
         * path : an array of Vector3, the curve axis of the Path3D
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
@@ -2722,21 +2846,40 @@ var BABYLON;
             this._raw = raw || false;
             this._compute(firstNormal);
         }
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         */
         Path3D.prototype.getCurve = function () {
             return this._curve;
         };
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         */
         Path3D.prototype.getTangents = function () {
             return this._tangents;
         };
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         */
         Path3D.prototype.getNormals = function () {
             return this._normals;
         };
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         */
         Path3D.prototype.getBinormals = function () {
             return this._binormals;
         };
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
         Path3D.prototype.getDistances = function () {
             return this._distances;
         };
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * Returns the same object updated.
+         */
         Path3D.prototype.update = function (path, firstNormal) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
@@ -2769,7 +2912,7 @@ var BABYLON;
             if (!this._raw) {
                 this._binormals[0].normalize();
             }
-            this._distances[0] = 0;
+            this._distances[0] = 0.0;
             // normals and binormals : next points
             var prev; // previous vector (segment)
             var cur; // current vector (segment)
@@ -2826,16 +2969,20 @@ var BABYLON;
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
         Path3D.prototype._normalVector = function (v0, vt, va) {
             var normal0;
+            var tgl = vt.length();
+            if (tgl === 0.0) {
+                tgl = 1.0;
+            }
             if (va === undefined || va === null) {
                 var point;
-                if (!BABYLON.Tools.WithinEpsilon(vt.y, 1, BABYLON.Engine.Epsilon)) {
-                    point = new Vector3(0, -1, 0);
+                if (!MathTools.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, BABYLON.Epsilon)) {
+                    point = new Vector3(0.0, -1.0, 0.0);
                 }
-                else if (!BABYLON.Tools.WithinEpsilon(vt.x, 1, BABYLON.Engine.Epsilon)) {
-                    point = new Vector3(1, 0, 0);
+                else if (!MathTools.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, BABYLON.Epsilon)) {
+                    point = new Vector3(1.0, 0.0, 0.0);
                 }
-                else if (!BABYLON.Tools.WithinEpsilon(vt.z, 1, BABYLON.Engine.Epsilon)) {
-                    point = new Vector3(0, 0, 1);
+                else if (!MathTools.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, BABYLON.Epsilon)) {
+                    point = new Vector3(0.0, 0.0, 1.0);
                 }
                 normal0 = Vector3.Cross(vt, point);
             }
@@ -2847,20 +2994,31 @@ var BABYLON;
             return normal0;
         };
         return Path3D;
-    })();
+    }());
     BABYLON.Path3D = Path3D;
     var Curve3 = (function () {
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
         function Curve3(points) {
-            this._length = 0;
+            this._length = 0.0;
             this._points = points;
             this._length = this._computeLength(points);
         }
-        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateQuadraticBezier = function (v0, v1, v2, nbPoints) {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array();
             var equation = function (t, val0, val1, val2) {
-                var res = (1 - t) * (1 - t) * val0 + 2 * t * (1 - t) * val1 + t * t * val2;
+                var res = (1.0 - t) * (1.0 - t) * val0 + 2.0 * t * (1.0 - t) * val1 + t * t * val2;
                 return res;
             };
             for (var i = 0; i <= nbPoints; i++) {
@@ -2868,12 +3026,19 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateCubicBezier = function (v0, v1, v2, v3, nbPoints) {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array();
             var equation = function (t, val0, val1, val2, val3) {
-                var res = (1 - t) * (1 - t) * (1 - t) * val0 + 3 * t * (1 - t) * (1 - t) * val1 + 3 * t * t * (1 - t) * val2 + t * t * t * val3;
+                var res = (1.0 - t) * (1.0 - t) * (1.0 - t) * val0 + 3.0 * t * (1.0 - t) * (1.0 - t) * val1 + 3.0 * t * t * (1.0 - t) * val2 + t * t * t * val3;
                 return res;
             };
             for (var i = 0; i <= nbPoints; i++) {
@@ -2881,21 +3046,39 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateHermiteSpline = function (p1, t1, p2, t2, nbPoints) {
             var hermite = new Array();
-            var step = 1 / nbPoints;
+            var step = 1.0 / nbPoints;
             for (var i = 0; i <= nbPoints; i++) {
                 hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
             }
             return new Curve3(hermite);
         };
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
         Curve3.prototype.getPoints = function () {
             return this._points;
         };
+        /**
+         * Returns the computed length (float) of the curve.
+         */
         Curve3.prototype.length = function () {
             return this._length;
         };
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         */
         Curve3.prototype.continue = function (curve) {
             var lastPoint = this._points[this._points.length - 1];
             var continuedPoints = this._points.slice();
@@ -2914,8 +3097,83 @@ var BABYLON;
             return l;
         };
         return Curve3;
-    })();
+    }());
     BABYLON.Curve3 = Curve3;
+    // SphericalHarmonics
+    var SphericalHarmonics = (function () {
+        function SphericalHarmonics() {
+            this.L00 = Vector3.Zero();
+            this.L1_1 = Vector3.Zero();
+            this.L10 = Vector3.Zero();
+            this.L11 = Vector3.Zero();
+            this.L2_2 = Vector3.Zero();
+            this.L2_1 = Vector3.Zero();
+            this.L20 = Vector3.Zero();
+            this.L21 = Vector3.Zero();
+            this.L22 = Vector3.Zero();
+        }
+        SphericalHarmonics.prototype.addLight = function (direction, color, deltaSolidAngle) {
+            var colorVector = new Vector3(color.r, color.g, color.b);
+            var c = colorVector.scale(deltaSolidAngle);
+            this.L00 = this.L00.add(c.scale(0.282095));
+            this.L1_1 = this.L1_1.add(c.scale(0.488603 * direction.y));
+            this.L10 = this.L10.add(c.scale(0.488603 * direction.z));
+            this.L11 = this.L11.add(c.scale(0.488603 * direction.x));
+            this.L2_2 = this.L2_2.add(c.scale(1.092548 * direction.x * direction.y));
+            this.L2_1 = this.L2_1.add(c.scale(1.092548 * direction.y * direction.z));
+            this.L21 = this.L21.add(c.scale(1.092548 * direction.x * direction.z));
+            this.L20 = this.L20.add(c.scale(0.315392 * (3.0 * direction.z * direction.z - 1.0)));
+            this.L22 = this.L22.add(c.scale(0.546274 * (direction.x * direction.x - direction.y * direction.y)));
+        };
+        SphericalHarmonics.prototype.scale = function (scale) {
+            this.L00 = this.L00.scale(scale);
+            this.L1_1 = this.L1_1.scale(scale);
+            this.L10 = this.L10.scale(scale);
+            this.L11 = this.L11.scale(scale);
+            this.L2_2 = this.L2_2.scale(scale);
+            this.L2_1 = this.L2_1.scale(scale);
+            this.L20 = this.L20.scale(scale);
+            this.L21 = this.L21.scale(scale);
+            this.L22 = this.L22.scale(scale);
+        };
+        return SphericalHarmonics;
+    }());
+    BABYLON.SphericalHarmonics = SphericalHarmonics;
+    // SphericalPolynomial
+    var SphericalPolynomial = (function () {
+        function SphericalPolynomial() {
+            this.x = Vector3.Zero();
+            this.y = Vector3.Zero();
+            this.z = Vector3.Zero();
+            this.xx = Vector3.Zero();
+            this.yy = Vector3.Zero();
+            this.zz = Vector3.Zero();
+            this.xy = Vector3.Zero();
+            this.yz = Vector3.Zero();
+            this.zx = Vector3.Zero();
+        }
+        SphericalPolynomial.prototype.addAmbient = function (color) {
+            var colorVector = new Vector3(color.r, color.g, color.b);
+            this.xx = this.xx.add(colorVector);
+            this.yy = this.yy.add(colorVector);
+            this.zz = this.zz.add(colorVector);
+        };
+        SphericalPolynomial.getSphericalPolynomialFromHarmonics = function (harmonics) {
+            var result = new SphericalPolynomial();
+            result.x = harmonics.L11.scale(1.02333);
+            result.y = harmonics.L1_1.scale(1.02333);
+            result.z = harmonics.L10.scale(1.02333);
+            result.xx = harmonics.L00.scale(0.886277).subtract(harmonics.L20.scale(0.247708)).add(harmonics.L22.scale(0.429043));
+            result.yy = harmonics.L00.scale(0.886277).subtract(harmonics.L20.scale(0.247708)).subtract(harmonics.L22.scale(0.429043));
+            result.zz = harmonics.L00.scale(0.886277).add(harmonics.L20.scale(0.495417));
+            result.yz = harmonics.L2_1.scale(0.858086);
+            result.zx = harmonics.L21.scale(0.858086);
+            result.xy = harmonics.L2_2.scale(0.858086);
+            return result;
+        };
+        return SphericalPolynomial;
+    }());
+    BABYLON.SphericalPolynomial = SphericalPolynomial;
     // Vertex formats
     var PositionNormalVertex = (function () {
         function PositionNormalVertex(position, normal) {
@@ -2928,7 +3186,7 @@ var BABYLON;
             return new PositionNormalVertex(this.position.clone(), this.normal.clone());
         };
         return PositionNormalVertex;
-    })();
+    }());
     BABYLON.PositionNormalVertex = PositionNormalVertex;
     var PositionNormalTextureVertex = (function () {
         function PositionNormalTextureVertex(position, normal, uv) {
@@ -2943,6 +3201,26 @@ var BABYLON;
             return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
         };
         return PositionNormalTextureVertex;
-    })();
+    }());
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
+    // Temporary pre-allocated objects for engine internal use
+    // usage in any internal function :
+    // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
+    // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
+    var Tmp = (function () {
+        function Tmp() {
+        }
+        Tmp.Color3 = [Color3.Black(), Color3.Black(), Color3.Black()];
+        Tmp.Vector2 = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()]; // 3 temp Vector2 at once should be enough
+        Tmp.Vector3 = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
+            Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()]; // 9 temp Vector3 at once should be enough
+        Tmp.Vector4 = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()]; // 3 temp Vector4 at once should be enough
+        Tmp.Quaternion = [new Quaternion(0, 0, 0, 0)]; // 1 temp Quaternion at once should be enough
+        Tmp.Matrix = [Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero()]; // 6 temp Matrices at once should be enough
+        return Tmp;
+    }());
+    BABYLON.Tmp = Tmp;
 })(BABYLON || (BABYLON = {}));

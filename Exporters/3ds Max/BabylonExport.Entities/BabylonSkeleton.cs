@@ -13,5 +13,8 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public BabylonBone[] bones { get; set; }
+
+        [DataMember]
+        public bool needInitialSkinMatrix { get; set; }
     }
 }

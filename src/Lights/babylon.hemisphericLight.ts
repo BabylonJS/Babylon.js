@@ -1,11 +1,17 @@
 ﻿module BABYLON {
     export class HemisphericLight extends Light {
+        @serializeAsColor3()
         public groundColor = new Color3(0.0, 0.0, 0.0);
+
+        @serializeAsVector3()
+        public direction: Vector3
 
         private _worldMatrix: Matrix;
 
-        constructor(name: string, public direction: Vector3, scene: Scene) {
+        constructor(name: string, direction: Vector3, scene: Scene) {
             super(name, scene);
+
+            this.direction = direction;
         }
 
         public setDirectionToTarget(target: Vector3): Vector3 {
@@ -19,7 +25,13 @@
 
         public transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void {
             var normalizeDirection = Vector3.Normalize(this.direction);
-            effect.setFloat4(directionUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0);
+
+            effect.setFloat4(directionUniformName,
+                normalizeDirection.x,
+                normalizeDirection.y,
+                normalizeDirection.z,
+                0);
+
             effect.setColor3(groundColorUniformName, this.groundColor.scale(this.intensity));
         }
 
@@ -31,13 +43,8 @@
             return this._worldMatrix;
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-            serializationObject.type = 3;
-            serializationObject.direction = this.direction.asArray();
-            serializationObject.groundColor = this.groundColor.asArray();
-
-            return serializationObject;
+        public getTypeID(): number {
+            return 3;
         }
     }
 } 

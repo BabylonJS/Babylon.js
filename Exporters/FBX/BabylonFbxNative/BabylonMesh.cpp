@@ -440,77 +440,82 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	}
 	pivotMatrix = ConvertToBabylonCoordinateSystem( GetGeometryTransformation(fbxNode));
 
-	auto animStack = fbxNode->GetScene()->GetCurrentAnimationStack();
-	FbxString animStackName = animStack->GetName();
-	//FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
-	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
-	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
-	auto startFrame = animStack->GetLocalTimeSpan().GetStart().GetFrameCount(animTimeMode);
-	auto endFrame = animStack->GetLocalTimeSpan().GetStop().GetFrameCount(animTimeMode);
-	auto animLengthInFrame = endFrame - startFrame + 1;
-	_visibility = static_cast<float>(node->fbxNode()->Visibility.Get());
-	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"position", L"position", true, 0, static_cast<int>(animLengthInFrame), true);
-	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"rotationQuaternion", L"rotationQuaternion", true, 0, static_cast<int>(animLengthInFrame), true);
-	auto scaleAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"scaling", L"scaling", true, 0, static_cast<int>(animLengthInFrame), true);
-	auto visibilityAnim = std::make_shared<BabylonAnimation<float>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"visibility", L"visibility", true, 0, static_cast<int>(animLengthInFrame), true);
 	auto mesh = fbxNode->GetMesh();
-	_isVisible = fbxNode->Show.Get();
-	
-	auto rotCurveNode = fbxNode->LclRotation.GetCurveNode();
-	auto translateCurveNode = fbxNode->LclTranslation.GetCurveNode();
-	auto scalingCurveNode = fbxNode->LclScaling.GetCurveNode();
-	auto visibilityCurveNode = fbxNode->Visibility.GetCurveNode();
-	if (rotCurveNode || translateCurveNode || scalingCurveNode) {
-		for (auto ix = 0; ix < animLengthInFrame; ix++) {
-			FbxTime currTime;
-			currTime.SetFrame(startFrame + ix, animTimeMode);
+	auto animStack = fbxNode->GetScene()->GetCurrentAnimationStack();
 
-			babylon_animation_key<babylon_vector3> poskey;
-			babylon_animation_key<babylon_vector4> rotkey;
-			babylon_animation_key<babylon_vector3> scalekey;
-			poskey.frame = ix;
-			rotkey.frame = ix;
-			scalekey.frame = ix;
-			auto currTransform = node->GetLocal(currTime);
-			poskey.values = currTransform.translation();
-			rotkey.values = currTransform.rotationQuaternion();
-			scalekey.values = currTransform.scaling();
-			posAnim->appendKey(poskey);
-			rotAnim->appendKey(rotkey);
-			scaleAnim->appendKey(scalekey);
+	if (animStack) {
+		FbxString animStackName = animStack->GetName();
+		//FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
+		auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
+		auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
+		auto startFrame = animStack->GetLocalTimeSpan().GetStart().GetFrameCount(animTimeMode);
+		auto endFrame = animStack->GetLocalTimeSpan().GetStop().GetFrameCount(animTimeMode);
+		auto animLengthInFrame = endFrame - startFrame + 1;
+		_visibility = static_cast<float>(node->fbxNode()->Visibility.Get());
+		auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"position", L"position", true, 0, static_cast<int>(animLengthInFrame), true);
+		auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"rotationQuaternion", L"rotationQuaternion", true, 0, static_cast<int>(animLengthInFrame), true);
+		auto scaleAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"scaling", L"scaling", true, 0, static_cast<int>(animLengthInFrame), true);
+		auto visibilityAnim = std::make_shared<BabylonAnimation<float>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"visibility", L"visibility", true, 0, static_cast<int>(animLengthInFrame), true);
+
+		_isVisible = fbxNode->Show.Get();
+
+		auto rotCurveNode = fbxNode->LclRotation.GetCurveNode();
+		auto translateCurveNode = fbxNode->LclTranslation.GetCurveNode();
+		auto scalingCurveNode = fbxNode->LclScaling.GetCurveNode();
+		auto visibilityCurveNode = fbxNode->Visibility.GetCurveNode();
+		if (rotCurveNode || translateCurveNode || scalingCurveNode) {
+			for (auto ix = 0; ix < animLengthInFrame; ix++) {
+				FbxTime currTime;
+				currTime.SetFrame(startFrame + ix, animTimeMode);
+
+				babylon_animation_key<babylon_vector3> poskey;
+				babylon_animation_key<babylon_vector4> rotkey;
+				babylon_animation_key<babylon_vector3> scalekey;
+				poskey.frame = ix;
+				rotkey.frame = ix;
+				scalekey.frame = ix;
+				auto currTransform = node->GetLocal(currTime);
+				poskey.values = currTransform.translation();
+				rotkey.values = currTransform.rotationQuaternion();
+				scalekey.values = currTransform.scaling();
+				posAnim->appendKey(poskey);
+				rotAnim->appendKey(rotkey);
+				scaleAnim->appendKey(scalekey);
 
 
+			}
+		}
+		if (visibilityCurveNode) {
+			for (auto ix = 0; ix < animLengthInFrame; ix++) {
+				FbxTime currTime;
+				currTime.SetFrame(startFrame + ix, animTimeMode);
+
+				babylon_animation_key<float> visibilityKey;
+
+				visibilityKey.frame = ix;
+
+				visibilityKey.values = static_cast<float>(node->fbxNode()->Visibility.EvaluateValue(currTime));
+
+				visibilityAnim->appendKey(visibilityKey);
+
+
+			}
+		}
+
+		if (!posAnim->isConstant()){
+			animations.push_back(posAnim);
+		}
+		if (!rotAnim->isConstant()){
+			animations.push_back(rotAnim);
+		}
+		if (!scaleAnim->isConstant()){
+			animations.push_back(scaleAnim);
+		}
+		if (!visibilityAnim->isConstant()) {
+			animations.push_back(visibilityAnim);
 		}
 	}
-	if (visibilityCurveNode) {
-		for (auto ix = 0; ix < animLengthInFrame; ix++) {
-			FbxTime currTime;
-			currTime.SetFrame(startFrame + ix, animTimeMode);
 
-			babylon_animation_key<float> visibilityKey;
-
-			visibilityKey.frame = ix;
-
-			visibilityKey.values = static_cast<float>(node->fbxNode()->Visibility.EvaluateValue(currTime));
-
-			visibilityAnim->appendKey(visibilityKey);
-
-
-		}
-	}
-	
-	if (!posAnim->isConstant()){
-		animations.push_back(posAnim);
-	}
-	if (!rotAnim->isConstant()){
-		animations.push_back(rotAnim);
-	}
-	if (!scaleAnim->isConstant()){
-		animations.push_back(scaleAnim);
-	}
-	if (!visibilityAnim->isConstant()) {
-		animations.push_back(visibilityAnim);
-	}
 	if (!mesh) {
 		return;
 	}
@@ -660,6 +665,9 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 				break;
 			case FbxLayerElement::eByPolygon:
 				materialIndex = materials->GetIndexArray().GetAt(triangleIndex);
+			}
+			if (materialIndex < 0 || materialIndex >= materialCount) {
+				materialIndex = 0;
 			}
 		}
 

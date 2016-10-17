@@ -8,6 +8,7 @@ var cleants = require('gulp-clean-ts-extends');
 var replace = require("gulp-replace");
 var webserver = require('gulp-webserver');
 var uglify = require("gulp-uglify");
+var uncommentShader = require("./gulp-removeShaderComments");
 
 var config = require("./config.json");
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
@@ -19,8 +20,12 @@ function shadersName(filename) {
       .replace('.fx', 'Shader');
 }
 
+function includeShadersName(filename) {
+    return filename.replace('.fx', '');
+}
+
 gulp.task('copyReference', function () {
-    return gulp.src("../dist/preview release/babylon.max.js").pipe(gulp.dest("test"));
+    return gulp.src("../dist/preview release/babylon.max.js").pipe(gulp.dest("test/refs"));
 });
 
 /*
@@ -33,16 +38,38 @@ gulp.task('default', ["copyReference"], function () {
                 noExternalResolve: false,
                 target: 'ES5',
                 declarationFiles: true,
-                typescript: require('typescript')
+                typescript: require('typescript'),
+                experimentalDecorators: true
             }));
 
         var js = compilOutput.js;
-        // Build definitions file
-        var dts = compilOutput.dts.pipe(gulp.dest(config.build.dtsOutputDirectory));
+        
+        var dts = [];
+        if (material.declarationFilename) {
+            // Build definitions file
+            dts = compilOutput.dts
+                .pipe(concat(material.declarationFilename))
+                .pipe(gulp.dest(config.build.dtsOutputDirectory));
+        }
+        else {
+            // Build definitions file
+            dts = compilOutput.dts
+                .pipe(gulp.dest(config.build.dtsOutputDirectory));
+        }
+        
+        var shader = gulp.src(material.shaderFiles)
+                .pipe(uncommentShader())
+                .pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
 
-        var shader = gulp.src(material.shaderFiles).pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
-
-        return merge2(js, shader)
+        if (!material.referenceFiles) {
+            material.referenceFiles = [];
+        }
+        
+        var includeShader = gulp.src(material.referenceFiles)
+            .pipe(uncommentShader())
+            .pipe(srcToVariable("BABYLON.Effect.IncludesShadersStore", true, includeShadersName));
+        
+        return merge2(js, shader, includeShader)
             .pipe(cleants())
             .pipe(replace(extendsSearchRegex, ""))
             .pipe(concat(material.output))

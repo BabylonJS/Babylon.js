@@ -44,6 +44,10 @@
         public static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent {
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         }
+
+        public static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent {
+            return new ActionEvent(prim, pointerPos.x, pointerPos.y, null, evt, additionalData);
+        }
     }
 
     /**
@@ -57,14 +61,17 @@
         private static _OnLeftPickTrigger = 2;
         private static _OnRightPickTrigger = 3;
         private static _OnCenterPickTrigger = 4;
-        private static _OnPointerOverTrigger = 5;
-        private static _OnPointerOutTrigger = 6;
-        private static _OnEveryFrameTrigger = 7;
-        private static _OnIntersectionEnterTrigger = 8;
-        private static _OnIntersectionExitTrigger = 9;
-        private static _OnKeyDownTrigger = 10;
-        private static _OnKeyUpTrigger = 11;
-        private static _OnPickUpTrigger = 12;
+        private static _OnPickDownTrigger = 5;
+        private static _OnPickUpTrigger = 6;
+        private static _OnLongPressTrigger = 7;
+        private static _OnPointerOverTrigger = 8;
+        private static _OnPointerOutTrigger = 9;
+        private static _OnEveryFrameTrigger = 10;
+        private static _OnIntersectionEnterTrigger = 11;
+        private static _OnIntersectionExitTrigger = 12;
+        private static _OnKeyDownTrigger = 13;
+        private static _OnKeyUpTrigger = 14;
+        private static _OnPickOutTrigger = 15;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -84,6 +91,23 @@
 
         public static get OnCenterPickTrigger(): number {
             return ActionManager._OnCenterPickTrigger;
+        }
+
+        public static get OnPickDownTrigger(): number {
+            return ActionManager._OnPickDownTrigger;
+        }
+
+        public static get OnPickUpTrigger(): number {
+            return ActionManager._OnPickUpTrigger;
+        }
+
+        /// This trigger will only be raised if you also declared a OnPickDown
+        public static get OnPickOutTrigger(): number {
+            return ActionManager._OnPickOutTrigger;
+        }
+
+        public static get OnLongPressTrigger(): number {
+            return ActionManager._OnLongPressTrigger;
         }
 
         public static get OnPointerOverTrigger(): number {
@@ -113,9 +137,10 @@
         public static get OnKeyUpTrigger(): number {
             return ActionManager._OnKeyUpTrigger;
         }
-        public static get OnPickUpTrigger(): number {
-            return ActionManager._OnPickUpTrigger;
-        }
+
+        public static DragMovementThreshold = 10; // in pixels
+        public static LongPressDelay = 500; // in milliseconds
+        
         // Members
         public actions = new Array<Action>();
 
@@ -185,9 +210,6 @@
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
                     return true;
                 }
-                if (action.trigger === ActionManager._OnPickUpTrigger) {
-                    return true;
-                }
             }
 
             return false;
@@ -201,10 +223,7 @@
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
-                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
-                    return true;
-                }
-                if (action.trigger === ActionManager._OnPickUpTrigger) {
+                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPickUpTrigger) {
                     return true;
                 }
             }
@@ -224,7 +243,6 @@
                     return null;
                 }
             }
-
 
             this.actions.push(action);
 
@@ -276,6 +294,42 @@
             var properties = propertyPath.split(".");
 
             return properties[properties.length - 1];
+        }
+        
+        public serialize(name: string): any {
+            var root = {
+                children: [],
+                name: name,
+                type: 3, // Root node
+                properties: [] // Empty for root but required
+            };
+            
+            for (var i = 0; i < this.actions.length; i++) {
+                var triggerObject = { 
+                    type: 0, // Trigger
+                    children: [],
+                    name: ActionManager.GetTriggerName(this.actions[i].trigger),
+                    properties: []
+                };
+                
+                var triggerOptions = this.actions[i].triggerOptions;
+                if (triggerOptions && typeof triggerOptions !== "number") {
+                    if (triggerOptions.parameter instanceof Node) {
+                        triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.parameter));
+                    }
+                    else {
+                        triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
+                    }
+                }
+                
+                // Serialize child action, recursively
+                this.actions[i].serialize(triggerObject);
+                
+                // Add serialized trigger
+                root.children.push(triggerObject);
+            }
+            
+            return root;
         }
 
         public static Parse(parsedActions: any, object: AbstractMesh, scene: Scene) {
@@ -457,5 +511,26 @@
             }
         }
 
+        public static GetTriggerName(trigger: number): string {
+            switch (trigger) {
+                case 0:  return "NothingTrigger";
+                case 1:  return "OnPickTrigger";
+                case 2:  return "OnLeftPickTrigger";
+                case 3:  return "OnRightPickTrigger";
+                case 4:  return "OnCenterPickTrigger";
+                case 5:  return "OnPickDownTrigger";
+                case 6:  return "OnPickUpTrigger";
+                case 7:  return "OnLongPressTrigger";
+                case 8:  return "OnPointerOverTrigger";
+                case 9:  return "OnPointerOutTrigger";
+                case 10: return "OnEveryFrameTrigger";
+                case 11: return "OnIntersectionEnterTrigger";
+                case 12: return "OnIntersectionExitTrigger";
+                case 13: return "OnKeyDownTrigger";
+                case 14: return "OnKeyUpTrigger";
+                case 15: return "OnPickOutTrigger";
+                default: return "";
+            }
+        }
     }
 } 

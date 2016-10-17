@@ -9,6 +9,8 @@
     }
 
     export class EdgesRenderer {
+        public edgesWidthScalerForOrthographic = 1000.0;
+        public edgesWidthScalerForPerspective = 50.0;
         private _source: AbstractMesh;
         private _linesPositions = new Array<number>();
         private _linesNormals = new Array<number>();
@@ -17,10 +19,8 @@
         private _indicesCount: number;
 
         private _lineShader: ShaderMaterial;
-        private _vb0: VertexBuffer;
-        private _vb1: VertexBuffer;
         private _ib: WebGLBuffer;
-        private _buffers = new Array<VertexBuffer>();
+        private _buffers: { [key: string]: VertexBuffer; } = {};
         private _checkVerticesInsteadOfIndices = false;
 
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
@@ -50,8 +50,18 @@
         }
 
         public dispose(): void {
-            this._vb0.dispose();
-            this._vb1.dispose();
+
+            var buffer = this._buffers[VertexBuffer.PositionKind];
+            if (buffer) {
+                buffer.dispose();
+                this._buffers[VertexBuffer.PositionKind] = null;
+            }
+            buffer = this._buffers[VertexBuffer.NormalKind];
+            if (buffer) {
+                buffer.dispose();
+                this._buffers[VertexBuffer.NormalKind] = null;
+            }
+
             this._source.getScene().getEngine()._releaseBuffer(this._ib);
             this._lineShader.dispose();
         }
@@ -259,11 +269,9 @@
 
             // Merge into a single mesh
             var engine = this._source.getScene().getEngine();
-            this._vb0 = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
-            this._vb1 = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
 
-            this._buffers[VertexBuffer.PositionKind] = this._vb0;
-            this._buffers[VertexBuffer.NormalKind] = this._vb1;
+            this._buffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
+            this._buffers[VertexBuffer.NormalKind] = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
 
             this._ib = engine.createIndexBuffer(this._linesIndices);
 
@@ -280,11 +288,17 @@
             this._lineShader._preBind();
 
             // VBOs
-            engine.bindMultiBuffers(this._buffers, this._ib, this._lineShader.getEffect());
+            engine.bindBuffers(this._buffers, this._ib, this._lineShader.getEffect());
 
             scene.resetCachedMaterial();
             this._lineShader.setColor4("color", this._source.edgesColor);
-            this._lineShader.setFloat("width", this._source.edgesWidth / 50.0);
+
+            if (scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+                this._lineShader.setFloat("width", this._source.edgesWidth / this.edgesWidthScalerForOrthographic);
+            } else {
+                this._lineShader.setFloat("width", this._source.edgesWidth / this.edgesWidthScalerForPerspective);
+            }
+
             this._lineShader.setFloat("aspectRatio", engine.getAspectRatio(scene.activeCamera));
             this._lineShader.bind(this._source.getWorldMatrix());
 

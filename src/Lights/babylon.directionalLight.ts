@@ -1,13 +1,19 @@
 ﻿module BABYLON {
     export class DirectionalLight extends Light implements IShadowLight {
+        @serializeAsVector3()
         public position: Vector3;
+
+        @serializeAsVector3()
+        public direction: Vector3
 
         private _transformedDirection: Vector3;
         public transformedPosition: Vector3;
         private _worldMatrix: Matrix;
 
+        @serialize()
         public shadowOrthoScale = 0.5;
 
+        @serialize()
         public autoUpdateExtends = true;
 
         // Cache
@@ -16,10 +22,11 @@
         private _orthoTop = Number.MIN_VALUE;
         private _orthoBottom = Number.MAX_VALUE;
 
-        constructor(name: string, public direction: Vector3, scene: Scene) {
+        constructor(name: string, direction: Vector3, scene: Scene) {
             super(name, scene);
 
             this.position = direction.scale(-1);
+            this.direction = direction;
         }
 
         public getAbsolutePosition(): Vector3 {
@@ -136,13 +143,8 @@
             return this._worldMatrix;
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-            serializationObject.type = 1;
-            serializationObject.position = this.position.asArray();
-            serializationObject.direction = this.direction.asArray();
-
-            return serializationObject;
+        public getTypeID(): number {
+            return 1;
         }
     }
 }  

@@ -322,6 +322,7 @@ var BABYLON;
             var pathArray = options.pathArray;
             var closeArray = options.closeArray || false;
             var closePath = options.closePath || false;
+            var invertUV = options.invertUV || false;
             var defaultOffset = Math.floor(pathArray[0].length / 2);
             var offset = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
@@ -429,7 +430,12 @@ var BABYLON;
                 for (i = 0; i < minlg + closePathCorr; i++) {
                     u = us[p][i] / uTotalDistance[p];
                     v = vs[i][p] / vTotalDistance[i];
-                    uvs.push(u, v);
+                    if (invertUV) {
+                        uvs.push(v, u);
+                    }
+                    else {
+                        uvs.push(u, v);
+                    }
                 }
             }
             // indices
@@ -640,7 +646,7 @@ var BABYLON;
         VertexData.CreateCylinder = function (options) {
             var height = options.height || 2;
             var diameterTop = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
-            var diameterBottom = options.diameterBottom || options.diameter || 1;
+            var diameterBottom = (options.diameterBottom === 0) ? 0 : options.diameterBottom || options.diameter || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
             var hasRings = options.hasRings;
@@ -914,18 +920,22 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateLines = function (options) {
+        VertexData.CreateLineSystem = function (options) {
             var indices = [];
             var positions = [];
-            var points = options.points;
-            for (var index = 0; index < points.length; index++) {
-                positions.push(points[index].x, points[index].y, points[index].z);
-                if (index > 0) {
-                    indices.push(index - 1);
-                    indices.push(index);
+            var lines = options.lines;
+            var idx = 0;
+            for (var l = 0; l < lines.length; l++) {
+                var points = lines[l];
+                for (var index = 0; index < points.length; index++) {
+                    positions.push(points[index].x, points[index].y, points[index].z);
+                    if (index > 0) {
+                        indices.push(idx - 1);
+                        indices.push(idx);
+                    }
+                    idx++;
                 }
             }
-            // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -978,24 +988,25 @@ var BABYLON;
             var row, col;
             var width = options.width || 1;
             var height = options.height || 1;
-            var subdivisions = options.subdivisions || 1;
-            for (row = 0; row <= subdivisions; row++) {
-                for (col = 0; col <= subdivisions; col++) {
-                    var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+            var subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
+            var subdivisionsY = options.subdivisionsY || options.subdivisions || 1;
+            for (row = 0; row <= subdivisionsY; row++) {
+                for (col = 0; col <= subdivisionsX; col++) {
+                    var position = new BABYLON.Vector3((col * width) / subdivisionsX - (width / 2.0), 0, ((subdivisionsY - row) * height) / subdivisionsY - (height / 2.0));
                     var normal = new BABYLON.Vector3(0, 1.0, 0);
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
-                    uvs.push(col / subdivisions, 1.0 - row / subdivisions);
+                    uvs.push(col / subdivisionsX, 1.0 - row / subdivisionsX);
                 }
             }
-            for (row = 0; row < subdivisions; row++) {
-                for (col = 0; col < subdivisions; col++) {
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + row * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
-                    indices.push(col + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
+            for (row = 0; row < subdivisionsY; row++) {
+                for (col = 0; col < subdivisionsX; col++) {
+                    indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + 1 + row * (subdivisionsX + 1));
+                    indices.push(col + row * (subdivisionsX + 1));
+                    indices.push(col + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
+                    indices.push(col + row * (subdivisionsX + 1));
                 }
             }
             // Result
@@ -1007,10 +1018,10 @@ var BABYLON;
             return vertexData;
         };
         VertexData.CreateTiledGround = function (options) {
-            var xmin = options.xmin;
-            var zmin = options.zmin;
-            var xmax = options.xmax;
-            var zmax = options.zmax;
+            var xmin = options.xmin || -1.0;
+            var zmin = options.zmin || -1.0;
+            var xmax = options.xmax || 1.0;
+            var zmax = options.zmax || 1.0;
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
             var indices = [];
@@ -1018,7 +1029,7 @@ var BABYLON;
             var normals = [];
             var uvs = [];
             var row, col, tileRow, tileCol;
-            subdivisions.h = (subdivisions.w < 1) ? 1 : subdivisions.h;
+            subdivisions.h = (subdivisions.h < 1) ? 1 : subdivisions.h;
             subdivisions.w = (subdivisions.w < 1) ? 1 : subdivisions.w;
             precision.w = (precision.w < 1) ? 1 : precision.w;
             precision.h = (precision.h < 1) ? 1 : precision.h;
@@ -1813,6 +1824,6 @@ var BABYLON;
             geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
         };
         return VertexData;
-    })();
+    }());
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));

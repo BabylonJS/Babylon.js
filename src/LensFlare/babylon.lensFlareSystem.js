@@ -5,21 +5,23 @@ var BABYLON;
             this.name = name;
             this.lensFlares = new Array();
             this.borderLimit = 300;
+            this.viewportBorder = 0;
             this.layerMask = 0x0FFFFFFF;
-            this._vertexDeclaration = [2];
-            this._vertexStrideSize = 2 * 4;
+            this._vertexBuffers = {};
             this._isEnabled = true;
             this._scene = scene;
             this._emitter = emitter;
+            this.id = name;
             scene.lensFlareSystems.push(this);
             this.meshesSelectionPredicate = function (m) { return m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0); };
+            var engine = scene.getEngine();
             // VBO
             var vertices = [];
             vertices.push(1, 1);
             vertices.push(-1, 1);
             vertices.push(-1, -1);
             vertices.push(1, -1);
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = new BABYLON.VertexBuffer(engine, vertices, BABYLON.VertexBuffer.PositionKind, false, false, 2);
             // Indices
             var indices = [];
             indices.push(0);
@@ -28,9 +30,9 @@ var BABYLON;
             indices.push(0);
             indices.push(2);
             indices.push(3);
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
             // Effects
-            this._effect = this._scene.getEngine().createEffect("lensFlare", ["position"], ["color", "viewportMatrix"], ["textureSampler"], "");
+            this._effect = engine.createEffect("lensFlare", [BABYLON.VertexBuffer.PositionKind], ["color", "viewportMatrix"], ["textureSampler"], "");
         }
         Object.defineProperty(LensFlareSystem.prototype, "isEnabled", {
             get: function () {
@@ -60,11 +62,22 @@ var BABYLON;
             this._positionX = position.x;
             this._positionY = position.y;
             position = BABYLON.Vector3.TransformCoordinates(this.getEmitterPosition(), this._scene.getViewMatrix());
+            if (this.viewportBorder > 0) {
+                globalViewport.x -= this.viewportBorder;
+                globalViewport.y -= this.viewportBorder;
+                globalViewport.width += this.viewportBorder * 2;
+                globalViewport.height += this.viewportBorder * 2;
+                position.x += this.viewportBorder;
+                position.y += this.viewportBorder;
+                this._positionX += this.viewportBorder;
+                this._positionY += this.viewportBorder;
+            }
             if (position.z > 0) {
                 if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
                     if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height))
                         return true;
                 }
+                return true;
             }
             return false;
         };
@@ -73,10 +86,10 @@ var BABYLON;
                 return false;
             }
             var emitterPosition = this.getEmitterPosition();
-            var direction = emitterPosition.subtract(this._scene.activeCamera.position);
+            var direction = emitterPosition.subtract(this._scene.activeCamera.globalPosition);
             var distance = direction.length();
             direction.normalize();
-            var ray = new BABYLON.Ray(this._scene.activeCamera.position, direction);
+            var ray = new BABYLON.Ray(this._scene.activeCamera.globalPosition, direction);
             var pickInfo = this._scene.pickWithRay(ray, this.meshesSelectionPredicate, true);
             return !pickInfo.hit || pickInfo.distance > distance;
         };
@@ -85,7 +98,7 @@ var BABYLON;
                 return false;
             var engine = this._scene.getEngine();
             var viewport = this._scene.activeCamera.viewport;
-            var globalViewport = viewport.toScreenGlobal(engine);
+            var globalViewport = viewport.toGlobal(engine.getRenderWidth(true), engine.getRenderHeight(true));
             // Position
             if (!this.computeEffectivePosition(globalViewport)) {
                 return false;
@@ -116,6 +129,7 @@ var BABYLON;
                 awayY = 0;
             }
             var away = (awayX > awayY) ? awayX : awayY;
+            away -= this.viewportBorder;
             if (away > this.borderLimit) {
                 away = this.borderLimit;
             }
@@ -126,6 +140,14 @@ var BABYLON;
             if (intensity > 1.0) {
                 intensity = 1.0;
             }
+            if (this.viewportBorder > 0) {
+                globalViewport.x += this.viewportBorder;
+                globalViewport.y += this.viewportBorder;
+                globalViewport.width -= this.viewportBorder * 2;
+                globalViewport.height -= this.viewportBorder * 2;
+                this._positionX -= this.viewportBorder;
+                this._positionY -= this.viewportBorder;
+            }
             // Position
             var centerX = globalViewport.x + globalViewport.width / 2;
             var centerY = globalViewport.y + globalViewport.height / 2;
@@ -135,18 +157,18 @@ var BABYLON;
             engine.enableEffect(this._effect);
             engine.setState(false);
             engine.setDepthBuffer(false);
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_ONEONE);
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
             // Flares
             for (var index = 0; index < this.lensFlares.length; index++) {
                 var flare = this.lensFlares[index];
+                engine.setAlphaMode(flare.alphaMode);
                 var x = centerX - (distX * flare.position);
                 var y = centerY - (distY * flare.position);
                 var cw = flare.size;
                 var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
-                var cx = 2 * (x / globalViewport.width) - 1.0;
-                var cy = 1.0 - 2 * (y / globalViewport.height);
+                var cx = 2 * (x / (globalViewport.width + globalViewport.x * 2)) - 1.0;
+                var cy = 1.0 - 2 * (y / (globalViewport.height + globalViewport.y * 2));
                 var viewportMatrix = BABYLON.Matrix.FromValues(cw / 2, 0, 0, 0, 0, ch / 2, 0, 0, 0, 0, 1, 0, cx, cy, 0, 1);
                 this._effect.setMatrix("viewportMatrix", viewportMatrix);
                 // Texture
@@ -161,9 +183,10 @@ var BABYLON;
             return true;
         };
         LensFlareSystem.prototype.dispose = function () {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            var vertexBuffer = this._vertexBuffers[BABYLON.VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = null;
             }
             if (this._indexBuffer) {
                 this._scene.getEngine()._releaseBuffer(this._indexBuffer);
@@ -178,7 +201,9 @@ var BABYLON;
         };
         LensFlareSystem.Parse = function (parsedLensFlareSystem, scene, rootUrl) {
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
-            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
+            var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
+            lensFlareSystem.id = parsedLensFlareSystem.id || name;
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
                 var parsedFlare = parsedLensFlareSystem.flares[index];
@@ -188,6 +213,8 @@ var BABYLON;
         };
         LensFlareSystem.prototype.serialize = function () {
             var serializationObject = {};
+            serializationObject.id = this.id;
+            serializationObject.name = this.name;
             serializationObject.emitterId = this.getEmitter().id;
             serializationObject.borderLimit = this.borderLimit;
             serializationObject.flares = [];
@@ -203,6 +230,6 @@ var BABYLON;
             return serializationObject;
         };
         return LensFlareSystem;
-    })();
+    }());
     BABYLON.LensFlareSystem = LensFlareSystem;
 })(BABYLON || (BABYLON = {}));

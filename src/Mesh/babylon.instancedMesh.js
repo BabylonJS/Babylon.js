@@ -124,7 +124,7 @@ var BABYLON;
         InstancedMesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
             var result = this._sourceMesh.createInstance(name);
             // Deep copy
-            BABYLON.Tools.DeepCopy(this, result, ["name"], []);
+            BABYLON.Tools.DeepCopy(this, result, ["name", "subMeshes"], []);
             // Bounding info
             this.refreshBoundingInfo();
             // Parent
@@ -151,6 +151,6 @@ var BABYLON;
             _super.prototype.dispose.call(this, doNotRecurse);
         };
         return InstancedMesh;
-    })(BABYLON.AbstractMesh);
+    }(BABYLON.AbstractMesh));
     BABYLON.InstancedMesh = InstancedMesh;
 })(BABYLON || (BABYLON = {}));

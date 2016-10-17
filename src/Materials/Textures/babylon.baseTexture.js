@@ -1,22 +1,46 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var BaseTexture = (function () {
         function BaseTexture(scene) {
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.hasAlpha = false;
             this.getAlphaFromRGB = false;
             this.level = 1;
-            this.isCube = false;
-            this.isRenderTarget = false;
-            this.animations = new Array();
             this.coordinatesIndex = 0;
             this.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
             this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.anisotropicFilteringLevel = 4;
+            this.isCube = false;
+            this.isRenderTarget = false;
+            this.animations = new Array();
+            /**
+            * An event triggered when the texture is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._scene = scene;
             this._scene.textures.push(this);
         }
+        BaseTexture.prototype.toString = function () {
+            return this.name;
+        };
+        Object.defineProperty(BaseTexture.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         BaseTexture.prototype.getScene = function () {
             return this._scene;
         };
@@ -40,20 +64,20 @@ var BABYLON;
         };
         BaseTexture.prototype.getSize = function () {
             if (this._texture._width) {
-                return { width: this._texture._width, height: this._texture._height };
+                return new BABYLON.Size(this._texture._width, this._texture._height);
             }
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new BABYLON.Size(this._texture._size, this._texture._size);
             }
-            return { width: 0, height: 0 };
+            return BABYLON.Size.Zero();
         };
         BaseTexture.prototype.getBaseSize = function () {
-            if (!this.isReady())
-                return { width: 0, height: 0 };
+            if (!this.isReady() || !this._texture)
+                return BABYLON.Size.Zero();
             if (this._texture._size) {
-                return { width: this._texture._size, height: this._texture._size };
+                return new BABYLON.Size(this._texture._size, this._texture._size);
             }
-            return { width: this._texture._baseWidth, height: this._texture._baseHeight };
+            return new BABYLON.Size(this._texture._baseWidth, this._texture._baseHeight);
         };
         BaseTexture.prototype.scale = function (ratio) {
         };
@@ -112,27 +136,52 @@ var BABYLON;
             // Release
             this.releaseInternalTexture();
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         };
         BaseTexture.prototype.serialize = function () {
-            var serializationObject = {};
             if (!this.name) {
                 return null;
             }
-            serializationObject.name = this.name;
-            serializationObject.hasAlpha = this.hasAlpha;
-            serializationObject.level = this.level;
-            serializationObject.coordinatesIndex = this.coordinatesIndex;
-            serializationObject.coordinatesMode = this.coordinatesMode;
-            serializationObject.wrapU = this.wrapU;
-            serializationObject.wrapV = this.wrapV;
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             return serializationObject;
         };
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "name", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "hasAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "getAlphaFromRGB", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "level", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "coordinatesIndex", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "coordinatesMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "wrapU", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "wrapV", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "anisotropicFilteringLevel", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "isCube", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "isRenderTarget", void 0);
         return BaseTexture;
-    })();
+    }());
     BABYLON.BaseTexture = BaseTexture;
 })(BABYLON || (BABYLON = {}));

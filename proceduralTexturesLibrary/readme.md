@@ -13,7 +13,7 @@ To add a new procedural texture, you have to create your own folder in *procedur
 * The .ts is the TypeScript code of your procedural texture
 * .fx file: GLSL code for fragment shaders
 
-## Integrating the material in the build process
+## Integrating the procedural texture in the build process
 
 To build all procedural textures and generate the *dist* folder, just run:
 

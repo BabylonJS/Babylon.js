@@ -22,17 +22,35 @@
         return extentsOverlap(result0.min, result0.max, result1.min, result1.max);
     }
 
-    export class BoundingInfo {
+    export interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+
+    export class BoundingInfo implements ICullable {
         public boundingBox: BoundingBox;
         public boundingSphere: BoundingSphere;
+
+        private _isLocked = false;
 
         constructor(public minimum: Vector3, public maximum: Vector3) {
             this.boundingBox = new BoundingBox(minimum, maximum);
             this.boundingSphere = new BoundingSphere(minimum, maximum);
         }
 
+        public get isLocked(): boolean {
+            return this._isLocked;
+        }
+
+        public set isLocked(value: boolean) { 
+            this._isLocked = value;
+        }
+
         // Methods
-        public _update(world: Matrix) {
+        public update(world: Matrix) {
+            if (this._isLocked) {
+                return;
+            }
             this.boundingBox._update(world);
             this.boundingSphere._update(world);
         }

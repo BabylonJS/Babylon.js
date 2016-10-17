@@ -9,6 +9,7 @@ var BABYLON;
             this._displayStatistics = true;
             this._displayTree = false;
             this._displayLogs = false;
+            this._skeletonViewers = new Array();
             this._identityMatrix = BABYLON.Matrix.Identity();
             this.axisRatio = 0.02;
             this.accentColor = "orange";
@@ -93,7 +94,7 @@ var BABYLON;
                     _this._drawingContext.clearRect(0, 0, _this._drawingCanvas.width, _this._drawingCanvas.height);
                     var engine = _this._scene.getEngine();
                     var viewport = _this._camera.viewport;
-                    var globalViewport = viewport.toGlobal(engine);
+                    var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
                     // Meshes
                     var meshes = _this._camera.getActiveMeshes();
                     var index;
@@ -249,7 +250,9 @@ var BABYLON;
             BABYLON.StandardMaterial.BumpTextureEnabled = true;
             BABYLON.StandardMaterial.OpacityTextureEnabled = true;
             BABYLON.StandardMaterial.ReflectionTextureEnabled = true;
-            BABYLON.StandardMaterial.LightmapEnabled = true;
+            BABYLON.StandardMaterial.LightmapTextureEnabled = true;
+            BABYLON.StandardMaterial.RefractionTextureEnabled = true;
+            BABYLON.StandardMaterial.ColorGradingTextureEnabled = true;
             this._scene.shadowsEnabled = true;
             this._scene.particlesEnabled = true;
             this._scene.postProcessesEnabled = true;
@@ -261,6 +264,13 @@ var BABYLON;
             this._scene.renderTargetsEnabled = true;
             this._scene.probesEnabled = true;
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
+            this._clearSkeletonViewers();
+        };
+        DebugLayer.prototype._clearSkeletonViewers = function () {
+            for (var index = 0; index < this._skeletonViewers.length; index++) {
+                this._skeletonViewers[index].dispose();
+            }
+            this._skeletonViewers = [];
         };
         DebugLayer.prototype.show = function (showUI, camera, rootElement) {
             if (showUI === void 0) { showUI = true; }
@@ -308,6 +318,7 @@ var BABYLON;
         };
         DebugLayer.prototype._generateTexBox = function (root, title, color) {
             var label = document.createElement("label");
+            label.style.display = "inline";
             label.innerHTML = title;
             label.style.color = color;
             root.appendChild(label);
@@ -316,9 +327,13 @@ var BABYLON;
         DebugLayer.prototype._generateAdvancedCheckBox = function (root, leftTitle, rightTitle, initialState, task, tag) {
             if (tag === void 0) { tag = null; }
             var label = document.createElement("label");
+            label.style.display = "inline";
             var boundingBoxesCheckbox = document.createElement("input");
             boundingBoxesCheckbox.type = "checkbox";
             boundingBoxesCheckbox.checked = initialState;
+            boundingBoxesCheckbox.style.display = "inline";
+            boundingBoxesCheckbox.style.margin = "0px 5px 0px 0px";
+            boundingBoxesCheckbox.style.verticalAlign = "sub";
             boundingBoxesCheckbox.addEventListener("change", function (evt) {
                 task(evt.target, tag);
             });
@@ -340,9 +355,13 @@ var BABYLON;
         DebugLayer.prototype._generateCheckBox = function (root, title, initialState, task, tag) {
             if (tag === void 0) { tag = null; }
             var label = document.createElement("label");
+            label.style.display = "inline";
             var checkBox = document.createElement("input");
             checkBox.type = "checkbox";
             checkBox.checked = initialState;
+            checkBox.style.display = "inline";
+            checkBox.style.margin = "0px 5px 0px 0px";
+            checkBox.style.verticalAlign = "sub";
             checkBox.addEventListener("change", function (evt) {
                 task(evt.target, tag);
             });
@@ -370,10 +389,14 @@ var BABYLON;
         DebugLayer.prototype._generateRadio = function (root, title, name, initialState, task, tag) {
             if (tag === void 0) { tag = null; }
             var label = document.createElement("label");
+            label.style.display = "inline";
             var boundingBoxesRadio = document.createElement("input");
             boundingBoxesRadio.type = "radio";
             boundingBoxesRadio.name = name;
             boundingBoxesRadio.checked = initialState;
+            boundingBoxesRadio.style.display = "inline";
+            boundingBoxesRadio.style.margin = "0px 5px 0px 0px";
+            boundingBoxesRadio.style.verticalAlign = "sub";
             boundingBoxesRadio.addEventListener("change", function (evt) {
                 task(evt.target, tag);
             });
@@ -518,8 +541,10 @@ var BABYLON;
                 this._generateCheckBox(this._optionsSubsetDiv, "Bump", BABYLON.StandardMaterial.BumpTextureEnabled, function (element) { BABYLON.StandardMaterial.BumpTextureEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Opacity", BABYLON.StandardMaterial.OpacityTextureEnabled, function (element) { BABYLON.StandardMaterial.OpacityTextureEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", BABYLON.StandardMaterial.ReflectionTextureEnabled, function (element) { BABYLON.StandardMaterial.ReflectionTextureEnabled = element.checked; });
+                this._generateCheckBox(this._optionsSubsetDiv, "Refraction", BABYLON.StandardMaterial.RefractionTextureEnabled, function (element) { BABYLON.StandardMaterial.RefractionTextureEnabled = element.checked; });
+                this._generateCheckBox(this._optionsSubsetDiv, "ColorGrading", BABYLON.StandardMaterial.ColorGradingTextureEnabled, function (element) { BABYLON.StandardMaterial.ColorGradingTextureEnabled = element.checked; });
+                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", BABYLON.StandardMaterial.LightmapTextureEnabled, function (element) { BABYLON.StandardMaterial.LightmapTextureEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", BABYLON.StandardMaterial.FresnelEnabled, function (element) { BABYLON.StandardMaterial.FresnelEnabled = element.checked; });
-                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", BABYLON.StandardMaterial.LightmapEnabled, function (element) { BABYLON.StandardMaterial.LightmapEnabled = element.checked; });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Animations", this._scene.animationsEnabled, function (element) { _this._scene.animationsEnabled = element.checked; });
@@ -554,6 +579,32 @@ var BABYLON;
                     });
                 }
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Viewers:</b>", this.accentColor);
+                this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", false, function (element) {
+                    if (!element.checked) {
+                        _this._clearSkeletonViewers();
+                        return;
+                    }
+                    for (var index = 0; index < _this._scene.meshes.length; index++) {
+                        var mesh = _this._scene.meshes[index];
+                        if (mesh.skeleton) {
+                            var found = false;
+                            for (var sIndex = 0; sIndex < _this._skeletonViewers.length; sIndex++) {
+                                if (_this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found) {
+                                continue;
+                            }
+                            var viewer = new BABYLON.Debug.SkeletonViewer(mesh.skeleton, mesh, _this._scene);
+                            viewer.isEnabled = true;
+                            _this._skeletonViewers.push(viewer);
+                        }
+                    }
+                });
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", function (element) { _this._scene.dumpNextRenderTargets = true; });
                 this._generateButton(this._optionsSubsetDiv, "Run SceneOptimizer", function (element) { BABYLON.SceneOptimizer.OptimizeAsync(_this._scene); });
@@ -580,6 +631,7 @@ var BABYLON;
                 + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Count</b><br>"
                 + "Total meshes: " + scene.meshes.length + "<br>"
+                + "Total lights: " + scene.lights.length + "<br>"
                 + "Total vertices: " + scene.getTotalVertices() + "<br>"
                 + "Total materials: " + scene.materials.length + "<br>"
                 + "Total textures: " + scene.textures.length + "<br>"
@@ -595,29 +647,36 @@ var BABYLON;
                 + "Sprites: " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
                 + "Render: <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
                 + "Frame: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
-                + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
+                + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br>"
+                + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br><br>"
                 + "</div>"
                 + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Extensions</b><br>"
                 + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
                 + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
                 + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
-                + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
+                + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br><br>"
                 + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
                 + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
+                + "High precision shaders: " + (engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No") + "<br>"
+                + "Draw buffers: " + (engine.getCaps().drawBuffersExtension ? "Yes" : "No") + "<br>"
+                + "</div><br>"
+                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Caps.</b><br>"
+                + "Stencil: " + (engine.isStencilEnable ? "Enabled" : "Disabled") + "<br>"
                 + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
                 + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
-                + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>"
-                + "</div><br>"
+                + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br>"
                 + "<b>Info</b><br>"
+                + "WebGL feature level: " + engine.webGLVersion + "<br>"
                 + glInfo.version + "<br>"
+                + "</div><br>"
                 + glInfo.renderer + "<br>";
             if (this.customStatsFunction) {
-                this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;
+                this._statsSubsetDiv.innerHTML += this.customStatsFunction();
             }
         };
         return DebugLayer;
-    })();
+    }());
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));

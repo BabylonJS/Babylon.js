@@ -2,14 +2,14 @@
     export class LensFlareSystem {
         public lensFlares = new Array<LensFlare>();
         public borderLimit = 300;
+        public viewportBorder = 0;
         public meshesSelectionPredicate: (mesh: Mesh) => boolean;
         public layerMask: number = 0x0FFFFFFF;
+        public id: string;
 
         private _scene: Scene;
         private _emitter: any;
-        private _vertexDeclaration = [2];
-        private _vertexStrideSize = 2 * 4;
-        private _vertexBuffer: WebGLBuffer;
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
         private _positionX: number;
@@ -20,9 +20,12 @@
 
             this._scene = scene;
             this._emitter = emitter;
+            this.id = name;
             scene.lensFlareSystems.push(this);
 
             this.meshesSelectionPredicate = m => m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0);
+
+            var engine = scene.getEngine();
 
             // VBO
             var vertices = [];
@@ -31,7 +34,7 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
             // Indices
             var indices = [];
@@ -43,11 +46,11 @@
             indices.push(2);
             indices.push(3);
 
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
 
             // Effects
-            this._effect = this._scene.getEngine().createEffect("lensFlare",
-                ["position"],
+            this._effect = engine.createEffect("lensFlare",
+                [VertexBuffer.PositionKind],
                 ["color", "viewportMatrix"],
                 ["textureSampler"], "");
         }
@@ -86,11 +89,23 @@
 
             position = Vector3.TransformCoordinates(this.getEmitterPosition(), this._scene.getViewMatrix());
 
+            if (this.viewportBorder>0) {
+                globalViewport.x -= this.viewportBorder;
+                globalViewport.y -= this.viewportBorder;
+                globalViewport.width += this.viewportBorder * 2;
+                globalViewport.height += this.viewportBorder * 2;
+                position.x += this.viewportBorder;
+                position.y += this.viewportBorder;
+                this._positionX += this.viewportBorder;
+                this._positionY += this.viewportBorder;
+            }
+
             if (position.z > 0) {
                 if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
                     if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height))
                         return true;
                 }
+                return true;
             }
 
             return false;
@@ -102,11 +117,11 @@
             }
 
             var emitterPosition = this.getEmitterPosition();
-            var direction = emitterPosition.subtract(this._scene.activeCamera.position);
+            var direction = emitterPosition.subtract(this._scene.activeCamera.globalPosition);
             var distance = direction.length();
             direction.normalize();
 
-            var ray = new Ray(this._scene.activeCamera.position, direction);
+            var ray = new Ray(this._scene.activeCamera.globalPosition, direction);
             var pickInfo = this._scene.pickWithRay(ray, this.meshesSelectionPredicate, true);
 
             return !pickInfo.hit || pickInfo.distance > distance;
@@ -118,7 +133,7 @@
 
             var engine = this._scene.getEngine();
             var viewport = this._scene.activeCamera.viewport;
-            var globalViewport = viewport.toScreenGlobal(engine);
+            var globalViewport = viewport.toGlobal(engine.getRenderWidth(true), engine.getRenderHeight(true));
 
             // Position
             if (!this.computeEffectivePosition(globalViewport)) {
@@ -151,6 +166,9 @@
             }
 
             var away = (awayX > awayY) ? awayX : awayY;
+
+            away -= this.viewportBorder;
+
             if (away > this.borderLimit) {
                 away = this.borderLimit;
             }
@@ -164,6 +182,15 @@
                 intensity = 1.0;
             }
 
+            if (this.viewportBorder>0) {
+                globalViewport.x += this.viewportBorder;
+                globalViewport.y += this.viewportBorder;
+                globalViewport.width -= this.viewportBorder * 2;
+                globalViewport.height -= this.viewportBorder * 2;
+                this._positionX -= this.viewportBorder;
+                this._positionY -= this.viewportBorder;
+            }
+
             // Position
             var centerX = globalViewport.x + globalViewport.width / 2;
             var centerY = globalViewport.y + globalViewport.height / 2;
@@ -174,22 +201,23 @@
             engine.enableEffect(this._effect);
             engine.setState(false);
             engine.setDepthBuffer(false);
-            engine.setAlphaMode(Engine.ALPHA_ONEONE);
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
             // Flares
             for (var index = 0; index < this.lensFlares.length; index++) {
                 var flare = this.lensFlares[index];
+
+                engine.setAlphaMode(flare.alphaMode);
 
                 var x = centerX - (distX * flare.position);
                 var y = centerY - (distY * flare.position);
 
                 var cw = flare.size;
                 var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
-                var cx = 2 * (x / globalViewport.width) - 1.0;
-                var cy = 1.0 - 2 * (y / globalViewport.height);
+                var cx = 2 * (x / (globalViewport.width + globalViewport.x * 2)) - 1.0;
+                var cy = 1.0 - 2 * (y / (globalViewport.height + globalViewport.y * 2));
 
                 var viewportMatrix = Matrix.FromValues(
                     cw / 2, 0, 0, 0,
@@ -215,9 +243,10 @@
         }
 
         public dispose(): void {
-            if (this._vertexBuffer) {
-                this._scene.getEngine()._releaseBuffer(this._vertexBuffer);
-                this._vertexBuffer = null;
+            var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
             }
 
             if (this._indexBuffer) {
@@ -233,11 +262,15 @@
             var index = this._scene.lensFlareSystems.indexOf(this);
             this._scene.lensFlareSystems.splice(index, 1);
         }
-        
+
         public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
 
-            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
+
+            var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
+
+            lensFlareSystem.id = parsedLensFlareSystem.id || name;
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
 
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
@@ -250,6 +283,9 @@
 
         public serialize(): any {
             var serializationObject: any = {};
+
+            serializationObject.id = this.id;
+            serializationObject.name = this.name;
 
             serializationObject.emitterId = this.getEmitter().id;
             serializationObject.borderLimit = this.borderLimit;

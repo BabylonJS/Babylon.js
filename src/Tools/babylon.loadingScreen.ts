@@ -1,27 +1,32 @@
 module BABYLON {
-	
-	export interface ILoadingScreen {
-		displayLoadingUI : () => void;
-		hideLoadingUI : () => void;
-        //default loader support
-        loadingUIBackgroundColor : string;
-        loadingUIText : string;
-                
-	}
-	
-	export class DefaultLoadingScreen implements ILoadingScreen {
-		
-		private _loadingDiv: HTMLDivElement;
-        private _loadingTextDiv: HTMLDivElement;
-		
-		constructor(private _renderingCanvas : HTMLCanvasElement, private _loadingText = "", private _loadingDivBackgroundColor = "black") {
-			
-		}
-		
-		public displayLoadingUI(): void {
-			this._loadingDiv = document.createElement("div");
 
-		    this._loadingDiv.id = "babylonjsLoadingDiv";
+    export interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        //default loader support
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+
+    }
+
+    export class DefaultLoadingScreen implements ILoadingScreen {
+
+        private _loadingDiv: HTMLDivElement;
+        private _loadingTextDiv: HTMLDivElement;
+
+        constructor(private _renderingCanvas: HTMLCanvasElement, private _loadingText = "", private _loadingDivBackgroundColor = "black") {
+
+        }
+
+        public displayLoadingUI(): void {
+            if (this._loadingDiv) {
+                // Do not add a loading screen if there is already one  
+                return;
+            }
+
+            this._loadingDiv = document.createElement("div");
+
+            this._loadingDiv.id = "babylonjsLoadingDiv";
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.style.transition = "opacity 1.5s ease";
 
@@ -41,8 +46,8 @@ module BABYLON {
 
             this._loadingDiv.appendChild(this._loadingTextDiv);
 			
-			//set the predefined text
-			this._loadingTextDiv.innerHTML = this._loadingText;
+            //set the predefined text
+            this._loadingTextDiv.innerHTML = this._loadingText;
 
             // Loading img
             var imgBack = new Image();
@@ -93,9 +98,9 @@ module BABYLON {
                 imgBack.style.transform = "rotateZ(360deg)";
                 imgBack.style.webkitTransform = "rotateZ(360deg)";
             }, 0);
-		}	
+        }
 
-		public hideLoadingUI(): void {
+        public hideLoadingUI(): void {
             if (!this._loadingDiv) {
                 return;
             }
@@ -112,12 +117,12 @@ module BABYLON {
 
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
-        }	
+        }
 
-		public set loadingUIText(text: string) {
+        public set loadingUIText(text: string) {
             this._loadingText = text;
-			
-			if (this._loadingTextDiv) {
+
+            if (this._loadingTextDiv) {
                 this._loadingTextDiv.innerHTML = this._loadingText;
             }
         }
@@ -136,15 +141,15 @@ module BABYLON {
             this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
         }	
 
-		// Resize
-		private _resizeLoadingUI = () => {
-			var canvasRect = this._renderingCanvas.getBoundingClientRect();
-			this._loadingDiv.style.position = "absolute";
-			this._loadingDiv.style.left = canvasRect.left + "px";
-			this._loadingDiv.style.top = canvasRect.top + "px";
-			this._loadingDiv.style.width = canvasRect.width + "px";
-			this._loadingDiv.style.height = canvasRect.height + "px";
-		}
-	}
-	
+        // Resize
+        private _resizeLoadingUI = () => {
+            var canvasRect = this._renderingCanvas.getBoundingClientRect();
+            this._loadingDiv.style.position = "absolute";
+            this._loadingDiv.style.left = canvasRect.left + "px";
+            this._loadingDiv.style.top = canvasRect.top + "px";
+            this._loadingDiv.style.width = canvasRect.width + "px";
+            this._loadingDiv.style.height = canvasRect.height + "px";
+        }
+    }
+
 }

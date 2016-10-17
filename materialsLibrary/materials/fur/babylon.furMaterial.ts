@@ -10,67 +10,74 @@ module BABYLON {
         public ALPHATEST = false;
         public POINTSIZE = false;
         public FOG = false;
-        public LIGHT0 = false;
-        public LIGHT1 = false;
-        public LIGHT2 = false;
-        public LIGHT3 = false;
-        public SPOTLIGHT0 = false;
-        public SPOTLIGHT1 = false;
-        public SPOTLIGHT2 = false;
-        public SPOTLIGHT3 = false;
-        public HEMILIGHT0 = false;
-        public HEMILIGHT1 = false;
-        public HEMILIGHT2 = false;
-        public HEMILIGHT3 = false;
-        public DIRLIGHT0 = false;
-        public DIRLIGHT1 = false;
-        public DIRLIGHT2 = false;
-        public DIRLIGHT3 = false;
-        public POINTLIGHT0 = false;
-        public POINTLIGHT1 = false;
-        public POINTLIGHT2 = false;
-        public POINTLIGHT3 = false;        
-        public SHADOW0 = false;
-        public SHADOW1 = false;
-        public SHADOW2 = false;
-        public SHADOW3 = false;
-        public SHADOWS = false;
-        public SHADOWVSM0 = false;
-        public SHADOWVSM1 = false;
-        public SHADOWVSM2 = false;
-        public SHADOWVSM3 = false;
-        public SHADOWPCF0 = false;
-        public SHADOWPCF1 = false;
-        public SHADOWPCF2 = false;
-        public SHADOWPCF3 = false;
         public NORMAL = false;
         public UV1 = false;
         public UV2 = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public BONES = false;
-        public BONES4 = false;
+        public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
+        public HIGHLEVEL = false;
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
 
     export class FurMaterial extends Material {
+        
+        @serializeAsTexture()
         public diffuseTexture: BaseTexture;
+        
+        @serializeAsTexture()
         public heightTexture: BaseTexture;
+        
+        @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
+        
+        @serialize()
         public furLength: number = 1;
+        
+        @serialize()
         public furAngle: number = 0;
+        
+        @serializeAsColor3()
         public furColor = new Color3(0.44,0.21,0.02);
+        
+        @serialize()
+        public furOffset: number = 0.0;
+        
+        @serialize()
+        public furSpacing: number = 12;
+        
+        @serializeAsVector3()
+        public furGravity = new Vector3(0, 0, 0);
+        
+        @serialize()
+        public furSpeed: number = 100;
+        
+        @serialize()
+        public furDensity: number = 20;
+        
+        public furTexture: DynamicTexture;
+        
+        @serialize()
         public disableLighting = false;
+        
+        @serialize()
+        public highLevelFur: boolean = true;
+        
+        @serialize()
+        public maxSimultaneousLights = 4;
+        
+        public _meshes: AbstractMesh[];
 
         private _worldViewProjectionMatrix = Matrix.Zero();
-        private _scaledDiffuse = new Color3(1.,1.,1.);
         private _renderId: number;
+        
+        private _furTime: number = 0;
 
         private _defines = new FurMaterialDefines();
         private _cachedDefines = new FurMaterialDefines();
@@ -79,6 +86,15 @@ module BABYLON {
             super(name, scene);
 
             this._cachedDefines.BonesPerMesh = -1;
+        }
+        
+        @serialize()
+        public get furTime() {
+            return this._furTime;
+        }
+        
+        public set furTime(furTime: number) {
+            this._furTime = furTime;
         }
 
         public needAlphaBlending(): boolean {
@@ -91,6 +107,24 @@ module BABYLON {
 
         public getAlphaTestTexture(): BaseTexture {
             return null;
+        }
+        
+        public updateFur(): void {
+            for (var i = 1; i < this._meshes.length; i++) {
+                var offsetFur = <FurMaterial>this._meshes[i].material;
+                
+                offsetFur.furLength = this.furLength;
+                offsetFur.furAngle = this.furAngle;
+                offsetFur.furGravity = this.furGravity;
+                offsetFur.furSpacing = this.furSpacing;
+                offsetFur.furSpeed = this.furSpeed;
+                offsetFur.furColor = this.furColor;
+                offsetFur.diffuseTexture = this.diffuseTexture;
+                offsetFur.furTexture = this.furTexture;
+                offsetFur.highLevelFur = this.highLevelFur;
+                offsetFur.furTime = this.furTime;
+                offsetFur.furDensity = this.furDensity;
+            }
         }
 
         // Methods   
@@ -171,83 +205,15 @@ module BABYLON {
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
             }
+            
+            // High level
+            if (this.highLevelFur) {
+                this._defines.HIGHLEVEL = true;
+            }
 
-            var lightIndex = 0;
+            // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                for (var index = 0; index < scene.lights.length; index++) {
-                    var light = scene.lights[index];
-
-                    if (!light.isEnabled()) {
-                        continue;
-                    }
-
-                    // Excluded check
-                    if (light._excludedMeshesIds.length > 0) {
-                        for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                            var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
-
-                            if (excludedMesh) {
-                                light.excludedMeshes.push(excludedMesh);
-                            }
-                        }
-
-                        light._excludedMeshesIds = [];
-                    }
-
-                    // Included check
-                    if (light._includedOnlyMeshesIds.length > 0) {
-                        for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                            var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
-
-                            if (includedOnlyMesh) {
-                                light.includedOnlyMeshes.push(includedOnlyMesh);
-                            }
-                        }
-
-                        light._includedOnlyMeshesIds = [];
-                    }
-
-                    if (!light.canAffectMesh(mesh)) {
-                        continue;
-                    }
-                    needNormals = true;
-                    this._defines["LIGHT" + lightIndex] = true;
-
-                    var type;
-                    if (light instanceof SpotLight) {
-                        type = "SPOTLIGHT" + lightIndex;
-                    } else if (light instanceof HemisphericLight) {
-                        type = "HEMILIGHT" + lightIndex;
-                    } else if (light instanceof PointLight) {
-                        type = "POINTLIGHT" + lightIndex;
-                    } else {
-                        type = "DIRLIGHT" + lightIndex;
-                    }
-
-                    this._defines[type] = true;
-
-                    // Shadows
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = light.getShadowGenerator();
-                        if (mesh && mesh.receiveShadows && shadowGenerator) {
-                            this._defines["SHADOW" + lightIndex] = true;
-
-                            this._defines.SHADOWS = true;
-
-                            if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
-                                this._defines["SHADOWVSM" + lightIndex] = true;
-                            }
-
-                            if (shadowGenerator.usePoissonSampling) {
-                                this._defines["SHADOWPCF" + lightIndex] = true;
-                            }
-                        }
-                    }
-
-                    lightIndex++;
-                    if (lightIndex === maxSimultaneousLights)
-                        break;
-                }
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
 
             // Attribs
@@ -270,10 +236,10 @@ module BABYLON {
                         this._defines.VERTEXALPHA = true;
                     }
                 }
+                
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.BONES = true;
+                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                    this._defines.BONES4 = true;
                 }
 
                 // Instances
@@ -294,30 +260,10 @@ module BABYLON {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                for (lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-                    if (!this._defines["LIGHT" + lightIndex]) {
-                        continue;
-                    }
-
-                    if (lightIndex > 0) {
-                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOW" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWPCF" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWVSM" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                    }
-                }
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
              
-                if (this._defines.BONES4) {
-                    fallbacks.addFallback(0, "BONES4");
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
@@ -339,40 +285,28 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.BONES) {
-                    attribs.push(VertexBuffer.MatricesIndicesKind);
-                    attribs.push(VertexBuffer.MatricesWeightsKind);
-                }
-
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
                 // Legacy browser patch
                 var shaderName = "fur";
                 var join = this._defines.toString();
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vDiffuseInfos", 
+                    "mBones",
+                    "vClipPlane", "diffuseMatrix",
+                    "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing", "furDensity"
+                ];
+                var samplers = ["diffuseSampler",
+                    "heightTexture", "furTexture"
+                ];
+                
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                
                 this._effect = scene.getEngine().createEffect(shaderName,
-                    attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                        "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                        "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                        "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                        "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", 
-                        "mBones",
-                        "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                        "furLength", "furAngle", "furColor"
-                    ],
-                    ["diffuseSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
-                        "heightTexture"
-                    ],
-                    join, fallbacks, this.onCompiled, this.onError);
+                    attribs, uniforms, samplers,
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -404,9 +338,7 @@ module BABYLON {
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
-            }
+            MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
@@ -422,10 +354,7 @@ module BABYLON {
                 }
                 
                 // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+                MaterialHelper.BindClipPlane(this._effect, scene);
 
                 // Point size
                 if (this.pointsCloud) {
@@ -435,53 +364,10 @@ module BABYLON {
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
             }
 
-            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                var lightIndex = 0;
-                for (var index = 0; index < scene.lights.length; index++) {
-                    var light = scene.lights[index];
-
-                    if (!light.isEnabled()) {
-                        continue;
-                    }
-
-                    if (!light.canAffectMesh(mesh)) {
-                        continue;
-                    }
-
-                    if (light instanceof PointLight) {
-                        // Point Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex);
-                    } else if (light instanceof DirectionalLight) {
-                        // Directional Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex);
-                    } else if (light instanceof SpotLight) {
-                        // Spot Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                    } else if (light instanceof HemisphericLight) {
-                        // Hemispheric Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                    }
-
-                    light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
-                    this._effect.setColor4("vLightDiffuse" + lightIndex, this._scaledDiffuse, light.range);
-
-                    // Shadows
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = light.getShadowGenerator();
-                        if (mesh.receiveShadows && shadowGenerator) {
-                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                            this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
-                        }
-                    }
-
-                    lightIndex++;
-
-                    if (lightIndex === maxSimultaneousLights)
-                        break;
-                }
+                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
             }
 
             // View
@@ -490,15 +376,23 @@ module BABYLON {
             }
 
             // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
+            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
             
             this._effect.setFloat("furLength", this.furLength);
             this._effect.setFloat("furAngle", this.furAngle);
             this._effect.setColor4("furColor", this.furColor, 1.0);
-
+            
+            if (this.highLevelFur) {
+                this._effect.setVector3("furGravity", this.furGravity);
+                this._effect.setFloat("furOffset", this.furOffset);
+                this._effect.setFloat("furSpacing", this.furSpacing);
+                this._effect.setFloat("furDensity", this.furDensity);
+                
+                this._furTime += this.getScene().getEngine().getDeltaTime() / this.furSpeed;
+                this._effect.setFloat("furTime", this._furTime);
+                
+                this._effect.setTexture("furTexture", this.furTexture);
+            }
  
             super.bind(world, mesh);
         }
@@ -521,80 +415,114 @@ module BABYLON {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();
             }
+            
+            if (this._meshes) {
+                for (var i = 1; i < this._meshes.length; i++) {
+                    this._meshes[i].material.dispose(forceDisposeEffect);
+                    this._meshes[i].dispose();
+                }
+            }
 
             super.dispose(forceDisposeEffect);
         }
-
-        public clone(name: string): FurMaterial {
-            var newMaterial = new FurMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Fur material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.heightTexture && this.heightTexture.clone) {
-                newMaterial.heightTexture = this.heightTexture.clone();
-            }
-            if (this.diffuseColor && this.diffuseColor.clone) {
-                newMaterial.diffuseColor = this.diffuseColor.clone();
-            }
-            
-            return newMaterial;
-        }
         
-        public serialize(): any {		
-            var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.FurMaterial";
-            serializationObject.diffuseColor    = this.diffuseColor.asArray();
-            serializationObject.disableLighting = this.disableLighting;
-            serializationObject.furLength = this.furLength;
-            serializationObject.furAngle = this.furAngle;
-            serializationObject.furColor = this.furColor.asArray();
-            
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-            
-            if (this.heightTexture) {
-                serializationObject.heightTexture = this.heightTexture.serialize();
-            }
+        public clone(name: string): FurMaterial {
+            return SerializationHelper.Clone(() => new FurMaterial(name, this.getScene()), this);
+        }
 
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.FurMaterial";
+            
+            if (this._meshes) {
+                serializationObject.sourceMeshName = this._meshes[0].name;
+                serializationObject.quality = this._meshes.length;
+            }
+            
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {
-            var material = new FurMaterial(source.name, scene);
-
-            material.diffuseColor       = Color3.FromArray(source.diffuseColor);
-            material.furLength          = source.furLength;
-            material.furAngle           = source.furAngle;
-            material.furColor           = Color3.FromArray(source.furColor);
-            material.disableLighting    = source.disableLighting;
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            var material = SerializationHelper.Parse(() => new FurMaterial(source.name, scene), source, scene, rootUrl);
+            
+            if (source.sourceMeshName && material.highLevelFur) {
+                scene.executeWhenReady(() => {
+                    var sourceMesh = <Mesh>scene.getMeshByName(source.sourceMeshName);
+                    if (sourceMesh) {
+                        var furTexture = FurMaterial.GenerateTexture("Fur Texture", scene);
+                        material.furTexture = furTexture;
+                        FurMaterial.FurifyMesh(sourceMesh, source.quality);
+                    }
+                });
             }
             
-            if (source.heightTexture) {
-                material.heightTexture = Texture.Parse(source.heightTexture, scene, rootUrl);
-            }
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
             return material;
+        }
+        
+        public static GenerateTexture(name: string, scene: Scene): DynamicTexture {
+            // Generate fur textures
+            var texture = new DynamicTexture("FurTexture " + name, 256, scene, true);
+            var context = texture.getContext();
+            
+            for ( var i = 0; i < 20000; ++i ) {
+                context.fillStyle = "rgba(255, " + Math.floor(Math.random() * 255) + ", " + Math.floor(Math.random() * 255) + ", 1)";
+                context.fillRect((Math.random() * texture.getSize().width), (Math.random() * texture.getSize().height), 2, 2);
+            }
+            
+            texture.update(false);
+            texture.wrapU = Texture.WRAP_ADDRESSMODE;
+            texture.wrapV = Texture.WRAP_ADDRESSMODE;
+            
+            return texture;
+        }
+        
+        // Creates and returns an array of meshes used as shells for the Fur Material
+        // that can be disposed later in your code
+        // The quality is in interval [0, 100]
+        public static FurifyMesh(sourceMesh: Mesh, quality: number): Mesh[] {
+            var meshes = [sourceMesh];
+            var mat: FurMaterial = <FurMaterial>sourceMesh.material;
+            var i;
+            
+            if (!(mat instanceof FurMaterial)) {
+                throw "The material of the source mesh must be a Fur Material";
+            }
+            
+            for (i = 1; i < quality; i++) {
+                var offsetFur = new BABYLON.FurMaterial(mat.name + i, sourceMesh.getScene());
+                sourceMesh.getScene().materials.pop();
+                Tags.EnableFor(offsetFur);
+                Tags.AddTagsTo(offsetFur, "furShellMaterial");
+                
+                offsetFur.furLength = mat.furLength;
+                offsetFur.furAngle = mat.furAngle;
+                offsetFur.furGravity = mat.furGravity;
+                offsetFur.furSpacing = mat.furSpacing;
+                offsetFur.furSpeed = mat.furSpeed;
+                offsetFur.furColor = mat.furColor;
+                offsetFur.diffuseTexture = mat.diffuseTexture;
+                offsetFur.furOffset = i / quality;
+                offsetFur.furTexture = mat.furTexture;
+                offsetFur.highLevelFur = mat.highLevelFur;
+                offsetFur.furTime = mat.furTime;
+                offsetFur.furDensity = mat.furDensity;
+                
+                var offsetMesh = sourceMesh.clone(sourceMesh.name + i);
+                
+                offsetMesh.material = offsetFur;
+                offsetMesh.skeleton = sourceMesh.skeleton;
+                offsetMesh.position = Vector3.Zero();
+                meshes.push(offsetMesh);
+            }
+            
+            for (i = 1; i < meshes.length; i++) {
+                meshes[i].parent = sourceMesh;
+            }
+            
+            (<FurMaterial>sourceMesh.material)._meshes = meshes;
+            
+            return meshes;
         }
     }
 } 

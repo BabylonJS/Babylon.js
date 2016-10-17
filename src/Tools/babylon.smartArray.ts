@@ -25,11 +25,12 @@
             value.__smartArrayFlags[this._id] = this._duplicateId;
         }
 
-        public pushNoDuplicate(value): void {
+        public pushNoDuplicate(value): boolean {
             if (value.__smartArrayFlags && value.__smartArrayFlags[this._id] === this._duplicateId) {
-                return;
+                return false;
             }
             this.push(value);
+            return true;
         }
 
         public sort(compareFn): void {

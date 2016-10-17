@@ -1,253 +1,4 @@
 ﻿module BABYLON {
-    export class _DepthCullingState {
-        private _isDepthTestDirty = false;
-        private _isDepthMaskDirty = false;
-        private _isDepthFuncDirty = false;
-        private _isCullFaceDirty = false;
-        private _isCullDirty = false;
-        private _isZOffsetDirty = false;
-
-        private _depthTest: boolean;
-        private _depthMask: boolean;
-        private _depthFunc: number;
-        private _cull: boolean;
-        private _cullFace: number;
-        private _zOffset: number;
-
-        public get isDirty(): boolean {
-            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
-        }
-
-        public get zOffset(): number {
-            return this._zOffset;
-        }
-
-        public set zOffset(value: number) {
-            if (this._zOffset === value) {
-                return;
-            }
-
-            this._zOffset = value;
-            this._isZOffsetDirty = true;
-        }
-
-        public get cullFace(): number {
-            return this._cullFace;
-        }
-
-        public set cullFace(value: number) {
-            if (this._cullFace === value) {
-                return;
-            }
-
-            this._cullFace = value;
-            this._isCullFaceDirty = true;
-        }
-
-        public get cull() {
-            return this._cull;
-        }
-
-        public set cull(value: boolean) {
-            if (this._cull === value) {
-                return;
-            }
-
-            this._cull = value;
-            this._isCullDirty = true;
-        }
-
-        public get depthFunc(): number {
-            return this._depthFunc;
-        }
-
-        public set depthFunc(value: number) {
-            if (this._depthFunc === value) {
-                return;
-            }
-
-            this._depthFunc = value;
-            this._isDepthFuncDirty = true;
-        }
-
-        public get depthMask(): boolean {
-            return this._depthMask;
-        }
-
-        public set depthMask(value: boolean) {
-            if (this._depthMask === value) {
-                return;
-            }
-
-            this._depthMask = value;
-            this._isDepthMaskDirty = true;
-        }
-
-        public get depthTest(): boolean {
-            return this._depthTest;
-        }
-
-        public set depthTest(value: boolean) {
-            if (this._depthTest === value) {
-                return;
-            }
-
-            this._depthTest = value;
-            this._isDepthTestDirty = true;
-        }
-
-        public reset() {
-            this._depthMask = true;
-            this._depthTest = true;
-            this._depthFunc = null;
-            this._cull = null;
-            this._cullFace = null;
-            this._zOffset = 0;
-
-            this._isDepthTestDirty = true;
-            this._isDepthMaskDirty = true;
-            this._isDepthFuncDirty = false;
-            this._isCullFaceDirty = false;
-            this._isCullDirty = false;
-            this._isZOffsetDirty = false;
-        }
-
-        public apply(gl: WebGLRenderingContext) {
-
-            if (!this.isDirty) {
-                return;
-            }
-
-            // Cull
-            if (this._isCullDirty) {
-                if (this.cull) {
-                    gl.enable(gl.CULL_FACE);
-                } else {
-                    gl.disable(gl.CULL_FACE);
-                }
-
-                this._isCullDirty = false;
-            }
-
-            // Cull face
-            if (this._isCullFaceDirty) {
-                gl.cullFace(this.cullFace);
-                this._isCullFaceDirty = false;
-            }
-
-            // Depth mask
-            if (this._isDepthMaskDirty) {
-                gl.depthMask(this.depthMask);
-                this._isDepthMaskDirty = false;
-            }
-
-            // Depth test
-            if (this._isDepthTestDirty) {
-                if (this.depthTest) {
-                    gl.enable(gl.DEPTH_TEST);
-                } else {
-                    gl.disable(gl.DEPTH_TEST);
-                }
-                this._isDepthTestDirty = false;
-            }
-
-            // Depth func
-            if (this._isDepthFuncDirty) {
-                gl.depthFunc(this.depthFunc);
-                this._isDepthFuncDirty = false;
-            }
-
-            // zOffset
-            if (this._isZOffsetDirty) {
-                if (this.zOffset) {
-                    gl.enable(gl.POLYGON_OFFSET_FILL);
-                    gl.polygonOffset(this.zOffset, 0);
-                } else {
-                    gl.disable(gl.POLYGON_OFFSET_FILL);
-                }
-
-                this._isZOffsetDirty = false;
-            }
-        }
-    }
-
-    export class _AlphaState {
-        private _isAlphaBlendDirty = false;
-        private _isBlendFunctionParametersDirty = false;
-        private _alphaBlend = false;
-        private _blendFunctionParameters = new Array<number>(4);
-
-        public get isDirty(): boolean {
-            return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
-        }
-
-        public get alphaBlend(): boolean {
-            return this._alphaBlend;
-        }
-
-        public set alphaBlend(value: boolean) {
-            if (this._alphaBlend === value) {
-                return;
-            }
-
-            this._alphaBlend = value;
-            this._isAlphaBlendDirty = true;
-        }
-
-        public setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void {
-            if (
-                this._blendFunctionParameters[0] === value0 &&
-                this._blendFunctionParameters[1] === value1 &&
-                this._blendFunctionParameters[2] === value2 &&
-                this._blendFunctionParameters[3] === value3
-            ) {
-                return;
-            }
-
-            this._blendFunctionParameters[0] = value0;
-            this._blendFunctionParameters[1] = value1;
-            this._blendFunctionParameters[2] = value2;
-            this._blendFunctionParameters[3] = value3;
-
-            this._isBlendFunctionParametersDirty = true;
-        }
-
-        public reset() {
-            this._alphaBlend = false;
-            this._blendFunctionParameters[0] = null;
-            this._blendFunctionParameters[1] = null;
-            this._blendFunctionParameters[2] = null;
-            this._blendFunctionParameters[3] = null;
-
-            this._isAlphaBlendDirty = true;
-            this._isBlendFunctionParametersDirty = false;
-        }
-
-        public apply(gl: WebGLRenderingContext) {
-
-            if (!this.isDirty) {
-                return;
-            }
-
-            // Alpha blend
-            if (this._isAlphaBlendDirty) {
-                if (this._alphaBlend) {
-                    gl.enable(gl.BLEND);
-                } else {
-                    gl.disable(gl.BLEND);
-                }
-
-                this._isAlphaBlendDirty = false;
-            }
-
-            // Alpha function
-            if (this._isBlendFunctionParametersDirty) {
-                gl.blendFuncSeparate(this._blendFunctionParameters[0], this._blendFunctionParameters[1], this._blendFunctionParameters[2], this._blendFunctionParameters[3]);
-                this._isBlendFunctionParametersDirty = false;
-            }
-        }
-    }
-
     var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string): WebGLShader => {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
@@ -260,13 +11,18 @@
         return shader;
     };
 
+    var HALF_FLOAT_OES = 0x8D61;
+
     var getWebGLTextureType = (gl: WebGLRenderingContext, type: number): number => {
-        var textureType = gl.UNSIGNED_BYTE;
+        if (type === Engine.TEXTURETYPE_FLOAT) {
+            return gl.FLOAT;
+        }
+        else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+            // Add Half Float Constant.
+            return HALF_FLOAT_OES;
+        }
 
-        if (type === Engine.TEXTURETYPE_FLOAT)
-            textureType = gl.FLOAT;
-
-        return textureType;
+        return gl.UNSIGNED_BYTE;
     };
 
     var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
@@ -307,7 +63,7 @@
         var potWidth = Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
         var potHeight = Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
 
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        engine._bindTextureDirectly(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
 
         texture._baseWidth = width;
@@ -327,14 +83,19 @@
             gl.generateMipmap(gl.TEXTURE_2D);
         }
 
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        engine._bindTextureDirectly(gl.TEXTURE_2D, null);
 
         engine.resetTextureCache();
         scene._removePendingData(texture);
+
+        texture.onLoadedCallbacks.forEach(callback => {
+            callback();
+        });
+        texture.onLoadedCallbacks = [];
     };
 
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
-        onfinish: (images: HTMLImageElement[]) => void) => {
+        onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: () => void = null) => {
 
         var img: HTMLImageElement;
 
@@ -351,6 +112,10 @@
 
         var onerror = () => {
             scene._removePendingData(img);
+
+            if (onErrorCallBack) {
+                onErrorCallBack();
+            }
         };
 
         img = Tools.LoadImage(url, onload, onerror, scene.database);
@@ -358,30 +123,76 @@
     }
 
     var cascadeLoad = (rootUrl: string, scene,
-        onfinish: (images: HTMLImageElement[]) => void, extensions: string[]) => {
+        onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: () => void = null) => {
 
         var loadedImages: any = [];
         loadedImages._internalCount = 0;
 
         for (var index = 0; index < 6; index++) {
-            partialLoad(rootUrl + extensions[index], index, loadedImages, scene, onfinish);
+            partialLoad(files[index], index, loadedImages, scene, onfinish, onError);
         }
     };
+
+    export class InstancingAttributeInfo {
+        /**
+         * Index/offset of the attribute in the vertex shader
+         */
+        index: number;
+
+        /**
+         * size of the attribute, 1, 2, 3 or 4
+         */
+        attributeSize: number;
+
+        /**
+         * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
+         * default is FLOAT
+         */
+        attribyteType: number;
+
+        /**
+         * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
+         */
+        normalized: boolean;
+
+        /**
+         * Offset of the data in the Vertex Buffer acting as the instancing buffer
+         */
+        offset: number;
+
+        /**
+         * Name of the GLSL attribute, for debugging purpose only
+         */
+        attributeName: string;
+    }
 
     export class EngineCapabilities {
         public maxTexturesImageUnits: number;
         public maxTextureSize: number;
         public maxCubemapTextureSize: number;
         public maxRenderTextureSize: number;
+        public maxVertexAttribs: number;
         public standardDerivatives: boolean;
-        public s3tc;
+        public s3tc: WEBGL_compressed_texture_s3tc;
         public textureFloat: boolean;
-        public textureAnisotropicFilterExtension;
+        public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
         public maxAnisotropy: number;
-        public instancedArrays;
+        public instancedArrays: ANGLE_instanced_arrays;
         public uintIndices: boolean;
         public highPrecisionShaderSupported: boolean;
         public fragmentDepthSupported: boolean;
+        public textureFloatLinearFiltering: boolean;
+        public textureFloatRender: boolean;
+        public textureHalfFloat: boolean;
+        public textureHalfFloatLinearFiltering: boolean;
+        public textureHalfFloatRender: boolean;
+        public textureLOD: boolean;
+        public drawBuffersExtension;
+    }
+
+    export interface EngineOptions extends WebGLContextAttributes {
+        limitDeviceRatio?: number;
+        autoEnableWebVR?: boolean;
     }
 
     /**
@@ -410,6 +221,86 @@
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
+        private static _TEXTURETYPE_HALF_FLOAT = 2;
+
+        // Depht or Stencil test Constants.
+        private static _NEVER = 0x0200; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn.
+        private static _ALWAYS = 0x0207; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn.
+        private static _LESS = 0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
+        private static _EQUAL = 0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
+        private static _LEQUAL = 0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
+        private static _GREATER = 0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
+        private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
+        private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
+
+        public static get NEVER(): number {
+            return Engine._NEVER;
+        }
+
+        public static get ALWAYS(): number {
+            return Engine._ALWAYS;
+        }
+
+        public static get LESS(): number {
+            return Engine._LESS;
+        }
+
+        public static get EQUAL(): number {
+            return Engine._EQUAL;
+        }
+
+        public static get LEQUAL(): number {
+            return Engine._LEQUAL;
+        }
+
+        public static get GREATER(): number {
+            return Engine._GREATER;
+        }
+
+        public static get GEQUAL(): number {
+            return Engine._GEQUAL;
+        }
+
+        public static get NOTEQUAL(): number {
+            return Engine._NOTEQUAL;
+        }
+
+        // Stencil Actions Constants.
+        private static _KEEP = 0x1E00;
+        private static _REPLACE = 0x1E01;
+        private static _INCR = 0x1E02;
+        private static _DECR = 0x1E03;
+        private static _INVERT = 0x150A;
+        private static _INCR_WRAP = 0x8507;
+        private static _DECR_WRAP = 0x8508;
+
+        public static get KEEP(): number {
+            return Engine._KEEP;
+        }
+
+        public static get REPLACE(): number {
+            return Engine._REPLACE;
+        }
+
+        public static get INCR(): number {
+            return Engine._INCR;
+        }
+
+        public static get DECR(): number {
+            return Engine._DECR;
+        }
+
+        public static get INVERT(): number {
+            return Engine._INVERT;
+        }
+
+        public static get INCR_WRAP(): number {
+            return Engine._INCR_WRAP;
+        }
+
+        public static get DECR_WRAP(): number {
+            return Engine._DECR_WRAP;
+        }
 
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
@@ -483,12 +374,15 @@
             return Engine._TEXTURETYPE_FLOAT;
         }
 
+        public static get TEXTURETYPE_HALF_FLOAT(): number {
+            return Engine._TEXTURETYPE_HALF_FLOAT;
+        }
+
         public static get Version(): string {
-            return "2.3.0-alpha";
+            return "2.5.-beta";
         }
 
         // Updatable statics so stick with vars here
-        public static Epsilon = 0.001;
         public static CollisionsEpsilon = 0.001;
         public static CodeRepository = "src/";
         public static ShadersRepository = "src/Shaders/";
@@ -502,10 +396,25 @@
         public enableOfflineSupport = true;
         public scenes = new Array<Scene>();
 
+        //WebVR 
+
+        //The new WebVR uses promises.
+        //this promise resolves with the current devices available.
+        public vrDisplaysPromise;
+
+        private _vrDisplays;
+        private _vrDisplayEnabled;
+        private _oldSize: BABYLON.Size;
+        private _oldHardwareScaleFactor: number;
+        private _vrAnimationFrameHandler: number;
+
         // Private Members
         public _gl: WebGLRenderingContext;
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
+        private _webGLVersion = "1.0";
+
+        private _badOS = false;
 
         public static audioEngine: AudioEngine;
 
@@ -518,10 +427,11 @@
         private _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _alphaTest: boolean;
+        private _isStencilEnable: boolean;
 
         private _loadingScreen: ILoadingScreen;
 
-        private _drawCalls = 0;
+        public _drawCalls = new PerfCounter();
 
         private _glVersion: string;
         private _glRenderer: string;
@@ -539,27 +449,37 @@
         private deltaTime = 0;
 
         // States
-        private _depthCullingState = new _DepthCullingState();
-        private _alphaState = new _AlphaState();
+        private _depthCullingState = new Internals._DepthCullingState();
+        private _stencilState = new Internals._StencilState();
+        private _alphaState = new Internals._AlphaState();
         private _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
         private _loadedTexturesCache = new Array<WebGLTexture>();
         private _maxTextureChannels = 16;
-        private _activeTexturesCache = new Array<BaseTexture>(this._maxTextureChannels);
+        private _activeTexture: number;
+        private _activeTexturesCache = new Array<WebGLTexture>(this._maxTextureChannels);
         private _currentEffect: Effect;
+        private _currentProgram: WebGLProgram;
         private _compiledEffects = {};
-        private _vertexAttribArrays: boolean[];
+        private _vertexAttribArraysEnabled: boolean[] = [];
         private _cachedViewport: Viewport;
         private _cachedVertexBuffers: any;
         private _cachedIndexBuffer: WebGLBuffer;
         private _cachedEffectForVertexBuffers: Effect;
         private _currentRenderTarget: WebGLTexture;
         private _uintIndicesCurrentlySet = false;
+        private _currentBoundBuffer = new Array<WebGLBuffer>();
+        private _currentFramebuffer: WebGLFramebuffer;
+        private _currentBufferPointers: Array<{ indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number, buffer: WebGLBuffer }> = [];
+        private _currentInstanceLocations = new Array<number>();
+        private _currentInstanceBuffers = new Array<WebGLBuffer>();
+        private _textureUnits: Int32Array;
 
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
 
+        private _externalData: StringDictionary<Object>;
         private _bindedRenderFunction: any;
 
         /**
@@ -568,22 +488,41 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean }, adaptToDeviceRatio = true) {
+        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = true) {
             this._renderingCanvas = canvas;
 
-            options = options || {};
-            options.antialias = antialias;
+            this._externalData = new StringDictionary<Object>();
 
+            options = options || {};
+
+            if (antialias != null) {
+                options.antialias = antialias;
+            }
 
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
 
+            // Checks if some of the format renders first to allow the use of webgl inspector.
+            var renderToFullFloat = this._canRenderToFloatTexture();
+            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
+
             // GL
-            try {
-                this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
-            } catch (e) {
-                throw new Error("WebGL not supported");
+            //try {
+            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+            //    if (this._gl) {
+            //        this._webGLVersion = "2.0";
+            //    }
+            //} catch (e) {
+            //    // Do nothing
+            //}
+
+            if (!this._gl) {
+                try {
+                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                } catch (e) {
+                    throw new Error("WebGL not supported");
+                }
             }
 
             if (!this._gl) {
@@ -602,15 +541,18 @@
             window.addEventListener("focus", this._onFocus);
 
             // Viewport
-            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / (window.devicePixelRatio || 1.0) : 1.0;
+            var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
 
             // Caps
+            this._isStencilEnable = options.stencil;
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
+            this._caps.maxVertexAttribs = this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS);
 
             // Infos
             this._glVersion = this._gl.getParameter(this._gl.VERSION);
@@ -639,6 +581,14 @@
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
+            this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+            this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
+            this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
+            this._caps.textureFloatRender = renderToFullFloat;
+
+            this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
+            this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
+            this._caps.textureHalfFloatRender = renderToHalfFloat;
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -665,9 +615,9 @@
                 // Pointer lock
                 if (this.isFullscreen && this._pointerLockRequested) {
                     canvas.requestPointerLock = canvas.requestPointerLock ||
-                    canvas.msRequestPointerLock ||
-                    canvas.mozRequestPointerLock ||
-                    canvas.webkitRequestPointerLock;
+                        canvas.msRequestPointerLock ||
+                        canvas.mozRequestPointerLock ||
+                        canvas.webkitRequestPointerLock;
 
                     if (canvas.requestPointerLock) {
                         canvas.requestPointerLock();
@@ -697,11 +647,32 @@
             if (AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
             }
-			
+
             //default loading screen
             this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
 
+            //Load WebVR Devices
+            if (options.autoEnableWebVR) {
+                this.initWebVR();
+            }
+
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /AppleWebKit.*10.[\d] Mobile/
+            //ua sniffing is the tool of the devil.
+            this._badOS = regexp.test(navigator.userAgent);
+
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+        }
+
+        public get webGLVersion(): string {
+            return this._webGLVersion;
+        }
+
+        /**
+         * Returns true if the stencil buffer has been enabled through the creation option of the context.
+         */
+        public get isStencilEnable(): boolean {
+            return this._isStencilEnable;
         }
 
         private _prepareWorkingCanvas(): void {
@@ -774,12 +745,19 @@
         }
 
         public get drawCalls(): number {
+            return this._drawCalls.current;
+        }
+
+        public get drawCallsPerfCounter(): PerfCounter {
             return this._drawCalls;
         }
 
-        // Methods
-        public resetDrawCalls(): void {
-            this._drawCalls = 0;
+        public getDepthFunction(): number {
+            return this._depthCullingState.depthFunc;
+        }
+
+        public setDepthFunction(depthFunc: number) {
+            this._depthCullingState.depthFunc = depthFunc;
         }
 
         public setDepthFunctionToGreater(): void {
@@ -796,6 +774,70 @@
 
         public setDepthFunctionToLessOrEqual(): void {
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
+        }
+
+        public getStencilBuffer(): boolean {
+            return this._stencilState.stencilTest;
+        }
+
+        public setStencilBuffer(enable: boolean): void {
+            this._stencilState.stencilTest = enable;
+        }
+
+        public getStencilMask(): number {
+            return this._stencilState.stencilMask;
+        }
+
+        public setStencilMask(mask: number): void {
+            this._stencilState.stencilMask = mask;
+        }
+
+        public getStencilFunction(): number {
+            return this._stencilState.stencilFunc;
+        }
+
+        public getStencilFunctionReference(): number {
+            return this._stencilState.stencilFuncRef;
+        }
+
+        public getStencilFunctionMask(): number {
+            return this._stencilState.stencilFuncMask;
+        }
+
+        public setStencilFunction(stencilFunc: number) {
+            this._stencilState.stencilFunc = stencilFunc;
+        }
+
+        public setStencilFunctionReference(reference: number) {
+            this._stencilState.stencilFuncRef = reference;
+        }
+
+        public setStencilFunctionMask(mask: number) {
+            this._stencilState.stencilFuncMask = mask;
+        }
+
+        public getStencilOperationFail(): number {
+            return this._stencilState.stencilOpStencilFail;
+        }
+
+        public getStencilOperationDepthFail(): number {
+            return this._stencilState.stencilOpDepthFail;
+        }
+
+        public getStencilOperationPass(): number {
+            return this._stencilState.stencilOpStencilDepthPass;
+        }
+
+        public setStencilOperationFail(operation: number): void {
+            this._stencilState.stencilOpStencilFail = operation;
+        }
+
+        public setStencilOperationDepthFail(operation: number): void {
+            this._stencilState.stencilOpDepthFail = operation;
+        }
+
+        public setStencilOperationPass(operation: number): void {
+            this._stencilState.stencilOpStencilDepthPass = operation;
         }
 
         /**
@@ -837,7 +879,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                Tools.QueueNewFrame(this._bindedRenderFunction);
+                Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplayEnabled);
             } else {
                 this._renderingQueueLaunched = false;
             }
@@ -845,7 +887,7 @@
 
         /**
          * Register and execute a render loop. The engine can have more than one render function.
-         * @param {Function} renderFunction - the function to continuesly execute starting the next render loop.
+         * @param {Function} renderFunction - the function to continuously execute starting the next render loop.
          * @example
          * engine.runRenderLoop(function () {
          *      scene.render()
@@ -868,6 +910,7 @@
         /**
          * Toggle full screen mode.
          * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
+         * @param {any} options - an options object to be sent to the requestFullscreen function
          */
         public switchFullscreen(requestPointerLock: boolean): void {
             if (this.isFullscreen) {
@@ -878,27 +921,47 @@
             }
         }
 
-        public clear(color: any, backBuffer: boolean, depthStencil: boolean): void {
+        public clear(color: any, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
             this.applyStates();
 
+            var mode = 0;
             if (backBuffer) {
                 this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            }
-
-            if (depthStencil && this._depthCullingState.depthMask) {
-                this._gl.clearDepth(1.0);
-            }
-            var mode = 0;
-
-            if (backBuffer) {
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
-
-            if (depthStencil && this._depthCullingState.depthMask) {
+            if (depth) {
+                this._gl.clearDepth(1.0);
                 mode |= this._gl.DEPTH_BUFFER_BIT;
             }
-
+            if (stencil) {
+                this._gl.clearStencil(0);
+                mode |= this._gl.STENCIL_BUFFER_BIT;
+            }
             this._gl.clear(mode);
+        }
+
+        public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
+            let gl = this._gl;
+
+            // Save state
+            var curScissor = gl.getParameter(gl.SCISSOR_TEST);
+            var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
+
+            // Change state
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor(x, y, width, height);
+
+            // Clear
+            this.clear(clearColor, true, true, true);
+
+            // Restore state
+            gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
+
+            if (curScissor === true) {
+                gl.enable(gl.SCISSOR_TEST);
+            } else {
+                gl.disable(gl.SCISSOR_TEST);
+            }
         }
 
         /**
@@ -918,10 +981,18 @@
             this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
         }
 
-        public setDirectViewport(x: number, y: number, width: number, height: number): void {
+        /**
+         * Directly set the WebGL Viewport
+         * The x, y, width & height are directly passed to the WebGL call
+         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state.
+         */
+        public setDirectViewport(x: number, y: number, width: number, height: number): Viewport {
+            let currentViewport = this._cachedViewport;
             this._cachedViewport = null;
 
             this._gl.viewport(x, y, width, height);
+
+            return currentViewport;
         }
 
         public beginFrame(): void {
@@ -929,7 +1000,15 @@
         }
 
         public endFrame(): void {
-            //this.flushFramebuffer();
+            //force a flush in case we are using a bad OS.
+            if (this._badOS) {
+                this.flushFramebuffer();
+            }
+
+            //submit frame to the vr device, if enabled
+            if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
+                this._vrDisplayEnabled.submitFrame()
+            }
         }
 
         /**
@@ -947,7 +1026,7 @@
 
             for (var index = 0; index < this.scenes.length; index++) {
                 var scene = this.scenes[index];
-                if (scene.debugLayer.isVisible()) {
+                if (DebugLayer && scene.debugLayer.isVisible()) {
                     scene.debugLayer._syncPositions();
                 }
             }
@@ -973,41 +1052,107 @@
             }
         }
 
-        public bindFramebuffer(texture: WebGLTexture, faceIndex?: number): void {
-            this._currentRenderTarget = texture;
 
-            var gl = this._gl;
-            gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
+        //WebVR functions
 
-            if (texture.isCube) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
+        public initWebVR() {
+            if (!this.vrDisplaysPromise) {
+                this._getVRDisplays();
+            }
+        }
+
+        public enableVR(vrDevice) {
+            this._vrDisplayEnabled = vrDevice;
+            this._vrDisplayEnabled.requestPresent([{ source: this.getRenderingCanvas() }]).then(this._onVRFullScreenTriggered);
+        }
+
+        public disableVR() {
+            if (this._vrDisplayEnabled) {
+                this._vrDisplayEnabled.exitPresent().then(this._onVRFullScreenTriggered);
+            }
+        }
+
+        private _onVRFullScreenTriggered = () => {
+            if (this._vrDisplayEnabled && this._vrDisplayEnabled.isPresenting) {
+                //get the old size before we change
+                this._oldSize = new BABYLON.Size(this.getRenderWidth(), this.getRenderHeight());
+                this._oldHardwareScaleFactor = this.getHardwareScalingLevel();
+
+                //according to the WebVR specs, requestAnimationFrame should be triggered only once.
+                //But actually, no browser follow the specs...
+                //this._vrAnimationFrameHandler = this._vrDisplayEnabled.requestAnimationFrame(this._bindedRenderFunction);
+
+                //get the width and height, change the render size
+                var leftEye = this._vrDisplayEnabled.getEyeParameters('left');
+                var width, height;
+                this.setHardwareScalingLevel(1);
+                this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
             } else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                //When the specs are implemented, need to uncomment this.
+                //this._vrDisplayEnabled.cancelAnimationFrame(this._vrAnimationFrameHandler);
+                this.setHardwareScalingLevel(this._oldHardwareScaleFactor);
+                this.setSize(this._oldSize.width, this._oldSize.height);
+                this._vrDisplayEnabled = undefined;
+            }
+        }
+
+        private _getVRDisplays() {
+            var getWebVRDevices = (devices: Array<any>) => {
+                var size = devices.length;
+                var i = 0;
+
+                this._vrDisplays = devices.filter(function (device) {
+                    return devices[i] instanceof VRDisplay;
+                });
+
+                return this._vrDisplays;
             }
 
-            this._gl.viewport(0, 0, texture._width, texture._height);
+            //using a key due to typescript
+            if (navigator.getVRDisplays) {
+                this.vrDisplaysPromise = navigator.getVRDisplays().then(getWebVRDevices);
+            }
+        }
+
+        public bindFramebuffer(texture: WebGLTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number): void {
+            this._currentRenderTarget = texture;
+            this.bindUnboundFramebuffer(texture._framebuffer);
+            var gl = this._gl;
+            if (texture.isCube) {
+
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
+            }
+
+            gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
 
             this.wipeCaches();
+        }
+
+        private bindUnboundFramebuffer(framebuffer: WebGLFramebuffer) {
+            if (this._currentFramebuffer !== framebuffer) {
+                this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, framebuffer);
+                this._currentFramebuffer = framebuffer;
+            }
         }
 
         public unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps = false): void {
             this._currentRenderTarget = null;
             if (texture.generateMipMaps && !disableGenerateMipMaps) {
                 var gl = this._gl;
-                gl.bindTexture(gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
-                gl.bindTexture(gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(gl.TEXTURE_2D, null);
             }
 
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
         }
 
         public generateMipMapsForCubemap(texture: WebGLTexture) {
             if (texture.generateMipMaps) {
                 var gl = this._gl;
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
             }
         }
 
@@ -1017,7 +1162,7 @@
 
         public restoreDefaultFramebuffer(): void {
             this._currentRenderTarget = null;
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
 
             this.setViewport(this._cachedViewport);
 
@@ -1026,13 +1171,13 @@
 
         // VBOs
         private _resetVertexBufferBinding(): void {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
+            this.bindArrayBuffer(null);
             this._cachedVertexBuffers = null;
         }
 
         public createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
             var vbo = this._gl.createBuffer();
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
+            this.bindArrayBuffer(vbo);
 
             if (vertices instanceof Float32Array) {
                 this._gl.bufferData(this._gl.ARRAY_BUFFER, <Float32Array>vertices, this._gl.STATIC_DRAW);
@@ -1045,39 +1190,52 @@
             return vbo;
         }
 
-        public createDynamicVertexBuffer(capacity: number): WebGLBuffer {
+        public createDynamicVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
             var vbo = this._gl.createBuffer();
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
+            this.bindArrayBuffer(vbo);
+
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, <Float32Array>vertices, this._gl.DYNAMIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(<number[]>vertices), this._gl.DYNAMIC_DRAW);
+            }
             this._resetVertexBufferBinding();
             vbo.references = 1;
             return vbo;
         }
 
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: number[] | Float32Array, offset?: number): void {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: number[] | Float32Array, offset?: number, count?: number): void {
+            this.bindArrayBuffer(vertexBuffer);
 
             if (offset === undefined) {
                 offset = 0;
             }
 
-            if (vertices instanceof Float32Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, <Float32Array>vertices);
+            if (count === undefined) {
+                if (vertices instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, <Float32Array>vertices);
+                } else {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(<number[]>vertices));
+                }
             } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(<number[]>vertices));
+                if (vertices instanceof Float32Array) {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <Float32Array>vertices.subarray(offset, offset + count));
+                } else {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(<number[]>vertices).subarray(offset, offset + count));
+                }
             }
 
             this._resetVertexBufferBinding();
         }
 
         private _resetIndexBufferBinding(): void {
-            this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, null);
+            this.bindIndexBuffer(null);
             this._cachedIndexBuffer = null;
         }
 
         public createIndexBuffer(indices: number[] | Int32Array): WebGLBuffer {
             var vbo = this._gl.createBuffer();
-            this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, vbo);
+            this.bindIndexBuffer(vbo);
 
             // Check for 32 bits indices
             var arrayBuffer;
@@ -1104,32 +1262,93 @@
             return vbo;
         }
 
-        public bindBuffers(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
+        public bindArrayBuffer(buffer: WebGLBuffer): void {
+            this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+        }
+
+        private bindIndexBuffer(buffer: WebGLBuffer): void {
+            this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
+        }
+
+        private bindBuffer(buffer: WebGLBuffer, target: number): void {
+            if (this._currentBoundBuffer[target] !== buffer) {
+                this._gl.bindBuffer(target, buffer);
+                this._currentBoundBuffer[target] = buffer;
+            }
+        }
+
+        public updateArrayBuffer(data: Float32Array): void {
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+        }
+
+        private vertexAttribPointer(buffer: WebGLBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
+            var pointer = this._currentBufferPointers[indx];
+
+            var changed = false;
+            if (!pointer) {
+                changed = true;
+                this._currentBufferPointers[indx] = { indx, size, type, normalized, stride, offset, buffer: buffer };
+            } else {
+                if (pointer.buffer !== buffer) { pointer.buffer = buffer; changed = true; }
+                if (pointer.size !== size) { pointer.size = size; changed = true; }
+                if (pointer.type !== type) { pointer.type = type; changed = true; }
+                if (pointer.normalized !== normalized) { pointer.normalized = normalized; changed = true; }
+                if (pointer.stride !== stride) { pointer.stride = stride; changed = true; }
+                if (pointer.offset !== offset) { pointer.offset = offset; changed = true; }
+            }
+
+            if (changed) {
+                this.bindArrayBuffer(buffer);
+                this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
+            }
+        }
+
+        public bindBuffersDirectly(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffer || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffer;
                 this._cachedEffectForVertexBuffers = effect;
 
-                this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
+                let attributesCount = effect.getAttributesCount();
 
                 var offset = 0;
-                for (var index = 0; index < vertexDeclaration.length; index++) {
-                    var order = effect.getAttributeLocation(index);
+                for (var index = 0; index < attributesCount; index++) {
 
-                    if (order >= 0) {
-                        this._gl.vertexAttribPointer(order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+                    if (index < vertexDeclaration.length) {
+
+                        var order = effect.getAttributeLocation(index);
+
+                        if (order >= 0) {
+                            if (!this._vertexAttribArraysEnabled[order]) {
+                                this._gl.enableVertexAttribArray(order);
+                                this._vertexAttribArraysEnabled[order] = true;
+                            }
+                            this.vertexAttribPointer(vertexBuffer, order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+                        }
+
+                        offset += vertexDeclaration[index] * 4;
+
+                    } else {
+
+                        //disable effect attributes that have no data
+                        var order = effect.getAttributeLocation(index);
+                        if (this._vertexAttribArraysEnabled[order]) {
+                            this._gl.disableVertexAttribArray(order);
+                            this._vertexAttribArraysEnabled[order] = false;
+                        }
+
                     }
-                    offset += vertexDeclaration[index] * 4;
+
                 }
             }
 
             if (this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
-                this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
             }
         }
 
-        public bindMultiBuffers(vertexBuffers: VertexBuffer[], indexBuffer: WebGLBuffer, effect: Effect): void {
+        public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
@@ -1141,21 +1360,52 @@
 
                     if (order >= 0) {
                         var vertexBuffer = vertexBuffers[attributes[index]];
+
                         if (!vertexBuffer) {
+                            if (this._vertexAttribArraysEnabled[order]) {
+                                this._gl.disableVertexAttribArray(order);
+                                this._vertexAttribArraysEnabled[order] = false;
+                            }
                             continue;
                         }
-                        var stride = vertexBuffer.getStrideSize();
-                        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer.getBuffer());
-                        this._gl.vertexAttribPointer(order, stride, this._gl.FLOAT, false, stride * 4, 0);
+
+                        if (!this._vertexAttribArraysEnabled[order]) {
+                            this._gl.enableVertexAttribArray(order);
+                            this._vertexAttribArraysEnabled[order] = true;
+                        }
+
+                        var buffer = vertexBuffer.getBuffer();
+                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+
+                        if (vertexBuffer.getIsInstanced()) {
+                            this._caps.instancedArrays.vertexAttribDivisorANGLE(order, 1);
+                            this._currentInstanceLocations.push(order);
+                            this._currentInstanceBuffers.push(buffer);
+                        }
                     }
                 }
             }
 
             if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
-                this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
             }
+        }
+
+        public unbindInstanceAttributes() {
+            var boundBuffer;
+            for (var i = 0, ul = this._currentInstanceLocations.length; i < ul; i++) {
+                var instancesBuffer = this._currentInstanceBuffers[i];
+                if (boundBuffer != instancesBuffer) {
+                    boundBuffer = instancesBuffer;
+                    this.bindArrayBuffer(instancesBuffer);
+                }
+                var offsetLocation = this._currentInstanceLocations[i];
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+            }
+            this._currentInstanceBuffers.length = 0;
+            this._currentInstanceLocations.length = 0;
         }
 
         public _releaseBuffer(buffer: WebGLBuffer): boolean {
@@ -1174,7 +1424,7 @@
 
             buffer.capacity = capacity;
 
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, buffer);
+            this.bindArrayBuffer(buffer);
             this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
             return buffer;
         }
@@ -1183,30 +1433,51 @@
             this._gl.deleteBuffer(buffer);
         }
 
-
-        public updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocations: number[]): void {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
-
-            for (var index = 0; index < 4; index++) {
-                var offsetLocation = offsetLocations[index];
-                this._gl.enableVertexAttribArray(offsetLocation);
-                this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
+        public updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void {
+            this.bindArrayBuffer(instancesBuffer);
+            if (data) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
             }
-        }
 
-        public unBindInstancesBuffer(instancesBuffer: WebGLBuffer, offsetLocations: number[]): void {
-            this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            for (var index = 0; index < 4; index++) {
-                var offsetLocation = offsetLocations[index];
-                this._gl.disableVertexAttribArray(offsetLocation);
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+            if ((<any>offsetLocations[0]).index !== undefined) {
+                let stride = 0;
+                for (let i = 0; i < offsetLocations.length; i++) {
+                    let ai = <InstancingAttributeInfo>offsetLocations[i];
+                    stride += ai.attributeSize * 4;
+                }
+                for (let i = 0; i < offsetLocations.length; i++) {
+                    let ai = <InstancingAttributeInfo>offsetLocations[i];
+
+                    if (!this._vertexAttribArraysEnabled[ai.index]) {
+                        this._gl.enableVertexAttribArray(ai.index);
+                        this._vertexAttribArraysEnabled[ai.index] = true;
+                    }
+
+                    this.vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
+                    this._currentInstanceLocations.push(ai.index);
+                    this._currentInstanceBuffers.push(instancesBuffer);
+                }
+            } else {
+                for (let index = 0; index < 4; index++) {
+                    let offsetLocation = <number>offsetLocations[index];
+
+                    if (!this._vertexAttribArraysEnabled[offsetLocation]) {
+                        this._gl.enableVertexAttribArray(offsetLocation);
+                        this._vertexAttribArraysEnabled[offsetLocation] = true;
+                    }
+
+                    this.vertexAttribPointer(instancesBuffer, offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
+                    this._currentInstanceLocations.push(offsetLocation);
+                    this._currentInstanceBuffers.push(instancesBuffer);
+                }
             }
         }
 
         public applyStates() {
             this._depthCullingState.apply(this._gl);
+            this._stencilState.apply(this._gl);
             this._alphaState.apply(this._gl);
         }
 
@@ -1214,7 +1485,7 @@
             // Apply states
             this.applyStates();
 
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
             // Render
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
@@ -1229,7 +1500,7 @@
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
-            this._drawCalls++;
+            this._drawCalls.addCount(1, false);
 
             if (instancesCount) {
                 this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
@@ -1237,6 +1508,19 @@
             }
 
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
+        }
+
+        public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+            // Apply states
+            this.applyStates();
+            this._drawCalls.addCount(1, false);
+
+            if (instancesCount) {
+                this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
+                return;
+            }
+
+            this._gl.drawArrays(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount);
         }
 
         // Shaders
@@ -1250,7 +1534,7 @@
         }
 
         public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
-            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
@@ -1259,7 +1543,7 @@
                 return this._compiledEffects[name];
             }
 
-            var effect = new Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError);
+            var effect = new Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
             this._compiledEffects[name] = effect;
 
@@ -1279,27 +1563,29 @@
                 ["diffuseSampler"].concat(samplers), defines, fallbacks, onCompiled, onError);
         }
 
-        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string): WebGLProgram {
-            var vertexShader = compileShader(this._gl, vertexCode, "vertex", defines);
-            var fragmentShader = compileShader(this._gl, fragmentCode, "fragment", defines);
+        public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
+            context = context || this._gl;
 
-            var shaderProgram = this._gl.createProgram();
-            this._gl.attachShader(shaderProgram, vertexShader);
-            this._gl.attachShader(shaderProgram, fragmentShader);
+            var vertexShader = compileShader(context, vertexCode, "vertex", defines);
+            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines);
 
-            this._gl.linkProgram(shaderProgram);
+            var shaderProgram = context.createProgram();
+            context.attachShader(shaderProgram, vertexShader);
+            context.attachShader(shaderProgram, fragmentShader);
 
-            var linked = this._gl.getProgramParameter(shaderProgram, this._gl.LINK_STATUS);
+            context.linkProgram(shaderProgram);
+
+            var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
             if (!linked) {
-                var error = this._gl.getProgramInfoLog(shaderProgram);
+                var error = context.getProgramInfoLog(shaderProgram);
                 if (error) {
                     throw new Error(error);
                 }
             }
 
-            this._gl.deleteShader(vertexShader);
-            this._gl.deleteShader(fragmentShader);
+            context.deleteShader(vertexShader);
+            context.deleteShader(fragmentShader);
 
             return shaderProgram;
         }
@@ -1329,43 +1615,78 @@
         }
 
         public enableEffect(effect: Effect): void {
-            if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
+            //if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
 
-                if (effect && effect.onBind) {
-                    effect.onBind(effect);
-                }
-                return;
-            }
-
-            this._vertexAttribArrays = this._vertexAttribArrays || [];
+            //    if (effect && effect.onBind) {
+            //        effect.onBind(effect);
+            //    }
+            //    return;
+            //}
 
             // Use program
-            this._gl.useProgram(effect.getProgram());
-
-            for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
-                    continue;
-                }
-                this._vertexAttribArrays[i] = false;
-                this._gl.disableVertexAttribArray(i);
-            }
-
-            var attributesCount = effect.getAttributesCount();
-            for (var index = 0; index < attributesCount; index++) {
-                // Attributes
-                var order = effect.getAttributeLocation(index);
-
-                if (order >= 0) {
-                    this._vertexAttribArrays[order] = true;
-                    this._gl.enableVertexAttribArray(order);
-                }
-            }
+            this.setProgram(effect.getProgram());
 
             this._currentEffect = effect;
 
             if (effect.onBind) {
                 effect.onBind(effect);
             }
+        }
+
+        public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform1iv(uniform, array);
+        }
+
+        public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+
+            this._gl.uniform2iv(uniform, array);
+        }
+
+        public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+
+            this._gl.uniform3iv(uniform, array);
+        }
+
+        public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+
+            this._gl.uniform4iv(uniform, array);
+        }
+
+        public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform1fv(uniform, array);
+        }
+
+        public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+
+            this._gl.uniform2fv(uniform, array);
+        }
+
+        public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+
+            this._gl.uniform3fv(uniform, array);
+        }
+
+        public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+
+            this._gl.uniform4fv(uniform, array);
         }
 
         public setArray(uniform: WebGLUniformLocation, array: number[]): void {
@@ -1509,48 +1830,43 @@
             this._gl.colorMask(enable, enable, enable, enable);
         }
 
-        public setAlphaMode(mode: number): void {
+        public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
             if (this._alphaMode === mode) {
                 return;
             }
 
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
-                    this.setDepthWrite(true);
                     this._alphaState.alphaBlend = false;
                     break;
                 case Engine.ALPHA_COMBINE:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_ONEONE:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_ADD:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_SUBTRACT:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_MULTIPLY:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_MAXIMIZED:
-                    this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
             }
-
+            if (!noDepthWriteChange) {
+                this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
+            }
             this._alphaMode = mode;
         }
 
@@ -1571,7 +1887,9 @@
             this.resetTextureCache();
             this._currentEffect = null;
 
+            this._stencilState.reset();
             this._depthCullingState.reset();
+            this.setDepthFunctionToLessOrEqual();
             this._alphaState.reset();
 
             this._cachedVertexBuffers = null;
@@ -1582,7 +1900,7 @@
         public setSamplingMode(texture: WebGLTexture, samplingMode: number): void {
             var gl = this._gl;
 
-            gl.bindTexture(gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
 
             var magFilter = gl.NEAREST;
             var minFilter = gl.NEAREST;
@@ -1598,7 +1916,7 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
 
-            gl.bindTexture(gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(gl.TEXTURE_2D, null);
 
             texture.samplingMode = samplingMode;
         }
@@ -1629,6 +1947,7 @@
             texture.noMipmap = noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
+            texture.onLoadedCallbacks = [onLoad];
             this._loadedTexturesCache.push(texture);
 
             var onerror = () => {
@@ -1647,16 +1966,12 @@
 
                     prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
                         Internals.TGATools.UploadContent(this._gl, data);
-
-                        if (onLoad) {
-                            onLoad();
-                        }
                     }, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     Tools.LoadFile(url, arrayBuffer => {
                         callback(arrayBuffer);
-                    }, onerror, scene.database, true);
+                    }, null, scene.database, true, onerror);
                 else
                     callback(buffer);
 
@@ -1668,17 +1983,13 @@
                     prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
 
                         Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
-
-                        if (onLoad) {
-                            onLoad();
-                        }
                     }, samplingMode);
                 };
 
                 if (!(fromData instanceof Array))
                     Tools.LoadFile(url, data => {
                         callback(data);
-                    }, onerror, scene.database, true);
+                    }, null, scene.database, true, onerror);
                 else
                     callback(buffer);
 
@@ -1711,10 +2022,6 @@
                         }
 
                         this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, isPot ? img : this._workingCanvas);
-
-                        if (onLoad) {
-                            onLoad();
-                        }
                     }, samplingMode);
                 };
 
@@ -1728,7 +2035,7 @@
             return texture;
         }
 
-        public updateRawTexture(texture: WebGLTexture, data: ArrayBufferView, format: number, invertY: boolean, compression: string = null): void {
+        private _getInternalFormat(format: number): number {
             var internalFormat = this._gl.RGBA;
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
@@ -1747,8 +2054,18 @@
                     internalFormat = this._gl.RGBA;
                     break;
             }
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+
+            return internalFormat;
+        }
+
+        public updateRawTexture(texture: WebGLTexture, data: ArrayBufferView, format: number, invertY: boolean, compression: string = null): void {
+            var internalFormat = this._getInternalFormat(format);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+
+            if (texture._width % 4 !== 0) {
+                this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
+            }
 
             if (compression) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
@@ -1759,7 +2076,7 @@
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             this.resetTextureCache();
             texture.isReady = true;
         }
@@ -1773,14 +2090,14 @@
             texture.references = 1;
 
             this.updateRawTexture(texture, data, format, invertY, compression);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
 
             // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
 
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
 
             texture.samplingMode = samplingMode;
 
@@ -1789,12 +2106,12 @@
             return texture;
         }
 
-        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number, forceExponantOfTwo = true): WebGLTexture {
+        public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): WebGLTexture {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
 
-            if (forceExponantOfTwo) {
+            if (generateMipMaps) {
                 width = Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
                 height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
@@ -1818,28 +2135,34 @@
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
 
             if (texture.isCube) {
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, texture);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture);
 
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             } else {
-                this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
 
                 this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
                 this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             }
         }
 
-        public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void {
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+        public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false): void {
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+            }
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, canvas);
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+            }
             this.resetTextureCache();
             texture.isReady = true;
         }
@@ -1849,7 +2172,7 @@
                 return;
             }
 
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
 
             try {
@@ -1884,7 +2207,7 @@
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
                 }
 
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this.resetTextureCache();
                 texture.isReady = true;
 
@@ -1901,24 +2224,32 @@
             // in the same way, generateDepthBuffer is defaulted to true
             var generateMipMaps = false;
             var generateDepthBuffer = true;
+            var generateStencilBuffer = false;
+
             var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
+
                 type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
-                if (type === Engine.TEXTURETYPE_FLOAT) {
-                    // if floating point (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+                    // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+                    samplingMode = Texture.NEAREST_SAMPLINGMODE;
+                }
+                else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+                    // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
                     samplingMode = Texture.NEAREST_SAMPLINGMODE;
                 }
             }
             var gl = this._gl;
 
             var texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
 
             var width = size.width || size;
             var height = size.height || size;
@@ -1937,39 +2268,56 @@
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
 
-            var depthBuffer: WebGLRenderbuffer;
-            // Create the depth buffer
-            if (generateDepthBuffer) {
-                depthBuffer = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+            var depthStencilBuffer: WebGLRenderbuffer;
+
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
                 gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
             }
+
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            if (generateDepthBuffer) {
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            this.bindUnboundFramebuffer(framebuffer);
+
+            // Manage attachments
+            if (generateStencilBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
             }
+            else if (generateDepthBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
             if (generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
 
             // Unbind
-            gl.bindTexture(gl.TEXTURE_2D, null);
+            this._bindTextureDirectly(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
             if (generateDepthBuffer) {
-                texture._depthBuffer = depthBuffer;
+                texture._depthBuffer = depthStencilBuffer;
             }
+            texture._baseWidth = width;
+            texture._baseHeight = height;
             texture._width = width;
             texture._height = height;
             texture.isReady = true;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
             texture.samplingMode = samplingMode;
+            texture.type = type;
+
             this.resetTextureCache();
 
             this._loadedTexturesCache.push(texture);
@@ -1983,9 +2331,15 @@
             var texture = gl.createTexture();
 
             var generateMipMaps = true;
+            var generateDepthBuffer = true;
+            var generateStencilBuffer = false;
+
             var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
                 generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
+                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+                generateStencilBuffer = generateDepthBuffer && options.generateStencilBuffer;
+
                 if (options.samplingMode !== undefined) {
                     samplingMode = options.samplingMode;
                 }
@@ -1999,7 +2353,7 @@
 
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
 
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
 
             for (var face = 0; face < 6; face++) {
                 gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -2011,45 +2365,66 @@
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
             // Create the depth buffer
-            var depthBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+            var depthStencilBuffer: WebGLRenderbuffer;
+
+            // Create the depth/stencil buffer
+            if (generateStencilBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, size, size);
+            }
+            else if (generateDepthBuffer) {
+                depthStencilBuffer = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+            }
 
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            this.bindUnboundFramebuffer(framebuffer);
 
-            // mipmaps
+            // Manage attachments
+            if (generateStencilBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+            else if (generateDepthBuffer) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            }
+
+            // Mipmaps
             if (texture.generateMipMaps) {
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
             // Unbind
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            this.bindUnboundFramebuffer(null);
 
             texture._framebuffer = framebuffer;
-            texture._depthBuffer = depthBuffer;
-
-            this.resetTextureCache();
-
+            if (generateDepthBuffer) {
+                texture._depthBuffer = depthStencilBuffer;
+            }
             texture._width = size;
             texture._height = size;
             texture.isReady = true;
 
+            this.resetTextureCache();
+
+            this._loadedTexturesCache.push(texture);
+
             return texture;
         }
 
-        public createCubeTexture(rootUrl: string, scene: Scene, extensions: string[], noMipmap?: boolean): WebGLTexture {
+        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean, onLoad: () => void = null, onError: () => void = null): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
             texture.isCube = true;
             texture.url = rootUrl;
             texture.references = 1;
+            texture.onLoadedCallbacks = [];
 
             var extension = rootUrl.substr(rootUrl.length - 4, 4).toLowerCase();
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
@@ -2060,7 +2435,7 @@
 
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
 
                     Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 6);
@@ -2074,14 +2449,14 @@
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
                     this.resetTextureCache();
 
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
-                }, null, null, true);
+                }, null, null, true, onError);
             } else {
                 cascadeLoad(rootUrl, scene, imgs => {
                     var width = Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
@@ -2096,7 +2471,7 @@
                         gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                     ];
 
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
                     for (var index = 0; index < faces.length; index++) {
@@ -2113,18 +2488,184 @@
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
                     this.resetTextureCache();
 
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
-                }, extensions);
+
+                    texture.onLoadedCallbacks.forEach(callback => {
+                        callback();
+                    });
+
+                    if (onLoad) {
+                        onLoad();
+                    }
+                }, files, onError);
             }
+
+            this._loadedTexturesCache.push(texture);
 
             return texture;
         }
+
+        public updateTextureSize(texture: WebGLTexture, width: number, height: number) {
+            texture._width = width;
+            texture._height = height;
+            texture._size = width * height;
+            texture._baseWidth = width;
+            texture._baseHeight = height;
+        }
+
+        public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+            callback: (ArrayBuffer) => ArrayBufferView[],
+            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
+            var gl = this._gl;
+            var texture = gl.createTexture();
+            scene._addPendingData(texture);
+            texture.isCube = true;
+            texture.references = 1;
+            texture.url = url;
+
+            var internalFormat = this._getInternalFormat(format);
+
+            var textureType = gl.UNSIGNED_BYTE;
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                textureType = gl.FLOAT;
+            }
+
+            var width = size;
+            var height = width;
+            var isPot = (Tools.IsExponentOfTwo(width) && Tools.IsExponentOfTwo(height));
+
+            texture._width = width;
+            texture._height = height;
+
+            var onerror = () => {
+                scene._removePendingData(texture);
+            };
+
+            var internalCallback = (data) => {
+                var rgbeDataArrays = callback(data);
+
+                var facesIndex = [
+                    gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                    gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                ];
+
+                width = texture._width;
+                height = texture._height;
+                isPot = (Tools.IsExponentOfTwo(width) && Tools.IsExponentOfTwo(height));
+
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+
+                if (!noMipmap && isPot) {
+                    if (mipmmapGenerator) {
+
+                        var arrayTemp: ArrayBufferView[] = [];
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
+                        arrayTemp.push(rgbeDataArrays[0]); // +X
+                        arrayTemp.push(rgbeDataArrays[3]); // -X
+                        arrayTemp.push(rgbeDataArrays[1]); // +Y
+                        arrayTemp.push(rgbeDataArrays[4]); // -Y
+                        arrayTemp.push(rgbeDataArrays[2]); // +Z
+                        arrayTemp.push(rgbeDataArrays[5]); // -Z
+
+                        var mipData = mipmmapGenerator(arrayTemp);
+                        for (var level = 0; level < mipData.length; level++) {
+                            var mipSize = width >> level;
+
+                            // mipData is order in +X -X +Y -Y +Z -Z
+                            gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                            gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                            gl.texImage2D(facesIndex[2], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                            gl.texImage2D(facesIndex[3], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                            gl.texImage2D(facesIndex[4], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                            gl.texImage2D(facesIndex[5], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                        }
+                    }
+                    else {
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (let index = 0; index < facesIndex.length; index++) {
+                            let faceData = rgbeDataArrays[index];
+                            gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
+                        }
+
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+                        // Workaround firefox bug fix https://bugzilla.mozilla.org/show_bug.cgi?id=1221822
+                        // By following the webgl standard changes from Revision 7, 2014/11/24
+                        // Firefox Removed the support for RGB32F, since it is not natively supported on all platforms where WebGL is implemented.
+                        if (textureType === gl.FLOAT && internalFormat === gl.RGB && gl.getError() === 1282) {
+                            Tools.Log("RGB32F not renderable on Firefox, trying fallback to RGBA32F.");
+
+                            // Data are known to be in +X +Y +Z -X -Y -Z
+                            for (let index = 0; index < facesIndex.length; index++) {
+                                let faceData = <Float32Array>rgbeDataArrays[index];
+
+                                // Create a new RGBA Face.
+                                let newFaceData = new Float32Array(width * height * 4);
+                                for (let x = 0; x < width; x++) {
+                                    for (let y = 0; y < height; y++) {
+                                        let index = (y * width + x) * 3;
+                                        let newIndex = (y * width + x) * 4;
+
+                                        // Map Old Value to new value.
+                                        newFaceData[newIndex + 0] = faceData[index + 0];
+                                        newFaceData[newIndex + 1] = faceData[index + 1];
+                                        newFaceData[newIndex + 2] = faceData[index + 2];
+
+                                        // Add fully opaque alpha channel.
+                                        newFaceData[newIndex + 3] = 1;
+                                    }
+                                }
+
+                                // Reupload the face.
+                                gl.texImage2D(facesIndex[index], 0, gl.RGBA, width, height, 0, gl.RGBA, textureType, newFaceData);
+                            }
+
+                            // Try to generate mipmap again.
+                            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        }
+                    }
+                }
+                else {
+                    noMipmap = true;
+                }
+
+                if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                }
+                else if (textureType === HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                }
+                else {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
+                }
+
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+                texture.isReady = true;
+
+                this.resetTextureCache();
+                scene._removePendingData(texture);
+            };
+
+            Tools.LoadFile(url, data => {
+                internalCallback(data);
+            }, onerror, scene.database, true);
+
+            return texture;
+        };
 
         public _releaseTexture(texture: WebGLTexture): void {
             var gl = this._gl;
@@ -2148,8 +2689,16 @@
             }
         }
 
+        private setProgram(program: WebGLProgram): void {
+            if (this._currentProgram !== program) {
+                this._gl.useProgram(program);
+                this._currentProgram = program;
+            }
+        }
+
         public bindSamplers(effect: Effect): void {
-            this._gl.useProgram(effect.getProgram());
+            this.setProgram(effect.getProgram());
+
             var samplers = effect.getSamplers();
             for (var index = 0; index < samplers.length; index++) {
                 var uniform = effect.getUniform(samplers[index]);
@@ -2158,12 +2707,27 @@
             this._currentEffect = null;
         }
 
+        private activateTexture(texture: number): void {
+            if (this._activeTexture !== texture) {
+                this._gl.activeTexture(texture);
+                this._activeTexture = texture;
+            }
+        }
+
+        public _bindTextureDirectly(target: number, texture: WebGLTexture): void {
+            if (this._activeTexturesCache[this._activeTexture] !== texture) {
+                this._gl.bindTexture(target, texture);
+                this._activeTexturesCache[this._activeTexture] = texture;
+            }
+        }
 
         public _bindTexture(channel: number, texture: WebGLTexture): void {
-            this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            if (channel < 0) {
+                return;
+            }
 
-            this._activeTexturesCache[channel] = null;
+            this.activateTexture(this._gl["TEXTURE" + channel]);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         }
 
         public setTextureFromPostProcess(channel: number, postProcess: PostProcess): void {
@@ -2172,24 +2736,28 @@
 
         public unbindAllTextures(): void {
             for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
-                this._activeTexturesCache[channel] = null;
+                this.activateTexture(this._gl["TEXTURE" + channel]);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             }
         }
 
-        public setTexture(channel: number, texture: BaseTexture): void {
+        public setTexture(channel: number, uniform: WebGLUniformLocation, texture: BaseTexture): void {
             if (channel < 0) {
                 return;
             }
+
+            this._gl.uniform1i(uniform, channel);
+            this._setTexture(channel, texture);
+        }
+
+        private _setTexture(channel: number, texture: BaseTexture): void {
             // Not ready?
             if (!texture || !texture.isReady()) {
                 if (this._activeTexturesCache[channel] != null) {
-                    this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                    this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                    this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
-                    this._activeTexturesCache[channel] = null;
+                    this.activateTexture(this._gl["TEXTURE" + channel]);
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                    this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 }
                 return;
             }
@@ -2197,7 +2765,7 @@
             // Video
             var alreadyActivated = false;
             if (texture instanceof VideoTexture) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                this.activateTexture(this._gl["TEXTURE" + channel]);
                 alreadyActivated = true;
                 texture.update();
             } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
@@ -2205,19 +2773,18 @@
                 return;
             }
 
-            if (this._activeTexturesCache[channel] === texture) {
-                return;
-            }
-            this._activeTexturesCache[channel] = texture;
-
             var internalTexture = texture.getInternalTexture();
 
+            if (this._activeTexturesCache[channel] === internalTexture) {
+                return;
+            }
+
             if (!alreadyActivated) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                this.activateTexture(this._gl["TEXTURE" + channel]);
             }
 
             if (internalTexture.isCube) {
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture);
 
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
@@ -2229,7 +2796,7 @@
 
                 this._setAnisotropicLevel(this._gl.TEXTURE_CUBE_MAP, texture);
             } else {
-                this._gl.bindTexture(this._gl.TEXTURE_2D, internalTexture);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, internalTexture);
 
                 if (internalTexture._cachedWrapU !== texture.wrapU) {
                     internalTexture._cachedWrapU = texture.wrapU;
@@ -2266,6 +2833,24 @@
             }
         }
 
+        public setTextureArray(channel: number, uniform: WebGLUniformLocation, textures: BaseTexture[]): void {
+            if (channel < 0) {
+                return;
+            }
+
+            if (!this._textureUnits || this._textureUnits.length !== textures.length) {
+                this._textureUnits = new Int32Array(textures.length);
+            }
+            for (let i = 0; i < textures.length; i++) {
+                this._textureUnits[i] = channel + i;
+            }
+            this._gl.uniform1iv(uniform, this._textureUnits);
+
+            for (var index = 0; index < textures.length; index++) {
+                this._setTexture(channel + index, textures[index]);
+            }
+        }
+
         public _setAnisotropicLevel(key: number, texture: BaseTexture) {
             var anisotropicFilterExtension = this._caps.textureAnisotropicFilterExtension;
             var value = texture.anisotropicFilteringLevel;
@@ -2286,6 +2871,46 @@
             return data;
         }
 
+        /**
+         * Add an externaly attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        public addExternalData<T>(key: string, data: T): boolean {
+            return this._externalData.add(key, data);
+        }
+
+        /**
+         * Get an externaly attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        public getExternalData<T>(key: string): T {
+            return <T>this._externalData.get(key);
+        }
+
+        /**
+         * Get an externaly attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+            return <T>this._externalData.getOrAddWithFactory(key, factory);
+        }
+
+        /**
+         * Remove an externaly attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        public removeExternalData(key): boolean {
+            return this._externalData.remove(key);
+        }
+
         public releaseInternalTexture(texture: WebGLTexture): void {
             if (!texture) {
                 return;
@@ -2303,6 +2928,16 @@
                 }
 
                 this._releaseTexture(texture);
+            }
+        }
+
+        public unbindAllAttributes() {
+            for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+                if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
+                    continue;
+                }
+                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArraysEnabled[i] = false;
             }
         }
 
@@ -2326,14 +2961,12 @@
             }
 
             // Unbind
-            for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
-                    continue;
-                }
-                this._gl.disableVertexAttribArray(i);
-            }
+            this.unbindAllAttributes();
 
             this._gl = null;
+
+            //WebVR
+            this.disableVR();
 
             // Events
             window.removeEventListener("blur", this._onBlur);
@@ -2349,7 +2982,6 @@
         }
 
         // Loading screen
-
         public displayLoadingUI(): void {
             this._loadingScreen.displayLoadingUI();
         }
@@ -2372,6 +3004,14 @@
 
         public set loadingUIBackgroundColor(color: string) {
             this._loadingScreen.loadingUIBackgroundColor = color;
+        }
+
+        public attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void {
+            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+        }
+
+        public attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void {
+            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
         }
 
         // FPS
@@ -2407,6 +3047,119 @@
             }
         }
 
+        private _canRenderToFloatTexture(): boolean {
+            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+        }
+
+        private _canRenderToHalfFloatTexture(): boolean {
+            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+        }
+
+        // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
+        private _canRenderToTextureOfType(format: number, extension: string): boolean {
+            var tempcanvas = document.createElement("canvas");
+            tempcanvas.height = 16;
+            tempcanvas.width = 16;
+            var gl = <WebGLRenderingContext>(tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
+
+            // extension.
+            var ext = gl.getExtension(extension);
+            if (!ext) {
+                return false;
+            }
+
+            // setup GLSL program
+            var vertexCode = `attribute vec4 a_position;
+                void main() {
+                    gl_Position = a_position;
+                }`;
+            var fragmentCode = `precision mediump float;
+                uniform vec4 u_color;
+                uniform sampler2D u_texture;
+
+                void main() {
+                    gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;
+                }`;
+            var program = this.createShaderProgram(vertexCode, fragmentCode, null, gl);
+            gl.useProgram(program);
+
+            // look up where the vertex data needs to go.
+            var positionLocation = gl.getAttribLocation(program, "a_position");
+            var colorLoc = gl.getUniformLocation(program, "u_color");
+
+            // provide texture coordinates for the rectangle.
+            var positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1.0, -1.0,
+                1.0, -1.0,
+                -1.0, 1.0,
+                -1.0, 1.0,
+                1.0, -1.0,
+                1.0, 1.0]), gl.STATIC_DRAW);
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+            var whiteTex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, whiteTex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
+
+            var tex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+            var fb = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+
+            var cleanup = () => {
+                gl.deleteProgram(program);
+                gl.disableVertexAttribArray(positionLocation);
+                gl.deleteBuffer(positionBuffer);
+                gl.deleteFramebuffer(fb);
+                gl.deleteTexture(whiteTex);
+                gl.deleteTexture(tex);
+            };
+
+            var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+            if (status !== gl.FRAMEBUFFER_COMPLETE) {
+                Tools.Log("GL Support: can **NOT** render to " + format + " texture");
+                cleanup();
+                return false;
+            }
+
+            // Draw the rectangle.
+            gl.bindTexture(gl.TEXTURE_2D, whiteTex);
+            gl.uniform4fv(colorLoc, <any>[0, 10, 20, 1]);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            gl.clearColor(1, 0, 0, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.uniform4fv(colorLoc, <any>[0, 1 / 10, 1 / 20, 1]);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            var pixel = new Uint8Array(4);
+            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+            if (pixel[0] !== 0 ||
+                pixel[1] < 248 ||
+                pixel[2] < 248 ||
+                pixel[3] < 254) {
+                BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
+                cleanup();
+                return false;
+            }
+
+            // Succesfully rendered to "format" texture.
+            cleanup();
+            return true;
+        }
+
         // Statics
         public static isSupported(): boolean {
             try {
@@ -2424,4 +3177,3 @@
         }
     }
 }
-

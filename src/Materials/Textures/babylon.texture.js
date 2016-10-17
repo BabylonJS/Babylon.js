@@ -3,11 +3,20 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
         function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
+            var _this = this;
+            if (noMipmap === void 0) { noMipmap = false; }
+            if (invertY === void 0) { invertY = true; }
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
@@ -32,25 +41,43 @@ var BABYLON;
                 return;
             }
             this._texture = this._getFromCache(url, noMipmap, samplingMode);
+            var load = function () {
+                if (_this._onLoadObservarble && _this._onLoadObservarble.hasObservers()) {
+                    _this.onLoadObservable.notifyObservers(true);
+                }
+                if (onLoad) {
+                    onLoad();
+                }
+            };
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, onLoad, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
                 }
                 else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                    this._delayedOnLoad = load;
+                    this._delayedOnError = onError;
                 }
             }
             else {
-                BABYLON.Tools.SetImmediate(function () {
-                    if (onLoad) {
-                        onLoad();
-                    }
-                });
+                if (this._texture.isReady) {
+                    BABYLON.Tools.SetImmediate(function () { return load(); });
+                }
+                else {
+                    this._texture.onLoadedCallbacks.push(load);
+                }
             }
         }
+        Object.defineProperty(Texture.prototype, "noMipmap", {
+            get: function () {
+                return this._noMipmap;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Texture.prototype.delayLoad = function () {
             if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
@@ -58,7 +85,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
@@ -68,6 +95,7 @@ var BABYLON;
             if (!this._texture) {
                 return;
             }
+            this._samplingMode = samplingMode;
             this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         };
         Texture.prototype._prepareRowForTextureGeneration = function (x, y, z, t) {
@@ -162,38 +190,21 @@ var BABYLON;
             return this._cachedTextureMatrix;
         };
         Texture.prototype.clone = function () {
-            var newTexture = new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
-            // Base texture
-            newTexture.hasAlpha = this.hasAlpha;
-            newTexture.level = this.level;
-            newTexture.wrapU = this.wrapU;
-            newTexture.wrapV = this.wrapV;
-            newTexture.coordinatesIndex = this.coordinatesIndex;
-            newTexture.coordinatesMode = this.coordinatesMode;
-            // Texture
-            newTexture.uOffset = this.uOffset;
-            newTexture.vOffset = this.vOffset;
-            newTexture.uScale = this.uScale;
-            newTexture.vScale = this.vScale;
-            newTexture.uAng = this.uAng;
-            newTexture.vAng = this.vAng;
-            newTexture.wAng = this.wAng;
-            return newTexture;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () {
+                return new Texture(_this._texture.url, _this.getScene(), _this._noMipmap, _this._invertY, _this._samplingMode);
+            }, this);
         };
-        Texture.prototype.serialize = function () {
-            if (!this.name) {
-                return null;
-            }
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.uOffset = this.uOffset;
-            serializationObject.vOffset = this.vOffset;
-            serializationObject.uScale = this.uScale;
-            serializationObject.vScale = this.vScale;
-            serializationObject.uAng = this.uAng;
-            serializationObject.vAng = this.vAng;
-            serializationObject.wAng = this.wAng;
-            return serializationObject;
-        };
+        Object.defineProperty(Texture.prototype, "onLoadObservable", {
+            get: function () {
+                if (!this._onLoadObservarble) {
+                    this._onLoadObservarble = new BABYLON.Observable();
+                }
+                return this._onLoadObservarble;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
@@ -208,39 +219,33 @@ var BABYLON;
             if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
                 return null;
             }
-            var texture;
-            if (parsedTexture.mirrorPlane) {
-                texture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-                texture._waitingRenderList = parsedTexture.renderList;
-                texture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
-            }
-            else if (parsedTexture.isRenderTarget) {
-                texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-                texture._waitingRenderList = parsedTexture.renderList;
-            }
-            else {
-                if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+            var texture = BABYLON.SerializationHelper.Parse(function () {
+                if (parsedTexture.customType) {
+                    var customTexture = BABYLON.Tools.Instantiate(parsedTexture.customType);
+                    return customTexture.Parse(parsedTexture, scene, rootUrl);
+                }
+                else if (parsedTexture.mirrorPlane) {
+                    var mirrorTexture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                    mirrorTexture._waitingRenderList = parsedTexture.renderList;
+                    mirrorTexture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
+                    return mirrorTexture;
+                }
+                else if (parsedTexture.isRenderTarget) {
+                    var renderTargetTexture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                    renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    return renderTargetTexture;
                 }
                 else {
-                    texture = new Texture(rootUrl + parsedTexture.name, scene);
+                    var texture;
+                    if (parsedTexture.base64String) {
+                        texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                    }
+                    else {
+                        texture = new Texture(rootUrl + parsedTexture.name, scene);
+                    }
+                    return texture;
                 }
-            }
-            texture.name = parsedTexture.name;
-            texture.hasAlpha = parsedTexture.hasAlpha;
-            texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
-            texture.level = parsedTexture.level;
-            texture.coordinatesIndex = parsedTexture.coordinatesIndex;
-            texture.coordinatesMode = parsedTexture.coordinatesMode;
-            texture.uOffset = parsedTexture.uOffset;
-            texture.vOffset = parsedTexture.vOffset;
-            texture.uScale = parsedTexture.uScale;
-            texture.vScale = parsedTexture.vScale;
-            texture.uAng = parsedTexture.uAng;
-            texture.vAng = parsedTexture.vAng;
-            texture.wAng = parsedTexture.wAng;
-            texture.wrapU = parsedTexture.wrapU;
-            texture.wrapV = parsedTexture.wrapV;
+            }, parsedTexture, scene);
             // Animations
             if (parsedTexture.animations) {
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
@@ -266,7 +271,31 @@ var BABYLON;
         Texture.CLAMP_ADDRESSMODE = 0;
         Texture.WRAP_ADDRESSMODE = 1;
         Texture.MIRROR_ADDRESSMODE = 2;
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "url", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "uOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "vOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "uScale", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "vScale", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "uAng", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "vAng", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "wAng", void 0);
         return Texture;
-    })(BABYLON.BaseTexture);
+    }(BABYLON.BaseTexture));
     BABYLON.Texture = Texture;
 })(BABYLON || (BABYLON = {}));

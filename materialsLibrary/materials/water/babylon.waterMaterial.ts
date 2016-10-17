@@ -2,8 +2,6 @@
 /// <reference path="../simple/babylon.simpleMaterial.ts"/>
 
 module BABYLON {
-	var maxSimultaneousLights = 4;
-
     class WaterMaterialDefines extends MaterialDefines {
         public BUMP = false;
         public REFLECTION = false;
@@ -11,53 +9,24 @@ module BABYLON {
         public ALPHATEST = false;
         public POINTSIZE = false;
         public FOG = false;
-        public LIGHT0 = false;
-        public LIGHT1 = false;
-        public LIGHT2 = false;
-        public LIGHT3 = false;
-        public SPOTLIGHT0 = false;
-        public SPOTLIGHT1 = false;
-        public SPOTLIGHT2 = false;
-        public SPOTLIGHT3 = false;
-        public HEMILIGHT0 = false;
-        public HEMILIGHT1 = false;
-        public HEMILIGHT2 = false;
-        public HEMILIGHT3 = false;
-        public DIRLIGHT0 = false;
-        public DIRLIGHT1 = false;
-        public DIRLIGHT2 = false;
-        public DIRLIGHT3 = false;
-        public POINTLIGHT0 = false;
-        public POINTLIGHT1 = false;
-        public POINTLIGHT2 = false;
-        public POINTLIGHT3 = false;        
-        public SHADOW0 = false;
-        public SHADOW1 = false;
-        public SHADOW2 = false;
-        public SHADOW3 = false;
-        public SHADOWS = false;
-        public SHADOWVSM0 = false;
-        public SHADOWVSM1 = false;
-        public SHADOWVSM2 = false;
-        public SHADOWVSM3 = false;
-        public SHADOWPCF0 = false;
-        public SHADOWPCF1 = false;
-        public SHADOWPCF2 = false;
-        public SHADOWPCF3 = false;
         public NORMAL = false;
         public UV1 = false;
         public UV2 = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public BONES = false;
-        public BONES4 = false;
+        public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public SPECULARTERM = false;
+        public LOGARITHMICDEPTH = false;
+        public FRESNELSEPARATE = false;
+        public BUMPSUPERIMPOSE = false;
+        public BUMPAFFECTSREFLECTION = false;
+
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
 	
@@ -65,44 +34,90 @@ module BABYLON {
 		/*
 		* Public members
 		*/
+        @serializeAsTexture()
         public bumpTexture: BaseTexture;
+        
+        @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
+        
+        @serializeAsColor3()
         public specularColor = new Color3(0, 0, 0);
+        
+        @serialize()
         public specularPower = 64;
+        
+        @serialize()
         public disableLighting = false;
+        
+        @serialize()
+        public maxSimultaneousLights = 4;
         
         /**
         * @param {number}: Represents the wind force
         */
+        @serialize()
 		public windForce: number = 6;
         /**
         * @param {Vector2}: The direction of the wind in the plane (X, Z)
         */
+        @serializeAsVector2()
 		public windDirection: Vector2 = new Vector2(0, 1);
         /**
         * @param {number}: Wave height, represents the height of the waves
         */
+        @serialize()
 		public waveHeight: number = 0.4;
         /**
         * @param {number}: Bump height, represents the bump height related to the bump map
         */
+        @serialize()
 		public bumpHeight: number = 0.4;
         /**
-        * @param {number}: The water color blended with the reflection and refraction samplers
+         * @param {boolean}: Add a smaller moving bump to less steady waves.
+         */
+        @serialize()
+        public bumpSuperimpose = false;
+        /**
+         * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+         */
+        @serialize()
+        public fresnelSeparate = false;
+        /**
+         * @param {boolean}: bump Waves modify the reflection.
+         */
+        @serialize()
+        public bumpAffectsReflection = false;
+
+        /**
+        * @param {number}: The water color blended with the refraction (near)
         */
+        @serializeAsColor3()
 		public waterColor: Color3 = new Color3(0.1, 0.1, 0.6);
         /**
         * @param {number}: The blend factor related to the water color
         */
+        @serialize()
 		public colorBlendFactor: number = 0.2;
+        /**
+         * @param {number}: The water color blended with the reflection (far)
+         */
+        @serializeAsColor3()
+        public waterColor2: Color3 = new Color3(0.1, 0.1, 0.6);
+        /**
+         * @param {number}: The blend factor related to the water color (reflection, far)
+         */
+        @serialize()
+        public colorBlendFactor2: number = 0.2;
         /**
         * @param {number}: Represents the maximum length of a wave
         */
+        @serialize()
 		public waveLength: number = 0.1;
         
         /**
         * @param {number}: Defines the waves speed
         */
+        @serialize()
         public waveSpeed: number = 1.0;
 		
 		/*
@@ -118,14 +133,14 @@ module BABYLON {
 		private _reflectionTransform: Matrix = Matrix.Zero();
 		private _lastTime: number = 0;
         
-        private _scaledDiffuse = new Color3();
-        private _scaledSpecular = new Color3();
         private _renderId: number;
 
         private _defines = new WaterMaterialDefines();
         private _cachedDefines = new WaterMaterialDefines();
-		
-		/**
+
+        private _useLogarithmicDepth: boolean;
+
+        /**
 		* Constructor
 		*/
 		constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
@@ -134,7 +149,16 @@ module BABYLON {
 			// Create render targets
 			this._createRenderTargets(scene, renderTargetSize);
         }
-		
+
+        @serialize()
+        public get useLogarithmicDepth(): boolean {
+            return this._useLogarithmicDepth;
+        }
+
+        public set useLogarithmicDepth(value: boolean) {
+            this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
+        }
+
         // Get / Set
         public get refractionTexture(): RenderTargetTexture {
             return this._refractionRTT;
@@ -155,6 +179,14 @@ module BABYLON {
             
             this._refractionRTT.refreshRate = refreshRate;
             this._reflectionRTT.refreshRate = refreshRate;
+        }
+        
+        public getRenderList(): AbstractMesh[] {
+            return this._refractionRTT.renderList;
+        }
+        
+        public get renderTargetsEnabled(): boolean {
+            return !(this._refractionRTT.refreshRate === 0);
         }
         
 		public needAlphaBlending(): boolean {
@@ -238,92 +270,30 @@ module BABYLON {
                 this._defines.POINTSIZE = true;
             }
 
+            if (this.useLogarithmicDepth) {
+                this._defines.LOGARITHMICDEPTH = true;
+            }
+
+            if (this.fresnelSeparate) {
+                this._defines.FRESNELSEPARATE = true;
+            }
+
+            if (this.bumpSuperimpose) {
+                this._defines.BUMPSUPERIMPOSE = true;
+            }
+
+            if (this.bumpAffectsReflection) {
+                this._defines.BUMPAFFECTSREFLECTION = true;
+            }
+
             // Fog
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
             }
-
-            var lightIndex = 0;
+            
+            // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                for (var index = 0; index < scene.lights.length; index++) {
-                    var light = scene.lights[index];
-
-                    if (!light.isEnabled()) {
-                        continue;
-                    }
-
-                    // Excluded check
-                    if (light._excludedMeshesIds.length > 0) {
-                        for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                            var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
-
-                            if (excludedMesh) {
-                                light.excludedMeshes.push(excludedMesh);
-                            }
-                        }
-
-                        light._excludedMeshesIds = [];
-                    }
-
-                    // Included check
-                    if (light._includedOnlyMeshesIds.length > 0) {
-                        for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                            var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
-
-                            if (includedOnlyMesh) {
-                                light.includedOnlyMeshes.push(includedOnlyMesh);
-                            }
-                        }
-
-                        light._includedOnlyMeshesIds = [];
-                    }
-
-                    if (!light.canAffectMesh(mesh)) {
-                        continue;
-                    }
-                    needNormals = true;
-                    this._defines["LIGHT" + lightIndex] = true;
-
-                    var type;
-                    if (light instanceof SpotLight) {
-                        type = "SPOTLIGHT" + lightIndex;
-                    } else if (light instanceof HemisphericLight) {
-                        type = "HEMILIGHT" + lightIndex;
-                    } else if (light instanceof PointLight) {
-                        type = "POINTLIGHT" + lightIndex;
-                    } else {
-                        type = "DIRLIGHT" + lightIndex;
-                    }
-
-                    this._defines[type] = true;
-                    
-                    // Specular
-                    if (!light.specular.equalsFloats(0, 0, 0)) {
-                        this._defines.SPECULARTERM = true;
-                    }
-
-                    // Shadows
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = light.getShadowGenerator();
-                        if (mesh && mesh.receiveShadows && shadowGenerator) {
-                            this._defines["SHADOW" + lightIndex] = true;
-
-                            this._defines.SHADOWS = true;
-
-                            if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
-                                this._defines["SHADOWVSM" + lightIndex] = true;
-                            }
-
-                            if (shadowGenerator.usePoissonSampling) {
-                                this._defines["SHADOWPCF" + lightIndex] = true;
-                            }
-                        }
-                    }
-
-                    lightIndex++;
-                    if (lightIndex === maxSimultaneousLights)
-                        break;
-                }
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
 
             // Attribs
@@ -346,10 +316,10 @@ module BABYLON {
                         this._defines.VERTEXALPHA = true;
                     }
                 }
+                
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.BONES = true;
+                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                    this._defines.BONES4 = true;
                 }
 
                 // Instances
@@ -372,30 +342,14 @@ module BABYLON {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                for (lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-                    if (!this._defines["LIGHT" + lightIndex]) {
-                        continue;
-                    }
-
-                    if (lightIndex > 0) {
-                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOW" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWPCF" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWVSM" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                    }
+                if (this._defines.LOGARITHMICDEPTH) {
+                    fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
+
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
              
-                if (this._defines.BONES4) {
-                    fallbacks.addFallback(0, "BONES4");
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
@@ -417,44 +371,33 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.BONES) {
-                    attribs.push(VertexBuffer.MatricesIndicesKind);
-                    attribs.push(VertexBuffer.MatricesWeightsKind);
-                }
-
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
                 // Legacy browser patch
                 var shaderName = "water";
                 var join = this._defines.toString();
-				
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vNormalInfos", 
+                    "mBones",
+                    "vClipPlane", "normalMatrix",
+                    "logarithmicDepthConstant",
+
+                    // Water
+                    "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
+                    "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed"
+                ]
+                var samplers = ["normalSampler",
+                    // Water
+                    "refractionSampler", "reflectionSampler"
+                ];
+                
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                
                 this._effect = scene.getEngine().createEffect(shaderName,
-                    attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
-                        "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                        "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                        "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                        "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vNormalInfos", 
-                        "mBones",
-                        "vClipPlane", "normalMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-						// Water
-						"worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
-						"cameraPosition", "bumpHeight", "waveHeight", "waterColor", "colorBlendFactor", "waveSpeed"
-                    ],
-                    ["normalSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
-						// Water
-						"refractionSampler", "reflectionSampler"
-                    ],
-                    join, fallbacks, this.onCompiled, this.onError);
+                    attribs, uniforms, samplers,
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -486,9 +429,7 @@ module BABYLON {
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
-            }
+            MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
@@ -499,10 +440,7 @@ module BABYLON {
                     this._effect.setMatrix("normalMatrix", this.bumpTexture.getTextureMatrix());
                 }
                 // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+                MaterialHelper.BindClipPlane(this._effect, scene);
 
                 // Point size
                 if (this.pointsCloud) {
@@ -512,62 +450,14 @@ module BABYLON {
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
             }
 
-            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             
             if (this._defines.SPECULARTERM) {
                 this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                var lightIndex = 0;
-                for (var index = 0; index < scene.lights.length; index++) {
-                    var light = scene.lights[index];
-
-                    if (!light.isEnabled()) {
-                        continue;
-                    }
-
-                    if (!light.canAffectMesh(mesh)) {
-                        continue;
-                    }
-
-                    if (light instanceof PointLight) {
-                        // Point Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex);
-                    } else if (light instanceof DirectionalLight) {
-                        // Directional Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex);
-                    } else if (light instanceof SpotLight) {
-                        // Spot Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                    } else if (light instanceof HemisphericLight) {
-                        // Hemispheric Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                    }
-
-                    light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
-                    this._effect.setColor4("vLightDiffuse" + lightIndex, this._scaledDiffuse, light.range);
-                    
-                    if (this._defines.SPECULARTERM) {
-                        light.specular.scaleToRef(light.intensity, this._scaledSpecular);
-                        this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
-                    }
-
-                    // Shadows
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = light.getShadowGenerator();
-                        if (mesh.receiveShadows && shadowGenerator) {
-                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                            this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
-                        }
-                    }
-
-                    lightIndex++;
-
-                    if (lightIndex === maxSimultaneousLights)
-                        break;
-                }
+                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines, this.maxSimultaneousLights);
             }
 
             // View
@@ -576,11 +466,11 @@ module BABYLON {
             }
 
             // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
-            
+            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
+
+            // Log. depth
+            MaterialHelper.BindLogDepth(this._defines, this._effect, scene);
+
             // Water
             if (StandardMaterial.ReflectionTextureEnabled) {
                 this._effect.setTexture("refractionSampler", this._refractionRTT);
@@ -599,6 +489,8 @@ module BABYLON {
             this._effect.setFloat("bumpHeight", this.bumpHeight);
 			this._effect.setColor4("waterColor", this.waterColor, 1.0);
 			this._effect.setFloat("colorBlendFactor", this.colorBlendFactor);
+            this._effect.setColor4("waterColor2", this.waterColor2, 1.0);
+            this._effect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
             this._effect.setFloat("waveSpeed", this.waveSpeed);
 
             super.bind(world, mesh);
@@ -607,8 +499,13 @@ module BABYLON {
 		private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {
 			// Render targets
 			this._refractionRTT = new RenderTargetTexture(name + "_refraction", {width: renderTargetSize.x, height: renderTargetSize.y}, scene, false, true);
+            this._refractionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._refractionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+
 			this._reflectionRTT = new RenderTargetTexture(name + "_reflection", {width: renderTargetSize.x, height: renderTargetSize.y}, scene, false, true);
-			
+            this._reflectionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._reflectionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+
 			scene.customRenderTargets.push(this._refractionRTT);
 			scene.customRenderTargets.push(this._reflectionRTT);
 			
@@ -695,6 +592,17 @@ module BABYLON {
             if (this.bumpTexture) {
                 this.bumpTexture.dispose();
             }
+
+            var index = this.getScene().customRenderTargets.indexOf(this._refractionRTT);
+            if (index != -1){
+                this.getScene().customRenderTargets.splice(index, 1);
+            }
+            index = -1;
+            index = this.getScene().customRenderTargets.indexOf(this._reflectionRTT);
+            if (index != -1){
+                this.getScene().customRenderTargets.splice(index, 1);
+            }
+
             if (this._reflectionRTT) {
                 this._reflectionRTT.dispose();
             }
@@ -706,81 +614,20 @@ module BABYLON {
         }
 
         public clone(name: string): WaterMaterial {
-            var newMaterial = new WaterMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // water material
-            if (this.bumpTexture && this.bumpTexture.clone) {
-                newMaterial.bumpTexture = this.bumpTexture.clone();
-            }
-
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            return SerializationHelper.Clone(() => new WaterMaterial(name, this.getScene()), this);
         }
-        
-		public serialize(): any {
-		        		
-            var serializationObject = super.serialize();
-			
-             serializationObject.customType         = "BABYLON.WaterMaterial";
-            serializationObject.diffuseColor    	= this.diffuseColor.asArray();
-			serializationObject.specularColor   	= this.specularColor.asArray();
-            serializationObject.specularPower   	= this.specularPower;
-            serializationObject.disableLighting 	= this.disableLighting;
-            serializationObject.windForce     		= this.windForce;
-            serializationObject.windDirection 		= this.windDirection.asArray();
-            serializationObject.waveHeight      	= this.waveHeight;
-            serializationObject.bumpHeight 			= this.bumpHeight;
-			serializationObject.waterColor 			= this.waterColor.asArray();
-			serializationObject.colorBlendFactor	= this.colorBlendFactor;
-			serializationObject.waveLength 			= this.waveLength;
-			serializationObject.renderTargetSize	= this.renderTargetSize.asArray();
-			
-            if (this.bumpTexture) {
-                serializationObject.bumpTexture 	= this.bumpTexture.serialize();
-            }
 
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.WaterMaterial";
+            serializationObject.reflectionTexture.isRenderTarget = true;
+            serializationObject.refractionTexture.isRenderTarget = true;
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
-		
-			var renderTargetSize = source.renderTargetSize ? Vector2.FromArray(source.renderTargetSize) : null;
-		
-            var material = new WaterMaterial(source.name, scene, renderTargetSize);
-
-            material.diffuseColor    	= Color3.FromArray(source.diffuseColor);
-			material.specularColor   	= Color3.FromArray(source.specularColor);
-            material.specularPower   	= source.specularPower;
-            material.disableLighting 	= source.disableLighting;
-            material.windForce     		= source.windForce;
-            material.windDirection 		= Vector2.FromArray(source.windDirection);
-            material.waveHeight      	= source.waveHeight;
-            material.bumpHeight 		= source.bumpHeight;
-			material.waterColor 		= Color3.FromArray(source.waterColor);
-			material.colorBlendFactor	= source.colorBlendFactor;
-			material.waveLength 		= source.waveLength;
-			material.renderTargetSize	= Vector2.FromArray(source.renderTargetSize);
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.bumpTexture) {
-                material.bumpTexture = Texture.Parse(source.bumpTexture, scene, rootUrl);
-            }
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
         }
 		
 		public static CreateDefaultMesh(name: string, scene: Scene): Mesh {

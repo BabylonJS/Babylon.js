@@ -7,12 +7,11 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
 
-        private _vertexBuffer: WebGLBuffer;
+        public onGenerated: () => void;
+
+        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
-
-        private _vertexDeclaration = [2];
-        private _vertexStrideSize = 2 * 4;
 
         private _uniforms = new Array<string>();
         private _samplers = new Array<string>();
@@ -31,7 +30,7 @@
 
         private _fallbackTextureUsed = false;
 
-        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps = true) {
+        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps = true, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
             scene._proceduralTextures.push(this);
@@ -45,7 +44,15 @@
 
             this._fallbackTexture = fallbackTexture;
 
-            this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+            var engine = scene.getEngine();
+
+            if (isCube) {
+                this._texture = engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this.setFloat("face", 0);
+            }
+            else {
+                this._texture = engine.createRenderTargetTexture(size, generateMipMaps);
+            }
 
             // VBO
             var vertices = [];
@@ -54,7 +61,7 @@
             vertices.push(-1, -1);
             vertices.push(1, -1);
 
-            this._vertexBuffer = scene.getEngine().createVertexBuffer(vertices);
+            this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
             // Indices
             var indices = [];
@@ -66,7 +73,7 @@
             indices.push(2);
             indices.push(3);
 
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._indexBuffer = engine.createIndexBuffer(indices);
         }
 
         public reset(): void {
@@ -98,7 +105,7 @@
             }
 
             this._effect = engine.createEffect(shaders,
-                ["position"],
+                [VertexBuffer.PositionKind],
                 this._uniforms,
                 this._samplers,
                 "", null, null, () => {
@@ -237,11 +244,6 @@
             var scene = this.getScene();
             var engine = scene.getEngine();
 
-            engine.bindFramebuffer(this._texture);
-
-            // Clear
-            engine.clear(scene.clearColor, true, true);
-
             // Render
             engine.enableEffect(this._effect);
             engine.setState(false);
@@ -285,16 +287,44 @@
             // Matrix      
             for (name in this._matrices) {
                 this._effect.setMatrix(name, this._matrices[name]);
-            }
+            }            
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
 
-            // Draw order
-            engine.draw(true, 0, 6);
+            if (this.isCube) {
+                for (var face = 0; face < 6; face++) {
+                    engine.bindFramebuffer(this._texture, face);
+
+                    this._effect.setFloat("face", face);
+
+                    // Clear
+                    engine.clear(scene.clearColor, true, true, true);
+
+                    // Draw order
+                    engine.draw(true, 0, 6);
+
+                    // Mipmaps
+                    if (face === 5) {
+                        engine.generateMipMapsForCubemap(this._texture);
+                    }
+                }
+            } else {
+                engine.bindFramebuffer(this._texture);
+
+                // Clear
+                engine.clear(scene.clearColor, true, true, true);
+
+                // Draw order
+                engine.draw(true, 0, 6);
+            }
 
             // Unbind
-            engine.unBindFramebuffer(this._texture);
+            engine.unBindFramebuffer(this._texture, this.isCube);
+
+            if (this.onGenerated) {
+                this.onGenerated();
+            }
         }
 
         public clone(): ProceduralTexture {
@@ -317,6 +347,17 @@
             if (index >= 0) {
                 this.getScene()._proceduralTextures.splice(index, 1);
             }
+
+            var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+            if (vertexBuffer) {
+                vertexBuffer.dispose();
+                this._vertexBuffers[VertexBuffer.PositionKind] = null;
+            }
+
+            if (this._indexBuffer && this.getScene().getEngine()._releaseBuffer(this._indexBuffer)) {
+                this._indexBuffer = null;
+            }
+
             super.dispose();
         }
     }
