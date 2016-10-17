@@ -1126,7 +1126,7 @@
                         if (computeLayoutArea) {
                             dstArea.width += this.rightPixels;
                         }
-                        dstOffset.z = 0;
+                        dstOffset.z = this.rightPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -1144,7 +1144,7 @@
                             right = this.rightPixels;
                         }
                         dstArea.width = sourceArea.width - (dstOffset.x + right);
-                        dstOffset.z = 0;
+                        dstOffset.z = this.rightPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignCenter:
@@ -1177,7 +1177,7 @@
                         if (computeLayoutArea) {
                             dstArea.height += this.topPixels;
                         }
-                        dstOffset.w = 0;
+                        dstOffset.w = this.topPixels;
                         break;
 
                     }
@@ -1212,7 +1212,7 @@
                             top = this.topPixels;
                         }
                         dstArea.height = sourceArea.height - (dstOffset.y + top);
-                        dstOffset.w = 0;
+                        dstOffset.w = this.topPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignCenter:
