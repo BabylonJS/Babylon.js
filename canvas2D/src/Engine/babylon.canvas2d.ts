@@ -550,22 +550,26 @@
 
             // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
             if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
-                this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList = null;
-                this._previousOverPrimitive = this._actualOverPrimitive;
-                this._actualOverPrimitive = null;
-                return;
+                // Reset intersection info as we don't hit anything
+                ii.intersectedPrimitives = new Array<PrimitiveIntersectedInfo>();
+                ii.topMostIntersectedPrimitive = null;
+            } else {
+                // The pointer is inside the Canvas, do an intersection test
+                this.intersect(ii);
             }
 
-            this.intersect(ii);
+            {
+                // Update prev/actual intersection info, fire "overPrim" property change if needed
+                this._previousIntersectionList = this._actualIntersectionList;
+                this._actualIntersectionList = ii.intersectedPrimitives;
+                this._previousOverPrimitive = this._actualOverPrimitive;
+                this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
 
-            this._previousIntersectionList = this._actualIntersectionList;
-            this._actualIntersectionList = ii.intersectedPrimitives;
-            this._previousOverPrimitive = this._actualOverPrimitive;
-            this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
-
-            if ((!this._actualOverPrimitive && !this._previousOverPrimitive) || !(this._actualOverPrimitive && this._previousOverPrimitive && this._actualOverPrimitive.prim === this._previousOverPrimitive.prim)) {
-                this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
+                let prev = (this._previousOverPrimitive != null) ? this._previousOverPrimitive.prim : null;
+                let actual = (this._actualOverPrimitive != null) ? this._actualOverPrimitive.prim : null;
+                if (prev !== actual) {
+                    this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
+                }
             }
 
             this._intersectionRenderId = this.scene.getRenderId();
@@ -672,17 +676,18 @@
                     this._updatePrimPointerPos(cur);
                 }
 
-                // Trigger a PointerEnter corresponding to the PointerOver
-                if (mask === PrimitivePointerInfo.PointerOver) {
-                    this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
-                    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
-                }
+                // NOTE TO MYSELF, this is commented right now because it doesn't seemed needed but I can't figure out why I put this code in the first place
+                //// Trigger a PointerEnter corresponding to the PointerOver
+                //if (mask === PrimitivePointerInfo.PointerOver) {
+                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
+                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
+                //}
 
-                // Trigger a PointerLeave corresponding to the PointerOut
-                else if (mask === PrimitivePointerInfo.PointerOut) {
-                    this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
-                    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
-                }
+                //// Trigger a PointerLeave corresponding to the PointerOut
+                //else if (mask === PrimitivePointerInfo.PointerOut) {
+                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
+                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
+                //}
 
                 // Loop to the parent
                 cur = cur.parent;
