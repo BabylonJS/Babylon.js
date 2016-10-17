@@ -1244,7 +1244,7 @@
             }
         }
 
-        public static flagFREE001                  = 0x0000001;    // set if the object is already disposed
+        public static flagNoPartOfLayout          = 0x0000001;    // set if the primitive's position/size must not be computed by Layout Engine
         public static flagLevelBoundingInfoDirty  = 0x0000002;    // set if the primitive's level bounding box (not including children) is dirty
         public static flagModelDirty              = 0x0000004;    // set if the model must be changed
         public static flagLayoutDirty             = 0x0000008;    // set if the layout must be computed

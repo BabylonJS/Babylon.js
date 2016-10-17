@@ -1079,10 +1079,10 @@
          * @param sourceArea the source area where the content must be sized/positioned
          * @param contentSize the content size to position/resize
          * @param alignment the alignment setting
-         * @param dstOffset the position of the content
+         * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
          * @param dstArea the new size of the content
          */
-        public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size, computeLayoutArea = false) {
+        public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector4, dstArea: Size, computeLayoutArea = false) {
             // Fetch some data
             let topType = this._getType(0, true);
             let leftType = this._getType(1, true);
@@ -1110,6 +1110,7 @@
                         if (computeLayoutArea) {
                             dstArea.width += this.leftPixels;
                         }
+                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
                         break;
 
                     }
@@ -1125,6 +1126,7 @@
                         if (computeLayoutArea) {
                             dstArea.width += this.rightPixels;
                         }
+                        dstOffset.z = 0;
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -1142,6 +1144,7 @@
                             right = this.rightPixels;
                         }
                         dstArea.width = sourceArea.width - (dstOffset.x + right);
+                        dstOffset.z = 0;
                         break;
                     }
                 case PrimitiveAlignment.AlignCenter:
@@ -1156,6 +1159,7 @@
                         let offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
                         dstOffset.x = Math.round(((sourceArea.width - width) / 2) + offset);
                         dstArea.width = width;
+                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
                         break;
                     }
             }
@@ -1173,6 +1177,7 @@
                         if (computeLayoutArea) {
                             dstArea.height += this.topPixels;
                         }
+                        dstOffset.w = 0;
                         break;
 
                     }
@@ -1188,6 +1193,7 @@
                         if (computeLayoutArea) {
                             dstArea.height += this.bottomPixels;
                         }
+                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
                         break;
 
                     }
@@ -1206,6 +1212,7 @@
                             top = this.topPixels;
                         }
                         dstArea.height = sourceArea.height - (dstOffset.y + top);
+                        dstOffset.w = 0;
                         break;
                     }
                 case PrimitiveAlignment.AlignCenter:
@@ -1220,6 +1227,7 @@
                         let offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
                         dstOffset.y = Math.round(((sourceArea.height - height) / 2) + offset);
                         dstArea.height = height;
+                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
                         break;
                     }
             }
@@ -1422,8 +1430,8 @@
             this._layoutArea = Size.Zero();
             this._layoutAreaPos = null;
             this._layoutBoundingInfo = null;
-            this._marginOffset = Vector2.Zero();
-            this._paddingOffset = Vector2.Zero();
+            this._marginOffset = Vector4.Zero();
+            this._paddingOffset = Vector4.Zero();
             this._parentPaddingOffset = Vector2.Zero();
             this._parentContentArea = Size.Zero();
             this._lastAutoSizeArea = Size.Zero();
@@ -2687,6 +2695,7 @@
                         ]
                     }
                 );
+                this._debugAreaGroup._setFlags(SmartPropertyPrim.flagNoPartOfLayout);
                 this._updateDebugArea();
             }
 
@@ -2711,7 +2720,8 @@
             }
 
             // Update the visibility status of layout/margin/padding
-            let hasLayout = (this.layoutAreaPos.x!==0) || (this.layoutAreaPos.y!==0);
+            let hasLayout = this._layoutAreaPos != null;
+            let hasPos = (this.actualPosition.x!==0) || (this.actualPosition.y!==0);
             let hasMargin = this._hasMargin;
             let hasPadding = this._hasPadding;
             prims[0][0].levelVisible = hasLayout;
@@ -2741,40 +2751,42 @@
                 areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
             }
 
-            {
-                let w = this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width;
-                let h = this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height;
-                storeAreaInfo(Vector2.Zero(), new Size(w, h));
-            }
+            let marginH = this._marginOffset.x + this._marginOffset.z;
+            let marginV = this._marginOffset.y + this._marginOffset.w;
+
+            let w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width)  : (marginH + this.actualSize.width);
+            let h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + this.actualSize.height);
+            let pos = (!hasLayout && !hasMargin && !hasPadding && hasPos) ? this.actualPosition : Vector2.Zero();
+
+            storeAreaInfo(pos, new Size(w, h));
 
             // Compute the layout related data
             if (hasLayout) {
-                let layoutOffset = this.layoutAreaPos;
+                let layoutOffset = this.layoutAreaPos.clone();
 
-                let w = this.layoutArea.width - (layoutOffset.x + this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width);
-                let h = this.layoutArea.height - (layoutOffset.y + this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height);
-
-                let layoutArea = new Size(w, h);
-
-                storeAreaInfo(layoutOffset, layoutArea);
-                curOffset = this.layoutAreaPos;
+                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : this.actualSize.clone());
+                curOffset = layoutOffset.clone();
             }
 
             // Compute margin data
             if (hasMargin) {
-                let marginOffset = this._marginOffset.add(curOffset);
+                let marginOffset = curOffset.clone();
+                marginOffset.x += this._marginOffset.x;
+                marginOffset.y += this._marginOffset.y;
                 let marginArea = this.actualSize;
 
                 storeAreaInfo(marginOffset, marginArea);
-                curOffset.addInPlace(marginOffset);
+                curOffset = marginOffset.clone();
             }
 
             if (hasPadding) {
-                let contentOffset = this._paddingOffset.add(curOffset);
+                let contentOffset = curOffset.clone();
+                contentOffset.x += this._paddingOffset.x;
+                contentOffset.y += this._paddingOffset.y;
                 let contentArea = this.contentArea;
 
                 storeAreaInfo(contentOffset, contentArea);
-                curOffset.addInPlace(contentOffset);
+                curOffset = curOffset.add(contentOffset);
             }
 
             // Helper function that set the pos and size of a given prim
@@ -2809,9 +2821,9 @@
                 let lp = new Vector2(ca.min.x, na.min.y);
                 let ls = new Size(na.min.x - ca.min.x, na.max.y - na.min.y);
                 let rp = new Vector2(na.max.x, na.min.y);
-                let rs = ls;
+                let rs = new Size(ca.max.x - na.max.x, na.max.y - na.min.y);
                 let bp = new Vector2(ca.min.x, ca.min.y);
-                let bs = ts;
+                let bs = new Size(ca.size.width, na.min.y - ca.min.y);
 
                 // Frame
                 plist[1].position = ca.off;
@@ -3342,7 +3354,7 @@
                 let parentPaddingChanged = false;
                 let parentPaddingOffset: Vector2 = Prim2DBase._v0;
                 if (this._parent) {
-                    parentPaddingOffset = this._parent._paddingOffset;
+                    parentPaddingOffset = new Vector2(this._parent._paddingOffset.x, this._parent._paddingOffset.y);
                     parentPaddingChanged = !parentPaddingOffset.equals(this._parentPaddingOffset);
                 }
 
@@ -3378,6 +3390,7 @@
         }
 
         private static _icPos = Vector2.Zero();
+        private static _icZone = Vector4.Zero();
         private static _icArea = Size.Zero();
         private static _size = Size.Zero();
 
@@ -3410,12 +3423,13 @@
                 this.actualSize = Prim2DBase._size.clone();
             }
 
+            let po = new Vector2(this._paddingOffset.x, this._paddingOffset.y);
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so me resize the primitive itself
                 if (isSizeAuto) {
                     let content = this.size.clone();
                     this._getActualSizeFromContentToRef(content, Prim2DBase._icArea);
-                    this.padding.enlarge(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
+                    this.padding.enlarge(Prim2DBase._icArea, po, Prim2DBase._size);
                     this._contentArea.copyFrom(content);
                     this.actualSize = Prim2DBase._size.clone();
 
@@ -3425,19 +3439,26 @@
                     }
 
                 } else {
-                    this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
+                    this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icZone, Prim2DBase._icArea);
                     Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                     Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                    this.padding.compute(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
-                    this._paddingOffset.x += Prim2DBase._icPos.x;
-                    this._paddingOffset.y += Prim2DBase._icPos.y;
+                    this.padding.compute(Prim2DBase._icArea, po, Prim2DBase._size);
+                    this._paddingOffset.x = po.x;
+                    this._paddingOffset.y = po.y;
+                    this._paddingOffset.x += Prim2DBase._icZone.x;
+                    this._paddingOffset.y += Prim2DBase._icZone.y;
+                    this._paddingOffset.z -= Prim2DBase._icZone.z;
+                    this._paddingOffset.w -= Prim2DBase._icZone.w;
                     this._contentArea.copyFrom(Prim2DBase._size);
                 }
             } else {
-                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
+                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icZone, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                 Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this._paddingOffset.copyFrom(Prim2DBase._icPos);
+                this._paddingOffset.x = Prim2DBase._icZone.x;
+                this._paddingOffset.y = Prim2DBase._icZone.y;
+                this._paddingOffset.z = Prim2DBase._icZone.z;
+                this._paddingOffset.w = Prim2DBase._icZone.z;
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
 
@@ -3671,12 +3692,12 @@
          * This method is used to alter the contentArea of the Primitive before margin is applied.
          * In most of the case you won't need to override this method, but it can prove some usefulness, check the Rectangle2D class for a concrete application.
          * @param primSize the current size of the primitive
-         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
+         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing! x, y, z, w area left, bottom, right, top
          * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          */
-        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size) {
+        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size) {
             initialContentArea.copyFrom(primSize);
-            initialContentPosition.x = initialContentPosition.y = 0;
+            initialContentPosition.x = initialContentPosition.y = initialContentPosition.z = initialContentPosition.w = 0;
         }
 
         /**
@@ -3715,8 +3736,8 @@
         protected _maxSize: Size;
         protected _desiredSize: Size;
         private _layoutEngine: LayoutEngineBase;
-        private _marginOffset: Vector2;
-        private _paddingOffset: Vector2;
+        private _marginOffset: Vector4;
+        private _paddingOffset: Vector4;
         private _parentPaddingOffset: Vector2;
         private _parentContentArea: Size;
         private _lastAutoSizeArea: Size;
