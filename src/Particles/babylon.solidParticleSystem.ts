@@ -109,6 +109,7 @@
         private _scale: Vector3 = Tmp.Vector3[2];
         private _translation: Vector3 = Tmp.Vector3[3];
         private _particlesIntersect: boolean = false;
+        private _wm: Matrix;
 
 
         /**
@@ -167,6 +168,7 @@
             vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
             this.mesh.isPickable = this._pickable;
+            this._wm = this.mesh.getWorldMatrix();
 
             // free memory
             this._positions = null;
@@ -261,11 +263,15 @@
                 for (v = 0; v < shape.length; v++) {
                     shape[v].subtractInPlace(barycenter);
                 }
+                var bInfo;
+                if (this._particlesIntersect) {
+                    bInfo = new BoundingInfo(barycenter, barycenter);
+                }
                 var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, null, null);
 
                 // add the particle in the SPS
                 this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, meshNor, this._normals, idx, 0, null);
-                this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0);
+                this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0, bInfo);
                 // initialize the particle position
                 this.particles[this.nbParticles].position.addInPlace(barycenter);
 
@@ -398,8 +404,8 @@
         }
 
         // adds a new particle object in the particles array
-        private _addParticle(idx: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number, bbInfo?: BoundingInfo): void {
-            this.particles.push(new SolidParticle(idx, idxpos, model, shapeId, idxInShape, bbInfo));
+        private _addParticle(idx: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number, bInfo?: BoundingInfo): void {
+            this.particles.push(new SolidParticle(idx, idxpos, model, shapeId, idxInShape, bInfo));
         }
 
         /**
@@ -535,7 +541,7 @@
             // if the particles will always face the camera
             if (this.billboard) {
                 // compute the camera position and un-rotate it by the current mesh rotation
-                if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
+                if (this._wm.decompose(this._scale, this._quaternion, this._translation)) {
                     this._quaternionToRotationMatrix();
                     this._rotMatrix.invertToRef(this._invertMatrix);
                     this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
@@ -741,8 +747,8 @@
                     }
 
                     // then update the bbox and the bsphere into the world system
-                    bBox._update(this.mesh.getWorldMatrix());
-                    bSphere._update(this.mesh.getWorldMatrix());
+                    bBox._update(this._wm);
+                    bSphere._update(this._wm);
                 }
 
                 // increment indexes for the next particle
