@@ -45,19 +45,26 @@ To integrate your new procedural texture to the build process, you have to edit 
 To test your procedural texture, you can use the /test/index.html file by adding a reference to your .js file. Then you will need to update the code to create an instance of your procedural texture and reference it in the UI system:
 
 ```
-gui.add(options, 'material', ['none','fire']).onFinishChange(function () {
-  switch (options.material) {
+gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', '[YOURTEXTURE]', 'starfield']).onFinishChange(function () {
+  resetPTOptions();
+  switch (options.texture) {
     case "fire":
-      currentMaterial = fireMaterial;
+      currentTexture = firePT;
+      addPToptions(firePT, ['time', 'alphaThreshold', 'speed', ]);
       break;
+    
+    //.......................
+
+    //YOURTEXTURE
+
     case "none":
     default:
-      currentMaterial = std;
+      currentTexture = diffuseTexture;
       break;
   }
 
-  currentMesh.material = currentMaterial;
-  window.enableMaterial(options.material);
+  std.diffuseTexture = currentTexture;
+  window.enableTexture(options.texture);
 });
 ```
 
