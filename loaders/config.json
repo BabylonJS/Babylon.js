@@ -16,7 +16,9 @@
       "files": [
         "glTF/babylon.glTFFileLoaderInterfaces.ts",
         "glTF/babylon.glTFFileLoader.ts",
-        "glTF/babylon.glTFFileLoaderUtils.ts"
+        "glTF/babylon.glTFFileLoaderUtils.ts",
+        "glTF/babylon.glTFFileLoaderExtension.ts",
+        "glTF/babylon.glTFBinaryExtension.ts"
       ],
       "output": "./glTF",
       "filename": "babylon.glTFFileLoader.js"
@@ -24,6 +26,6 @@
   },
 
   "defines": [
-    "../dist/*.d.ts"
+    "../dist/preview release/*.d.ts"
   ]
 }
