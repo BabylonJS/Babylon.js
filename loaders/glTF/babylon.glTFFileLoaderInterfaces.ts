@@ -351,9 +351,11 @@
 
         scene: Scene;
         rootUrl: string;
-        loadedBuffers: number;
-        loadedShaders: number;
-        arrayBuffers: Object;
+
+        loadedBufferCount: number;
+        loadedBufferViews: { [name: string]: ArrayBufferView };
+
+        loadedShaderCount: number;
 
         importOnlyMeshes: boolean;
         importMeshesNames?: string[];
@@ -373,29 +375,5 @@
     export interface IJointNode {
         node: IGLTFNode;
         id: string;
-    }
-
-    /**
-    * Extensions
-    */
-    export interface IGLTFExtension {
-        /**
-        * The name of the extension (example: "KHR_materials_pbr" cf. https://github.com/tsturm/glTF/tree/master/extensions/Vendor/FRAUNHOFER_materials_pbr)
-        */
-        extensionName: string;
-    }
-
-    export interface IGLTFLoaderExtension<ExtensionType extends Object, ExtensionObject extends Object> extends IGLTFExtension {
-        /**
-        * If the extensions needs the loader to skip its default behavior
-        * Example, when loading materials, if the loader should use only the extension
-        * or load the shader material and call the extension to customize the shader material
-        */
-        needToSkipDefaultLoaderBehavior(id: string, extension: ExtensionType): boolean;
-
-        /**
-        * Apply extension method
-        */
-        apply(gltfRuntime: IGLTFRuntime, id: string, name: string, extension: ExtensionType, object: ExtensionObject): ExtensionObject;
     }
 }

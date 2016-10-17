@@ -88,6 +88,22 @@
         }
 
         /**
+        * Decode the base64 uri
+        * @param uri: the uri to decode
+        */
+        public static DecodeBase64(uri: string): ArrayBuffer {
+            var decodedString = atob(uri.split(",")[1]);
+            var bufferLength = decodedString.length;
+            var bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+            for (var i = 0; i < bufferLength; i++) {
+                bufferView[i] = decodedString.charCodeAt(i);
+            }
+
+            return bufferView.buffer;
+        }
+
+        /**
         * Returns the wrap mode of the texture
         * @param mode: the mode value
         */
@@ -98,48 +114,6 @@
                 case ETextureWrapMode.REPEAT: return Texture.WRAP_ADDRESSMODE;
                 default: return Texture.WRAP_ADDRESSMODE;
             }
-        }
-
-        /**
-         * Loads a texture from its name
-         * @param gltfRuntime: the gltf runtime
-         * @param name: the name of the texture
-         */
-        public static LoadTexture(gltfRuntime: IGLTFRuntime, name: string): Texture {
-            var texture: IGLTFTexture = gltfRuntime.textures[name];
-
-            if (!texture || !texture.source) {
-                return null;
-            }
-
-            if (texture.babylonTexture) {
-                return texture.babylonTexture;
-            }
-
-            var sampler: IGLTFSampler = gltfRuntime.samplers[texture.sampler];
-            var source: IGLTFImage = gltfRuntime.images[texture.source];
-            var newTexture: Texture = null;
-
-            var createMipMaps = (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
-                (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
-                (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
-                (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR);
-
-            var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
-
-            if (GLTFUtils.IsBase64(source.uri)) {
-                newTexture = new Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, null, null, source.uri, true);
-            }
-            else {
-                newTexture = new Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode);
-            }
-
-            newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
-            newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
-            newTexture.name = name;
-
-            texture.babylonTexture = newTexture;
-            return newTexture;
         }
 
         /**
@@ -176,6 +150,26 @@
             }
         }
 
+        public static GetBufferFromBufferView(gltfRuntime: IGLTFRuntime, bufferView: IGLTFBufferView, byteOffset: number, byteLength: number, componentType: EComponentType): ArrayBufferView {
+            var byteOffset = bufferView.byteOffset + byteOffset;
+
+            var loadedBufferView = gltfRuntime.loadedBufferViews[bufferView.buffer];
+            if (byteOffset + byteLength > loadedBufferView.byteLength) {
+                throw new Error("Buffer access is out of range");
+            }
+
+            var buffer = loadedBufferView.buffer;
+            byteOffset += loadedBufferView.byteOffset;
+
+            switch (componentType) {
+                case EComponentType.BYTE: return new Int8Array(buffer, byteOffset, byteLength);
+                case EComponentType.UNSIGNED_BYTE: return new Uint8Array(buffer, byteOffset, byteLength);
+                case EComponentType.SHORT: return new Int16Array(buffer, byteOffset, byteLength);
+                case EComponentType.UNSIGNED_SHORT: return new Uint16Array(buffer, byteOffset, byteLength);
+                default: return new Float32Array(buffer, byteOffset, byteLength);
+            }
+        }
+
         /**
          * Returns a buffer from its accessor
          * @param gltfRuntime: the GLTF runtime
@@ -183,18 +177,23 @@
          */
         public static GetBufferFromAccessor(gltfRuntime: IGLTFRuntime, accessor: IGLTFAccessor): any {
             var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[accessor.bufferView];
-            var arrayBuffer: ArrayBuffer = gltfRuntime.arrayBuffers[bufferView.buffer];
+            var byteLength = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
+            return GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, accessor.byteOffset, byteLength, accessor.componentType);
+        }
 
-            var byteOffset = accessor.byteOffset + bufferView.byteOffset;
-            var count = accessor.count * GLTFUtils.GetByteStrideFromType(accessor);
+        /**
+         * Decodes a buffer view into a string
+         * @param view: the buffer view
+         */
+        public static DecodeBufferToText(view: ArrayBufferView): string {
+            var result = "";
+            var length = view.byteLength;
 
-            switch (accessor.componentType) {
-                case EComponentType.BYTE: return new Int8Array(arrayBuffer, byteOffset, count);
-                case EComponentType.UNSIGNED_BYTE: return new Uint8Array(arrayBuffer, byteOffset, count);
-                case EComponentType.SHORT: return new Int16Array(arrayBuffer, byteOffset, count);
-                case EComponentType.UNSIGNED_SHORT: return new Uint16Array(arrayBuffer, byteOffset, count);
-                default: return new Float32Array(arrayBuffer, byteOffset, count);
+            for (var i = 0; i < length; ++i) {
+                result += String.fromCharCode(view[i]);
             }
+
+            return result;
         }
     }
 }
