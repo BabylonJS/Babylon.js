@@ -47,6 +47,9 @@ var BABYLON;
             configurable: true
         });
         SolidParticle.prototype.intersectsMesh = function (target) {
+            if (!(this.isVisible && target.isVisible)) {
+                return false; // only visible particle and target can intersect
+            }
             if (!this._boundingInfo || !target._boundingInfo) {
                 return false;
             }

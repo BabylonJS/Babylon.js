@@ -1159,40 +1159,40 @@ var BABYLON;
             }
         };
         Engine.prototype.bindBuffers = function (vertexBuffers, indexBuffer, effect) {
-            //   if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
-            this._cachedVertexBuffers = vertexBuffers;
-            this._cachedEffectForVertexBuffers = effect;
-            var attributes = effect.getAttributesNames();
-            for (var index = 0; index < attributes.length; index++) {
-                var order = effect.getAttributeLocation(index);
-                if (order >= 0) {
-                    var vertexBuffer = vertexBuffers[attributes[index]];
-                    if (!vertexBuffer) {
-                        if (this._vertexAttribArraysEnabled[order]) {
-                            this._gl.disableVertexAttribArray(order);
-                            this._vertexAttribArraysEnabled[order] = false;
+            if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
+                this._cachedVertexBuffers = vertexBuffers;
+                this._cachedEffectForVertexBuffers = effect;
+                var attributes = effect.getAttributesNames();
+                for (var index = 0; index < attributes.length; index++) {
+                    var order = effect.getAttributeLocation(index);
+                    if (order >= 0) {
+                        var vertexBuffer = vertexBuffers[attributes[index]];
+                        if (!vertexBuffer) {
+                            if (this._vertexAttribArraysEnabled[order]) {
+                                this._gl.disableVertexAttribArray(order);
+                                this._vertexAttribArraysEnabled[order] = false;
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                    if (!this._vertexAttribArraysEnabled[order]) {
-                        this._gl.enableVertexAttribArray(order);
-                        this._vertexAttribArraysEnabled[order] = true;
-                    }
-                    var buffer = vertexBuffer.getBuffer();
-                    this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
-                    if (vertexBuffer.getIsInstanced()) {
-                        this._caps.instancedArrays.vertexAttribDivisorANGLE(order, 1);
-                        this._currentInstanceLocations.push(order);
-                        this._currentInstanceBuffers.push(buffer);
+                        if (!this._vertexAttribArraysEnabled[order]) {
+                            this._gl.enableVertexAttribArray(order);
+                            this._vertexAttribArraysEnabled[order] = true;
+                        }
+                        var buffer = vertexBuffer.getBuffer();
+                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+                        if (vertexBuffer.getIsInstanced()) {
+                            this._caps.instancedArrays.vertexAttribDivisorANGLE(order, 1);
+                            this._currentInstanceLocations.push(order);
+                            this._currentInstanceBuffers.push(buffer);
+                        }
                     }
                 }
             }
-            //   }
-            // if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
-            this._cachedIndexBuffer = indexBuffer;
-            this.bindIndexBuffer(indexBuffer);
-            this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
-            //}
+            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
+                this._cachedIndexBuffer = indexBuffer;
+                this.bindIndexBuffer(indexBuffer);
+                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
+            }
         };
         Engine.prototype.unbindInstanceAttributes = function () {
             var boundBuffer;
