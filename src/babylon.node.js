@@ -17,6 +17,7 @@ var BABYLON;
          */
         function Node(name, scene) {
             this.state = "";
+            this.metadata = null;
             this.animations = new Array();
             this._ranges = {};
             this._childrenFlag = -1;
@@ -292,6 +293,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], Node.prototype, "state", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "metadata", void 0);
         return Node;
     }());
     BABYLON.Node = Node;
