@@ -1711,10 +1711,10 @@ declare module BABYLON {
          * @param sourceArea the source area where the content must be sized/positioned
          * @param contentSize the content size to position/resize
          * @param alignment the alignment setting
-         * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
+         * @param dstOffset the position of the content
          * @param dstArea the new size of the content
          */
-        computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean): void;
+        computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size, computeLayoutArea?: boolean): void;
         /**
          * Compute an area and its position considering this thickness properties based on a given source area
          * @param sourceArea the source area
@@ -2207,7 +2207,6 @@ declare module BABYLON {
         private static _transMtx;
         protected updateCachedStates(recurse: boolean): void;
         private static _icPos;
-        private static _icZone;
         private static _icArea;
         private static _size;
         private _updatePositioning();
@@ -2230,10 +2229,10 @@ declare module BABYLON {
          * This method is used to alter the contentArea of the Primitive before margin is applied.
          * In most of the case you won't need to override this method, but it can prove some usefulness, check the Rectangle2D class for a concrete application.
          * @param primSize the current size of the primitive
-         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing! x, y, z, w area left, bottom, right, top
+         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          */
-        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size): void;
+        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size): void;
         /**
          * This method is used to calculate the new size of the primitive based on the content which must stay the same
          * Check the Rectangle2D implementation for a concrete application.
@@ -2406,7 +2405,7 @@ declare module BABYLON {
         static roundSubdivisions: number;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Rectangle2DRenderCache;
-        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size): void;
+        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size): void;
         protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size): void;
         protected createInstanceDataParts(): InstanceDataBase[];
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
@@ -2893,7 +2892,7 @@ declare module BABYLON {
          * @param state true to set them, false to clear them
          */
         _changeFlags(flags: number, state: boolean): void;
-        static flagNoPartOfLayout: number;
+        static flagFREE001: number;
         static flagLevelBoundingInfoDirty: number;
         static flagModelDirty: number;
         static flagLayoutDirty: number;
@@ -3226,6 +3225,418 @@ declare module BABYLON {
         constructor(name: string, scene: Scene, canvas: Canvas2D);
         dispose(): void;
         private _canvas;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Custom type of the propertyChanged observable
+     */
+    class PropertyChangedInfo {
+        /**
+         * Previous value of the property
+         */
+        oldValue: any;
+        /**
+         * New value of the property
+         */
+        newValue: any;
+        /**
+         * Name of the property that changed its value
+         */
+        propertyName: string;
+    }
+    /**
+     * Property Changed interface
+     */
+    interface IPropertyChanged {
+        /**
+         * PropertyChanged observable
+         */
+        propertyChanged: Observable<PropertyChangedInfo>;
+    }
+    /**
+     * The purpose of this class is to provide a base implementation of the IPropertyChanged interface for the user to avoid rewriting a code needlessly.
+     * Typical use of this class is to check for equality in a property set(), then call the onPropertyChanged method if values are different after the new value is set. The protected method will notify observers of the change.
+     * Remark: onPropertyChanged detects reentrant code and acts in a way to make sure everything is fine, fast and allocation friendly (when there no reentrant code which should be 99% of the time)
+     */
+    abstract class PropertyChangedBase implements IPropertyChanged {
+        /**
+         * Protected method to call when there's a change of value in a property set
+         * @param propName the name of the concerned property
+         * @param oldValue its old value
+         * @param newValue its new value
+         * @param mask an optional observable mask
+         */
+        protected onPropertyChanged<T>(propName: string, oldValue: T, newValue: T, mask?: number): void;
+        /**
+         * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
+         * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
+         */
+        propertyChanged: Observable<PropertyChangedInfo>;
+        _propertyChanged: Observable<PropertyChangedInfo>;
+        private static pci;
+        private static calling;
+    }
+    /**
+     * Class for the ObservableArray.onArrayChanged observable
+     */
+    class ArrayChanged<T> {
+        constructor();
+        /**
+         * Contain the action that were made on the ObservableArray, it's one of the ArrayChanged.xxxAction members.
+         * Note the action's value can be used in the "mask" field of the Observable to only be notified about given action(s)
+         */
+        action: number;
+        /**
+         * Only valid if the action is newItemsAction
+         */
+        newItems: {
+            index: number;
+            value: T;
+        }[];
+        /**
+         * Only valid if the action is removedItemsAction
+         */
+        removedItems: {
+            index: number;
+            value: T;
+        }[];
+        /**
+         * Only valid if the action is changedItemAction
+         */
+        changedItems: {
+            index: number;
+            value: T;
+        }[];
+        /**
+         * Get the index of the first item inserted
+         */
+        newStartingIndex: number;
+        /**
+         * Get the index of the first item removed
+         */
+        removedStartingIndex: number;
+        /**
+         * Get the index of the first changed item
+         */
+        changedStartingIndex: number;
+        /**
+         * The content of the array was totally cleared
+         */
+        static clearAction: number;
+        /**
+         * A new item was added, the newItems field contains the key/value pairs
+         */
+        static newItemsAction: number;
+        /**
+         * An existing item was removed, the removedKey field contains its key
+         */
+        static removedItemsAction: number;
+        /**
+         * One or many items in the array were changed, the
+         */
+        static changedItemAction: number;
+        /**
+         * The array's content was totally changed
+         * Depending on the method that used this mode the ChangedArray object may contains more information
+         */
+        static replacedArrayAction: number;
+        /**
+         * The length of the array changed
+         */
+        static lengthChangedAction: number;
+        private static _clearAction;
+        private static _newItemsAction;
+        private static _removedItemsAction;
+        private static _replacedArrayAction;
+        private static _lengthChangedAction;
+        private static _changedItemAction;
+        clear(): void;
+    }
+    class OAWatchedObjectChangedInfo<T> {
+        object: T;
+        propertyChanged: PropertyChangedInfo;
+    }
+    /**
+     * This class mimics the Javascript Array and TypeScript Array<T> classes, adding new features concerning the Observable pattern.
+     *
+     */
+    class ObservableArray<T> extends PropertyChangedBase {
+        /**
+         * Create an Observable Array.
+         * @param watchObjectsPropertyChange
+         * @param array and optional array that will be encapsulated by this ObservableArray instance. That's right, it's NOT a copy!
+         */
+        constructor(watchObjectsPropertyChange: boolean, array?: Array<T>);
+        /**
+          * Gets or sets the length of the array. This is a number one higher than the highest element defined in an array.
+          */
+        length: number;
+        getAt(index: number): T;
+        setAt(index: number, value: T): boolean;
+        /**
+          * Returns a string representation of an array.
+          */
+        toString(): string;
+        toLocaleString(): string;
+        /**
+          * Appends new elements to an array, and returns the new length of the array.
+          * @param items New elements of the Array.
+          */
+        push(...items: T[]): number;
+        /**
+          * Removes the last element from an array and returns it.
+          */
+        pop(): T;
+        /**
+          * Combines two or more arrays.
+          * @param items Additional items to add to the end of array1.
+          */
+        concat(...items: T[]): ObservableArray<T>;
+        /**
+          * Adds all the elements of an array separated by the specified separator string.
+          * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
+          */
+        join(separator?: string): string;
+        /**
+          * Reverses the elements in an Array.
+         * The arrayChanged action is
+          */
+        reverse(): T[];
+        /**
+          * Removes the first element from an array and returns it, shift all subsequents element one element before.
+         * The ArrayChange action is replacedArrayAction, the whole array changes and must be reevaluate as such, the removed element is in removedItems.
+         *
+          */
+        shift(): T;
+        /**
+          * Returns a section of an array.
+          * @param start The beginning of the specified portion of the array.
+          * @param end The end of the specified portion of the array.
+          */
+        slice(start?: number, end?: number): ObservableArray<T>;
+        /**
+          * Sorts an array.
+          * @param compareFn The name of the function used to determine the order of the elements. If omitted, the elements are sorted in ascending, ASCII character order.
+         * On the contrary of the Javascript Array's implementation, this method returns nothing
+          */
+        sort(compareFn?: (a: T, b: T) => number): void;
+        /**
+          * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
+          * @param start The zero-based location in the array from which to start removing elements.
+          * @param deleteCount The number of elements to remove.
+          * @param items Elements to insert into the array in place of the deleted elements.
+          */
+        splice(start: number, deleteCount: number, ...items: T[]): T[];
+        /**
+          * Inserts new elements at the start of an array.
+          * @param items  Elements to insert at the start of the Array.
+          * The ChangedArray action is replacedArrayAction, newItems contains the list of the added items
+          */
+        unshift(...items: T[]): number;
+        /**
+          * Returns the index of the first occurrence of a value in an array.
+          * @param searchElement The value to locate in the array.
+          * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+          */
+        indexOf(searchElement: T, fromIndex?: number): number;
+        /**
+          * Returns the index of the last occurrence of a specified value in an array.
+          * @param searchElement The value to locate in the array.
+          * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
+          */
+        lastIndexOf(searchElement: T, fromIndex?: number): number;
+        /**
+          * Determines whether all the members of an array satisfy the specified test.
+          * @param callbackfn A function that accepts up to three arguments. The every method calls the callbackfn function for each element in array1 until the callbackfn returns false, or until the end of the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        every(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean;
+        /**
+          * Determines whether the specified callback function returns true for any element of an array.
+          * @param callbackfn A function that accepts up to three arguments. The some method calls the callbackfn function for each element in array1 until the callbackfn returns true, or until the end of the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        some(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean;
+        /**
+          * Performs the specified action for each element in an array.
+          * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.
+          * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+        /**
+          * Calls a defined callback function on each element of an array, and returns an array that contains the results.
+          * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+        /**
+          * Returns the elements of an array that meet the condition specified in a callback function.
+          * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
+          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
+          */
+        filter(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): T[];
+        /**
+          * Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+          * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
+          * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
+          */
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
+        /**
+          * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+          * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
+          * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
+          */
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
+        arrayChanged: Observable<ArrayChanged<T>>;
+        protected getArrayChangedObject(): ArrayChanged<T>;
+        protected feedNotifArray(array: {
+            index: number;
+            value: T;
+        }[], startindIndex: number, ...items: T[]): void;
+        protected callArrayChanged(ac: ArrayChanged<T>): void;
+        watchedObjectChanged: Observable<OAWatchedObjectChangedInfo<T>>;
+        private _addWatchedElement(...items);
+        private _removeWatchedElement(...items);
+        protected onWatchedObjectChanged(key: string, object: T, propChanged: PropertyChangedInfo): void;
+        private _array;
+        private _arrayChanged;
+        private dci;
+        private _callingArrayChanged;
+        private _watchedObjectChanged;
+        private _woci;
+        private _callingWatchedObjectChanged;
+        private _watchObjectsPropertyChange;
+        private _watchedObjectList;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class for the ObservableStringDictionary.onDictionaryChanged observable
+     */
+    class DictionaryChanged<T> {
+        /**
+         * Contain the action that were made on the dictionary, it's one of the DictionaryChanged.xxxAction members.
+         * Note the action's value can be used in the "mask" field of the Observable to only be notified about given action(s)
+         */
+        action: number;
+        /**
+         * Only valid if the action is newItemAction
+         */
+        newItem: {
+            key: string;
+            value: T;
+        };
+        /**
+         * Only valid if the action is removedItemAction
+         */
+        removedKey: string;
+        /**
+         * Only valid if the action is itemValueChangedAction
+         */
+        changedItem: {
+            key: string;
+            oldValue: T;
+            newValue: T;
+        };
+        /**
+         * The content of the dictionary was totally cleared
+         */
+        static clearAction: number;
+        /**
+         * A new item was added, the newItem field contains the key/value pair
+         */
+        static newItemAction: number;
+        /**
+         * An existing item was removed, the removedKey field contains its key
+         */
+        static removedItemAction: number;
+        /**
+         * An existing item had a value change, the changedItem field contains the key/value
+         */
+        static itemValueChangedAction: number;
+        /**
+         * The dictionary's content was reset and replaced by the content of another dictionary.
+         * DictionaryChanged<T> contains no further information about this action
+         */
+        static replacedAction: number;
+        private static _clearAction;
+        private static _newItemAction;
+        private static _removedItemAction;
+        private static _itemValueChangedAction;
+        private static _replacedAction;
+    }
+    class OSDWatchedObjectChangedInfo<T> {
+        key: string;
+        object: T;
+        propertyChanged: PropertyChangedInfo;
+    }
+    class ObservableStringDictionary<T> extends StringDictionary<T> implements IPropertyChanged {
+        constructor(watchObjectsPropertyChange: boolean);
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        copyFrom(source: StringDictionary<T>): void;
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matching value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        add(key: string, value: T): boolean;
+        getAndRemove(key: string): T;
+        private _add(key, value, fireNotif, registerWatcher);
+        private _addWatchedElement(key, el);
+        private _removeWatchedElement(key, el);
+        set(key: string, value: T): boolean;
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        remove(key: string): boolean;
+        private _remove(key, fireNotif, element?);
+        /**
+         * Clear the whole content of the dictionary
+         */
+        clear(): void;
+        propertyChanged: Observable<PropertyChangedInfo>;
+        protected onPropertyChanged<T>(propName: string, oldValue: T, newValue: T, mask?: number): void;
+        dictionaryChanged: Observable<DictionaryChanged<T>>;
+        protected onDictionaryChanged(action: number, newItem: {
+            key: string;
+            value: T;
+        }, removedKey: string, changedItem: {
+            key: string;
+            oldValue: T;
+            newValue: T;
+        }): void;
+        watchedObjectChanged: Observable<OSDWatchedObjectChangedInfo<T>>;
+        protected onWatchedObjectChanged(key: string, object: T, propChanged: PropertyChangedInfo): void;
+        private _propertyChanged;
+        private static pci;
+        private static callingPropChanged;
+        private _dictionaryChanged;
+        private dci;
+        private _callingDicChanged;
+        private _watchedObjectChanged;
+        private _woci;
+        private _callingWatchedObjectChanged;
+        private _watchObjectsPropertyChange;
+        private _watchedObjectList;
     }
 }
 
@@ -3653,420 +4064,5 @@ declare module BABYLON {
             root: Prim2DBase;
             contentPlaceholder: Prim2DBase;
         };
-    }
-}
-
-declare module BABYLON {
-    class PropertyChangedInfo {
-        /**
-         * Previous value of the property
-         */
-        oldValue: any;
-        /**
-         * New value of the property
-         */
-        newValue: any;
-        /**
-         * Name of the property that changed its value
-         */
-        propertyName: string;
-    }
-    /**
-     * Custom type of the propertyChanged observable
-     */
-    /**
-     * Property Changed interface
-     */
-    interface IPropertyChanged {
-        /**
-         * PropertyChanged observable
-         */
-        propertyChanged: Observable<PropertyChangedInfo>;
-    }
-    /**
-     * The purpose of this class is to provide a base implementation of the IPropertyChanged interface for the user to avoid rewriting a code needlessly.
-     * Typical use of this class is to check for equality in a property set(), then call the onPropertyChanged method if values are different after the new value is set. The protected method will notify observers of the change.
-     * Remark: onPropertyChanged detects reentrant code and acts in a way to make sure everything is fine, fast and allocation friendly (when there no reentrant code which should be 99% of the time)
-     */
-    abstract class PropertyChangedBase implements IPropertyChanged {
-        /**
-         * Protected method to call when there's a change of value in a property set
-         * @param propName the name of the concerned property
-         * @param oldValue its old value
-         * @param newValue its new value
-         * @param mask an optional observable mask
-         */
-        protected onPropertyChanged<T>(propName: string, oldValue: T, newValue: T, mask?: number): void;
-        /**
-         * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
-         * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
-         */
-        propertyChanged: Observable<PropertyChangedInfo>;
-        _propertyChanged: Observable<PropertyChangedInfo>;
-        private static pci;
-        private static calling;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class for the ObservableArray.onArrayChanged observable
-     */
-    class ArrayChanged<T> {
-        constructor();
-        /**
-         * Contain the action that were made on the ObservableArray, it's one of the ArrayChanged.xxxAction members.
-         * Note the action's value can be used in the "mask" field of the Observable to only be notified about given action(s)
-         */
-        action: number;
-        /**
-         * Only valid if the action is newItemsAction
-         */
-        newItems: {
-            index: number;
-            value: T;
-        }[];
-        /**
-         * Only valid if the action is removedItemsAction
-         */
-        removedItems: {
-            index: number;
-            value: T;
-        }[];
-        /**
-         * Only valid if the action is changedItemAction
-         */
-        changedItems: {
-            index: number;
-            value: T;
-        }[];
-        /**
-         * Get the index of the first item inserted
-         */
-        newStartingIndex: number;
-        /**
-         * Get the index of the first item removed
-         */
-        removedStartingIndex: number;
-        /**
-         * Get the index of the first changed item
-         */
-        changedStartingIndex: number;
-        /**
-         * The content of the array was totally cleared
-         */
-        static clearAction: number;
-        /**
-         * A new item was added, the newItems field contains the key/value pairs
-         */
-        static newItemsAction: number;
-        /**
-         * An existing item was removed, the removedKey field contains its key
-         */
-        static removedItemsAction: number;
-        /**
-         * One or many items in the array were changed, the
-         */
-        static changedItemAction: number;
-        /**
-         * The array's content was totally changed
-         * Depending on the method that used this mode the ChangedArray object may contains more information
-         */
-        static replacedArrayAction: number;
-        /**
-         * The length of the array changed
-         */
-        static lengthChangedAction: number;
-        private static _clearAction;
-        private static _newItemsAction;
-        private static _removedItemsAction;
-        private static _replacedArrayAction;
-        private static _lengthChangedAction;
-        private static _changedItemAction;
-        clear(): void;
-    }
-    class OAWatchedObjectChangedInfo<T> {
-        object: T;
-        propertyChanged: PropertyChangedInfo;
-    }
-    /**
-     * This class mimics the Javascript Array and TypeScript Array<T> classes, adding new features concerning the Observable pattern.
-     *
-     */
-    class ObservableArray<T> extends PropertyChangedBase {
-        /**
-         * Create an Observable Array.
-         * @param watchObjectsPropertyChange
-         * @param array and optional array that will be encapsulated by this ObservableArray instance. That's right, it's NOT a copy!
-         */
-        constructor(watchObjectsPropertyChange: boolean, array?: Array<T>);
-        /**
-          * Gets or sets the length of the array. This is a number one higher than the highest element defined in an array.
-          */
-        length: number;
-        getAt(index: number): T;
-        setAt(index: number, value: T): boolean;
-        /**
-          * Returns a string representation of an array.
-          */
-        toString(): string;
-        toLocaleString(): string;
-        /**
-          * Appends new elements to an array, and returns the new length of the array.
-          * @param items New elements of the Array.
-          */
-        push(...items: T[]): number;
-        /**
-          * Removes the last element from an array and returns it.
-          */
-        pop(): T;
-        /**
-          * Combines two or more arrays.
-          * @param items Additional items to add to the end of array1.
-          */
-        concat(...items: T[]): ObservableArray<T>;
-        /**
-          * Adds all the elements of an array separated by the specified separator string.
-          * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
-          */
-        join(separator?: string): string;
-        /**
-          * Reverses the elements in an Array.
-         * The arrayChanged action is
-          */
-        reverse(): T[];
-        /**
-          * Removes the first element from an array and returns it, shift all subsequents element one element before.
-         * The ArrayChange action is replacedArrayAction, the whole array changes and must be reevaluate as such, the removed element is in removedItems.
-         *
-          */
-        shift(): T;
-        /**
-          * Returns a section of an array.
-          * @param start The beginning of the specified portion of the array.
-          * @param end The end of the specified portion of the array.
-          */
-        slice(start?: number, end?: number): ObservableArray<T>;
-        /**
-          * Sorts an array.
-          * @param compareFn The name of the function used to determine the order of the elements. If omitted, the elements are sorted in ascending, ASCII character order.
-         * On the contrary of the Javascript Array's implementation, this method returns nothing
-          */
-        sort(compareFn?: (a: T, b: T) => number): void;
-        /**
-          * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
-          * @param start The zero-based location in the array from which to start removing elements.
-          * @param deleteCount The number of elements to remove.
-          * @param items Elements to insert into the array in place of the deleted elements.
-          */
-        splice(start: number, deleteCount: number, ...items: T[]): T[];
-        /**
-          * Inserts new elements at the start of an array.
-          * @param items  Elements to insert at the start of the Array.
-          * The ChangedArray action is replacedArrayAction, newItems contains the list of the added items
-          */
-        unshift(...items: T[]): number;
-        /**
-          * Returns the index of the first occurrence of a value in an array.
-          * @param searchElement The value to locate in the array.
-          * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
-          */
-        indexOf(searchElement: T, fromIndex?: number): number;
-        /**
-          * Returns the index of the last occurrence of a specified value in an array.
-          * @param searchElement The value to locate in the array.
-          * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
-          */
-        lastIndexOf(searchElement: T, fromIndex?: number): number;
-        /**
-          * Determines whether all the members of an array satisfy the specified test.
-          * @param callbackfn A function that accepts up to three arguments. The every method calls the callbackfn function for each element in array1 until the callbackfn returns false, or until the end of the array.
-          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
-          */
-        every(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean;
-        /**
-          * Determines whether the specified callback function returns true for any element of an array.
-          * @param callbackfn A function that accepts up to three arguments. The some method calls the callbackfn function for each element in array1 until the callbackfn returns true, or until the end of the array.
-          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
-          */
-        some(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean;
-        /**
-          * Performs the specified action for each element in an array.
-          * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.
-          * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
-          */
-        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
-        /**
-          * Calls a defined callback function on each element of an array, and returns an array that contains the results.
-          * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
-          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
-          */
-        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
-        /**
-          * Returns the elements of an array that meet the condition specified in a callback function.
-          * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
-          * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
-          */
-        filter(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): T[];
-        /**
-          * Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-          * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
-          * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
-          */
-        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
-        /**
-          * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-          * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
-          * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
-          */
-        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
-        arrayChanged: Observable<ArrayChanged<T>>;
-        protected getArrayChangedObject(): ArrayChanged<T>;
-        protected feedNotifArray(array: {
-            index: number;
-            value: T;
-        }[], startindIndex: number, ...items: T[]): void;
-        protected callArrayChanged(ac: ArrayChanged<T>): void;
-        watchedObjectChanged: Observable<OAWatchedObjectChangedInfo<T>>;
-        private _addWatchedElement(...items);
-        private _removeWatchedElement(...items);
-        protected onWatchedObjectChanged(key: string, object: T, propChanged: PropertyChangedInfo): void;
-        private _array;
-        private _arrayChanged;
-        private dci;
-        private _callingArrayChanged;
-        private _watchedObjectChanged;
-        private _woci;
-        private _callingWatchedObjectChanged;
-        private _watchObjectsPropertyChange;
-        private _watchedObjectList;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class for the ObservableStringDictionary.onDictionaryChanged observable
-     */
-    class DictionaryChanged<T> {
-        /**
-         * Contain the action that were made on the dictionary, it's one of the DictionaryChanged.xxxAction members.
-         * Note the action's value can be used in the "mask" field of the Observable to only be notified about given action(s)
-         */
-        action: number;
-        /**
-         * Only valid if the action is newItemAction
-         */
-        newItem: {
-            key: string;
-            value: T;
-        };
-        /**
-         * Only valid if the action is removedItemAction
-         */
-        removedKey: string;
-        /**
-         * Only valid if the action is itemValueChangedAction
-         */
-        changedItem: {
-            key: string;
-            oldValue: T;
-            newValue: T;
-        };
-        /**
-         * The content of the dictionary was totally cleared
-         */
-        static clearAction: number;
-        /**
-         * A new item was added, the newItem field contains the key/value pair
-         */
-        static newItemAction: number;
-        /**
-         * An existing item was removed, the removedKey field contains its key
-         */
-        static removedItemAction: number;
-        /**
-         * An existing item had a value change, the changedItem field contains the key/value
-         */
-        static itemValueChangedAction: number;
-        /**
-         * The dictionary's content was reset and replaced by the content of another dictionary.
-         * DictionaryChanged<T> contains no further information about this action
-         */
-        static replacedAction: number;
-        private static _clearAction;
-        private static _newItemAction;
-        private static _removedItemAction;
-        private static _itemValueChangedAction;
-        private static _replacedAction;
-    }
-    class OSDWatchedObjectChangedInfo<T> {
-        key: string;
-        object: T;
-        propertyChanged: PropertyChangedInfo;
-    }
-    class ObservableStringDictionary<T> extends StringDictionary<T> implements IPropertyChanged {
-        constructor(watchObjectsPropertyChange: boolean);
-        /**
-         * This will clear this dictionary and copy the content from the 'source' one.
-         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
-         * @param source the dictionary to take the content from and copy to this dictionary
-         */
-        copyFrom(source: StringDictionary<T>): void;
-        /**
-         * Get a value from its key or add it if it doesn't exist.
-         * This method will ensure you that a given key/data will be present in the dictionary.
-         * @param key the given key to get the matching value from
-         * @param factory the factory that will create the value if the key is not present in the dictionary.
-         * The factory will only be invoked if there's no data for the given key.
-         * @return the value corresponding to the key.
-         */
-        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
-        /**
-         * Add a new key and its corresponding value
-         * @param key the key to add
-         * @param value the value corresponding to the key
-         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
-         */
-        add(key: string, value: T): boolean;
-        getAndRemove(key: string): T;
-        private _add(key, value, fireNotif, registerWatcher);
-        private _addWatchedElement(key, el);
-        private _removeWatchedElement(key, el);
-        set(key: string, value: T): boolean;
-        /**
-         * Remove a key/value from the dictionary.
-         * @param key the key to remove
-         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
-         */
-        remove(key: string): boolean;
-        private _remove(key, fireNotif, element?);
-        /**
-         * Clear the whole content of the dictionary
-         */
-        clear(): void;
-        propertyChanged: Observable<PropertyChangedInfo>;
-        protected onPropertyChanged<T>(propName: string, oldValue: T, newValue: T, mask?: number): void;
-        dictionaryChanged: Observable<DictionaryChanged<T>>;
-        protected onDictionaryChanged(action: number, newItem: {
-            key: string;
-            value: T;
-        }, removedKey: string, changedItem: {
-            key: string;
-            oldValue: T;
-            newValue: T;
-        }): void;
-        watchedObjectChanged: Observable<OSDWatchedObjectChangedInfo<T>>;
-        protected onWatchedObjectChanged(key: string, object: T, propChanged: PropertyChangedInfo): void;
-        private _propertyChanged;
-        private static pci;
-        private static callingPropChanged;
-        private _dictionaryChanged;
-        private dci;
-        private _callingDicChanged;
-        private _watchedObjectChanged;
-        private _woci;
-        private _callingWatchedObjectChanged;
-        private _watchObjectsPropertyChange;
-        private _watchedObjectList;
     }
 }

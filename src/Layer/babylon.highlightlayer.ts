@@ -45,6 +45,11 @@
          * Alpha blending mode used to apply the blur. Default is combine.
          */
         alphaBlendingMode?: number
+
+        /**
+         * The camera attached to the layer.
+         */
+        camera?: Camera;
     }
 
     /**
@@ -72,6 +77,24 @@
          * Else it falls back to the current color.
          */
         glowEmissiveOnly: boolean;
+    }
+
+    /**
+     * Storage interface grouping all the information required for an excluded mesh.
+     */
+    interface IHighlightLayerExcludedMesh {
+        /** 
+         * The glowy mesh
+         */
+        mesh: Mesh;
+        /**
+         * The mesh render callback use to prevent stencil use
+         */
+        beforeRender: Observer<Mesh>;
+        /**
+         * The mesh render callback use to restore previous stencil use
+         */
+        afterRender: Observer<Mesh>;
     }
 
     /**
@@ -117,6 +140,7 @@
         private _maxSize: number = 0;
         private _shouldRender = false;
         private _instanceGlowingMeshStencilReference = HighlightLayer.glowingMeshStencilReference++;
+        private _excludedMeshes: { [id: string]: IHighlightLayerExcludedMesh } = {};
 
         /**
          * Specifies whether or not the inner glow is ACTIVE in the layer.
@@ -127,11 +151,6 @@
          * Specifies whether or not the outer glow is ACTIVE in the layer.
          */
         public outerGlow: boolean = true;
-
-        /**
-         * Specifies the listof mesh excluded during the generation of the highlight layer.
-         */
-        public excludedMeshes: Mesh[] = [];
 
         /**
          * Specifies the horizontal size of the blur.
@@ -159,6 +178,13 @@
          */
         public get blurVerticalSize(): number {
             return this._verticalBlurPostprocess.blurWidth;
+        }
+
+        /**
+         * Gets the camera attached to the layer.
+         */
+        public get camera(): Camera {
+            return this._options.camera;
         }
 
         /**
@@ -287,6 +313,7 @@
                 false,
                 true,
                 Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._mainTexture.activeCamera = this._options.camera;
             this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._mainTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._mainTexture.anisotropicFilteringLevel = 1;
@@ -353,7 +380,7 @@
                 }
 
                 // Excluded Mesh
-                if (this.excludedMeshes.indexOf(mesh) > -1) {
+                if (this._excludedMeshes[mesh.id]) {
                     return;
                 };
 
@@ -600,6 +627,39 @@
         }
 
         /**
+         * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
+         * @param mesh The mesh to exclude from the highlight layer
+         */
+        public addExcludedMesh(mesh: Mesh) {
+            var meshExcluded = this._excludedMeshes[mesh.id];
+            if (!meshExcluded) {
+                this._excludedMeshes[mesh.id] = {
+                    mesh: mesh,
+                    beforeRender: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
+                        mesh.getEngine().setStencilBuffer(false);
+                    }),
+                    afterRender: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
+                        mesh.getEngine().setStencilBuffer(true);
+                    }),
+                }
+            }
+        }
+
+        /**
+          * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
+          * @param mesh The mesh to highlight
+          */
+        public removeExcludedMesh(mesh: Mesh) {
+            var meshExcluded = this._excludedMeshes[mesh.id];
+            if (meshExcluded) {
+                mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
+                mesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
+            }
+
+            this._excludedMeshes[mesh.id] = undefined;
+        }
+
+        /**
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.
          * @param mesh The mesh to highlight
          * @param color The color of the highlight
@@ -616,7 +676,12 @@
                     color: color,
                     // Lambda required for capture due to Observable this context
                     observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
-                        mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                        if (this._excludedMeshes[mesh.id]) {
+                            this.defaultStencilReference(mesh);
+                        }
+                        else {
+                            mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                        }
                     }),
                     observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference),
                     glowEmissiveOnly: glowEmissiveOnly
@@ -705,14 +770,22 @@
             this.disposeTextureAndPostProcesses();
 
             // Clean mesh references 
-            for (var id in this._meshes) {
-                var meshHighlight = this._meshes[id];
+            for (let id in this._meshes) {
+                let meshHighlight = this._meshes[id];
                 if (meshHighlight && meshHighlight.mesh) {
                     meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
                     meshHighlight.mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
                 }
             }
             this._meshes = null;
+            for (let id in this._excludedMeshes) {
+                let meshHighlight = this._excludedMeshes[id];
+                if (meshHighlight) {
+                    meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.beforeRender);
+                    meshHighlight.mesh.onAfterRenderObservable.remove(meshHighlight.afterRender);
+                }
+            }
+            this._excludedMeshes = null;
 
             // Remove from scene
             var index = this._scene.highlightLayers.indexOf(this, 0);

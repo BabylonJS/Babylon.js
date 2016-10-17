@@ -10,8 +10,12 @@ function __() { this.constructor = d; }
 __.prototype = b.prototype;
 d.prototype = new __();
 };
+
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Custom type of the propertyChanged observable
+     */
     var PropertyChangedInfo = (function () {
         function PropertyChangedInfo() {
         }
@@ -68,11 +72,6 @@ var BABYLON;
         return PropertyChangedBase;
     }());
     BABYLON.PropertyChangedBase = PropertyChangedBase;
-})(BABYLON || (BABYLON = {}));
-
-
-var BABYLON;
-(function (BABYLON) {
     /**
      * Class for the ObservableArray.onArrayChanged observable
      */
@@ -621,7 +620,7 @@ var BABYLON;
             }
         };
         return ObservableArray;
-    }(BABYLON.PropertyChangedBase));
+    }(PropertyChangedBase));
     BABYLON.ObservableArray = ObservableArray;
 })(BABYLON || (BABYLON = {}));
 
@@ -1268,9 +1267,6 @@ var BABYLON;
                 var max = 0;
                 for (var _i = 0, _a = prim.children; _i < _a.length; _i++) {
                     var child = _a[_i];
-                    if (child._isFlagSet(BABYLON.SmartPropertyPrim.flagNoPartOfLayout)) {
-                        continue;
-                    }
                     var layoutArea = void 0;
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
@@ -1285,9 +1281,6 @@ var BABYLON;
                 }
                 for (var _b = 0, _c = prim.children; _b < _c.length; _b++) {
                     var child = _c[_b];
-                    if (child._isFlagSet(BABYLON.SmartPropertyPrim.flagNoPartOfLayout)) {
-                        continue;
-                    }
                     child.layoutAreaPos = new BABYLON.Vector2(x, y);
                     var layoutArea = child.layoutArea;
                     if (h) {
@@ -1311,7 +1304,7 @@ var BABYLON;
         });
         StackPanelLayoutEngine._horizontal = null;
         StackPanelLayoutEngine._vertical = null;
-        StackPanelLayoutEngine.dstOffset = BABYLON.Vector4.Zero();
+        StackPanelLayoutEngine.dstOffset = BABYLON.Vector2.Zero();
         StackPanelLayoutEngine.dstArea = BABYLON.Size.Zero();
         StackPanelLayoutEngine = __decorate([
             BABYLON.className("StackPanelLayoutEngine", "BABYLON")
@@ -2614,7 +2607,7 @@ var BABYLON;
             }
         };
         SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT = 0;
-        SmartPropertyPrim.flagNoPartOfLayout = 0x0000001; // set if the primitive's position/size must not be computed by Layout Engine
+        SmartPropertyPrim.flagFREE001 = 0x0000001; // set if the object is already disposed
         SmartPropertyPrim.flagLevelBoundingInfoDirty = 0x0000002; // set if the primitive's level bounding box (not including children) is dirty
         SmartPropertyPrim.flagModelDirty = 0x0000004; // set if the model must be changed
         SmartPropertyPrim.flagLayoutDirty = 0x0000008; // set if the layout must be computed
@@ -3672,7 +3665,7 @@ var BABYLON;
          * @param sourceArea the source area where the content must be sized/positioned
          * @param contentSize the content size to position/resize
          * @param alignment the alignment setting
-         * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
+         * @param dstOffset the position of the content
          * @param dstArea the new size of the content
          */
         PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea, computeLayoutArea) {
@@ -3704,7 +3697,6 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.width += this.leftPixels;
                         }
-                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
                         break;
                     }
                 case PrimitiveAlignment.AlignRight:
@@ -3720,7 +3712,6 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.width += this.rightPixels;
                         }
-                        dstOffset.z = this.rightPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -3738,7 +3729,6 @@ var BABYLON;
                             right = this.rightPixels;
                         }
                         dstArea.width = sourceArea.width - (dstOffset.x + right);
-                        dstOffset.z = this.rightPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignCenter:
@@ -3752,7 +3742,6 @@ var BABYLON;
                         var offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
                         dstOffset.x = Math.round(((sourceArea.width - width) / 2) + offset);
                         dstArea.width = width;
-                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
                         break;
                     }
             }
@@ -3770,7 +3759,6 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.height += this.topPixels;
                         }
-                        dstOffset.w = this.topPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignBottom:
@@ -3786,7 +3774,6 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.height += this.bottomPixels;
                         }
-                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -3804,7 +3791,6 @@ var BABYLON;
                             top_1 = this.topPixels;
                         }
                         dstArea.height = sourceArea.height - (dstOffset.y + top_1);
-                        dstOffset.w = this.topPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignCenter:
@@ -3818,7 +3804,6 @@ var BABYLON;
                         var offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
                         dstOffset.y = Math.round(((sourceArea.height - height) / 2) + offset);
                         dstArea.height = height;
-                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
                         break;
                     }
             }
@@ -3947,8 +3932,8 @@ var BABYLON;
             this._layoutArea = BABYLON.Size.Zero();
             this._layoutAreaPos = null;
             this._layoutBoundingInfo = null;
-            this._marginOffset = BABYLON.Vector4.Zero();
-            this._paddingOffset = BABYLON.Vector4.Zero();
+            this._marginOffset = BABYLON.Vector2.Zero();
+            this._paddingOffset = BABYLON.Vector2.Zero();
             this._parentPaddingOffset = BABYLON.Vector2.Zero();
             this._parentContentArea = BABYLON.Size.Zero();
             this._lastAutoSizeArea = BABYLON.Size.Zero();
@@ -5115,7 +5100,6 @@ var BABYLON;
                             })
                         ]
                     });
-                    this._debugAreaGroup._setFlags(BABYLON.SmartPropertyPrim.flagNoPartOfLayout);
                     this._updateDebugArea();
                 }
                 this._displayDebugAreas = value;
@@ -5138,8 +5122,7 @@ var BABYLON;
                 }
             }
             // Update the visibility status of layout/margin/padding
-            var hasLayout = this._layoutAreaPos != null;
-            var hasPos = (this.actualPosition.x !== 0) || (this.actualPosition.y !== 0);
+            var hasLayout = (this.layoutAreaPos.x !== 0) || (this.layoutAreaPos.y !== 0);
             var hasMargin = this._hasMargin;
             var hasPadding = this._hasPadding;
             prims[0][0].levelVisible = hasLayout;
@@ -5163,34 +5146,32 @@ var BABYLON;
                 }
                 areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
             };
-            var marginH = this._marginOffset.x + this._marginOffset.z;
-            var marginV = this._marginOffset.y + this._marginOffset.w;
-            var w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width) : (marginH + this.actualSize.width);
-            var h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + this.actualSize.height);
-            var pos = (!hasLayout && !hasMargin && !hasPadding && hasPos) ? this.actualPosition : BABYLON.Vector2.Zero();
-            storeAreaInfo(pos, new BABYLON.Size(w, h));
+            {
+                var w = this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width;
+                var h = this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height;
+                storeAreaInfo(BABYLON.Vector2.Zero(), new BABYLON.Size(w, h));
+            }
             // Compute the layout related data
             if (hasLayout) {
-                var layoutOffset = this.layoutAreaPos.clone();
-                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : this.actualSize.clone());
-                curOffset = layoutOffset.clone();
+                var layoutOffset = this.layoutAreaPos;
+                var w = this.layoutArea.width - (layoutOffset.x + this.margin.leftPixels + this.margin.rightPixels + this.actualSize.width);
+                var h = this.layoutArea.height - (layoutOffset.y + this.margin.topPixels + this.margin.bottomPixels + this.actualSize.height);
+                var layoutArea = new BABYLON.Size(w, h);
+                storeAreaInfo(layoutOffset, layoutArea);
+                curOffset = this.layoutAreaPos;
             }
             // Compute margin data
             if (hasMargin) {
-                var marginOffset = curOffset.clone();
-                marginOffset.x += this._marginOffset.x;
-                marginOffset.y += this._marginOffset.y;
+                var marginOffset = this._marginOffset.add(curOffset);
                 var marginArea = this.actualSize;
                 storeAreaInfo(marginOffset, marginArea);
-                curOffset = marginOffset.clone();
+                curOffset.addInPlace(marginOffset);
             }
             if (hasPadding) {
-                var contentOffset = curOffset.clone();
-                contentOffset.x += this._paddingOffset.x;
-                contentOffset.y += this._paddingOffset.y;
+                var contentOffset = this._paddingOffset.add(curOffset);
                 var contentArea = this.contentArea;
                 storeAreaInfo(contentOffset, contentArea);
-                curOffset = curOffset.add(contentOffset);
+                curOffset.addInPlace(contentOffset);
             }
             // Helper function that set the pos and size of a given prim
             var setArea = function (i, j, pos, size) {
@@ -5219,9 +5200,9 @@ var BABYLON;
                 var lp = new BABYLON.Vector2(ca.min.x, na.min.y);
                 var ls = new BABYLON.Size(na.min.x - ca.min.x, na.max.y - na.min.y);
                 var rp = new BABYLON.Vector2(na.max.x, na.min.y);
-                var rs = new BABYLON.Size(ca.max.x - na.max.x, na.max.y - na.min.y);
+                var rs = ls;
                 var bp = new BABYLON.Vector2(ca.min.x, ca.min.y);
-                var bs = new BABYLON.Size(ca.size.width, na.min.y - ca.min.y);
+                var bs = ts;
                 // Frame
                 plist[1].position = ca.off;
                 plist[1].size = ca.size;
@@ -5663,7 +5644,7 @@ var BABYLON;
                 var parentPaddingChanged = false;
                 var parentPaddingOffset = Prim2DBase._v0;
                 if (this._parent) {
-                    parentPaddingOffset = new BABYLON.Vector2(this._parent._paddingOffset.x, this._parent._paddingOffset.y);
+                    parentPaddingOffset = this._parent._paddingOffset;
                     parentPaddingChanged = !parentPaddingOffset.equals(this._parentPaddingOffset);
                 }
                 // Check if there are changes in the parent that will force us to update the global matrix
@@ -5715,13 +5696,12 @@ var BABYLON;
                 this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase._size);
                 this.actualSize = Prim2DBase._size.clone();
             }
-            var po = new BABYLON.Vector2(this._paddingOffset.x, this._paddingOffset.y);
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so me resize the primitive itself
                 if (isSizeAuto) {
                     var content = this.size.clone();
                     this._getActualSizeFromContentToRef(content, Prim2DBase._icArea);
-                    this.padding.enlarge(Prim2DBase._icArea, po, Prim2DBase._size);
+                    this.padding.enlarge(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
                     this._contentArea.copyFrom(content);
                     this.actualSize = Prim2DBase._size.clone();
                     // Changing the padding has resize the prim, which forces us to recompute margin again
@@ -5730,27 +5710,20 @@ var BABYLON;
                     }
                 }
                 else {
-                    this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icZone, Prim2DBase._icArea);
+                    this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
                     Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                     Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                    this.padding.compute(Prim2DBase._icArea, po, Prim2DBase._size);
-                    this._paddingOffset.x = po.x;
-                    this._paddingOffset.y = po.y;
-                    this._paddingOffset.x += Prim2DBase._icZone.x;
-                    this._paddingOffset.y += Prim2DBase._icZone.y;
-                    this._paddingOffset.z -= Prim2DBase._icZone.z;
-                    this._paddingOffset.w -= Prim2DBase._icZone.w;
+                    this.padding.compute(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
+                    this._paddingOffset.x += Prim2DBase._icPos.x;
+                    this._paddingOffset.y += Prim2DBase._icPos.y;
                     this._contentArea.copyFrom(Prim2DBase._size);
                 }
             }
             else {
-                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icZone, Prim2DBase._icArea);
+                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                 Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this._paddingOffset.x = Prim2DBase._icZone.x;
-                this._paddingOffset.y = Prim2DBase._icZone.y;
-                this._paddingOffset.z = Prim2DBase._icZone.z;
-                this._paddingOffset.w = Prim2DBase._icZone.z;
+                this._paddingOffset.copyFrom(Prim2DBase._icPos);
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
             if (!this._position) {
@@ -5953,12 +5926,12 @@ var BABYLON;
          * This method is used to alter the contentArea of the Primitive before margin is applied.
          * In most of the case you won't need to override this method, but it can prove some usefulness, check the Rectangle2D class for a concrete application.
          * @param primSize the current size of the primitive
-         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing! x, y, z, w area left, bottom, right, top
+         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          */
         Prim2DBase.prototype._getInitialContentAreaToRef = function (primSize, initialContentPosition, initialContentArea) {
             initialContentArea.copyFrom(primSize);
-            initialContentPosition.x = initialContentPosition.y = initialContentPosition.z = initialContentPosition.w = 0;
+            initialContentPosition.x = initialContentPosition.y = 0;
         };
         /**
          * This method is used to calculate the new size of the primitive based on the content which must stay the same
@@ -5983,7 +5956,6 @@ var BABYLON;
         Prim2DBase._v0 = BABYLON.Vector2.Zero(); // Must stay with the value 0,0
         Prim2DBase._transMtx = BABYLON.Matrix.Zero();
         Prim2DBase._icPos = BABYLON.Vector2.Zero();
-        Prim2DBase._icZone = BABYLON.Vector4.Zero();
         Prim2DBase._icArea = BABYLON.Size.Zero();
         Prim2DBase._size = BABYLON.Size.Zero();
         Prim2DBase._zOrderChangedNotifList = new Array();
@@ -8910,8 +8882,6 @@ var BABYLON;
                 initialContentPosition.x = initialContentPosition.y = rr;
                 initialContentArea.width = Math.max(0, primSize.width - (rr * 2));
                 initialContentArea.height = Math.max(0, primSize.height - (rr * 2));
-                initialContentPosition.z = primSize.width - (initialContentPosition.x + initialContentArea.width);
-                initialContentPosition.w = primSize.height - (initialContentPosition.y + initialContentArea.height);
             }
         };
         Rectangle2D.prototype._getActualSizeFromContentToRef = function (primSize, newPrimSize) {
@@ -11927,25 +11897,19 @@ var BABYLON;
             ii.findFirstOnly = false;
             // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
             if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
-                // Reset intersection info as we don't hit anything
-                ii.intersectedPrimitives = new Array();
-                ii.topMostIntersectedPrimitive = null;
-            }
-            else {
-                // The pointer is inside the Canvas, do an intersection test
-                this.intersect(ii);
-            }
-            {
-                // Update prev/actual intersection info, fire "overPrim" property change if needed
                 this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList = ii.intersectedPrimitives;
+                this._actualIntersectionList = null;
                 this._previousOverPrimitive = this._actualOverPrimitive;
-                this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
-                var prev = (this._previousOverPrimitive != null) ? this._previousOverPrimitive.prim : null;
-                var actual = (this._actualOverPrimitive != null) ? this._actualOverPrimitive.prim : null;
-                if (prev !== actual) {
-                    this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
-                }
+                this._actualOverPrimitive = null;
+                return;
+            }
+            this.intersect(ii);
+            this._previousIntersectionList = this._actualIntersectionList;
+            this._actualIntersectionList = ii.intersectedPrimitives;
+            this._previousOverPrimitive = this._actualOverPrimitive;
+            this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+            if ((!this._actualOverPrimitive && !this._previousOverPrimitive) || !(this._actualOverPrimitive && this._previousOverPrimitive && this._actualOverPrimitive.prim === this._previousOverPrimitive.prim)) {
+                this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
             }
             this._intersectionRenderId = this.scene.getRenderId();
         };
@@ -12033,17 +11997,15 @@ var BABYLON;
                 if (bubbleCancelled) {
                     this._updatePrimPointerPos(cur);
                 }
-                // NOTE TO MYSELF, this is commented right now because it doesn't seemed needed but I can't figure out why I put this code in the first place
-                //// Trigger a PointerEnter corresponding to the PointerOver
-                //if (mask === PrimitivePointerInfo.PointerOver) {
-                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
-                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
-                //}
-                //// Trigger a PointerLeave corresponding to the PointerOut
-                //else if (mask === PrimitivePointerInfo.PointerOut) {
-                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
-                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
-                //}
+                // Trigger a PointerEnter corresponding to the PointerOver
+                if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
+                    this._debugExecObserver(cur, BABYLON.PrimitivePointerInfo.PointerEnter);
+                    cur._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerEnter);
+                }
+                else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
+                    this._debugExecObserver(cur, BABYLON.PrimitivePointerInfo.PointerLeave);
+                    cur._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerLeave);
+                }
                 // Loop to the parent
                 cur = cur.parent;
             }

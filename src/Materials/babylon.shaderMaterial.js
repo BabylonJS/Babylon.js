@@ -108,7 +108,7 @@ var BABYLON;
             this._matrices2x2[name] = value;
             return this;
         };
-        ShaderMaterial.prototype.setVector3Array = function (name, value) {
+        ShaderMaterial.prototype.setArray3 = function (name, value) {
             this._checkUniform(name);
             this._vectors3Arrays[name] = value;
             return this;
@@ -179,9 +179,7 @@ var BABYLON;
                     this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 }
                 // Bones
-                if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-                }
+                BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
                 var name;
                 // Texture
                 for (name in this._textures) {
@@ -394,7 +392,7 @@ var BABYLON;
             }
             // Vector3Array
             for (name in source.vectors3Arrays) {
-                material.setVector3Array(name, source.vectors3Arrays[name]);
+                material.setArray3(name, source.vectors3Arrays[name]);
             }
             return material;
         };

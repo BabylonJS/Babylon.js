@@ -137,7 +137,7 @@
             return this;
         }
 
-        public setVector3Array(name: string, value: number[]): ShaderMaterial {
+        public setArray3(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._vectors3Arrays[name] = value;
 
@@ -234,9 +234,7 @@
                 }
 
                 // Bones
-                if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-                }
+                MaterialHelper.BindBonesParameters(mesh, this._effect);
 
                 var name: string;
                 // Texture
@@ -503,7 +501,7 @@
 
             // Vector3Array
             for (name in source.vectors3Arrays) {
-                material.setVector3Array(name, source.vectors3Arrays[name]);
+                material.setArray3(name, source.vectors3Arrays[name]);
             }
             
             return material;
