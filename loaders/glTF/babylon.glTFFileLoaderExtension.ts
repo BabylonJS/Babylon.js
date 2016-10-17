@@ -63,7 +63,7 @@
         // ---------
 
         public static LoadRuntimeAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void {
-            GLTFFileLoaderExtension.ApplyExtensions<IGLTFRuntime>(loaderExtension => {
+            GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
             }, () => {
                 setTimeout(() => {
@@ -73,7 +73,7 @@
         }
 
         public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void): void {
-            GLTFFileLoaderExtension.ApplyExtensions<Texture>(loaderExtension => {
+            GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError);
             }, () => {
                 GLTFFileLoaderBase.LoadBufferAsync(gltfRuntime, id, onSuccess, onError);
@@ -87,7 +87,7 @@
         }
 
         public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: () => void): void {
-            GLTFFileLoaderExtension.ApplyExtensions<Texture>(loaderExtension => {
+            GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadShaderStringAsync(gltfRuntime, id, onSuccess, onError);
             }, () => {
                 GLTFFileLoaderBase.LoadShaderStringAsync(gltfRuntime, id, onSuccess, onError);
@@ -95,7 +95,7 @@
         }
 
         public static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): void {
-            GLTFFileLoaderExtension.ApplyExtensions<Texture>(loaderExtension => {
+            GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadMaterialAsync(gltfRuntime, id, onSuccess, onError);
             }, () => {
                 GLTFFileLoaderBase.LoadMaterialAsync(gltfRuntime, id, onSuccess, onError);
@@ -103,7 +103,7 @@
         }
 
         private static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): void {
-            GLTFFileLoaderExtension.ApplyExtensions<Texture>(loaderExtension => {
+            GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadTextureBufferAsync(gltfRuntime, id, onSuccess, onError);
             }, () => {
                 GLTFFileLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, onSuccess, onError);
@@ -111,14 +111,14 @@
         }
 
         private static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: () => void): void {
-            GLTFFileLoaderExtension.ApplyExtensions<Texture>(loaderExtension => {
+            GLTFFileLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.createTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);
             }, () => {
                 GLTFFileLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);
             });
         }
 
-        private static ApplyExtensions<ObjectT extends Object>(func: (loaderExtension: GLTFFileLoaderExtension) => boolean, defaultFunc: () => void): void {
+        private static ApplyExtensions(func: (loaderExtension: GLTFFileLoaderExtension) => boolean, defaultFunc: () => void): void {
             for (var extensionName in GLTFFileLoader.Extensions) {
                 var loaderExtension = GLTFFileLoader.Extensions[extensionName];
                 if (func(loaderExtension)) {
