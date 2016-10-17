@@ -46,26 +46,26 @@ To test your procedural texture, you can use the /test/index.html file by adding
 
 ```
 gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', '[YOURTEXTURE]', 'starfield']).onFinishChange(function () {
-					resetPTOptions();
-					switch (options.texture) {
-						case "fire":
-							currentTexture = firePT;
-							addPToptions(firePT, ['time', 'alphaThreshold', 'speed', ]);
-							break;
-						
-            //.......................
+  resetPTOptions();
+  switch (options.texture) {
+    case "fire":
+      currentTexture = firePT;
+      addPToptions(firePT, ['time', 'alphaThreshold', 'speed', ]);
+      break;
+    
+    //.......................
 
-            //YOURTEXTURE
+    //YOURTEXTURE
 
-						case "none":
-						default:
-							currentTexture = diffuseTexture;
-							break;
-					}
+    case "none":
+    default:
+      currentTexture = diffuseTexture;
+      break;
+  }
 
-					std.diffuseTexture = currentTexture;
-					window.enableTexture(options.texture);
-				});
+  std.diffuseTexture = currentTexture;
+  window.enableTexture(options.texture);
+});
 ```
 
 This page allows you to test your code with animated meshes, shadows, various kinds of lights and fog. Just use the UI on the right to turn features on and off.
