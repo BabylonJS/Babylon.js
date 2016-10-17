@@ -1741,6 +1741,10 @@
 
             mesh.position = Vector3.FromArray(parsedMesh.position);
 
+            if (parsedMesh.metadata !== undefined) {
+                mesh.metadata = parsedMesh.metadata;
+            }
+
             if (parsedMesh.rotationQuaternion) {
                 mesh.rotationQuaternion = Quaternion.FromArray(parsedMesh.rotationQuaternion);
             } else if (parsedMesh.rotation) {

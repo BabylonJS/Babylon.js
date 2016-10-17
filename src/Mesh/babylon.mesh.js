@@ -1541,6 +1541,9 @@ var BABYLON;
             mesh.id = parsedMesh.id;
             BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
             mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
+            if (parsedMesh.metadata !== undefined) {
+                mesh.metadata = parsedMesh.metadata;
+            }
             if (parsedMesh.rotationQuaternion) {
                 mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedMesh.rotationQuaternion);
             }
