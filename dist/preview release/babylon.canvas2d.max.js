@@ -10,310 +10,8 @@ function __() { this.constructor = d; }
 __.prototype = b.prototype;
 d.prototype = new __();
 };
-
 var BABYLON;
 (function (BABYLON) {
-    /**
-     * Class for the ObservableStringDictionary.onDictionaryChanged observable
-     */
-    var DictionaryChanged = (function () {
-        function DictionaryChanged() {
-        }
-        Object.defineProperty(DictionaryChanged, "clearAction", {
-            /**
-             * The content of the dictionary was totally cleared
-             */
-            get: function () {
-                return DictionaryChanged._clearAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DictionaryChanged, "newItemAction", {
-            /**
-             * A new item was added, the newItem field contains the key/value pair
-             */
-            get: function () {
-                return DictionaryChanged._newItemAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DictionaryChanged, "removedItemAction", {
-            /**
-             * An existing item was removed, the removedKey field contains its key
-             */
-            get: function () {
-                return DictionaryChanged._removedItemAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DictionaryChanged, "itemValueChangedAction", {
-            /**
-             * An existing item had a value change, the changedItem field contains the key/value
-             */
-            get: function () {
-                return DictionaryChanged._itemValueChangedAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DictionaryChanged, "replacedAction", {
-            /**
-             * The dictionary's content was reset and replaced by the content of another dictionary.
-             * DictionaryChanged<T> contains no further information about this action
-             */
-            get: function () {
-                return DictionaryChanged._replacedAction;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        DictionaryChanged._clearAction = 0x1;
-        DictionaryChanged._newItemAction = 0x2;
-        DictionaryChanged._removedItemAction = 0x4;
-        DictionaryChanged._itemValueChangedAction = 0x8;
-        DictionaryChanged._replacedAction = 0x10;
-        return DictionaryChanged;
-    }());
-    BABYLON.DictionaryChanged = DictionaryChanged;
-    var OSDWatchedObjectChangedInfo = (function () {
-        function OSDWatchedObjectChangedInfo() {
-        }
-        return OSDWatchedObjectChangedInfo;
-    }());
-    BABYLON.OSDWatchedObjectChangedInfo = OSDWatchedObjectChangedInfo;
-    var ObservableStringDictionary = (function (_super) {
-        __extends(ObservableStringDictionary, _super);
-        function ObservableStringDictionary(watchObjectsPropertyChange) {
-            _super.call(this);
-            this._propertyChanged = null;
-            this._dictionaryChanged = null;
-            this.dci = new DictionaryChanged();
-            this._callingDicChanged = false;
-            this._watchedObjectChanged = null;
-            this._callingWatchedObjectChanged = false;
-            this._woci = new OSDWatchedObjectChangedInfo();
-            this._watchObjectsPropertyChange = watchObjectsPropertyChange;
-            this._watchedObjectList = this._watchObjectsPropertyChange ? new BABYLON.StringDictionary() : null;
-        }
-        /**
-         * This will clear this dictionary and copy the content from the 'source' one.
-         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
-         * @param source the dictionary to take the content from and copy to this dictionary
-         */
-        ObservableStringDictionary.prototype.copyFrom = function (source) {
-            var _this = this;
-            var oldCount = this.count;
-            // Don't rely on this class' implementation for clear/add otherwise tons of notification will be thrown
-            _super.prototype.clear.call(this);
-            source.forEach(function (t, v) { return _this._add(t, v, false, _this._watchObjectsPropertyChange); });
-            this.onDictionaryChanged(DictionaryChanged.replacedAction, null, null, null);
-            this.onPropertyChanged("count", oldCount, this.count);
-        };
-        /**
-         * Get a value from its key or add it if it doesn't exist.
-         * This method will ensure you that a given key/data will be present in the dictionary.
-         * @param key the given key to get the matching value from
-         * @param factory the factory that will create the value if the key is not present in the dictionary.
-         * The factory will only be invoked if there's no data for the given key.
-         * @return the value corresponding to the key.
-         */
-        ObservableStringDictionary.prototype.getOrAddWithFactory = function (key, factory) {
-            var _this = this;
-            var val = _super.prototype.getOrAddWithFactory.call(this, key, function (k) {
-                var v = factory(key);
-                _this._add(key, v, true, _this._watchObjectsPropertyChange);
-                return v;
-            });
-            return val;
-        };
-        /**
-         * Add a new key and its corresponding value
-         * @param key the key to add
-         * @param value the value corresponding to the key
-         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
-         */
-        ObservableStringDictionary.prototype.add = function (key, value) {
-            return this._add(key, value, true, true);
-        };
-        ObservableStringDictionary.prototype.getAndRemove = function (key) {
-            var val = _super.prototype.get.call(this, key);
-            this._remove(key, true, val);
-            return val;
-        };
-        ObservableStringDictionary.prototype._add = function (key, value, fireNotif, registerWatcher) {
-            if (_super.prototype.add.call(this, key, value)) {
-                if (fireNotif) {
-                    this.onDictionaryChanged(DictionaryChanged.newItemAction, { key: key, value: value }, null, null);
-                    this.onPropertyChanged("count", this.count - 1, this.count);
-                }
-                if (registerWatcher) {
-                    this._addWatchedElement(key, value);
-                }
-                return true;
-            }
-            return false;
-        };
-        ObservableStringDictionary.prototype._addWatchedElement = function (key, el) {
-            var _this = this;
-            if (el["propertyChanged"]) {
-                this._watchedObjectList.add(key, el.propertyChanged.add(function (e, d) {
-                    _this.onWatchedObjectChanged(key, el, e);
-                }));
-            }
-        };
-        ObservableStringDictionary.prototype._removeWatchedElement = function (key, el) {
-            var observer = this._watchedObjectList.getAndRemove(key);
-            el.propertyChanged.remove(observer);
-        };
-        ObservableStringDictionary.prototype.set = function (key, value) {
-            var oldValue = this.get(key);
-            if (this._watchObjectsPropertyChange) {
-                this._removeWatchedElement(key, oldValue);
-            }
-            if (_super.prototype.set.call(this, key, value)) {
-                this.onDictionaryChanged(DictionaryChanged.itemValueChangedAction, null, null, { key: key, oldValue: oldValue, newValue: value });
-                this._addWatchedElement(key, value);
-                return true;
-            }
-            return false;
-        };
-        /**
-         * Remove a key/value from the dictionary.
-         * @param key the key to remove
-         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
-         */
-        ObservableStringDictionary.prototype.remove = function (key) {
-            return this._remove(key, true);
-        };
-        ObservableStringDictionary.prototype._remove = function (key, fireNotif, element) {
-            if (!element) {
-                element = this.get(key);
-            }
-            if (!element) {
-                return false;
-            }
-            if (_super.prototype.remove.call(this, key) === undefined) {
-                return false;
-            }
-            this.onDictionaryChanged(DictionaryChanged.removedItemAction, null, key, null);
-            this.onPropertyChanged("count", this.count + 1, this.count);
-            if (this._watchObjectsPropertyChange) {
-                this._removeWatchedElement(key, element);
-            }
-            return true;
-        };
-        /**
-         * Clear the whole content of the dictionary
-         */
-        ObservableStringDictionary.prototype.clear = function () {
-            var _this = this;
-            this._watchedObjectList.forEach(function (k, v) {
-                var el = _this.get(k);
-                _this._removeWatchedElement(k, el);
-            });
-            this._watchedObjectList.clear();
-            var oldCount = this.count;
-            _super.prototype.clear.call(this);
-            this.onDictionaryChanged(DictionaryChanged.clearAction, null, null, null);
-            this.onPropertyChanged("count", oldCount, 0);
-        };
-        Object.defineProperty(ObservableStringDictionary.prototype, "propertyChanged", {
-            get: function () {
-                if (!this._propertyChanged) {
-                    this._propertyChanged = new BABYLON.Observable();
-                }
-                return this._propertyChanged;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ObservableStringDictionary.prototype.onPropertyChanged = function (propName, oldValue, newValue, mask) {
-            if (this._propertyChanged && this._propertyChanged.hasObservers()) {
-                var pci = ObservableStringDictionary.callingPropChanged ? new BABYLON.PropertyChangedInfo() : ObservableStringDictionary.pci;
-                pci.oldValue = oldValue;
-                pci.newValue = newValue;
-                pci.propertyName = propName;
-                try {
-                    ObservableStringDictionary.callingPropChanged = true;
-                    this.propertyChanged.notifyObservers(pci, mask);
-                }
-                finally {
-                    ObservableStringDictionary.callingPropChanged = false;
-                }
-            }
-        };
-        Object.defineProperty(ObservableStringDictionary.prototype, "dictionaryChanged", {
-            get: function () {
-                if (!this._dictionaryChanged) {
-                    this._dictionaryChanged = new BABYLON.Observable();
-                }
-                return this._dictionaryChanged;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ObservableStringDictionary.prototype.onDictionaryChanged = function (action, newItem, removedKey, changedItem) {
-            if (this._dictionaryChanged && this._dictionaryChanged.hasObservers()) {
-                var dci = this._callingDicChanged ? new DictionaryChanged() : this.dci;
-                dci.action = action;
-                dci.newItem = newItem;
-                dci.removedKey = removedKey;
-                dci.changedItem = changedItem;
-                try {
-                    this._callingDicChanged = true;
-                    this.dictionaryChanged.notifyObservers(dci, action);
-                }
-                finally {
-                    this._callingDicChanged = false;
-                }
-            }
-        };
-        Object.defineProperty(ObservableStringDictionary.prototype, "watchedObjectChanged", {
-            get: function () {
-                if (!this._watchedObjectChanged) {
-                    this._watchedObjectChanged = new BABYLON.Observable();
-                }
-                return this._watchedObjectChanged;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ObservableStringDictionary.prototype.onWatchedObjectChanged = function (key, object, propChanged) {
-            if (this._watchedObjectChanged && this._watchedObjectChanged.hasObservers()) {
-                var woci = this._callingWatchedObjectChanged ? new OSDWatchedObjectChangedInfo() : this._woci;
-                woci.key = key;
-                woci.object = object;
-                woci.propertyChanged = propChanged;
-                try {
-                    this._callingWatchedObjectChanged = true;
-                    this.watchedObjectChanged.notifyObservers(woci);
-                }
-                finally {
-                    this._callingWatchedObjectChanged = false;
-                }
-            }
-        };
-        ObservableStringDictionary.pci = new BABYLON.PropertyChangedInfo();
-        ObservableStringDictionary.callingPropChanged = false;
-        return ObservableStringDictionary;
-    }(BABYLON.StringDictionary));
-    BABYLON.ObservableStringDictionary = ObservableStringDictionary;
-})(BABYLON || (BABYLON = {}));
-
-
-
-
-
-
-
-var BABYLON;
-(function (BABYLON) {
-    /**
-     * Custom type of the propertyChanged observable
-     */
     var PropertyChangedInfo = (function () {
         function PropertyChangedInfo() {
         }
@@ -370,6 +68,11 @@ var BABYLON;
         return PropertyChangedBase;
     }());
     BABYLON.PropertyChangedBase = PropertyChangedBase;
+})(BABYLON || (BABYLON = {}));
+
+
+var BABYLON;
+(function (BABYLON) {
     /**
      * Class for the ObservableArray.onArrayChanged observable
      */
@@ -918,8 +621,306 @@ var BABYLON;
             }
         };
         return ObservableArray;
-    }(PropertyChangedBase));
+    }(BABYLON.PropertyChangedBase));
     BABYLON.ObservableArray = ObservableArray;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * Class for the ObservableStringDictionary.onDictionaryChanged observable
+     */
+    var DictionaryChanged = (function () {
+        function DictionaryChanged() {
+        }
+        Object.defineProperty(DictionaryChanged, "clearAction", {
+            /**
+             * The content of the dictionary was totally cleared
+             */
+            get: function () {
+                return DictionaryChanged._clearAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "newItemAction", {
+            /**
+             * A new item was added, the newItem field contains the key/value pair
+             */
+            get: function () {
+                return DictionaryChanged._newItemAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "removedItemAction", {
+            /**
+             * An existing item was removed, the removedKey field contains its key
+             */
+            get: function () {
+                return DictionaryChanged._removedItemAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "itemValueChangedAction", {
+            /**
+             * An existing item had a value change, the changedItem field contains the key/value
+             */
+            get: function () {
+                return DictionaryChanged._itemValueChangedAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DictionaryChanged, "replacedAction", {
+            /**
+             * The dictionary's content was reset and replaced by the content of another dictionary.
+             * DictionaryChanged<T> contains no further information about this action
+             */
+            get: function () {
+                return DictionaryChanged._replacedAction;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        DictionaryChanged._clearAction = 0x1;
+        DictionaryChanged._newItemAction = 0x2;
+        DictionaryChanged._removedItemAction = 0x4;
+        DictionaryChanged._itemValueChangedAction = 0x8;
+        DictionaryChanged._replacedAction = 0x10;
+        return DictionaryChanged;
+    }());
+    BABYLON.DictionaryChanged = DictionaryChanged;
+    var OSDWatchedObjectChangedInfo = (function () {
+        function OSDWatchedObjectChangedInfo() {
+        }
+        return OSDWatchedObjectChangedInfo;
+    }());
+    BABYLON.OSDWatchedObjectChangedInfo = OSDWatchedObjectChangedInfo;
+    var ObservableStringDictionary = (function (_super) {
+        __extends(ObservableStringDictionary, _super);
+        function ObservableStringDictionary(watchObjectsPropertyChange) {
+            _super.call(this);
+            this._propertyChanged = null;
+            this._dictionaryChanged = null;
+            this.dci = new DictionaryChanged();
+            this._callingDicChanged = false;
+            this._watchedObjectChanged = null;
+            this._callingWatchedObjectChanged = false;
+            this._woci = new OSDWatchedObjectChangedInfo();
+            this._watchObjectsPropertyChange = watchObjectsPropertyChange;
+            this._watchedObjectList = this._watchObjectsPropertyChange ? new BABYLON.StringDictionary() : null;
+        }
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        ObservableStringDictionary.prototype.copyFrom = function (source) {
+            var _this = this;
+            var oldCount = this.count;
+            // Don't rely on this class' implementation for clear/add otherwise tons of notification will be thrown
+            _super.prototype.clear.call(this);
+            source.forEach(function (t, v) { return _this._add(t, v, false, _this._watchObjectsPropertyChange); });
+            this.onDictionaryChanged(DictionaryChanged.replacedAction, null, null, null);
+            this.onPropertyChanged("count", oldCount, this.count);
+        };
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matching value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        ObservableStringDictionary.prototype.getOrAddWithFactory = function (key, factory) {
+            var _this = this;
+            var val = _super.prototype.getOrAddWithFactory.call(this, key, function (k) {
+                var v = factory(key);
+                _this._add(key, v, true, _this._watchObjectsPropertyChange);
+                return v;
+            });
+            return val;
+        };
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        ObservableStringDictionary.prototype.add = function (key, value) {
+            return this._add(key, value, true, true);
+        };
+        ObservableStringDictionary.prototype.getAndRemove = function (key) {
+            var val = _super.prototype.get.call(this, key);
+            this._remove(key, true, val);
+            return val;
+        };
+        ObservableStringDictionary.prototype._add = function (key, value, fireNotif, registerWatcher) {
+            if (_super.prototype.add.call(this, key, value)) {
+                if (fireNotif) {
+                    this.onDictionaryChanged(DictionaryChanged.newItemAction, { key: key, value: value }, null, null);
+                    this.onPropertyChanged("count", this.count - 1, this.count);
+                }
+                if (registerWatcher) {
+                    this._addWatchedElement(key, value);
+                }
+                return true;
+            }
+            return false;
+        };
+        ObservableStringDictionary.prototype._addWatchedElement = function (key, el) {
+            var _this = this;
+            if (el["propertyChanged"]) {
+                this._watchedObjectList.add(key, el.propertyChanged.add(function (e, d) {
+                    _this.onWatchedObjectChanged(key, el, e);
+                }));
+            }
+        };
+        ObservableStringDictionary.prototype._removeWatchedElement = function (key, el) {
+            var observer = this._watchedObjectList.getAndRemove(key);
+            el.propertyChanged.remove(observer);
+        };
+        ObservableStringDictionary.prototype.set = function (key, value) {
+            var oldValue = this.get(key);
+            if (this._watchObjectsPropertyChange) {
+                this._removeWatchedElement(key, oldValue);
+            }
+            if (_super.prototype.set.call(this, key, value)) {
+                this.onDictionaryChanged(DictionaryChanged.itemValueChangedAction, null, null, { key: key, oldValue: oldValue, newValue: value });
+                this._addWatchedElement(key, value);
+                return true;
+            }
+            return false;
+        };
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        ObservableStringDictionary.prototype.remove = function (key) {
+            return this._remove(key, true);
+        };
+        ObservableStringDictionary.prototype._remove = function (key, fireNotif, element) {
+            if (!element) {
+                element = this.get(key);
+            }
+            if (!element) {
+                return false;
+            }
+            if (_super.prototype.remove.call(this, key) === undefined) {
+                return false;
+            }
+            this.onDictionaryChanged(DictionaryChanged.removedItemAction, null, key, null);
+            this.onPropertyChanged("count", this.count + 1, this.count);
+            if (this._watchObjectsPropertyChange) {
+                this._removeWatchedElement(key, element);
+            }
+            return true;
+        };
+        /**
+         * Clear the whole content of the dictionary
+         */
+        ObservableStringDictionary.prototype.clear = function () {
+            var _this = this;
+            this._watchedObjectList.forEach(function (k, v) {
+                var el = _this.get(k);
+                _this._removeWatchedElement(k, el);
+            });
+            this._watchedObjectList.clear();
+            var oldCount = this.count;
+            _super.prototype.clear.call(this);
+            this.onDictionaryChanged(DictionaryChanged.clearAction, null, null, null);
+            this.onPropertyChanged("count", oldCount, 0);
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "propertyChanged", {
+            get: function () {
+                if (!this._propertyChanged) {
+                    this._propertyChanged = new BABYLON.Observable();
+                }
+                return this._propertyChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onPropertyChanged = function (propName, oldValue, newValue, mask) {
+            if (this._propertyChanged && this._propertyChanged.hasObservers()) {
+                var pci = ObservableStringDictionary.callingPropChanged ? new BABYLON.PropertyChangedInfo() : ObservableStringDictionary.pci;
+                pci.oldValue = oldValue;
+                pci.newValue = newValue;
+                pci.propertyName = propName;
+                try {
+                    ObservableStringDictionary.callingPropChanged = true;
+                    this.propertyChanged.notifyObservers(pci, mask);
+                }
+                finally {
+                    ObservableStringDictionary.callingPropChanged = false;
+                }
+            }
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "dictionaryChanged", {
+            get: function () {
+                if (!this._dictionaryChanged) {
+                    this._dictionaryChanged = new BABYLON.Observable();
+                }
+                return this._dictionaryChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onDictionaryChanged = function (action, newItem, removedKey, changedItem) {
+            if (this._dictionaryChanged && this._dictionaryChanged.hasObservers()) {
+                var dci = this._callingDicChanged ? new DictionaryChanged() : this.dci;
+                dci.action = action;
+                dci.newItem = newItem;
+                dci.removedKey = removedKey;
+                dci.changedItem = changedItem;
+                try {
+                    this._callingDicChanged = true;
+                    this.dictionaryChanged.notifyObservers(dci, action);
+                }
+                finally {
+                    this._callingDicChanged = false;
+                }
+            }
+        };
+        Object.defineProperty(ObservableStringDictionary.prototype, "watchedObjectChanged", {
+            get: function () {
+                if (!this._watchedObjectChanged) {
+                    this._watchedObjectChanged = new BABYLON.Observable();
+                }
+                return this._watchedObjectChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ObservableStringDictionary.prototype.onWatchedObjectChanged = function (key, object, propChanged) {
+            if (this._watchedObjectChanged && this._watchedObjectChanged.hasObservers()) {
+                var woci = this._callingWatchedObjectChanged ? new OSDWatchedObjectChangedInfo() : this._woci;
+                woci.key = key;
+                woci.object = object;
+                woci.propertyChanged = propChanged;
+                try {
+                    this._callingWatchedObjectChanged = true;
+                    this.watchedObjectChanged.notifyObservers(woci);
+                }
+                finally {
+                    this._callingWatchedObjectChanged = false;
+                }
+            }
+        };
+        ObservableStringDictionary.pci = new BABYLON.PropertyChangedInfo();
+        ObservableStringDictionary.callingPropChanged = false;
+        return ObservableStringDictionary;
+    }(BABYLON.StringDictionary));
+    BABYLON.ObservableStringDictionary = ObservableStringDictionary;
 })(BABYLON || (BABYLON = {}));
 
 var BABYLON;
@@ -1267,6 +1268,9 @@ var BABYLON;
                 var max = 0;
                 for (var _i = 0, _a = prim.children; _i < _a.length; _i++) {
                     var child = _a[_i];
+                    if (child._isFlagSet(BABYLON.SmartPropertyPrim.flagNoPartOfLayout)) {
+                        continue;
+                    }
                     var layoutArea = void 0;
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
@@ -1281,6 +1285,9 @@ var BABYLON;
                 }
                 for (var _b = 0, _c = prim.children; _b < _c.length; _b++) {
                     var child = _c[_b];
+                    if (child._isFlagSet(BABYLON.SmartPropertyPrim.flagNoPartOfLayout)) {
+                        continue;
+                    }
                     child.layoutAreaPos = new BABYLON.Vector2(x, y);
                     var layoutArea = child.layoutArea;
                     if (h) {
@@ -1304,7 +1311,7 @@ var BABYLON;
         });
         StackPanelLayoutEngine._horizontal = null;
         StackPanelLayoutEngine._vertical = null;
-        StackPanelLayoutEngine.dstOffset = BABYLON.Vector2.Zero();
+        StackPanelLayoutEngine.dstOffset = BABYLON.Vector4.Zero();
         StackPanelLayoutEngine.dstArea = BABYLON.Size.Zero();
         StackPanelLayoutEngine = __decorate([
             BABYLON.className("StackPanelLayoutEngine", "BABYLON")
@@ -2607,7 +2614,7 @@ var BABYLON;
             }
         };
         SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT = 0;
-        SmartPropertyPrim.flagFREE001 = 0x0000001; // set if the object is already disposed
+        SmartPropertyPrim.flagNoPartOfLayout = 0x0000001; // set if the primitive's position/size must not be computed by Layout Engine
         SmartPropertyPrim.flagLevelBoundingInfoDirty = 0x0000002; // set if the primitive's level bounding box (not including children) is dirty
         SmartPropertyPrim.flagModelDirty = 0x0000004; // set if the model must be changed
         SmartPropertyPrim.flagLayoutDirty = 0x0000008; // set if the layout must be computed
@@ -3665,7 +3672,7 @@ var BABYLON;
          * @param sourceArea the source area where the content must be sized/positioned
          * @param contentSize the content size to position/resize
          * @param alignment the alignment setting
-         * @param dstOffset the position of the content
+         * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
          * @param dstArea the new size of the content
          */
         PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea, computeLayoutArea) {
@@ -3697,6 +3704,7 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.width += this.leftPixels;
                         }
+                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
                         break;
                     }
                 case PrimitiveAlignment.AlignRight:
@@ -3712,6 +3720,7 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.width += this.rightPixels;
                         }
+                        dstOffset.z = this.rightPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -3729,6 +3738,7 @@ var BABYLON;
                             right = this.rightPixels;
                         }
                         dstArea.width = sourceArea.width - (dstOffset.x + right);
+                        dstOffset.z = this.rightPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignCenter:
@@ -3742,6 +3752,7 @@ var BABYLON;
                         var offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
                         dstOffset.x = Math.round(((sourceArea.width - width) / 2) + offset);
                         dstArea.width = width;
+                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
                         break;
                     }
             }
@@ -3759,6 +3770,7 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.height += this.topPixels;
                         }
+                        dstOffset.w = this.topPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignBottom:
@@ -3774,6 +3786,7 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.height += this.bottomPixels;
                         }
+                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -3791,6 +3804,7 @@ var BABYLON;
                             top_1 = this.topPixels;
                         }
                         dstArea.height = sourceArea.height - (dstOffset.y + top_1);
+                        dstOffset.w = this.topPixels;
                         break;
                     }
                 case PrimitiveAlignment.AlignCenter:
@@ -3804,6 +3818,7 @@ var BABYLON;
                         var offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
                         dstOffset.y = Math.round(((sourceArea.height - height) / 2) + offset);
                         dstArea.height = height;
+                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
                         break;
                     }
             }
@@ -3932,8 +3947,8 @@ var BABYLON;
             this._layoutArea = BABYLON.Size.Zero();
             this._layoutAreaPos = null;
             this._layoutBoundingInfo = null;
-            this._marginOffset = BABYLON.Vector2.Zero();
-            this._paddingOffset = BABYLON.Vector2.Zero();
+            this._marginOffset = BABYLON.Vector4.Zero();
+            this._paddingOffset = BABYLON.Vector4.Zero();
             this._parentPaddingOffset = BABYLON.Vector2.Zero();
             this._parentContentArea = BABYLON.Size.Zero();
             this._lastAutoSizeArea = BABYLON.Size.Zero();
@@ -3960,6 +3975,8 @@ var BABYLON;
             this._firstZDirtyIndex = Prim2DBase._bigInt;
             this._actualOpacity = 0;
             this._actualScale = BABYLON.Vector2.Zero();
+            this._displayDebugAreas = false;
+            this._debugAreaGroup = null;
             var isPickable = true;
             var isContainer = true;
             if (settings.isPickable !== undefined) {
@@ -5035,6 +5052,211 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Prim2DBase.prototype, "displayDebugAreas", {
+            get: function () {
+                return this._displayDebugAreas;
+            },
+            set: function (value) {
+                if (this._displayDebugAreas === value) {
+                    return;
+                }
+                if (value === false) {
+                    this._debugAreaGroup.dispose();
+                    this._debugAreaGroup = null;
+                }
+                else {
+                    var layoutFill = "#F0808040"; // Red - Layout area
+                    var layoutBorder = "#F08080FF";
+                    var marginFill = "#F0F04040"; // Yellow - Margin area
+                    var marginBorder = "#F0F040FF";
+                    var paddingFill = "#F040F040"; // Magenta - Padding Area
+                    var paddingBorder = "#F040F0FF";
+                    var contentFill = "#40F0F040"; // Cyan - Content area
+                    var contentBorder = "#40F0F0FF";
+                    var s = new BABYLON.Size(10, 10);
+                    var p = BABYLON.Vector2.Zero();
+                    this._debugAreaGroup = new BABYLON.Group2D({
+                        parent: (this.parent != null) ? this.parent : this, id: "###DEBUG AREA GROUP###", children: [
+                            new BABYLON.Group2D({
+                                id: "###Layout Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Layout Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: layoutBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Top###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Left###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Right###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Layout Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: layoutFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Margin Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Margin Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: marginBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Top###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Left###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Right###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Margin Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: marginFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Padding Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Padding Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: paddingBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Top###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Left###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Right###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Padding Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: paddingFill })
+                                ]
+                            }),
+                            new BABYLON.Group2D({
+                                id: "###Content Area###", position: p, size: s, children: [
+                                    new BABYLON.Rectangle2D({ id: "###Content Frame###", position: BABYLON.Vector2.Zero(), size: s, fill: null, border: contentBorder }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Top###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Left###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Right###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill }),
+                                    new BABYLON.Rectangle2D({ id: "###Content Bottom###", position: BABYLON.Vector2.Zero(), size: s, fill: contentFill })
+                                ]
+                            })
+                        ]
+                    });
+                    this._debugAreaGroup._setFlags(BABYLON.SmartPropertyPrim.flagNoPartOfLayout);
+                    this._updateDebugArea();
+                }
+                this._displayDebugAreas = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Prim2DBase.prototype._updateDebugArea = function () {
+            var areaNames = ["Layout", "Margin", "Padding", "Content"];
+            var areaZones = ["Area", "Frame", "Top", "Left", "Right", "Bottom"];
+            var prims = new Array(4);
+            // Get all the primitives used to display the areas
+            for (var i = 0; i < 4; i++) {
+                prims[i] = new Array(6);
+                for (var j = 0; j < 6; j++) {
+                    prims[i][j] = this._debugAreaGroup.findById("###" + areaNames[i] + " " + areaZones[j] + "###");
+                    if (j > 1) {
+                        prims[i][j].levelVisible = false;
+                    }
+                }
+            }
+            // Update the visibility status of layout/margin/padding
+            var hasLayout = this._layoutAreaPos != null;
+            var hasPos = (this.actualPosition.x !== 0) || (this.actualPosition.y !== 0);
+            var hasMargin = this._hasMargin;
+            var hasPadding = this._hasPadding;
+            prims[0][0].levelVisible = hasLayout;
+            prims[1][0].levelVisible = hasMargin;
+            prims[2][0].levelVisible = hasPadding;
+            prims[3][0].levelVisible = true;
+            // Current offset
+            var curOffset = BABYLON.Vector2.Zero();
+            // Store the area info of the layout area
+            var curAreaIndex = 0;
+            // Store data about each area
+            var areaInfo = new Array(4);
+            var storeAreaInfo = function (pos, size) {
+                var min = pos.clone();
+                var max = pos.clone();
+                if (size.width > 0) {
+                    max.x += size.width;
+                }
+                if (size.height > 0) {
+                    max.y += size.height;
+                }
+                areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
+            };
+            var marginH = this._marginOffset.x + this._marginOffset.z;
+            var marginV = this._marginOffset.y + this._marginOffset.w;
+            var w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width) : (marginH + this.actualSize.width);
+            var h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + this.actualSize.height);
+            var pos = (!hasLayout && !hasMargin && !hasPadding && hasPos) ? this.actualPosition : BABYLON.Vector2.Zero();
+            storeAreaInfo(pos, new BABYLON.Size(w, h));
+            // Compute the layout related data
+            if (hasLayout) {
+                var layoutOffset = this.layoutAreaPos.clone();
+                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : this.actualSize.clone());
+                curOffset = layoutOffset.clone();
+            }
+            // Compute margin data
+            if (hasMargin) {
+                var marginOffset = curOffset.clone();
+                marginOffset.x += this._marginOffset.x;
+                marginOffset.y += this._marginOffset.y;
+                var marginArea = this.actualSize;
+                storeAreaInfo(marginOffset, marginArea);
+                curOffset = marginOffset.clone();
+            }
+            if (hasPadding) {
+                var contentOffset = curOffset.clone();
+                contentOffset.x += this._paddingOffset.x;
+                contentOffset.y += this._paddingOffset.y;
+                var contentArea = this.contentArea;
+                storeAreaInfo(contentOffset, contentArea);
+                curOffset = curOffset.add(contentOffset);
+            }
+            // Helper function that set the pos and size of a given prim
+            var setArea = function (i, j, pos, size) {
+                prims[i][j].position = pos;
+                prims[i][j].size = size;
+            };
+            var setFullRect = function (i, pos, size) {
+                var plist = prims[i];
+                plist[2].levelVisible = true;
+                plist[3].levelVisible = false;
+                plist[4].levelVisible = false;
+                plist[5].levelVisible = false;
+                setArea(i, 1, pos, size);
+                setArea(i, 2, pos, size);
+            };
+            var setQuadRect = function (i, areaIndex) {
+                var plist = prims[i];
+                plist[2].levelVisible = true;
+                plist[3].levelVisible = true;
+                plist[4].levelVisible = true;
+                plist[5].levelVisible = true;
+                var ca = areaInfo[areaIndex];
+                var na = areaInfo[areaIndex + 1];
+                var tp = new BABYLON.Vector2(ca.min.x, na.max.y);
+                var ts = new BABYLON.Size(ca.size.width, ca.max.y - tp.y);
+                var lp = new BABYLON.Vector2(ca.min.x, na.min.y);
+                var ls = new BABYLON.Size(na.min.x - ca.min.x, na.max.y - na.min.y);
+                var rp = new BABYLON.Vector2(na.max.x, na.min.y);
+                var rs = new BABYLON.Size(ca.max.x - na.max.x, na.max.y - na.min.y);
+                var bp = new BABYLON.Vector2(ca.min.x, ca.min.y);
+                var bs = new BABYLON.Size(ca.size.width, na.min.y - ca.min.y);
+                // Frame
+                plist[1].position = ca.off;
+                plist[1].size = ca.size;
+                // Top rect
+                plist[2].position = tp;
+                plist[2].size = ts;
+                // Left rect
+                plist[3].position = lp;
+                plist[3].size = ls;
+                // Right rect
+                plist[4].position = rp;
+                plist[4].size = rs;
+                // Bottom rect
+                plist[5].position = bp;
+                plist[5].size = bs;
+            };
+            var areaCount = curAreaIndex;
+            curAreaIndex = 0;
+            // Available zones
+            var availableZones = [false, hasLayout, hasMargin, hasPadding, true];
+            for (var k = 1; k < 5; k++) {
+                if (availableZones[k]) {
+                    var ai = areaInfo[curAreaIndex];
+                    setArea(k - 1, 0, BABYLON.Vector2.Zero(), ai.size);
+                    //                    setArea(k-1, 1, Vector2.Zero(), ai.size);
+                    if (k === 4) {
+                        setFullRect(k - 1, ai.off, ai.size);
+                    }
+                    else {
+                        setQuadRect(k - 1, curAreaIndex);
+                    }
+                    ++curAreaIndex;
+                }
+            }
+        };
         Prim2DBase.prototype.findById = function (id) {
             if (this._id === id) {
                 return this;
@@ -5441,7 +5663,7 @@ var BABYLON;
                 var parentPaddingChanged = false;
                 var parentPaddingOffset = Prim2DBase._v0;
                 if (this._parent) {
-                    parentPaddingOffset = this._parent._paddingOffset;
+                    parentPaddingOffset = new BABYLON.Vector2(this._parent._paddingOffset.x, this._parent._paddingOffset.y);
                     parentPaddingChanged = !parentPaddingOffset.equals(this._parentPaddingOffset);
                 }
                 // Check if there are changes in the parent that will force us to update the global matrix
@@ -5493,12 +5715,13 @@ var BABYLON;
                 this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase._size);
                 this.actualSize = Prim2DBase._size.clone();
             }
+            var po = new BABYLON.Vector2(this._paddingOffset.x, this._paddingOffset.y);
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so me resize the primitive itself
                 if (isSizeAuto) {
                     var content = this.size.clone();
                     this._getActualSizeFromContentToRef(content, Prim2DBase._icArea);
-                    this.padding.enlarge(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
+                    this.padding.enlarge(Prim2DBase._icArea, po, Prim2DBase._size);
                     this._contentArea.copyFrom(content);
                     this.actualSize = Prim2DBase._size.clone();
                     // Changing the padding has resize the prim, which forces us to recompute margin again
@@ -5507,20 +5730,27 @@ var BABYLON;
                     }
                 }
                 else {
-                    this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
+                    this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icZone, Prim2DBase._icArea);
                     Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                     Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                    this.padding.compute(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
-                    this._paddingOffset.x += Prim2DBase._icPos.x;
-                    this._paddingOffset.y += Prim2DBase._icPos.y;
+                    this.padding.compute(Prim2DBase._icArea, po, Prim2DBase._size);
+                    this._paddingOffset.x = po.x;
+                    this._paddingOffset.y = po.y;
+                    this._paddingOffset.x += Prim2DBase._icZone.x;
+                    this._paddingOffset.y += Prim2DBase._icZone.y;
+                    this._paddingOffset.z -= Prim2DBase._icZone.z;
+                    this._paddingOffset.w -= Prim2DBase._icZone.w;
                     this._contentArea.copyFrom(Prim2DBase._size);
                 }
             }
             else {
-                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icPos, Prim2DBase._icArea);
+                this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icZone, Prim2DBase._icArea);
                 Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                 Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                this._paddingOffset.copyFrom(Prim2DBase._icPos);
+                this._paddingOffset.x = Prim2DBase._icZone.x;
+                this._paddingOffset.y = Prim2DBase._icZone.y;
+                this._paddingOffset.z = Prim2DBase._icZone.z;
+                this._paddingOffset.w = Prim2DBase._icZone.z;
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
             if (!this._position) {
@@ -5529,6 +5759,9 @@ var BABYLON;
             }
             if (isSizeAuto) {
                 this._lastAutoSizeArea = this.actualSize;
+            }
+            if (this.displayDebugAreas) {
+                this._updateDebugArea();
             }
         };
         Object.defineProperty(Prim2DBase.prototype, "contentArea", {
@@ -5720,12 +5953,12 @@ var BABYLON;
          * This method is used to alter the contentArea of the Primitive before margin is applied.
          * In most of the case you won't need to override this method, but it can prove some usefulness, check the Rectangle2D class for a concrete application.
          * @param primSize the current size of the primitive
-         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
+         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing! x, y, z, w area left, bottom, right, top
          * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          */
         Prim2DBase.prototype._getInitialContentAreaToRef = function (primSize, initialContentPosition, initialContentArea) {
             initialContentArea.copyFrom(primSize);
-            initialContentPosition.x = initialContentPosition.y = 0;
+            initialContentPosition.x = initialContentPosition.y = initialContentPosition.z = initialContentPosition.w = 0;
         };
         /**
          * This method is used to calculate the new size of the primitive based on the content which must stay the same
@@ -5750,6 +5983,7 @@ var BABYLON;
         Prim2DBase._v0 = BABYLON.Vector2.Zero(); // Must stay with the value 0,0
         Prim2DBase._transMtx = BABYLON.Matrix.Zero();
         Prim2DBase._icPos = BABYLON.Vector2.Zero();
+        Prim2DBase._icZone = BABYLON.Vector4.Zero();
         Prim2DBase._icArea = BABYLON.Size.Zero();
         Prim2DBase._size = BABYLON.Size.Zero();
         Prim2DBase._zOrderChangedNotifList = new Array();
@@ -8676,6 +8910,8 @@ var BABYLON;
                 initialContentPosition.x = initialContentPosition.y = rr;
                 initialContentArea.width = Math.max(0, primSize.width - (rr * 2));
                 initialContentArea.height = Math.max(0, primSize.height - (rr * 2));
+                initialContentPosition.z = primSize.width - (initialContentPosition.x + initialContentArea.width);
+                initialContentPosition.w = primSize.height - (initialContentPosition.y + initialContentArea.height);
             }
         };
         Rectangle2D.prototype._getActualSizeFromContentToRef = function (primSize, newPrimSize) {
@@ -11691,19 +11927,25 @@ var BABYLON;
             ii.findFirstOnly = false;
             // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
             if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
-                this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList = null;
-                this._previousOverPrimitive = this._actualOverPrimitive;
-                this._actualOverPrimitive = null;
-                return;
+                // Reset intersection info as we don't hit anything
+                ii.intersectedPrimitives = new Array();
+                ii.topMostIntersectedPrimitive = null;
             }
-            this.intersect(ii);
-            this._previousIntersectionList = this._actualIntersectionList;
-            this._actualIntersectionList = ii.intersectedPrimitives;
-            this._previousOverPrimitive = this._actualOverPrimitive;
-            this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
-            if ((!this._actualOverPrimitive && !this._previousOverPrimitive) || !(this._actualOverPrimitive && this._previousOverPrimitive && this._actualOverPrimitive.prim === this._previousOverPrimitive.prim)) {
-                this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
+            else {
+                // The pointer is inside the Canvas, do an intersection test
+                this.intersect(ii);
+            }
+            {
+                // Update prev/actual intersection info, fire "overPrim" property change if needed
+                this._previousIntersectionList = this._actualIntersectionList;
+                this._actualIntersectionList = ii.intersectedPrimitives;
+                this._previousOverPrimitive = this._actualOverPrimitive;
+                this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+                var prev = (this._previousOverPrimitive != null) ? this._previousOverPrimitive.prim : null;
+                var actual = (this._actualOverPrimitive != null) ? this._actualOverPrimitive.prim : null;
+                if (prev !== actual) {
+                    this.onPropertyChanged("overPrim", this._previousOverPrimitive ? this._previousOverPrimitive.prim : null, this._actualOverPrimitive ? this._actualOverPrimitive.prim : null);
+                }
             }
             this._intersectionRenderId = this.scene.getRenderId();
         };
@@ -11791,15 +12033,17 @@ var BABYLON;
                 if (bubbleCancelled) {
                     this._updatePrimPointerPos(cur);
                 }
-                // Trigger a PointerEnter corresponding to the PointerOver
-                if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
-                    this._debugExecObserver(cur, BABYLON.PrimitivePointerInfo.PointerEnter);
-                    cur._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerEnter);
-                }
-                else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
-                    this._debugExecObserver(cur, BABYLON.PrimitivePointerInfo.PointerLeave);
-                    cur._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerLeave);
-                }
+                // NOTE TO MYSELF, this is commented right now because it doesn't seemed needed but I can't figure out why I put this code in the first place
+                //// Trigger a PointerEnter corresponding to the PointerOver
+                //if (mask === PrimitivePointerInfo.PointerOver) {
+                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
+                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
+                //}
+                //// Trigger a PointerLeave corresponding to the PointerOut
+                //else if (mask === PrimitivePointerInfo.PointerOut) {
+                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
+                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
+                //}
                 // Loop to the parent
                 cur = cur.parent;
             }

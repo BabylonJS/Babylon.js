@@ -1711,10 +1711,10 @@ declare module BABYLON {
          * @param sourceArea the source area where the content must be sized/positioned
          * @param contentSize the content size to position/resize
          * @param alignment the alignment setting
-         * @param dstOffset the position of the content
+         * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
          * @param dstArea the new size of the content
          */
-        computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector2, dstArea: Size, computeLayoutArea?: boolean): void;
+        computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean): void;
         /**
          * Compute an area and its position considering this thickness properties based on a given source area
          * @param sourceArea the source area
@@ -2133,6 +2133,8 @@ declare module BABYLON {
          */
         pointerEventObservable: Observable<PrimitivePointerInfo>;
         zActualOrderChangedObservable: Observable<number>;
+        displayDebugAreas: boolean;
+        private _updateDebugArea();
         findById(id: string): Prim2DBase;
         protected onZOrderChanged(): void;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
@@ -2205,6 +2207,7 @@ declare module BABYLON {
         private static _transMtx;
         protected updateCachedStates(recurse: boolean): void;
         private static _icPos;
+        private static _icZone;
         private static _icArea;
         private static _size;
         private _updatePositioning();
@@ -2227,10 +2230,10 @@ declare module BABYLON {
          * This method is used to alter the contentArea of the Primitive before margin is applied.
          * In most of the case you won't need to override this method, but it can prove some usefulness, check the Rectangle2D class for a concrete application.
          * @param primSize the current size of the primitive
-         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
+         * @param initialContentPosition the position of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing! x, y, z, w area left, bottom, right, top
          * @param initialContentArea the size of the initial content area to compute, a valid object is passed, you have to set its properties. PLEASE ROUND the values, we're talking about pixels and fraction of them is not a good thing!
          */
-        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size): void;
+        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size): void;
         /**
          * This method is used to calculate the new size of the primitive based on the content which must stay the same
          * Check the Rectangle2D implementation for a concrete application.
@@ -2278,6 +2281,8 @@ declare module BABYLON {
         protected _opacity: number;
         private _actualOpacity;
         private _actualScale;
+        private _displayDebugAreas;
+        private _debugAreaGroup;
         protected _parentTransformStep: number;
         protected _globalTransformStep: number;
         protected _globalTransformProcessStep: number;
@@ -2401,7 +2406,7 @@ declare module BABYLON {
         static roundSubdivisions: number;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Rectangle2DRenderCache;
-        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector2, initialContentArea: Size): void;
+        protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size): void;
         protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size): void;
         protected createInstanceDataParts(): InstanceDataBase[];
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
@@ -2888,7 +2893,7 @@ declare module BABYLON {
          * @param state true to set them, false to clear them
          */
         _changeFlags(flags: number, state: boolean): void;
-        static flagFREE001: number;
+        static flagNoPartOfLayout: number;
         static flagLevelBoundingInfoDirty: number;
         static flagModelDirty: number;
         static flagLayoutDirty: number;
@@ -3608,6 +3613,19 @@ declare module BABYLON {
             height?: number;
             worldPosition?: Vector3;
             worldRotation?: Quaternion;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
         });
         canvas: Canvas2D;
         left: number;
@@ -3639,9 +3657,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /**
-     * Custom type of the propertyChanged observable
-     */
     class PropertyChangedInfo {
         /**
          * Previous value of the property
@@ -3656,6 +3671,9 @@ declare module BABYLON {
          */
         propertyName: string;
     }
+    /**
+     * Custom type of the propertyChanged observable
+     */
     /**
      * Property Changed interface
      */
@@ -3688,6 +3706,9 @@ declare module BABYLON {
         private static pci;
         private static calling;
     }
+}
+
+declare module BABYLON {
     /**
      * Class for the ObservableArray.onArrayChanged observable
      */
