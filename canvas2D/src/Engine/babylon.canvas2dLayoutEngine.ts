@@ -129,7 +129,7 @@
 
         private _isHorizontal: boolean = true;
 
-        private static dstOffset = Vector2.Zero();
+        private static dstOffset = Vector4.Zero();
         private static dstArea = Size.Zero();
 
         public updateLayout(prim: Prim2DBase) {
@@ -141,7 +141,9 @@
                 let max = 0;
 
                 for (let child of prim.children) {
-
+                    if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
+                        continue;
+                    }
                     let layoutArea: Size;
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine.dstOffset, StackPanelLayoutEngine.dstArea, true);
@@ -157,6 +159,9 @@
                 }
 
                 for (let child of prim.children) {
+                    if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
+                        continue;
+                    }
                     child.layoutAreaPos = new Vector2(x, y);
 
                     let layoutArea = child.layoutArea;
