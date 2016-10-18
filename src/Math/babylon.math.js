@@ -1113,7 +1113,7 @@ var BABYLON;
             this.w = w;
         }
         Vector4.prototype.toString = function () {
-            return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}";
+            return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
         };
         Vector4.prototype.getClassName = function () {
             return "Vector4";
