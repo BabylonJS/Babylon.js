@@ -1382,7 +1382,7 @@
         constructor(public x: number, public y: number, public z: number, public w: number) { }
 
         public toString(): string {
-            return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "W:" + this.w + "}";
+            return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
         }
 
         public getClassName(): string {
