@@ -8,6 +8,7 @@ module BABYLON {
 
         constructor(iterations?: number) {
             this.world = new OIMO.World(1 / 60, 2, iterations, true);
+            this.world.worldscale(1);
             this.world.clear();
             //making sure no stats are calculated
             this.world.isNoStat = true;
