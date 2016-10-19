@@ -12697,6 +12697,7 @@ var BABYLON;
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
+            this._webvrViewMatrix = BABYLON.Matrix.Identity();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._globalPosition = BABYLON.Vector3.Zero();
             this._refreshFrustumPlanes = true;
@@ -13122,16 +13123,18 @@ var BABYLON;
                     break;
                 case Camera.RIG_MODE_WEBVR:
                     if (rigParams.vrDisplay) {
-                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
-                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        //var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        //var rightEye = rigParams.vrDisplay.getEyeParameters('right');
                         this._rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
-                        this._rigCameras[0].setCameraRigParameter("vrFieldOfView", leftEye.fieldOfView);
-                        this._rigCameras[0].setCameraRigParameter("vrOffsetMatrix", BABYLON.Matrix.Translation(-leftEye.offset[0], leftEye.offset[1], -leftEye.offset[2]));
+                        this._rigCameras[0].setCameraRigParameter("left", true);
+                        this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);
+                        //this._rigCameras[0].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-leftEye.offset[0], leftEye.offset[1], -leftEye.offset[2]));
                         this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        //this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
-                        this._rigCameras[1].setCameraRigParameter("vrFieldOfView", rightEye.fieldOfView);
-                        this._rigCameras[1].setCameraRigParameter("vrOffsetMatrix", BABYLON.Matrix.Translation(-rightEye.offset[0], rightEye.offset[1], -rightEye.offset[2]));
+                        this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
+                        //this._rigCameras[1].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-rightEye.offset[0], rightEye.offset[1], -rightEye.offset[2]));
                         this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                     }
@@ -13147,9 +13150,23 @@ var BABYLON;
             return this._projectionMatrix;
         };
         Camera.prototype._getWebVRProjectionMatrix = function () {
-            BABYLON.Matrix.PerspectiveFovWebVRToRef(this._cameraRigParams['vrFieldOfView'], this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
-            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams['vrOffsetMatrix'], this._projectionMatrix);
+            var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
+            //babylon compatible matrix
+            [8, 9, 10, 11].forEach(function (num) {
+                projectionArray[num] *= -1;
+            });
+            BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
             return this._projectionMatrix;
+        };
+        //Can be used, but we'll use the free camera's view matrix calculation
+        Camera.prototype._getWebVRViewMatrix = function () {
+            var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
+            //babylon compatible matrix
+            [8, 9, 10, 11].forEach(function (num) {
+                projectionArray[num] *= -1;
+            });
+            BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._webvrViewMatrix);
+            return this._webvrViewMatrix;
         };
         Camera.prototype.setCameraRigParameter = function (name, value) {
             if (!this._cameraRigParams) {
@@ -43330,6 +43347,7 @@ var BABYLON;
             this._vrDevice = null;
             this._cacheState = null;
             this._vrEnabled = false;
+            this._attached = false;
             //enable VR
             this.getEngine().initWebVR();
             if (!this.getEngine().vrDisplaysPromise) {
@@ -43338,6 +43356,7 @@ var BABYLON;
             else {
                 //TODO get the metrics updated using the device's eye parameters!
                 //TODO also check that the device has the right capabilities!
+                this._frameData = new VRFrameData();
                 this.getEngine().vrDisplaysPromise.then(function (devices) {
                     if (devices.length > 0) {
                         _this._vrEnabled = true;
@@ -43361,7 +43380,10 @@ var BABYLON;
                             _this._vrDevice = devices[0];
                         }
                         //reset the rig parameters.
-                        _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { vrDisplay: _this._vrDevice });
+                        _this.setCameraRigMode(BABYLON.Camera.RIG_MODE_WEBVR, { vrDisplay: _this._vrDevice, frameData: _this._frameData });
+                        if (_this._attached) {
+                            _this.getEngine().enableVR(_this._vrDevice);
+                        }
                     }
                     else {
                         BABYLON.Tools.Error("No WebVR devices found!");
@@ -43372,25 +43394,23 @@ var BABYLON;
             this._quaternionCache = new BABYLON.Quaternion();
         }
         WebVRFreeCamera.prototype._checkInputs = function () {
-            if (this._vrEnabled) {
-                var currentPost = this._vrDevice.getPose();
+            if (this._vrEnabled && this._vrDevice.getFrameData(this._frameData)) {
+                var currentPost = this._frameData.pose;
                 //make sure we have data
                 if (currentPost && currentPost.orientation) {
                     this._cacheState = currentPost;
-                    this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], this._cacheState.orientation[2], this._cacheState.orientation[3]);
+                    this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], -this._cacheState.orientation[2], -this._cacheState.orientation[3]);
                     if (this.webVROptions.trackPosition && this._cacheState.position) {
                         this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
                         this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale);
                     }
-                    //Flip in XY plane
-                    this.rotationQuaternion.z *= -1;
-                    this.rotationQuaternion.w *= -1;
                 }
             }
             _super.prototype._checkInputs.call(this);
         };
         WebVRFreeCamera.prototype.attachControl = function (element, noPreventDefault) {
             _super.prototype.attachControl.call(this, element, noPreventDefault);
+            this._attached = true;
             noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             if (this._vrEnabled) {
                 this.getEngine().enableVR(this._vrDevice);
@@ -43399,6 +43419,7 @@ var BABYLON;
         WebVRFreeCamera.prototype.detachControl = function (element) {
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
+            this._attached = false;
             this.getEngine().disableVR();
         };
         WebVRFreeCamera.prototype.requestVRFullscreen = function (requestPointerlock) {
