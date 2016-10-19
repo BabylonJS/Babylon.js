@@ -1,4 +1,431 @@
 declare module BABYLON {
+    class Button extends ContentControl {
+        static BUTTON_PROPCOUNT: number;
+        static isPushedProperty: Prim2DPropInfo;
+        static isDefaultProperty: Prim2DPropInfo;
+        static isOutlineProperty: Prim2DPropInfo;
+        constructor(settings?: {
+            id?: string;
+            parent?: UIElement;
+            templateName?: string;
+            styleName?: string;
+            content?: any;
+            contentAlignment?: string;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        });
+        isPushed: boolean;
+        isDefault: boolean;
+        isOutline: boolean;
+        clickObservable: Observable<Button>;
+        _raiseClick(): void;
+        protected createVisualTree(): void;
+        private _isPushed;
+        private _isDefault;
+        private _isOutline;
+        private _clickObservable;
+        protected _position: Vector2;
+        normalEnabledBackground: IBrush2D;
+        normalDisabledBackground: IBrush2D;
+        normalMouseOverBackground: IBrush2D;
+        normalPushedBackground: IBrush2D;
+        normalEnabledBorder: IBrush2D;
+        normalDisabledBorder: IBrush2D;
+        normalMouseOverBorder: IBrush2D;
+        normalPushedBorder: IBrush2D;
+        defaultEnabledBackground: IBrush2D;
+        defaultDisabledBackground: IBrush2D;
+        defaultMouseOverBackground: IBrush2D;
+        defaultPushedBackground: IBrush2D;
+        defaultEnabledBorder: IBrush2D;
+        defaultDisabledBorder: IBrush2D;
+        defaultMouseOverBorder: IBrush2D;
+        defaultPushedBorder: IBrush2D;
+    }
+    class DefaultButtonRenderingTemplate extends UIElementRenderingTemplateBase {
+        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+        attach(owner: UIElement): void;
+        stateChange(): void;
+        private _rect;
+    }
+}
+
+declare module BABYLON {
+    abstract class Control extends UIElement {
+        static CONTROL_PROPCOUNT: number;
+        static backgroundProperty: Prim2DPropInfo;
+        static borderProperty: Prim2DPropInfo;
+        static borderThicknessProperty: Prim2DPropInfo;
+        static fontNameProperty: Prim2DPropInfo;
+        static foregroundProperty: Prim2DPropInfo;
+        constructor(settings: {
+            id?: string;
+            templateName?: string;
+            styleName?: string;
+        });
+        background: StringDictionary<IBrush2D>;
+        border: IBrush2D;
+        borderThickness: number;
+        fontName: string;
+        foreground: IBrush2D;
+        private _background;
+        private _border;
+        private _borderThickness;
+        private _fontName;
+        private _foreground;
+    }
+    abstract class ContentControl extends Control {
+        static CONTENTCONTROL_PROPCOUNT: number;
+        static contentProperty: Prim2DPropInfo;
+        static contentAlignmentProperty: Prim2DPropInfo;
+        constructor(settings?: {
+            id?: string;
+            templateName?: string;
+            styleName?: string;
+            content?: any;
+            contentAlignment?: string;
+        });
+        dispose(): boolean;
+        content: any;
+        contentAlignment: PrimitiveAlignment;
+        /**
+         * Check if there a contentAlignment specified (non null and not default)
+         */
+        _hasContentAlignment: boolean;
+        protected _contentUIElement: UIElement;
+        private _buildContentUIElement();
+        private _content;
+        private _contentAlignment;
+        private __contentUIElement;
+        protected _getChildren(): Array<UIElement>;
+    }
+}
+
+declare module BABYLON {
+    class Label extends Control {
+        static textProperty: Prim2DPropInfo;
+        constructor(settings?: {
+            id?: string;
+            parent?: UIElement;
+            templateName?: string;
+            styleName?: string;
+            text?: string;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        });
+        protected _position: Vector2;
+        private static _emptyArray;
+        protected _getChildren(): UIElement[];
+        protected createVisualTree(): void;
+        text: string;
+        private _text;
+    }
+    class DefaultLabelRenderingTemplate extends UIElementRenderingTemplateBase {
+        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+    }
+}
+
+declare module BABYLON {
+    interface ICommand {
+        canExecute(parameter: any): boolean;
+        execute(parameter: any): void;
+        canExecuteChanged: Observable<void>;
+    }
+    class Command implements ICommand {
+        constructor(execute: (p) => void, canExecute: (p) => boolean);
+        canExecute(parameter: any): boolean;
+        execute(parameter: any): void;
+        canExecuteChanged: Observable<void>;
+        private _lastCanExecuteResult;
+        private _execute;
+        private _canExecute;
+        private _canExecuteChanged;
+    }
+    abstract class UIElement extends SmartPropertyBase {
+        static UIELEMENT_PROPCOUNT: number;
+        static parentProperty: Prim2DPropInfo;
+        static widthProperty: Prim2DPropInfo;
+        static heightProperty: Prim2DPropInfo;
+        static minWidthProperty: Prim2DPropInfo;
+        static minHeightProperty: Prim2DPropInfo;
+        static maxWidthProperty: Prim2DPropInfo;
+        static maxHeightProperty: Prim2DPropInfo;
+        static actualWidthProperty: Prim2DPropInfo;
+        static actualHeightProperty: Prim2DPropInfo;
+        static marginProperty: Prim2DPropInfo;
+        static paddingProperty: Prim2DPropInfo;
+        static marginAlignmentProperty: Prim2DPropInfo;
+        static isEnabledProperty: Prim2DPropInfo;
+        static isFocusedProperty: Prim2DPropInfo;
+        static isMouseOverProperty: Prim2DPropInfo;
+        constructor(settings: {
+            id?: string;
+            parent?: UIElement;
+            templateName?: string;
+            styleName?: string;
+            minWidth?: number;
+            minHeight?: number;
+            maxWidth?: number;
+            maxHeight?: number;
+            width?: number;
+            height?: number;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        });
+        dispose(): boolean;
+        /**
+         * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
+         */
+        animations: Animation[];
+        /**
+         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
+         * Look at Sprite2D for more information
+         */
+        getAnimatables(): IAnimatable[];
+        ownerWindows: Window;
+        style: string;
+        /**
+         * A string that identifies the UIElement.
+         * The id is optional and there's possible collision with other UIElement's id as the uniqueness is not supported.
+         */
+        id: string;
+        /**
+         * Return a unique id automatically generated.
+         * This property is mainly used for serialization to ensure a perfect way of identifying a UIElement
+         */
+        uid: string;
+        hierarchyDepth: number;
+        parent: UIElement;
+        width: number;
+        height: number;
+        minWidth: number;
+        minHheight: number;
+        minHeight: number;
+        maxWidth: number;
+        maxHeight: number;
+        actualWidth: number;
+        actualHeight: number;
+        margin: PrimitiveThickness;
+        _hasMargin: boolean;
+        padding: PrimitiveThickness;
+        private _hasPadding;
+        marginAlignment: PrimitiveAlignment;
+        /**
+         * Check if there a marginAlignment specified (non null and not default)
+         */
+        _hasMarginAlignment: boolean;
+        isEnabled: boolean;
+        isFocused: boolean;
+        isMouseOver: boolean;
+        /**
+         * Check if a given flag is set
+         * @param flag the flag value
+         * @return true if set, false otherwise
+         */
+        _isFlagSet(flag: number): boolean;
+        /**
+         * Check if all given flags are set
+         * @param flags the flags ORed
+         * @return true if all the flags are set, false otherwise
+         */
+        _areAllFlagsSet(flags: number): boolean;
+        /**
+         * Check if at least one flag of the given flags is set
+         * @param flags the flags ORed
+         * @return true if at least one flag is set, false otherwise
+         */
+        _areSomeFlagsSet(flags: number): boolean;
+        /**
+         * Clear the given flags
+         * @param flags the flags to clear
+         */
+        _clearFlags(flags: number): void;
+        /**
+         * Set the given flags to true state
+         * @param flags the flags ORed to set
+         * @return the flags state before this call
+         */
+        _setFlags(flags: number): number;
+        /**
+         * Change the state of the given flags
+         * @param flags the flags ORed to change
+         * @param state true to set them, false to clear them
+         */
+        _changeFlags(flags: number, state: boolean): void;
+        private _assignTemplate(templateName);
+        _createVisualTree(): void;
+        _patchUIElement(ownerWindow: Window, parent: UIElement): void;
+        protected _getDataSource(): IPropertyChanged;
+        protected createVisualTree(): void;
+        protected visualPlaceholder: Prim2DBase;
+        protected visualTemplateRoot: Prim2DBase;
+        protected visualChildrenPlaceholder: Prim2DBase;
+        protected _position: Vector2;
+        protected abstract _getChildren(): Array<UIElement>;
+        static flagVisualToBuild: number;
+        protected _visualPlaceholder: Group2D;
+        protected _visualTemplateRoot: Prim2DBase;
+        protected _visualChildrenPlaceholder: Prim2DBase;
+        private _renderingTemplate;
+        private _parent;
+        private _hierarchyDepth;
+        private _flags;
+        private _style;
+        private _ownerWindow;
+        private _id;
+        private _uid;
+        private _actualWidth;
+        private _actualHeight;
+        private _minWidth;
+        private _minHeight;
+        private _maxWidth;
+        private _maxHeight;
+        private _width;
+        private _height;
+        private _margin;
+        private _padding;
+        private _marginAlignment;
+        private _isEnabled;
+        private _isFocused;
+        private _isMouseOver;
+    }
+    abstract class UIElementStyle {
+        abstract removeStyle(uiel: UIElement): any;
+        abstract applyStyle(uiel: UIElement): any;
+        name: string;
+    }
+    class UIElementStyleManager {
+        static getStyle(uiElType: string, styleName: string): UIElementStyle;
+        static registerStyle(uiElType: string, templateName: string, style: UIElementStyle): void;
+        static stylesByUIElement: StringDictionary<StringDictionary<UIElementStyle>>;
+        static DefaultStyleName: string;
+        private static _defaultStyleName;
+    }
+    class UIElementRenderingTemplateManager {
+        static getRenderingTemplate(uiElType: string, templateName: string): () => UIElementRenderingTemplateBase;
+        static registerRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase): void;
+        static renderingTemplatesByUIElement: StringDictionary<StringDictionary<() => UIElementRenderingTemplateBase>>;
+        static DefaultTemplateName: string;
+        private static _defaultTemplateName;
+    }
+    abstract class UIElementRenderingTemplateBase {
+        attach(owner: UIElement): void;
+        detach(): void;
+        owner: UIElement;
+        abstract createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+        private _owner;
+    }
+    function registerWindowRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase): (target: Object) => void;
+}
+
+declare module BABYLON {
+    class Window extends ContentControl {
+        static WINDOW_PROPCOUNT: number;
+        static leftProperty: Prim2DPropInfo;
+        static bottomProperty: Prim2DPropInfo;
+        static positionProperty: Prim2DPropInfo;
+        constructor(scene: Scene, settings?: {
+            id?: string;
+            templateName?: string;
+            styleName?: string;
+            content?: any;
+            contentAlignment?: string;
+            left?: number;
+            bottom?: number;
+            minWidth?: number;
+            minHeight?: number;
+            maxWidth?: number;
+            maxHeight?: number;
+            width?: number;
+            height?: number;
+            worldPosition?: Vector3;
+            worldRotation?: Quaternion;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        });
+        canvas: Canvas2D;
+        left: number;
+        bottom: number;
+        position: Vector2;
+        protected _position: Vector2;
+        protected createVisualTree(): void;
+        _registerVisualToBuild(uiel: UIElement): void;
+        private _overPrimChanged(oldPrim, newPrim);
+        private _canvasPreRender();
+        private _canvasDisposed();
+        private _canvas;
+        private _left;
+        private _bottom;
+        private _isWorldSpaceCanvas;
+        private _renderObserver;
+        private _disposeObserver;
+        private _UIElementVisualToBuildList;
+        private _mouseOverUIElement;
+        private static getScreenCanvas(scene);
+        private static _screenCanvasList;
+    }
+    class DefaultWindowRenderingTemplate extends UIElementRenderingTemplateBase {
+        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+    }
+}
+
+declare module BABYLON {
     /**
      * Stores 2D Bounding Information.
      * This class handles a circle area and a bounding rectangle one.
@@ -268,6 +695,10 @@ declare module BABYLON {
             id?: string;
             children?: Array<Prim2DBase>;
             size?: Size;
+            renderingPhase?: {
+                camera: Camera;
+                renderingGroupID: number;
+            };
             designSize?: Size;
             designUseHorizAxis?: boolean;
             isScreenSpace?: boolean;
@@ -617,6 +1048,7 @@ declare module BABYLON {
          *  - width: the width of the Canvas. you can alternatively use the size setting.
          *  - height: the height of the Canvas. you can alternatively use the size setting.
          *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
+         *  - renderingPhase: you can specify for which camera and which renderGroup this canvas will render to enable interleaving of 3D/2D content through the use of renderinGroup. As a rendering Group is rendered for each camera, you have to specify in the scope of which camera you want the canvas' render to be made. Default behavior will render the Canvas at the very end of the render loop.
          *  - designSize: if you want to set the canvas content based on fixed coordinates whatever the final canvas dimension would be, set this. For instance a designSize of 360*640 will give you the possibility to specify all the children element in this frame. The Canvas' true size will be the HTMLCanvas' size: for instance it could be 720*1280, then a uniform scale of 2 will be applied on the Canvas to keep the absolute coordinates working as expecting. If the ratios of the designSize and the true Canvas size are not the same, then the scale is computed following the designUseHorizAxis member by using either the size of the horizontal axis or the vertical axis.
          *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
@@ -643,6 +1075,10 @@ declare module BABYLON {
             width?: number;
             height?: number;
             size?: Size;
+            renderingPhase?: {
+                camera: Camera;
+                renderingGroupID: number;
+            };
             designSize?: Size;
             designUseHorizAxis?: boolean;
             cachingStrategy?: number;
@@ -3226,433 +3662,6 @@ declare module BABYLON {
         constructor(name: string, scene: Scene, canvas: Canvas2D);
         dispose(): void;
         private _canvas;
-    }
-}
-
-declare module BABYLON {
-    class Button extends ContentControl {
-        static BUTTON_PROPCOUNT: number;
-        static isPushedProperty: Prim2DPropInfo;
-        static isDefaultProperty: Prim2DPropInfo;
-        static isOutlineProperty: Prim2DPropInfo;
-        constructor(settings?: {
-            id?: string;
-            parent?: UIElement;
-            templateName?: string;
-            styleName?: string;
-            content?: any;
-            contentAlignment?: string;
-            marginTop?: number | string;
-            marginLeft?: number | string;
-            marginRight?: number | string;
-            marginBottom?: number | string;
-            margin?: number | string;
-            marginHAlignment?: number;
-            marginVAlignment?: number;
-            marginAlignment?: string;
-            paddingTop?: number | string;
-            paddingLeft?: number | string;
-            paddingRight?: number | string;
-            paddingBottom?: number | string;
-            padding?: string;
-        });
-        isPushed: boolean;
-        isDefault: boolean;
-        isOutline: boolean;
-        clickObservable: Observable<Button>;
-        _raiseClick(): void;
-        protected createVisualTree(): void;
-        private _isPushed;
-        private _isDefault;
-        private _isOutline;
-        private _clickObservable;
-        protected _position: Vector2;
-        normalEnabledBackground: IBrush2D;
-        normalDisabledBackground: IBrush2D;
-        normalMouseOverBackground: IBrush2D;
-        normalPushedBackground: IBrush2D;
-        normalEnabledBorder: IBrush2D;
-        normalDisabledBorder: IBrush2D;
-        normalMouseOverBorder: IBrush2D;
-        normalPushedBorder: IBrush2D;
-        defaultEnabledBackground: IBrush2D;
-        defaultDisabledBackground: IBrush2D;
-        defaultMouseOverBackground: IBrush2D;
-        defaultPushedBackground: IBrush2D;
-        defaultEnabledBorder: IBrush2D;
-        defaultDisabledBorder: IBrush2D;
-        defaultMouseOverBorder: IBrush2D;
-        defaultPushedBorder: IBrush2D;
-    }
-    class DefaultButtonRenderingTemplate extends UIElementRenderingTemplateBase {
-        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
-            root: Prim2DBase;
-            contentPlaceholder: Prim2DBase;
-        };
-        attach(owner: UIElement): void;
-        stateChange(): void;
-        private _rect;
-    }
-}
-
-declare module BABYLON {
-    abstract class Control extends UIElement {
-        static CONTROL_PROPCOUNT: number;
-        static backgroundProperty: Prim2DPropInfo;
-        static borderProperty: Prim2DPropInfo;
-        static borderThicknessProperty: Prim2DPropInfo;
-        static fontNameProperty: Prim2DPropInfo;
-        static foregroundProperty: Prim2DPropInfo;
-        constructor(settings: {
-            id?: string;
-            templateName?: string;
-            styleName?: string;
-        });
-        background: StringDictionary<IBrush2D>;
-        border: IBrush2D;
-        borderThickness: number;
-        fontName: string;
-        foreground: IBrush2D;
-        private _background;
-        private _border;
-        private _borderThickness;
-        private _fontName;
-        private _foreground;
-    }
-    abstract class ContentControl extends Control {
-        static CONTENTCONTROL_PROPCOUNT: number;
-        static contentProperty: Prim2DPropInfo;
-        static contentAlignmentProperty: Prim2DPropInfo;
-        constructor(settings?: {
-            id?: string;
-            templateName?: string;
-            styleName?: string;
-            content?: any;
-            contentAlignment?: string;
-        });
-        dispose(): boolean;
-        content: any;
-        contentAlignment: PrimitiveAlignment;
-        /**
-         * Check if there a contentAlignment specified (non null and not default)
-         */
-        _hasContentAlignment: boolean;
-        protected _contentUIElement: UIElement;
-        private _buildContentUIElement();
-        private _content;
-        private _contentAlignment;
-        private __contentUIElement;
-        protected _getChildren(): Array<UIElement>;
-    }
-}
-
-declare module BABYLON {
-    class Label extends Control {
-        static textProperty: Prim2DPropInfo;
-        constructor(settings?: {
-            id?: string;
-            parent?: UIElement;
-            templateName?: string;
-            styleName?: string;
-            text?: string;
-            marginTop?: number | string;
-            marginLeft?: number | string;
-            marginRight?: number | string;
-            marginBottom?: number | string;
-            margin?: number | string;
-            marginHAlignment?: number;
-            marginVAlignment?: number;
-            marginAlignment?: string;
-            paddingTop?: number | string;
-            paddingLeft?: number | string;
-            paddingRight?: number | string;
-            paddingBottom?: number | string;
-            padding?: string;
-        });
-        protected _position: Vector2;
-        private static _emptyArray;
-        protected _getChildren(): UIElement[];
-        protected createVisualTree(): void;
-        text: string;
-        private _text;
-    }
-    class DefaultLabelRenderingTemplate extends UIElementRenderingTemplateBase {
-        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
-            root: Prim2DBase;
-            contentPlaceholder: Prim2DBase;
-        };
-    }
-}
-
-declare module BABYLON {
-    interface ICommand {
-        canExecute(parameter: any): boolean;
-        execute(parameter: any): void;
-        canExecuteChanged: Observable<void>;
-    }
-    class Command implements ICommand {
-        constructor(execute: (p) => void, canExecute: (p) => boolean);
-        canExecute(parameter: any): boolean;
-        execute(parameter: any): void;
-        canExecuteChanged: Observable<void>;
-        private _lastCanExecuteResult;
-        private _execute;
-        private _canExecute;
-        private _canExecuteChanged;
-    }
-    abstract class UIElement extends SmartPropertyBase {
-        static UIELEMENT_PROPCOUNT: number;
-        static parentProperty: Prim2DPropInfo;
-        static widthProperty: Prim2DPropInfo;
-        static heightProperty: Prim2DPropInfo;
-        static minWidthProperty: Prim2DPropInfo;
-        static minHeightProperty: Prim2DPropInfo;
-        static maxWidthProperty: Prim2DPropInfo;
-        static maxHeightProperty: Prim2DPropInfo;
-        static actualWidthProperty: Prim2DPropInfo;
-        static actualHeightProperty: Prim2DPropInfo;
-        static marginProperty: Prim2DPropInfo;
-        static paddingProperty: Prim2DPropInfo;
-        static marginAlignmentProperty: Prim2DPropInfo;
-        static isEnabledProperty: Prim2DPropInfo;
-        static isFocusedProperty: Prim2DPropInfo;
-        static isMouseOverProperty: Prim2DPropInfo;
-        constructor(settings: {
-            id?: string;
-            parent?: UIElement;
-            templateName?: string;
-            styleName?: string;
-            minWidth?: number;
-            minHeight?: number;
-            maxWidth?: number;
-            maxHeight?: number;
-            width?: number;
-            height?: number;
-            marginTop?: number | string;
-            marginLeft?: number | string;
-            marginRight?: number | string;
-            marginBottom?: number | string;
-            margin?: number | string;
-            marginHAlignment?: number;
-            marginVAlignment?: number;
-            marginAlignment?: string;
-            paddingTop?: number | string;
-            paddingLeft?: number | string;
-            paddingRight?: number | string;
-            paddingBottom?: number | string;
-            padding?: string;
-        });
-        dispose(): boolean;
-        /**
-         * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
-         */
-        animations: Animation[];
-        /**
-         * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
-         * Look at Sprite2D for more information
-         */
-        getAnimatables(): IAnimatable[];
-        ownerWindows: Window;
-        style: string;
-        /**
-         * A string that identifies the UIElement.
-         * The id is optional and there's possible collision with other UIElement's id as the uniqueness is not supported.
-         */
-        id: string;
-        /**
-         * Return a unique id automatically generated.
-         * This property is mainly used for serialization to ensure a perfect way of identifying a UIElement
-         */
-        uid: string;
-        hierarchyDepth: number;
-        parent: UIElement;
-        width: number;
-        height: number;
-        minWidth: number;
-        minHheight: number;
-        minHeight: number;
-        maxWidth: number;
-        maxHeight: number;
-        actualWidth: number;
-        actualHeight: number;
-        margin: PrimitiveThickness;
-        _hasMargin: boolean;
-        padding: PrimitiveThickness;
-        private _hasPadding;
-        marginAlignment: PrimitiveAlignment;
-        /**
-         * Check if there a marginAlignment specified (non null and not default)
-         */
-        _hasMarginAlignment: boolean;
-        isEnabled: boolean;
-        isFocused: boolean;
-        isMouseOver: boolean;
-        /**
-         * Check if a given flag is set
-         * @param flag the flag value
-         * @return true if set, false otherwise
-         */
-        _isFlagSet(flag: number): boolean;
-        /**
-         * Check if all given flags are set
-         * @param flags the flags ORed
-         * @return true if all the flags are set, false otherwise
-         */
-        _areAllFlagsSet(flags: number): boolean;
-        /**
-         * Check if at least one flag of the given flags is set
-         * @param flags the flags ORed
-         * @return true if at least one flag is set, false otherwise
-         */
-        _areSomeFlagsSet(flags: number): boolean;
-        /**
-         * Clear the given flags
-         * @param flags the flags to clear
-         */
-        _clearFlags(flags: number): void;
-        /**
-         * Set the given flags to true state
-         * @param flags the flags ORed to set
-         * @return the flags state before this call
-         */
-        _setFlags(flags: number): number;
-        /**
-         * Change the state of the given flags
-         * @param flags the flags ORed to change
-         * @param state true to set them, false to clear them
-         */
-        _changeFlags(flags: number, state: boolean): void;
-        private _assignTemplate(templateName);
-        _createVisualTree(): void;
-        _patchUIElement(ownerWindow: Window, parent: UIElement): void;
-        protected _getDataSource(): IPropertyChanged;
-        protected createVisualTree(): void;
-        protected visualPlaceholder: Prim2DBase;
-        protected visualTemplateRoot: Prim2DBase;
-        protected visualChildrenPlaceholder: Prim2DBase;
-        protected _position: Vector2;
-        protected abstract _getChildren(): Array<UIElement>;
-        static flagVisualToBuild: number;
-        protected _visualPlaceholder: Group2D;
-        protected _visualTemplateRoot: Prim2DBase;
-        protected _visualChildrenPlaceholder: Prim2DBase;
-        private _renderingTemplate;
-        private _parent;
-        private _hierarchyDepth;
-        private _flags;
-        private _style;
-        private _ownerWindow;
-        private _id;
-        private _uid;
-        private _actualWidth;
-        private _actualHeight;
-        private _minWidth;
-        private _minHeight;
-        private _maxWidth;
-        private _maxHeight;
-        private _width;
-        private _height;
-        private _margin;
-        private _padding;
-        private _marginAlignment;
-        private _isEnabled;
-        private _isFocused;
-        private _isMouseOver;
-    }
-    abstract class UIElementStyle {
-        abstract removeStyle(uiel: UIElement): any;
-        abstract applyStyle(uiel: UIElement): any;
-        name: string;
-    }
-    class UIElementStyleManager {
-        static getStyle(uiElType: string, styleName: string): UIElementStyle;
-        static registerStyle(uiElType: string, templateName: string, style: UIElementStyle): void;
-        static stylesByUIElement: StringDictionary<StringDictionary<UIElementStyle>>;
-        static DefaultStyleName: string;
-        private static _defaultStyleName;
-    }
-    class UIElementRenderingTemplateManager {
-        static getRenderingTemplate(uiElType: string, templateName: string): () => UIElementRenderingTemplateBase;
-        static registerRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase): void;
-        static renderingTemplatesByUIElement: StringDictionary<StringDictionary<() => UIElementRenderingTemplateBase>>;
-        static DefaultTemplateName: string;
-        private static _defaultTemplateName;
-    }
-    abstract class UIElementRenderingTemplateBase {
-        attach(owner: UIElement): void;
-        detach(): void;
-        owner: UIElement;
-        abstract createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
-            root: Prim2DBase;
-            contentPlaceholder: Prim2DBase;
-        };
-        private _owner;
-    }
-    function registerWindowRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase): (target: Object) => void;
-}
-
-declare module BABYLON {
-    class Window extends ContentControl {
-        static WINDOW_PROPCOUNT: number;
-        static leftProperty: Prim2DPropInfo;
-        static bottomProperty: Prim2DPropInfo;
-        static positionProperty: Prim2DPropInfo;
-        constructor(scene: Scene, settings?: {
-            id?: string;
-            templateName?: string;
-            styleName?: string;
-            content?: any;
-            contentAlignment?: string;
-            left?: number;
-            bottom?: number;
-            minWidth?: number;
-            minHeight?: number;
-            maxWidth?: number;
-            maxHeight?: number;
-            width?: number;
-            height?: number;
-            worldPosition?: Vector3;
-            worldRotation?: Quaternion;
-            marginTop?: number | string;
-            marginLeft?: number | string;
-            marginRight?: number | string;
-            marginBottom?: number | string;
-            margin?: number | string;
-            marginHAlignment?: number;
-            marginVAlignment?: number;
-            marginAlignment?: string;
-            paddingTop?: number | string;
-            paddingLeft?: number | string;
-            paddingRight?: number | string;
-            paddingBottom?: number | string;
-            padding?: string;
-        });
-        canvas: Canvas2D;
-        left: number;
-        bottom: number;
-        position: Vector2;
-        protected _position: Vector2;
-        protected createVisualTree(): void;
-        _registerVisualToBuild(uiel: UIElement): void;
-        private _overPrimChanged(oldPrim, newPrim);
-        private _canvasPreRender();
-        private _canvasDisposed();
-        private _canvas;
-        private _left;
-        private _bottom;
-        private _isWorldSpaceCanvas;
-        private _renderObserver;
-        private _disposeObserver;
-        private _UIElementVisualToBuildList;
-        private _mouseOverUIElement;
-        private static getScreenCanvas(scene);
-        private static _screenCanvasList;
-    }
-    class DefaultWindowRenderingTemplate extends UIElementRenderingTemplateBase {
-        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
-            root: Prim2DBase;
-            contentPlaceholder: Prim2DBase;
-        };
     }
 }
 
