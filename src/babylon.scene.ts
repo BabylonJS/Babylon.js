@@ -63,6 +63,51 @@
     }
 
     /**
+     * This class is used by the onRenderingGroupObservable
+     */
+    export class RenderingGroupInfo {
+        /**
+         * The Scene that being rendered
+         */
+        scene: Scene;
+
+        /**
+         * The camera currently used for the rendering pass
+         */
+        camera: Camera;
+
+        /**
+         * The ID of the renderingGroup being processed
+         */
+        renderingGroupId: number;
+
+        /**
+         * The rendering stage, can be either STAGE_PRECLEAR, STAGE_PREOPAQUE, STAGE_PRETRANSPARENT, STAGE_POSTTRANSPARENT
+         */
+        renderStage: number;
+
+        /**
+         * Stage corresponding to the very first hook in the renderingGroup phase: before the render buffer may be cleared
+         */
+        static STAGE_PRECLEAR = 1;
+
+        /**
+         * Called before opaque object are rendered
+         */
+        static STAGE_PREOPAQUE = 2;
+
+        /**
+         * Called after the opaque objects are rendered and before the transparent ones
+         */
+        static STAGE_PRETRANSPARENT = 3;
+
+        /**
+         * Called after the transparent object are rendered, last hook of the renderingGroup phase
+         */
+        static STAGE_POSTTRANSPARENT = 4;
+    }
+
+    /**
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
@@ -233,6 +278,13 @@
         * @type {BABYLON.Observable}
         */
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
+
+        /**
+         * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
+         * The RenderinGroupInfo class contains all the information about the context in which the observable is called
+         * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
+         */
+        public onRenderingGroupObservable = new Observable<RenderingGroupInfo>();
 
         // Animations
         public animations: Animation[] = [];
