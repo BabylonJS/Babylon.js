@@ -125,6 +125,10 @@
 
                 this._currentIndex = index;
 
+                if (observable && !renderingGroup) {
+                    renderingGroup = this._fetchRenderingGroup(index);
+                }
+
                 if (renderingGroup) {
                     let renderingGroupMask = 0;
 
@@ -191,6 +195,12 @@
             var mesh = subMesh.getMesh();
             var renderingGroupId = mesh.renderingGroupId || 0;
 
+            this._fetchRenderingGroup(renderingGroupId);
+
+            this._renderingGroups[renderingGroupId].dispatch(subMesh);
+        }
+
+        private _fetchRenderingGroup(renderingGroupId: number): RenderingGroup {
             if (!this._renderingGroups[renderingGroupId]) {
                 this._renderingGroups[renderingGroupId] = new RenderingGroup(renderingGroupId, this._scene,
                     this._customOpaqueSortCompareFn[renderingGroupId],
@@ -199,7 +209,7 @@
                 );
             }
 
-            this._renderingGroups[renderingGroupId].dispatch(subMesh);
+            return this._renderingGroups[renderingGroupId];
         }
 
         /**
