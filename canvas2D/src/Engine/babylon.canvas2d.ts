@@ -70,6 +70,7 @@
             id?: string,
             children?: Array<Prim2DBase>,
             size?: Size,
+            renderingPhase?: { camera: Camera, renderingGroupID: number },
             designSize?: Size,
             designUseHorizAxis?: boolean,
             isScreenSpace?: boolean,
@@ -183,10 +184,22 @@
             });
 
             if (this._isScreenSpace) {
-                this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
-                    this._engine.clear(null, false, true, true);
-                    this._render();
-                });
+                if (settings.renderingPhase) {
+                    if (!settings.renderingPhase.camera || settings.renderingPhase.renderingGroupID==null) {
+                        throw Error("You have to specify a valid camera and renderingGroup");
+                    }
+                    this._scene.onRenderingGroupObservable.add((e, s) => {
+                        if (this._scene.activeCamera === settings.renderingPhase.camera) {
+                            this._engine.clear(null, false, true, true);
+                            this._render();
+                        }
+                    }, Math.pow(2, settings.renderingPhase.renderingGroupID));
+                } else {
+                    this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
+                        this._engine.clear(null, false, true, true);
+                        this._render();
+                    });
+                }
             } else {
                 this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add((d, s) => {
                     this._render();
@@ -1799,6 +1812,7 @@
          *  - width: the width of the Canvas. you can alternatively use the size setting.
          *  - height: the height of the Canvas. you can alternatively use the size setting.
          *  - size: the Size of the canvas. Alternatively the width and height properties can be set. If null two behaviors depend on the cachingStrategy: if it's CACHESTRATEGY_CACHECANVAS then it will always auto-fit the rendering device, in all the other modes it will fit the content of the Canvas
+         *  - renderingPhase: you can specify for which camera and which renderGroup this canvas will render to enable interleaving of 3D/2D content through the use of renderinGroup. As a rendering Group is rendered for each camera, you have to specify in the scope of which camera you want the canvas' render to be made. Default behavior will render the Canvas at the very end of the render loop.
          *  - designSize: if you want to set the canvas content based on fixed coordinates whatever the final canvas dimension would be, set this. For instance a designSize of 360*640 will give you the possibility to specify all the children element in this frame. The Canvas' true size will be the HTMLCanvas' size: for instance it could be 720*1280, then a uniform scale of 2 will be applied on the Canvas to keep the absolute coordinates working as expecting. If the ratios of the designSize and the true Canvas size are not the same, then the scale is computed following the designUseHorizAxis member by using either the size of the horizontal axis or the vertical axis.
          *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
@@ -1826,6 +1840,7 @@
             width?: number,
             height?: number,
             size?: Size,
+            renderingPhase?: {camera: Camera, renderingGroupID: number },
             designSize?: Size,
             designUseHorizAxis?: boolean,
             cachingStrategy?: number,
