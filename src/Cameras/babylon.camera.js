@@ -37,6 +37,7 @@ var BABYLON;
             this._projectionMatrix = new BABYLON.Matrix();
             this._postProcesses = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
+            this._webvrViewMatrix = BABYLON.Matrix.Identity();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._globalPosition = BABYLON.Vector3.Zero();
             this._refreshFrustumPlanes = true;
@@ -462,16 +463,18 @@ var BABYLON;
                     break;
                 case Camera.RIG_MODE_WEBVR:
                     if (rigParams.vrDisplay) {
-                        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
-                        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+                        //var leftEye = rigParams.vrDisplay.getEyeParameters('left');
+                        //var rightEye = rigParams.vrDisplay.getEyeParameters('right');
                         this._rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
-                        this._rigCameras[0].setCameraRigParameter("vrFieldOfView", leftEye.fieldOfView);
-                        this._rigCameras[0].setCameraRigParameter("vrOffsetMatrix", BABYLON.Matrix.Translation(-leftEye.offset[0], leftEye.offset[1], -leftEye.offset[2]));
+                        this._rigCameras[0].setCameraRigParameter("left", true);
+                        this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);
+                        //this._rigCameras[0].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-leftEye.offset[0], leftEye.offset[1], -leftEye.offset[2]));
                         this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
                         this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
+                        //this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
                         this._rigCameras[1].viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0);
-                        this._rigCameras[1].setCameraRigParameter("vrFieldOfView", rightEye.fieldOfView);
-                        this._rigCameras[1].setCameraRigParameter("vrOffsetMatrix", BABYLON.Matrix.Translation(-rightEye.offset[0], rightEye.offset[1], -rightEye.offset[2]));
+                        this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
+                        //this._rigCameras[1].setCameraRigParameter("vrOffsetMatrix", Matrix.Translation(-rightEye.offset[0], rightEye.offset[1], -rightEye.offset[2]));
                         this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                     }
@@ -487,9 +490,23 @@ var BABYLON;
             return this._projectionMatrix;
         };
         Camera.prototype._getWebVRProjectionMatrix = function () {
-            BABYLON.Matrix.PerspectiveFovWebVRToRef(this._cameraRigParams['vrFieldOfView'], this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
-            this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams['vrOffsetMatrix'], this._projectionMatrix);
+            var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
+            //babylon compatible matrix
+            [8, 9, 10, 11].forEach(function (num) {
+                projectionArray[num] *= -1;
+            });
+            BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
             return this._projectionMatrix;
+        };
+        //Can be used, but we'll use the free camera's view matrix calculation
+        Camera.prototype._getWebVRViewMatrix = function () {
+            var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
+            //babylon compatible matrix
+            [8, 9, 10, 11].forEach(function (num) {
+                projectionArray[num] *= -1;
+            });
+            BABYLON.Matrix.FromArrayToRef(projectionArray, 0, this._webvrViewMatrix);
+            return this._webvrViewMatrix;
         };
         Camera.prototype.setCameraRigParameter = function (name, value) {
             if (!this._cameraRigParams) {
