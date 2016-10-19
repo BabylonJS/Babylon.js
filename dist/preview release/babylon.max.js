@@ -15730,6 +15730,7 @@ var BABYLON;
             this._customOpaqueSortCompareFn = {};
             this._customAlphaTestSortCompareFn = {};
             this._customTransparentSortCompareFn = {};
+            this._renderinGroupInfo = null;
             this._scene = scene;
             for (var i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
                 this._autoClearDepthStencil[i] = true;
@@ -15789,6 +15790,17 @@ var BABYLON;
             }
         };
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
+            // Check if there's at least on observer on the onRenderingGroupObservable and initialize things to fire it
+            var observable = this._scene.onRenderingGroupObservable.hasObservers() ? this._scene.onRenderingGroupObservable : null;
+            var info = null;
+            if (observable) {
+                if (!this._renderinGroupInfo) {
+                    this._renderinGroupInfo = new BABYLON.RenderingGroupInfo();
+                }
+                info = this._renderinGroupInfo;
+                info.scene = this._scene;
+                info.camera = this._scene.activeCamera;
+            }
             this._currentActiveMeshes = activeMeshes;
             this._currentRenderParticles = renderParticles;
             this._currentRenderSprites = renderSprites;
@@ -15798,20 +15810,52 @@ var BABYLON;
                 var needToStepBack = false;
                 this._currentIndex = index;
                 if (renderingGroup) {
+                    var renderingGroupMask = 0;
+                    // Fire PRECLEAR stage
+                    if (observable) {
+                        renderingGroupMask = Math.pow(2, index);
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRECLEAR;
+                        info.renderingGroupId = index;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
+                    // Clear depth/stencil if needed
                     if (this._autoClearDepthStencil[index]) {
                         this._clearDepthStencilBuffer();
                     }
+                    // Fire PREOPAQUE stage
+                    if (observable) {
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PREOPAQUE;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
                     if (!renderingGroup.onBeforeTransparentRendering) {
                         renderingGroup.onBeforeTransparentRendering = this._renderSpritesAndParticles.bind(this);
+                    }
+                    // Fire PRETRANSPARENT stage
+                    if (observable) {
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRETRANSPARENT;
+                        observable.notifyObservers(info, renderingGroupMask);
                     }
                     if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
                         needToStepBack = true;
                         this._renderSpritesAndParticles();
                     }
+                    // Fire POSTTRANSPARENT stage
+                    if (observable) {
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
                 }
                 else {
                     this._renderSpritesAndParticles();
+                    if (observable) {
+                        var renderingGroupMask = Math.pow(2, index);
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRECLEAR;
+                        info.renderingGroupId = index;
+                        observable.notifyObservers(info, renderingGroupMask);
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
                 }
                 if (needToStepBack) {
                     index--;
@@ -16212,6 +16256,35 @@ var BABYLON;
     }(PointerInfoBase));
     BABYLON.PointerInfo = PointerInfo;
     /**
+     * This class is used by the onRenderingGroupObservable
+     */
+    var RenderingGroupInfo = (function () {
+        function RenderingGroupInfo() {
+        }
+        /**
+         * Stage corresponding to the very first hook in the renderingGroup phase: before the render buffer may be cleared
+         * This stage will be fired no matter what
+         */
+        RenderingGroupInfo.STAGE_PRECLEAR = 1;
+        /**
+         * Called before opaque object are rendered.
+         * This stage will be fired only if there's 3D Opaque content to render
+         */
+        RenderingGroupInfo.STAGE_PREOPAQUE = 2;
+        /**
+         * Called after the opaque objects are rendered and before the transparent ones
+         * This stage will be fired only if there's 3D transparent content to render
+         */
+        RenderingGroupInfo.STAGE_PRETRANSPARENT = 3;
+        /**
+         * Called after the transparent object are rendered, last hook of the renderingGroup phase
+         * This stage will be fired no matter what
+         */
+        RenderingGroupInfo.STAGE_POSTTRANSPARENT = 4;
+        return RenderingGroupInfo;
+    }());
+    BABYLON.RenderingGroupInfo = RenderingGroupInfo;
+    /**
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
@@ -16303,6 +16376,12 @@ var BABYLON;
             * @type {BABYLON.Observable}
             */
             this.onMeshRemovedObservable = new BABYLON.Observable();
+            /**
+             * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
+             * The RenderinGroupInfo class contains all the information about the context in which the observable is called
+             * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
+             */
+            this.onRenderingGroupObservable = new BABYLON.Observable();
             // Animations
             this.animations = [];
             /**

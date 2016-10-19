@@ -7,6 +7,7 @@ var BABYLON;
             this._customOpaqueSortCompareFn = {};
             this._customAlphaTestSortCompareFn = {};
             this._customTransparentSortCompareFn = {};
+            this._renderinGroupInfo = null;
             this._scene = scene;
             for (var i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
                 this._autoClearDepthStencil[i] = true;
@@ -66,6 +67,17 @@ var BABYLON;
             }
         };
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
+            // Check if there's at least on observer on the onRenderingGroupObservable and initialize things to fire it
+            var observable = this._scene.onRenderingGroupObservable.hasObservers() ? this._scene.onRenderingGroupObservable : null;
+            var info = null;
+            if (observable) {
+                if (!this._renderinGroupInfo) {
+                    this._renderinGroupInfo = new BABYLON.RenderingGroupInfo();
+                }
+                info = this._renderinGroupInfo;
+                info.scene = this._scene;
+                info.camera = this._scene.activeCamera;
+            }
             this._currentActiveMeshes = activeMeshes;
             this._currentRenderParticles = renderParticles;
             this._currentRenderSprites = renderSprites;
@@ -75,20 +87,52 @@ var BABYLON;
                 var needToStepBack = false;
                 this._currentIndex = index;
                 if (renderingGroup) {
+                    var renderingGroupMask = 0;
+                    // Fire PRECLEAR stage
+                    if (observable) {
+                        renderingGroupMask = Math.pow(2, index);
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRECLEAR;
+                        info.renderingGroupId = index;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
+                    // Clear depth/stencil if needed
                     if (this._autoClearDepthStencil[index]) {
                         this._clearDepthStencilBuffer();
                     }
+                    // Fire PREOPAQUE stage
+                    if (observable) {
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PREOPAQUE;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
                     if (!renderingGroup.onBeforeTransparentRendering) {
                         renderingGroup.onBeforeTransparentRendering = this._renderSpritesAndParticles.bind(this);
+                    }
+                    // Fire PRETRANSPARENT stage
+                    if (observable) {
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRETRANSPARENT;
+                        observable.notifyObservers(info, renderingGroupMask);
                     }
                     if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
                         needToStepBack = true;
                         this._renderSpritesAndParticles();
                     }
+                    // Fire POSTTRANSPARENT stage
+                    if (observable) {
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
                 }
                 else {
                     this._renderSpritesAndParticles();
+                    if (observable) {
+                        var renderingGroupMask = Math.pow(2, index);
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRECLEAR;
+                        info.renderingGroupId = index;
+                        observable.notifyObservers(info, renderingGroupMask);
+                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
                 }
                 if (needToStepBack) {
                     index--;

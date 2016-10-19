@@ -87,6 +87,35 @@ var BABYLON;
     }(PointerInfoBase));
     BABYLON.PointerInfo = PointerInfo;
     /**
+     * This class is used by the onRenderingGroupObservable
+     */
+    var RenderingGroupInfo = (function () {
+        function RenderingGroupInfo() {
+        }
+        /**
+         * Stage corresponding to the very first hook in the renderingGroup phase: before the render buffer may be cleared
+         * This stage will be fired no matter what
+         */
+        RenderingGroupInfo.STAGE_PRECLEAR = 1;
+        /**
+         * Called before opaque object are rendered.
+         * This stage will be fired only if there's 3D Opaque content to render
+         */
+        RenderingGroupInfo.STAGE_PREOPAQUE = 2;
+        /**
+         * Called after the opaque objects are rendered and before the transparent ones
+         * This stage will be fired only if there's 3D transparent content to render
+         */
+        RenderingGroupInfo.STAGE_PRETRANSPARENT = 3;
+        /**
+         * Called after the transparent object are rendered, last hook of the renderingGroup phase
+         * This stage will be fired no matter what
+         */
+        RenderingGroupInfo.STAGE_POSTTRANSPARENT = 4;
+        return RenderingGroupInfo;
+    }());
+    BABYLON.RenderingGroupInfo = RenderingGroupInfo;
+    /**
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
@@ -178,6 +207,12 @@ var BABYLON;
             * @type {BABYLON.Observable}
             */
             this.onMeshRemovedObservable = new BABYLON.Observable();
+            /**
+             * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
+             * The RenderinGroupInfo class contains all the information about the context in which the observable is called
+             * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
+             */
+            this.onRenderingGroupObservable = new BABYLON.Observable();
             // Animations
             this.animations = [];
             /**
