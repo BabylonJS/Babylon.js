@@ -179,7 +179,8 @@
 
                         info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
                         observable.notifyObservers(info, renderingGroupMask);
-                    }                }
+                    }
+                }
 
                 if (needToStepBack) {
                     index--;
