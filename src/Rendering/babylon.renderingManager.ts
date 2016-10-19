@@ -170,6 +170,16 @@
                     }
                 } else {
                     this._renderSpritesAndParticles();
+
+                    if (observable) {
+                        let renderingGroupMask = Math.pow(2, index);
+                        info.renderStage = RenderingGroupInfo.STAGE_PRECLEAR;
+                        info.renderingGroupId = index;
+                        observable.notifyObservers(info, renderingGroupMask);
+
+                        info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
+                        observable.notifyObservers(info, renderingGroupMask);
+                    }
                 }
 
                 if (needToStepBack) {
