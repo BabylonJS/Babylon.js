@@ -5821,9 +5821,9 @@ var BABYLON;
     (function (Internals) {
         var _AlphaState = (function () {
             function _AlphaState() {
-                this._isAlphaBlendDirty = true;
-                this._isBlendFunctionParametersDirty = true;
-                this._alphaBlend = true;
+                this._isAlphaBlendDirty = false;
+                this._isBlendFunctionParametersDirty = false;
+                this._alphaBlend = false;
                 this._blendFunctionParameters = new Array(4);
             }
             Object.defineProperty(_AlphaState.prototype, "isDirty", {
@@ -5901,12 +5901,12 @@ var BABYLON;
     (function (Internals) {
         var _DepthCullingState = (function () {
             function _DepthCullingState() {
-                this._isDepthTestDirty = true;
-                this._isDepthMaskDirty = true;
-                this._isDepthFuncDirty = true;
-                this._isCullFaceDirty = true;
-                this._isCullDirty = true;
-                this._isZOffsetDirty = true;
+                this._isDepthTestDirty = false;
+                this._isDepthMaskDirty = false;
+                this._isDepthFuncDirty = false;
+                this._isCullFaceDirty = false;
+                this._isCullDirty = false;
+                this._isZOffsetDirty = false;
             }
             Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
                 get: function () {
@@ -6076,10 +6076,10 @@ var BABYLON;
     (function (Internals) {
         var _StencilState = (function () {
             function _StencilState() {
-                this._isStencilTestDirty = true;
-                this._isStencilMaskDirty = true;
-                this._isStencilFuncDirty = true;
-                this._isStencilOpDirty = true;
+                this._isStencilTestDirty = false;
+                this._isStencilMaskDirty = false;
+                this._isStencilFuncDirty = false;
+                this._isStencilOpDirty = false;
                 this.reset();
             }
             Object.defineProperty(_StencilState.prototype, "isDirty", {

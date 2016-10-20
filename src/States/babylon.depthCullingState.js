@@ -4,12 +4,12 @@ var BABYLON;
     (function (Internals) {
         var _DepthCullingState = (function () {
             function _DepthCullingState() {
-                this._isDepthTestDirty = true;
-                this._isDepthMaskDirty = true;
-                this._isDepthFuncDirty = true;
-                this._isCullFaceDirty = true;
-                this._isCullDirty = true;
-                this._isZOffsetDirty = true;
+                this._isDepthTestDirty = false;
+                this._isDepthMaskDirty = false;
+                this._isDepthFuncDirty = false;
+                this._isCullFaceDirty = false;
+                this._isCullDirty = false;
+                this._isZOffsetDirty = false;
             }
             Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
                 get: function () {

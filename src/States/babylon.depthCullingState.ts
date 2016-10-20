@@ -1,11 +1,11 @@
 ﻿module BABYLON.Internals {
     export class _DepthCullingState {
-        private _isDepthTestDirty = true;
-        private _isDepthMaskDirty = true;
-        private _isDepthFuncDirty = true;
-        private _isCullFaceDirty = true;
-        private _isCullDirty = true;
-        private _isZOffsetDirty = true;
+        private _isDepthTestDirty = false;
+        private _isDepthMaskDirty = false;
+        private _isDepthFuncDirty = false;
+        private _isCullFaceDirty = false;
+        private _isCullDirty = false;
+        private _isZOffsetDirty = false;
 
         private _depthTest: boolean;
         private _depthMask: boolean;
