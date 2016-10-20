@@ -14,6 +14,13 @@
         private _cullFace: number;
         private _zOffset: number;
 
+        /**
+         * Initializes the state.
+         */
+        public constructor() {
+            this.reset();
+        }
+
         public get isDirty(): boolean {
             return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
         }
