@@ -1,9 +1,9 @@
 ﻿module BABYLON.Internals {
     export class _StencilState {
-        private _isStencilTestDirty = true;
-        private _isStencilMaskDirty = true;
-        private _isStencilFuncDirty = true;
-        private _isStencilOpDirty = true;
+        private _isStencilTestDirty = false;
+        private _isStencilMaskDirty = false;
+        private _isStencilFuncDirty = false;
+        private _isStencilOpDirty = false;
 
         private _stencilTest: boolean;
 

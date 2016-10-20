@@ -4,10 +4,10 @@ var BABYLON;
     (function (Internals) {
         var _StencilState = (function () {
             function _StencilState() {
-                this._isStencilTestDirty = true;
-                this._isStencilMaskDirty = true;
-                this._isStencilFuncDirty = true;
-                this._isStencilOpDirty = true;
+                this._isStencilTestDirty = false;
+                this._isStencilMaskDirty = false;
+                this._isStencilFuncDirty = false;
+                this._isStencilOpDirty = false;
                 this.reset();
             }
             Object.defineProperty(_StencilState.prototype, "isDirty", {
