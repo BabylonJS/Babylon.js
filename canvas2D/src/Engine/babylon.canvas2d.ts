@@ -188,7 +188,7 @@
                     if (!settings.renderingPhase.camera || settings.renderingPhase.renderingGroupID==null) {
                         throw Error("You have to specify a valid camera and renderingGroup");
                     }
-                    this._scene.onRenderingGroupObservable.add((e, s) => {
+                    this._renderingGroupObserver = this._scene.onRenderingGroupObservable.add((e, s) => {
                         if (this._scene.activeCamera === settings.renderingPhase.camera) {
                             this._engine.clear(null, false, true, true);
                             this._render();
@@ -841,6 +841,11 @@
 
             if (this.interactionEnabled) {
                 this._setupInteraction(false);
+            }
+
+            if (this._renderingGroupObserver) {
+                this._scene.onRenderingGroupObservable.remove(this._renderingGroupObserver);
+                this._renderingGroupObserver = null;
             }
 
             if (this._beforeRenderObserver) {
