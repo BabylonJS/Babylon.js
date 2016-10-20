@@ -1,8 +1,8 @@
 ﻿module BABYLON.Internals {
     export class _AlphaState {
-        private _isAlphaBlendDirty = false;
-        private _isBlendFunctionParametersDirty = false;
-        private _alphaBlend = false;
+        private _isAlphaBlendDirty = true;
+        private _isBlendFunctionParametersDirty = true;
+        private _alphaBlend = true;
         private _blendFunctionParameters = new Array<number>(4);
 
         public get isDirty(): boolean {
