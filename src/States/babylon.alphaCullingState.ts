@@ -5,6 +5,13 @@
         private _alphaBlend = false;
         private _blendFunctionParameters = new Array<number>(4);
 
+        /**
+         * Initializes the state.
+         */
+        public constructor() {
+            this.reset();
+        }
+
         public get isDirty(): boolean {
             return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
         }
