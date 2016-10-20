@@ -13,6 +13,8 @@ uniform vec4 gridControl;
 varying vec3 vPosition;
 varying vec3 vNormal;
 
+#include<fogFragmentDeclaration>
+
 float getVisibility(float position) {
     // Major grid line every Frequency defined in material.
     float majorGridFrequency = gridControl.y;
@@ -82,13 +84,17 @@ void main(void) {
     float grid = clamp(x + y + z, 0., 1.);
     
     // Create the color.
-    vec3 gridColor = mix(mainColor, lineColor, grid);
+    vec3 color = mix(mainColor, lineColor, grid);
+
+#ifdef FOG
+    #include<fogFragment>
+#endif
 
 #ifdef TRANSPARENT
-    float opacity = clamp(grid, 0.08, gridControl.w);
-    gl_FragColor = vec4(gridColor.rgb, opacity);
+    float opacity = clamp(grid, 0.08, color.w);
+    gl_FragColor = vec4(color.rgb, opacity);
 #else
     // Apply the color.
-    gl_FragColor = vec4(gridColor.rgb, 1.0);
+    gl_FragColor = vec4(color.rgb, 1.0);
 #endif
 }

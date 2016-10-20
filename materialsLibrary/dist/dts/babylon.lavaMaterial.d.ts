@@ -11,6 +11,7 @@ declare module BABYLON {
         private _lastTime;
         diffuseColor: Color3;
         disableLighting: boolean;
+        maxSimultaneousLights: number;
         private _worldViewProjectionMatrix;
         private _scaledDiffuse;
         private _renderId;
