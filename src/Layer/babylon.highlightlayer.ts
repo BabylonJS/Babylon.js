@@ -630,19 +630,22 @@
          * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
          * @param mesh The mesh to exclude from the highlight layer
          */
-        public addExcludedMesh(mesh: Mesh) {
-            if (mesh instanceof BABYLON.InstancedMesh) {
-              mesh = (<BABYLON.InstancedMesh> mesh).sourceMesh;
+        public addExcludedMesh(mesh: AbstractMesh) {
+            var sourceMesh: Mesh;
+            if (mesh instanceof InstancedMesh) {
+              sourceMesh = (<InstancedMesh> mesh).sourceMesh;
+            } else {
+              sourceMesh = <Mesh> mesh;
             }
 
-            var meshExcluded = this._excludedMeshes[mesh.id];
+            var meshExcluded = this._excludedMeshes[sourceMesh.id];
             if (!meshExcluded) {
-                this._excludedMeshes[mesh.id] = {
-                    mesh: mesh,
-                    beforeRender: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
+                this._excludedMeshes[sourceMesh.id] = {
+                    mesh: sourceMesh,
+                    beforeRender: sourceMesh.onBeforeRenderObservable.add((mesh: Mesh) => {
                         mesh.getEngine().setStencilBuffer(false);
                     }),
-                    afterRender: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
+                    afterRender: sourceMesh.onAfterRenderObservable.add((mesh: Mesh) => {
                         mesh.getEngine().setStencilBuffer(true);
                     }),
                 }
@@ -653,18 +656,21 @@
           * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
           * @param mesh The mesh to highlight
           */
-        public removeExcludedMesh(mesh: Mesh) {
-            if (mesh instanceof BABYLON.InstancedMesh) {
-              mesh = (<BABYLON.InstancedMesh> mesh).sourceMesh;
+        public removeExcludedMesh(mesh: AbstractMesh) {
+            var sourceMesh: Mesh;
+            if (mesh instanceof InstancedMesh) {
+              sourceMesh = (<InstancedMesh> mesh).sourceMesh;
+            } else {
+              sourceMesh = <Mesh> mesh;
             }
 
-            var meshExcluded = this._excludedMeshes[mesh.id];
+            var meshExcluded = this._excludedMeshes[sourceMesh.id];
             if (meshExcluded) {
-                mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
-                mesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
+                sourceMesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
+                sourceMesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
             }
 
-            this._excludedMeshes[mesh.id] = undefined;
+            this._excludedMeshes[sourceMesh.id] = undefined;
         }
 
         /**
@@ -673,21 +679,24 @@
          * @param color The color of the highlight
          * @param glowEmissiveOnly Extract the glow from the emissive texture
          */
-        public addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly = false) {
-            if (mesh instanceof BABYLON.InstancedMesh) {
-              mesh = (<BABYLON.InstancedMesh> mesh).sourceMesh;
+        public addMesh(mesh: AbstractMesh, color: Color3, glowEmissiveOnly = false) {
+            var sourceMesh: Mesh;
+            if (mesh instanceof InstancedMesh) {
+              sourceMesh = (<InstancedMesh> mesh).sourceMesh;
+            } else {
+              sourceMesh = <Mesh> mesh;
             }
 
-            var meshHighlight = this._meshes[mesh.id];
+            var meshHighlight = this._meshes[sourceMesh.id];
             if (meshHighlight) {
                 meshHighlight.color = color;
             }
             else {
-                this._meshes[mesh.id] = {
-                    mesh: mesh,
+                this._meshes[sourceMesh.id] = {
+                    mesh: sourceMesh,
                     color: color,
                     // Lambda required for capture due to Observable this context
-                    observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
+                    observerHighlight: sourceMesh.onBeforeRenderObservable.add((mesh: Mesh) => {
                         if (this._excludedMeshes[mesh.id]) {
                             this.defaultStencilReference(mesh);
                         }
@@ -695,7 +704,7 @@
                             mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
                         }
                     }),
-                    observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference),
+                    observerDefault: sourceMesh.onAfterRenderObservable.add(this.defaultStencilReference),
                     glowEmissiveOnly: glowEmissiveOnly
                 };
             }
@@ -707,18 +716,21 @@
          * Remove a mesh from the highlight layer in order to make it stop glowing.
          * @param mesh The mesh to highlight
          */
-        public removeMesh(mesh: Mesh) {
-            if (mesh instanceof BABYLON.InstancedMesh) {
-              mesh = (<BABYLON.InstancedMesh> mesh).sourceMesh;
+        public removeMesh(mesh: AbstractMesh) {
+            var sourceMesh: Mesh;
+            if (mesh instanceof InstancedMesh) {
+              sourceMesh = (<InstancedMesh> mesh).sourceMesh;
+            } else {
+              sourceMesh = <Mesh> mesh;
             }
             
-            var meshHighlight = this._meshes[mesh.id];
+            var meshHighlight = this._meshes[sourceMesh.id];
             if (meshHighlight) {
-                mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
-                mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
+                sourceMesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
+                sourceMesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
             }
 
-            this._meshes[mesh.id] = undefined;
+            this._meshes[sourceMesh.id] = undefined;
 
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
