@@ -631,7 +631,9 @@
          * @param mesh The mesh to exclude from the highlight layer
          */
         public addExcludedMesh(mesh: Mesh) {
-            mesh = mesh instanceof BABYLON.InstancedMesh ? mesh.sourceMesh : mesh;
+            if (mesh instanceof BABYLON.InstancedMesh) {
+              mesh = (<BABYLON.InstancedMesh> mesh).sourceMesh;
+            }
 
             var meshExcluded = this._excludedMeshes[mesh.id];
             if (!meshExcluded) {
@@ -652,7 +654,9 @@
           * @param mesh The mesh to highlight
           */
         public removeExcludedMesh(mesh: Mesh) {
-            mesh = mesh instanceof BABYLON.InstancedMesh ? mesh.sourceMesh : mesh;
+            if (mesh instanceof BABYLON.InstancedMesh) {
+              mesh = (<BABYLON.InstancedMesh> mesh).sourceMesh;
+            }
 
             var meshExcluded = this._excludedMeshes[mesh.id];
             if (meshExcluded) {
@@ -670,7 +674,9 @@
          * @param glowEmissiveOnly Extract the glow from the emissive texture
          */
         public addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly = false) {
-            mesh = mesh instanceof BABYLON.InstancedMesh ? mesh.sourceMesh : mesh;
+            if (mesh instanceof BABYLON.InstancedMesh) {
+              mesh = (<BABYLON.InstancedMesh> mesh).sourceMesh;
+            }
 
             var meshHighlight = this._meshes[mesh.id];
             if (meshHighlight) {
@@ -702,7 +708,9 @@
          * @param mesh The mesh to highlight
          */
         public removeMesh(mesh: Mesh) {
-            mesh = mesh instanceof BABYLON.InstancedMesh ? mesh.sourceMesh : mesh;
+            if (mesh instanceof BABYLON.InstancedMesh) {
+              mesh = (<BABYLON.InstancedMesh> mesh).sourceMesh;
+            }
             
             var meshHighlight = this._meshes[mesh.id];
             if (meshHighlight) {
