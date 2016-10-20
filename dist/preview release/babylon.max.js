@@ -5821,9 +5821,9 @@ var BABYLON;
     (function (Internals) {
         var _AlphaState = (function () {
             function _AlphaState() {
-                this._isAlphaBlendDirty = false;
-                this._isBlendFunctionParametersDirty = false;
-                this._alphaBlend = false;
+                this._isAlphaBlendDirty = true;
+                this._isBlendFunctionParametersDirty = true;
+                this._alphaBlend = true;
                 this._blendFunctionParameters = new Array(4);
             }
             Object.defineProperty(_AlphaState.prototype, "isDirty", {
@@ -5901,12 +5901,12 @@ var BABYLON;
     (function (Internals) {
         var _DepthCullingState = (function () {
             function _DepthCullingState() {
-                this._isDepthTestDirty = false;
-                this._isDepthMaskDirty = false;
-                this._isDepthFuncDirty = false;
-                this._isCullFaceDirty = false;
-                this._isCullDirty = false;
-                this._isZOffsetDirty = false;
+                this._isDepthTestDirty = true;
+                this._isDepthMaskDirty = true;
+                this._isDepthFuncDirty = true;
+                this._isCullFaceDirty = true;
+                this._isCullDirty = true;
+                this._isZOffsetDirty = true;
             }
             Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
                 get: function () {
@@ -6076,10 +6076,10 @@ var BABYLON;
     (function (Internals) {
         var _StencilState = (function () {
             function _StencilState() {
-                this._isStencilTestDirty = false;
-                this._isStencilMaskDirty = false;
-                this._isStencilFuncDirty = false;
-                this._isStencilOpDirty = false;
+                this._isStencilTestDirty = true;
+                this._isStencilMaskDirty = true;
+                this._isStencilFuncDirty = true;
+                this._isStencilOpDirty = true;
                 this.reset();
             }
             Object.defineProperty(_StencilState.prototype, "isDirty", {
@@ -16549,6 +16549,8 @@ var BABYLON;
             this._uniqueIdCounter = 0;
             this._engine = engine;
             engine.scenes.push(this);
+            this._externalData = new BABYLON.StringDictionary();
+            this._uid = null;
             this._renderingManager = new BABYLON.RenderingManager(this);
             this.postProcessManager = new BABYLON.PostProcessManager(this);
             this.postProcessRenderPipelineManager = new BABYLON.PostProcessRenderPipelineManager();
@@ -17775,6 +17777,55 @@ var BABYLON;
         };
         Scene.prototype.isActiveMesh = function (mesh) {
             return (this._activeMeshes.indexOf(mesh) !== -1);
+        };
+        Object.defineProperty(Scene.prototype, "uid", {
+            /**
+             * Return a unique id as a string which can serve as an identifier for the scene
+             */
+            get: function () {
+                if (!this._uid) {
+                    this._uid = BABYLON.Tools.RandomId();
+                }
+                return this._uid;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Add an externaly attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        Scene.prototype.addExternalData = function (key, data) {
+            return this._externalData.add(key, data);
+        };
+        /**
+         * Get an externaly attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        Scene.prototype.getExternalData = function (key) {
+            return this._externalData.get(key);
+        };
+        /**
+         * Get an externaly attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        Scene.prototype.getOrAddExternalDataWithFactory = function (key, factory) {
+            return this._externalData.getOrAddWithFactory(key, factory);
+        };
+        /**
+         * Remove an externaly attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        Scene.prototype.removeExternalData = function (key) {
+            return this._externalData.remove(key);
         };
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
             if (mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {

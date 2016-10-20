@@ -4,9 +4,9 @@ var BABYLON;
     (function (Internals) {
         var _AlphaState = (function () {
             function _AlphaState() {
-                this._isAlphaBlendDirty = false;
-                this._isBlendFunctionParametersDirty = false;
-                this._alphaBlend = false;
+                this._isAlphaBlendDirty = true;
+                this._isBlendFunctionParametersDirty = true;
+                this._alphaBlend = true;
                 this._blendFunctionParameters = new Array(4);
             }
             Object.defineProperty(_AlphaState.prototype, "isDirty", {
