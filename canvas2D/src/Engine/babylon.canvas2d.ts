@@ -1224,6 +1224,7 @@
         private _cachingStrategy: number;
         private _hierarchyLevelMaxSiblingCount: number;
         private _groupCacheMaps: StringDictionary<MapTexture[]>;
+        private _renderingGroupObserver: Observer<Scene>;
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
         private _supprtInstancedArray: boolean;
