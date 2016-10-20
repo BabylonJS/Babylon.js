@@ -108,9 +108,9 @@
         private _maximum: Vector3 = Tmp.Vector3[1];
         private _scale: Vector3 = Tmp.Vector3[2];
         private _translation: Vector3 = Tmp.Vector3[3];
+        private _minBbox: Vector3 = Tmp.Vector3[4];
+        private _maxBbox: Vector3 = Tmp.Vector3[5];
         private _particlesIntersect: boolean = false;
-        private _wm: Matrix;
-
 
         /**
         * Creates a SPS (Solid Particle System) object.
@@ -168,7 +168,6 @@
             vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
             this.mesh.isPickable = this._pickable;
-            this._wm = this.mesh.getWorldMatrix();
 
             // free memory
             this._positions = null;
@@ -541,7 +540,7 @@
             // if the particles will always face the camera
             if (this.billboard) {
                 // compute the camera position and un-rotate it by the current mesh rotation
-                if (this._wm.decompose(this._scale, this._quaternion, this._translation)) {
+                if (this.mesh._worldMatrix.decompose(this._scale, this._quaternion, this._translation)) {
                     this._quaternionToRotationMatrix();
                     this._rotMatrix.invertToRef(this._invertMatrix);
                     this._camera._currentTarget.subtractToRef(this._camera.globalPosition, this._camDir);
@@ -729,15 +728,15 @@
                     }
                     // place and scale the particle bouding sphere in the SPS local system
                     if (this._particle.isVisible) {
-                        this._minimum.x = this._particle._modelBoundingInfo.minimum.x * this._particle.scaling.x;
-                        this._minimum.y = this._particle._modelBoundingInfo.minimum.y * this._particle.scaling.y;
-                        this._minimum.z = this._particle._modelBoundingInfo.minimum.z * this._particle.scaling.z;
-                        this._maximum.x = this._particle._modelBoundingInfo.maximum.x * this._particle.scaling.x;
-                        this._maximum.y = this._particle._modelBoundingInfo.maximum.y * this._particle.scaling.y;
-                        this._maximum.z = this._particle._modelBoundingInfo.maximum.z * this._particle.scaling.z;
-                        bSphere.center.x = this._particle.position.x + (this._minimum.x + this._maximum.x) * 0.5;
-                        bSphere.center.y = this._particle.position.y + (this._minimum.y + this._maximum.y) * 0.5;
-                        bSphere.center.z = this._particle.position.z + (this._minimum.z + this._maximum.z) * 0.5;
+                        this._minBbox.x = this._particle._modelBoundingInfo.minimum.x * this._particle.scaling.x;
+                        this._minBbox.y = this._particle._modelBoundingInfo.minimum.y * this._particle.scaling.y;
+                        this._minBbox.z = this._particle._modelBoundingInfo.minimum.z * this._particle.scaling.z;
+                        this._maxBbox.x = this._particle._modelBoundingInfo.maximum.x * this._particle.scaling.x;
+                        this._maxBbox.y = this._particle._modelBoundingInfo.maximum.y * this._particle.scaling.y;
+                        this._maxBbox.z = this._particle._modelBoundingInfo.maximum.z * this._particle.scaling.z;
+                        bSphere.center.x = this._particle.position.x + (this._minBbox.x + this._maxBbox.x) * 0.5;
+                        bSphere.center.y = this._particle.position.y + (this._minBbox.y + this._maxBbox.y) * 0.5;
+                        bSphere.center.z = this._particle.position.z + (this._minBbox.z + this._maxBbox.z) * 0.5;
                         bSphere.radius = Vector3.Distance(this._minimum, this._maximum) * 0.5;
                     } else {
                         bSphere.center.x = this._camera.position.x;
@@ -747,8 +746,8 @@
                     }
 
                     // then update the bbox and the bsphere into the world system
-                    bBox._update(this._wm);
-                    bSphere._update(this._wm);
+                    bBox._update(this.mesh._worldMatrix);
+                    bSphere._update(this.mesh._worldMatrix);
                 }
 
                 // increment indexes for the next particle
