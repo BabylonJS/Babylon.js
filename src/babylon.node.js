@@ -273,6 +273,14 @@ var BABYLON;
         Node.prototype.dispose = function () {
             this.parent = null;
         };
+        Node.prototype.getDirection = function (localAxis) {
+            var result = BABYLON.Vector3.Zero();
+            this.getDirectionToRef(localAxis, result);
+            return result;
+        };
+        Node.prototype.getDirectionToRef = function (localAxis, result) {
+            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+        };
         Node.ParseAnimationRanges = function (node, parsedNode, scene) {
             if (parsedNode.ranges) {
                 for (var index = 0; index < parsedNode.ranges.length; index++) {
