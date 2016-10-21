@@ -101,6 +101,10 @@
             this._uid = null;
             this._cachedCanvasGroup = null;
 
+            this._renderingGroupObserver = null;
+            this._beforeRenderObserver = null;
+            this._afterRenderObserver = null;
+
             this._profileInfoText = null;
 
             Prim2DBase._isCanvasInit = false;
@@ -188,7 +192,7 @@
                     if (!settings.renderingPhase.camera || settings.renderingPhase.renderingGroupID==null) {
                         throw Error("You have to specify a valid camera and renderingGroup");
                     }
-                    this._scene.onRenderingGroupObservable.add((e, s) => {
+                    this._renderingGroupObserver = this._scene.onRenderingGroupObservable.add((e, s) => {
                         if (this._scene.activeCamera === settings.renderingPhase.camera) {
                             this._engine.clear(null, false, true, true);
                             this._render();
@@ -843,6 +847,11 @@
                 this._setupInteraction(false);
             }
 
+            if (this._renderingGroupObserver) {
+                this._scene.onRenderingGroupObservable.remove(this._renderingGroupObserver);
+                this._renderingGroupObserver = null;
+            }
+
             if (this._beforeRenderObserver) {
                 this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
                 this._beforeRenderObserver = null;
@@ -1219,6 +1228,7 @@
         private _cachingStrategy: number;
         private _hierarchyLevelMaxSiblingCount: number;
         private _groupCacheMaps: StringDictionary<MapTexture[]>;
+        private _renderingGroupObserver: Observer<RenderingGroupInfo>;
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
         private _supprtInstancedArray: boolean;
