@@ -33,6 +33,13 @@
         @serialize()
         public isRenderTarget = false;
 
+        public get uid(): string {
+            if (!this._uid) {
+                this._uid = Tools.RandomId();
+            }
+            return this._uid;
+        }
+
         public toString(): string {
             return this.name;
         }
@@ -59,6 +66,7 @@
 
         private _scene: Scene;
         public _texture: WebGLTexture;
+        private _uid: string;
 
         constructor(scene: Scene) {
             this._scene = scene;
