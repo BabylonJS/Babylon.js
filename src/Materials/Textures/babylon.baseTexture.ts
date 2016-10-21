@@ -71,6 +71,7 @@
         constructor(scene: Scene) {
             this._scene = scene;
             this._scene.textures.push(this);
+            this._uid = null;
         }
 
         public getScene(): Scene {
