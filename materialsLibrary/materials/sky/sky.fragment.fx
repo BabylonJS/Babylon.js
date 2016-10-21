@@ -136,11 +136,13 @@ void main(void) {
 	float ExposureBias = fLumCompressed;
 
 	vec3 curr = Uncharted2Tonemap((log2(2.0/pow(luminance,4.0)))*texColor);
-	vec3 skyColor = curr * whiteScale;
 
-	vec3 retColor = pow(skyColor,vec3(1.0/(1.2+(1.2*sunfade))));
-	
-	vec4 baseColor = vec4(retColor, 1.0);
+	// May generate a bug so just just keep retColor = skyColor;
+	// vec3 skyColor = curr * whiteScale;
+	//vec3 retColor = pow(skyColor,vec3(1.0/(1.2+(1.2*sunfade))));
+
+	vec3 retColor = curr * whiteScale;
+
 	/**
 	*--------------------------------------------------------------------------------------------------
 	* Sky Color
@@ -151,18 +153,15 @@ void main(void) {
 	float alpha = 1.0;
 
 #ifdef VERTEXCOLOR
-	baseColor.rgb *= vColor.rgb;
+	retColor.rgb *= vColor.rgb;
 #endif
-
-	// Lighting
-	vec3 diffuseBase = vec3(1.0, 1.0, 1.0);
 
 #ifdef VERTEXALPHA
 	alpha *= vColor.a;
 #endif
 
 	// Composition
-	vec4 color = vec4(baseColor.rgb, alpha);
+	vec4 color = clamp(vec4(retColor.rgb, alpha), 0.0, 1.0);
 
     // Fog
 #include<fogFragment>
