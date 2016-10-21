@@ -161,7 +161,7 @@ void main(void) {
 #endif
 
 	// Composition
-	vec4 color = vec4(retColor.rgb, alpha);
+	vec4 color = clamp(vec4(retColor.rgb, alpha), 0.0, 1.0);
 
     // Fog
 #include<fogFragment>
