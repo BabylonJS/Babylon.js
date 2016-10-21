@@ -1,5 +1,6 @@
 declare var HMDVRDevice;
 declare var VRDisplay;
+declare var VRFrameData;
 
 module BABYLON {
 
@@ -13,9 +14,12 @@ module BABYLON {
         public _vrDevice = null;
         private _cacheState = null;
         private _vrEnabled = false;
+        private _attached: boolean = false;
 
         private _oldSize: BABYLON.Size;
         private _oldHardwareScaleFactor: number;
+
+        private _frameData;
 
         private _quaternionCache: Quaternion;
 
@@ -30,6 +34,7 @@ module BABYLON {
             } else {
                 //TODO get the metrics updated using the device's eye parameters!
                 //TODO also check that the device has the right capabilities!
+                this._frameData = new VRFrameData();
                 this.getEngine().vrDisplaysPromise.then((devices) => {
                     if (devices.length > 0) {
                         this._vrEnabled = true;
@@ -52,7 +57,11 @@ module BABYLON {
                         }
 
                         //reset the rig parameters.
-                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { vrDisplay: this._vrDevice });
+                        this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { vrDisplay: this._vrDevice, frameData: this._frameData });
+
+                        if (this._attached) {
+                            this.getEngine().enableVR(this._vrDevice)
+                        }
                     } else {
                         Tools.Error("No WebVR devices found!");
                     }
@@ -64,21 +73,17 @@ module BABYLON {
         }
 
         public _checkInputs(): void {
-            if (this._vrEnabled) {
-                var currentPost = this._vrDevice.getPose();
+            if (this._vrEnabled && this._vrDevice.getFrameData(this._frameData)) {
+                var currentPost = this._frameData.pose;
                 //make sure we have data
                 if (currentPost && currentPost.orientation) {
                     this._cacheState = currentPost;
-                    this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], this._cacheState.orientation[2], this._cacheState.orientation[3]);
+                    this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], -this._cacheState.orientation[2], -this._cacheState.orientation[3]);
                     if (this.webVROptions.trackPosition && this._cacheState.position) {
                         this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
                         this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale)
                     }
-                    //Flip in XY plane
-                    this.rotationQuaternion.z *= -1;
-                    this.rotationQuaternion.w *= -1;
                 }
-
             }
 
             super._checkInputs();
@@ -86,6 +91,7 @@ module BABYLON {
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             super.attachControl(element, noPreventDefault);
+            this._attached = true;
 
             noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
@@ -97,6 +103,7 @@ module BABYLON {
         public detachControl(element: HTMLElement): void {
             super.detachControl(element);
             this._vrEnabled = false;
+            this._attached = false;
             this.getEngine().disableVR();
         }
 

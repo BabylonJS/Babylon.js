@@ -26,13 +26,33 @@ declare module BABYLON {
         */
         bumpHeight: number;
         /**
-        * @param {number}: The water color blended with the reflection and refraction samplers
+         * @param {boolean}: Add a smaller moving bump to less steady waves.
+         */
+        bumpSuperimpose: boolean;
+        /**
+         * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+         */
+        fresnelSeparate: boolean;
+        /**
+         * @param {boolean}: bump Waves modify the reflection.
+         */
+        bumpAffectsReflection: boolean;
+        /**
+        * @param {number}: The water color blended with the refraction (near)
         */
         waterColor: Color3;
         /**
         * @param {number}: The blend factor related to the water color
         */
         colorBlendFactor: number;
+        /**
+         * @param {number}: The water color blended with the reflection (far)
+         */
+        waterColor2: Color3;
+        /**
+         * @param {number}: The blend factor related to the water color (reflection, far)
+         */
+        colorBlendFactor2: number;
         /**
         * @param {number}: Represents the maximum length of a wave
         */
@@ -50,10 +70,12 @@ declare module BABYLON {
         private _renderId;
         private _defines;
         private _cachedDefines;
+        private _useLogarithmicDepth;
         /**
         * Constructor
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);
+        useLogarithmicDepth: boolean;
         refractionTexture: RenderTargetTexture;
         reflectionTexture: RenderTargetTexture;
         addToRenderList(node: any): void;

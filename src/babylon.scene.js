@@ -87,6 +87,35 @@ var BABYLON;
     }(PointerInfoBase));
     BABYLON.PointerInfo = PointerInfo;
     /**
+     * This class is used by the onRenderingGroupObservable
+     */
+    var RenderingGroupInfo = (function () {
+        function RenderingGroupInfo() {
+        }
+        /**
+         * Stage corresponding to the very first hook in the renderingGroup phase: before the render buffer may be cleared
+         * This stage will be fired no matter what
+         */
+        RenderingGroupInfo.STAGE_PRECLEAR = 1;
+        /**
+         * Called before opaque object are rendered.
+         * This stage will be fired only if there's 3D Opaque content to render
+         */
+        RenderingGroupInfo.STAGE_PREOPAQUE = 2;
+        /**
+         * Called after the opaque objects are rendered and before the transparent ones
+         * This stage will be fired only if there's 3D transparent content to render
+         */
+        RenderingGroupInfo.STAGE_PRETRANSPARENT = 3;
+        /**
+         * Called after the transparent object are rendered, last hook of the renderingGroup phase
+         * This stage will be fired no matter what
+         */
+        RenderingGroupInfo.STAGE_POSTTRANSPARENT = 4;
+        return RenderingGroupInfo;
+    }());
+    BABYLON.RenderingGroupInfo = RenderingGroupInfo;
+    /**
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
@@ -178,6 +207,12 @@ var BABYLON;
             * @type {BABYLON.Observable}
             */
             this.onMeshRemovedObservable = new BABYLON.Observable();
+            /**
+             * This Observable will be triggered for each stage of each renderingGroup of each rendered camera.
+             * The RenderinGroupInfo class contains all the information about the context in which the observable is called
+             * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
+             */
+            this.onRenderingGroupObservable = new BABYLON.Observable();
             // Animations
             this.animations = [];
             /**
@@ -311,6 +346,8 @@ var BABYLON;
             this._uniqueIdCounter = 0;
             this._engine = engine;
             engine.scenes.push(this);
+            this._externalData = new BABYLON.StringDictionary();
+            this._uid = null;
             this._renderingManager = new BABYLON.RenderingManager(this);
             this.postProcessManager = new BABYLON.PostProcessManager(this);
             this.postProcessRenderPipelineManager = new BABYLON.PostProcessRenderPipelineManager();
@@ -1537,6 +1574,55 @@ var BABYLON;
         };
         Scene.prototype.isActiveMesh = function (mesh) {
             return (this._activeMeshes.indexOf(mesh) !== -1);
+        };
+        Object.defineProperty(Scene.prototype, "uid", {
+            /**
+             * Return a unique id as a string which can serve as an identifier for the scene
+             */
+            get: function () {
+                if (!this._uid) {
+                    this._uid = BABYLON.Tools.RandomId();
+                }
+                return this._uid;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Add an externaly attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        Scene.prototype.addExternalData = function (key, data) {
+            return this._externalData.add(key, data);
+        };
+        /**
+         * Get an externaly attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        Scene.prototype.getExternalData = function (key) {
+            return this._externalData.get(key);
+        };
+        /**
+         * Get an externaly attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        Scene.prototype.getOrAddExternalDataWithFactory = function (key, factory) {
+            return this._externalData.getOrAddWithFactory(key, factory);
+        };
+        /**
+         * Remove an externaly attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        Scene.prototype.removeExternalData = function (key) {
+            return this._externalData.remove(key);
         };
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
             if (mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
