@@ -2635,7 +2635,8 @@ var BABYLON;
         SmartPropertyPrim.flagActualScaleDirty = 0x0040000; // set if the actualScale property needs to be recomputed
         SmartPropertyPrim.flagDontInheritParentScale = 0x0080000; // set if the actualScale must not use its parent's scale to be computed
         SmartPropertyPrim.flagGlobalTransformDirty = 0x0100000; // set if the global transform must be recomputed due to a local transform change
-        SmartPropertyPrim.flagLayoutBoundingInfoDirty = 0x0100000; // set if the layout bounding info is dirty
+        SmartPropertyPrim.flagLayoutBoundingInfoDirty = 0x0200000; // set if the layout bounding info is dirty
+        SmartPropertyPrim.flagAllow3DEventsBelowCanvas = 0x0400000; // set if pointer events should be sent to 3D Engine when the pointer is over the Canvas
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim", "BABYLON")
         ], SmartPropertyPrim);
@@ -4236,7 +4237,10 @@ var BABYLON;
              * Setting this property may have no effect is specific alignment are in effect.
              */
             get: function () {
-                return this._position || Prim2DBase._nullPosition;
+                if (!this._position) {
+                    this._position = BABYLON.Vector2.Zero();
+                }
+                return this._position;
             },
             set: function (value) {
                 if (!this._checkPositionChange()) {
@@ -4813,7 +4817,10 @@ var BABYLON;
              * The setter should only be called by a Layout Engine class.
              */
             get: function () {
-                return this._layoutAreaPos || Prim2DBase._nullPosition;
+                if (!this._layoutAreaPos) {
+                    this._layoutAreaPos = BABYLON.Vector2.Zero();
+                }
+                return this._layoutAreaPos;
             },
             set: function (val) {
                 if (this._layoutAreaPos && this._layoutAreaPos.equals(val)) {
@@ -11596,6 +11603,7 @@ var BABYLON;
             this._trackedGroups = new Array();
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new BABYLON.StringDictionary();
+            this._changeFlags(BABYLON.SmartPropertyPrim.flagAllow3DEventsBelowCanvas, (settings.allow3DEventBelowCanvas != null) && settings.allow3DEventBelowCanvas);
             this._patchHierarchy(this);
             var enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
             this._fitRenderingDevice = !settings.size;
@@ -11872,6 +11880,12 @@ var BABYLON;
                 skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerUp, eventData);
             }
             eventState.skipNextObservers = skip;
+            if (!skip && (this._isFlagSet(BABYLON.SmartPropertyPrim.flagAllow3DEventsBelowCanvas) === false)) {
+                eventState.skipNextObservers = true;
+                if (eventData instanceof BABYLON.PointerInfoPre) {
+                    eventData.skipOnPointerObservable = true;
+                }
+            }
         };
         Canvas2D.prototype._updatePointerInfo = function (eventData, localPosition) {
             var s = this.scale;
@@ -12422,6 +12436,23 @@ var BABYLON;
              */
             get: function () {
                 return this.__engineData;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "allow3DEventBelowCanvas", {
+            /**
+             * If true is returned, pointerEvent occurring above the Canvas area also sent in 3D scene, if false they are not sent in the 3D Scene
+             */
+            get: function () {
+                return this._isFlagSet(BABYLON.SmartPropertyPrim.flagAllow3DEventsBelowCanvas);
+            },
+            /**
+             * Set true if you want pointerEvent occurring above the Canvas area to also be sent in the 3D scene.
+             * Set false if you don't want the Scene to get the events
+             */
+            set: function (value) {
+                this._changeFlags(BABYLON.SmartPropertyPrim.flagAllow3DEventsBelowCanvas, value);
             },
             enumerable: true,
             configurable: true
@@ -13047,6 +13078,7 @@ var BABYLON;
          *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
+         *  - allow3DEventBelowCanvas: by default pointerEvent occurring above the Canvas will prevent to be also sent in the 3D Scene. If you set this setting to true, events will be sent both for Canvas and 3D Scene
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
          * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
