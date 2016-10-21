@@ -1785,7 +1785,8 @@
 
         @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, false, true)
         /**
-         * Return the position where the primitive is rendered in the Canvas, this position may be different than the one returned by the position property due to layout/alignment/margin/padding computing
+         * Return the position where the primitive is rendered in the Canvas, this position may be different than the one returned by the position property due to layout/alignment/margin/padding computing.
+         * BEWARE: don't change this value, it's read-only!
          */
         public get actualPosition(): Vector2 {
             if (this._actualPosition != null) {
@@ -1841,7 +1842,10 @@
          */
         @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 3, pi => Prim2DBase.positionProperty = pi, false, false, true)
         public get position(): Vector2 {
-            return this._position || Prim2DBase._nullPosition;
+            if (!this._position) {
+                this._position = Vector2.Zero();
+            }
+            return this._position;
         }
 
         public set position(value: Vector2) {
@@ -2419,7 +2423,10 @@
          * The setter should only be called by a Layout Engine class.
          */
         public get layoutAreaPos(): Vector2 {
-            return this._layoutAreaPos || Prim2DBase._nullPosition;
+            if (!this._layoutAreaPos) {
+                this._layoutAreaPos = Vector2.Zero();
+            }
+            return this._layoutAreaPos;
         }
 
         public set layoutAreaPos(val: Vector2) {

@@ -818,6 +818,15 @@ var BABYLON;
         Vector3.Up = function () {
             return new Vector3(0, 1.0, 0);
         };
+        Vector3.Forward = function () {
+            return new Vector3(0, 0, 1.0);
+        };
+        Vector3.Right = function () {
+            return new Vector3(1.0, 0, 0);
+        };
+        Vector3.Left = function () {
+            return new Vector3(-1.0, 0, 0);
+        };
         Vector3.TransformCoordinates = function (vector, transformation) {
             var result = Vector3.Zero();
             Vector3.TransformCoordinatesToRef(vector, transformation, result);

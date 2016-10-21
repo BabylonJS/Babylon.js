@@ -1023,6 +1023,18 @@
             return new Vector3(0, 1.0, 0);
         }
 
+        public static Forward(): Vector3 {
+            return new Vector3(0, 0, 1.0);
+        }
+
+        public static Right(): Vector3 {
+            return new Vector3(1.0, 0, 0);
+        }
+
+        public static Left(): Vector3 {
+            return new Vector3(-1.0, 0, 0);
+        }
+
         public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3 {
             var result = Vector3.Zero();
 
