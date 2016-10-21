@@ -1057,7 +1057,20 @@
                         }
                     }
 
-                    modelKey += v.name + ":" + ((propVal != null) ? ((v.typeLevelCompare) ? Tools.getClassName(propVal) : propVal.toString()) : "[null]") + ";";
+                    let value = "[null]";
+                    if (propVal != null) {
+                        if (v.typeLevelCompare) {
+                            value = Tools.getClassName(propVal);
+                        } else {
+                            if (propVal instanceof BaseTexture) {
+                                value = propVal.uid;
+                            } else {
+                                value = propVal.toString();
+                            }
+                        }
+                    }
+
+                    modelKey += v.name + ":" + value + ";";
                 }
             });
 
