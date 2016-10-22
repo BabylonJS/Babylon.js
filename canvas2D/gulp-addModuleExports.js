@@ -25,6 +25,11 @@ module.exports = function (varName) {
             'return c > 3 && r && Object.defineProperty(target, key, r), r;\n' +
         '};\n';
 
+        var dependencyAddition =
+        'if (typeof BABYLON === "undefined") {\n' +
+            'throw "BabylonJS is a required dependency, please include it first!"\n' +
+        '};\n';
+
         if (file.isNull()) {
             cb(null, file);
             return;
@@ -36,7 +41,7 @@ module.exports = function (varName) {
         }
 
         try {
-            file.contents = new Buffer(decorateAddition.concat(new Buffer(extendsAddition.concat(String(file.contents)).concat(moduleExportsAddition))));
+            file.contents = new Buffer(decorateAddition.concat(new Buffer(extendsAddition.concat(dependencyAddition).concat(String(file.contents)).concat(moduleExportsAddition))));
             this.push(file);
 
         } catch (err) {
