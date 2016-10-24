@@ -162,7 +162,9 @@
 
         private _removeWatchedElement(key: string, el: T) {
             let observer = this._watchedObjectList.getAndRemove(key);
-            (<IPropertyChanged><any>el).propertyChanged.remove(observer);
+            if (el["propertyChanged"]) {
+                (<IPropertyChanged><any>el).propertyChanged.remove(observer);
+            }
         }
 
         public set(key: string, value: T): boolean {

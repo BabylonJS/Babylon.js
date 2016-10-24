@@ -55,48 +55,64 @@
 
     export abstract class UIElement extends SmartPropertyBase {
 
-        static UIELEMENT_PROPCOUNT: number = 15;
+        static get enabledState(): string {
+            return UIElement._enableState;
+        }
 
-        static parentProperty         : Prim2DPropInfo;
-        static widthProperty          : Prim2DPropInfo;
-        static heightProperty         : Prim2DPropInfo;
-        static minWidthProperty       : Prim2DPropInfo;
-        static minHeightProperty      : Prim2DPropInfo;
-        static maxWidthProperty       : Prim2DPropInfo;
-        static maxHeightProperty      : Prim2DPropInfo;
-        static actualWidthProperty    : Prim2DPropInfo;
-        static actualHeightProperty   : Prim2DPropInfo;
-        static marginProperty         : Prim2DPropInfo;
-        static paddingProperty        : Prim2DPropInfo;
-        static marginAlignmentProperty: Prim2DPropInfo;
-        static isEnabledProperty      : Prim2DPropInfo;
-        static isFocusedProperty      : Prim2DPropInfo;
-        static isMouseOverProperty    : Prim2DPropInfo;
+        static get disabledState(): string {
+            return UIElement._disabledState;
+        }
+
+        static get mouseOverState(): string {
+            return UIElement._mouseOverState;
+        }
+
+        static UIELEMENT_PROPCOUNT: number = 16;
+
+        static parentProperty          : Prim2DPropInfo;
+        static widthProperty           : Prim2DPropInfo;
+        static heightProperty          : Prim2DPropInfo;
+        static minWidthProperty        : Prim2DPropInfo;
+        static minHeightProperty       : Prim2DPropInfo;
+        static maxWidthProperty        : Prim2DPropInfo;
+        static maxHeightProperty       : Prim2DPropInfo;
+        static actualWidthProperty     : Prim2DPropInfo;
+        static actualHeightProperty    : Prim2DPropInfo;
+        static marginProperty          : Prim2DPropInfo;
+        static paddingProperty         : Prim2DPropInfo;
+        static marginAlignmentProperty : Prim2DPropInfo;
+        static paddingAlignmentProperty: Prim2DPropInfo;
+        static isEnabledProperty       : Prim2DPropInfo;
+        static isFocusedProperty       : Prim2DPropInfo;
+        static isMouseOverProperty     : Prim2DPropInfo;
 
         constructor(settings: {
-            id              ?: string,
-            parent          ?: UIElement,
-            templateName    ?: string,
-            styleName       ?: string,
-            minWidth        ?: number,
-            minHeight       ?: number,
-            maxWidth        ?: number,
-            maxHeight       ?: number,
-            width           ?: number,
-            height          ?: number,
-            marginTop       ?: number | string,
-            marginLeft      ?: number | string,
-            marginRight     ?: number | string,
-            marginBottom    ?: number | string,
-            margin          ?: number | string,
-            marginHAlignment?: number,
-            marginVAlignment?: number,
-            marginAlignment ?: string,
-            paddingTop      ?: number | string,
-            paddingLeft     ?: number | string,
-            paddingRight    ?: number | string,
-            paddingBottom   ?: number | string,
-            padding         ?: string,
+            id               ?: string,
+            parent           ?: UIElement,
+            templateName     ?: string,
+            styleName        ?: string,
+            minWidth         ?: number,
+            minHeight        ?: number,
+            maxWidth         ?: number,
+            maxHeight        ?: number,
+            width            ?: number,
+            height           ?: number,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: number | string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+            paddingAlignment ?: string,
         }) {
             super();
 
@@ -111,7 +127,8 @@
             this._visualTemplateRoot        = null;
             this._visualChildrenPlaceholder = null;
             this._hierarchyDepth            = 0;
-            this._style                     = (settings.styleName!=null) ? UIElementStyleManager.getStyle(type, settings.styleName) : null;
+            this._renderingTemplateName     = (settings.templateName != null) ? settings.templateName : GUIManager.DefaultTemplateName;
+            this._style                     = (settings.styleName!=null) ? GUIManager.getStyle(type, settings.styleName) : null;
             this._flags                     = 0;
             this._id                        = (settings.id!=null) ? settings.id : null;
             this._uid                       = null;
@@ -124,9 +141,8 @@
             this._margin                    = null;
             this._padding                   = null;
             this._marginAlignment           = null;
-            this._isEnabled                 = true;
-            this._isFocused                 = false;
-            this._isMouseOver               = false;
+
+            this._setFlags(UIElement.flagIsVisible|UIElement.flagIsEnabled);
 
             // Default Margin Alignment for UIElement is stretch for horizontal/vertical and not left/bottom (which is the default for Canvas2D Primitives)
             //this.marginAlignment.horizontal = PrimitiveAlignment.AlignStretch;
@@ -183,7 +199,17 @@
                 this.padding.fromString(settings.padding);
             }
 
-            this._assignTemplate(settings.templateName);
+            if (settings.paddingHAlignment) {
+                this.paddingAlignment.horizontal = settings.paddingHAlignment;
+            }
+
+            if (settings.paddingVAlignment) {
+                this.paddingAlignment.vertical = settings.paddingVAlignment;
+            }
+
+            if (settings.paddingAlignment) {
+                this.paddingAlignment.fromString(settings.paddingAlignment);
+            }
 
             if (settings.parent != null) {
                 this._parent = settings.parent;
@@ -266,13 +292,27 @@
         // SizeChanged
         // ToolTipOpening/Closing
 
-        public get ownerWindows(): Window {
+        public findById(id: string): UIElement {
+            if (this._id === id) {
+                return this;
+            }
+
+            let children = this._getChildren();
+            for (let child of children) {
+                let r = child.findById(id);
+                if (r != null) {
+                    return r;
+                }
+            }
+        }
+
+        public get ownerWindow(): Window {
             return this._ownerWindow;
         }
 
         public get style(): string {
             if (!this.style) {
-                return UIElementStyleManager.DefaultStyleName;
+                return GUIManager.DefaultStyleName;
             }
             return this._style.name;
         }
@@ -284,7 +324,7 @@
 
             let newStyle: UIElementStyle = null;
             if (value) {
-                newStyle = UIElementStyleManager.getStyle(Tools.getFullClassName(this), value);
+                newStyle = GUIManager.getStyle(Tools.getFullClassName(this), value);
                 if (!newStyle) {
                     throw Error(`Couldn't find Style ${value} for UIElement ${Tools.getFullClassName(this)}`);
                 }
@@ -485,40 +525,121 @@
             return (this._marginAlignment !== null && !this._marginAlignment.isDefault);
         }
 
-        @dynamicLevelProperty(12, pi => UIElement.isEnabledProperty = pi)
+        @dynamicLevelProperty(12, pi => UIElement.paddingAlignmentProperty = pi)
         /**
-         * True if the UIElement is enabled, false if it's disabled
+         * You can get/set the margin alignment through this property
+         */
+        public get paddingAlignment(): PrimitiveAlignment {
+            if (!this._paddingAlignment) {
+                this._paddingAlignment = new PrimitiveAlignment();
+            }
+            return this._paddingAlignment;
+        }
+
+        public set paddingAlignment(value: PrimitiveAlignment) {
+            this.paddingAlignment.copyFrom(value);
+        }
+
+        /**
+         * Check if there a marginAlignment specified (non null and not default)
+         */
+        public get _hasPaddingAlignment(): boolean {
+            return (this._paddingAlignment !== null && !this._paddingAlignment.isDefault);
+        }
+
+        public get isVisible(): boolean {
+            return this._isFlagSet(UIElement.flagIsVisible);
+        }
+
+        public set isVisible(value: boolean) {
+            if (this.isVisible === value) {
+                return;
+            }
+
+            this._visualPlaceholder.levelVisible = value;
+
+            this._changeFlags(UIElement.flagIsVisible, value);
+        }
+
+        @dynamicLevelProperty(13, pi => UIElement.isEnabledProperty = pi)
+        /**
+         * True if the UIElement is enabled, false if it's disabled.
+         * User interaction is not possible if the UIElement is not enabled
          */
         public get isEnabled(): boolean {
-            return this._isEnabled;
+            return this._isFlagSet(UIElement.flagIsEnabled);
         }
 
         public set isEnabled(value: boolean) {
-            this._isEnabled = value;
+            this._changeFlags(UIElement.flagIsEnabled, value);
         }
 
-        @dynamicLevelProperty(13, pi => UIElement.isFocusedProperty = pi)
+        @dynamicLevelProperty(14, pi => UIElement.isFocusedProperty = pi)
         /**
          * True if the UIElement has the focus, false if it doesn't
          */
         public get isFocused(): boolean {
-            return this._isFocused;
+            return this._isFlagSet(UIElement.flagIsFocus);
         }
 
         public set isFocused(value: boolean) {
-            this._isFocused = value;
+            // If the UIElement doesn't accept focus, set it on its parent
+            if (!this.isFocusable) {
+                let p = this.parent;
+                if (!p) {
+                    return;
+                }
+                p.isFocused = value;
+            }
+
+            // If the focus is being set, notify the Focus Manager
+            if (value) {
+                this.ownerWindow.focusManager.setFocusOn(this, this.getFocusScope());
+            }
+
+            this._changeFlags(UIElement.flagIsFocus, value);
         }
 
-        @dynamicLevelProperty(14, pi => UIElement.isMouseOverProperty = pi)
+        @dynamicLevelProperty(15, pi => UIElement.isMouseOverProperty = pi)
         /**
          * True if the UIElement has the mouse over it
          */
         public get isMouseOver(): boolean {
-            return this._isMouseOver;
+            return this._isFlagSet(UIElement.flagIsMouseOver);
         }
 
         public set isMouseOver(value: boolean) {
-            this._isMouseOver = value;
+            this._changeFlags(UIElement.flagIsMouseOver, value);
+        }
+
+        public get isFocusScope(): boolean {
+            return this._isFlagSet(UIElement.flagIsFocusScope);
+        }
+
+        public set isFocusScope(value: boolean) {
+            this._changeFlags(UIElement.flagIsFocusScope, value);
+        }
+
+        public get isFocusable(): boolean {
+            return this._isFlagSet(UIElement.flagIsFocusable);
+        }
+
+        public set isFocusable(value: boolean) {
+            this._changeFlags(UIElement.flagIsFocusable, value);
+        }
+
+        // Look for the nearest parent which is the focus scope. Should always return something as the Window UIElement which is the root of all UI Tree is focus scope (unless the user disable it)
+        protected getFocusScope(): UIElement {
+            if (this.isFocusScope) {
+                return this;
+            }
+
+            let p = this.parent;
+            if (!p) {
+                return null;
+            }
+
+            return p.getFocusScope();
         }
 
         /**
@@ -582,38 +703,43 @@
 
         private _assignTemplate(templateName: string) {
             if (!templateName) {
-                templateName = UIElementRenderingTemplateManager.DefaultTemplateName;
+                templateName = GUIManager.DefaultTemplateName;
             }
             let className = Tools.getFullClassName(this);
             if (!className) {
                 throw Error("Couldn't access class name of this UIElement, you have to decorate the type with the className decorator");
             }
 
-            let factory = UIElementRenderingTemplateManager.getRenderingTemplate(className, templateName);
+            let factory = GUIManager.getRenderingTemplate(className, templateName);
             if (!factory) {
                 throw Error(`Couldn't get the renderingTemplate ${templateName} of class ${className}`);
             }
 
+            this._renderingTemplateName = templateName;
             this._renderingTemplate = factory();
             this._renderingTemplate.attach(this);
         }
 
         public _createVisualTree() {
-            let parentPrim: Prim2DBase = this.ownerWindows.canvas;
+            let parentPrim: Prim2DBase = this.ownerWindow.canvas;
             if (this.parent) {
                 parentPrim = this.parent.visualChildrenPlaceholder;
             }
 
-            this._visualPlaceholder = new Group2D({ parent: parentPrim, id: `GUI Visual Placeholder of ${this.id}`});
+            if (!this._renderingTemplate) {
+                this._assignTemplate(this._renderingTemplateName);               
+            }
+
+            this._visualPlaceholder = new Group2D({ parent: parentPrim, id: `GUI ${Tools.getClassName(this)} RootGroup of ${this.id}`});
             let p = this._visualPlaceholder;
             p.addExternalData<UIElement>("_GUIOwnerElement_", this);
             p.dataSource = this;
-            p.createSimpleDataBinding(Prim2DBase.widthProperty, "width", DataBinding.MODE_ONEWAY);
-            p.createSimpleDataBinding(Prim2DBase.heightProperty, "height", DataBinding.MODE_ONEWAY);
-            p.createSimpleDataBinding(Prim2DBase.actualWidthProperty, "actualWidth", DataBinding.MODE_ONEWAYTOSOURCE);
-            p.createSimpleDataBinding(Prim2DBase.actualHeightProperty, "actualHeight", DataBinding.MODE_ONEWAYTOSOURCE);
-            p.createSimpleDataBinding(Prim2DBase.marginProperty, "margin", DataBinding.MODE_ONEWAY);
-            p.createSimpleDataBinding(Prim2DBase.paddingProperty, "padding", DataBinding.MODE_ONEWAY);
+
+            p.createSimpleDataBinding(Prim2DBase.widthProperty          , "width"          , DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(Prim2DBase.heightProperty         , "height"         , DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(Prim2DBase.actualWidthProperty    , "actualWidth"    , DataBinding.MODE_ONEWAYTOSOURCE);
+            p.createSimpleDataBinding(Prim2DBase.actualHeightProperty   , "actualHeight"   , DataBinding.MODE_ONEWAYTOSOURCE);
+            p.createSimpleDataBinding(Prim2DBase.marginProperty         , "margin"         , DataBinding.MODE_ONEWAY);
             p.createSimpleDataBinding(Prim2DBase.marginAlignmentProperty, "marginAlignment", DataBinding.MODE_ONEWAY);
             this.createVisualTree();
         }
@@ -675,12 +801,19 @@
         protected get _position(): Vector2 { return null; } // TODO use abstract keyword when TS 2.0 will be approved
         protected abstract _getChildren(): Array<UIElement>;
 
-        public static flagVisualToBuild = 0x0000001;    // set if the UIElement visual must be updated
+        public static flagVisualToBuild = 0x0000001;
+        public static flagIsVisible     = 0x0000002;
+        public static flagIsFocus       = 0x0000004;
+        public static flagIsFocusScope  = 0x0000008;
+        public static flagIsFocusable   = 0x0000010;
+        public static flagIsEnabled     = 0x0000020;
+        public static flagIsMouseOver   = 0x0000040;
 
         protected _visualPlaceholder: Group2D;
         protected _visualTemplateRoot: Prim2DBase;
         protected _visualChildrenPlaceholder: Prim2DBase;
-        private _renderingTemplate: UIElementRenderingTemplateBase;
+        private _renderingTemplateName: string;
+        protected _renderingTemplate: UIElementRenderingTemplateBase;
         private _parent: UIElement;
         private _hierarchyDepth: number;
         private _flags: number;
@@ -699,9 +832,11 @@
         private _margin: PrimitiveThickness;
         private _padding: PrimitiveThickness;
         private _marginAlignment: PrimitiveAlignment;
-        private _isEnabled: boolean;
-        private _isFocused: boolean;
-        private _isMouseOver: boolean;
+        private _paddingAlignment: PrimitiveAlignment;
+
+        private static _enableState = "Enabled";
+        private static _disabledState = "Disabled";
+        private static _mouseOverState = "MouseOver";
     }
 
     export abstract class UIElementStyle {
@@ -710,9 +845,23 @@
         get name(): string { return null; } // TODO use abstract keyword when TS 2.0 will be approved
     }
 
-    export class UIElementStyleManager {
+    export class GUIManager {
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // DATA TEMPLATE MANAGER
+
+        static registerDataTemplate(className: string, factory: (parent: UIElement, dataObject: any) => UIElement) {
+            
+        }
+
+        // DATA TEMPLATE MANAGER
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // STYLE MANAGER
+
         static getStyle(uiElType: string, styleName: string): UIElementStyle {
-            let styles = UIElementStyleManager.stylesByUIElement.get(uiElType);
+            let styles = GUIManager.stylesByUIElement.get(uiElType);
             if (!styles) {
                 throw Error(`The type ${uiElType} is unknown, no style were registered for it.`);
             }
@@ -724,7 +873,7 @@
         }
 
         static registerStyle(uiElType: string, templateName: string, style: UIElementStyle) {
-            let templates = UIElementStyleManager.stylesByUIElement.getOrAddWithFactory(uiElType, () => new StringDictionary<UIElementStyle>());
+            let templates = GUIManager.stylesByUIElement.getOrAddWithFactory(uiElType, () => new StringDictionary<UIElementStyle>());
             if (templates.contains(templateName)) {
                 templates[templateName] = style;
             } else {
@@ -735,19 +884,20 @@
         static stylesByUIElement: StringDictionary<StringDictionary<UIElementStyle>> = new StringDictionary<StringDictionary<UIElementStyle>>();
 
         public static get DefaultStyleName(): string {
-            return UIElementStyleManager._defaultStyleName;
+            return GUIManager._defaultStyleName;
         }
 
         public static set DefaultStyleName(value: string) {
-            UIElementStyleManager._defaultStyleName = value;
+            GUIManager._defaultStyleName = value;
         }
 
-        private static _defaultStyleName = "Default";
-    }
+        // STYLE MANAGER
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    export class UIElementRenderingTemplateManager {
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // RENDERING TEMPLATE MANAGER
         static getRenderingTemplate(uiElType: string, templateName: string): () => UIElementRenderingTemplateBase {
-            let templates = UIElementRenderingTemplateManager.renderingTemplatesByUIElement.get(uiElType);
+            let templates = GUIManager.renderingTemplatesByUIElement.get(uiElType);
             if (!templates) {
                 throw Error(`The type ${uiElType} is unknown, no Rendering Template were registered for it.`);
             }
@@ -759,7 +909,7 @@
         }
 
         static registerRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase) {
-            let templates = UIElementRenderingTemplateManager.renderingTemplatesByUIElement.getOrAddWithFactory(uiElType, () => new StringDictionary<() => UIElementRenderingTemplateBase>());
+            let templates = GUIManager.renderingTemplatesByUIElement.getOrAddWithFactory(uiElType, () => new StringDictionary<() => UIElementRenderingTemplateBase>());
             if (templates.contains(templateName)) {
                 templates[templateName] = factory;
             } else {
@@ -770,14 +920,18 @@
         static renderingTemplatesByUIElement: StringDictionary<StringDictionary<() => UIElementRenderingTemplateBase>> = new StringDictionary<StringDictionary<() => UIElementRenderingTemplateBase>>();
 
         public static get DefaultTemplateName(): string {
-            return UIElementRenderingTemplateManager._defaultTemplateName;
+            return GUIManager._defaultTemplateName;
         }
 
         public static set DefaultTemplateName(value: string) {
-            UIElementRenderingTemplateManager._defaultTemplateName = value;
+            GUIManager._defaultTemplateName = value;
         }
-        
+
+        // RENDERING TEMPLATE MANAGER
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+
         private static _defaultTemplateName = "Default";
+        private static _defaultStyleName = "Default";
     }
 
     export abstract class UIElementRenderingTemplateBase {
@@ -799,7 +953,7 @@
 
     export function registerWindowRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase): (target: Object) => void {
         return () => {
-            UIElementRenderingTemplateManager.registerRenderingTemplate(uiElType, templateName, factory);
+            GUIManager.registerRenderingTemplate(uiElType, templateName, factory);
         }
     }
 
