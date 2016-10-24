@@ -655,9 +655,9 @@
                 let engine = this.owner.engine;
                 let count = ts.endDataIndex - ts.startDataIndex;
 
-                // Use Instanced Array if it's supported and if there's at least 5 prims to draw.
-                // We don't want to create an Instanced Buffer for less that 5 prims
-                if (useInstanced && count >= 5) {
+                // Use Instanced Array if it's supported and if there's at least minPartCountToUseInstancedArray prims to draw.
+                // We don't want to create an Instanced Buffer for less that minPartCountToUseInstancedArray prims
+                if (useInstanced && count >= this.owner.minPartCountToUseInstancedArray) {
 
                     if (!ts.partBuffers) {
                         let buffers = new Array<WebGLBuffer>();
@@ -829,8 +829,13 @@
                 scale = this.actualScale;
             }
 
-            Group2D._s.width  = Math.ceil(this.actualSize.width * scale.x * rs);
-            Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
+            if (isCanvas && this.owner.cachingStrategy===Canvas2D.CACHESTRATEGY_CANVAS) {
+                Group2D._s.width = this.owner.engine.getRenderWidth();
+                Group2D._s.height = this.owner.engine.getRenderHeight();
+            } else {
+                Group2D._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
+                Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
+            }
 
             let sizeChanged = !Group2D._s.equals(rd._cacheSize);
 
@@ -855,6 +860,9 @@
                 var res = this.owner._allocateGroupCache(this, this.parent && this.parent.renderGroup, curWidth ? new Size(curWidth, curHeight) : null, rd._useMipMap, rd._anisotropicLevel);
                 rd._cacheNode = res.node;
                 rd._cacheTexture = res.texture;
+                if (rd._cacheRenderSprite) {
+                    rd._cacheRenderSprite.dispose();
+                }
                 rd._cacheRenderSprite = res.sprite;
                 sizeChanged = true;
             }
@@ -879,6 +887,16 @@
             }
         }
 
+        protected _spreadActualScaleDirty() {
+            if (this._renderableData && this._renderableData._cacheRenderSprite) {
+                this.handleGroupChanged(Prim2DBase.actualScaleProperty);
+            }
+
+            super._spreadActualScaleDirty();
+        }
+
+        protected static _unS = new Vector2(1, 1);
+
         protected handleGroupChanged(prop: Prim2DPropInfo) {
             // This method is only for cachedGroup
             let rd = this._renderableData;
@@ -893,20 +911,36 @@
 
             // For now we only support these property changes
             // TODO: add more! :)
-            if (prop.id === Prim2DBase.actualPositionProperty.id) {
-                cachedSprite.actualPosition = this.actualPosition.clone();
-                if (cachedSprite.position != null) {
-                    cachedSprite.position = cachedSprite.actualPosition.clone();
-                }
-            } else if (prop.id === Prim2DBase.rotationProperty.id) {
-                cachedSprite.rotation = this.rotation;
-            } else if (prop.id === Prim2DBase.scaleProperty.id) {
-                cachedSprite.scale = this.scale;
-            } else if (prop.id === Prim2DBase.originProperty.id) {
-                cachedSprite.origin = this.origin.clone();
-            } else if (prop.id === Group2D.actualSizeProperty.id) {
-                cachedSprite.size = this.actualSize.clone();
-                //console.log(`[${this._globalTransformProcessStep}] Sync Sprite ${this.id}, width: ${this.actualSize.width}, height: ${this.actualSize.height}`);
+            switch (prop.id) {
+                case Prim2DBase.actualScaleProperty.id:
+                case Prim2DBase.actualPositionProperty.id:
+                    let noResizeScale = rd._noResizeOnScale;
+                    let isCanvas = parent == null;
+                    let scale: Vector2;
+                    if (noResizeScale) {
+                        scale = isCanvas ? Group2D._unS : this.parent.actualScale;
+                    } else {
+                        scale = this.actualScale;
+                    }
+
+                    cachedSprite.actualPosition = this.actualPosition.multiply(scale);
+                    if (cachedSprite.position != null) {
+                        cachedSprite.position = cachedSprite.actualPosition.clone();
+                    }
+                    break;
+
+                case Prim2DBase.rotationProperty.id:
+                    cachedSprite.rotation = this.rotation;
+                    break;
+                case Prim2DBase.scaleProperty.id:
+                    cachedSprite.scale = this.scale;
+                    break;
+                case Prim2DBase.originProperty.id:
+                    cachedSprite.origin = this.origin.clone();
+                    break;
+                case Group2D.actualSizeProperty.id:
+                    cachedSprite.size = this.actualSize.clone();
+                    break;
             }
         }
 
@@ -949,18 +983,22 @@
 
             // All Group cached mode, all groups are renderable/cached, including the Canvas, groups with the behavior DONTCACHE are renderable/not cached, groups with CACHEINPARENT are logical ones
             else if (canvasStrat === Canvas2D.CACHESTRATEGY_ALLGROUPS) {
-                var gcb = this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK;
-                if ((gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE) || (gcb === Group2D.GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP)) {
-                    this._isRenderableGroup = gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE;
-                    this._isCachedGroup = false;
-                }
-
-                if (gcb === Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
+                if (isCanvas) {
                     this._isRenderableGroup = true;
-                    this._isCachedGroup = true;
+                    this._isCachedGroup = false;
+                } else {
+                    var gcb = this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK;
+                    if ((gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE) || (gcb === Group2D.GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP)) {
+                        this._isRenderableGroup = gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE;
+                        this._isCachedGroup = false;
+                    }
+
+                    if (gcb === Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
+                        this._isRenderableGroup = true;
+                        this._isCachedGroup = true;
+                    }
                 }
             }
-
 
             if (this._isRenderableGroup) {
                 // Yes, we do need that check, trust me, unfortunately we can call _detectGroupStates many time on the same object...

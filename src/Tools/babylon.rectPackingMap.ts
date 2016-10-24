@@ -6,10 +6,15 @@
   */
     export class PackedRect {
         constructor(root: PackedRect, parent: PackedRect, pos: Vector2, size: Size) {
-            this._pos = pos;
-            this._size = size;
-            this._root = root;
-            this._parent = parent;
+            this._pos         = pos;
+            this._size        = size;
+            this._root        = root;
+            this._parent      = parent;
+            this._contentSize = null;
+            this._bottomNode  = null;
+            this._leftNode    = null;
+            this._initialSize = null;
+            this._rightNode   = null;
         }
 
         /**
@@ -104,8 +109,13 @@
             }
 
             // The node is free, but was previously allocated (_initialSize is set), rely on initialSize to make the test as it's the space we have
-            else if (this._initialSize && (size.width <= this._initialSize.width) && (size.height <= this._initialSize.height)) {
-                resNode = this;
+            else if (this._initialSize) {
+                if ((size.width <= this._initialSize.width) && (size.height <= this._initialSize.height))
+                {
+                    resNode = this;
+                } else {
+                    return null;
+                }
             }
 
             // The node is free and empty, rely on its size for the test
@@ -118,6 +128,7 @@
         private splitNode(contentSize: Size): PackedRect {
             // If there's no contentSize but an initialSize it means this node were previously allocated, but freed, we need to create a _leftNode as subNode and use to allocate the space we need (and this node will have a right/bottom subNode for the space left as this._initialSize may be greater than contentSize)
             if (!this._contentSize && this._initialSize) {
+                this._contentSize = contentSize.clone();
                 this._leftNode = new PackedRect(this._root, this, new Vector2(this._pos.x, this._pos.y), new Size(this._initialSize.width, this._initialSize.height));
                 return this._leftNode.splitNode(contentSize);
             } else {
