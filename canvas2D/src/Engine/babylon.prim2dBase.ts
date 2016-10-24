@@ -1353,7 +1353,7 @@
      * Base class for a Primitive of the Canvas2D feature
      */
     export class Prim2DBase extends SmartPropertyPrim {
-        static PRIM2DBASE_PROPCOUNT: number = 24;
+        static PRIM2DBASE_PROPCOUNT: number = 25;
 
         public  static _bigInt = Math.pow(2, 30);
 
@@ -1782,6 +1782,11 @@
          * Metadata of the scaleY property
          */
         public static scaleYProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the actualScale property
+         */
+        public static actualScaleProperty: Prim2DPropInfo;
 
         @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, false, true)
         /**
@@ -2320,7 +2325,7 @@
             return this._scale.y;
         }
 
-        private _spreadActualScaleDirty() {
+        protected _spreadActualScaleDirty() {
             for (let child of this._children) {
                 child._setFlags(SmartPropertyPrim.flagActualScaleDirty);
                 child._spreadActualScaleDirty();
@@ -2330,6 +2335,7 @@
         /**
          * Returns the actual scale of this Primitive, the value is computed from the scale property of this primitive, multiplied by the actualScale of its parent one (if any). The Vector2 object returned contains the scale for both X and Y axis
          */
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 24, pi => Prim2DBase.actualScaleProperty = pi, false, true)
         public get actualScale(): Vector2 {
             if (this._isFlagSet(SmartPropertyPrim.flagActualScaleDirty)) {
                 let cur = this._isFlagSet(SmartPropertyPrim.flagDontInheritParentScale) ? null : this.parent;

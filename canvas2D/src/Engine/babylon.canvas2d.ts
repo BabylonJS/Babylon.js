@@ -63,7 +63,6 @@
          */
         public static RENDEROBSERVABLE_POST = 2;
 
-
         private static _INSTANCES : Array<Canvas2D> = [];
 
         constructor(scene: Scene, settings?: {
@@ -196,7 +195,7 @@
                         throw Error("You have to specify a valid camera and renderingGroup");
                     }
                     this._renderingGroupObserver = this._scene.onRenderingGroupObservable.add((e, s) => {
-                        if (this._scene.activeCamera === settings.renderingPhase.camera) {
+                        if ((this._scene.activeCamera === settings.renderingPhase.camera) && (e.renderStage===RenderingGroupInfo.STAGE_POSTTRANSPARENT)) {
                             this._engine.clear(null, false, true, true);
                             this._render();
                         }
@@ -1118,6 +1117,11 @@
             return canvas;
         }
 
+        /**
+         * Instanced Array will be create if there's at least this number of parts/prim that can fit into it
+         */
+        public minPartCountToUseInstancedArray = 5;
+
         private checkBackgroundAvailability() {
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 throw Error("Can't use Canvas Background with the caching strategy TOPLEVELGROUPS");
@@ -1469,8 +1473,6 @@
             }
         }
 
-        private static _unS = new Vector2(1, 1);
-
         /**
          * Internal method that allocate a cache for the given group.
          * Caching is made using a collection of MapTexture where many groups have their bitmap cache stored inside.
@@ -1494,6 +1496,7 @@
             // Determine size
             let size = group.actualSize;
             size = new Size(Math.ceil(size.width * scale.x), Math.ceil(size.height * scale.y));
+            let originalSize = size.clone();
             if (minSize) {
                 size.width = Math.max(minSize.width, size.width);
                 size.height = Math.max(minSize.height, size.height);
@@ -1542,15 +1545,18 @@
 
                 let sprite: Sprite2D;
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
+                    if (this._cachedCanvasGroup) {
+                        this._cachedCanvasGroup.dispose();
+                    }
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
+                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, spriteLocation: node.pos });
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos, dontInheritParentScale: true });
+                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x * scale.x, y: group.actualPosition.y * scale.y, spriteSize: originalSize, spriteLocation: node.pos, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add((e, s) => {

@@ -1127,7 +1127,7 @@
             }
 
             // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
-            if (this instanceof Group2D) {
+            if (this instanceof Group2D && (<Group2D><any>this)._renderableData) {
                 (<SmartPropertyPrim>this).handleGroupChanged(propInfo);
             }
 
