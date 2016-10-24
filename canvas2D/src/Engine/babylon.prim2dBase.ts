@@ -1763,7 +1763,7 @@
         public static paddingProperty: Prim2DPropInfo;
 
         /**
-         * Metadata of the hAlignment property
+         * Metadata of the marginAlignment property
          */
         public static marginAlignmentProperty: Prim2DPropInfo;
 
