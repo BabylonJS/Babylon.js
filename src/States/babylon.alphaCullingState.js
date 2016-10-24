@@ -3,11 +3,15 @@ var BABYLON;
     var Internals;
     (function (Internals) {
         var _AlphaState = (function () {
+            /**
+             * Initializes the state.
+             */
             function _AlphaState() {
                 this._isAlphaBlendDirty = false;
                 this._isBlendFunctionParametersDirty = false;
                 this._alphaBlend = false;
                 this._blendFunctionParameters = new Array(4);
+                this.reset();
             }
             Object.defineProperty(_AlphaState.prototype, "isDirty", {
                 get: function () {
