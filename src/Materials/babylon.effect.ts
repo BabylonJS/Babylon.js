@@ -177,6 +177,13 @@
                 return;
             }
 
+            // Base64 encoded ?
+            if (vertex.substr(0, 7) === "base64:") {
+            	var vertexBinary = window.atob(vertex.substr(7));
+            	callback(vertexBinary);
+            	return;
+            }
+
             // Is in local store ?
             if (Effect.ShadersStore[vertex + "VertexShader"]) {
                 callback(Effect.ShadersStore[vertex + "VertexShader"]);
@@ -201,6 +208,13 @@
                 var fragmentCode = Tools.GetDOMTextContent(fragment);
                 callback(fragmentCode);
                 return;
+            }
+
+            // Base64 encoded ?
+            if (fragment(0, 7) === "base64:") {
+            	var fragmentBinary = window.atob(fragment.substr(7));
+            	callback(fragmentBinary);
+            	return;
             }
 
             // Is in local store ?
