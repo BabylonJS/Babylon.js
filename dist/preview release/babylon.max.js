@@ -24741,7 +24741,7 @@ var BABYLON;
                 return;
             }
             // Base64 encoded ?
-            if (fragment(0, 7) === "base64:") {
+            if (fragment.substr(0, 7) === "base64:") {
                 var fragmentBinary = window.atob(fragment.substr(7));
                 callback(fragmentBinary);
                 return;
