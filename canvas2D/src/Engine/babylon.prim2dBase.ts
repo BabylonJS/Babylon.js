@@ -1662,6 +1662,14 @@
             return this._id;
         }
 
+        public set id(value: string) {
+            if (this._id === value) {
+                return;
+            }
+            let oldValue = this._id;
+            this.onPropertyChanged("id", oldValue, this._id);
+        }
+
         /**
          * Metadata of the position property
          */
