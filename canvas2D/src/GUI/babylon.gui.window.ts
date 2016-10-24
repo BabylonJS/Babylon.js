@@ -1,42 +1,98 @@
 ﻿module BABYLON {
+
+    class FocusScopeData {
+        constructor(focusScope: UIElement) {
+            this.focusScope = focusScope;
+            this.focusedElement = null;
+        }
+
+        focusScope: UIElement;
+        focusedElement: UIElement;
+    }
+
+    export class FocusManager {
+        constructor() {
+            this._focusScopes = new StringDictionary<FocusScopeData>();
+            this._rootScope = new FocusScopeData(null);
+            this._activeScope = null;
+        }
+
+        public setFocusOn(el: UIElement, focusScope: UIElement) {
+            let fsd = (focusScope != null) ? this._focusScopes.getOrAddWithFactory(focusScope.uid, k => new FocusScopeData(focusScope)) : this._rootScope;
+
+            if (fsd.focusedElement !== el) {
+                // Remove focus from current
+                if (fsd.focusedElement) {
+                    fsd.focusedElement.isFocused = false;
+                }
+
+                fsd.focusedElement = el;
+            }
+
+            if (this._activeScope !== fsd) {
+                this._activeScope = fsd;
+            }
+
+        }
+
+        private _rootScope: FocusScopeData;
+        private _focusScopes: StringDictionary<FocusScopeData>;
+        private _activeScope: FocusScopeData;
+    }
+
+    class GUISceneData {
+        constructor(scene: Scene) {
+            this.scene = scene;
+            this.screenSpaceCanvas = new ScreenSpaceCanvas2D(scene, { id: "GUI Canvas", cachingStrategy: Canvas2D.CACHESTRATEGY_DONTCACHE });
+            this.focusManager = new FocusManager();
+        }
+
+        screenSpaceCanvas: ScreenSpaceCanvas2D;
+        scene: Scene;
+        focusManager: FocusManager;
+    }
+
     @className("Window", "BABYLON")
     export class Window extends ContentControl {
-        static WINDOW_PROPCOUNT = ContentControl.CONTENTCONTROL_PROPCOUNT + 2;
+        static WINDOW_PROPCOUNT = ContentControl.CONTENTCONTROL_PROPCOUNT + 4;
 
         static leftProperty: Prim2DPropInfo;
         static bottomProperty: Prim2DPropInfo;
         static positionProperty: Prim2DPropInfo;
+        static isActiveProperty: Prim2DPropInfo;
 
         constructor(scene: Scene, settings?: {
 
-            id              ?: string,
-            templateName    ?: string,
-            styleName       ?: string,
-            content         ?: any,
-            contentAlignment?: string,
-            left            ?: number,
-            bottom          ?: number,
-            minWidth        ?: number,
-            minHeight       ?: number,
-            maxWidth        ?: number,
-            maxHeight       ?: number,
-            width           ?: number,
-            height          ?: number,
-            worldPosition   ?: Vector3,
-            worldRotation   ?: Quaternion,
-            marginTop       ?: number | string,
-            marginLeft      ?: number | string,
-            marginRight     ?: number | string,
-            marginBottom    ?: number | string,
-            margin          ?: number | string,
-            marginHAlignment?: number,
-            marginVAlignment?: number,
-            marginAlignment ?: string,
-            paddingTop      ?: number | string,
-            paddingLeft     ?: number | string,
-            paddingRight    ?: number | string,
-            paddingBottom   ?: number | string,
-            padding         ?: string,
+            id               ?: string,
+            templateName     ?: string,
+            styleName        ?: string,
+            content          ?: any,
+            left             ?: number,
+            bottom           ?: number,
+            minWidth         ?: number,
+            minHeight        ?: number,
+            maxWidth         ?: number,
+            maxHeight        ?: number,
+            width            ?: number,
+            height           ?: number,
+            worldPosition    ?: Vector3,
+            worldRotation    ?: Quaternion,
+            marginTop        ?: number | string,
+            marginLeft       ?: number | string,
+            marginRight      ?: number | string,
+            marginBottom     ?: number | string,
+            margin           ?: number | string,
+            marginHAlignment ?: number,
+            marginVAlignment ?: number,
+            marginAlignment  ?: string,
+            paddingTop       ?: number | string,
+            paddingLeft      ?: number | string,
+            paddingRight     ?: number | string,
+            paddingBottom    ?: number | string,
+            padding          ?: string,
+            paddingHAlignment?: number,
+            paddingVAlignment?: number,
+            paddingAlignment ?: string,
         }) {
 
             if (!settings) {
@@ -44,6 +100,11 @@
             }
 
             super(settings);
+
+            // Per default a Window is focus scope
+            this.isFocusScope = true;
+
+            this.isActive = false;
 
             if (!this._UIElementVisualToBuildList) {
                 this._UIElementVisualToBuildList = new Array<UIElement>();
@@ -54,7 +115,8 @@
 
             // Screen Space UI
             if (!settings.worldPosition && !settings.worldRotation) {
-                this._canvas = Window.getScreenCanvas(scene);
+                this._sceneData = Window.getSceneData(scene);
+                this._canvas = this._sceneData.screenSpaceCanvas;
                 this._isWorldSpaceCanvas = false;
                 this._left = (settings.left != null) ? settings.left : 0;
                 this._bottom = (settings.bottom != null) ? settings.bottom : 0;
@@ -114,6 +176,19 @@
         public set position(value: Vector2) {
             this._left = value.x;
             this._bottom = value.y;
+        }
+
+        @dependencyProperty(ContentControl.CONTENTCONTROL_PROPCOUNT + 3, pi => Window.isActiveProperty = pi)
+        public get isActive(): boolean {
+            return this._isActive;
+        }
+
+        public set isActive(value: boolean) {
+            this._isActive = value;
+        }
+
+        public get focusManager(): FocusManager {
+            return this._sceneData.focusManager;
         }
 
         protected get _position(): Vector2 {
@@ -190,28 +265,22 @@
             this._canvas.renderObservable.remove(this._renderObserver);
         }
 
+        private _sceneData: GUISceneData;
         private _canvas: Canvas2D;
         private _left: number;
         private _bottom: number;
+        private _isActive: boolean;
         private _isWorldSpaceCanvas: boolean;
         private _renderObserver: Observer<Canvas2D>;
         private _disposeObserver: Observer<SmartPropertyBase>;
         private _UIElementVisualToBuildList: Array<UIElement>;
         private _mouseOverUIElement: UIElement;
 
-        private static getScreenCanvas(scene: Scene): ScreenSpaceCanvas2D {
-            let canvas = Tools.first(Window._screenCanvasList, c => c.scene === scene);
-            if (canvas) {
-                return canvas;
-            }
-
-            canvas = new ScreenSpaceCanvas2D(scene, { id: "GUI Canvas", cachingStrategy: Canvas2D.CACHESTRATEGY_DONTCACHE });
-            Window._screenCanvasList.push(canvas);
-
-            return canvas;
+        private static getSceneData(scene: Scene): GUISceneData {
+            return Window._sceneData.getOrAddWithFactory(scene.uid, k => new GUISceneData(scene));
         }
 
-        private static _screenCanvasList: Array<ScreenSpaceCanvas2D> = new Array<ScreenSpaceCanvas2D>();
+        private static _sceneData: StringDictionary<GUISceneData> = new StringDictionary<GUISceneData>();
     }
 
     @registerWindowRenderingTemplate("BABYLON.Window", "Default", () => new DefaultWindowRenderingTemplate ())
