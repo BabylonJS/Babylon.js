@@ -17,6 +17,7 @@ module BABYLON {
         public idxInShape: number = 0;                  // index of the particle in its shape id
         public _modelBoundingInfo: BoundingInfo;        // reference to the shape model BoundingInfo object
         public _boundingInfo: BoundingInfo;             // particle BoundingInfo
+        public _sps: SolidParticleSystem;               // reference to the SPS what the particle belongs to
 
         /**
          * Creates a Solid Particle object.
@@ -28,12 +29,13 @@ module BABYLON {
          * `idxInShape` (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
          * `modelBoundingInfo` is the reference to the model BoundingInfo used for intersection computations.
          */
-        constructor(particleIndex: number, positionIndex: number, model: ModelShape, shapeId: number, idxInShape: number, modelBoundingInfo?: BoundingInfo) {
+        constructor(particleIndex: number, positionIndex: number, model: ModelShape, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: BoundingInfo) {
             this.idx = particleIndex;
             this._pos = positionIndex;
             this._model = model;
             this.shapeId = shapeId;
             this.idxInShape = idxInShape;
+            this._sps = sps;
             if (modelBoundingInfo) {
                 this._modelBoundingInfo = modelBoundingInfo;
                 this._boundingInfo = new BoundingInfo(modelBoundingInfo.minimum, modelBoundingInfo.maximum);
@@ -70,6 +72,9 @@ module BABYLON {
         public intersectsMesh(target: Mesh | SolidParticle): boolean {
             if (!this._boundingInfo || !target._boundingInfo) {
                 return false;
+            }
+            if (this._sps._bSphereOnly) {
+                return BoundingSphere.Intersects(this._boundingInfo.boundingSphere, target._boundingInfo.boundingSphere);
             }
             return this._boundingInfo.intersects(target._boundingInfo, false);
         }
