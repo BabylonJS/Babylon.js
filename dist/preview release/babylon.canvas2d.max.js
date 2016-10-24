@@ -10,6 +10,9 @@ function __() { this.constructor = d; }
 __.prototype = b.prototype;
 d.prototype = new __();
 };
+if (typeof BABYLON === "undefined") {
+throw "BabylonJS is a required dependency, please include it first!"
+};
 var BABYLON;
 (function (BABYLON) {
     var PropertyChangedInfo = (function () {
@@ -786,7 +789,9 @@ var BABYLON;
         };
         ObservableStringDictionary.prototype._removeWatchedElement = function (key, el) {
             var observer = this._watchedObjectList.getAndRemove(key);
-            el.propertyChanged.remove(observer);
+            if (el["propertyChanged"]) {
+                el.propertyChanged.remove(observer);
+            }
         };
         ObservableStringDictionary.prototype.set = function (key, value) {
             var oldValue = this.get(key);
@@ -1193,10 +1198,10 @@ var BABYLON;
         CanvasLayoutEngine.prototype._doUpdate = function (prim) {
             // Canvas ?
             if (prim instanceof BABYLON.Canvas2D) {
-                prim.layoutArea = prim.actualSize;
+                prim.layoutArea = prim.actualSize.multiplyByFloats(prim.scaleX, prim.scaleY);
             }
             else if (prim.parent instanceof BABYLON.Canvas2D) {
-                prim.layoutArea = prim.owner.actualSize;
+                prim.layoutArea = prim.owner.actualSize.multiplyByFloats(prim.owner.scaleX, prim.owner.scaleY);
             }
             else {
                 prim.layoutArea = prim.parent.contentArea;
@@ -2443,7 +2448,21 @@ var BABYLON;
                                 propVal = BABYLON.Tools.hashCodeFromStream(BABYLON.Tools.arrayOrStringFeeder(propVal));
                             }
                         }
-                        modelKey += v.name + ":" + ((propVal != null) ? ((v.typeLevelCompare) ? BABYLON.Tools.getClassName(propVal) : propVal.toString()) : "[null]") + ";";
+                        var value = "[null]";
+                        if (propVal != null) {
+                            if (v.typeLevelCompare) {
+                                value = BABYLON.Tools.getClassName(propVal);
+                            }
+                            else {
+                                if (propVal instanceof BABYLON.BaseTexture) {
+                                    value = propVal.uid;
+                                }
+                                else {
+                                    value = propVal.toString();
+                                }
+                            }
+                        }
+                        modelKey += v.name + ":" + value + ";";
                     }
                 });
                 this._clearFlags(SmartPropertyPrim.flagModelDirty);
@@ -2497,7 +2516,7 @@ var BABYLON;
                 }
             }
             // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
-            if (this instanceof BABYLON.Group2D) {
+            if (this instanceof BABYLON.Group2D && this._renderableData) {
                 this.handleGroupChanged(propInfo);
             }
             // Check for parent layout dirty
@@ -4177,6 +4196,13 @@ var BABYLON;
              */
             get: function () {
                 return this._id;
+            },
+            set: function (value) {
+                if (this._id === value) {
+                    return;
+                }
+                var oldValue = this._id;
+                this.onPropertyChanged("id", oldValue, this._id);
             },
             enumerable: true,
             configurable: true
@@ -5976,7 +6002,7 @@ var BABYLON;
         Prim2DBase.prototype._getActualSizeFromContentToRef = function (primSize, newPrimSize) {
             newPrimSize.copyFrom(primSize);
         };
-        Prim2DBase.PRIM2DBASE_PROPCOUNT = 24;
+        Prim2DBase.PRIM2DBASE_PROPCOUNT = 25;
         Prim2DBase._bigInt = Math.pow(2, 30);
         Prim2DBase._nullPosition = BABYLON.Vector2.Zero();
         Prim2DBase.boundinbBoxReentrency = false;
@@ -6068,6 +6094,9 @@ var BABYLON;
         __decorate([
             BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 23, function (pi) { return Prim2DBase.scaleYProperty = pi; }, false, true)
         ], Prim2DBase.prototype, "scaleY", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 24, function (pi) { return Prim2DBase.actualScaleProperty = pi; }, false, true)
+        ], Prim2DBase.prototype, "actualScale", null);
         Prim2DBase = __decorate([
             BABYLON.className("Prim2DBase", "BABYLON")
         ], Prim2DBase);
@@ -8129,9 +8158,9 @@ var BABYLON;
                 var mrc = gii.modelRenderCache;
                 var engine = this.owner.engine;
                 var count = ts.endDataIndex - ts.startDataIndex;
-                // Use Instanced Array if it's supported and if there's at least 5 prims to draw.
-                // We don't want to create an Instanced Buffer for less that 5 prims
-                if (useInstanced && count >= 5) {
+                // Use Instanced Array if it's supported and if there's at least minPartCountToUseInstancedArray prims to draw.
+                // We don't want to create an Instanced Buffer for less that minPartCountToUseInstancedArray prims
+                if (useInstanced && count >= this.owner.minPartCountToUseInstancedArray) {
                     if (!ts.partBuffers) {
                         var buffers = new Array();
                         for (var j = 0; j < gii.transparentData.length; j++) {
@@ -8275,8 +8304,14 @@ var BABYLON;
             else {
                 scale = this.actualScale;
             }
-            Group2D._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
-            Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
+            if (isCanvas && this.owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_CANVAS) {
+                Group2D._s.width = this.owner.engine.getRenderWidth();
+                Group2D._s.height = this.owner.engine.getRenderHeight();
+            }
+            else {
+                Group2D._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
+                Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
+            }
             var sizeChanged = !Group2D._s.equals(rd._cacheSize);
             if (rd._cacheNode) {
                 var size = rd._cacheNode.contentSize;
@@ -8297,6 +8332,9 @@ var BABYLON;
                 var res = this.owner._allocateGroupCache(this, this.parent && this.parent.renderGroup, curWidth ? new BABYLON.Size(curWidth, curHeight) : null, rd._useMipMap, rd._anisotropicLevel);
                 rd._cacheNode = res.node;
                 rd._cacheTexture = res.texture;
+                if (rd._cacheRenderSprite) {
+                    rd._cacheRenderSprite.dispose();
+                }
                 rd._cacheRenderSprite = res.sprite;
                 sizeChanged = true;
             }
@@ -8316,6 +8354,12 @@ var BABYLON;
                 this._renderableData._cacheTexture.unbindTexture();
             }
         };
+        Group2D.prototype._spreadActualScaleDirty = function () {
+            if (this._renderableData && this._renderableData._cacheRenderSprite) {
+                this.handleGroupChanged(BABYLON.Prim2DBase.actualScaleProperty);
+            }
+            _super.prototype._spreadActualScaleDirty.call(this);
+        };
         Group2D.prototype.handleGroupChanged = function (prop) {
             // This method is only for cachedGroup
             var rd = this._renderableData;
@@ -8328,23 +8372,35 @@ var BABYLON;
             }
             // For now we only support these property changes
             // TODO: add more! :)
-            if (prop.id === BABYLON.Prim2DBase.actualPositionProperty.id) {
-                cachedSprite.actualPosition = this.actualPosition.clone();
-                if (cachedSprite.position != null) {
-                    cachedSprite.position = cachedSprite.actualPosition.clone();
-                }
-            }
-            else if (prop.id === BABYLON.Prim2DBase.rotationProperty.id) {
-                cachedSprite.rotation = this.rotation;
-            }
-            else if (prop.id === BABYLON.Prim2DBase.scaleProperty.id) {
-                cachedSprite.scale = this.scale;
-            }
-            else if (prop.id === BABYLON.Prim2DBase.originProperty.id) {
-                cachedSprite.origin = this.origin.clone();
-            }
-            else if (prop.id === Group2D.actualSizeProperty.id) {
-                cachedSprite.size = this.actualSize.clone();
+            switch (prop.id) {
+                case BABYLON.Prim2DBase.actualScaleProperty.id:
+                case BABYLON.Prim2DBase.actualPositionProperty.id:
+                    var noResizeScale = rd._noResizeOnScale;
+                    var isCanvas = parent == null;
+                    var scale = void 0;
+                    if (noResizeScale) {
+                        scale = isCanvas ? Group2D._unS : this.parent.actualScale;
+                    }
+                    else {
+                        scale = this.actualScale;
+                    }
+                    cachedSprite.actualPosition = this.actualPosition.multiply(scale);
+                    if (cachedSprite.position != null) {
+                        cachedSprite.position = cachedSprite.actualPosition.clone();
+                    }
+                    break;
+                case BABYLON.Prim2DBase.rotationProperty.id:
+                    cachedSprite.rotation = this.rotation;
+                    break;
+                case BABYLON.Prim2DBase.scaleProperty.id:
+                    cachedSprite.scale = this.scale;
+                    break;
+                case BABYLON.Prim2DBase.originProperty.id:
+                    cachedSprite.origin = this.origin.clone();
+                    break;
+                case Group2D.actualSizeProperty.id:
+                    cachedSprite.size = this.actualSize.clone();
+                    break;
             }
         };
         Group2D.prototype.detectGroupStates = function () {
@@ -8382,14 +8438,20 @@ var BABYLON;
                 }
             }
             else if (canvasStrat === BABYLON.Canvas2D.CACHESTRATEGY_ALLGROUPS) {
-                var gcb = this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK;
-                if ((gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE) || (gcb === Group2D.GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP)) {
-                    this._isRenderableGroup = gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE;
+                if (isCanvas) {
+                    this._isRenderableGroup = true;
                     this._isCachedGroup = false;
                 }
-                if (gcb === Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
-                    this._isRenderableGroup = true;
-                    this._isCachedGroup = true;
+                else {
+                    var gcb = this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK;
+                    if ((gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE) || (gcb === Group2D.GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP)) {
+                        this._isRenderableGroup = gcb === Group2D.GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE;
+                        this._isCachedGroup = false;
+                    }
+                    if (gcb === Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY) {
+                        this._isRenderableGroup = true;
+                        this._isCachedGroup = true;
+                    }
                 }
             }
             if (this._isRenderableGroup) {
@@ -8434,6 +8496,7 @@ var BABYLON;
         Group2D.GROUPCACHEBEHAVIOR_OPTIONMASK = 0xFF;
         Group2D._uV = new BABYLON.Vector2(1, 1);
         Group2D._s = BABYLON.Size.Zero();
+        Group2D._unS = new BABYLON.Vector2(1, 1);
         __decorate([
             BABYLON.instanceLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, function (pi) { return Group2D.sizeProperty = pi; }, false, true)
         ], Group2D.prototype, "size", null);
@@ -9538,21 +9601,23 @@ var BABYLON;
             this.texture = texture;
             this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this.size = settings.spriteSize;
-            this.spriteLocation = settings.spriteLocation || new BABYLON.Vector2(0, 0);
-            this.spriteScaleFactor = settings.spriteScaleFactor || new BABYLON.Vector2(1, 1);
+            this.size = (settings.spriteSize != null) ? settings.spriteSize.clone() : null;
+            this.spriteLocation = (settings.spriteLocation != null) ? settings.spriteLocation.clone() : new BABYLON.Vector2(0, 0);
+            this.spriteScaleFactor = (settings.spriteScaleFactor != null) ? settings.spriteScaleFactor : new BABYLON.Vector2(1, 1);
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.useAlphaFromTexture = true;
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
-                    this.size = texture.getBaseSize();
+                    var s = texture.getBaseSize();
+                    this.size = new BABYLON.Size(s.width, s.height);
                 }
                 else {
                     texture.onLoadObservable.add(function () {
                         if (settings.spriteSize == null) {
-                            _this.size = texture.getBaseSize();
+                            var s = texture.getBaseSize();
+                            _this.size = new BABYLON.Size(s.width, s.height);
                         }
                         _this._positioningDirty();
                         _this._instanceDirtyFlags |= BABYLON.Prim2DBase.originProperty.flagId | Sprite2D.textureProperty.flagId; // To make sure the sprite is issued again for render
@@ -9690,10 +9755,6 @@ var BABYLON;
         Sprite2D.prototype.levelIntersect = function (intersectInfo) {
             // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
             return true;
-        };
-        Sprite2D._createCachedCanvasSprite = function (owner, texture, size, pos) {
-            var sprite = new Sprite2D(texture, { parent: owner, id: "__cachedCanvasSprite__", position: BABYLON.Vector2.Zero(), origin: BABYLON.Vector2.Zero(), spriteSize: size, spriteLocation: pos, alignToPixel: true });
-            return sprite;
         };
         Sprite2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey);
@@ -11530,6 +11591,10 @@ var BABYLON;
                 vd.applyToMesh(plane);
             };
             this._notifDebugMode = false;
+            /**
+             * Instanced Array will be create if there's at least this number of parts/prim that can fit into it
+             */
+            this.minPartCountToUseInstancedArray = 5;
             this._mapCounter = 0;
             this._drawCallsOpaqueCounter = new BABYLON.PerfCounter();
             this._drawCallsAlphaTestCounter = new BABYLON.PerfCounter();
@@ -11545,6 +11610,9 @@ var BABYLON;
             this._boundingInfoRecomputeCounter = new BABYLON.PerfCounter();
             this._uid = null;
             this._cachedCanvasGroup = null;
+            this._renderingGroupObserver = null;
+            this._beforeRenderObserver = null;
+            this._afterRenderObserver = null;
             this._profileInfoText = null;
             BABYLON.Prim2DBase._isCanvasInit = false;
             if (!settings) {
@@ -11619,8 +11687,8 @@ var BABYLON;
                     if (!settings.renderingPhase.camera || settings.renderingPhase.renderingGroupID == null) {
                         throw Error("You have to specify a valid camera and renderingGroup");
                     }
-                    this._scene.onRenderingGroupObservable.add(function (e, s) {
-                        if (_this._scene.activeCamera === settings.renderingPhase.camera) {
+                    this._renderingGroupObserver = this._scene.onRenderingGroupObservable.add(function (e, s) {
+                        if ((_this._scene.activeCamera === settings.renderingPhase.camera) && (e.renderStage === BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT)) {
                             _this._engine.clear(null, false, true, true);
                             _this._render();
                         }
@@ -12188,6 +12256,10 @@ var BABYLON;
             if (this.interactionEnabled) {
                 this._setupInteraction(false);
             }
+            if (this._renderingGroupObserver) {
+                this._scene.onRenderingGroupObservable.remove(this._renderingGroupObserver);
+                this._renderingGroupObserver = null;
+            }
             if (this._beforeRenderObserver) {
                 this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
                 this._beforeRenderObserver = null;
@@ -12735,6 +12807,7 @@ var BABYLON;
             // Determine size
             var size = group.actualSize;
             size = new BABYLON.Size(Math.ceil(size.width * scale.x), Math.ceil(size.height * scale.y));
+            var originalSize = size.clone();
             if (minSize) {
                 size.width = Math.max(minSize.width, size.width);
                 size.height = Math.max(minSize.height, size.height);
@@ -12775,13 +12848,16 @@ var BABYLON;
                 // Special case if the canvas is entirely cached: create a group that will have a single sprite it will be rendered specifically at the very end of the rendering process
                 var sprite = void 0;
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
+                    if (this._cachedCanvasGroup) {
+                        this._cachedCanvasGroup.dispose();
+                    }
                     this._cachedCanvasGroup = BABYLON.Group2D._createCachedCanvasGroup(this);
-                    sprite = new BABYLON.Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
+                    sprite = new BABYLON.Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, spriteLocation: node.pos });
                     sprite.zOrder = 1;
                     sprite.origin = BABYLON.Vector2.Zero();
                 }
                 else {
-                    sprite = new BABYLON.Sprite2D(map, { parent: parent, id: "__cachedSpriteOfGroup__" + group.id, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos, dontInheritParentScale: true });
+                    sprite = new BABYLON.Sprite2D(map, { parent: parent, id: "__cachedSpriteOfGroup__" + group.id, x: group.actualPosition.x * scale.x, y: group.actualPosition.y * scale.y, spriteSize: originalSize, spriteLocation: node.pos, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add(function (e, s) {
@@ -12950,7 +13026,6 @@ var BABYLON;
         Canvas2D._v = BABYLON.Vector3.Zero(); // Must stay zero
         Canvas2D._m = BABYLON.Matrix.Identity();
         Canvas2D._mI = BABYLON.Matrix.Identity(); // Must stay identity
-        Canvas2D._unS = new BABYLON.Vector2(1, 1);
         /**
          * Define the default size used for both the width and height of a MapTexture to allocate.
          * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
@@ -13193,7 +13268,8 @@ var BABYLON;
             this._visualTemplateRoot = null;
             this._visualChildrenPlaceholder = null;
             this._hierarchyDepth = 0;
-            this._style = (settings.styleName != null) ? UIElementStyleManager.getStyle(type, settings.styleName) : null;
+            this._renderingTemplateName = (settings.templateName != null) ? settings.templateName : GUIManager.DefaultTemplateName;
+            this._style = (settings.styleName != null) ? GUIManager.getStyle(type, settings.styleName) : null;
             this._flags = 0;
             this._id = (settings.id != null) ? settings.id : null;
             this._uid = null;
@@ -13206,9 +13282,7 @@ var BABYLON;
             this._margin = null;
             this._padding = null;
             this._marginAlignment = null;
-            this._isEnabled = true;
-            this._isFocused = false;
-            this._isMouseOver = false;
+            this._setFlags(UIElement.flagIsVisible | UIElement.flagIsEnabled);
             // Default Margin Alignment for UIElement is stretch for horizontal/vertical and not left/bottom (which is the default for Canvas2D Primitives)
             //this.marginAlignment.horizontal = PrimitiveAlignment.AlignStretch;
             //this.marginAlignment.vertical   = PrimitiveAlignment.AlignStretch;
@@ -13257,12 +13331,41 @@ var BABYLON;
             if (settings.padding) {
                 this.padding.fromString(settings.padding);
             }
-            this._assignTemplate(settings.templateName);
+            if (settings.paddingHAlignment) {
+                this.paddingAlignment.horizontal = settings.paddingHAlignment;
+            }
+            if (settings.paddingVAlignment) {
+                this.paddingAlignment.vertical = settings.paddingVAlignment;
+            }
+            if (settings.paddingAlignment) {
+                this.paddingAlignment.fromString(settings.paddingAlignment);
+            }
             if (settings.parent != null) {
                 this._parent = settings.parent;
                 this._hierarchyDepth = this._parent._hierarchyDepth + 1;
             }
         }
+        Object.defineProperty(UIElement, "enabledState", {
+            get: function () {
+                return UIElement._enableState;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement, "disabledState", {
+            get: function () {
+                return UIElement._disabledState;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement, "mouseOverState", {
+            get: function () {
+                return UIElement._mouseOverState;
+            },
+            enumerable: true,
+            configurable: true
+        });
         UIElement.prototype.dispose = function () {
             if (this.isDisposed) {
                 return false;
@@ -13283,44 +13386,57 @@ var BABYLON;
         UIElement.prototype.getAnimatables = function () {
             return new Array();
         };
-        Object.defineProperty(UIElement.prototype, "ownerWindows", {
-            // TODO
-            // PROPERTIES
-            // Style
-            // Id
-            // Parent/Children
-            // ActualWidth/Height, MinWidth/Height, MaxWidth/Height,
-            // Alignment/Margin
-            // Visibility, IsVisible
-            // IsEnabled (is false, control is disabled, no interaction and a specific render state)
-            // CacheMode of Visual Elements
-            // Focusable/IsFocused
-            // IsPointerCaptured, CapturePointer, IsPointerDirectlyOver, IsPointerOver. De-correlate mouse, stylus, touch?
-            // ContextMenu
-            // Cursor
-            // DesiredSize
-            // IsInputEnable ?
-            // Opacity, OpacityMask ?
-            // SnapToDevicePixels
-            // Tag
-            // ToolTip
-            // METHODS
-            // BringIntoView (for scrollable content, to move the scroll to bring the given element visible in the parent's area)
-            // Capture/ReleaseCapture (mouse, touch, stylus)
-            // Focus
-            // PointFrom/ToScreen to translate coordinates
-            // EVENTS
-            // ContextMenuOpening/Closing/Changed
-            // DragEnter/LeaveOver, Drop
-            // Got/LostFocus
-            // IsEnabledChanged
-            // IsPointerOver/DirectlyOverChanged
-            // IsVisibleChanged
-            // KeyDown/Up
-            // LayoutUpdated ?
-            // Pointer related events
-            // SizeChanged
-            // ToolTipOpening/Closing
+        // TODO
+        // PROPERTIES
+        // Style
+        // Id
+        // Parent/Children
+        // ActualWidth/Height, MinWidth/Height, MaxWidth/Height,
+        // Alignment/Margin
+        // Visibility, IsVisible
+        // IsEnabled (is false, control is disabled, no interaction and a specific render state)
+        // CacheMode of Visual Elements
+        // Focusable/IsFocused
+        // IsPointerCaptured, CapturePointer, IsPointerDirectlyOver, IsPointerOver. De-correlate mouse, stylus, touch?
+        // ContextMenu
+        // Cursor
+        // DesiredSize
+        // IsInputEnable ?
+        // Opacity, OpacityMask ?
+        // SnapToDevicePixels
+        // Tag
+        // ToolTip
+        // METHODS
+        // BringIntoView (for scrollable content, to move the scroll to bring the given element visible in the parent's area)
+        // Capture/ReleaseCapture (mouse, touch, stylus)
+        // Focus
+        // PointFrom/ToScreen to translate coordinates
+        // EVENTS
+        // ContextMenuOpening/Closing/Changed
+        // DragEnter/LeaveOver, Drop
+        // Got/LostFocus
+        // IsEnabledChanged
+        // IsPointerOver/DirectlyOverChanged
+        // IsVisibleChanged
+        // KeyDown/Up
+        // LayoutUpdated ?
+        // Pointer related events
+        // SizeChanged
+        // ToolTipOpening/Closing
+        UIElement.prototype.findById = function (id) {
+            if (this._id === id) {
+                return this;
+            }
+            var children = this._getChildren();
+            for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
+                var child = children_1[_i];
+                var r = child.findById(id);
+                if (r != null) {
+                    return r;
+                }
+            }
+        };
+        Object.defineProperty(UIElement.prototype, "ownerWindow", {
             get: function () {
                 return this._ownerWindow;
             },
@@ -13330,7 +13446,7 @@ var BABYLON;
         Object.defineProperty(UIElement.prototype, "style", {
             get: function () {
                 if (!this.style) {
-                    return UIElementStyleManager.DefaultStyleName;
+                    return GUIManager.DefaultStyleName;
                 }
                 return this._style.name;
             },
@@ -13340,7 +13456,7 @@ var BABYLON;
                 }
                 var newStyle = null;
                 if (value) {
-                    newStyle = UIElementStyleManager.getStyle(BABYLON.Tools.getFullClassName(this), value);
+                    newStyle = GUIManager.getStyle(BABYLON.Tools.getFullClassName(this), value);
                     if (!newStyle) {
                         throw Error("Couldn't find Style " + value + " for UIElement " + BABYLON.Tools.getFullClassName(this));
                     }
@@ -13563,36 +13679,116 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(UIElement.prototype, "isEnabled", {
+        Object.defineProperty(UIElement.prototype, "paddingAlignment", {
             get: function () {
-                return this._isEnabled;
+                if (!this._paddingAlignment) {
+                    this._paddingAlignment = new BABYLON.PrimitiveAlignment();
+                }
+                return this._paddingAlignment;
             },
             set: function (value) {
-                this._isEnabled = value;
+                this.paddingAlignment.copyFrom(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "_hasPaddingAlignment", {
+            /**
+             * Check if there a marginAlignment specified (non null and not default)
+             */
+            get: function () {
+                return (this._paddingAlignment !== null && !this._paddingAlignment.isDefault);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "isVisible", {
+            get: function () {
+                return this._isFlagSet(UIElement.flagIsVisible);
+            },
+            set: function (value) {
+                if (this.isVisible === value) {
+                    return;
+                }
+                this._visualPlaceholder.levelVisible = value;
+                this._changeFlags(UIElement.flagIsVisible, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "isEnabled", {
+            get: function () {
+                return this._isFlagSet(UIElement.flagIsEnabled);
+            },
+            set: function (value) {
+                this._changeFlags(UIElement.flagIsEnabled, value);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(UIElement.prototype, "isFocused", {
             get: function () {
-                return this._isFocused;
+                return this._isFlagSet(UIElement.flagIsFocus);
             },
             set: function (value) {
-                this._isFocused = value;
+                // If the UIElement doesn't accept focus, set it on its parent
+                if (!this.isFocusable) {
+                    var p = this.parent;
+                    if (!p) {
+                        return;
+                    }
+                    p.isFocused = value;
+                }
+                // If the focus is being set, notify the Focus Manager
+                if (value) {
+                    this.ownerWindow.focusManager.setFocusOn(this, this.getFocusScope());
+                }
+                this._changeFlags(UIElement.flagIsFocus, value);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(UIElement.prototype, "isMouseOver", {
             get: function () {
-                return this._isMouseOver;
+                return this._isFlagSet(UIElement.flagIsMouseOver);
             },
             set: function (value) {
-                this._isMouseOver = value;
+                this._changeFlags(UIElement.flagIsMouseOver, value);
             },
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(UIElement.prototype, "isFocusScope", {
+            get: function () {
+                return this._isFlagSet(UIElement.flagIsFocusScope);
+            },
+            set: function (value) {
+                this._changeFlags(UIElement.flagIsFocusScope, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIElement.prototype, "isFocusable", {
+            get: function () {
+                return this._isFlagSet(UIElement.flagIsFocusable);
+            },
+            set: function (value) {
+                this._changeFlags(UIElement.flagIsFocusable, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        // Look for the nearest parent which is the focus scope. Should always return something as the Window UIElement which is the root of all UI Tree is focus scope (unless the user disable it)
+        UIElement.prototype.getFocusScope = function () {
+            if (this.isFocusScope) {
+                return this;
+            }
+            var p = this.parent;
+            if (!p) {
+                return null;
+            }
+            return p.getFocusScope();
+        };
         /**
          * Check if a given flag is set
          * @param flag the flag value
@@ -13649,25 +13845,29 @@ var BABYLON;
         };
         UIElement.prototype._assignTemplate = function (templateName) {
             if (!templateName) {
-                templateName = UIElementRenderingTemplateManager.DefaultTemplateName;
+                templateName = GUIManager.DefaultTemplateName;
             }
             var className = BABYLON.Tools.getFullClassName(this);
             if (!className) {
                 throw Error("Couldn't access class name of this UIElement, you have to decorate the type with the className decorator");
             }
-            var factory = UIElementRenderingTemplateManager.getRenderingTemplate(className, templateName);
+            var factory = GUIManager.getRenderingTemplate(className, templateName);
             if (!factory) {
                 throw Error("Couldn't get the renderingTemplate " + templateName + " of class " + className);
             }
+            this._renderingTemplateName = templateName;
             this._renderingTemplate = factory();
             this._renderingTemplate.attach(this);
         };
         UIElement.prototype._createVisualTree = function () {
-            var parentPrim = this.ownerWindows.canvas;
+            var parentPrim = this.ownerWindow.canvas;
             if (this.parent) {
                 parentPrim = this.parent.visualChildrenPlaceholder;
             }
-            this._visualPlaceholder = new BABYLON.Group2D({ parent: parentPrim, id: "GUI Visual Placeholder of " + this.id });
+            if (!this._renderingTemplate) {
+                this._assignTemplate(this._renderingTemplateName);
+            }
+            this._visualPlaceholder = new BABYLON.Group2D({ parent: parentPrim, id: "GUI " + BABYLON.Tools.getClassName(this) + " RootGroup of " + this.id });
             var p = this._visualPlaceholder;
             p.addExternalData("_GUIOwnerElement_", this);
             p.dataSource = this;
@@ -13676,7 +13876,6 @@ var BABYLON;
             p.createSimpleDataBinding(BABYLON.Prim2DBase.actualWidthProperty, "actualWidth", BABYLON.DataBinding.MODE_ONEWAYTOSOURCE);
             p.createSimpleDataBinding(BABYLON.Prim2DBase.actualHeightProperty, "actualHeight", BABYLON.DataBinding.MODE_ONEWAYTOSOURCE);
             p.createSimpleDataBinding(BABYLON.Prim2DBase.marginProperty, "margin", BABYLON.DataBinding.MODE_ONEWAY);
-            p.createSimpleDataBinding(BABYLON.Prim2DBase.paddingProperty, "padding", BABYLON.DataBinding.MODE_ONEWAY);
             p.createSimpleDataBinding(BABYLON.Prim2DBase.marginAlignmentProperty, "marginAlignment", BABYLON.DataBinding.MODE_ONEWAY);
             this.createVisualTree();
         };
@@ -13693,8 +13892,8 @@ var BABYLON;
             }
             var children = this._getChildren();
             if (children) {
-                for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
-                    var curChild = children_1[_i];
+                for (var _i = 0, children_2 = children; _i < children_2.length; _i++) {
+                    var curChild = children_2[_i];
                     curChild._patchUIElement(ownerWindow, this);
                 }
             }
@@ -13743,8 +13942,17 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        UIElement.UIELEMENT_PROPCOUNT = 15;
-        UIElement.flagVisualToBuild = 0x0000001; // set if the UIElement visual must be updated
+        UIElement.UIELEMENT_PROPCOUNT = 16;
+        UIElement.flagVisualToBuild = 0x0000001;
+        UIElement.flagIsVisible = 0x0000002;
+        UIElement.flagIsFocus = 0x0000004;
+        UIElement.flagIsFocusScope = 0x0000008;
+        UIElement.flagIsFocusable = 0x0000010;
+        UIElement.flagIsEnabled = 0x0000020;
+        UIElement.flagIsMouseOver = 0x0000040;
+        UIElement._enableState = "Enabled";
+        UIElement._disabledState = "Disabled";
+        UIElement._mouseOverState = "MouseOver";
         __decorate([
             BABYLON.dependencyProperty(0, function (pi) { return UIElement.parentProperty = pi; })
         ], UIElement.prototype, "parent", null);
@@ -13782,13 +13990,16 @@ var BABYLON;
             BABYLON.dynamicLevelProperty(11, function (pi) { return UIElement.marginAlignmentProperty = pi; })
         ], UIElement.prototype, "marginAlignment", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(12, function (pi) { return UIElement.isEnabledProperty = pi; })
+            BABYLON.dynamicLevelProperty(12, function (pi) { return UIElement.paddingAlignmentProperty = pi; })
+        ], UIElement.prototype, "paddingAlignment", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(13, function (pi) { return UIElement.isEnabledProperty = pi; })
         ], UIElement.prototype, "isEnabled", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(13, function (pi) { return UIElement.isFocusedProperty = pi; })
+            BABYLON.dynamicLevelProperty(14, function (pi) { return UIElement.isFocusedProperty = pi; })
         ], UIElement.prototype, "isFocused", null);
         __decorate([
-            BABYLON.dynamicLevelProperty(14, function (pi) { return UIElement.isMouseOverProperty = pi; })
+            BABYLON.dynamicLevelProperty(15, function (pi) { return UIElement.isMouseOverProperty = pi; })
         ], UIElement.prototype, "isMouseOver", null);
         return UIElement;
     }(BABYLON.SmartPropertyBase));
@@ -13805,11 +14016,19 @@ var BABYLON;
         return UIElementStyle;
     }());
     BABYLON.UIElementStyle = UIElementStyle;
-    var UIElementStyleManager = (function () {
-        function UIElementStyleManager() {
+    var GUIManager = (function () {
+        function GUIManager() {
         }
-        UIElementStyleManager.getStyle = function (uiElType, styleName) {
-            var styles = UIElementStyleManager.stylesByUIElement.get(uiElType);
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // DATA TEMPLATE MANAGER
+        GUIManager.registerDataTemplate = function (className, factory) {
+        };
+        // DATA TEMPLATE MANAGER
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // STYLE MANAGER
+        GUIManager.getStyle = function (uiElType, styleName) {
+            var styles = GUIManager.stylesByUIElement.get(uiElType);
             if (!styles) {
                 throw Error("The type " + uiElType + " is unknown, no style were registered for it.");
             }
@@ -13819,8 +14038,8 @@ var BABYLON;
             }
             return style;
         };
-        UIElementStyleManager.registerStyle = function (uiElType, templateName, style) {
-            var templates = UIElementStyleManager.stylesByUIElement.getOrAddWithFactory(uiElType, function () { return new BABYLON.StringDictionary(); });
+        GUIManager.registerStyle = function (uiElType, templateName, style) {
+            var templates = GUIManager.stylesByUIElement.getOrAddWithFactory(uiElType, function () { return new BABYLON.StringDictionary(); });
             if (templates.contains(templateName)) {
                 templates[templateName] = style;
             }
@@ -13828,26 +14047,22 @@ var BABYLON;
                 templates.add(templateName, style);
             }
         };
-        Object.defineProperty(UIElementStyleManager, "DefaultStyleName", {
+        Object.defineProperty(GUIManager, "DefaultStyleName", {
             get: function () {
-                return UIElementStyleManager._defaultStyleName;
+                return GUIManager._defaultStyleName;
             },
             set: function (value) {
-                UIElementStyleManager._defaultStyleName = value;
+                GUIManager._defaultStyleName = value;
             },
             enumerable: true,
             configurable: true
         });
-        UIElementStyleManager.stylesByUIElement = new BABYLON.StringDictionary();
-        UIElementStyleManager._defaultStyleName = "Default";
-        return UIElementStyleManager;
-    }());
-    BABYLON.UIElementStyleManager = UIElementStyleManager;
-    var UIElementRenderingTemplateManager = (function () {
-        function UIElementRenderingTemplateManager() {
-        }
-        UIElementRenderingTemplateManager.getRenderingTemplate = function (uiElType, templateName) {
-            var templates = UIElementRenderingTemplateManager.renderingTemplatesByUIElement.get(uiElType);
+        // STYLE MANAGER
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // RENDERING TEMPLATE MANAGER
+        GUIManager.getRenderingTemplate = function (uiElType, templateName) {
+            var templates = GUIManager.renderingTemplatesByUIElement.get(uiElType);
             if (!templates) {
                 throw Error("The type " + uiElType + " is unknown, no Rendering Template were registered for it.");
             }
@@ -13857,8 +14072,8 @@ var BABYLON;
             }
             return templateFactory;
         };
-        UIElementRenderingTemplateManager.registerRenderingTemplate = function (uiElType, templateName, factory) {
-            var templates = UIElementRenderingTemplateManager.renderingTemplatesByUIElement.getOrAddWithFactory(uiElType, function () { return new BABYLON.StringDictionary(); });
+        GUIManager.registerRenderingTemplate = function (uiElType, templateName, factory) {
+            var templates = GUIManager.renderingTemplatesByUIElement.getOrAddWithFactory(uiElType, function () { return new BABYLON.StringDictionary(); });
             if (templates.contains(templateName)) {
                 templates[templateName] = factory;
             }
@@ -13866,21 +14081,25 @@ var BABYLON;
                 templates.add(templateName, factory);
             }
         };
-        Object.defineProperty(UIElementRenderingTemplateManager, "DefaultTemplateName", {
+        Object.defineProperty(GUIManager, "DefaultTemplateName", {
             get: function () {
-                return UIElementRenderingTemplateManager._defaultTemplateName;
+                return GUIManager._defaultTemplateName;
             },
             set: function (value) {
-                UIElementRenderingTemplateManager._defaultTemplateName = value;
+                GUIManager._defaultTemplateName = value;
             },
             enumerable: true,
             configurable: true
         });
-        UIElementRenderingTemplateManager.renderingTemplatesByUIElement = new BABYLON.StringDictionary();
-        UIElementRenderingTemplateManager._defaultTemplateName = "Default";
-        return UIElementRenderingTemplateManager;
+        GUIManager.stylesByUIElement = new BABYLON.StringDictionary();
+        GUIManager.renderingTemplatesByUIElement = new BABYLON.StringDictionary();
+        // RENDERING TEMPLATE MANAGER
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        GUIManager._defaultTemplateName = "Default";
+        GUIManager._defaultStyleName = "Default";
+        return GUIManager;
     }());
-    BABYLON.UIElementRenderingTemplateManager = UIElementRenderingTemplateManager;
+    BABYLON.GUIManager = GUIManager;
     var UIElementRenderingTemplateBase = (function () {
         function UIElementRenderingTemplateBase() {
         }
@@ -13901,10 +14120,98 @@ var BABYLON;
     BABYLON.UIElementRenderingTemplateBase = UIElementRenderingTemplateBase;
     function registerWindowRenderingTemplate(uiElType, templateName, factory) {
         return function () {
-            UIElementRenderingTemplateManager.registerRenderingTemplate(uiElType, templateName, factory);
+            GUIManager.registerRenderingTemplate(uiElType, templateName, factory);
         };
     }
     BABYLON.registerWindowRenderingTemplate = registerWindowRenderingTemplate;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    var StackPanel = (function (_super) {
+        __extends(StackPanel, _super);
+        function StackPanel(settings) {
+            if (!settings) {
+                settings = {};
+            }
+            _super.call(this, settings);
+            this.isOrientationHorizontal = (settings.isOrientationHorizontal == null) ? true : settings.isOrientationHorizontal;
+            this._children = new Array();
+            if (settings.children != null) {
+                for (var _i = 0, _a = settings.children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    this._children.push(child);
+                }
+            }
+        }
+        Object.defineProperty(StackPanel.prototype, "isOrientationHorizontal", {
+            get: function () {
+                return this._isOrientationHorizontal;
+            },
+            set: function (value) {
+                this._isOrientationHorizontal = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        StackPanel.prototype.createVisualTree = function () {
+            _super.prototype.createVisualTree.call(this);
+            // A StackPanel Control has a Group2D, child of the visualPlaceHolder, which is the Children placeholder.
+            // The Children UIElement Tree will be create inside this placeholder.
+            this._childrenPlaceholder = new BABYLON.Group2D({ parent: this._visualPlaceholder, id: "StackPanel Children Placeholder of " + this.id });
+            var p = this._childrenPlaceholder;
+            p.layoutEngine = this.isOrientationHorizontal ? BABYLON.StackPanelLayoutEngine.Horizontal : BABYLON.StackPanelLayoutEngine.Vertical;
+            // The UIElement padding properties (padding and paddingAlignment) are bound to the Group2D Children placeholder, we bound to the Margin properties as the Group2D acts as an inner element already, so margin of inner is padding.
+            p.dataSource = this;
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.marginProperty, "padding", BABYLON.DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.marginAlignmentProperty, "paddingAlignment", BABYLON.DataBinding.MODE_ONEWAY);
+            // The UIElement set the childrenPlaceholder with the visual returned by the renderingTemplate.
+            // But it's not the case for a StackPanel, the placeholder of UIElement Children (the content)
+            this._visualChildrenPlaceholder = this._childrenPlaceholder;
+        };
+        Object.defineProperty(StackPanel.prototype, "children", {
+            get: function () {
+                return this._children;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        StackPanel.prototype._getChildren = function () {
+            return this.children;
+        };
+        StackPanel.STACKPANEL_PROPCOUNT = BABYLON.UIElement.UIELEMENT_PROPCOUNT + 3;
+        __decorate([
+            BABYLON.dependencyProperty(StackPanel.STACKPANEL_PROPCOUNT + 0, function (pi) { return StackPanel.orientationHorizontalProperty = pi; })
+        ], StackPanel.prototype, "isOrientationHorizontal", null);
+        StackPanel = __decorate([
+            BABYLON.className("StackPanel", "BABYLON")
+        ], StackPanel);
+        return StackPanel;
+    }(BABYLON.UIElement));
+    BABYLON.StackPanel = StackPanel;
+    var DefaultStackPanelRenderingTemplate = (function (_super) {
+        __extends(DefaultStackPanelRenderingTemplate, _super);
+        function DefaultStackPanelRenderingTemplate() {
+            _super.apply(this, arguments);
+        }
+        DefaultStackPanelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
+            return { root: visualPlaceholder, contentPlaceholder: visualPlaceholder };
+        };
+        DefaultStackPanelRenderingTemplate.prototype.attach = function (owner) {
+            _super.prototype.attach.call(this, owner);
+        };
+        DefaultStackPanelRenderingTemplate = __decorate([
+            BABYLON.registerWindowRenderingTemplate("BABYLON.StackPanel", "Default", function () { return new DefaultStackPanelRenderingTemplate(); })
+        ], DefaultStackPanelRenderingTemplate);
+        return DefaultStackPanelRenderingTemplate;
+    }(BABYLON.UIElementRenderingTemplateBase));
+    BABYLON.DefaultStackPanelRenderingTemplate = DefaultStackPanelRenderingTemplate;
 })(BABYLON || (BABYLON = {}));
 
 
@@ -13995,6 +14302,16 @@ var BABYLON;
         return Control;
     }(BABYLON.UIElement));
     BABYLON.Control = Control;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
     var ContentControl = (function (_super) {
         __extends(ContentControl, _super);
         function ContentControl(settings) {
@@ -14004,9 +14321,6 @@ var BABYLON;
             _super.call(this, settings);
             if (settings.content != null) {
                 this._content = settings.content;
-            }
-            if (settings.contentAlignment != null) {
-                this.contentAlignment.fromString(settings.contentAlignment);
             }
         }
         ContentControl.prototype.dispose = function () {
@@ -14034,29 +14348,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ContentControl.prototype, "contentAlignment", {
-            get: function () {
-                if (!this._contentAlignment) {
-                    this._contentAlignment = new BABYLON.PrimitiveAlignment();
-                }
-                return this._contentAlignment;
-            },
-            set: function (value) {
-                this.contentAlignment.copyFrom(value);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ContentControl.prototype, "_hasContentAlignment", {
-            /**
-             * Check if there a contentAlignment specified (non null and not default)
-             */
-            get: function () {
-                return (this._contentAlignment !== null && !this._contentAlignment.isDefault);
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(ContentControl.prototype, "_contentUIElement", {
             get: function () {
                 if (!this.__contentUIElement) {
@@ -14067,6 +14358,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        ContentControl.prototype._createVisualTree = function () {
+            // Base implementation will create the Group2D for the Visual Placeholder and its Visual Tree
+            _super.prototype._createVisualTree.call(this);
+            // A Content Control has a Group2D, child of the visualPlaceHolder, which is the Content placeholder.
+            // The Content UIElement Tree will be create inside this placeholder.
+            this._contentPlaceholder = new BABYLON.Group2D({ parent: this._visualPlaceholder, id: "ContentControl Content Placeholder of " + this.id });
+            var p = this._contentPlaceholder;
+            // The UIElement padding properties (padding and paddingAlignment) are bound to the Group2D Content placeholder, we bound to the Margin properties as the Group2D acts as an inner element already, so margin of inner is padding.
+            p.dataSource = this;
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.marginProperty, "padding", BABYLON.DataBinding.MODE_ONEWAY);
+            p.createSimpleDataBinding(BABYLON.Prim2DBase.marginAlignmentProperty, "paddingAlignment", BABYLON.DataBinding.MODE_ONEWAY);
+            // The UIElement set the childrenPlaceholder with the visual returned by the renderingTemplate.
+            // But it's not the case for a ContentControl, the placeholder of UIElement Children (the content)
+            this._visualChildrenPlaceholder = this._contentPlaceholder;
+        };
         ContentControl.prototype._buildContentUIElement = function () {
             var c = this._content;
             this.__contentUIElement = null;
@@ -14081,16 +14387,12 @@ var BABYLON;
                 binding.stringFormat = function (v) { return ("" + v); };
                 binding.dataSource = this;
                 l.createDataBinding(BABYLON.Label.textProperty, binding);
-                binding = new BABYLON.DataBinding();
-                binding.propertyPathName = "contentAlignment";
-                binding.dataSource = this;
-                l.createDataBinding(BABYLON.Label.marginAlignmentProperty, binding);
                 this.__contentUIElement = l;
             }
             else {
             }
             if (this.__contentUIElement) {
-                this.__contentUIElement._patchUIElement(this.ownerWindows, this);
+                this.__contentUIElement._patchUIElement(this.ownerWindow, this);
             }
         };
         ContentControl.prototype._getChildren = function () {
@@ -14100,18 +14402,15 @@ var BABYLON;
             }
             return children;
         };
-        ContentControl.CONTENTCONTROL_PROPCOUNT = Control.CONTROL_PROPCOUNT + 2;
+        ContentControl.CONTENTCONTROL_PROPCOUNT = BABYLON.Control.CONTROL_PROPCOUNT + 2;
         __decorate([
-            BABYLON.dependencyProperty(Control.CONTROL_PROPCOUNT + 0, function (pi) { return ContentControl.contentProperty = pi; })
+            BABYLON.dependencyProperty(BABYLON.Control.CONTROL_PROPCOUNT + 0, function (pi) { return ContentControl.contentProperty = pi; })
         ], ContentControl.prototype, "content", null);
-        __decorate([
-            BABYLON.dependencyProperty(Control.CONTROL_PROPCOUNT + 1, function (pi) { return ContentControl.contentAlignmentProperty = pi; })
-        ], ContentControl.prototype, "contentAlignment", null);
         ContentControl = __decorate([
             BABYLON.className("ContentControl", "BABYLON")
         ], ContentControl);
         return ContentControl;
-    }(Control));
+    }(BABYLON.Control));
     BABYLON.ContentControl = ContentControl;
 })(BABYLON || (BABYLON = {}));
 
@@ -14123,6 +14422,43 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var FocusScopeData = (function () {
+        function FocusScopeData(focusScope) {
+            this.focusScope = focusScope;
+            this.focusedElement = null;
+        }
+        return FocusScopeData;
+    }());
+    var FocusManager = (function () {
+        function FocusManager() {
+            this._focusScopes = new BABYLON.StringDictionary();
+            this._rootScope = new FocusScopeData(null);
+            this._activeScope = null;
+        }
+        FocusManager.prototype.setFocusOn = function (el, focusScope) {
+            var fsd = (focusScope != null) ? this._focusScopes.getOrAddWithFactory(focusScope.uid, function (k) { return new FocusScopeData(focusScope); }) : this._rootScope;
+            if (fsd.focusedElement !== el) {
+                // Remove focus from current
+                if (fsd.focusedElement) {
+                    fsd.focusedElement.isFocused = false;
+                }
+                fsd.focusedElement = el;
+            }
+            if (this._activeScope !== fsd) {
+                this._activeScope = fsd;
+            }
+        };
+        return FocusManager;
+    }());
+    BABYLON.FocusManager = FocusManager;
+    var GUISceneData = (function () {
+        function GUISceneData(scene) {
+            this.scene = scene;
+            this.screenSpaceCanvas = new BABYLON.ScreenSpaceCanvas2D(scene, { id: "GUI Canvas", cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_DONTCACHE });
+            this.focusManager = new FocusManager();
+        }
+        return GUISceneData;
+    }());
     var Window = (function (_super) {
         __extends(Window, _super);
         function Window(scene, settings) {
@@ -14131,6 +14467,9 @@ var BABYLON;
                 settings = {};
             }
             _super.call(this, settings);
+            // Per default a Window is focus scope
+            this.isFocusScope = true;
+            this.isActive = false;
             if (!this._UIElementVisualToBuildList) {
                 this._UIElementVisualToBuildList = new Array();
             }
@@ -14138,7 +14477,8 @@ var BABYLON;
             this._patchUIElement(this, null);
             // Screen Space UI
             if (!settings.worldPosition && !settings.worldRotation) {
-                this._canvas = Window.getScreenCanvas(scene);
+                this._sceneData = Window.getSceneData(scene);
+                this._canvas = this._sceneData.screenSpaceCanvas;
                 this._isWorldSpaceCanvas = false;
                 this._left = (settings.left != null) ? settings.left : 0;
                 this._bottom = (settings.bottom != null) ? settings.bottom : 0;
@@ -14198,6 +14538,23 @@ var BABYLON;
             set: function (value) {
                 this._left = value.x;
                 this._bottom = value.y;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Window.prototype, "isActive", {
+            get: function () {
+                return this._isActive;
+            },
+            set: function (value) {
+                this._isActive = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Window.prototype, "focusManager", {
+            get: function () {
+                return this._sceneData.focusManager;
             },
             enumerable: true,
             configurable: true
@@ -14263,17 +14620,11 @@ var BABYLON;
             this._canvas.disposeObservable.remove(this._disposeObserver);
             this._canvas.renderObservable.remove(this._renderObserver);
         };
-        Window.getScreenCanvas = function (scene) {
-            var canvas = BABYLON.Tools.first(Window._screenCanvasList, function (c) { return c.scene === scene; });
-            if (canvas) {
-                return canvas;
-            }
-            canvas = new BABYLON.ScreenSpaceCanvas2D(scene, { id: "GUI Canvas", cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_DONTCACHE });
-            Window._screenCanvasList.push(canvas);
-            return canvas;
+        Window.getSceneData = function (scene) {
+            return Window._sceneData.getOrAddWithFactory(scene.uid, function (k) { return new GUISceneData(scene); });
         };
-        Window.WINDOW_PROPCOUNT = BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 2;
-        Window._screenCanvasList = new Array();
+        Window.WINDOW_PROPCOUNT = BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 4;
+        Window._sceneData = new BABYLON.StringDictionary();
         __decorate([
             BABYLON.dependencyProperty(BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 0, function (pi) { return Window.leftProperty = pi; })
         ], Window.prototype, "left", null);
@@ -14283,6 +14634,9 @@ var BABYLON;
         __decorate([
             BABYLON.dependencyProperty(BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 2, function (pi) { return Window.positionProperty = pi; })
         ], Window.prototype, "position", null);
+        __decorate([
+            BABYLON.dependencyProperty(BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 3, function (pi) { return Window.isActiveProperty = pi; })
+        ], Window.prototype, "isActive", null);
         Window = __decorate([
             BABYLON.className("Window", "BABYLON")
         ], Window);
@@ -14393,28 +14747,38 @@ var BABYLON;
                 settings = {};
             }
             _super.call(this, settings);
-            // For a button the default contentAlignemnt is center/center
-            if (settings.contentAlignment == null) {
-                this.contentAlignment.horizontal = BABYLON.PrimitiveAlignment.AlignCenter;
-                this.contentAlignment.vertical = BABYLON.PrimitiveAlignment.AlignCenter;
+            if (settings.paddingAlignment == null) {
+                this.paddingAlignment.horizontal = BABYLON.PrimitiveAlignment.AlignCenter;
+                this.paddingAlignment.vertical = BABYLON.PrimitiveAlignment.AlignCenter;
             }
-            this.normalEnabledBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#337AB7FF");
-            this.normalDisabledBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#7BA9D0FF");
-            this.normalMouseOverBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#286090FF");
-            this.normalPushedBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#1E496EFF");
-            this.normalEnabledBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#2E6DA4FF");
-            this.normalDisabledBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#77A0C4FF");
-            this.normalMouseOverBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#204D74FF");
-            this.normalPushedBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#2E5D9EFF");
-            this.defaultEnabledBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
-            this.defaultDisabledBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
-            this.defaultMouseOverBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#E6E6E6FF");
-            this.defaultPushedBackground = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#D4D4D4FF");
-            this.defaultEnabledBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#CCCCCCFF");
-            this.defaultDisabledBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#DEDEDEFF");
-            this.defaultMouseOverBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#ADADADFF");
-            this.defaultPushedBorder = BABYLON.Canvas2D.GetSolidColorBrushFromHex("#6C8EC5FF");
+            this._normalStateBackground = new BABYLON.ObservableStringDictionary(false);
+            this._normalStateBorder = new BABYLON.ObservableStringDictionary(false);
+            this._defaultStateBackground = new BABYLON.ObservableStringDictionary(false);
+            this._defaultStateBorder = new BABYLON.ObservableStringDictionary(false);
+            this._normalStateBackground.add(BABYLON.UIElement.enabledState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#337AB7FF"));
+            this._normalStateBackground.add(BABYLON.UIElement.disabledState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#7BA9D0FF"));
+            this._normalStateBackground.add(BABYLON.UIElement.mouseOverState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#286090FF"));
+            this._normalStateBackground.add(Button.pushedState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#1E496EFF"));
+            this._normalStateBorder.add(BABYLON.UIElement.enabledState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#2E6DA4FF"));
+            this._normalStateBorder.add(BABYLON.UIElement.disabledState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#77A0C4FF"));
+            this._normalStateBorder.add(BABYLON.UIElement.mouseOverState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#204D74FF"));
+            this._normalStateBorder.add(Button.pushedState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#2E5D9EFF"));
+            this._defaultStateBackground.add(BABYLON.UIElement.enabledState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"));
+            this._defaultStateBackground.add(BABYLON.UIElement.disabledState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF"));
+            this._defaultStateBackground.add(BABYLON.UIElement.mouseOverState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#E6E6E6FF"));
+            this._defaultStateBackground.add(Button.pushedState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#D4D4D4FF"));
+            this._defaultStateBorder.add(BABYLON.UIElement.enabledState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#CCCCCCFF"));
+            this._defaultStateBorder.add(BABYLON.UIElement.disabledState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#DEDEDEFF"));
+            this._defaultStateBorder.add(BABYLON.UIElement.mouseOverState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#ADADADFF"));
+            this._defaultStateBorder.add(Button.pushedState, BABYLON.Canvas2D.GetSolidColorBrushFromHex("#6C8EC5FF"));
         }
+        Object.defineProperty(Button, "pushedState", {
+            get: function () {
+                return Button._pushedState;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Button.prototype, "isPushed", {
             get: function () {
                 return this._isPushed;
@@ -14456,13 +14820,19 @@ var BABYLON;
             configurable: true
         });
         Button.prototype._raiseClick = function () {
-            console.log("click");
+            if (this._clickObservable && this._clickObservable.hasObservers()) {
+                this._clickObservable.notifyObservers(this);
+            }
         };
         Button.prototype.createVisualTree = function () {
             var _this = this;
             _super.prototype.createVisualTree.call(this);
             var p = this._visualPlaceholder;
             p.pointerEventObservable.add(function (e, s) {
+                // check if input must be discarded
+                if (!_this.isVisible || !_this.isEnabled) {
+                    return;
+                }
                 // We reject an event coming from the placeholder because it means it's on an empty spot, so it's not valid.
                 if (e.relatedTarget === _this._visualPlaceholder) {
                     return;
@@ -14473,17 +14843,40 @@ var BABYLON;
                 }
                 else if (s.mask === BABYLON.PrimitivePointerInfo.PointerDown) {
                     _this.isPushed = true;
+                    _this.isFocused = true;
                 }
             }, BABYLON.PrimitivePointerInfo.PointerUp | BABYLON.PrimitivePointerInfo.PointerDown);
         };
-        Object.defineProperty(Button.prototype, "_position", {
+        Object.defineProperty(Button.prototype, "normalStateBackground", {
             get: function () {
-                return BABYLON.Vector2.Zero();
+                return this._normalStateBackground;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Button.prototype, "defaultStateBackground", {
+            get: function () {
+                return this._defaultStateBackground;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Button.prototype, "normalStateBorder", {
+            get: function () {
+                return this._normalStateBorder;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Button.prototype, "defaultStateBorder", {
+            get: function () {
+                return this._defaultStateBorder;
             },
             enumerable: true,
             configurable: true
         });
         Button.BUTTON_PROPCOUNT = BABYLON.ContentControl.CONTENTCONTROL_PROPCOUNT + 3;
+        Button._pushedState = "Pushed";
         __decorate([
             BABYLON.dependencyProperty(BABYLON.ContentControl.CONTROL_PROPCOUNT + 0, function (pi) { return Button.isPushedProperty = pi; })
         ], Button.prototype, "isPushed", null);
@@ -14518,40 +14911,50 @@ var BABYLON;
                 Button.isDefaultProperty.flagId |
                 Button.isOutlineProperty.flagId |
                 Button.isPushedProperty.flagId);
+            // Register for brush change and update the Visual
+            var button = owner;
+            button.normalStateBackground.dictionaryChanged.add(function (e, c) { return _this.stateChange(); });
+            button.normalStateBorder.dictionaryChanged.add(function (e, c) { return _this.stateChange(); });
+            button.defaultStateBackground.dictionaryChanged.add(function (e, c) { return _this.stateChange(); });
+            button.defaultStateBorder.dictionaryChanged.add(function (e, c) { return _this.stateChange(); });
         };
         DefaultButtonRenderingTemplate.prototype.stateChange = function () {
+            //console.log("state changed");
             var b = this.owner;
-            var bg = b.isDefault ? b.defaultEnabledBackground : b.normalEnabledBackground;
-            var bd = b.isDefault ? b.defaultEnabledBorder : b.normalEnabledBorder;
+            var state = BABYLON.UIElement.enabledState;
+            var bg = b.isDefault ? b.defaultStateBackground.get(state) : b.normalStateBackground.get(state);
+            var bd = b.isDefault ? b.defaultStateBorder.get(state) : b.normalStateBorder.get(state);
             if (b.isPushed) {
+                state = Button.pushedState;
                 if (b.isDefault) {
-                    bg = b.defaultPushedBackground;
-                    bd = b.defaultPushedBorder;
+                    bg = b.defaultStateBackground.get(state);
+                    bd = b.defaultStateBorder.get(state);
                 }
                 else {
-                    bg = b.normalPushedBackground;
-                    bd = b.normalPushedBorder;
+                    bg = b.normalStateBackground.get(state);
+                    bd = b.normalStateBorder.get(state);
                 }
             }
             else if (b.isMouseOver) {
-                console.log("MouseOver Style");
+                state = BABYLON.UIElement.mouseOverState;
                 if (b.isDefault) {
-                    bg = b.defaultMouseOverBackground;
-                    bd = b.defaultMouseOverBorder;
+                    bg = b.defaultStateBackground.get(state);
+                    bd = b.defaultStateBorder.get(state);
                 }
                 else {
-                    bg = b.normalMouseOverBackground;
-                    bd = b.normalMouseOverBorder;
+                    bg = b.normalStateBackground.get(state);
+                    bd = b.normalStateBorder.get(state);
                 }
             }
             else if (!b.isEnabled) {
+                state = BABYLON.UIElement.disabledState;
                 if (b.isDefault) {
-                    bg = b.defaultDisabledBackground;
-                    bd = b.defaultDisabledBorder;
+                    bg = b.defaultStateBackground.get(state);
+                    bd = b.defaultStateBorder.get(state);
                 }
                 else {
-                    bg = b.normalDisabledBackground;
-                    bd = b.normalDisabledBorder;
+                    bg = b.normalStateBackground.get(state);
+                    bd = b.normalStateBorder.get(state);
                 }
             }
             this._rect.fill = bg;
