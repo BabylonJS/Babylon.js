@@ -91,7 +91,7 @@ void main(void) {
 #endif
 
 #ifdef TRANSPARENT
-    float opacity = clamp(grid, 0.08, color.w);
+    float opacity = clamp(grid, 0.08, gridControl.w);
     gl_FragColor = vec4(color.rgb, opacity);
 #else
     // Apply the color.
