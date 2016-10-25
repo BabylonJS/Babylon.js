@@ -8,9 +8,12 @@ var BABYLON;
         * Creates a SPS (Solid Particle System) object.
         * `name` (String) is the SPS name, this will be the underlying mesh name.
         * `scene` (Scene) is the scene in which the SPS is added.
-        * `updatable` (default true) : if the SPS must be updatable or immutable.
-        * `isPickable` (default false) : if the solid particles must be pickable.
-        * `particleIntersection` (default false) : if the solid particle intersections must be computed
+        * `updatable` (optional boolean, default true) : if the SPS must be updatable or immutable.
+        * `isPickable` (optional boolean, default false) : if the solid particles must be pickable.
+        * `particleIntersection` (optional boolean, default false) : if the solid particle intersections must be computed.
+        * `boundingSphereOnly` (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
+        * `bSphereRadiusFactor` (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+        *  Example : bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
         */
         function SolidParticleSystem(name, scene, options) {
             // public members
@@ -92,12 +95,14 @@ var BABYLON;
             this._maxBbox = BABYLON.Tmp.Vector3[5];
             this._particlesIntersect = false;
             this._bSphereOnly = false;
+            this._bSphereRadiusFactor = 1.0;
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
             this._pickable = options ? options.isPickable : false;
             this._particlesIntersect = options ? options.particleIntersection : false;
             this._bSphereOnly = options ? options.boundingSphereOnly : false;
+            this._bSphereRadiusFactor = (options && options.bSphereRadiusFactor) ? options.bSphereRadiusFactor : 1.0;
             if (options && options.updatable) {
                 this._updatable = options.updatable;
             }
@@ -644,7 +649,7 @@ var BABYLON;
                     bSphere.center.x = this._particle.position.x + (this._minBbox.x + this._maxBbox.x) * 0.5;
                     bSphere.center.y = this._particle.position.y + (this._minBbox.y + this._maxBbox.y) * 0.5;
                     bSphere.center.z = this._particle.position.z + (this._minBbox.z + this._maxBbox.z) * 0.5;
-                    bSphere.radius = 0.5 * Math.sqrt((this._maxBbox.x - this._minBbox.x) * (this._maxBbox.x - this._minBbox.x) + (this._maxBbox.y - this._minBbox.y) * (this._maxBbox.y - this._minBbox.y) + (this._maxBbox.z - this._minBbox.z) * (this._maxBbox.z - this._minBbox.z));
+                    bSphere.radius = this._bSphereRadiusFactor * 0.5 * Math.sqrt((this._maxBbox.x - this._minBbox.x) * (this._maxBbox.x - this._minBbox.x) + (this._maxBbox.y - this._minBbox.y) * (this._maxBbox.y - this._minBbox.y) + (this._maxBbox.z - this._minBbox.z) * (this._maxBbox.z - this._minBbox.z));
                     bSphere._update(this.mesh._worldMatrix);
                 }
                 // increment indexes for the next particle
