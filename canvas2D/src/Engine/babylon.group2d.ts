@@ -829,7 +829,7 @@
                 scale = this.actualScale;
             }
 
-            if (isCanvas && this.owner.cachingStrategy===Canvas2D.CACHESTRATEGY_CANVAS) {
+            if (isCanvas && this.owner.cachingStrategy===Canvas2D.CACHESTRATEGY_CANVAS && this.owner.isScreenSpace) {
                 Group2D._s.width = this.owner.engine.getRenderWidth();
                 Group2D._s.height = this.owner.engine.getRenderHeight();
             } else {

@@ -75,7 +75,6 @@
             isScreenSpace?: boolean,
             cachingStrategy?: number,
             enableInteraction?: boolean,
-            allow3DEventBelowCanvas?: boolean,
             origin?: Vector2,
             isVisible?: boolean,
             backgroundRoundRadius?: number,
@@ -172,8 +171,6 @@
             this._trackedGroups = new Array<Group2D>();
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new StringDictionary<MapTexture[]>();
-
-            this._changeFlags(SmartPropertyPrim.flagAllow3DEventsBelowCanvas, (settings.allow3DEventBelowCanvas != null) && settings.allow3DEventBelowCanvas);
 
             this._patchHierarchy(this);
 
@@ -493,12 +490,6 @@
             }
 
             eventState.skipNextObservers = skip;
-            if (!skip && (this._isFlagSet(SmartPropertyPrim.flagAllow3DEventsBelowCanvas)===false)) {
-                eventState.skipNextObservers = true;
-                if (eventData instanceof PointerInfoPre) {
-                    eventData.skipOnPointerObservable = true;
-                }
-            }
         }
 
         private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2): boolean {
@@ -1077,21 +1068,6 @@
          */
         public get _engineData(): Canvas2DEngineBoundData {
             return this.__engineData;
-        }
-
-        /**
-         * If true is returned, pointerEvent occurring above the Canvas area also sent in 3D scene, if false they are not sent in the 3D Scene
-         */
-        public get allow3DEventBelowCanvas(): boolean {
-            return this._isFlagSet(SmartPropertyPrim.flagAllow3DEventsBelowCanvas);
-        }
-
-        /**
-         * Set true if you want pointerEvent occurring above the Canvas area to also be sent in the 3D scene.
-         * Set false if you don't want the Scene to get the events
-         */
-        public set allow3DEventBelowCanvas(value: boolean) {
-            this._changeFlags(SmartPropertyPrim.flagAllow3DEventsBelowCanvas, value);
         }
 
         public createCanvasProfileInfoCanvas(): Canvas2D {
@@ -1826,7 +1802,7 @@
             this.propertyChanged.add((e, st) => {
                 let mesh = this._worldSpaceNode as AbstractMesh;
                 if (mesh) {
-                    mesh.isVisible = this.isVisible;
+                    mesh.isVisible = e.newValue;
                 }
             }, Prim2DBase.isVisibleProperty.flagId);
         }
@@ -1857,7 +1833,6 @@
          *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
-         *  - allow3DEventBelowCanvas: by default pointerEvent occurring above the Canvas will prevent to be also sent in the 3D Scene. If you set this setting to true, events will be sent both for Canvas and 3D Scene
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
          * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
@@ -1887,7 +1862,6 @@
             cachingStrategy?: number,
             cacheBehavior?: number,
             enableInteraction?: boolean,
-            allow3DEventBelowCanvas?: boolean,
             isVisible?: boolean,
             backgroundRoundRadius?: number,
             backgroundFill?: IBrush2D | string,
