@@ -1198,10 +1198,10 @@ var BABYLON;
         CanvasLayoutEngine.prototype._doUpdate = function (prim) {
             // Canvas ?
             if (prim instanceof BABYLON.Canvas2D) {
-                prim.layoutArea = prim.actualSize.multiplyByFloats(prim.scaleX, prim.scaleY);
+                prim.layoutArea = prim.actualSize; //.multiplyByFloats(prim.scaleX, prim.scaleY);
             }
             else if (prim.parent instanceof BABYLON.Canvas2D) {
-                prim.layoutArea = prim.owner.actualSize.multiplyByFloats(prim.owner.scaleX, prim.owner.scaleY);
+                prim.layoutArea = prim.owner.actualSize; //.multiplyByFloats(prim.owner.scaleX, prim.owner.scaleY);
             }
             else {
                 prim.layoutArea = prim.parent.contentArea;
@@ -2655,7 +2655,6 @@ var BABYLON;
         SmartPropertyPrim.flagDontInheritParentScale = 0x0080000; // set if the actualScale must not use its parent's scale to be computed
         SmartPropertyPrim.flagGlobalTransformDirty = 0x0100000; // set if the global transform must be recomputed due to a local transform change
         SmartPropertyPrim.flagLayoutBoundingInfoDirty = 0x0200000; // set if the layout bounding info is dirty
-        SmartPropertyPrim.flagAllow3DEventsBelowCanvas = 0x0400000; // set if pointer events should be sent to 3D Engine when the pointer is over the Canvas
         SmartPropertyPrim = __decorate([
             BABYLON.className("SmartPropertyPrim", "BABYLON")
         ], SmartPropertyPrim);
@@ -4478,7 +4477,7 @@ var BABYLON;
              * Shortcut to actualPosition.height
              */
             get: function () {
-                return this.actualSize.width;
+                return this.actualSize.height;
             },
             set: function (val) {
                 this._actualSize.height = val;
@@ -5108,7 +5107,7 @@ var BABYLON;
                     var contentBorder = "#40F0F0FF";
                     var s = new BABYLON.Size(10, 10);
                     var p = BABYLON.Vector2.Zero();
-                    this._debugAreaGroup = new BABYLON.Group2D({
+                    this._debugAreaGroup = new BABYLON.Group2D({ dontInheritParentScale: true,
                         parent: (this.parent != null) ? this.parent : this, id: "###DEBUG AREA GROUP###", children: [
                             new BABYLON.Group2D({
                                 id: "###Layout Area###", position: p, size: s, children: [
@@ -5196,16 +5195,18 @@ var BABYLON;
                 }
                 areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
             };
+            var isCanvas = this instanceof BABYLON.Canvas2D;
             var marginH = this._marginOffset.x + this._marginOffset.z;
             var marginV = this._marginOffset.y + this._marginOffset.w;
-            var w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width) : (marginH + this.actualSize.width);
-            var h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + this.actualSize.height);
+            var actualSize = this.actualSize.multiplyByFloats(isCanvas ? 1 : this.scaleX, isCanvas ? 1 : this.scaleY);
+            var w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width) : (marginH + actualSize.width);
+            var h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + actualSize.height);
             var pos = (!hasLayout && !hasMargin && !hasPadding && hasPos) ? this.actualPosition : BABYLON.Vector2.Zero();
             storeAreaInfo(pos, new BABYLON.Size(w, h));
             // Compute the layout related data
             if (hasLayout) {
                 var layoutOffset = this.layoutAreaPos.clone();
-                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : this.actualSize.clone());
+                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : actualSize.clone());
                 curOffset = layoutOffset.clone();
             }
             // Compute margin data
@@ -5213,7 +5214,7 @@ var BABYLON;
                 var marginOffset = curOffset.clone();
                 marginOffset.x += this._marginOffset.x;
                 marginOffset.y += this._marginOffset.y;
-                var marginArea = this.actualSize;
+                var marginArea = actualSize;
                 storeAreaInfo(marginOffset, marginArea);
                 curOffset = marginOffset.clone();
             }
@@ -5322,10 +5323,6 @@ var BABYLON;
         Prim2DBase.prototype.releasePointerEventsCapture = function (pointerId) {
             return this.owner._releasePointerCapture(pointerId, this);
         };
-        /**
-         * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
-         * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
-         */
         Prim2DBase.prototype.intersect = function (intersectInfo) {
             if (!intersectInfo) {
                 return false;
@@ -5340,13 +5337,26 @@ var BABYLON;
                 intersectInfo.intersectedPrimitives = new Array();
                 intersectInfo.topMostIntersectedPrimitive = null;
             }
+            if (!Prim2DBase._bypassGroup2DExclusion && this instanceof BABYLON.Group2D && this.isCachedGroup && !this.isRenderableGroup) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
+                return false;
+            }
             if (!intersectInfo.intersectHidden && !this.isVisible) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
                 return false;
             }
             var id = this.id;
             if (id != null && id.indexOf("__cachedSpriteOfGroup__") === 0) {
-                var ownerGroup = this.getExternalData("__cachedGroup__");
-                return ownerGroup.intersect(intersectInfo);
+                try {
+                    Prim2DBase._bypassGroup2DExclusion = true;
+                    var ownerGroup = this.getExternalData("__cachedGroup__");
+                    return ownerGroup.intersect(intersectInfo);
+                }
+                finally {
+                    Prim2DBase._bypassGroup2DExclusion = false;
+                }
             }
             // If we're testing a cachedGroup, we must reject pointer outside its levelBoundingInfo because children primitives could be partially clipped outside so we must not accept them as intersected when it's the case (because they're not visually visible).
             var isIntersectionTest = false;
@@ -5474,6 +5484,10 @@ var BABYLON;
         Prim2DBase.prototype.dispose = function () {
             if (!_super.prototype.dispose.call(this)) {
                 return false;
+            }
+            if (this._pointerEventObservable) {
+                this._pointerEventObservable.clear();
+                this._pointerEventObservable = null;
             }
             if (this._actionManager) {
                 this._actionManager.dispose();
@@ -6009,6 +6023,11 @@ var BABYLON;
         Prim2DBase.nullSize = BABYLON.Size.Zero();
         Prim2DBase._bMax = BABYLON.Vector2.Zero();
         Prim2DBase._tpsBB = new BABYLON.BoundingInfo2D();
+        /**
+         * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
+         * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
+         */
+        Prim2DBase._bypassGroup2DExclusion = false;
         Prim2DBase._isCanvasInit = false;
         Prim2DBase._t0 = new BABYLON.Matrix();
         Prim2DBase._t1 = new BABYLON.Matrix();
@@ -8304,7 +8323,7 @@ var BABYLON;
             else {
                 scale = this.actualScale;
             }
-            if (isCanvas && this.owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_CANVAS) {
+            if (isCanvas && this.owner.cachingStrategy === BABYLON.Canvas2D.CACHESTRATEGY_CANVAS && this.owner.isScreenSpace) {
                 Group2D._s.width = this.owner.engine.getRenderWidth();
                 Group2D._s.height = this.owner.engine.getRenderHeight();
             }
@@ -9608,6 +9627,11 @@ var BABYLON;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.useAlphaFromTexture = true;
+            // If the user doesn't set a size, we'll use the texture's one, but if the texture is not loading, we HAVE to set a temporary dummy size otherwise the positioning engine will switch the marginAlignement to stretch/stretch, and WE DON'T WANT THAT.
+            // The fucking delayed texture sprite bug is fixed!
+            if (settings.spriteSize == null) {
+                this.size = new BABYLON.Size(10, 10);
+            }
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
                     var s = texture.getBaseSize();
@@ -9620,6 +9644,7 @@ var BABYLON;
                             _this.size = new BABYLON.Size(s.width, s.height);
                         }
                         _this._positioningDirty();
+                        _this._setLayoutDirty();
                         _this._instanceDirtyFlags |= BABYLON.Prim2DBase.originProperty.flagId | Sprite2D.textureProperty.flagId; // To make sure the sprite is issued again for render
                     });
                 }
@@ -11671,7 +11696,6 @@ var BABYLON;
             this._trackedGroups = new Array();
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new BABYLON.StringDictionary();
-            this._changeFlags(BABYLON.SmartPropertyPrim.flagAllow3DEventsBelowCanvas, (settings.allow3DEventBelowCanvas != null) && settings.allow3DEventBelowCanvas);
             this._patchHierarchy(this);
             var enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
             this._fitRenderingDevice = !settings.size;
@@ -11948,12 +11972,6 @@ var BABYLON;
                 skip = !this._bubbleNotifyPrimPointerObserver(targetPrim, BABYLON.PrimitivePointerInfo.PointerUp, eventData);
             }
             eventState.skipNextObservers = skip;
-            if (!skip && (this._isFlagSet(BABYLON.SmartPropertyPrim.flagAllow3DEventsBelowCanvas) === false)) {
-                eventState.skipNextObservers = true;
-                if (eventData instanceof BABYLON.PointerInfoPre) {
-                    eventData.skipOnPointerObservable = true;
-                }
-            }
         };
         Canvas2D.prototype._updatePointerInfo = function (eventData, localPosition) {
             var s = this.scale;
@@ -12508,23 +12526,6 @@ var BABYLON;
              */
             get: function () {
                 return this.__engineData;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Canvas2D.prototype, "allow3DEventBelowCanvas", {
-            /**
-             * If true is returned, pointerEvent occurring above the Canvas area also sent in 3D scene, if false they are not sent in the 3D Scene
-             */
-            get: function () {
-                return this._isFlagSet(BABYLON.SmartPropertyPrim.flagAllow3DEventsBelowCanvas);
-            },
-            /**
-             * Set true if you want pointerEvent occurring above the Canvas area to also be sent in the 3D scene.
-             * Set false if you don't want the Scene to get the events
-             */
-            set: function (value) {
-                this._changeFlags(BABYLON.SmartPropertyPrim.flagAllow3DEventsBelowCanvas, value);
             },
             enumerable: true,
             configurable: true
@@ -13121,7 +13122,7 @@ var BABYLON;
             this.propertyChanged.add(function (e, st) {
                 var mesh = _this._worldSpaceNode;
                 if (mesh) {
-                    mesh.isVisible = _this.isVisible;
+                    mesh.isVisible = e.newValue;
                 }
             }, BABYLON.Prim2DBase.isVisibleProperty.flagId);
         }
@@ -13153,7 +13154,6 @@ var BABYLON;
          *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
-         *  - allow3DEventBelowCanvas: by default pointerEvent occurring above the Canvas will prevent to be also sent in the 3D Scene. If you set this setting to true, events will be sent both for Canvas and 3D Scene
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
          * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
