@@ -389,20 +389,22 @@
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.useAlphaFromTexture = true;
 
+            // If the user doesn't set a size, we'll use the texture's one, but if the texture is not loading, we HAVE to set a temporary dummy size otherwise the positioning engine will switch the marginAlignement to stretch/stretch, and WE DON'T WANT THAT.
+            // The fucking delayed texture sprite bug is fixed!
+            if (settings.spriteSize == null) {
+                this.size = new Size(10, 10);
+            }
+
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
-                    //console.log(`Texture of Sprite2D ${this.id} was immediately ready`);
                     let s = texture.getBaseSize();
                     this.size = new Size(s.width, s.height);
                 } else {
-                    //console.log(`Texture of Sprite2D ${this.id} defer loading`);
 
                     texture.onLoadObservable.add(() => {
-                        //console.log(`Texture of Sprite2D ${this.id} loaded`);
-
                         if (settings.spriteSize == null) {
                             let s = texture.getBaseSize();
-                            this.size = new Size(s.width, s.height);
+                        this.size = new Size(s.width, s.height);
                         }
                         this._positioningDirty();
                         this._setLayoutDirty();
