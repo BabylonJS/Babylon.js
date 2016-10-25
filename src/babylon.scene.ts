@@ -2120,6 +2120,8 @@
 
             // Render targets
             this._renderTargetsDuration.beginMonitoring();
+            var needsRestoreFrameBuffer = false;
+
             var beforeRenderTargetDate = Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
@@ -2136,14 +2138,45 @@
 
                 this._intermediateRendering = false;
                 this._renderId++;
-                engine.restoreDefaultFramebuffer(); // Restore back buffer
+
+                needsRestoreFrameBuffer = true; // Restore back buffer
             }
+
+            // Render HighlightLayer Texture
+            var stencilState = this._engine.getStencilBuffer();
+            var renderhighlights = false;
+            if (this.renderTargetsEnabled && this.highlightLayers && this.highlightLayers.length > 0) {
+                for (let i = 0; i < this.highlightLayers.length; i++) {
+                    let highlightLayer = this.highlightLayers[i];
+
+                    if (highlightLayer.shouldRender() &&
+                        (!highlightLayer.camera ||
+                            (highlightLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === highlightLayer.camera) ||
+                            (highlightLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && highlightLayer.camera._rigCameras.indexOf(camera) > -1))) {
+
+                        renderhighlights = true;
+                        needsRestoreFrameBuffer = true;
+                        this._intermediateRendering = true;
+
+                        var renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
+                        renderTarget.render(false, false);
+
+                        this._intermediateRendering = false;
+                    }
+                }
+            }
+
+            if (needsRestoreFrameBuffer) {
+                engine.restoreDefaultFramebuffer();
+            }
+
             this._renderTargetsDuration.endMonitoring(false);
 
             // Prepare Frame
             this.postProcessManager._prepareFrame();
 
             this._renderDuration.beginMonitoring();
+
             // Backgrounds
             var layerIndex;
             var layer;
@@ -2162,17 +2195,8 @@
             Tools.StartPerformanceCounter("Main render");
 
             // Activate HighlightLayer stencil
-            var stencilState = this._engine.getStencilBuffer();
-            var renderhighlights = false;
-            if (this.highlightLayers && this.highlightLayers.length > 0) {
-                for (let i = 0; i < this.highlightLayers.length; i++) {
-                    let highlightLayer = this.highlightLayers[i];
-                    if ((!highlightLayer.camera || camera == highlightLayer.camera) && highlightLayer.shouldRender()) {
-                        renderhighlights = true;
-                        this._engine.setStencilBuffer(true);
-                        break;
-                    }
-                }
+            if (renderhighlights) {
+                this._engine.setStencilBuffer(true);
             }
 
             this._renderingManager.render(null, null, true, true);
@@ -2410,15 +2434,6 @@
             // Depth renderer
             if (this._depthRenderer) {
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
-            }
-
-            // HighlightLayer
-            if (this.highlightLayers && this.highlightLayers.length > 0) {
-                for (let i = 0; i < this.highlightLayers.length; i++) {
-                    if (this.highlightLayers[i].shouldRender()) {
-                        this._renderTargets.push((<any>this.highlightLayers[i])._mainTexture);
-                    }
-                }
             }
 
             // RenderPipeline
