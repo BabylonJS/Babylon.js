@@ -26,6 +26,11 @@
         mainTextureRatio?: number;
 
         /**
+         * Enforces a fixed size texture to ensure resize independant blur.
+         */
+        mainTextureFixedSize?: number;
+
+        /**
          * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size 
          * of the picture to blur (the smaller the faster).
          */
@@ -632,10 +637,10 @@
          */
         public addExcludedMesh(mesh: AbstractMesh) {
             var sourceMesh: Mesh;
-            if (mesh instanceof InstancedMesh) {
-              sourceMesh = (<InstancedMesh> mesh).sourceMesh;
+            if (mesh instanceof InstancedMesh) {
+                sourceMesh = (<InstancedMesh>mesh).sourceMesh;
             } else {
-              sourceMesh = <Mesh> mesh;
+                sourceMesh = <Mesh>mesh;
             }
 
             var meshExcluded = this._excludedMeshes[sourceMesh.id];
@@ -658,10 +663,10 @@
           */
         public removeExcludedMesh(mesh: AbstractMesh) {
             var sourceMesh: Mesh;
-            if (mesh instanceof InstancedMesh) {
-              sourceMesh = (<InstancedMesh> mesh).sourceMesh;
+            if (mesh instanceof InstancedMesh) {
+                sourceMesh = (<InstancedMesh>mesh).sourceMesh;
             } else {
-              sourceMesh = <Mesh> mesh;
+                sourceMesh = <Mesh>mesh;
             }
 
             var meshExcluded = this._excludedMeshes[sourceMesh.id];
@@ -681,10 +686,10 @@
          */
         public addMesh(mesh: AbstractMesh, color: Color3, glowEmissiveOnly = false) {
             var sourceMesh: Mesh;
-            if (mesh instanceof InstancedMesh) {
-              sourceMesh = (<InstancedMesh> mesh).sourceMesh;
+            if (mesh instanceof InstancedMesh) {
+                sourceMesh = (<InstancedMesh>mesh).sourceMesh;
             } else {
-              sourceMesh = <Mesh> mesh;
+                sourceMesh = <Mesh>mesh;
             }
 
             var meshHighlight = this._meshes[sourceMesh.id];
@@ -718,12 +723,12 @@
          */
         public removeMesh(mesh: AbstractMesh) {
             var sourceMesh: Mesh;
-            if (mesh instanceof InstancedMesh) {
-              sourceMesh = (<InstancedMesh> mesh).sourceMesh;
+            if (mesh instanceof InstancedMesh) {
+                sourceMesh = (<InstancedMesh>mesh).sourceMesh;
             } else {
-              sourceMesh = <Mesh> mesh;
+                sourceMesh = <Mesh>mesh;
             }
-            
+
             var meshHighlight = this._meshes[sourceMesh.id];
             if (meshHighlight) {
                 sourceMesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
@@ -753,11 +758,17 @@
          * of the engine canvas size.
          */
         private setMainTextureSize(): void {
-            this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
-            this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
+            if (this._options.mainTextureFixedSize) {
+                this._mainTextureDesiredSize.width = this._options.mainTextureFixedSize;
+                this._mainTextureDesiredSize.height = this._options.mainTextureFixedSize;
+            }
+            else {
+                this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
+                this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
 
-            this._mainTextureDesiredSize.width = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
-            this._mainTextureDesiredSize.height = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
+                this._mainTextureDesiredSize.width = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
+                this._mainTextureDesiredSize.height = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
+            }
         }
 
         /**
