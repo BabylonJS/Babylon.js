@@ -391,15 +391,21 @@
 
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
+                    //console.log(`Texture of Sprite2D ${this.id} was immediately ready`);
                     let s = texture.getBaseSize();
                     this.size = new Size(s.width, s.height);
                 } else {
+                    //console.log(`Texture of Sprite2D ${this.id} defer loading`);
+
                     texture.onLoadObservable.add(() => {
+                        //console.log(`Texture of Sprite2D ${this.id} loaded`);
+
                         if (settings.spriteSize == null) {
                             let s = texture.getBaseSize();
                             this.size = new Size(s.width, s.height);
                         }
                         this._positioningDirty();
+                        this._setLayoutDirty();
                         this._instanceDirtyFlags |= Prim2DBase.originProperty.flagId | Sprite2D.textureProperty.flagId;  // To make sure the sprite is issued again for render
                     });
                 }
