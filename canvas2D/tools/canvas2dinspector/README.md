@@ -2,6 +2,8 @@
 
 ![](https://raw.githubusercontent.com/Temechon/canvas2d-inspector/master/screen.jpg)
 
+[The main repo can be found here](https://github.com/Temechon/canvas2d-inspector)
+
 An extension to easily debug your Canvas2D, made with HTML/CSS.
 
 ## Usage
