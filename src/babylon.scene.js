@@ -1779,6 +1779,7 @@ var BABYLON;
             }
             // Render targets
             this._renderTargetsDuration.beginMonitoring();
+            var needsRestoreFrameBuffer = false;
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
@@ -1794,7 +1795,29 @@ var BABYLON;
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._intermediateRendering = false;
                 this._renderId++;
-                engine.restoreDefaultFramebuffer(); // Restore back buffer
+                needsRestoreFrameBuffer = true; // Restore back buffer
+            }
+            // Render HighlightLayer Texture
+            var stencilState = this._engine.getStencilBuffer();
+            var renderhighlights = false;
+            if (this.renderTargetsEnabled && this.highlightLayers && this.highlightLayers.length > 0) {
+                for (var i = 0; i < this.highlightLayers.length; i++) {
+                    var highlightLayer = this.highlightLayers[i];
+                    if (highlightLayer.shouldRender() &&
+                        (!highlightLayer.camera ||
+                            (highlightLayer.camera.cameraRigMode === BABYLON.Camera.RIG_MODE_NONE && camera === highlightLayer.camera) ||
+                            (highlightLayer.camera.cameraRigMode !== BABYLON.Camera.RIG_MODE_NONE && highlightLayer.camera._rigCameras.indexOf(camera) > -1))) {
+                        renderhighlights = true;
+                        needsRestoreFrameBuffer = true;
+                        this._intermediateRendering = true;
+                        var renderTarget = highlightLayer._mainTexture;
+                        renderTarget.render(false, false);
+                        this._intermediateRendering = false;
+                    }
+                }
+            }
+            if (needsRestoreFrameBuffer) {
+                engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration.endMonitoring(false);
             // Prepare Frame
@@ -1816,17 +1839,8 @@ var BABYLON;
             // Render
             BABYLON.Tools.StartPerformanceCounter("Main render");
             // Activate HighlightLayer stencil
-            var stencilState = this._engine.getStencilBuffer();
-            var renderhighlights = false;
-            if (this.highlightLayers && this.highlightLayers.length > 0) {
-                for (var i = 0; i < this.highlightLayers.length; i++) {
-                    var highlightLayer = this.highlightLayers[i];
-                    if ((!highlightLayer.camera || camera == highlightLayer.camera) && highlightLayer.shouldRender()) {
-                        renderhighlights = true;
-                        this._engine.setStencilBuffer(true);
-                        break;
-                    }
-                }
+            if (renderhighlights) {
+                this._engine.setStencilBuffer(true);
             }
             this._renderingManager.render(null, null, true, true);
             // Restore HighlightLayer stencil
@@ -2020,14 +2034,6 @@ var BABYLON;
             // Depth renderer
             if (this._depthRenderer) {
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
-            }
-            // HighlightLayer
-            if (this.highlightLayers && this.highlightLayers.length > 0) {
-                for (var i = 0; i < this.highlightLayers.length; i++) {
-                    if (this.highlightLayers[i].shouldRender()) {
-                        this._renderTargets.push(this.highlightLayers[i]._mainTexture);
-                    }
-                }
             }
             // RenderPipeline
             this.postProcessRenderPipelineManager.update();
