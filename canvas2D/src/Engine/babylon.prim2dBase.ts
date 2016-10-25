@@ -2083,7 +2083,7 @@
          */
         @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 13, pi => Prim2DBase.actualHeightProperty = pi, false, true)
         public get actualHeight(): number {
-            return this.actualSize.width;
+            return this.actualSize.height;
         }
 
         public set actualHeight(val: number) {
@@ -2774,9 +2774,10 @@
 
             let marginH = this._marginOffset.x + this._marginOffset.z;
             let marginV = this._marginOffset.y + this._marginOffset.w;
+            let actualSize = this.actualSize.multiplyByFloats(this.scaleX, this.scaleY);
 
-            let w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width)  : (marginH + this.actualSize.width);
-            let h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + this.actualSize.height);
+            let w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width)  : (marginH + actualSize.width);
+            let h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + actualSize.height);
             let pos = (!hasLayout && !hasMargin && !hasPadding && hasPos) ? this.actualPosition : Vector2.Zero();
 
             storeAreaInfo(pos, new Size(w, h));
@@ -2785,7 +2786,7 @@
             if (hasLayout) {
                 let layoutOffset = this.layoutAreaPos.clone();
 
-                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : this.actualSize.clone());
+                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : actualSize.clone());
                 curOffset = layoutOffset.clone();
             }
 
@@ -2794,7 +2795,7 @@
                 let marginOffset = curOffset.clone();
                 marginOffset.x += this._marginOffset.x;
                 marginOffset.y += this._marginOffset.y;
-                let marginArea = this.actualSize;
+                let marginArea = actualSize;
 
                 storeAreaInfo(marginOffset, marginArea);
                 curOffset = marginOffset.clone();
@@ -2934,6 +2935,8 @@
          * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
          * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
          */
+        private static _bypassGroup2DExclusion = false;
+
         public intersect(intersectInfo: IntersectInfo2D): boolean {
             if (!intersectInfo) {
                 return false;
@@ -2950,14 +2953,27 @@
                 intersectInfo.topMostIntersectedPrimitive = null;
             }
 
+            if (!Prim2DBase._bypassGroup2DExclusion && this instanceof Group2D && (<Group2D><any>this).isCachedGroup && !(<Group2D><any>this).isRenderableGroup) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
+                return false;
+            }
+
             if (!intersectInfo.intersectHidden && !this.isVisible) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
                 return false;
             }
 
             let id = this.id;
-            if (id!=null && id.indexOf("__cachedSpriteOfGroup__") === 0) {
-                let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
-                return ownerGroup.intersect(intersectInfo);
+            if (id != null && id.indexOf("__cachedSpriteOfGroup__") === 0) {
+                try {
+                    Prim2DBase._bypassGroup2DExclusion = true;
+                    let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
+                    return ownerGroup.intersect(intersectInfo);
+                } finally  {
+                    Prim2DBase._bypassGroup2DExclusion = false;
+                } 
             }
 
             // If we're testing a cachedGroup, we must reject pointer outside its levelBoundingInfo because children primitives could be partially clipped outside so we must not accept them as intersected when it's the case (because they're not visually visible).
@@ -3100,6 +3116,11 @@
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
+            }
+
+            if (this._pointerEventObservable) {
+                this._pointerEventObservable.clear();
+                this._pointerEventObservable = null;
             }
 
             if (this._actionManager) {
