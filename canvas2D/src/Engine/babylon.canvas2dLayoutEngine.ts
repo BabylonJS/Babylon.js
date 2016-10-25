@@ -62,12 +62,12 @@
         private _doUpdate(prim: Prim2DBase) {
             // Canvas ?
             if (prim instanceof Canvas2D) {
-                prim.layoutArea = prim.actualSize.multiplyByFloats(prim.scaleX, prim.scaleY);
+                prim.layoutArea = prim.actualSize; //.multiplyByFloats(prim.scaleX, prim.scaleY);
             }
 
             // Direct child of Canvas ?
             else if (prim.parent instanceof Canvas2D) {
-                prim.layoutArea = prim.owner.actualSize.multiplyByFloats(prim.owner.scaleX, prim.owner.scaleY);
+                prim.layoutArea = prim.owner.actualSize; //.multiplyByFloats(prim.owner.scaleX, prim.owner.scaleY);
             }
 
             // Indirect child of Canvas

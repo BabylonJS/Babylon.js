@@ -2670,7 +2670,7 @@
 
                 this._debugAreaGroup = new Group2D
                     (
-                    {
+                    {   dontInheritParentScale: true,
                         parent: (this.parent!=null) ? this.parent : this, id: "###DEBUG AREA GROUP###", children:
                         [
                             new Group2D({
@@ -2772,9 +2772,10 @@
                 areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
             }
 
+            let isCanvas = this instanceof Canvas2D;
             let marginH = this._marginOffset.x + this._marginOffset.z;
             let marginV = this._marginOffset.y + this._marginOffset.w;
-            let actualSize = this.actualSize.multiplyByFloats(this.scaleX, this.scaleY);
+            let actualSize = this.actualSize.multiplyByFloats(isCanvas ? 1 : this.scaleX, isCanvas ? 1 : this.scaleY);
 
             let w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width)  : (marginH + actualSize.width);
             let h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + actualSize.height);
