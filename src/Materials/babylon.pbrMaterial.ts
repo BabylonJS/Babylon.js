@@ -1009,10 +1009,6 @@
                 MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
                 // Legacy browser patch
-                var shaderName = "pbr";
-                if (!scene.getEngine().getCaps().standardDerivatives) {
-                    shaderName = "legacypbr";
-                }
                 var join = this._defines.toString();
                 
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
@@ -1037,7 +1033,7 @@
                 ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers); 
                 MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights); 
                 
-                this._effect = scene.getEngine().createEffect(shaderName,
+                this._effect = scene.getEngine().createEffect("pbr",
                     attribs, uniforms, samplers,
                     join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights});
             }
