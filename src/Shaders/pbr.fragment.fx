@@ -171,6 +171,7 @@ uniform mat4 reflectionMatrix;
 #include<harmonicsFunctions>
 #include<pbrLightFunctions>
 
+#include<helperFunctions>
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
