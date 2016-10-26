@@ -261,6 +261,12 @@
         @serializeAsTexture()
         public ambientTexture: BaseTexture;
 
+        /**
+         * AKA Occlusion Texture Intensity in other nomenclature.
+         */
+        @serialize()
+        public ambientTextureStrength: number = 1.0;
+
         @serializeAsTexture()
         public opacityTexture: BaseTexture;
 
@@ -1108,7 +1114,7 @@
                     if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                         this._effect.setTexture("ambientSampler", this.ambientTexture);
 
-                        this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
+                        this._effect.setFloat3("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level, this.ambientTextureStrength);
                         this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
                     }
 
