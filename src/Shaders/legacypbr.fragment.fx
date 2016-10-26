@@ -54,7 +54,7 @@ uniform vec2 vAlbedoInfos;
 #ifdef AMBIENT
 varying vec2 vAmbientUV;
 uniform sampler2D ambientSampler;
-uniform vec2 vAmbientInfos;
+uniform vec3 vAmbientInfos;
 #endif
 
 #ifdef OPACITY	
@@ -146,6 +146,7 @@ void main(void) {
 
     #ifdef AMBIENT
         ambientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;
+        ambientColor = vec3(1., 1., 1.) - ((vec3(1., 1., 1.) - ambientColor) * vAmbientInfos.z);
         
         #ifdef OVERLOADEDVALUES
             ambientColor.rgb = mix(ambientColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
