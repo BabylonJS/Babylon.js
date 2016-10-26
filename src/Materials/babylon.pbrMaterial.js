@@ -218,6 +218,10 @@ var BABYLON;
              */
             this.overloadedMicroSurfaceIntensity = 0.0;
             this._overloadedMicroSurface = new BABYLON.Vector3(this.overloadedMicroSurface, this.overloadedMicroSurfaceIntensity, this.overloadedReflectionIntensity);
+            /**
+             * AKA Occlusion Texture Intensity in other nomenclature.
+             */
+            this.ambientTextureStrength = 1.0;
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             /**
              * AKA Diffuse Color in other nomenclature.
@@ -848,7 +852,7 @@ var BABYLON;
                     }
                     if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
                         this._effect.setTexture("ambientSampler", this.ambientTexture);
-                        this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
+                        this._effect.setFloat3("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level, this.ambientTextureStrength);
                         this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
                     }
                     if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
@@ -1154,6 +1158,9 @@ var BABYLON;
         __decorate([
             BABYLON.serializeAsTexture()
         ], PBRMaterial.prototype, "ambientTexture", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "ambientTextureStrength", void 0);
         __decorate([
             BABYLON.serializeAsTexture()
         ], PBRMaterial.prototype, "opacityTexture", void 0);
