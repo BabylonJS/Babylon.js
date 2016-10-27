@@ -184,6 +184,19 @@ void main(void) {
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
+	// Bump
+	#ifdef NORMAL
+		vec3 normalW = normalize(vNormalW);
+	#else
+		vec3 normalW = vec3(1.0, 1.0, 1.0);
+	#endif
+
+	#ifdef ALBEDO
+		vec2 diffuseUV = vAlbedoUV;
+	#endif
+
+	#include<bumpFragment>
+
 	// Albedo
 	vec4 surfaceAlbedo = vec4(1., 1., 1., 1.);
 	vec3 surfaceAlbedoContribution = vAlbedoColor.rgb;
@@ -192,7 +205,7 @@ void main(void) {
 	float alpha = vAlbedoColor.a;
 
 #ifdef ALBEDO
-	surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV);
+	surfaceAlbedo = texture2D(albedoSampler, diffuseUV);
 	surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
 
 #ifndef LINKREFRACTIONTOTRANSPARENCY
@@ -220,15 +233,6 @@ void main(void) {
 #ifdef OVERLOADEDVALUES
 	surfaceAlbedo.rgb = mix(surfaceAlbedo.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
 #endif
-
-	// Bump
-#ifdef NORMAL
-	vec3 normalW = normalize(vNormalW);
-#else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
-#endif
-
-#include<bumpFragment>
 
 	// Ambient color
 	vec3 ambientColor = vec3(1., 1., 1.);
