@@ -1801,6 +1801,7 @@ var BABYLON;
             var stencilState = this._engine.getStencilBuffer();
             var renderhighlights = false;
             if (this.renderTargetsEnabled && this.highlightLayers && this.highlightLayers.length > 0) {
+                this._intermediateRendering = true;
                 for (var i = 0; i < this.highlightLayers.length; i++) {
                     var highlightLayer = this.highlightLayers[i];
                     if (highlightLayer.shouldRender() &&
@@ -1808,13 +1809,16 @@ var BABYLON;
                             (highlightLayer.camera.cameraRigMode === BABYLON.Camera.RIG_MODE_NONE && camera === highlightLayer.camera) ||
                             (highlightLayer.camera.cameraRigMode !== BABYLON.Camera.RIG_MODE_NONE && highlightLayer.camera._rigCameras.indexOf(camera) > -1))) {
                         renderhighlights = true;
-                        needsRestoreFrameBuffer = true;
-                        this._intermediateRendering = true;
                         var renderTarget = highlightLayer._mainTexture;
-                        renderTarget.render(false, false);
-                        this._intermediateRendering = false;
+                        if (renderTarget._shouldRender()) {
+                            this._renderId++;
+                            renderTarget.render(false, false);
+                            needsRestoreFrameBuffer = true;
+                        }
                     }
                 }
+                this._intermediateRendering = false;
+                this._renderId++;
             }
             if (needsRestoreFrameBuffer) {
                 engine.restoreDefaultFramebuffer();
