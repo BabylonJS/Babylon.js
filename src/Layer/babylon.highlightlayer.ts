@@ -635,22 +635,15 @@
          * Add a mesh in the exclusion list to prevent it to impact or being impacted by the highlight layer.
          * @param mesh The mesh to exclude from the highlight layer
          */
-        public addExcludedMesh(mesh: AbstractMesh) {
-            var sourceMesh: Mesh;
-            if (mesh instanceof InstancedMesh) {
-                sourceMesh = (<InstancedMesh>mesh).sourceMesh;
-            } else {
-                sourceMesh = <Mesh>mesh;
-            }
-
-            var meshExcluded = this._excludedMeshes[sourceMesh.id];
+        public addExcludedMesh(mesh: Mesh) {
+            var meshExcluded = this._excludedMeshes[mesh.id];
             if (!meshExcluded) {
-                this._excludedMeshes[sourceMesh.id] = {
-                    mesh: sourceMesh,
-                    beforeRender: sourceMesh.onBeforeRenderObservable.add((mesh: Mesh) => {
+                this._excludedMeshes[mesh.id] = {
+                    mesh: mesh,
+                    beforeRender: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
                         mesh.getEngine().setStencilBuffer(false);
                     }),
-                    afterRender: sourceMesh.onAfterRenderObservable.add((mesh: Mesh) => {
+                    afterRender: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
                         mesh.getEngine().setStencilBuffer(true);
                     }),
                 }
@@ -661,21 +654,14 @@
           * Remove a mesh from the exclusion list to let it impact or being impacted by the highlight layer.
           * @param mesh The mesh to highlight
           */
-        public removeExcludedMesh(mesh: AbstractMesh) {
-            var sourceMesh: Mesh;
-            if (mesh instanceof InstancedMesh) {
-                sourceMesh = (<InstancedMesh>mesh).sourceMesh;
-            } else {
-                sourceMesh = <Mesh>mesh;
-            }
-
-            var meshExcluded = this._excludedMeshes[sourceMesh.id];
+        public removeExcludedMesh(mesh: Mesh) {
+            var meshExcluded = this._excludedMeshes[mesh.id];
             if (meshExcluded) {
-                sourceMesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
-                sourceMesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
+                mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
+                mesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
             }
 
-            this._excludedMeshes[sourceMesh.id] = undefined;
+            this._excludedMeshes[mesh.id] = undefined;
         }
 
         /**
@@ -684,24 +670,17 @@
          * @param color The color of the highlight
          * @param glowEmissiveOnly Extract the glow from the emissive texture
          */
-        public addMesh(mesh: AbstractMesh, color: Color3, glowEmissiveOnly = false) {
-            var sourceMesh: Mesh;
-            if (mesh instanceof InstancedMesh) {
-                sourceMesh = (<InstancedMesh>mesh).sourceMesh;
-            } else {
-                sourceMesh = <Mesh>mesh;
-            }
-
-            var meshHighlight = this._meshes[sourceMesh.id];
+        public addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly = false) {
+            var meshHighlight = this._meshes[mesh.id];
             if (meshHighlight) {
                 meshHighlight.color = color;
             }
             else {
-                this._meshes[sourceMesh.id] = {
-                    mesh: sourceMesh,
+                this._meshes[mesh.id] = {
+                    mesh: mesh,
                     color: color,
                     // Lambda required for capture due to Observable this context
-                    observerHighlight: sourceMesh.onBeforeRenderObservable.add((mesh: Mesh) => {
+                    observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
                         if (this._excludedMeshes[mesh.id]) {
                             this.defaultStencilReference(mesh);
                         }
@@ -709,7 +688,7 @@
                             mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
                         }
                     }),
-                    observerDefault: sourceMesh.onAfterRenderObservable.add(this.defaultStencilReference),
+                    observerDefault: mesh.onAfterRenderObservable.add(this.defaultStencilReference),
                     glowEmissiveOnly: glowEmissiveOnly
                 };
             }
@@ -721,21 +700,14 @@
          * Remove a mesh from the highlight layer in order to make it stop glowing.
          * @param mesh The mesh to highlight
          */
-        public removeMesh(mesh: AbstractMesh) {
-            var sourceMesh: Mesh;
-            if (mesh instanceof InstancedMesh) {
-                sourceMesh = (<InstancedMesh>mesh).sourceMesh;
-            } else {
-                sourceMesh = <Mesh>mesh;
-            }
-
-            var meshHighlight = this._meshes[sourceMesh.id];
+        public removeMesh(mesh: Mesh) {
+            var meshHighlight = this._meshes[mesh.id];
             if (meshHighlight) {
-                sourceMesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
-                sourceMesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
+                mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
+                mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
             }
 
-            this._meshes[sourceMesh.id] = undefined;
+            this._meshes[mesh.id] = undefined;
 
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
