@@ -414,9 +414,11 @@
             return this._computedViewMatrix;
         }
 
-        public setForcedProjectionMatrix(array: number[]): void {
+        public freezeProjectionMatrix(array?: number[]): void {
             this._doNotComputeProjectionMatrix = true;
-            BABYLON.Matrix.FromArrayToRef(array, 0, this._projectionMatrix);
+            if (array) {
+                BABYLON.Matrix.FromArrayToRef(array, 0, this._projectionMatrix);
+            }
         };
         
         public getProjectionMatrix(force?: boolean): Matrix {
