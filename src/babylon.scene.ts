@@ -2146,6 +2146,7 @@
             var stencilState = this._engine.getStencilBuffer();
             var renderhighlights = false;
             if (this.renderTargetsEnabled && this.highlightLayers && this.highlightLayers.length > 0) {
+                this._intermediateRendering = true;
                 for (let i = 0; i < this.highlightLayers.length; i++) {
                     let highlightLayer = this.highlightLayers[i];
 
@@ -2155,15 +2156,18 @@
                             (highlightLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && highlightLayer.camera._rigCameras.indexOf(camera) > -1))) {
 
                         renderhighlights = true;
-                        needsRestoreFrameBuffer = true;
-                        this._intermediateRendering = true;
-
+                        
                         var renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
-                        renderTarget.render(false, false);
-
-                        this._intermediateRendering = false;
+                        if (renderTarget._shouldRender()) {
+                            this._renderId++;
+                            renderTarget.render(false, false);
+                            needsRestoreFrameBuffer = true;
+                        }
                     }
                 }
+
+                this._intermediateRendering = false;
+                this._renderId++;
             }
 
             if (needsRestoreFrameBuffer) {
