@@ -373,12 +373,9 @@
 
             // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
             // So we set the width/height to the rendering's one because that's what we want for the viewport!
-            if (this instanceof Canvas2D) {
-                let c = <Canvas2D><any>this;
-                if (c.designSize != null) {
-                    sw = this.owner.engine.getRenderWidth();
-                    sh = this.owner.engine.getRenderHeight();
-                }
+            if ((this instanceof Canvas2D || this.id === "__cachedCanvasGroup__") && this.owner.designSize != null) {
+                sw = this.owner.engine.getRenderWidth();
+                sh = this.owner.engine.getRenderHeight();
             }
 
             // Setup the size of the rendering viewport
