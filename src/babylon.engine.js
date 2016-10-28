@@ -78,7 +78,9 @@ var BABYLON;
         engine.resetTextureCache();
         scene._removePendingData(texture);
         texture.onLoadedCallbacks.forEach(function (callback) {
-            callback();
+            if (callback) {
+                callback();
+            }
         });
         texture.onLoadedCallbacks = [];
     };
@@ -2088,7 +2090,9 @@ var BABYLON;
                     texture._height = height;
                     texture.isReady = true;
                     texture.onLoadedCallbacks.forEach(function (callback) {
-                        callback();
+                        if (callback) {
+                            callback();
+                        }
                     });
                     if (onLoad) {
                         onLoad();
