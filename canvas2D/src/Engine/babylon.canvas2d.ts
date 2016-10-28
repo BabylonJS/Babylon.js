@@ -1047,6 +1047,10 @@
             this._setupInteraction(enable);
         }
 
+        public get fitRenderingDevice(): boolean {
+            return this._fitRenderingDevice;
+        }
+
         public get designSize(): Size {
             return this._designSize;
         }
