@@ -414,10 +414,10 @@
             return this._computedViewMatrix;
         }
 
-        public freezeProjectionMatrix(array?: number[]): void {
+        public freezeProjectionMatrix(projection?: Matrix): void {
             this._doNotComputeProjectionMatrix = true;
-            if (array) {
-                BABYLON.Matrix.FromArrayToRef(array, 0, this._projectionMatrix);
+            if (projection !== undefined) {
+                this._projectionMatrix = projection;
             }
         };
         
