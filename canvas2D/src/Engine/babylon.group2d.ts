@@ -917,23 +917,12 @@
             // For now we only support these property changes
             // TODO: add more! :)
             switch (prop.id) {
-                case Prim2DBase.actualScaleProperty.id:
                 case Prim2DBase.actualPositionProperty.id:
-                    let noResizeScale = rd._noResizeOnScale;
-                    let isCanvas = parent == null;
-                    let scale: Vector2;
-                    if (noResizeScale) {
-                        scale = isCanvas ? Group2D._unS : this.parent.actualScale;
-                    } else {
-                        scale = this.actualScale;
-                    }
-
-                    cachedSprite.actualPosition = this.actualPosition.multiply(scale);
+                    cachedSprite.actualPosition = this.actualPosition.clone();
                     if (cachedSprite.position != null) {
                         cachedSprite.position = cachedSprite.actualPosition.clone();
                     }
                     break;
-
                 case Prim2DBase.rotationProperty.id:
                     cachedSprite.rotation = this.rotation;
                     break;
