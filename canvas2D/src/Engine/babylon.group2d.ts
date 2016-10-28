@@ -830,8 +830,13 @@
             }
 
             if (isCanvas && this.owner.cachingStrategy===Canvas2D.CACHESTRATEGY_CANVAS && this.owner.isScreenSpace) {
-                Group2D._s.width = this.owner.engine.getRenderWidth();
-                Group2D._s.height = this.owner.engine.getRenderHeight();
+                if(this.owner.designSize || this.owner.fitRenderingDevice){
+                    Group2D._s.width = this.owner.engine.getRenderWidth();
+                    Group2D._s.height = this.owner.engine.getRenderHeight();
+                }
+                else{
+                    Group2D._s.copyFrom(this.owner.size);
+                }
             } else {
                 Group2D._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
                 Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
