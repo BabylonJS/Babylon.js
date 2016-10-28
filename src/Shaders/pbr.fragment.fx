@@ -191,10 +191,6 @@ void main(void) {
 		vec3 normalW = vec3(1.0, 1.0, 1.0);
 	#endif
 
-	#ifdef ALBEDO
-		vec2 diffuseUV = vAlbedoUV;
-	#endif
-
 	#include<bumpFragment>
 
 	// Albedo
@@ -205,7 +201,7 @@ void main(void) {
 	float alpha = vAlbedoColor.a;
 
 #ifdef ALBEDO
-	surfaceAlbedo = texture2D(albedoSampler, diffuseUV);
+	surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 	surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
 
 #ifndef LINKREFRACTIONTOTRANSPARENCY
@@ -238,7 +234,7 @@ void main(void) {
 	vec3 ambientColor = vec3(1., 1., 1.);
 
 #ifdef AMBIENT
-	ambientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;
+	ambientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
 	ambientColor = vec3(1., 1., 1.) - ((vec3(1., 1., 1.) - ambientColor) * vAmbientInfos.z);
 
 #ifdef OVERLOADEDVALUES
@@ -255,7 +251,7 @@ void main(void) {
 #endif
 
 #ifdef REFLECTIVITY
-	vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV);
+	vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
 	surfaceReflectivityColor = surfaceReflectivityColorMap.rgb;
 	surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
 
@@ -299,7 +295,7 @@ void main(void) {
 	float notShadowLevel = 1.; // 1 - shadowLevel
 
 	#ifdef LIGHTMAP
-  		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
+  		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * vLightmapInfos.y;
   	#endif
 
 	float NdotL = -1.;
@@ -321,7 +317,7 @@ void main(void) {
 #endif
 
 #ifdef OPACITY
-	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
+	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
 
 #ifdef OPACITYRGB
 	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
@@ -537,7 +533,7 @@ void main(void) {
 	// Emissive
 	vec3 surfaceEmissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
-	vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV).rgb;
+	vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb;
 	surfaceEmissiveColor = toLinearSpace(emissiveColorTex.rgb) * surfaceEmissiveColor * vEmissiveInfos.y;
 #endif
 
