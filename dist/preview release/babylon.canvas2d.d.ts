@@ -406,6 +406,7 @@ declare module BABYLON {
          * When enabled the Prim2DBase.pointerEventObservable property will notified when appropriate events occur
          */
         interactionEnabled: boolean;
+        fitRenderingDevice: boolean;
         designSize: Size;
         designSizeUseHorizAxis: boolean;
         /**
