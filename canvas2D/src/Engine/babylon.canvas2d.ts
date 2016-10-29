@@ -495,6 +495,7 @@
         private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2): boolean {
             let s = this.scale;
             let pii = this._primPointerInfo;
+            pii.cancelBubble = false;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = Vector2.Zero();
             }
