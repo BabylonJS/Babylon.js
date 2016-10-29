@@ -384,19 +384,19 @@
 
         }
 
-        public static computeAbsoluteTransforms (bone:BABYLON.Bone): void {
+        public computeAbsoluteTransforms (): void {
 
-            if (bone._parent) {
-                bone._matrix.multiplyToRef(bone._parent._absoluteTransform, bone._absoluteTransform);
+            if (this._parent) {
+                this._matrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
             } else {
-                bone._absoluteTransform.copyFrom(bone._matrix);
+                this._absoluteTransform.copyFrom(this._matrix);
             }
 
-            var children = bone.children;
+            var children = this.children;
             var len = children.length;
 
             for (var i = 0; i < len; i++) {
-                BABYLON.Bone.computeAbsoluteTransforms(children[i]);
+                children[i].computeAbsoluteTransforms();
             }
 
         }
