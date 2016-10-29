@@ -8,6 +8,8 @@
 - Canvas2D moved to a separate folder in main repo. Now you need to also include babylon.cavans2d.js to get Canvas@D feature ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
+- Added Bone.rotate ([abow](https://github.com/abow))
+- Added Bone.scale ([abow](https://github.com/abow))
 - Added Node.getDirection ([abow](https://github.com/abow))
 - New ```Tools.CreateScreenshot``` function will capture all canvas data. Previous implementation is now called `CreateScreenshotUsingRenderTarget` ([deltakosh](https://github.com/deltakosh)) 
 - Cube textures are now cached by texture cache ([deltakosh](https://github.com/deltakosh)) 
