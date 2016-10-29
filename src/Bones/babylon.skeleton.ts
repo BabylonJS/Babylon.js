@@ -410,7 +410,7 @@
             var renderId = this._scene.getRenderId();
             
             if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate ) {
-                BABYLON.Bone.computeAbsoluteTransforms(this.bones[0]);
+                this.bones[0].computeAbsoluteTransforms();
                 this._lastAbsoluteTransformsUpdateId = renderId;
             }
             
