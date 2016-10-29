@@ -273,6 +273,8 @@
 
             var parentScale = BABYLON.Tmp.Matrix[3];
             var parentScaleInv = BABYLON.Tmp.Matrix[4];
+
+            this._rotationMatrix.multiplyToRef(rmat, this._rotationMatrix);
             
             if (parent) {
                 
