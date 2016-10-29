@@ -13,8 +13,9 @@
         private _invertedAbsoluteTransform = new Matrix();
         private _parent: Bone;
 
-        private _scaleMatrix: Matrix;
-        private _scaleVector: Vector3;
+        private _scaleMatrix: Matrix = BABYLON.Matrix.Identity();
+        private _scaleVector: Vector3 = new BABYLON.Vector3(1, 1, 1);
+        private _rotationMatrix = BABYLON.Matrix.Identity();
 
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
@@ -230,7 +231,37 @@
 
         }
 
-        public rotate (axis: BABYLON.Vector3, amount: number, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null) {
+        public setYawPitchRoll (yaw: number, pitch: number, roll: number, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
+	
+            var rmat = BABYLON.Tmp.Matrix[0];
+
+            BABYLON.Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rmat);
+            
+            var rotMatInv = BABYLON.Tmp.Matrix[1];
+
+            rotMatInv.copyFrom(this._rotationMatrix);
+            rotMatInv.invert();
+            
+            rotMatInv.multiplyToRef(rmat, rmat);
+
+            this._rotateWithMatrix(rmat, space, mesh);
+            
+        };
+
+        public rotate (axis: BABYLON.Vector3, amount: number, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
+            
+            var rmat = BABYLON.Tmp.Matrix[0];
+            rmat.m[12] = 0;
+            rmat.m[13] = 0;
+            rmat.m[14] = 0;
+            
+            BABYLON.Matrix.RotationAxisToRef(axis, amount, rmat);
+            
+            this._rotateWithMatrix(rmat, space, mesh);
+            
+        }
+
+        private _rotateWithMatrix (rmat:BABYLON.Matrix, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
 
             var lmat = this.getLocalMatrix();
             
@@ -238,17 +269,10 @@
             var ly = lmat.m[13];
             var lz = lmat.m[14];
             
-            var rmat = BABYLON.Tmp.Matrix[0];
-            rmat.m[12] = 0;
-            rmat.m[13] = 0;
-            rmat.m[14] = 0;
-            
             var parent = this.getParent();
 
-            BABYLON.Matrix.RotationAxisToRef(axis, amount, rmat);
-
-            var parentScale = BABYLON.Tmp.Matrix[1];
-            var parentScaleInv = BABYLON.Tmp.Matrix[2];
+            var parentScale = BABYLON.Tmp.Matrix[3];
+            var parentScaleInv = BABYLON.Tmp.Matrix[4];
             
             if (parent) {
                 
@@ -327,6 +351,52 @@
 	
             result.copyFrom(this._scaleVector);
             
+        }
+
+        public getAbsolutePosition (mesh: BABYLON.AbstractMesh = null): BABYLON.Vector3 {
+
+            var pos = BABYLON.Vector3.Zero();
+
+            this.getAbsolutePositionToRef(mesh, pos);
+
+            return pos;
+
+        }
+
+        public getAbsolutePositionToRef (mesh: BABYLON.AbstractMesh = null, result: BABYLON.Vector3): void {
+
+            this._skeleton.computeAbsoluteTransforms();
+            
+            var tmat = BABYLON.Tmp.Matrix[0];
+
+            if (mesh) {
+                tmat.copyFrom(this.getAbsoluteTransform());
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }else{
+                tmat = this.getAbsoluteTransform();
+            }
+
+            result.x = tmat.m[12];
+            result.y = tmat.m[13];
+            result.z = tmat.m[14];
+
+        }
+
+        public static computeAbsoluteTransforms (bone:BABYLON.Bone): void {
+
+            if (bone._parent) {
+                bone._matrix.multiplyToRef(bone._parent._absoluteTransform, bone._absoluteTransform);
+            } else {
+                bone._absoluteTransform.copyFrom(bone._matrix);
+            }
+
+            var children = bone.children;
+            var len = children.length;
+
+            for (var i = 0; i < len; i++) {
+                BABYLON.Bone.computeAbsoluteTransforms(children[i]);
+            }
+
         }
 
     }

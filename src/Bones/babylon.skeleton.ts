@@ -13,6 +13,8 @@
 
         private _ranges: { [name: string]: AnimationRange; } = {};
 
+        private _lastAbsoluteTransformsUpdateId = -1;
+
         constructor(public name: string, public id: string, scene: Scene) {
             this.bones = [];
 
@@ -402,5 +404,17 @@
             }
             return skeleton;
         }
+
+        public computeAbsoluteTransforms (forceUpdate = false): void {
+
+            var renderId = this._scene.getRenderId();
+            
+            if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate ) {
+                BABYLON.Bone.computeAbsoluteTransforms(this.bones[0]);
+                this._lastAbsoluteTransformsUpdateId = renderId;
+            }
+            
+        }
+
     }
 }
