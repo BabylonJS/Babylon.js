@@ -66,7 +66,7 @@ uniform vec2 vAlbedoInfos;
 #ifdef AMBIENT
 varying vec2 vAmbientUV;
 uniform sampler2D ambientSampler;
-uniform vec2 vAmbientInfos;
+uniform vec3 vAmbientInfos;
 #endif
 
 #ifdef OPACITY	
@@ -171,6 +171,7 @@ uniform mat4 reflectionMatrix;
 #include<harmonicsFunctions>
 #include<pbrLightFunctions>
 
+#include<helperFunctions>
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
@@ -183,6 +184,15 @@ void main(void) {
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
+	// Bump
+	#ifdef NORMAL
+		vec3 normalW = normalize(vNormalW);
+	#else
+		vec3 normalW = vec3(1.0, 1.0, 1.0);
+	#endif
+
+	#include<bumpFragment>
+
 	// Albedo
 	vec4 surfaceAlbedo = vec4(1., 1., 1., 1.);
 	vec3 surfaceAlbedoContribution = vAlbedoColor.rgb;
@@ -191,7 +201,7 @@ void main(void) {
 	float alpha = vAlbedoColor.a;
 
 #ifdef ALBEDO
-	surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV);
+	surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 	surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
 
 #ifndef LINKREFRACTIONTOTRANSPARENCY
@@ -220,20 +230,12 @@ void main(void) {
 	surfaceAlbedo.rgb = mix(surfaceAlbedo.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
 #endif
 
-	// Bump
-#ifdef NORMAL
-	vec3 normalW = normalize(vNormalW);
-#else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
-#endif
-
-#include<bumpFragment>
-
 	// Ambient color
 	vec3 ambientColor = vec3(1., 1., 1.);
 
 #ifdef AMBIENT
-	ambientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;
+	ambientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
+	ambientColor = vec3(1., 1., 1.) - ((vec3(1., 1., 1.) - ambientColor) * vAmbientInfos.z);
 
 #ifdef OVERLOADEDVALUES
 	ambientColor.rgb = mix(ambientColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
@@ -249,7 +251,7 @@ void main(void) {
 #endif
 
 #ifdef REFLECTIVITY
-	vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV);
+	vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
 	surfaceReflectivityColor = surfaceReflectivityColorMap.rgb;
 	surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
 
@@ -293,7 +295,7 @@ void main(void) {
 	float notShadowLevel = 1.; // 1 - shadowLevel
 
 	#ifdef LIGHTMAP
-  		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
+  		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * vLightmapInfos.y;
   	#endif
 
 	float NdotL = -1.;
@@ -315,7 +317,7 @@ void main(void) {
 #endif
 
 #ifdef OPACITY
-	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
+	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
 
 #ifdef OPACITYRGB
 	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
@@ -531,7 +533,7 @@ void main(void) {
 	// Emissive
 	vec3 surfaceEmissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
-	vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV).rgb;
+	vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV + uvOffset).rgb;
 	surfaceEmissiveColor = toLinearSpace(emissiveColorTex.rgb) * surfaceEmissiveColor * vEmissiveInfos.y;
 #endif
 
