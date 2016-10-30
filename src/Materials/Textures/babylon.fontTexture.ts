@@ -231,7 +231,7 @@
             // In sdf mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the sdf map accurately)
             if (this._signedDistanceField) {
                 this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
-                this._sdfContext.fillText(char, 0, -this._offset);
+                this._sdfContext.fillText(char, 0, 0);
                 let data = this._sdfContext.getImageData(0, 0, width*this._sdfScale, this._sdfCanvas.height);
 
                 let res = this._computeSDFChar(data);
@@ -244,6 +244,13 @@
             // Fill the CharInfo object
             info.topLeftUV = new Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
             info.bottomRightUV = new Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + 2) / textureSize.height));
+
+            if (this._signedDistanceField) {
+                let off = 1/textureSize.width;
+                info.topLeftUV.addInPlace(new Vector2(off, off));
+                info.bottomRightUV.addInPlace(new Vector2(off, off));
+            }
+
             info.charWidth = this._superSample ? (width/2) : width;
 
             // Add the info structure
