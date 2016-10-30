@@ -145,6 +145,8 @@
         public static defaultFontColorProperty: Prim2DPropInfo;
         public static textProperty: Prim2DPropInfo;
         public static sizeProperty: Prim2DPropInfo;
+        public static fontSuperSampleProperty: Prim2DPropInfo;
+        public static fontSignedDistanceFieldProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Text2D.fontProperty = pi, false, true)
         /**
@@ -210,6 +212,24 @@
 
         public set size(value: Size) {
             this._size = value;
+        }
+
+        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Text2D.fontSuperSampleProperty = pi, false, false)
+        /**
+         * Get/set the font name to use, using HTML CSS notation.
+         * Set is not supported right now.
+         */
+        public get fontSuperSample(): boolean {
+            return this._fontTexture && this._fontTexture.isSuperSampled;
+        }
+
+        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Text2D.fontSuperSampleProperty = pi, false, false)
+        /**
+         * Get/set the font name to use, using HTML CSS notation.
+         * Set is not supported right now.
+         */
+        public get fontSignedDistanceField(): boolean {
+            return this._fontTexture && this._fontTexture.isSignedDistanceField;
         }
 
         public get isSizeAuto(): boolean {
