@@ -52,7 +52,7 @@
             if (cellSize.width && cellSize.height) {
                 this.cellWidth = cellSize.width;
                 this.cellHeight = cellSize.height;
-            } else if(cellSize === undefined) {
+            } else if(cellSize !== undefined) {
                 this.cellWidth = cellSize;
                 this.cellHeight = cellSize;
             } else {
