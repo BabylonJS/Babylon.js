@@ -15,8 +15,7 @@
 
         private _scaleMatrix: Matrix = BABYLON.Matrix.Identity();
         private _scaleVector: Vector3 = new BABYLON.Vector3(1, 1, 1);
-        private _rotationMatrix = BABYLON.Matrix.Identity();
-
+        
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
@@ -166,45 +165,42 @@
             return true;
         }
 
-        public scale (x: number, y: number, z: number, scaleChildren = false) {
+        public scale (x: number, y: number, z: number, scaleChildren = false): void {
 	
             var locMat = this.getLocalMatrix();
-    
             var origLocMat = BABYLON.Tmp.Matrix[0];
             origLocMat.copyFrom(locMat);
-            
+
             var origLocMatInv = BABYLON.Tmp.Matrix[1];
             origLocMatInv.copyFrom(origLocMat);
             origLocMatInv.invert();
-            
+
             var scaleMat = BABYLON.Tmp.Matrix[2];
-            
             BABYLON.Matrix.FromValuesToRef(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1, scaleMat);
-            
             this._scaleMatrix.multiplyToRef(scaleMat, this._scaleMatrix);
             this._scaleVector.x *= x;
             this._scaleVector.y *= y;
             this._scaleVector.z *= z;
-            
+
             locMat.multiplyToRef(origLocMatInv, locMat);
             locMat.multiplyToRef(scaleMat, locMat);
             locMat.multiplyToRef(origLocMat, locMat);
-            
+
             var parent = this.getParent();
-            
+
             if (parent) {
                 locMat.multiplyToRef(parent.getAbsoluteTransform(), this.getAbsoluteTransform());
-            } else {
+            }else {
                 this.getAbsoluteTransform().copyFrom(locMat);
             }
-            
+
             var len = this.children.length;
-            
+
             for (var i = 0; i < len; i++) {
                 var parentAbsMat = this.children[i]._parent.getAbsoluteTransform();
                 this.children[i].getLocalMatrix().multiplyToRef(parentAbsMat, this.children[i].getAbsoluteTransform());
             }
-            
+
             scaleMat.invert();
             
             if (this.children[0]) {
@@ -212,9 +208,9 @@
                 var cm = child.getLocalMatrix();
                 cm.multiplyToRef(scaleMat, cm);
                 var lm = child.getLocalMatrix();
-                lm.m[12] *= this._scaleVector.x;
-                lm.m[13] *= this._scaleVector.y;
-                lm.m[14] *= this._scaleVector.z;
+                lm.m[12] *= x;
+                lm.m[13] *= y;
+                lm.m[14] *= z;
             }
             
             if (scaleChildren) {
@@ -222,8 +218,8 @@
                     this.children[i].scale(x, y, z, scaleChildren);
                     
                 }
-            }
-            
+            }          
+
             this.markAsDirty();
 
         }
@@ -232,7 +228,6 @@
 	
             var rotMat = BABYLON.Tmp.Matrix[0];
             BABYLON.Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
-            
             var rotMatInv = BABYLON.Tmp.Matrix[1];
             
             if (space == BABYLON.Space.WORLD) {
@@ -248,16 +243,29 @@
                 var scaleMatrix = BABYLON.Tmp.Matrix[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
                 scaleMatrix.m[0] *= -1;
+                    
+                rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
+                rotMatInv.multiplyToRef(rotMat, rotMat);
+            
+            }else {
+                
+                rotMatInv.copyFrom(this.getLocalMatrix());
+                rotMatInv.invert();
+                
+                var scaleMatrix = BABYLON.Tmp.Matrix[2];
+                
+                scaleMatrix.copyFrom(this._scaleMatrix);
+                
+                if (this._parent) {
+                    var pscaleMatrix = BABYLON.Tmp.Matrix[3];
+                    pscaleMatrix.copyFrom(this._parent._scaleMatrix);
+                    pscaleMatrix.invert();
+                    pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
+                }
                 
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
                 rotMatInv.multiplyToRef(rotMat, rotMat);
-
-            } else {
-
-                rotMatInv.copyFrom(this._rotationMatrix);
-                rotMatInv.invert();
-                rotMatInv.multiplyToRef(rotMat, rotMat);
-
+                
             }
             
             this._rotateWithMatrix(rotMat, space, mesh);
@@ -283,32 +291,27 @@
             var lx = lmat.m[12];
             var ly = lmat.m[13];
             var lz = lmat.m[14];
-
             var parent = this.getParent();
             var parentScale = BABYLON.Tmp.Matrix[3];
             var parentScaleInv = BABYLON.Tmp.Matrix[4];
-
-            this._rotationMatrix.multiplyToRef(rmat, this._rotationMatrix);
 
             if (parent) {
                 if (space == BABYLON.Space.WORLD) {
                     if (mesh) {
                         parentScale.copyFrom(mesh.getWorldMatrix());
                         parent.getAbsoluteTransform().multiplyToRef(parentScale, parentScale);
-                    } else {
+                    }else {
                         parentScale.copyFrom(parent.getAbsoluteTransform());
                     }
-                } else {
+                }else {
                     parentScale = parent._scaleMatrix;
                 }
-
                 parentScaleInv.copyFrom(parentScale);
                 parentScaleInv.invert();
                 lmat.multiplyToRef(parentScale, lmat);
                 lmat.multiplyToRef(rmat, lmat);
                 lmat.multiplyToRef(parentScaleInv, lmat);
-
-            } else {
+            }else {
                 if (space == BABYLON.Space.WORLD && mesh) {
                     parentScale.copyFrom(mesh.getWorldMatrix());
                     parentScaleInv.copyFrom(parentScale);
@@ -316,7 +319,7 @@
                     lmat.multiplyToRef(parentScale, lmat);
                     lmat.multiplyToRef(rmat, lmat);
                     lmat.multiplyToRef(parentScaleInv, lmat);
-                } else {
+                }else {
                     lmat.multiplyToRef(rmat, lmat);
                 }
             }
@@ -328,17 +331,16 @@
             if (parent) {
                 var parentAbsMat = this._parent.getAbsoluteTransform();
                 lmat.multiplyToRef(parentAbsMat, this.getAbsoluteTransform());
-            } else {
+            }else {
                 this.getAbsoluteTransform().copyFrom(lmat);
             }
 
             var len = this.children.length;
-
             for (var i = 0; i < len; i++) {
                 var parentAbsMat = this.children[i]._parent.getAbsoluteTransform();
                 this.children[i].getLocalMatrix().multiplyToRef(parentAbsMat, this.children[i].getAbsoluteTransform());
             }
-            
+
             this.markAsDirty();
             
         }
