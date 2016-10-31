@@ -8,6 +8,8 @@
 - Canvas2D moved to a separate folder in main repo. Now you need to also include babylon.cavans2d.js to get Canvas@D feature ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
+- Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))
+- Added Bone.setYawPitchRoll ([abow](https://github.com/abow))
 - Added Bone.rotate ([abow](https://github.com/abow))
 - Added Bone.scale ([abow](https://github.com/abow))
 - Added Node.getDirection ([abow](https://github.com/abow))
