@@ -261,6 +261,8 @@
                     pscaleMatrix.copyFrom(this._parent._scaleMatrix);
                     pscaleMatrix.invert();
                     pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
+                } else {
+                    scaleMatrix.m[0] *= -1;
                 }
                 
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
