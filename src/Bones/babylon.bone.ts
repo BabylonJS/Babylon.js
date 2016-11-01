@@ -165,6 +165,12 @@
             return true;
         }
 
+        public setScale (x: number, y: number, z: number, scaleChildren = false): void {
+
+	        this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
+
+        }
+
         public scale (x: number, y: number, z: number, scaleChildren = false): void {
 	
             var locMat = this.getLocalMatrix();
@@ -228,47 +234,12 @@
 	
             var rotMat = BABYLON.Tmp.Matrix[0];
             BABYLON.Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
+            
             var rotMatInv = BABYLON.Tmp.Matrix[1];
             
-            if (space == BABYLON.Space.WORLD) {
-                
-                rotMatInv.copyFrom(this.getAbsoluteTransform());
-                
-                if (mesh) {
-                    rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
-                }
-                
-                rotMatInv.invert();
-                
-                var scaleMatrix = BABYLON.Tmp.Matrix[2];
-                scaleMatrix.copyFrom(this._scaleMatrix);
-                scaleMatrix.m[0] *= -1;
-                    
-                rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
-                rotMatInv.multiplyToRef(rotMat, rotMat);
-            
-            }else {
-                
-                rotMatInv.copyFrom(this.getLocalMatrix());
-                rotMatInv.invert();
-                
-                var scaleMatrix = BABYLON.Tmp.Matrix[2];
-                
-                scaleMatrix.copyFrom(this._scaleMatrix);
-                
-                if (this._parent) {
-                    var pscaleMatrix = BABYLON.Tmp.Matrix[3];
-                    pscaleMatrix.copyFrom(this._parent._scaleMatrix);
-                    pscaleMatrix.invert();
-                    pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
-                } else {
-                    scaleMatrix.m[0] *= -1;
-                }
-                
-                rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
-                rotMatInv.multiplyToRef(rotMat, rotMat);
-                
-            }
+            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+	
+            rotMatInv.multiplyToRef(rotMat, rotMat);
             
             this._rotateWithMatrix(rotMat, space, mesh);
             
@@ -285,6 +256,19 @@
             
             this._rotateWithMatrix(rmat, space, mesh);
             
+        }
+
+        public setAxisAngle (axis: Vector3, angle: number, space: BABYLON.Space, mesh: BABYLON.AbstractMesh): void {
+
+            var rotMat = BABYLON.Tmp.Matrix[0];
+            BABYLON.Matrix.RotationAxisToRef(axis, angle, rotMat);
+            var rotMatInv = BABYLON.Tmp.Matrix[1];
+            
+            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+            
+            rotMatInv.multiplyToRef(rotMat, rotMat);
+            this._rotateWithMatrix(rotMat, space, mesh);
+
         }
 
         private _rotateWithMatrix (rmat:BABYLON.Matrix, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
@@ -345,6 +329,37 @@
 
             this.markAsDirty();
             
+        }
+
+        private _getNegativeRotationToRef(rotMatInv:BABYLON.Matrix, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
+
+            if (space == BABYLON.Space.WORLD) {
+                rotMatInv.copyFrom(this.getAbsoluteTransform());
+                if (mesh) {
+                    rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
+                }
+                rotMatInv.invert();
+                var scaleMatrix = BABYLON.Tmp.Matrix[2];
+                scaleMatrix.copyFrom(this._scaleMatrix);
+                scaleMatrix.m[0] *= -1;
+                rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
+            }
+            else {
+                rotMatInv.copyFrom(this.getLocalMatrix());
+                rotMatInv.invert();
+                var scaleMatrix = BABYLON.Tmp.Matrix[2];
+                scaleMatrix.copyFrom(this._scaleMatrix);
+                if (this._parent) {
+                    var pscaleMatrix = BABYLON.Tmp.Matrix[3];
+                    pscaleMatrix.copyFrom(this._parent._scaleMatrix);
+                    pscaleMatrix.invert();
+                    pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
+                } else {
+                    scaleMatrix.m[0] *= -1;
+                }
+                rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
+            }
+
         }
 
         public getScale(): Vector3 {
