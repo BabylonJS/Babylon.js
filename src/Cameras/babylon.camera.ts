@@ -421,8 +421,12 @@
             }
         };
         
+        public unfreezeProjectionMatrix(): void {
+            this._doNotComputeProjectionMatrix = false;
+        };
+        
         public getProjectionMatrix(force?: boolean): Matrix {
-            if ((!force && this._isSynchronizedProjectionMatrix()) || this._doNotComputeProjectionMatrix) {
+            if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
             }
 
