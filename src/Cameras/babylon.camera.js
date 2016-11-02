@@ -354,8 +354,12 @@ var BABYLON;
             }
         };
         ;
+        Camera.prototype.unfreezeProjectionMatrix = function () {
+            this._doNotComputeProjectionMatrix = false;
+        };
+        ;
         Camera.prototype.getProjectionMatrix = function (force) {
-            if ((!force && this._isSynchronizedProjectionMatrix()) || this._doNotComputeProjectionMatrix) {
+            if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
             }
             this._refreshFrustumPlanes = true;

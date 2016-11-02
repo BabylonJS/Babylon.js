@@ -213,6 +213,10 @@ var BABYLON;
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
         };
         Texture.Parse = function (parsedTexture, scene, rootUrl) {
+            if (parsedTexture.customType) {
+                var customTexture = BABYLON.Tools.Instantiate(parsedTexture.customType);
+                return customTexture.Parse(parsedTexture, scene, rootUrl);
+            }
             if (parsedTexture.isCube) {
                 return BABYLON.CubeTexture.Parse(parsedTexture, scene, rootUrl);
             }
@@ -220,11 +224,7 @@ var BABYLON;
                 return null;
             }
             var texture = BABYLON.SerializationHelper.Parse(function () {
-                if (parsedTexture.customType) {
-                    var customTexture = BABYLON.Tools.Instantiate(parsedTexture.customType);
-                    return customTexture.Parse(parsedTexture, scene, rootUrl);
-                }
-                else if (parsedTexture.mirrorPlane) {
+                if (parsedTexture.mirrorPlane) {
                     var mirrorTexture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
