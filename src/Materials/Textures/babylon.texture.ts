@@ -268,6 +268,11 @@
         }
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
+            if (parsedTexture.customType) { 
+                var customTexture = Tools.Instantiate(parsedTexture.customType);
+                return customTexture.Parse(parsedTexture, scene, rootUrl);
+            }
+
             if (parsedTexture.isCube) {
                 return CubeTexture.Parse(parsedTexture, scene, rootUrl);
             }
@@ -277,10 +282,7 @@
             }
 
             var texture = SerializationHelper.Parse(() => {
-                if (parsedTexture.customType) {
-                    var customTexture = Tools.Instantiate(parsedTexture.customType);
-                    return customTexture.Parse(parsedTexture, scene, rootUrl);
-                } else if (parsedTexture.mirrorPlane) {
+                if (parsedTexture.mirrorPlane) {
                     var mirrorTexture = new MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
