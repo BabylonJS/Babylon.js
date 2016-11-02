@@ -74,6 +74,14 @@
         public goToFrame(frame: number): void {
             var animations = this._animations;
 
+            if (animations[0]) {
+                var fps = animations[0].framePerSecond;
+                var currentFrame = animations[0].currentFrame;
+                var adjustTime = frame - currentFrame;
+                var delay = adjustTime * 1000 / fps;
+                this._localDelayOffset -= delay;
+            }
+
             for (var index = 0; index < animations.length; index++) {
                 animations[index].goToFrame(frame);
             }
