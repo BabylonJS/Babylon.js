@@ -54,6 +54,7 @@ var BABYLON;
             this._context = this._canvas.getContext("2d");
             this._context.font = font;
             this._context.fillStyle = "white";
+            this._context.textBaseline = "top";
             this._cachedFontId = null;
             var res = this.getFontHeight(font);
             this._lineHeightSuper = res.height + 4;
@@ -198,7 +199,7 @@ var BABYLON;
             // In sdf mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the sdf map accurately)
             if (this._signedDistanceField) {
                 this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
-                this._sdfContext.fillText(char, 0, 0);
+                this._sdfContext.fillText(char, 0, -this._offset);
                 var data = this._sdfContext.getImageData(0, 0, width * this._sdfScale, this._sdfCanvas.height);
                 var res = this._computeSDFChar(data);
                 this._context.putImageData(res, this._currentFreePosition.x, this._currentFreePosition.y);

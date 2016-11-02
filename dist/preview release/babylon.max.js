@@ -13042,8 +13042,12 @@ var BABYLON;
             }
         };
         ;
+        Camera.prototype.unfreezeProjectionMatrix = function () {
+            this._doNotComputeProjectionMatrix = false;
+        };
+        ;
         Camera.prototype.getProjectionMatrix = function (force) {
-            if ((!force && this._isSynchronizedProjectionMatrix()) || this._doNotComputeProjectionMatrix) {
+            if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
             }
             this._refreshFrustumPlanes = true;
@@ -23341,6 +23345,10 @@ var BABYLON;
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
         };
         Texture.Parse = function (parsedTexture, scene, rootUrl) {
+            if (parsedTexture.customType) {
+                var customTexture = BABYLON.Tools.Instantiate(parsedTexture.customType);
+                return customTexture.Parse(parsedTexture, scene, rootUrl);
+            }
             if (parsedTexture.isCube) {
                 return BABYLON.CubeTexture.Parse(parsedTexture, scene, rootUrl);
             }
@@ -23348,11 +23356,7 @@ var BABYLON;
                 return null;
             }
             var texture = BABYLON.SerializationHelper.Parse(function () {
-                if (parsedTexture.customType) {
-                    var customTexture = BABYLON.Tools.Instantiate(parsedTexture.customType);
-                    return customTexture.Parse(parsedTexture, scene, rootUrl);
-                }
-                else if (parsedTexture.mirrorPlane) {
+                if (parsedTexture.mirrorPlane) {
                     var mirrorTexture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
@@ -39020,6 +39024,7 @@ var BABYLON;
             this._context = this._canvas.getContext("2d");
             this._context.font = font;
             this._context.fillStyle = "white";
+            this._context.textBaseline = "top";
             this._cachedFontId = null;
             var res = this.getFontHeight(font);
             this._lineHeightSuper = res.height + 4;
@@ -39164,7 +39169,7 @@ var BABYLON;
             // In sdf mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the sdf map accurately)
             if (this._signedDistanceField) {
                 this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
-                this._sdfContext.fillText(char, 0, 0);
+                this._sdfContext.fillText(char, 0, -this._offset);
                 var data = this._sdfContext.getImageData(0, 0, width * this._sdfScale, this._sdfCanvas.height);
                 var res = this._computeSDFChar(data);
                 this._context.putImageData(res, this._currentFreePosition.x, this._currentFreePosition.y);
