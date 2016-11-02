@@ -18,8 +18,8 @@ void main(void) {
 	//float edgeWidth = 0.7 * length(vec2(dFdx(dist), dFdy(dist)));
 	//float opacity = dist * smoothstep(edgeDistance - edgeWidth, edgeDistance + edgeWidth, dist);
 
-	float opacity = smoothstep(0.25, 0.75, dist);
-	gl_FragColor = vec4(vColor.xyz*opacity, 1.0);
+	//float opacity = smoothstep(0.25, 0.75, dist);
+	gl_FragColor = vec4(vColor.xyz*dist, 1.0);
 #else
 	vec4 color = texture2D(diffuseSampler, vUV);
 	gl_FragColor = color*vColor;
