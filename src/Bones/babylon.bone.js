@@ -140,6 +140,40 @@ var BABYLON;
             this.animations[0].createRange(rangeName, from + frameOffset, to + frameOffset);
             return true;
         };
+        Bone.prototype.translate = function (vec) {
+            var lm = this.getLocalMatrix();
+            lm.m[12] += vec.x;
+            lm.m[13] += vec.y;
+            lm.m[14] += vec.z;
+            this.markAsDirty();
+        };
+        Bone.prototype.setPosition = function (position) {
+            var lm = this.getLocalMatrix();
+            lm.m[12] = position.x;
+            lm.m[13] = position.y;
+            lm.m[14] = position.z;
+            this.markAsDirty();
+        };
+        Bone.prototype.setAbsolutePosition = function (position, mesh) {
+            if (mesh === void 0) { mesh = null; }
+            this._skeleton.computeAbsoluteTransforms();
+            var tmat = BABYLON.Tmp.Matrix[0];
+            var vec = BABYLON.Tmp.Vector3[0];
+            if (mesh) {
+                tmat.copyFrom(this._parent.getAbsoluteTransform());
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }
+            else {
+                tmat.copyFrom(this._parent.getAbsoluteTransform());
+            }
+            tmat.invert();
+            BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, vec);
+            var lm = this.getLocalMatrix();
+            lm.m[12] = vec.x;
+            lm.m[13] = vec.y;
+            lm.m[14] = vec.z;
+            this.markAsDirty();
+        };
         Bone.prototype.setScale = function (x, y, z, scaleChildren) {
             if (scaleChildren === void 0) { scaleChildren = false; }
             this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
@@ -263,18 +297,7 @@ var BABYLON;
             lmat.m[12] = lx;
             lmat.m[13] = ly;
             lmat.m[14] = lz;
-            if (parent) {
-                var parentAbsMat = this._parent.getAbsoluteTransform();
-                lmat.multiplyToRef(parentAbsMat, this.getAbsoluteTransform());
-            }
-            else {
-                this.getAbsoluteTransform().copyFrom(lmat);
-            }
-            var len = this.children.length;
-            for (var i = 0; i < len; i++) {
-                var parentAbsMat = this.children[i]._parent.getAbsoluteTransform();
-                this.children[i].getLocalMatrix().multiplyToRef(parentAbsMat, this.children[i].getAbsoluteTransform());
-            }
+            this.computeAbsoluteTransforms();
             this.markAsDirty();
         };
         Bone.prototype._getNegativeRotationToRef = function (rotMatInv, space, mesh) {
