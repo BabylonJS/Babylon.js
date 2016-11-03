@@ -165,6 +165,57 @@
             return true;
         }
 
+        public translate (vec: Vector3): void {
+
+            var lm = this.getLocalMatrix();
+
+            lm.m[12] += vec.x;
+            lm.m[13] += vec.y;
+            lm.m[14] += vec.z;
+
+            this.markAsDirty();
+	        
+        }
+
+        public setPosition (position: Vector3): void {
+
+            var lm = this.getLocalMatrix();
+
+            lm.m[12] = position.x;
+            lm.m[13] = position.y;
+            lm.m[14] = position.z;
+
+            this.markAsDirty();
+	        
+        }
+
+        public setAbsolutePosition (position: Vector3, mesh: AbstractMesh = null): void {
+
+            this._skeleton.computeAbsoluteTransforms();
+
+            var tmat = BABYLON.Tmp.Matrix[0];
+            var vec = BABYLON.Tmp.Vector3[0];
+
+            if (mesh) {
+                tmat.copyFrom(this._parent.getAbsoluteTransform());
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }else {
+                tmat.copyFrom(this._parent.getAbsoluteTransform());
+            }
+
+            tmat.invert();
+			BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, vec);
+
+			var lm = this.getLocalMatrix();
+            lm.m[12] = vec.x;
+            lm.m[13] = vec.y;
+            lm.m[14] = vec.z;
+            
+            this.markAsDirty();
+			
+	        
+        }
+
         public setScale (x: number, y: number, z: number, scaleChildren = false): void {
 
 	        this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
