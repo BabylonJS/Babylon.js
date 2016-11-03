@@ -819,7 +819,11 @@
                     this.setPointerOverMesh(pickResult.pickedMesh);
 
                     if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        canvas.style.cursor = this.hoverCursor;
+                        if(this._pointerOverMesh.actionManager.hoverCursor){
+                            canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
+                        } else {
+                            canvas.style.cursor = this.hoverCursor;
+                        }
                     } else {
                         canvas.style.cursor = "";
                     }
@@ -829,8 +833,12 @@
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
-                        canvas.style.cursor = this.hoverCursor;
                         this.setPointerOverSprite(pickResult.pickedSprite);
+                        if (this._pointerOverSprite.actionManager && this._pointerOverSprite.actionManager.hoverCursor) {
+                            canvas.style.cursor = this._pointerOverSprite.actionManager.hoverCursor;
+                        } else {
+                            canvas.style.cursor = this.hoverCursor;
+                        }
                     } else {
                         this.setPointerOverSprite(null);
                         // Restore pointer
@@ -2156,7 +2164,7 @@
                             (highlightLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && highlightLayer.camera._rigCameras.indexOf(camera) > -1))) {
 
                         renderhighlights = true;
-                        
+
                         var renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
                         if (renderTarget._shouldRender()) {
                             this._renderId++;
