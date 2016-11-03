@@ -144,7 +144,7 @@
         // Members
         public actions = new Array<Action>();
 
-        public hoverCursor = null;
+        public hoverCursor: string = '';
 
         private _scene: Scene;
 
