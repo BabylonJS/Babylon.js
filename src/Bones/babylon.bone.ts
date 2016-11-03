@@ -314,18 +314,7 @@
             lmat.m[13] = ly;
             lmat.m[14] = lz;
 
-            if (parent) {
-                var parentAbsMat = this._parent.getAbsoluteTransform();
-                lmat.multiplyToRef(parentAbsMat, this.getAbsoluteTransform());
-            }else {
-                this.getAbsoluteTransform().copyFrom(lmat);
-            }
-
-            var len = this.children.length;
-            for (var i = 0; i < len; i++) {
-                var parentAbsMat = this.children[i]._parent.getAbsoluteTransform();
-                this.children[i].getLocalMatrix().multiplyToRef(parentAbsMat, this.children[i].getAbsoluteTransform());
-            }
+            this.computeAbsoluteTransforms();
 
             this.markAsDirty();
             
