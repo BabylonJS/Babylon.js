@@ -3,7 +3,7 @@ module BABYLON {
         camera: FreeCamera;
 
         @serialize()
-        public pointerButtons = [0, 1, 2];
+        public buttons = [0, 1, 2];
 
         @serialize()
         public angularSensibility = 2000.0;
@@ -28,7 +28,7 @@ module BABYLON {
                         return;
                     }
 
-                    if(this.pointerButtons.indexOf(evt.button) === -1){
+                    if(this.buttons.indexOf(evt.button) === -1){
                         return;
                     }
 
