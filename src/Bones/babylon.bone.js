@@ -17,6 +17,24 @@ var BABYLON;
             this._invertedAbsoluteTransform = new BABYLON.Matrix();
             this._scaleMatrix = BABYLON.Matrix.Identity();
             this._scaleVector = new BABYLON.Vector3(1, 1, 1);
+            this._negateScaleChildren = new BABYLON.Vector3(1, 1, 1);
+            this._syncScaleVector = function () {
+                var lm = this.getLocalMatrix();
+                var xsq = (lm.m[0] * lm.m[0] + lm.m[1] * lm.m[1] + lm.m[2] * lm.m[2]);
+                var ysq = (lm.m[4] * lm.m[4] + lm.m[5] * lm.m[5] + lm.m[6] * lm.m[6]);
+                var zsq = (lm.m[8] * lm.m[8] + lm.m[9] * lm.m[9] + lm.m[10] * lm.m[10]);
+                var xs = lm.m[0] * lm.m[1] * lm.m[2] * lm.m[3] < 0 ? -1 : 1;
+                var ys = lm.m[4] * lm.m[5] * lm.m[6] * lm.m[7] < 0 ? -1 : 1;
+                var zs = lm.m[8] * lm.m[9] * lm.m[10] * lm.m[11] < 0 ? -1 : 1;
+                this._scaleVector.x = xs * Math.sqrt(xsq);
+                this._scaleVector.y = ys * Math.sqrt(ysq);
+                this._scaleVector.z = zs * Math.sqrt(zsq);
+                if (this._parent) {
+                    this._scaleVector.x /= this._parent._negateScaleChildren.x;
+                    this._scaleVector.y /= this._parent._negateScaleChildren.y;
+                    this._scaleVector.z /= this._parent._negateScaleChildren.z;
+                }
+            };
             this._skeleton = skeleton;
             this._matrix = matrix;
             this._baseMatrix = matrix;
@@ -176,6 +194,14 @@ var BABYLON;
         };
         Bone.prototype.setScale = function (x, y, z, scaleChildren) {
             if (scaleChildren === void 0) { scaleChildren = false; }
+            if (this.animations[0] && !this.animations[0].isStopped()) {
+                if (!scaleChildren) {
+                    this._negateScaleChildren.x = 1 / x;
+                    this._negateScaleChildren.y = 1 / y;
+                    this._negateScaleChildren.z = 1 / z;
+                }
+                this._syncScaleVector();
+            }
             this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
         };
         Bone.prototype.scale = function (x, y, z, scaleChildren) {
@@ -203,13 +229,9 @@ var BABYLON;
                 this.getAbsoluteTransform().copyFrom(locMat);
             }
             var len = this.children.length;
-            for (var i = 0; i < len; i++) {
-                var parentAbsMat = this.children[i]._parent.getAbsoluteTransform();
-                this.children[i].getLocalMatrix().multiplyToRef(parentAbsMat, this.children[i].getAbsoluteTransform());
-            }
             scaleMat.invert();
-            if (this.children[0]) {
-                var child = this.children[0];
+            for (var i = 0; i < len; i++) {
+                var child = this.children[i];
                 var cm = child.getLocalMatrix();
                 cm.multiplyToRef(scaleMat, cm);
                 var lm = child.getLocalMatrix();
@@ -217,6 +239,7 @@ var BABYLON;
                 lm.m[13] *= y;
                 lm.m[14] *= z;
             }
+            this.computeAbsoluteTransforms();
             if (scaleChildren) {
                 for (var i = 0; i < len; i++) {
                     this.children[i].scale(x, y, z, scaleChildren);

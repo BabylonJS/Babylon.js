@@ -696,7 +696,12 @@ var BABYLON;
                     _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
                     if (_this._pointerOverMesh.actionManager && _this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        canvas.style.cursor = _this.hoverCursor;
+                        if (_this._pointerOverMesh.actionManager.hoverCursor) {
+                            canvas.style.cursor = _this._pointerOverMesh.actionManager.hoverCursor;
+                        }
+                        else {
+                            canvas.style.cursor = _this.hoverCursor;
+                        }
                     }
                     else {
                         canvas.style.cursor = "";
@@ -707,8 +712,13 @@ var BABYLON;
                     // Sprites
                     pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
-                        canvas.style.cursor = _this.hoverCursor;
                         _this.setPointerOverSprite(pickResult.pickedSprite);
+                        if (_this._pointerOverSprite.actionManager && _this._pointerOverSprite.actionManager.hoverCursor) {
+                            canvas.style.cursor = _this._pointerOverSprite.actionManager.hoverCursor;
+                        }
+                        else {
+                            canvas.style.cursor = _this.hoverCursor;
+                        }
                     }
                     else {
                         _this.setPointerOverSprite(null);
