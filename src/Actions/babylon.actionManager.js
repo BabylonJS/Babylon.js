@@ -60,6 +60,7 @@ var BABYLON;
         function ActionManager(scene) {
             // Members
             this.actions = new Array();
+            this.hoverCursor = '';
             this._scene = scene;
             scene._actionManagers.push(this);
         }
