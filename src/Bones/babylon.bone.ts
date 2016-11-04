@@ -316,8 +316,8 @@
             
         }
 
-        public setAxisAngle (axis: Vector3, angle: number, space: BABYLON.Space, mesh: BABYLON.AbstractMesh): void {
-
+        public setAxisAngle (axis: Vector3, angle: number, space: BABYLON.Space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
+            
             var rotMat = BABYLON.Tmp.Matrix[0];
             BABYLON.Matrix.RotationAxisToRef(axis, angle, rotMat);
             var rotMatInv = BABYLON.Tmp.Matrix[1];
@@ -325,6 +325,18 @@
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
             
             rotMatInv.multiplyToRef(rotMat, rotMat);
+            this._rotateWithMatrix(rotMat, space, mesh);
+
+        }
+
+        public setRotationMatrix (rotMat: Matrix, space: BABYLON.Space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null) {
+
+            var rotMatInv = BABYLON.Tmp.Matrix[1];
+            
+            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+
+            rotMatInv.multiplyToRef(rotMat, rotMat);
+            
             this._rotateWithMatrix(rotMat, space, mesh);
 
         }
@@ -487,6 +499,27 @@
                 this._scaleVector.x /= this._parent._negateScaleChildren.x;
                 this._scaleVector.y /= this._parent._negateScaleChildren.y;
                 this._scaleVector.z /= this._parent._negateScaleChildren.z;
+            }
+
+        }
+
+        public getDirection (localAxis: Vector3){
+
+            var result = BABYLON.Vector3.Zero();
+
+            this.getDirectionToRef(localAxis, result);
+            
+            return result;
+
+        }
+
+        public getDirectionToRef (localAxis: Vector3, result: Vector3) {
+
+            this._skeleton.computeAbsoluteTransforms();
+            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getAbsoluteTransform(), result);
+            
+            if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
+                result.normalize();
             }
 
         }
