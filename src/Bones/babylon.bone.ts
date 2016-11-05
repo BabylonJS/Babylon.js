@@ -393,17 +393,19 @@
         private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
 
             if (space == Space.WORLD) {
-                rotMatInv.copyFrom(this.getAbsoluteTransform());
-                if (mesh) {
+                var scaleMatrix = BABYLON.Tmp.Matrix[2];
+				scaleMatrix.copyFrom(this._scaleMatrix);
+				rotMatInv.copyFrom(this.getAbsoluteTransform());
+				if (mesh) {
                     rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
+					var meshScale = BABYLON.Tmp.Matrix[3];
+					BABYLON.Matrix.ScalingToRef(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z, meshScale);
+					scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
                 }
-                rotMatInv.invert();
-                var scaleMatrix = Tmp.Matrix[2];
-                scaleMatrix.copyFrom(this._scaleMatrix);
+				rotMatInv.invert();
                 scaleMatrix.m[0] *= -1;
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
-            }
-            else {
+            } else {
                 rotMatInv.copyFrom(this.getLocalMatrix());
                 rotMatInv.invert();
                 var scaleMatrix = Tmp.Matrix[2];
