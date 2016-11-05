@@ -13,9 +13,9 @@
         private _invertedAbsoluteTransform = new Matrix();
         private _parent: Bone;
 
-        private _scaleMatrix: Matrix = BABYLON.Matrix.Identity();
-        private _scaleVector: Vector3 = new BABYLON.Vector3(1, 1, 1);
-        private _negateScaleChildren = new BABYLON.Vector3(1, 1, 1);
+        private _scaleMatrix = Matrix.Identity();
+        private _scaleVector = new Vector3(1, 1, 1);
+        private _negateScaleChildren = new Vector3(1, 1, 1);
         
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
@@ -194,8 +194,8 @@
 
             this._skeleton.computeAbsoluteTransforms();
 
-            var tmat = BABYLON.Tmp.Matrix[0];
-            var vec = BABYLON.Tmp.Vector3[0];
+            var tmat = Tmp.Matrix[0];
+            var vec = Tmp.Vector3[0];
 
             if (mesh) {
                 tmat.copyFrom(this._parent.getAbsoluteTransform());
@@ -205,7 +205,7 @@
             }
 
             tmat.invert();
-			BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, vec);
+			Vector3.TransformCoordinatesToRef(position, tmat, vec);
 
 			var lm = this.getLocalMatrix();
             lm.m[12] = vec.x;
@@ -235,15 +235,15 @@
         public scale (x: number, y: number, z: number, scaleChildren = false): void {
 	
             var locMat = this.getLocalMatrix();
-            var origLocMat = BABYLON.Tmp.Matrix[0];
+            var origLocMat = Tmp.Matrix[0];
             origLocMat.copyFrom(locMat);
 
-            var origLocMatInv = BABYLON.Tmp.Matrix[1];
+            var origLocMatInv = Tmp.Matrix[1];
             origLocMatInv.copyFrom(origLocMat);
             origLocMatInv.invert();
 
-            var scaleMat = BABYLON.Tmp.Matrix[2];
-            BABYLON.Matrix.FromValuesToRef(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1, scaleMat);
+            var scaleMat = Tmp.Matrix[2];
+            Matrix.FromValuesToRef(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1, scaleMat);
             this._scaleMatrix.multiplyToRef(scaleMat, this._scaleMatrix);
             this._scaleVector.x *= x;
             this._scaleVector.y *= y;
@@ -288,12 +288,12 @@
 
         }
 
-        public setYawPitchRoll (yaw: number, pitch: number, roll: number, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
+        public setYawPitchRoll (yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh: AbstractMesh = null): void {
 	
-            var rotMat = BABYLON.Tmp.Matrix[0];
-            BABYLON.Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
+            var rotMat = Tmp.Matrix[0];
+            Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
             
-            var rotMatInv = BABYLON.Tmp.Matrix[1];
+            var rotMatInv = Tmp.Matrix[1];
             
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
 	
@@ -303,24 +303,24 @@
             
         }
 
-        public rotate (axis: BABYLON.Vector3, amount: number, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
+        public rotate (axis: Vector3, amount: number, space = Space.LOCAL, mesh: AbstractMesh = null): void {
             
-            var rmat = BABYLON.Tmp.Matrix[0];
+            var rmat = Tmp.Matrix[0];
             rmat.m[12] = 0;
             rmat.m[13] = 0;
             rmat.m[14] = 0;
             
-            BABYLON.Matrix.RotationAxisToRef(axis, amount, rmat);
+            Matrix.RotationAxisToRef(axis, amount, rmat);
             
             this._rotateWithMatrix(rmat, space, mesh);
             
         }
 
-        public setAxisAngle (axis: Vector3, angle: number, space: BABYLON.Space, mesh: BABYLON.AbstractMesh): void {
+        public setAxisAngle (axis: Vector3, angle: number, space = Space.LOCAL, mesh: AbstractMesh = null): void {
 
-            var rotMat = BABYLON.Tmp.Matrix[0];
-            BABYLON.Matrix.RotationAxisToRef(axis, angle, rotMat);
-            var rotMatInv = BABYLON.Tmp.Matrix[1];
+            var rotMat = Tmp.Matrix[0];
+            Matrix.RotationAxisToRef(axis, angle, rotMat);
+            var rotMatInv = Tmp.Matrix[1];
             
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
             
@@ -329,18 +329,30 @@
 
         }
 
-        private _rotateWithMatrix (rmat:BABYLON.Matrix, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
+        public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
+
+            var rotMatInv = Tmp.Matrix[1];
+            
+            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+
+            rotMatInv.multiplyToRef(rotMat, rotMat);
+            
+            this._rotateWithMatrix(rotMat, space, mesh);
+
+        }
+
+        private _rotateWithMatrix (rmat: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
 
             var lmat = this.getLocalMatrix();
             var lx = lmat.m[12];
             var ly = lmat.m[13];
             var lz = lmat.m[14];
             var parent = this.getParent();
-            var parentScale = BABYLON.Tmp.Matrix[3];
-            var parentScaleInv = BABYLON.Tmp.Matrix[4];
+            var parentScale = Tmp.Matrix[3];
+            var parentScaleInv = Tmp.Matrix[4];
 
             if (parent) {
-                if (space == BABYLON.Space.WORLD) {
+                if (space == Space.WORLD) {
                     if (mesh) {
                         parentScale.copyFrom(mesh.getWorldMatrix());
                         parent.getAbsoluteTransform().multiplyToRef(parentScale, parentScale);
@@ -356,7 +368,7 @@
                 lmat.multiplyToRef(rmat, lmat);
                 lmat.multiplyToRef(parentScaleInv, lmat);
             }else {
-                if (space == BABYLON.Space.WORLD && mesh) {
+                if (space == Space.WORLD && mesh) {
                     parentScale.copyFrom(mesh.getWorldMatrix());
                     parentScaleInv.copyFrom(parentScale);
                     parentScaleInv.invert();
@@ -378,15 +390,15 @@
             
         }
 
-        private _getNegativeRotationToRef(rotMatInv:BABYLON.Matrix, space = BABYLON.Space.LOCAL, mesh: BABYLON.AbstractMesh = null): void {
+        private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
 
-            if (space == BABYLON.Space.WORLD) {
+            if (space == Space.WORLD) {
                 rotMatInv.copyFrom(this.getAbsoluteTransform());
                 if (mesh) {
                     rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
                 }
                 rotMatInv.invert();
-                var scaleMatrix = BABYLON.Tmp.Matrix[2];
+                var scaleMatrix = Tmp.Matrix[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
                 scaleMatrix.m[0] *= -1;
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
@@ -394,10 +406,10 @@
             else {
                 rotMatInv.copyFrom(this.getLocalMatrix());
                 rotMatInv.invert();
-                var scaleMatrix = BABYLON.Tmp.Matrix[2];
+                var scaleMatrix = Tmp.Matrix[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
                 if (this._parent) {
-                    var pscaleMatrix = BABYLON.Tmp.Matrix[3];
+                    var pscaleMatrix = Tmp.Matrix[3];
                     pscaleMatrix.copyFrom(this._parent._scaleMatrix);
                     pscaleMatrix.invert();
                     pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
@@ -415,15 +427,15 @@
             
         }
 
-        public getScaleToRef(result:Vector3): void {
+        public getScaleToRef(result: Vector3): void {
 	
             result.copyFrom(this._scaleVector);
             
         }
 
-        public getAbsolutePosition (mesh: BABYLON.AbstractMesh = null): BABYLON.Vector3 {
+        public getAbsolutePosition (mesh: AbstractMesh = null): Vector3 {
 
-            var pos = BABYLON.Vector3.Zero();
+            var pos = Vector3.Zero();
 
             this.getAbsolutePositionToRef(mesh, pos);
 
@@ -431,11 +443,11 @@
 
         }
 
-        public getAbsolutePositionToRef (mesh: BABYLON.AbstractMesh = null, result: BABYLON.Vector3): void {
+        public getAbsolutePositionToRef (mesh: AbstractMesh = null, result: Vector3): void {
 
             this._skeleton.computeAbsoluteTransforms();
             
-            var tmat = BABYLON.Tmp.Matrix[0];
+            var tmat = Tmp.Matrix[0];
 
             if (mesh) {
                 tmat.copyFrom(this.getAbsoluteTransform());
@@ -487,6 +499,27 @@
                 this._scaleVector.x /= this._parent._negateScaleChildren.x;
                 this._scaleVector.y /= this._parent._negateScaleChildren.y;
                 this._scaleVector.z /= this._parent._negateScaleChildren.z;
+            }
+
+        }
+
+        public getDirection (localAxis: Vector3){
+
+            var result = Vector3.Zero();
+
+            this.getDirectionToRef(localAxis, result);
+            
+            return result;
+
+        }
+
+        public getDirectionToRef (localAxis: Vector3, result: Vector3) {
+
+            this._skeleton.computeAbsoluteTransforms();
+            Vector3.TransformNormalToRef(localAxis, this.getAbsoluteTransform(), result);
+            
+            if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
+                result.normalize();
             }
 
         }
