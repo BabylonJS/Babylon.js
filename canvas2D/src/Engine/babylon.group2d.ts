@@ -373,12 +373,9 @@
 
             // The dimension must be overridden when using the designSize feature, the ratio is maintain to compute a uniform scale, which is mandatory but if the designSize's ratio is different from the rendering surface's ratio, content will be clipped in some cases.
             // So we set the width/height to the rendering's one because that's what we want for the viewport!
-            if (this instanceof Canvas2D) {
-                let c = <Canvas2D><any>this;
-                if (c.designSize != null) {
-                    sw = this.owner.engine.getRenderWidth();
-                    sh = this.owner.engine.getRenderHeight();
-                }
+            if ((this instanceof Canvas2D || this.id === "__cachedCanvasGroup__") && this.owner.designSize != null) {
+                sw = this.owner.engine.getRenderWidth();
+                sh = this.owner.engine.getRenderHeight();
             }
 
             // Setup the size of the rendering viewport
@@ -830,8 +827,13 @@
             }
 
             if (isCanvas && this.owner.cachingStrategy===Canvas2D.CACHESTRATEGY_CANVAS && this.owner.isScreenSpace) {
-                Group2D._s.width = this.owner.engine.getRenderWidth();
-                Group2D._s.height = this.owner.engine.getRenderHeight();
+                if(this.owner.designSize || this.owner.fitRenderingDevice){
+                    Group2D._s.width = this.owner.engine.getRenderWidth();
+                    Group2D._s.height = this.owner.engine.getRenderHeight();
+                }
+                else{
+                    Group2D._s.copyFrom(this.owner.size);
+                }
             } else {
                 Group2D._s.width = Math.ceil(this.actualSize.width * scale.x * rs);
                 Group2D._s.height = Math.ceil(this.actualSize.height * scale.y * rs);
@@ -912,23 +914,12 @@
             // For now we only support these property changes
             // TODO: add more! :)
             switch (prop.id) {
-                case Prim2DBase.actualScaleProperty.id:
                 case Prim2DBase.actualPositionProperty.id:
-                    let noResizeScale = rd._noResizeOnScale;
-                    let isCanvas = parent == null;
-                    let scale: Vector2;
-                    if (noResizeScale) {
-                        scale = isCanvas ? Group2D._unS : this.parent.actualScale;
-                    } else {
-                        scale = this.actualScale;
-                    }
-
-                    cachedSprite.actualPosition = this.actualPosition.multiply(scale);
+                    cachedSprite.actualPosition = this.actualPosition.clone();
                     if (cachedSprite.position != null) {
                         cachedSprite.position = cachedSprite.actualPosition.clone();
                     }
                     break;
-
                 case Prim2DBase.rotationProperty.id:
                     cachedSprite.rotation = this.rotation;
                     break;

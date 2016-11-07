@@ -495,6 +495,7 @@
         private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2): boolean {
             let s = this.scale;
             let pii = this._primPointerInfo;
+            pii.cancelBubble = false;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = Vector2.Zero();
             }
@@ -606,7 +607,7 @@
                 let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
                 // Notify the previous "over" prim that the pointer is no longer over it
-                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim)) {
+                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim && !prevPrim.isDisposed)) {
                     this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
                     this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut, null);
                 }
@@ -1047,6 +1048,10 @@
             this._setupInteraction(enable);
         }
 
+        public get fitRenderingDevice(): boolean {
+            return this._fitRenderingDevice;
+        }
+
         public get designSize(): Size {
             return this._designSize;
         }
@@ -1081,7 +1086,7 @@
                     new Rectangle2D({
                         id: "ProfileBorder", border: "#FFFFFFFF", borderThickness: 2, roundRadius: 5, fill: "#C04040C0", marginAlignment: "h: left, v: top", margin: "10", padding: "10", children:
                         [
-                            new Text2D("Stats", { id: "ProfileInfoText", marginAlignment: "h: left, v: top", fontName: "10pt Lucida Console" })
+                            new Text2D("Stats", { id: "ProfileInfoText", marginAlignment: "h: left, v: top", fontName: "12pt Lucida Console", fontSignedDistanceField: true })
                         ]
                     })
 
@@ -1532,7 +1537,7 @@
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x * scale.x, y: group.actualPosition.y * scale.y, spriteSize: originalSize, spriteLocation: node.pos, dontInheritParentScale: true });
+                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: originalSize, spriteLocation: node.pos, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add((e, s) => {
