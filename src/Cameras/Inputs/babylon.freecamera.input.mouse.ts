@@ -28,7 +28,7 @@ module BABYLON {
                         return;
                     }
 
-                    if(this.buttons.indexOf(evt.button) === -1){
+                    if(p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1){
                         return;
                     }
 
