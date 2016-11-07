@@ -144,6 +144,8 @@
         // Members
         public actions = new Array<Action>();
 
+        public hoverCursor: string = '';
+
         private _scene: Scene;
 
         constructor(scene: Scene) {

@@ -43,7 +43,7 @@ var BABYLON;
                 if (this._texture.isReady) {
                     BABYLON.Tools.SetImmediate(function () { return onLoad(); });
                 }
-                else {
+                else if (onLoad) {
                     this._texture.onLoadedCallbacks.push(onLoad);
                 }
             }

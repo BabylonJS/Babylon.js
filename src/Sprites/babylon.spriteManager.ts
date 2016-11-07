@@ -43,20 +43,20 @@
             this._spriteTexture = value;
         }
 
-        constructor(public name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        constructor(public name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             this._capacity = capacity;
             this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
-            this._epsilon = epsilon === undefined ? 0.01 : epsilon;
-
-            if (cellSize.width) {
+            if (cellSize.width && cellSize.height) {
                 this.cellWidth = cellSize.width;
                 this.cellHeight = cellSize.height;
-            } else {
+            } else if(cellSize !== undefined) {
                 this.cellWidth = cellSize;
                 this.cellHeight = cellSize;
+            } else {
+               return;   
             }
 
             this._scene = scene;

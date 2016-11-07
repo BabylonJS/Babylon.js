@@ -11,7 +11,7 @@ var BABYLON;
         FresnelParameters.prototype.clone = function () {
             var newFresnelParameters = new FresnelParameters();
             BABYLON.Tools.DeepCopy(this, newFresnelParameters);
-            return new FresnelParameters;
+            return newFresnelParameters;
         };
         FresnelParameters.prototype.serialize = function () {
             var serializationObject = {};

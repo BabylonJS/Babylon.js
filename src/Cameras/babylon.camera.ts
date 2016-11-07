@@ -123,6 +123,7 @@
         // Cache
         private _computedViewMatrix = Matrix.Identity();
         public _projectionMatrix = new Matrix();
+        private _doNotComputeProjectionMatrix = false;
         private _worldMatrix: Matrix;
         public _postProcesses = new Array<PostProcess>();
         private _transformMatrix = Matrix.Zero();
@@ -413,8 +414,19 @@
             return this._computedViewMatrix;
         }
 
+        public freezeProjectionMatrix(projection?: Matrix): void {
+            this._doNotComputeProjectionMatrix = true;
+            if (projection !== undefined) {
+                this._projectionMatrix = projection;
+            }
+        };
+        
+        public unfreezeProjectionMatrix(): void {
+            this._doNotComputeProjectionMatrix = false;
+        };
+        
         public getProjectionMatrix(force?: boolean): Matrix {
-            if (!force && this._isSynchronizedProjectionMatrix()) {
+            if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
             }
 
