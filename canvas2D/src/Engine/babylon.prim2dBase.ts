@@ -2433,7 +2433,7 @@
             }
             this._positioningDirty();
             if (this.parent) {
-                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty | SmartPropertyPrim.flagGlobalTransformDirty);
             }
             this._layoutArea = val;
         }
@@ -2454,7 +2454,7 @@
                 return;
             }
             if (this.parent) {
-                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty | SmartPropertyPrim.flagGlobalTransformDirty);
             }
             this._positioningDirty();
             this._layoutAreaPos = val;
