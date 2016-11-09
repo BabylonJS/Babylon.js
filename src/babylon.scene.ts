@@ -156,6 +156,9 @@
 
         public hoverCursor = "pointer";
 
+        // Metadata
+        public metadata:any = null;
+        
         // Events
 
         /**
