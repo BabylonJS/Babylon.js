@@ -214,6 +214,9 @@ var BABYLON;
             //    // Do nothing
             //}
             if (!this._gl) {
+                if (!canvas) {
+                    throw new Error("The provided canvas is null or undefined.");
+                }
                 try {
                     this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
                 }
