@@ -237,6 +237,11 @@
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
 
+            // Metadata
+            if (scene.metadata) {
+                serializationObject.metadata = scene.metadata;
+            }
+
             // Lights
             serializationObject.lights = [];
             var index: number;
