@@ -26,6 +26,8 @@
         private _context: CanvasRenderingContext2D;
         private _lineHeight: number;
         private _lineHeightSuper: number;
+        private _xMargin: number;
+        private _yMargin: number;
         private _offset: number;
         private _currentFreePosition: Vector2;
         private _charInfos: ICharInfoMap = {};
@@ -35,10 +37,18 @@
         private _spaceWidthSuper;
         private _usedCounter = 1;
         private _superSample: boolean;
+        private _sdfCanvas: HTMLCanvasElement;
+        private _sdfContext: CanvasRenderingContext2D;
+        private _signedDistanceField: boolean;
         private _cachedFontId: string;
+        private _sdfScale: number;
 
         public get isSuperSampled(): boolean {
             return this._superSample;
+        }
+
+        public get isSignedDistanceField(): boolean {
+            return this._signedDistanceField;
         }
 
         public get spaceWidth(): number {
@@ -49,7 +59,7 @@
             return this._lineHeight;
         }
 
-        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false) {
+        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
             let s = <any>scene;
             if (!s.__fontTextureCache__) {
                 s.__fontTextureCache__ = new StringDictionary<FontTexture>();
@@ -57,28 +67,28 @@
 
             let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS");
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
             let ft = dic.get(lfn);
             if (ft) {
                 ++ft._usedCounter;
                 return ft;
             }
 
-            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, Texture.BILINEAR_SAMPLINGMODE, supersample);
+            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, Texture.BILINEAR_SAMPLINGMODE, supersample, signedDistanceField);
             ft._cachedFontId = lfn;
             dic.add(lfn, ft);
 
             return ft;
         }
 
-        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false) {
+        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
             let s = <any>scene;
             let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
             if (!dic) {
                 return;
             }
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS");
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
             var font = dic.get(lfn);
             if (--font._usedCounter === 0) {
                 dic.remove(lfn);
@@ -95,7 +105,7 @@
          * @param samplingMode the texture sampling mode
          * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
          */
-        constructor(name: string, font: string, scene: Scene, maxCharCount=200, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, superSample: boolean = false) {
+        constructor(name: string, font: string, scene: Scene, maxCharCount=200, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, superSample: boolean = false, signedDistanceField: boolean = false) {
             super(null, scene, true, false, samplingMode);
 
             this.name = name;
@@ -103,8 +113,12 @@
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
 
+            this._sdfScale = 8;
+            this._signedDistanceField = signedDistanceField;
             this._superSample = false;
-            if (superSample) {
+
+            // SDF will use supersample no matter what, the resolution is otherwise too poor to produce correct result
+            if (superSample || signedDistanceField) {
                 let sfont = this.getSuperSampleFont(font);
                 if (sfont) {
                     this._superSample = true;
@@ -117,19 +131,22 @@
             this._context = this._canvas.getContext("2d");
             this._context.font = font;
             this._context.fillStyle = "white";
+            this._context.textBaseline = "top";
             this._cachedFontId = null;
 
             var res = this.getFontHeight(font);
-            this._lineHeightSuper = res.height;
-            this._lineHeight = this._superSample ? (this._lineHeightSuper / 2) : this._lineHeightSuper;
-            this._offset = res.offset-1;
+            this._lineHeightSuper = res.height+4;
+            this._lineHeight = this._superSample ? (Math.ceil(this._lineHeightSuper / 2)) : this._lineHeightSuper;
+            this._offset = res.offset - 1;
+            this._xMargin = 1 + Math.ceil(this._lineHeightSuper / 15);    // Right now this empiric formula seems to work...
+            this._yMargin = this._xMargin;
 
             var maxCharWidth = this._context.measureText("W").width;
             this._spaceWidthSuper = this._context.measureText(" ").width;
             this._spaceWidth = this._superSample ? (this._spaceWidthSuper / 2) : this._spaceWidthSuper;
 
             // This is an approximate size, but should always be able to fit at least the maxCharCount
-            var totalEstSurface = this._lineHeightSuper * maxCharWidth * maxCharCount;
+            var totalEstSurface = (this._lineHeightSuper + this._yMargin) * (maxCharWidth + this._xMargin) * maxCharCount;
             var edge = Math.sqrt(totalEstSurface);
             var textSize = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
 
@@ -137,7 +154,7 @@
             this._texture = scene.getEngine().createDynamicTexture(textSize, textSize, false, samplingMode);
             var textureSize = this.getSize();
 
-            this.hasAlpha = true;
+            this.hasAlpha = this._signedDistanceField===false;
 
             // Recreate a new canvas with the final size: the one matching the texture (resizing the previous one doesn't work as one would expect...)
             this._canvas = document.createElement("canvas");
@@ -148,6 +165,26 @@
             this._context.font = font;
             this._context.fillStyle = "white";
             this._context.imageSmoothingEnabled = false;
+            this._context.clearRect(0, 0, textureSize.width, textureSize.height);
+
+            // Create a canvas for the signed distance field mode, we only have to store one char, the purpose is to render a char scaled _sdfScale times
+            //  into this 2D context, then get the bitmap data, create the sdf char and push the result in the _context (which hold the whole Font Texture content)
+            // So you can see this context as an intermediate one, because it is.
+            if (this._signedDistanceField) {
+                let sdfC = document.createElement("canvas");
+                let s = this._sdfScale;
+                sdfC.width = maxCharWidth * s;
+                sdfC.height = this._lineHeightSuper * s;
+                let sdfCtx = sdfC.getContext("2d");
+                sdfCtx.scale(s, s);
+                sdfCtx.textBaseline = "top";
+                sdfCtx.font = font;
+                sdfCtx.fillStyle = "white";
+                sdfCtx.imageSmoothingEnabled = false;
+
+                this._sdfCanvas = sdfC;
+                this._sdfContext = sdfCtx;
+            }
 
             this._currentFreePosition = Vector2.Zero();
 
@@ -156,6 +193,7 @@
                 var c = String.fromCharCode(i);
                 this.getChar(c);
             }
+
             this.update();
         }
 
@@ -181,11 +219,9 @@
 
             // we reached the end of the current line?
             let width = Math.round(measure.width);
-            var xMargin = 1 + Math.ceil(this._lineHeightSuper / 15);    // Right now this empiric formula seems to work...
-            var yMargin = xMargin;
-            if (this._currentFreePosition.x + width + xMargin > textureSize.width) {
+            if (this._currentFreePosition.x + width + this._xMargin > textureSize.width) {
                 this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeightSuper + yMargin;
+                this._currentFreePosition.y += this._lineHeightSuper + this._yMargin;
 
                 // No more room?
                 if (this._currentFreePosition.y > textureSize.height) {
@@ -193,12 +229,29 @@
                 }
             }
 
-            // Draw the character in the texture
-            this._context.fillText(char, this._currentFreePosition.x, this._currentFreePosition.y - this._offset);
+            // In sdf mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the sdf map accurately)
+            if (this._signedDistanceField) {
+                this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
+                this._sdfContext.fillText(char, 0, -this._offset);
+                let data = this._sdfContext.getImageData(0, 0, width*this._sdfScale, this._sdfCanvas.height);
+
+                let res = this._computeSDFChar(data);
+                this._context.putImageData(res, this._currentFreePosition.x, this._currentFreePosition.y);
+            } else {
+                // Draw the character in the HTML canvas
+                this._context.fillText(char, this._currentFreePosition.x, this._currentFreePosition.y - this._offset);
+            }
 
             // Fill the CharInfo object
             info.topLeftUV = new Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
             info.bottomRightUV = new Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + 2) / textureSize.height));
+
+            if (this._signedDistanceField) {
+                let off = 1/textureSize.width;
+                info.topLeftUV.addInPlace(new Vector2(off, off));
+                info.bottomRightUV.addInPlace(new Vector2(off, off));
+            }
+
             info.charWidth = this._superSample ? (width/2) : width;
 
             // Add the info structure
@@ -206,9 +259,156 @@
             this._curCharCount++;
 
             // Set the next position
-            this._currentFreePosition.x += width + xMargin;
+            this._currentFreePosition.x += width + this._xMargin;
 
             return info;
+        }
+
+        private _computeSDFChar(source: ImageData): ImageData {
+            let scl = this._sdfScale;
+            let sw = source.width;
+            let sh = source.height;
+            let dw = sw / scl;
+            let dh = sh / scl;
+            let roffx = 0;
+            let roffy = 0;
+
+            // We shouldn't look beyond half of the biggest between width and height
+            let radius = scl;
+            let br = radius - 1;
+
+            let lookupSrc = (dx: number, dy: number, offX: number, offY: number, lookVis: boolean): boolean => {
+                let sx = dx * scl;
+                let sy = dy * scl;
+
+                // Looking out of the area? return true to make the test going on
+                if (((sx + offX) < 0) || ((sx + offX) >= sw) || ((sy + offY) < 0) || ((sy + offY) >= sh)) {
+                    return true;
+                }
+
+                // Get the pixel we want
+                let val = source.data[(((sy + offY) * sw) + (sx + offX)) * 4];
+
+                let res = (val > 0) === lookVis;
+                if (!res) {
+                    roffx = offX;
+                    roffy = offY;
+                }
+                return res;
+            }
+
+            let lookupArea = (dx: number, dy: number, lookVis: boolean): number => {
+
+                // Fast rejection test, if we have the same result in N, S, W, E at a distance which is the radius-1 then it means the data will be consistent in this area. That's because we've scale the rendering of the letter "radius" times, so a letter's pixel will be at least radius wide
+                if (lookupSrc(dx, dy, 0, br, lookVis) &&
+                    lookupSrc(dx, dy, 0, -br, lookVis) &&
+                    lookupSrc(dx, dy, -br, 0, lookVis) &&
+                    lookupSrc(dx, dy, br, 0, lookVis)) {
+                    return 0;
+                }
+
+                for (let i = 1; i <= radius; i++) {
+                    // Quick test N, S, W, E
+                    if (!lookupSrc(dx, dy, 0, i, lookVis) || !lookupSrc(dx, dy, 0, -i, lookVis) || !lookupSrc(dx, dy, -i, 0, lookVis) || !lookupSrc(dx, dy, i, 0, lookVis)) {
+                        return i * i;   // Squared Distance is simple to compute in this case
+                    }
+
+                    // Test the frame area (except the N, S, W, E spots) from the nearest point from the center to the further one
+                    for (let j = 1; j <= i; j++) {
+                        if (
+                            !lookupSrc(dx, dy, -j, i, lookVis) || !lookupSrc(dx, dy, j, i, lookVis) ||
+                            !lookupSrc(dx, dy, i, -j, lookVis) || !lookupSrc(dx, dy, i, j, lookVis) ||
+                            !lookupSrc(dx, dy, -j, -i, lookVis) || !lookupSrc(dx, dy, j, -i, lookVis) ||
+                            !lookupSrc(dx, dy, -i, -j, lookVis) || !lookupSrc(dx, dy, -i, j, lookVis)) {
+
+                            // We found the nearest texel having and opposite state, store the squared length
+                            let res = (i * i) + (j * j);
+                            let count = 1;
+
+                            // To improve quality we will  sample the texels around this one, so it's 8 samples, we consider only the one having an opposite state, add them to the current res and will will compute the average at the end
+                            if (!lookupSrc(dx, dy, roffx - 1, roffy, lookVis)) {
+                                res += (roffx - 1) * (roffx - 1) + roffy * roffy;
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx + 1, roffy, lookVis)) {
+                                res += (roffx + 1) * (roffx + 1) + roffy * roffy;
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx, roffy - 1, lookVis)) {
+                                res += roffx * roffx + (roffy - 1) * (roffy - 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx, roffy + 1, lookVis)) {
+                                res += roffx * roffx + (roffy + 1) * (roffy + 1);
+                                ++count;
+                            }
+
+                            if (!lookupSrc(dx, dy, roffx - 1, roffy - 1, lookVis)) {
+                                res += (roffx - 1) * (roffx - 1) + (roffy - 1) * (roffy - 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx + 1, roffy + 1, lookVis)) {
+                                res += (roffx + 1) * (roffx + 1) + (roffy + 1) * (roffy + 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx + 1, roffy - 1, lookVis)) {
+                                res += (roffx + 1) * (roffx + 1) + (roffy - 1) * (roffy - 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx - 1, roffy + 1, lookVis)) {
+                                res += (roffx - 1) * (roffx - 1) + (roffy + 1) * (roffy + 1);
+                                ++count;
+                            }
+
+                            // Compute the average based on the accumulated distance
+                            return res / count;
+                        }
+                    }
+                }
+
+                return 0;
+            }
+
+            let tmp = new Array<number>(dw * dh);
+            for (let y = 0; y < dh; y++) {
+                for (let x = 0; x < dw; x++) {
+
+                    let curState = lookupSrc(x, y, 0, 0, true);
+
+                    let d = lookupArea(x, y, curState);
+                    if (d === 0) {
+                        d = radius * radius * 2;
+                    }
+                    tmp[(y * dw) + x] = curState ? d : -d;
+                }
+            }
+
+            let res = this._context.createImageData(dw, dh);
+
+            let size = dw * dh;
+            for (let j = 0; j < size; j++) {
+                let d = tmp[j];
+
+                let sign = (d < 0) ? -1 : 1;
+
+                d = Math.sqrt(Math.abs(d)) * sign;
+
+                d *= 127.5 / radius;
+                d += 127.5;
+                if (d < 0) {
+                    d = 0;
+                } else if (d > 255) {
+                    d = 255;
+                }
+                d += 0.5;
+
+                res.data[j*4 + 0] = d;
+                res.data[j*4 + 1] = d;
+                res.data[j*4 + 2] = d;
+                res.data[j*4 + 3] = 255;
+            }
+
+            return res;
         }
 
         public measureText(text: string, tabulationSize: number = 4): Size {

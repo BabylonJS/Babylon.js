@@ -10,6 +10,7 @@ var BABYLON;
             this._meshesWithPoseMatrix = new Array();
             this._identity = BABYLON.Matrix.Identity();
             this._ranges = {};
+            this._lastAbsoluteTransformsUpdateId = -1;
             this.bones = [];
             this._scene = scene;
             scene.skeletons.push(this);
@@ -332,6 +333,14 @@ var BABYLON;
                 }
             }
             return skeleton;
+        };
+        Skeleton.prototype.computeAbsoluteTransforms = function (forceUpdate) {
+            if (forceUpdate === void 0) { forceUpdate = false; }
+            var renderId = this._scene.getRenderId();
+            if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate) {
+                this.bones[0].computeAbsoluteTransforms();
+                this._lastAbsoluteTransformsUpdateId = renderId;
+            }
         };
         return Skeleton;
     }());

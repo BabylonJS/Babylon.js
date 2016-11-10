@@ -696,7 +696,12 @@ var BABYLON;
                     _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
                     if (_this._pointerOverMesh.actionManager && _this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        canvas.style.cursor = _this.hoverCursor;
+                        if (_this._pointerOverMesh.actionManager.hoverCursor) {
+                            canvas.style.cursor = _this._pointerOverMesh.actionManager.hoverCursor;
+                        }
+                        else {
+                            canvas.style.cursor = _this.hoverCursor;
+                        }
                     }
                     else {
                         canvas.style.cursor = "";
@@ -707,8 +712,13 @@ var BABYLON;
                     // Sprites
                     pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
-                        canvas.style.cursor = _this.hoverCursor;
                         _this.setPointerOverSprite(pickResult.pickedSprite);
+                        if (_this._pointerOverSprite.actionManager && _this._pointerOverSprite.actionManager.hoverCursor) {
+                            canvas.style.cursor = _this._pointerOverSprite.actionManager.hoverCursor;
+                        }
+                        else {
+                            canvas.style.cursor = _this.hoverCursor;
+                        }
                     }
                     else {
                         _this.setPointerOverSprite(null);
@@ -1779,6 +1789,7 @@ var BABYLON;
             }
             // Render targets
             this._renderTargetsDuration.beginMonitoring();
+            var needsRestoreFrameBuffer = false;
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
@@ -1794,7 +1805,33 @@ var BABYLON;
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._intermediateRendering = false;
                 this._renderId++;
-                engine.restoreDefaultFramebuffer(); // Restore back buffer
+                needsRestoreFrameBuffer = true; // Restore back buffer
+            }
+            // Render HighlightLayer Texture
+            var stencilState = this._engine.getStencilBuffer();
+            var renderhighlights = false;
+            if (this.renderTargetsEnabled && this.highlightLayers && this.highlightLayers.length > 0) {
+                this._intermediateRendering = true;
+                for (var i = 0; i < this.highlightLayers.length; i++) {
+                    var highlightLayer = this.highlightLayers[i];
+                    if (highlightLayer.shouldRender() &&
+                        (!highlightLayer.camera ||
+                            (highlightLayer.camera.cameraRigMode === BABYLON.Camera.RIG_MODE_NONE && camera === highlightLayer.camera) ||
+                            (highlightLayer.camera.cameraRigMode !== BABYLON.Camera.RIG_MODE_NONE && highlightLayer.camera._rigCameras.indexOf(camera) > -1))) {
+                        renderhighlights = true;
+                        var renderTarget = highlightLayer._mainTexture;
+                        if (renderTarget._shouldRender()) {
+                            this._renderId++;
+                            renderTarget.render(false, false);
+                            needsRestoreFrameBuffer = true;
+                        }
+                    }
+                }
+                this._intermediateRendering = false;
+                this._renderId++;
+            }
+            if (needsRestoreFrameBuffer) {
+                engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration.endMonitoring(false);
             // Prepare Frame
@@ -1816,17 +1853,8 @@ var BABYLON;
             // Render
             BABYLON.Tools.StartPerformanceCounter("Main render");
             // Activate HighlightLayer stencil
-            var stencilState = this._engine.getStencilBuffer();
-            var renderhighlights = false;
-            if (this.highlightLayers && this.highlightLayers.length > 0) {
-                for (var i = 0; i < this.highlightLayers.length; i++) {
-                    var highlightLayer = this.highlightLayers[i];
-                    if ((!highlightLayer.camera || camera == highlightLayer.camera) && highlightLayer.shouldRender()) {
-                        renderhighlights = true;
-                        this._engine.setStencilBuffer(true);
-                        break;
-                    }
-                }
+            if (renderhighlights) {
+                this._engine.setStencilBuffer(true);
             }
             this._renderingManager.render(null, null, true, true);
             // Restore HighlightLayer stencil
@@ -2020,14 +2048,6 @@ var BABYLON;
             // Depth renderer
             if (this._depthRenderer) {
                 this._renderTargets.push(this._depthRenderer.getDepthMap());
-            }
-            // HighlightLayer
-            if (this.highlightLayers && this.highlightLayers.length > 0) {
-                for (var i = 0; i < this.highlightLayers.length; i++) {
-                    if (this.highlightLayers[i].shouldRender()) {
-                        this._renderTargets.push(this.highlightLayers[i]._mainTexture);
-                    }
-                }
             }
             // RenderPipeline
             this.postProcessRenderPipelineManager.update();

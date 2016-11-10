@@ -32,7 +32,7 @@ uniform vec2 vAlbedoInfos;
 #ifdef AMBIENT
 varying vec2 vAmbientUV;
 uniform mat4 ambientMatrix;
-uniform vec2 vAmbientInfos;
+uniform vec3 vAmbientInfos;
 #endif
 
 #ifdef OPACITY

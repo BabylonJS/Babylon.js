@@ -11,7 +11,7 @@ var BABYLON;
          * `idxInShape` (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
          * `modelBoundingInfo` is the reference to the model BoundingInfo used for intersection computations.
          */
-        function SolidParticle(particleIndex, positionIndex, model, shapeId, idxInShape, modelBoundingInfo) {
+        function SolidParticle(particleIndex, positionIndex, model, shapeId, idxInShape, sps, modelBoundingInfo) {
             this.idx = 0; // particle global index
             this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0); // color
             this.position = BABYLON.Vector3.Zero(); // position
@@ -29,6 +29,7 @@ var BABYLON;
             this._model = model;
             this.shapeId = shapeId;
             this.idxInShape = idxInShape;
+            this._sps = sps;
             if (modelBoundingInfo) {
                 this._modelBoundingInfo = modelBoundingInfo;
                 this._boundingInfo = new BABYLON.BoundingInfo(modelBoundingInfo.minimum, modelBoundingInfo.maximum);
@@ -68,6 +69,9 @@ var BABYLON;
         SolidParticle.prototype.intersectsMesh = function (target) {
             if (!this._boundingInfo || !target._boundingInfo) {
                 return false;
+            }
+            if (this._sps._bSphereOnly) {
+                return BABYLON.BoundingSphere.Intersects(this._boundingInfo.boundingSphere, target._boundingInfo.boundingSphere);
             }
             return this._boundingInfo.intersects(target._boundingInfo, false);
         };

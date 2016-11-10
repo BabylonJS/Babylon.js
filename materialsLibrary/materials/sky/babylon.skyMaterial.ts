@@ -223,7 +223,10 @@ module BABYLON {
                 this._effect.setVector3("cameraPosition", this._cameraPosition);
             }
             
-            this._effect.setFloat("luminance", this.luminance);
+            if (this.luminance > 0) {
+                this._effect.setFloat("luminance", this.luminance);
+            }
+            
 			this._effect.setFloat("turbidity", this.turbidity);
 			this._effect.setFloat("rayleigh", this.rayleigh);
 			this._effect.setFloat("mieCoefficient", this.mieCoefficient);

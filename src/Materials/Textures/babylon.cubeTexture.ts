@@ -52,7 +52,7 @@
             } else {
                 if (this._texture.isReady) {
                     Tools.SetImmediate(() => onLoad());
-                } else {
+                } else if (onLoad) {
                     this._texture.onLoadedCallbacks.push(onLoad);
                 }
             }

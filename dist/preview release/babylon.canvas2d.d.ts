@@ -277,7 +277,6 @@ declare module BABYLON {
             isScreenSpace?: boolean;
             cachingStrategy?: number;
             enableInteraction?: boolean;
-            allow3DEventBelowCanvas?: boolean;
             origin?: Vector2;
             isVisible?: boolean;
             backgroundRoundRadius?: number;
@@ -407,6 +406,7 @@ declare module BABYLON {
          * When enabled the Prim2DBase.pointerEventObservable property will notified when appropriate events occur
          */
         interactionEnabled: boolean;
+        fitRenderingDevice: boolean;
         designSize: Size;
         designSizeUseHorizAxis: boolean;
         /**
@@ -418,15 +418,11 @@ declare module BABYLON {
          * @returns {}
          */
         _engineData: Canvas2DEngineBoundData;
-        /**
-         * If true is returned, pointerEvent occurring above the Canvas area also sent in 3D scene, if false they are not sent in the 3D Scene
-         */
-        /**
-         * Set true if you want pointerEvent occurring above the Canvas area to also be sent in the 3D scene.
-         * Set false if you don't want the Scene to get the events
-         */
-        allow3DEventBelowCanvas: boolean;
         createCanvasProfileInfoCanvas(): Canvas2D;
+        /**
+         * Instanced Array will be create if there's at least this number of parts/prim that can fit into it
+         */
+        minPartCountToUseInstancedArray: number;
         private checkBackgroundAvailability();
         private _initPerfMetrics();
         private _fetchPerfMetrics();
@@ -469,6 +465,7 @@ declare module BABYLON {
         private _cachingStrategy;
         private _hierarchyLevelMaxSiblingCount;
         private _groupCacheMaps;
+        private _renderingGroupObserver;
         private _beforeRenderObserver;
         private _afterRenderObserver;
         private _supprtInstancedArray;
@@ -505,7 +502,6 @@ declare module BABYLON {
          * Method that renders the Canvas, you should not invoke
          */
         private _render();
-        private static _unS;
         /**
          * Internal method that allocate a cache for the given group.
          * Caching is made using a collection of MapTexture where many groups have their bitmap cache stored inside.
@@ -635,7 +631,6 @@ declare module BABYLON {
          *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
-         *  - allow3DEventBelowCanvas: by default pointerEvent occurring above the Canvas will prevent to be also sent in the 3D Scene. If you set this setting to true, events will be sent both for Canvas and 3D Scene
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
          * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
@@ -667,7 +662,6 @@ declare module BABYLON {
             cachingStrategy?: number;
             cacheBehavior?: number;
             enableInteraction?: boolean;
-            allow3DEventBelowCanvas?: boolean;
             isVisible?: boolean;
             backgroundRoundRadius?: number;
             backgroundFill?: IBrush2D | string;
@@ -983,6 +977,8 @@ declare module BABYLON {
         private static _s;
         private _bindCacheTarget();
         private _unbindCacheTarget();
+        protected _spreadActualScaleDirty(): void;
+        protected static _unS: Vector2;
         protected handleGroupChanged(prop: Prim2DPropInfo): void;
         private detectGroupStates();
         private _trackedNode;
@@ -1925,7 +1921,7 @@ declare module BABYLON {
          */
         static paddingProperty: Prim2DPropInfo;
         /**
-         * Metadata of the hAlignment property
+         * Metadata of the marginAlignment property
          */
         static marginAlignmentProperty: Prim2DPropInfo;
         /**
@@ -1940,6 +1936,10 @@ declare module BABYLON {
          * Metadata of the scaleY property
          */
         static scaleYProperty: Prim2DPropInfo;
+        /**
+         * Metadata of the actualScale property
+         */
+        static actualScaleProperty: Prim2DPropInfo;
         /**
          * DO NOT INVOKE for internal purpose only
          */
@@ -2047,7 +2047,7 @@ declare module BABYLON {
         opacity: number;
         scaleX: number;
         scaleY: number;
-        private _spreadActualScaleDirty();
+        protected _spreadActualScaleDirty(): void;
         /**
          * Returns the actual scale of this Primitive, the value is computed from the scale property of this primitive, multiplied by the actualScale of its parent one (if any). The Vector2 object returned contains the scale for both X and Y axis
          */
@@ -2173,6 +2173,7 @@ declare module BABYLON {
          * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
          * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
          */
+        private static _bypassGroup2DExclusion;
         intersect(intersectInfo: IntersectInfo2D): boolean;
         /**
          * Move a child object into a new position regarding its siblings to change its rendering order.
@@ -2935,7 +2936,6 @@ declare module BABYLON {
         static flagDontInheritParentScale: number;
         static flagGlobalTransformDirty: number;
         static flagLayoutBoundingInfoDirty: number;
-        static flagAllow3DEventsBelowCanvas: number;
         private _flags;
         private _modelKey;
         protected _levelBoundingInfo: BoundingInfo2D;
@@ -3075,7 +3075,6 @@ declare module BABYLON {
             paddingBottom?: number | string;
             padding?: string;
         });
-        static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Sprite2DRenderCache;
         protected createInstanceDataParts(): InstanceDataBase[];
@@ -3120,14 +3119,19 @@ declare module BABYLON {
     }
     class Text2D extends RenderablePrim2D {
         static TEXT2D_MAINPARTID: number;
+        static TEXT2D_CATEGORY_SDF: string;
         static fontProperty: Prim2DPropInfo;
         static defaultFontColorProperty: Prim2DPropInfo;
         static textProperty: Prim2DPropInfo;
         static sizeProperty: Prim2DPropInfo;
+        static fontSuperSampleProperty: Prim2DPropInfo;
+        static fontSignedDistanceFieldProperty: Prim2DPropInfo;
         fontName: string;
         defaultFontColor: Color4;
         text: string;
         size: Size;
+        fontSuperSample: boolean;
+        fontSignedDistanceField: boolean;
         isSizeAuto: boolean;
         /**
          * Get the actual size of the Text2D primitive
@@ -3159,6 +3163,7 @@ declare module BABYLON {
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
+         * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -3197,6 +3202,7 @@ declare module BABYLON {
             origin?: Vector2;
             fontName?: string;
             fontSuperSample?: boolean;
+            fontSignedDistanceField?: boolean;
             defaultFontColor?: Color4;
             size?: Size;
             tabulationSize?: number;
@@ -3224,6 +3230,7 @@ declare module BABYLON {
         protected createInstanceDataParts(): InstanceDataBase[];
         protected beforeRefreshForLayoutConstruction(part: InstanceDataBase): any;
         protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private _updateCharCount();
         protected _useTextureAlpha(): boolean;
@@ -3233,6 +3240,7 @@ declare module BABYLON {
         private _charCount;
         private _fontName;
         private _fontSuperSample;
+        private _fontSDF;
         private _defaultFontColor;
         private _text;
         private _textSize;
@@ -3252,6 +3260,7 @@ declare module BABYLON {
 
 declare module BABYLON {
     class Button extends ContentControl {
+        static pushedState: string;
         static BUTTON_PROPCOUNT: number;
         static isPushedProperty: Prim2DPropInfo;
         static isDefaultProperty: Prim2DPropInfo;
@@ -3262,7 +3271,6 @@ declare module BABYLON {
             templateName?: string;
             styleName?: string;
             content?: any;
-            contentAlignment?: string;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -3276,6 +3284,9 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
+            paddingHAlignment?: number;
+            paddingVAlignment?: number;
+            paddingAlignment?: string;
         });
         isPushed: boolean;
         isDefault: boolean;
@@ -3283,27 +3294,19 @@ declare module BABYLON {
         clickObservable: Observable<Button>;
         _raiseClick(): void;
         protected createVisualTree(): void;
+        normalStateBackground: ObservableStringDictionary<IBrush2D>;
+        defaultStateBackground: ObservableStringDictionary<IBrush2D>;
+        normalStateBorder: ObservableStringDictionary<IBrush2D>;
+        defaultStateBorder: ObservableStringDictionary<IBrush2D>;
+        private _normalStateBackground;
+        private _normalStateBorder;
+        private _defaultStateBackground;
+        private _defaultStateBorder;
         private _isPushed;
         private _isDefault;
         private _isOutline;
         private _clickObservable;
-        protected _position: Vector2;
-        normalEnabledBackground: IBrush2D;
-        normalDisabledBackground: IBrush2D;
-        normalMouseOverBackground: IBrush2D;
-        normalPushedBackground: IBrush2D;
-        normalEnabledBorder: IBrush2D;
-        normalDisabledBorder: IBrush2D;
-        normalMouseOverBorder: IBrush2D;
-        normalPushedBorder: IBrush2D;
-        defaultEnabledBackground: IBrush2D;
-        defaultDisabledBackground: IBrush2D;
-        defaultMouseOverBackground: IBrush2D;
-        defaultPushedBackground: IBrush2D;
-        defaultEnabledBorder: IBrush2D;
-        defaultDisabledBorder: IBrush2D;
-        defaultMouseOverBorder: IBrush2D;
-        defaultPushedBorder: IBrush2D;
+        private static _pushedState;
     }
     class DefaultButtonRenderingTemplate extends UIElementRenderingTemplateBase {
         createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
@@ -3313,6 +3316,28 @@ declare module BABYLON {
         attach(owner: UIElement): void;
         stateChange(): void;
         private _rect;
+    }
+}
+
+declare module BABYLON {
+    abstract class ContentControl extends Control {
+        static CONTENTCONTROL_PROPCOUNT: number;
+        static contentProperty: Prim2DPropInfo;
+        constructor(settings?: {
+            id?: string;
+            templateName?: string;
+            styleName?: string;
+            content?: any;
+        });
+        dispose(): boolean;
+        content: any;
+        protected _contentUIElement: UIElement;
+        _createVisualTree(): void;
+        private _buildContentUIElement();
+        private _contentPlaceholder;
+        private _content;
+        private __contentUIElement;
+        protected _getChildren(): Array<UIElement>;
     }
 }
 
@@ -3339,31 +3364,6 @@ declare module BABYLON {
         private _borderThickness;
         private _fontName;
         private _foreground;
-    }
-    abstract class ContentControl extends Control {
-        static CONTENTCONTROL_PROPCOUNT: number;
-        static contentProperty: Prim2DPropInfo;
-        static contentAlignmentProperty: Prim2DPropInfo;
-        constructor(settings?: {
-            id?: string;
-            templateName?: string;
-            styleName?: string;
-            content?: any;
-            contentAlignment?: string;
-        });
-        dispose(): boolean;
-        content: any;
-        contentAlignment: PrimitiveAlignment;
-        /**
-         * Check if there a contentAlignment specified (non null and not default)
-         */
-        _hasContentAlignment: boolean;
-        protected _contentUIElement: UIElement;
-        private _buildContentUIElement();
-        private _content;
-        private _contentAlignment;
-        private __contentUIElement;
-        protected _getChildren(): Array<UIElement>;
     }
 }
 
@@ -3422,6 +3422,9 @@ declare module BABYLON {
         private _canExecuteChanged;
     }
     abstract class UIElement extends SmartPropertyBase {
+        static enabledState: string;
+        static disabledState: string;
+        static mouseOverState: string;
         static UIELEMENT_PROPCOUNT: number;
         static parentProperty: Prim2DPropInfo;
         static widthProperty: Prim2DPropInfo;
@@ -3435,6 +3438,7 @@ declare module BABYLON {
         static marginProperty: Prim2DPropInfo;
         static paddingProperty: Prim2DPropInfo;
         static marginAlignmentProperty: Prim2DPropInfo;
+        static paddingAlignmentProperty: Prim2DPropInfo;
         static isEnabledProperty: Prim2DPropInfo;
         static isFocusedProperty: Prim2DPropInfo;
         static isMouseOverProperty: Prim2DPropInfo;
@@ -3462,6 +3466,9 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
+            paddingHAlignment?: number;
+            paddingVAlignment?: number;
+            paddingAlignment?: string;
         });
         dispose(): boolean;
         /**
@@ -3473,7 +3480,8 @@ declare module BABYLON {
          * Look at Sprite2D for more information
          */
         getAnimatables(): IAnimatable[];
-        ownerWindows: Window;
+        findById(id: string): UIElement;
+        ownerWindow: Window;
         style: string;
         /**
          * A string that identifies the UIElement.
@@ -3505,9 +3513,18 @@ declare module BABYLON {
          * Check if there a marginAlignment specified (non null and not default)
          */
         _hasMarginAlignment: boolean;
+        paddingAlignment: PrimitiveAlignment;
+        /**
+         * Check if there a marginAlignment specified (non null and not default)
+         */
+        _hasPaddingAlignment: boolean;
+        isVisible: boolean;
         isEnabled: boolean;
         isFocused: boolean;
         isMouseOver: boolean;
+        isFocusScope: boolean;
+        isFocusable: boolean;
+        protected getFocusScope(): UIElement;
         /**
          * Check if a given flag is set
          * @param flag the flag value
@@ -3554,10 +3571,17 @@ declare module BABYLON {
         protected _position: Vector2;
         protected abstract _getChildren(): Array<UIElement>;
         static flagVisualToBuild: number;
+        static flagIsVisible: number;
+        static flagIsFocus: number;
+        static flagIsFocusScope: number;
+        static flagIsFocusable: number;
+        static flagIsEnabled: number;
+        static flagIsMouseOver: number;
         protected _visualPlaceholder: Group2D;
         protected _visualTemplateRoot: Prim2DBase;
         protected _visualChildrenPlaceholder: Prim2DBase;
-        private _renderingTemplate;
+        private _renderingTemplateName;
+        protected _renderingTemplate: UIElementRenderingTemplateBase;
         private _parent;
         private _hierarchyDepth;
         private _flags;
@@ -3576,28 +3600,28 @@ declare module BABYLON {
         private _margin;
         private _padding;
         private _marginAlignment;
-        private _isEnabled;
-        private _isFocused;
-        private _isMouseOver;
+        private _paddingAlignment;
+        private static _enableState;
+        private static _disabledState;
+        private static _mouseOverState;
     }
     abstract class UIElementStyle {
         abstract removeStyle(uiel: UIElement): any;
         abstract applyStyle(uiel: UIElement): any;
         name: string;
     }
-    class UIElementStyleManager {
+    class GUIManager {
+        static registerDataTemplate(className: string, factory: (parent: UIElement, dataObject: any) => UIElement): void;
         static getStyle(uiElType: string, styleName: string): UIElementStyle;
         static registerStyle(uiElType: string, templateName: string, style: UIElementStyle): void;
         static stylesByUIElement: StringDictionary<StringDictionary<UIElementStyle>>;
         static DefaultStyleName: string;
-        private static _defaultStyleName;
-    }
-    class UIElementRenderingTemplateManager {
         static getRenderingTemplate(uiElType: string, templateName: string): () => UIElementRenderingTemplateBase;
         static registerRenderingTemplate(uiElType: string, templateName: string, factory: () => UIElementRenderingTemplateBase): void;
         static renderingTemplatesByUIElement: StringDictionary<StringDictionary<() => UIElementRenderingTemplateBase>>;
         static DefaultTemplateName: string;
         private static _defaultTemplateName;
+        private static _defaultStyleName;
     }
     abstract class UIElementRenderingTemplateBase {
         attach(owner: UIElement): void;
@@ -3613,17 +3637,24 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class FocusManager {
+        constructor();
+        setFocusOn(el: UIElement, focusScope: UIElement): void;
+        private _rootScope;
+        private _focusScopes;
+        private _activeScope;
+    }
     class Window extends ContentControl {
         static WINDOW_PROPCOUNT: number;
         static leftProperty: Prim2DPropInfo;
         static bottomProperty: Prim2DPropInfo;
         static positionProperty: Prim2DPropInfo;
+        static isActiveProperty: Prim2DPropInfo;
         constructor(scene: Scene, settings?: {
             id?: string;
             templateName?: string;
             styleName?: string;
             content?: any;
-            contentAlignment?: string;
             left?: number;
             bottom?: number;
             minWidth?: number;
@@ -3647,27 +3678,34 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
+            paddingHAlignment?: number;
+            paddingVAlignment?: number;
+            paddingAlignment?: string;
         });
         canvas: Canvas2D;
         left: number;
         bottom: number;
         position: Vector2;
+        isActive: boolean;
+        focusManager: FocusManager;
         protected _position: Vector2;
         protected createVisualTree(): void;
         _registerVisualToBuild(uiel: UIElement): void;
         private _overPrimChanged(oldPrim, newPrim);
         private _canvasPreRender();
         private _canvasDisposed();
+        private _sceneData;
         private _canvas;
         private _left;
         private _bottom;
+        private _isActive;
         private _isWorldSpaceCanvas;
         private _renderObserver;
         private _disposeObserver;
         private _UIElementVisualToBuildList;
         private _mouseOverUIElement;
-        private static getScreenCanvas(scene);
-        private static _screenCanvasList;
+        private static getSceneData(scene);
+        private static _sceneData;
     }
     class DefaultWindowRenderingTemplate extends UIElementRenderingTemplateBase {
         createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
@@ -4089,5 +4127,50 @@ declare module BABYLON {
         private _callingWatchedObjectChanged;
         private _watchObjectsPropertyChange;
         private _watchedObjectList;
+    }
+}
+
+declare module BABYLON {
+    class StackPanel extends UIElement {
+        static STACKPANEL_PROPCOUNT: number;
+        static orientationHorizontalProperty: Prim2DPropInfo;
+        constructor(settings?: {
+            id?: string;
+            parent?: UIElement;
+            children?: Array<UIElement>;
+            templateName?: string;
+            styleName?: string;
+            isOrientationHorizontal?: any;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+            paddingHAlignment?: number;
+            paddingVAlignment?: number;
+            paddingAlignment?: string;
+        });
+        isOrientationHorizontal: boolean;
+        protected createVisualTree(): void;
+        children: Array<UIElement>;
+        protected _getChildren(): Array<UIElement>;
+        private _childrenPlaceholder;
+        private _children;
+        private _isOrientationHorizontal;
+    }
+    class DefaultStackPanelRenderingTemplate extends UIElementRenderingTemplateBase {
+        createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
+            root: Prim2DBase;
+            contentPlaceholder: Prim2DBase;
+        };
+        attach(owner: UIElement): void;
     }
 }

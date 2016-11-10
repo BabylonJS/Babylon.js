@@ -63,7 +63,6 @@
          */
         public static RENDEROBSERVABLE_POST = 2;
 
-
         private static _INSTANCES : Array<Canvas2D> = [];
 
         constructor(scene: Scene, settings?: {
@@ -76,7 +75,6 @@
             isScreenSpace?: boolean,
             cachingStrategy?: number,
             enableInteraction?: boolean,
-            allow3DEventBelowCanvas?: boolean,
             origin?: Vector2,
             isVisible?: boolean,
             backgroundRoundRadius?: number,
@@ -101,6 +99,10 @@
 
             this._uid = null;
             this._cachedCanvasGroup = null;
+
+            this._renderingGroupObserver = null;
+            this._beforeRenderObserver = null;
+            this._afterRenderObserver = null;
 
             this._profileInfoText = null;
 
@@ -170,8 +172,6 @@
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new StringDictionary<MapTexture[]>();
 
-            this._changeFlags(SmartPropertyPrim.flagAllow3DEventsBelowCanvas, (settings.allow3DEventBelowCanvas != null) && settings.allow3DEventBelowCanvas);
-
             this._patchHierarchy(this);
 
             let enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
@@ -191,8 +191,8 @@
                     if (!settings.renderingPhase.camera || settings.renderingPhase.renderingGroupID==null) {
                         throw Error("You have to specify a valid camera and renderingGroup");
                     }
-                    this._scene.onRenderingGroupObservable.add((e, s) => {
-                        if (this._scene.activeCamera === settings.renderingPhase.camera) {
+                    this._renderingGroupObserver = this._scene.onRenderingGroupObservable.add((e, s) => {
+                        if ((this._scene.activeCamera === settings.renderingPhase.camera) && (e.renderStage===RenderingGroupInfo.STAGE_POSTTRANSPARENT)) {
                             this._engine.clear(null, false, true, true);
                             this._render();
                         }
@@ -490,17 +490,12 @@
             }
 
             eventState.skipNextObservers = skip;
-            if (!skip && (this._isFlagSet(SmartPropertyPrim.flagAllow3DEventsBelowCanvas)===false)) {
-                eventState.skipNextObservers = true;
-                if (eventData instanceof PointerInfoPre) {
-                    eventData.skipOnPointerObservable = true;
-                }
-            }
         }
 
         private _updatePointerInfo(eventData: PointerInfoBase, localPosition: Vector2): boolean {
             let s = this.scale;
             let pii = this._primPointerInfo;
+            pii.cancelBubble = false;
             if (!pii.canvasPointerPos) {
                 pii.canvasPointerPos = Vector2.Zero();
             }
@@ -612,7 +607,7 @@
                 let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
                 // Notify the previous "over" prim that the pointer is no longer over it
-                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim)) {
+                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim && !prevPrim.isDisposed)) {
                     this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
                     this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut, null);
                 }
@@ -852,6 +847,11 @@
                 this._setupInteraction(false);
             }
 
+            if (this._renderingGroupObserver) {
+                this._scene.onRenderingGroupObservable.remove(this._renderingGroupObserver);
+                this._renderingGroupObserver = null;
+            }
+
             if (this._beforeRenderObserver) {
                 this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
                 this._beforeRenderObserver = null;
@@ -1048,6 +1048,10 @@
             this._setupInteraction(enable);
         }
 
+        public get fitRenderingDevice(): boolean {
+            return this._fitRenderingDevice;
+        }
+
         public get designSize(): Size {
             return this._designSize;
         }
@@ -1071,21 +1075,6 @@
             return this.__engineData;
         }
 
-        /**
-         * If true is returned, pointerEvent occurring above the Canvas area also sent in 3D scene, if false they are not sent in the 3D Scene
-         */
-        public get allow3DEventBelowCanvas(): boolean {
-            return this._isFlagSet(SmartPropertyPrim.flagAllow3DEventsBelowCanvas);
-        }
-
-        /**
-         * Set true if you want pointerEvent occurring above the Canvas area to also be sent in the 3D scene.
-         * Set false if you don't want the Scene to get the events
-         */
-        public set allow3DEventBelowCanvas(value: boolean) {
-            this._changeFlags(SmartPropertyPrim.flagAllow3DEventsBelowCanvas, value);
-        }
-
         public createCanvasProfileInfoCanvas(): Canvas2D {
             if (this._profilingCanvas) {
                 return this._profilingCanvas;
@@ -1097,7 +1086,7 @@
                     new Rectangle2D({
                         id: "ProfileBorder", border: "#FFFFFFFF", borderThickness: 2, roundRadius: 5, fill: "#C04040C0", marginAlignment: "h: left, v: top", margin: "10", padding: "10", children:
                         [
-                            new Text2D("Stats", { id: "ProfileInfoText", marginAlignment: "h: left, v: top", fontName: "10pt Lucida Console" })
+                            new Text2D("Stats", { id: "ProfileInfoText", marginAlignment: "h: left, v: top", fontName: "12pt Lucida Console", fontSignedDistanceField: true })
                         ]
                     })
 
@@ -1108,6 +1097,11 @@
             this._profilingCanvas = canvas;
             return canvas;
         }
+
+        /**
+         * Instanced Array will be create if there's at least this number of parts/prim that can fit into it
+         */
+        public minPartCountToUseInstancedArray = 5;
 
         private checkBackgroundAvailability() {
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
@@ -1243,6 +1237,7 @@
         private _cachingStrategy: number;
         private _hierarchyLevelMaxSiblingCount: number;
         private _groupCacheMaps: StringDictionary<MapTexture[]>;
+        private _renderingGroupObserver: Observer<RenderingGroupInfo>;
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
         private _supprtInstancedArray: boolean;
@@ -1459,8 +1454,6 @@
             }
         }
 
-        private static _unS = new Vector2(1, 1);
-
         /**
          * Internal method that allocate a cache for the given group.
          * Caching is made using a collection of MapTexture where many groups have their bitmap cache stored inside.
@@ -1484,6 +1477,7 @@
             // Determine size
             let size = group.actualSize;
             size = new Size(Math.ceil(size.width * scale.x), Math.ceil(size.height * scale.y));
+            let originalSize = size.clone();
             if (minSize) {
                 size.width = Math.max(minSize.width, size.width);
                 size.height = Math.max(minSize.height, size.height);
@@ -1532,15 +1526,18 @@
 
                 let sprite: Sprite2D;
                 if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_CANVAS) {
+                    if (this._cachedCanvasGroup) {
+                        this._cachedCanvasGroup.dispose();
+                    }
                     this._cachedCanvasGroup = Group2D._createCachedCanvasGroup(this);
-                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: node.contentSize, spriteLocation: node.pos });
+                    sprite = new Sprite2D(map, { parent: this._cachedCanvasGroup, id: "__cachedCanvasSprite__", spriteSize: originalSize, spriteLocation: node.pos });
                     sprite.zOrder = 1;
                     sprite.origin = Vector2.Zero();
                 }
 
                 // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
                 else {
-                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: node.contentSize, spriteLocation: node.pos, dontInheritParentScale: true });
+                    sprite = new Sprite2D(map, { parent: parent, id: `__cachedSpriteOfGroup__${group.id}`, x: group.actualPosition.x, y: group.actualPosition.y, spriteSize: originalSize, spriteLocation: node.pos, dontInheritParentScale: true });
                     sprite.origin = group.origin.clone();
                     sprite.addExternalData("__cachedGroup__", group);
                     sprite.pointerEventObservable.add((e, s) => {
@@ -1810,7 +1807,7 @@
             this.propertyChanged.add((e, st) => {
                 let mesh = this._worldSpaceNode as AbstractMesh;
                 if (mesh) {
-                    mesh.isVisible = this.isVisible;
+                    mesh.isVisible = e.newValue;
                 }
             }, Prim2DBase.isVisibleProperty.flagId);
         }
@@ -1841,7 +1838,6 @@
          *  - designUseHorizAxis: you can set this member if you use designSize to specify which axis is priority to compute the scale when the ratio of the canvas' size is different from the designSize's one.
          *  - cachingStrategy: either CACHESTRATEGY_TOPLEVELGROUPS, CACHESTRATEGY_ALLGROUPS, CACHESTRATEGY_CANVAS, CACHESTRATEGY_DONTCACHE. Please refer to their respective documentation for more information. Default is Canvas2D.CACHESTRATEGY_DONTCACHE
          *  - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is true.
-         *  - allow3DEventBelowCanvas: by default pointerEvent occurring above the Canvas will prevent to be also sent in the 3D Scene. If you set this setting to true, events will be sent both for Canvas and 3D Scene
          *  - isVisible: true if the canvas must be visible, false for hidden. Default is true.
          * - backgroundRoundRadius: the round radius of the background, either backgroundFill or backgroundBorder must be specified.
          * - backgroundFill: the brush to use to create a background fill for the canvas. can be a string value (see BABYLON.Canvas2D.GetBrushFromString) or a IBrush2D instance.
@@ -1871,7 +1867,6 @@
             cachingStrategy?: number,
             cacheBehavior?: number,
             enableInteraction?: boolean,
-            allow3DEventBelowCanvas?: boolean,
             isVisible?: boolean,
             backgroundRoundRadius?: number,
             backgroundFill?: IBrush2D | string,

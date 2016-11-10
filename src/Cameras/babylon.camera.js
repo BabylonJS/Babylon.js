@@ -35,6 +35,7 @@ var BABYLON;
             // Cache
             this._computedViewMatrix = BABYLON.Matrix.Identity();
             this._projectionMatrix = new BABYLON.Matrix();
+            this._doNotComputeProjectionMatrix = false;
             this._postProcesses = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._webvrViewMatrix = BABYLON.Matrix.Identity();
@@ -346,8 +347,19 @@ var BABYLON;
             this._currentRenderId = this.getScene().getRenderId();
             return this._computedViewMatrix;
         };
+        Camera.prototype.freezeProjectionMatrix = function (projection) {
+            this._doNotComputeProjectionMatrix = true;
+            if (projection !== undefined) {
+                this._projectionMatrix = projection;
+            }
+        };
+        ;
+        Camera.prototype.unfreezeProjectionMatrix = function () {
+            this._doNotComputeProjectionMatrix = false;
+        };
+        ;
         Camera.prototype.getProjectionMatrix = function (force) {
-            if (!force && this._isSynchronizedProjectionMatrix()) {
+            if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
             }
             this._refreshFrustumPlanes = true;
