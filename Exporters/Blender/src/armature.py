@@ -119,7 +119,7 @@ class Skeleton:
 
         self.dimensions = self.getDimensions()
 
-        bpy.ops.object.mode_set(mode='POSE')
+        bpy.ops.object.mode_set(mode='OBJECT')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # do not use .dimensions from blender, it might be including IK bones
     def getDimensions(self):

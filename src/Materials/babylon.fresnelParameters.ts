@@ -11,7 +11,7 @@
 
             Tools.DeepCopy(this, newFresnelParameters);
 
-            return new FresnelParameters;
+            return newFresnelParameters;
         }
 
         public serialize(): any {

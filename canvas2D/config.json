@@ -33,7 +33,9 @@
       "src/Engine/babylon.canvas2d.js",
       "src/Engine/babylon.worldSpaceCanvas2dNode.js",
       "src/GUI/babylon.gui.UIElement.js",
+      "src/GUI/Layouts/babylon.gui.stackPanel.js",
       "src/GUI/babylon.gui.control.js",
+      "src/GUI/babylon.gui.contentControl.js",
       "src/GUI/babylon.gui.window.js",
       "src/GUI/babylon.gui.label.js",
       "src/GUI/babylon.gui.button.js"

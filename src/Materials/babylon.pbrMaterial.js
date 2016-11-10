@@ -218,6 +218,10 @@ var BABYLON;
              */
             this.overloadedMicroSurfaceIntensity = 0.0;
             this._overloadedMicroSurface = new BABYLON.Vector3(this.overloadedMicroSurface, this.overloadedMicroSurfaceIntensity, this.overloadedReflectionIntensity);
+            /**
+             * AKA Occlusion Texture Intensity in other nomenclature.
+             */
+            this.ambientTextureStrength = 1.0;
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             /**
              * AKA Diffuse Color in other nomenclature.
@@ -441,114 +445,111 @@ var BABYLON;
             var needUVs = false;
             this._defines.reset();
             if (scene.texturesEnabled) {
-                // Textures
-                if (scene.texturesEnabled) {
-                    if (scene.getEngine().getCaps().textureLOD) {
-                        this._defines.LODBASEDMICROSFURACE = true;
+                if (scene.getEngine().getCaps().textureLOD) {
+                    this._defines.LODBASEDMICROSFURACE = true;
+                }
+                if (this.albedoTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
+                    if (!this.albedoTexture.isReady()) {
+                        return false;
                     }
-                    if (this.albedoTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
-                        if (!this.albedoTexture.isReady()) {
-                            return false;
-                        }
-                        else {
-                            needUVs = true;
-                            this._defines.ALBEDO = true;
-                        }
+                    else {
+                        needUVs = true;
+                        this._defines.ALBEDO = true;
                     }
-                    if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
-                        if (!this.ambientTexture.isReady()) {
-                            return false;
-                        }
-                        else {
-                            needUVs = true;
-                            this._defines.AMBIENT = true;
-                        }
+                }
+                if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
+                    if (!this.ambientTexture.isReady()) {
+                        return false;
                     }
-                    if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
-                        if (!this.opacityTexture.isReady()) {
-                            return false;
-                        }
-                        else {
-                            needUVs = true;
-                            this._defines.OPACITY = true;
-                            if (this.opacityTexture.getAlphaFromRGB) {
-                                this._defines.OPACITYRGB = true;
-                            }
+                    else {
+                        needUVs = true;
+                        this._defines.AMBIENT = true;
+                    }
+                }
+                if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
+                    if (!this.opacityTexture.isReady()) {
+                        return false;
+                    }
+                    else {
+                        needUVs = true;
+                        this._defines.OPACITY = true;
+                        if (this.opacityTexture.getAlphaFromRGB) {
+                            this._defines.OPACITYRGB = true;
                         }
                     }
-                    if (this.reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
-                        if (!this.reflectionTexture.isReady()) {
-                            return false;
+                }
+                if (this.reflectionTexture && BABYLON.StandardMaterial.ReflectionTextureEnabled) {
+                    if (!this.reflectionTexture.isReady()) {
+                        return false;
+                    }
+                    else {
+                        needNormals = true;
+                        this._defines.REFLECTION = true;
+                        if (this.reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE) {
+                            this._defines.INVERTCUBICMAP = true;
                         }
-                        else {
+                        this._defines.REFLECTIONMAP_3D = this.reflectionTexture.isCube;
+                        switch (this.reflectionTexture.coordinatesMode) {
+                            case BABYLON.Texture.CUBIC_MODE:
+                            case BABYLON.Texture.INVCUBIC_MODE:
+                                this._defines.REFLECTIONMAP_CUBIC = true;
+                                break;
+                            case BABYLON.Texture.EXPLICIT_MODE:
+                                this._defines.REFLECTIONMAP_EXPLICIT = true;
+                                break;
+                            case BABYLON.Texture.PLANAR_MODE:
+                                this._defines.REFLECTIONMAP_PLANAR = true;
+                                break;
+                            case BABYLON.Texture.PROJECTION_MODE:
+                                this._defines.REFLECTIONMAP_PROJECTION = true;
+                                break;
+                            case BABYLON.Texture.SKYBOX_MODE:
+                                this._defines.REFLECTIONMAP_SKYBOX = true;
+                                break;
+                            case BABYLON.Texture.SPHERICAL_MODE:
+                                this._defines.REFLECTIONMAP_SPHERICAL = true;
+                                break;
+                            case BABYLON.Texture.EQUIRECTANGULAR_MODE:
+                                this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
+                                break;
+                        }
+                        if (this.reflectionTexture instanceof BABYLON.HDRCubeTexture && this.reflectionTexture) {
+                            this._defines.USESPHERICALFROMREFLECTIONMAP = true;
                             needNormals = true;
-                            this._defines.REFLECTION = true;
-                            if (this.reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE) {
-                                this._defines.INVERTCUBICMAP = true;
-                            }
-                            this._defines.REFLECTIONMAP_3D = this.reflectionTexture.isCube;
-                            switch (this.reflectionTexture.coordinatesMode) {
-                                case BABYLON.Texture.CUBIC_MODE:
-                                case BABYLON.Texture.INVCUBIC_MODE:
-                                    this._defines.REFLECTIONMAP_CUBIC = true;
-                                    break;
-                                case BABYLON.Texture.EXPLICIT_MODE:
-                                    this._defines.REFLECTIONMAP_EXPLICIT = true;
-                                    break;
-                                case BABYLON.Texture.PLANAR_MODE:
-                                    this._defines.REFLECTIONMAP_PLANAR = true;
-                                    break;
-                                case BABYLON.Texture.PROJECTION_MODE:
-                                    this._defines.REFLECTIONMAP_PROJECTION = true;
-                                    break;
-                                case BABYLON.Texture.SKYBOX_MODE:
-                                    this._defines.REFLECTIONMAP_SKYBOX = true;
-                                    break;
-                                case BABYLON.Texture.SPHERICAL_MODE:
-                                    this._defines.REFLECTIONMAP_SPHERICAL = true;
-                                    break;
-                                case BABYLON.Texture.EQUIRECTANGULAR_MODE:
-                                    this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
-                                    break;
-                            }
-                            if (this.reflectionTexture instanceof BABYLON.HDRCubeTexture && this.reflectionTexture) {
-                                this._defines.USESPHERICALFROMREFLECTIONMAP = true;
-                                needNormals = true;
-                                if (this.reflectionTexture.isPMREM) {
-                                    this._defines.USEPMREMREFLECTION = true;
-                                }
+                            if (this.reflectionTexture.isPMREM) {
+                                this._defines.USEPMREMREFLECTION = true;
                             }
                         }
                     }
-                    if (this.lightmapTexture && BABYLON.StandardMaterial.LightmapTextureEnabled) {
-                        if (!this.lightmapTexture.isReady()) {
-                            return false;
-                        }
-                        else {
-                            needUVs = true;
-                            this._defines.LIGHTMAP = true;
-                            this._defines.USELIGHTMAPASSHADOWMAP = this.useLightmapAsShadowmap;
-                        }
+                }
+                if (this.lightmapTexture && BABYLON.StandardMaterial.LightmapTextureEnabled) {
+                    if (!this.lightmapTexture.isReady()) {
+                        return false;
                     }
-                    if (this.emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
-                        if (!this.emissiveTexture.isReady()) {
-                            return false;
-                        }
-                        else {
-                            needUVs = true;
-                            this._defines.EMISSIVE = true;
-                        }
+                    else {
+                        needUVs = true;
+                        this._defines.LIGHTMAP = true;
+                        this._defines.USELIGHTMAPASSHADOWMAP = this.useLightmapAsShadowmap;
                     }
-                    if (this.reflectivityTexture && BABYLON.StandardMaterial.SpecularTextureEnabled) {
-                        if (!this.reflectivityTexture.isReady()) {
-                            return false;
-                        }
-                        else {
-                            needUVs = true;
-                            this._defines.REFLECTIVITY = true;
-                            this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
-                            this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
-                        }
+                }
+                if (this.emissiveTexture && BABYLON.StandardMaterial.EmissiveTextureEnabled) {
+                    if (!this.emissiveTexture.isReady()) {
+                        return false;
+                    }
+                    else {
+                        needUVs = true;
+                        this._defines.EMISSIVE = true;
+                    }
+                }
+                if (this.reflectivityTexture && BABYLON.StandardMaterial.SpecularTextureEnabled) {
+                    if (!this.reflectivityTexture.isReady()) {
+                        return false;
+                    }
+                    else {
+                        needUVs = true;
+                        this._defines.REFLECTIVITY = true;
+                        this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
+                        this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
                     }
                 }
                 if (scene.getEngine().getCaps().standardDerivatives && this.bumpTexture && BABYLON.StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
@@ -558,7 +559,7 @@ var BABYLON;
                     else {
                         needUVs = true;
                         this._defines.BUMP = true;
-                        if (this.useParallax) {
+                        if (this.useParallax && this.albedoTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
                             this._defines.PARALLAX = true;
                             if (this.useParallaxOcclusion) {
                                 this._defines.PARALLAXOCCLUSION = true;
@@ -771,10 +772,6 @@ var BABYLON;
                 BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 // Legacy browser patch
-                var shaderName = "pbr";
-                if (!scene.getEngine().getCaps().standardDerivatives) {
-                    shaderName = "legacypbr";
-                }
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
                     "vFogInfos", "vFogColor", "pointSize",
@@ -795,7 +792,7 @@ var BABYLON;
                 BABYLON.ColorCurves.PrepareUniforms(uniforms);
                 BABYLON.ColorGradingTexture.PrepareUniformsAndSamplers(uniforms, samplers);
                 BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
+                this._effect = scene.getEngine().createEffect("pbr", attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -848,7 +845,7 @@ var BABYLON;
                     }
                     if (this.ambientTexture && BABYLON.StandardMaterial.AmbientTextureEnabled) {
                         this._effect.setTexture("ambientSampler", this.ambientTexture);
-                        this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
+                        this._effect.setFloat3("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level, this.ambientTextureStrength);
                         this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
                     }
                     if (this.opacityTexture && BABYLON.StandardMaterial.OpacityTextureEnabled) {
@@ -1154,6 +1151,9 @@ var BABYLON;
         __decorate([
             BABYLON.serializeAsTexture()
         ], PBRMaterial.prototype, "ambientTexture", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "ambientTextureStrength", void 0);
         __decorate([
             BABYLON.serializeAsTexture()
         ], PBRMaterial.prototype, "opacityTexture", void 0);

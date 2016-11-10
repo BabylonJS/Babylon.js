@@ -528,10 +528,16 @@ var BABYLON;
          * of the engine canvas size.
          */
         HighlightLayer.prototype.setMainTextureSize = function () {
-            this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
-            this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
-            this._mainTextureDesiredSize.width = BABYLON.Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
-            this._mainTextureDesiredSize.height = BABYLON.Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
+            if (this._options.mainTextureFixedSize) {
+                this._mainTextureDesiredSize.width = this._options.mainTextureFixedSize;
+                this._mainTextureDesiredSize.height = this._options.mainTextureFixedSize;
+            }
+            else {
+                this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
+                this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
+                this._mainTextureDesiredSize.width = BABYLON.Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
+                this._mainTextureDesiredSize.height = BABYLON.Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
+            }
         };
         /**
          * Force the stencil to the normal expected value for none glowing parts

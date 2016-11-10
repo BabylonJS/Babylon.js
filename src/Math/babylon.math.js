@@ -856,9 +856,12 @@ var BABYLON;
             return result;
         };
         Vector3.TransformNormalToRef = function (vector, transformation, result) {
-            result.x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
-            result.y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
-            result.z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
+            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
+            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
+            var z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
+            result.x = x;
+            result.y = y;
+            result.z = z;
         };
         Vector3.TransformNormalFromFloatsToRef = function (x, y, z, transformation, result) {
             result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);

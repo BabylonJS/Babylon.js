@@ -27,9 +27,14 @@
             effect.setTexture("diffuseSampler", this.fontTexture);
             engine.bindBuffersDirectly(this.vb, this.ib, [1], 4, effect);
 
-            var curAlphaMode = engine.getAlphaMode();
+            let sdf = this.fontTexture.isSignedDistanceField;
 
-            engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
+            // Enable alpha mode only if the texture is not using SDF, SDF is rendered in AlphaTest mode, which mean no alpha blend
+            var curAlphaMode: number;
+            if (!sdf) {
+                curAlphaMode = engine.getAlphaMode();
+                engine.setAlphaMode(Engine.ALPHA_COMBINE, true);
+            }
 
             let pid = context.groupInfoPartData[0];
             if (context.useInstancing) {
@@ -51,7 +56,9 @@
                 }
             }
 
-            engine.setAlphaMode(curAlphaMode, true);
+            if (!sdf) {
+                engine.setAlphaMode(curAlphaMode, true);
+            }
 
             return true;
         }
@@ -132,10 +139,14 @@
     export class Text2D extends RenderablePrim2D {
         static TEXT2D_MAINPARTID = 1;
 
+        static TEXT2D_CATEGORY_SDF = "SignedDistanceField";
+
         public static fontProperty: Prim2DPropInfo;
         public static defaultFontColorProperty: Prim2DPropInfo;
         public static textProperty: Prim2DPropInfo;
         public static sizeProperty: Prim2DPropInfo;
+        public static fontSuperSampleProperty: Prim2DPropInfo;
+        public static fontSignedDistanceFieldProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Text2D.fontProperty = pi, false, true)
         /**
@@ -203,6 +214,24 @@
             this._size = value;
         }
 
+        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Text2D.fontSuperSampleProperty = pi, false, false)
+        /**
+         * Get/set the font name to use, using HTML CSS notation.
+         * Set is not supported right now.
+         */
+        public get fontSuperSample(): boolean {
+            return this._fontTexture && this._fontTexture.isSuperSampled;
+        }
+
+        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Text2D.fontSuperSampleProperty = pi, false, false)
+        /**
+         * Get/set the font name to use, using HTML CSS notation.
+         * Set is not supported right now.
+         */
+        public get fontSignedDistanceField(): boolean {
+            return this._fontTexture && this._fontTexture.isSignedDistanceField;
+        }
+
         public get isSizeAuto(): boolean {
             return false;
         }
@@ -246,7 +275,7 @@
                 return null;
             }
 
-            this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample);
+            this._fontTexture = FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF);
             return this._fontTexture;
         }
 
@@ -259,7 +288,7 @@
             }
 
             if (this._fontTexture) {
-                FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample);
+                FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName, this._fontSuperSample, this._fontSDF);
                 this._fontTexture = null;
             }
 
@@ -286,6 +315,7 @@
          * - origin: define the normalized origin point location, default [0.5;0.5]
          * - fontName: the name/size/style of the font to use, following the CSS notation. Default is "12pt Arial".
          * - fontSuperSample: if true the text will be rendered with a superSampled font (the font is twice the given size). Use this settings if the text lies in world space or if it's scaled in.
+         * - signedDistanceField: if true the text will be rendered using the SignedDistanceField technique. This technique has the advantage to be rendered order independent (then much less drawing calls), but only works on font that are a little more than one pixel wide on the screen but the rendering quality is excellent whatever the font size is on the screen (which is the purpose of this technique). Outlining/Shadow is not supported right now. If you can, you should use this mode, the quality and the performances are the best. Note that fontSuperSample has no effect when this mode is on.
          * - defaultFontColor: the color by default to apply on each letter of the text to display, default is plain white.
          * - areaSize: the size of the area in which to display the text, default is auto-fit from text content.
          * - tabulationSize: number of space character to insert when a tabulation is encountered, default is 4
@@ -309,42 +339,43 @@
          */
         constructor(text: string, settings?: {
 
-            parent                ?: Prim2DBase, 
-            children              ?: Array<Prim2DBase>,
-            id                    ?: string,
-            position              ?: Vector2,
-            x                     ?: number,
-            y                     ?: number,
-            rotation              ?: number,
-            scale                 ?: number,
-            scaleX                ?: number,
-            scaleY                ?: number,
-            dontInheritParentScale?: boolean,
-            opacity               ?: number,
-            zOrder                ?: number, 
-            origin                ?: Vector2,
-            fontName              ?: string,
-            fontSuperSample       ?: boolean,
-            defaultFontColor      ?: Color4,
-            size                  ?: Size,
-            tabulationSize        ?: number,
-            isVisible             ?: boolean,
-            isPickable            ?: boolean,
-            isContainer           ?: boolean,
-            childrenFlatZOrder    ?: boolean,
-            marginTop             ?: number | string,
-            marginLeft            ?: number | string,
-            marginRight           ?: number | string,
-            marginBottom          ?: number | string,
-            margin                ?: number | string,
-            marginHAlignment      ?: number,
-            marginVAlignment      ?: number,
-            marginAlignment       ?: string,
-            paddingTop            ?: number | string,
-            paddingLeft           ?: number | string,
-            paddingRight          ?: number | string,
-            paddingBottom         ?: number | string,
-            padding               ?: string,
+            parent                  ?: Prim2DBase, 
+            children                ?: Array<Prim2DBase>,
+            id                      ?: string,
+            position                ?: Vector2,
+            x                       ?: number,
+            y                       ?: number,
+            rotation                ?: number,
+            scale                   ?: number,
+            scaleX                  ?: number,
+            scaleY                  ?: number,
+            dontInheritParentScale  ?: boolean,
+            opacity                 ?: number,
+            zOrder                  ?: number, 
+            origin                  ?: Vector2,
+            fontName                ?: string,
+            fontSuperSample         ?: boolean,
+            fontSignedDistanceField ?: boolean,
+            defaultFontColor        ?: Color4,
+            size                    ?: Size,
+            tabulationSize          ?: number,
+            isVisible               ?: boolean,
+            isPickable              ?: boolean,
+            isContainer             ?: boolean,
+            childrenFlatZOrder      ?: boolean,
+            marginTop               ?: number | string,
+            marginLeft              ?: number | string,
+            marginRight             ?: number | string,
+            marginBottom            ?: number | string,
+            margin                  ?: number | string,
+            marginHAlignment        ?: number,
+            marginVAlignment        ?: number,
+            marginAlignment         ?: string,
+            paddingTop              ?: number | string,
+            paddingLeft             ?: number | string,
+            paddingRight            ?: number | string,
+            paddingBottom           ?: number | string,
+            padding                 ?: string,
         }) {
 
             if (!settings) {
@@ -355,6 +386,7 @@
 
             this.fontName            = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
             this._fontSuperSample    = (settings.fontSuperSample!=null && settings.fontSuperSample);
+            this._fontSDF            = (settings.fontSignedDistanceField!=null && settings.fontSignedDistanceField);
             this.defaultFontColor    = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
             this._tabulationSize     = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             this._textSize           = null;
@@ -431,6 +463,15 @@
             }
         }
 
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[] {
+            var cat = super.getUsedShaderCategories(dataPart);
+
+            if (this._fontSDF) {
+                cat.push(Text2D.TEXT2D_CATEGORY_SDF);
+            }
+            return cat;
+        }
+
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
             if (!super.refreshInstanceDataPart(part)) {
                 return false;
@@ -499,11 +540,11 @@
         }
 
         protected _useTextureAlpha(): boolean {
-            return this.fontTexture != null && this.fontTexture.hasAlpha;
+            return this._fontSDF;
         }
 
         protected _shouldUseAlphaFromTexture(): boolean {
-            return true;
+            return !this._fontSDF;
         }
 
         private _fontTexture: FontTexture;
@@ -511,10 +552,9 @@
         private _charCount: number;
         private _fontName: string;
         private _fontSuperSample: boolean;
+        private _fontSDF: boolean;
         private _defaultFontColor: Color4;
         private _text: string;
         private _textSize: Size;
     }
-
-
 }

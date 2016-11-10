@@ -26,6 +26,11 @@
         mainTextureRatio?: number;
 
         /**
+         * Enforces a fixed size texture to ensure resize independant blur.
+         */
+        mainTextureFixedSize?: number;
+
+        /**
          * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size 
          * of the picture to blur (the smaller the faster).
          */
@@ -725,11 +730,17 @@
          * of the engine canvas size.
          */
         private setMainTextureSize(): void {
-            this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
-            this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
+            if (this._options.mainTextureFixedSize) {
+                this._mainTextureDesiredSize.width = this._options.mainTextureFixedSize;
+                this._mainTextureDesiredSize.height = this._options.mainTextureFixedSize;
+            }
+            else {
+                this._mainTextureDesiredSize.width = this._engine.getRenderingCanvas().width * this._options.mainTextureRatio;
+                this._mainTextureDesiredSize.height = this._engine.getRenderingCanvas().height * this._options.mainTextureRatio;
 
-            this._mainTextureDesiredSize.width = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
-            this._mainTextureDesiredSize.height = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
+                this._mainTextureDesiredSize.width = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize);
+                this._mainTextureDesiredSize.height = Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize);
+            }
         }
 
         /**

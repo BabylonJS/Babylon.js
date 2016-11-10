@@ -2,6 +2,7 @@ var BABYLON;
 (function (BABYLON) {
     var SpriteManager = (function () {
         function SpriteManager(name, imgUrl, capacity, cellSize, scene, epsilon, samplingMode) {
+            if (epsilon === void 0) { epsilon = 0.01; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             this.name = name;
             this.sprites = new Array();
@@ -19,14 +20,16 @@ var BABYLON;
             this._spriteTexture = new BABYLON.Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._spriteTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this._epsilon = epsilon === undefined ? 0.01 : epsilon;
-            if (cellSize.width) {
+            if (cellSize.width && cellSize.height) {
                 this.cellWidth = cellSize.width;
                 this.cellHeight = cellSize.height;
             }
-            else {
+            else if (cellSize !== undefined) {
                 this.cellWidth = cellSize;
                 this.cellHeight = cellSize;
+            }
+            else {
+                return;
             }
             this._scene = scene;
             this._scene.spriteManagers.push(this);

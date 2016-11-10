@@ -1353,7 +1353,7 @@
      * Base class for a Primitive of the Canvas2D feature
      */
     export class Prim2DBase extends SmartPropertyPrim {
-        static PRIM2DBASE_PROPCOUNT: number = 24;
+        static PRIM2DBASE_PROPCOUNT: number = 25;
 
         public  static _bigInt = Math.pow(2, 30);
 
@@ -1662,6 +1662,14 @@
             return this._id;
         }
 
+        public set id(value: string) {
+            if (this._id === value) {
+                return;
+            }
+            let oldValue = this._id;
+            this.onPropertyChanged("id", oldValue, this._id);
+        }
+
         /**
          * Metadata of the position property
          */
@@ -1763,7 +1771,7 @@
         public static paddingProperty: Prim2DPropInfo;
 
         /**
-         * Metadata of the hAlignment property
+         * Metadata of the marginAlignment property
          */
         public static marginAlignmentProperty: Prim2DPropInfo;
 
@@ -1782,6 +1790,11 @@
          * Metadata of the scaleY property
          */
         public static scaleYProperty: Prim2DPropInfo;
+
+        /**
+         * Metadata of the actualScale property
+         */
+        public static actualScaleProperty: Prim2DPropInfo;
 
         @instanceLevelProperty(1, pi => Prim2DBase.actualPositionProperty = pi, false, false, true)
         /**
@@ -2070,7 +2083,7 @@
          */
         @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 13, pi => Prim2DBase.actualHeightProperty = pi, false, true)
         public get actualHeight(): number {
-            return this.actualSize.width;
+            return this.actualSize.height;
         }
 
         public set actualHeight(val: number) {
@@ -2320,7 +2333,7 @@
             return this._scale.y;
         }
 
-        private _spreadActualScaleDirty() {
+        protected _spreadActualScaleDirty() {
             for (let child of this._children) {
                 child._setFlags(SmartPropertyPrim.flagActualScaleDirty);
                 child._spreadActualScaleDirty();
@@ -2330,6 +2343,7 @@
         /**
          * Returns the actual scale of this Primitive, the value is computed from the scale property of this primitive, multiplied by the actualScale of its parent one (if any). The Vector2 object returned contains the scale for both X and Y axis
          */
+        @instanceLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 24, pi => Prim2DBase.actualScaleProperty = pi, false, true)
         public get actualScale(): Vector2 {
             if (this._isFlagSet(SmartPropertyPrim.flagActualScaleDirty)) {
                 let cur = this._isFlagSet(SmartPropertyPrim.flagDontInheritParentScale) ? null : this.parent;
@@ -2656,7 +2670,7 @@
 
                 this._debugAreaGroup = new Group2D
                     (
-                    {
+                    {   dontInheritParentScale: true,
                         parent: (this.parent!=null) ? this.parent : this, id: "###DEBUG AREA GROUP###", children:
                         [
                             new Group2D({
@@ -2758,11 +2772,13 @@
                 areaInfo[curAreaIndex++] = { off: pos, size: size, min: min, max: max };
             }
 
+            let isCanvas = this instanceof Canvas2D;
             let marginH = this._marginOffset.x + this._marginOffset.z;
             let marginV = this._marginOffset.y + this._marginOffset.w;
+            let actualSize = this.actualSize.multiplyByFloats(isCanvas ? 1 : this.scaleX, isCanvas ? 1 : this.scaleY);
 
-            let w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width)  : (marginH + this.actualSize.width);
-            let h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + this.actualSize.height);
+            let w = hasLayout ? (this.layoutAreaPos.x + this.layoutArea.width)  : (marginH + actualSize.width);
+            let h = hasLayout ? (this.layoutAreaPos.y + this.layoutArea.height) : (marginV + actualSize.height);
             let pos = (!hasLayout && !hasMargin && !hasPadding && hasPos) ? this.actualPosition : Vector2.Zero();
 
             storeAreaInfo(pos, new Size(w, h));
@@ -2771,7 +2787,7 @@
             if (hasLayout) {
                 let layoutOffset = this.layoutAreaPos.clone();
 
-                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : this.actualSize.clone());
+                storeAreaInfo(layoutOffset, (hasMargin || hasPadding) ? this.layoutArea.clone() : actualSize.clone());
                 curOffset = layoutOffset.clone();
             }
 
@@ -2780,7 +2796,7 @@
                 let marginOffset = curOffset.clone();
                 marginOffset.x += this._marginOffset.x;
                 marginOffset.y += this._marginOffset.y;
-                let marginArea = this.actualSize;
+                let marginArea = actualSize;
 
                 storeAreaInfo(marginOffset, marginArea);
                 curOffset = marginOffset.clone();
@@ -2920,6 +2936,8 @@
          * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
          * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
          */
+        private static _bypassGroup2DExclusion = false;
+
         public intersect(intersectInfo: IntersectInfo2D): boolean {
             if (!intersectInfo) {
                 return false;
@@ -2936,14 +2954,27 @@
                 intersectInfo.topMostIntersectedPrimitive = null;
             }
 
+            if (!Prim2DBase._bypassGroup2DExclusion && this instanceof Group2D && (<Group2D><any>this).isCachedGroup && !(<Group2D><any>this).isRenderableGroup) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
+                return false;
+            }
+
             if (!intersectInfo.intersectHidden && !this.isVisible) {
+                // Important to call this before each return to allow a good recursion next time this intersectInfo is reused
+                intersectInfo._exit(firstLevel);
                 return false;
             }
 
             let id = this.id;
-            if (id!=null && id.indexOf("__cachedSpriteOfGroup__") === 0) {
-                let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
-                return ownerGroup.intersect(intersectInfo);
+            if (id != null && id.indexOf("__cachedSpriteOfGroup__") === 0) {
+                try {
+                    Prim2DBase._bypassGroup2DExclusion = true;
+                    let ownerGroup = this.getExternalData<Group2D>("__cachedGroup__");
+                    return ownerGroup.intersect(intersectInfo);
+                } finally  {
+                    Prim2DBase._bypassGroup2DExclusion = false;
+                } 
             }
 
             // If we're testing a cachedGroup, we must reject pointer outside its levelBoundingInfo because children primitives could be partially clipped outside so we must not accept them as intersected when it's the case (because they're not visually visible).
@@ -3086,6 +3117,11 @@
         public dispose(): boolean {
             if (!super.dispose()) {
                 return false;
+            }
+
+            if (this._pointerEventObservable) {
+                this._pointerEventObservable.clear();
+                this._pointerEventObservable = null;
             }
 
             if (this._actionManager) {

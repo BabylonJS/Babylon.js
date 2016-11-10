@@ -1074,9 +1074,12 @@
         }
 
         public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
-            result.x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
-            result.y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
-            result.z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
+            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
+            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + (vector.z * transformation.m[9]);
+            var z = (vector.x * transformation.m[2]) + (vector.y * transformation.m[6]) + (vector.z * transformation.m[10]);
+            result.x = x;
+            result.y = y;
+            result.z = z;
         }
 
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
@@ -3113,6 +3116,35 @@
             result.m[14] = temp3 * plane.d;
             result.m[15] = 1.0;
         }
+
+        public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, mat: Matrix) {
+            
+            mat.m[0] = xaxis.x;
+            mat.m[1] = xaxis.y;
+            mat.m[2] = xaxis.z;
+
+            mat.m[3] = 0;
+            
+            mat.m[4] = yaxis.x;
+            mat.m[5] = yaxis.y;
+            mat.m[6] = yaxis.z;
+            
+            mat.m[7] = 0;
+            
+            mat.m[8] = zaxis.x;
+            mat.m[9] = zaxis.y;
+            mat.m[10] = zaxis.z;
+            
+            mat.m[11] = 0;
+            
+            mat.m[12] = 0;
+            mat.m[13] = 0;
+            mat.m[14] = 0;
+            
+            mat.m[15] = 1;
+
+        }
+
     }
 
     export class Plane {

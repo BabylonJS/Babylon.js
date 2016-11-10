@@ -381,33 +381,37 @@
             this.texture = texture;
             this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this.size = settings.spriteSize;
-            this.spriteLocation = settings.spriteLocation || new Vector2(0, 0);
-            this.spriteScaleFactor = settings.spriteScaleFactor || new Vector2(1, 1);
+            this.size = (settings.spriteSize!=null) ? settings.spriteSize.clone() : null;
+            this.spriteLocation = (settings.spriteLocation!=null) ? settings.spriteLocation.clone() : new Vector2(0, 0);
+            this.spriteScaleFactor = (settings.spriteScaleFactor!=null) ? settings.spriteScaleFactor : new Vector2(1, 1);
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.useAlphaFromTexture = true;
 
+            // If the user doesn't set a size, we'll use the texture's one, but if the texture is not loading, we HAVE to set a temporary dummy size otherwise the positioning engine will switch the marginAlignement to stretch/stretch, and WE DON'T WANT THAT.
+            // The fucking delayed texture sprite bug is fixed!
+            if (settings.spriteSize == null) {
+                this.size = new Size(10, 10);
+            }
+
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
-                    this.size = <Size>texture.getBaseSize();
+                    let s = texture.getBaseSize();
+                    this.size = new Size(s.width, s.height);
                 } else {
+
                     texture.onLoadObservable.add(() => {
                         if (settings.spriteSize == null) {
-                            this.size = <Size>texture.getBaseSize();
+                            let s = texture.getBaseSize();
+                        this.size = new Size(s.width, s.height);
                         }
                         this._positioningDirty();
+                        this._setLayoutDirty();
                         this._instanceDirtyFlags |= Prim2DBase.originProperty.flagId | Sprite2D.textureProperty.flagId;  // To make sure the sprite is issued again for render
                     });
                 }
             }
-        }
-
-        static _createCachedCanvasSprite(owner: Canvas2D, texture: MapTexture, size: Size, pos: Vector2): Sprite2D {
-
-            let sprite = new Sprite2D(texture, { parent: owner, id: "__cachedCanvasSprite__", position: Vector2.Zero(), origin: Vector2.Zero(), spriteSize: size, spriteLocation: pos, alignToPixel: true });
-            return sprite;
         }
 
         protected createModelRenderCache(modelKey: string): ModelRenderCache {

@@ -1057,7 +1057,20 @@
                         }
                     }
 
-                    modelKey += v.name + ":" + ((propVal != null) ? ((v.typeLevelCompare) ? Tools.getClassName(propVal) : propVal.toString()) : "[null]") + ";";
+                    let value = "[null]";
+                    if (propVal != null) {
+                        if (v.typeLevelCompare) {
+                            value = Tools.getClassName(propVal);
+                        } else {
+                            if (propVal instanceof BaseTexture) {
+                                value = propVal.uid;
+                            } else {
+                                value = propVal.toString();
+                            }
+                        }
+                    }
+
+                    modelKey += v.name + ":" + value + ";";
                 }
             });
 
@@ -1114,7 +1127,7 @@
             }
 
             // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
-            if (this instanceof Group2D) {
+            if (this instanceof Group2D && (<Group2D><any>this)._renderableData) {
                 (<SmartPropertyPrim>this).handleGroupChanged(propInfo);
             }
 
@@ -1266,7 +1279,6 @@
         public static flagDontInheritParentScale  = 0x0080000;    // set if the actualScale must not use its parent's scale to be computed
         public static flagGlobalTransformDirty    = 0x0100000;    // set if the global transform must be recomputed due to a local transform change
         public static flagLayoutBoundingInfoDirty = 0x0200000;    // set if the layout bounding info is dirty
-        public static flagAllow3DEventsBelowCanvas= 0x0400000;    // set if pointer events should be sent to 3D Engine when the pointer is over the Canvas
 
         private   _flags              : number;
         private   _modelKey           : string;

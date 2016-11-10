@@ -385,7 +385,7 @@ module BABYLON {
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 var size = parsedTexture.isBABYLONPreprocessed ? null : parsedTexture.size;
                 texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, size,
-                    texture.generateHarmonics, texture.useInGammaSpace, texture.usePMREMGenerator);
+                    parsedTexture.generateHarmonics, parsedTexture.useInGammaSpace, parsedTexture.usePMREMGenerator);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;
                 texture.level = parsedTexture.level;

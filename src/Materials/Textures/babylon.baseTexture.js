@@ -27,7 +27,18 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._scene = scene;
             this._scene.textures.push(this);
+            this._uid = null;
         }
+        Object.defineProperty(BaseTexture.prototype, "uid", {
+            get: function () {
+                if (!this._uid) {
+                    this._uid = BABYLON.Tools.RandomId();
+                }
+                return this._uid;
+            },
+            enumerable: true,
+            configurable: true
+        });
         BaseTexture.prototype.toString = function () {
             return this.name;
         };
