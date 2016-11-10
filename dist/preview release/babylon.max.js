@@ -7893,13 +7893,14 @@ var BABYLON;
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
             texture.samplingMode = samplingMode;
         };
-        Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
+        Engine.prototype.createTexture = function (urlOrList, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
             var _this = this;
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
             if (buffer === void 0) { buffer = null; }
             var texture = this._gl.createTexture();
+            var url = ((urlOrList.constructor === Array) ? urlOrList[0] : urlOrList);
             var extension;
             var fromData = false;
             if (url.substr(0, 5) === "data:") {
@@ -7913,7 +7914,7 @@ var BABYLON;
                 url = oldUrl;
                 extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
             }
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            var isDDS = (extension === ".dds");
             var isTGA = (extension === ".tga");
             scene._addPendingData(texture);
             texture.url = url;
@@ -7945,6 +7946,16 @@ var BABYLON;
                     callback(buffer);
             }
             else if (isDDS) {
+                if (!this.getCaps().s3tc) {
+                    if (urlOrList instanceof Array) {
+                        var newList = urlOrList.slice(1);
+                        if (newList.length > 0) {
+                            return this.createTexture(newList, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer);
+                        }
+                    }
+                    onerror();
+                    return null;
+                }
                 callback = function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
@@ -23190,7 +23201,7 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
-        function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
+        function Texture(urlOrList, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
             var _this = this;
             if (noMipmap === void 0) { noMipmap = false; }
             if (invertY === void 0) { invertY = true; }
@@ -23207,8 +23218,10 @@ var BABYLON;
             this.uAng = 0;
             this.vAng = 0;
             this.wAng = 0;
+            var url = ((urlOrList instanceof Array) ? urlOrList[0] : urlOrList);
             this.name = url;
             this.url = url;
+            this._delayReloadData = urlOrList;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
             this._samplingMode = samplingMode;
@@ -23228,7 +23241,7 @@ var BABYLON;
             };
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(urlOrList, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
@@ -23262,7 +23275,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this._delayReloadData, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }

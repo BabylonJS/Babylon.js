@@ -13,7 +13,7 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
-        function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
+        function Texture(urlOrList, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
             var _this = this;
             if (noMipmap === void 0) { noMipmap = false; }
             if (invertY === void 0) { invertY = true; }
@@ -30,8 +30,10 @@ var BABYLON;
             this.uAng = 0;
             this.vAng = 0;
             this.wAng = 0;
+            var url = ((urlOrList instanceof Array) ? urlOrList[0] : urlOrList);
             this.name = url;
             this.url = url;
+            this._delayReloadData = urlOrList;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
             this._samplingMode = samplingMode;
@@ -51,7 +53,7 @@ var BABYLON;
             };
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(urlOrList, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
@@ -85,7 +87,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this._delayReloadData, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
