@@ -89,7 +89,9 @@
         scene._removePendingData(texture);
 
         texture.onLoadedCallbacks.forEach(callback => {
-            callback();
+            if (callback) {
+                callback();
+            }
         });
         texture.onLoadedCallbacks = [];
     };
@@ -2500,7 +2502,9 @@
                     texture.isReady = true;
 
                     texture.onLoadedCallbacks.forEach(callback => {
-                        callback();
+                        if (callback) {
+                            callback();
+                        }
                     });
 
                     if (onLoad) {
