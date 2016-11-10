@@ -71,12 +71,16 @@
         private _delayedOnLoad: () => void;
         private _delayedOnError: () => void;
         private _onLoadObservarble: Observable<boolean>;
+        private _delayReloadData: string | Array<string>
 
-        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false) {
+        constructor(urlOrList: string | Array<string>, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false) {
             super(scene);
+
+            var url = <string>((urlOrList instanceof Array) ? urlOrList[0] : urlOrList);
 
             this.name = url;
             this.url = url;
+            this._delayReloadData = urlOrList;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
             this._samplingMode = samplingMode;
@@ -100,7 +104,7 @@
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(urlOrList, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
@@ -128,7 +132,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this._delayReloadData, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }

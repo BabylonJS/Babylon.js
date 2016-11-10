@@ -1611,13 +1611,14 @@ var BABYLON;
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
             texture.samplingMode = samplingMode;
         };
-        Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
+        Engine.prototype.createTexture = function (urlOrList, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
             var _this = this;
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
             if (buffer === void 0) { buffer = null; }
             var texture = this._gl.createTexture();
+            var url = ((urlOrList.constructor === Array) ? urlOrList[0] : urlOrList);
             var extension;
             var fromData = false;
             if (url.substr(0, 5) === "data:") {
@@ -1631,7 +1632,7 @@ var BABYLON;
                 url = oldUrl;
                 extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
             }
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            var isDDS = (extension === ".dds");
             var isTGA = (extension === ".tga");
             scene._addPendingData(texture);
             texture.url = url;
@@ -1663,6 +1664,16 @@ var BABYLON;
                     callback(buffer);
             }
             else if (isDDS) {
+                if (!this.getCaps().s3tc) {
+                    if (urlOrList instanceof Array) {
+                        var newList = urlOrList.slice(1);
+                        if (newList.length > 0) {
+                            return this.createTexture(newList, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer);
+                        }
+                    }
+                    onerror();
+                    return null;
+                }
                 callback = function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
