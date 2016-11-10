@@ -23532,11 +23532,11 @@ var BABYLON;
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
                 }
             }
-            else {
+            else if (onLoad) {
                 if (this._texture.isReady) {
                     BABYLON.Tools.SetImmediate(function () { return onLoad(); });
                 }
-                else if (onLoad) {
+                else {
                     this._texture.onLoadedCallbacks.push(onLoad);
                 }
             }
