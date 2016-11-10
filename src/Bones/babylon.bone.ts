@@ -511,17 +511,17 @@
 
         }
 
-        public getDirection (localAxis: Vector3, mesh: AbstractMesh): Vector3{
+        public getDirection (localAxis: Vector3, mesh?: AbstractMesh): Vector3{
 
             var result = Vector3.Zero();
 
-            this.getDirectionToRef(localAxis, mesh, result);
+            this.getDirectionToRef(localAxis, result, mesh);
             
             return result;
 
         }
 
-        public getDirectionToRef (localAxis: Vector3, mesh: AbstractMesh, result: Vector3): void {
+        public getDirectionToRef (localAxis: Vector3, result: Vector3, mesh?: AbstractMesh): void {
 
             this._skeleton.computeAbsoluteTransforms();
             
