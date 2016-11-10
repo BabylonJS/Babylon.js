@@ -10,6 +10,7 @@ var BABYLON;
         function FreeCameraMouseInput(touchEnabled) {
             if (touchEnabled === void 0) { touchEnabled = true; }
             this.touchEnabled = touchEnabled;
+            this.buttons = [0, 1, 2];
             this.angularSensibility = 2000.0;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
@@ -19,6 +20,9 @@ var BABYLON;
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
                     if (!_this.touchEnabled && evt.pointerType === "touch") {
+                        return;
+                    }
+                    if (p.type !== BABYLON.PointerEventTypes.POINTERMOVE && _this.buttons.indexOf(evt.button) === -1) {
                         return;
                     }
                     if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
@@ -106,6 +110,9 @@ var BABYLON;
         FreeCameraMouseInput.prototype.getSimpleName = function () {
             return "mouse";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraMouseInput.prototype, "buttons", void 0);
         __decorate([
             BABYLON.serialize()
         ], FreeCameraMouseInput.prototype, "angularSensibility", void 0);

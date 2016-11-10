@@ -9,6 +9,7 @@ var BABYLON;
     var eventPrefix = BABYLON.Tools.GetPointerPrefix();
     var ArcRotateCameraPointersInput = (function () {
         function ArcRotateCameraPointersInput() {
+            this.buttons = [0, 1, 2];
             this.angularSensibilityX = 1000.0;
             this.angularSensibilityY = 1000.0;
             this.pinchPrecision = 6.0;
@@ -24,6 +25,9 @@ var BABYLON;
             var previousPinchDistance = 0;
             this._pointerInput = function (p, s) {
                 var evt = p.event;
+                if (p.type !== BABYLON.PointerEventTypes.POINTERMOVE && _this.buttons.indexOf(evt.button) === -1) {
+                    return;
+                }
                 if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                     try {
                         evt.srcElement.setPointerCapture(evt.pointerId);
@@ -193,6 +197,9 @@ var BABYLON;
         ArcRotateCameraPointersInput.prototype.getSimpleName = function () {
             return "pointers";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "buttons", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "angularSensibilityX", void 0);
