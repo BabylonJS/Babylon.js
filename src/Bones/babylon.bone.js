@@ -268,8 +268,18 @@ var BABYLON;
             this._rotateWithMatrix(rmat, space, mesh);
         };
         Bone.prototype.setAxisAngle = function (axis, angle, space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            if (mesh === void 0) { mesh = null; }
             var rotMat = BABYLON.Tmp.Matrix[0];
             BABYLON.Matrix.RotationAxisToRef(axis, angle, rotMat);
+            var rotMatInv = BABYLON.Tmp.Matrix[1];
+            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+            rotMatInv.multiplyToRef(rotMat, rotMat);
+            this._rotateWithMatrix(rotMat, space, mesh);
+        };
+        Bone.prototype.setRotationMatrix = function (rotMat, space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            if (mesh === void 0) { mesh = null; }
             var rotMatInv = BABYLON.Tmp.Matrix[1];
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
             rotMatInv.multiplyToRef(rotMat, rotMat);
@@ -327,13 +337,16 @@ var BABYLON;
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
             if (mesh === void 0) { mesh = null; }
             if (space == BABYLON.Space.WORLD) {
+                var scaleMatrix = BABYLON.Tmp.Matrix[2];
+                scaleMatrix.copyFrom(this._scaleMatrix);
                 rotMatInv.copyFrom(this.getAbsoluteTransform());
                 if (mesh) {
                     rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
+                    var meshScale = BABYLON.Tmp.Matrix[3];
+                    BABYLON.Matrix.ScalingToRef(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z, meshScale);
+                    scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
                 }
                 rotMatInv.invert();
-                var scaleMatrix = BABYLON.Tmp.Matrix[2];
-                scaleMatrix.copyFrom(this._scaleMatrix);
                 scaleMatrix.m[0] *= -1;
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             }
@@ -387,11 +400,27 @@ var BABYLON;
             }
             else {
                 this._absoluteTransform.copyFrom(this._matrix);
+                var poseMatrix = this._skeleton.getPoseMatrix();
+                if (poseMatrix) {
+                    this._absoluteTransform.multiplyToRef(poseMatrix, this._absoluteTransform);
+                }
             }
             var children = this.children;
             var len = children.length;
             for (var i = 0; i < len; i++) {
                 children[i].computeAbsoluteTransforms();
+            }
+        };
+        Bone.prototype.getDirection = function (localAxis) {
+            var result = BABYLON.Vector3.Zero();
+            this.getDirectionToRef(localAxis, result);
+            return result;
+        };
+        Bone.prototype.getDirectionToRef = function (localAxis, result) {
+            this._skeleton.computeAbsoluteTransforms();
+            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getAbsoluteTransform(), result);
+            if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
+                result.normalize();
             }
         };
         return Bone;

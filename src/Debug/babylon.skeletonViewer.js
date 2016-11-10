@@ -89,14 +89,14 @@ var BABYLON;
                         points = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
                         this._debugLines[boneNum] = points;
                     }
-                    this._getBonePosition(points[0], childBone, meshMat);
-                    this._getBonePosition(points[1], parentBone, meshMat);
+                    childBone.getAbsolutePositionToRef(this.mesh, points[0]);
+                    parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
                     boneNum++;
                 }
             };
             SkeletonViewer.prototype.update = function () {
                 if (this.autoUpdateBonesMatrices) {
-                    this._updateBoneMatrix(this.skeleton.bones[0]);
+                    this.skeleton.computeAbsoluteTransforms();
                 }
                 if (this.skeleton.bones[0].length === undefined) {
                     this._getLinesForBonesNoLength(this.skeleton.bones, this.mesh.getWorldMatrix());
@@ -112,16 +112,6 @@ var BABYLON;
                     BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
                 }
                 this._debugMesh.color = this.color;
-            };
-            SkeletonViewer.prototype._updateBoneMatrix = function (bone) {
-                if (bone.getParent()) {
-                    bone.getLocalMatrix().multiplyToRef(bone.getParent().getAbsoluteTransform(), bone.getAbsoluteTransform());
-                }
-                var children = bone.children;
-                var len = children.length;
-                for (var i = 0; i < len; i++) {
-                    this._updateBoneMatrix(children[i]);
-                }
             };
             SkeletonViewer.prototype.dispose = function () {
                 if (this._debugMesh) {

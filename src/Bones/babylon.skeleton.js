@@ -342,6 +342,13 @@ var BABYLON;
                 this._lastAbsoluteTransformsUpdateId = renderId;
             }
         };
+        Skeleton.prototype.getPoseMatrix = function () {
+            var poseMatrix;
+            if (this._meshesWithPoseMatrix.length > 0) {
+                poseMatrix = this._meshesWithPoseMatrix[0].getPoseMatrix();
+            }
+            return poseMatrix;
+        };
         return Skeleton;
     }());
     BABYLON.Skeleton = Skeleton;
