@@ -470,6 +470,12 @@
                 this._matrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
             } else {
                 this._absoluteTransform.copyFrom(this._matrix);
+
+                var poseMatrix = this._skeleton.getPoseMatrix();
+
+                if(poseMatrix){
+					this._absoluteTransform.multiplyToRef(poseMatrix, this._absoluteTransform);					
+				}
             }
 
             var children = this.children;

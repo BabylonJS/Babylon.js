@@ -416,5 +416,17 @@
             
         }
 
+        public getPoseMatrix(): Matrix {
+            
+            var poseMatrix: Matrix;
+            
+            if(this._meshesWithPoseMatrix.length > 0){
+                poseMatrix = this._meshesWithPoseMatrix[0].getPoseMatrix();
+            }
+
+            return poseMatrix;
+
+        }
+
     }
 }
