@@ -2232,7 +2232,9 @@ var BABYLON;
                 return this;
             }
             if (!this._sourcePositions) {
+                var submeshes = this.subMeshes.slice();
                 this.setPositionsForCPUSkinning();
+                this.subMeshes = submeshes;
             }
             if (!this._sourceNormals) {
                 this.setNormalsForCPUSkinning();
