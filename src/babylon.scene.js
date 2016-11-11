@@ -136,6 +136,8 @@ var BABYLON;
             this.constantlyUpdateMeshUnderPointer = false;
             this.useRightHandedSystem = false;
             this.hoverCursor = "pointer";
+            // Metadata
+            this.metadata = null;
             // Events
             /**
             * An event triggered when the scene is disposed.
