@@ -16,6 +16,7 @@
         private _scaleMatrix = Matrix.Identity();
         private _scaleVector = new Vector3(1, 1, 1);
         private _negateScaleChildren = new Vector3(1, 1, 1);
+        private _lastRotateId = -1;
         
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
@@ -214,18 +215,19 @@
             
             this.markAsDirty();
 			
-	        
         }
 
         public setScale (x: number, y: number, z: number, scaleChildren = false): void {
 
             if (this.animations[0] && !this.animations[0].isStopped()) {
-                if (!scaleChildren) {
-                    this._negateScaleChildren.x = 1/x;
-                    this._negateScaleChildren.y = 1/y;
-                    this._negateScaleChildren.z = 1/z;
+                if(this._lastRotateId < this.getScene().getRenderId() - 2){
+                    if (!scaleChildren) {
+                        this._negateScaleChildren.x = 1/x;
+                        this._negateScaleChildren.y = 1/y;
+                        this._negateScaleChildren.z = 1/z;
+                    }
+                    this._syncScaleVector();
                 }
-                this._syncScaleVector();
             }
 
 	        this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
@@ -388,6 +390,8 @@
 
             this.markAsDirty();
             
+            this._lastRotateId = this.getScene().getRenderId();
+
         }
 
         private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
@@ -535,9 +539,15 @@
 
             Vector3.TransformNormalToRef(localAxis, mat, result);
 
-            if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
-                result.normalize();
+            if(mesh){
+                result.x /= mesh.scaling.x;
+                result.y /= mesh.scaling.y;
+                result.z /= mesh.scaling.z;
             }
+
+            result.x /= this._scaleVector.x;
+            result.y /= this._scaleVector.y;
+            result.z /= this._scaleVector.z;
 
         }
 
