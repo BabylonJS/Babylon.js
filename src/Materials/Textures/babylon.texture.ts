@@ -301,6 +301,11 @@
                     var texture: Texture;
                     if (parsedTexture.base64String) {
                         texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                    } else if (parsedTexture.name instanceof Array) {
+                        for (var i = 0, len = parsedTexture.name.length; i < len; i++) {
+                            parsedTexture.name[i] = rootUrl + parsedTexture.name[i];
+                        }
+                        texture = new Texture(parsedTexture.name, scene);
                     } else {
                         texture = new Texture(rootUrl + parsedTexture.name, scene);
                     }
