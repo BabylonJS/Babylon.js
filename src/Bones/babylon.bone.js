@@ -411,17 +411,34 @@ var BABYLON;
                 children[i].computeAbsoluteTransforms();
             }
         };
-        Bone.prototype.getDirection = function (localAxis) {
+        Bone.prototype.getDirection = function (localAxis, mesh) {
             var result = BABYLON.Vector3.Zero();
-            this.getDirectionToRef(localAxis, result);
+            this.getDirectionToRef(localAxis, result, mesh);
             return result;
         };
-        Bone.prototype.getDirectionToRef = function (localAxis, result) {
+        Bone.prototype.getDirectionToRef = function (localAxis, result, mesh) {
             this._skeleton.computeAbsoluteTransforms();
-            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getAbsoluteTransform(), result);
+            var mat = BABYLON.Tmp.Matrix[0];
+            mat.copyFrom(this.getAbsoluteTransform());
+            if (mesh) {
+                mat.multiplyToRef(mesh.getWorldMatrix(), mat);
+            }
+            BABYLON.Vector3.TransformNormalToRef(localAxis, mat, result);
             if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
                 result.normalize();
             }
+        };
+        Bone.prototype.getRotation = function (mesh) {
+            var result = BABYLON.Quaternion.Identity();
+            this.getRotationToRef(mesh, result);
+            return result;
+        };
+        Bone.prototype.getRotationToRef = function (mesh, result) {
+            var mat = BABYLON.Tmp.Matrix[0];
+            var amat = this.getAbsoluteTransform();
+            var wmat = mesh.getWorldMatrix();
+            amat.multiplyToRef(wmat, mat);
+            mat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
         };
         return Bone;
     }(BABYLON.Node));

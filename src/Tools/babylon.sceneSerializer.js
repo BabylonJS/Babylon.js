@@ -103,6 +103,10 @@ var BABYLON;
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
             serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
+        // Metadata
+        if (mesh.metadata) {
+            serializationObject.metadata = mesh.metadata;
+        }
         // Instances
         serializationObject.instances = [];
         for (var index = 0; index < mesh.instances.length; index++) {
@@ -207,6 +211,10 @@ var BABYLON;
                 serializationObject.physicsEnabled = true;
                 serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
+            }
+            // Metadata
+            if (scene.metadata) {
+                serializationObject.metadata = scene.metadata;
             }
             // Lights
             serializationObject.lights = [];

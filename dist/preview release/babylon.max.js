@@ -16408,6 +16408,8 @@ var BABYLON;
             this.constantlyUpdateMeshUnderPointer = false;
             this.useRightHandedSystem = false;
             this.hoverCursor = "pointer";
+            // Metadata
+            this.metadata = null;
             // Events
             /**
             * An event triggered when the scene is disposed.
@@ -27421,6 +27423,10 @@ var BABYLON;
                         var physicsGravity = parsedData.physicsGravity ? BABYLON.Vector3.FromArray(parsedData.physicsGravity) : null;
                         scene.enablePhysics(physicsGravity, physicsPlugin);
                     }
+                    // Metadata
+                    if (parsedData.metadata !== undefined) {
+                        scene.metadata = parsedData.metadata;
+                    }
                     //collisions, if defined. otherwise, default is true
                     if (parsedData.collisionsEnabled != undefined) {
                         scene.collisionsEnabled = parsedData.collisionsEnabled;
@@ -30161,17 +30167,34 @@ var BABYLON;
                 children[i].computeAbsoluteTransforms();
             }
         };
-        Bone.prototype.getDirection = function (localAxis) {
+        Bone.prototype.getDirection = function (localAxis, mesh) {
             var result = BABYLON.Vector3.Zero();
-            this.getDirectionToRef(localAxis, result);
+            this.getDirectionToRef(localAxis, result, mesh);
             return result;
         };
-        Bone.prototype.getDirectionToRef = function (localAxis, result) {
+        Bone.prototype.getDirectionToRef = function (localAxis, result, mesh) {
             this._skeleton.computeAbsoluteTransforms();
-            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getAbsoluteTransform(), result);
+            var mat = BABYLON.Tmp.Matrix[0];
+            mat.copyFrom(this.getAbsoluteTransform());
+            if (mesh) {
+                mat.multiplyToRef(mesh.getWorldMatrix(), mat);
+            }
+            BABYLON.Vector3.TransformNormalToRef(localAxis, mat, result);
             if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
                 result.normalize();
             }
+        };
+        Bone.prototype.getRotation = function (mesh) {
+            var result = BABYLON.Quaternion.Identity();
+            this.getRotationToRef(mesh, result);
+            return result;
+        };
+        Bone.prototype.getRotationToRef = function (mesh, result) {
+            var mat = BABYLON.Tmp.Matrix[0];
+            var amat = this.getAbsoluteTransform();
+            var wmat = mesh.getWorldMatrix();
+            amat.multiplyToRef(wmat, mat);
+            mat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
         };
         return Bone;
     }(BABYLON.Node));
@@ -41852,6 +41875,10 @@ var BABYLON;
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
             serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
+        // Metadata
+        if (mesh.metadata) {
+            serializationObject.metadata = mesh.metadata;
+        }
         // Instances
         serializationObject.instances = [];
         for (var index = 0; index < mesh.instances.length; index++) {
@@ -41956,6 +41983,10 @@ var BABYLON;
                 serializationObject.physicsEnabled = true;
                 serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
+            }
+            // Metadata
+            if (scene.metadata) {
+                serializationObject.metadata = scene.metadata;
             }
             // Lights
             serializationObject.lights = [];
