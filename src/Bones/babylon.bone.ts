@@ -511,24 +511,55 @@
 
         }
 
-        public getDirection (localAxis: Vector3){
+        public getDirection (localAxis: Vector3, mesh?: AbstractMesh): Vector3{
 
             var result = Vector3.Zero();
 
-            this.getDirectionToRef(localAxis, result);
+            this.getDirectionToRef(localAxis, result, mesh);
             
             return result;
 
         }
 
-        public getDirectionToRef (localAxis: Vector3, result: Vector3) {
+        public getDirectionToRef (localAxis: Vector3, result: Vector3, mesh?: AbstractMesh): void {
 
             this._skeleton.computeAbsoluteTransforms();
-            Vector3.TransformNormalToRef(localAxis, this.getAbsoluteTransform(), result);
             
+            var mat = BABYLON.Tmp.Matrix[0];
+
+            mat.copyFrom(this.getAbsoluteTransform());
+
+            if(mesh){
+                mat.multiplyToRef(mesh.getWorldMatrix(), mat);
+            }
+
+            Vector3.TransformNormalToRef(localAxis, mat, result);
+
             if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
                 result.normalize();
             }
+
+        }
+
+        public getRotation(mesh: AbstractMesh): Quaternion {
+
+            var result = Quaternion.Identity();
+
+            this.getRotationToRef(mesh, result);
+
+            return result;
+
+        }
+
+        public getRotationToRef(mesh: AbstractMesh, result: Quaternion): void{
+
+            var mat = Tmp.Matrix[0];
+            var amat = this.getAbsoluteTransform();
+            var wmat = mesh.getWorldMatrix();
+
+            amat.multiplyToRef(wmat, mat);
+
+            mat.decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
 
         }
 
