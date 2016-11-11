@@ -21584,7 +21584,9 @@ var BABYLON;
                 return this;
             }
             if (!this._sourcePositions) {
+                var submeshes = this.subMeshes.slice();
                 this.setPositionsForCPUSkinning();
+                this.subMeshes = submeshes;
             }
             if (!this._sourceNormals) {
                 this.setNormalsForCPUSkinning();
@@ -24948,25 +24950,25 @@ var BABYLON;
                     }
                 }
                 engine.bindSamplers(this);
+                this._compilationError = "";
                 this._isReady = true;
                 if (this.onCompiled) {
                     this.onCompiled(this);
                 }
             }
             catch (e) {
+                this._compilationError = e.message;
                 // Let's go through fallbacks then
+                BABYLON.Tools.Error("Unable to compile effect: ");
+                BABYLON.Tools.Error("Defines: " + defines);
+                BABYLON.Tools.Error("Error: " + this._compilationError);
+                this._dumpShadersName();
                 if (fallbacks && fallbacks.isMoreFallbacks) {
-                    BABYLON.Tools.Error("Unable to compile effect with current defines. Trying next fallback.");
-                    this._dumpShadersName();
+                    BABYLON.Tools.Error("Trying next fallback.");
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 }
                 else {
-                    BABYLON.Tools.Error("Unable to compile effect: ");
-                    this._dumpShadersName();
-                    BABYLON.Tools.Error("Defines: " + defines);
-                    BABYLON.Tools.Error("Error: " + e.message);
-                    this._compilationError = e.message;
                     if (this.onError) {
                         this.onError(this, this._compilationError);
                     }
