@@ -473,8 +473,8 @@
                 var poseMatrix = this._skeleton.getPoseMatrix();
 
                 if(poseMatrix){
-					this._absoluteTransform.multiplyToRef(poseMatrix, this._absoluteTransform);					
-				}
+                    this._absoluteTransform.multiplyToRef(poseMatrix, this._absoluteTransform);					
+                }
             }
 
             var children = this.children;
