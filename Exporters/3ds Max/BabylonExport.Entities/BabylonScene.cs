@@ -38,8 +38,14 @@ namespace BabylonExport.Entities
         [DataMember]
         public float[] gravity { get; set; }
         
-        [DataMember]
-        public bool physicsEnabled { get; set; }
+		[DataMember]
+		public object metadata { get; set; }
+  
+		[DataMember]
+		public string physicsEngine { get; set; }
+
+		[DataMember]
+		public bool physicsEnabled { get; set; }
 
         [DataMember]
         public float[] physicsGravity { get; set; }
@@ -114,6 +120,9 @@ namespace BabylonExport.Entities
             clearColor = new[] { 0.2f, 0.2f, 0.3f };
             ambientColor = new[] { 0f, 0f, 0f };
             gravity = new[] { 0f, 0f, -0.9f };
+
+			metadata = null;
+			physicsEngine = "cannon";
 
             MaxVector = new BabylonVector3 { X = float.MinValue, Y = float.MinValue, Z = float.MinValue };
             MinVector = new BabylonVector3 { X = float.MaxValue, Y = float.MaxValue, Z = float.MaxValue };
