@@ -68,6 +68,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonAnimation[] animations { get; set; }
         
+		[DataMember]
+		public string[] extensions { get; set; }
+
         public BabylonTexture()
         {
             level = 1.0f;

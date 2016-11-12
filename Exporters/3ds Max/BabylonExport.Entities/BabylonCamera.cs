@@ -68,6 +68,12 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonAnimation[] animations { get; set; }
 
+		[DataMember]
+		public object metadata { get; set; }
+
+		[DataMember]
+		public string tags { get; set; }
+
         public BabylonCamera()
         {
             position = new[] { 0f, 0f, 0f };
@@ -79,6 +85,8 @@ namespace BabylonExport.Entities
             maxZ = 5000.0f;
             speed = 1.0f;
             inertia = 0.9f;
+
+			metadata = null;
         }
     }
 }
