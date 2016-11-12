@@ -68,6 +68,12 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonAnimation[] animations { get; set; }
 
+		[DataMember]
+		public object metadata { get; set;}
+
+		[DataMember]
+		public string tags { get; set;}
+
         public BabylonCamera()
         {
             position = new[] { 0f, 0f, 0f };
