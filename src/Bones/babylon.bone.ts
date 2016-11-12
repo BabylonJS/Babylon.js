@@ -16,7 +16,6 @@
         private _scaleMatrix = Matrix.Identity();
         private _scaleVector = new Vector3(1, 1, 1);
         private _negateScaleChildren = new Vector3(1, 1, 1);
-        private _lastRotateId = -1;
         
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
@@ -220,14 +219,12 @@
         public setScale (x: number, y: number, z: number, scaleChildren = false): void {
 
             if (this.animations[0] && !this.animations[0].isStopped()) {
-                if(this._lastRotateId < this.getScene().getRenderId() - 2){
-                    if (!scaleChildren) {
-                        this._negateScaleChildren.x = 1/x;
-                        this._negateScaleChildren.y = 1/y;
-                        this._negateScaleChildren.z = 1/z;
-                    }
-                    this._syncScaleVector();
+                if (!scaleChildren) {
+                    this._negateScaleChildren.x = 1/x;
+                    this._negateScaleChildren.y = 1/y;
+                    this._negateScaleChildren.z = 1/z;
                 }
+                this._syncScaleVector();
             }
 
 	        this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
@@ -389,8 +386,6 @@
             this.computeAbsoluteTransforms();
 
             this.markAsDirty();
-            
-            this._lastRotateId = this.getScene().getRenderId();
 
         }
 
@@ -512,6 +507,8 @@
                 this._scaleVector.y /= this._parent._negateScaleChildren.y;
                 this._scaleVector.z /= this._parent._negateScaleChildren.z;
             }
+            
+            Matrix.FromValuesToRef(this._scaleVector.x, 0, 0, 0, 0,  this._scaleVector.y, 0, 0, 0, 0,  this._scaleVector.z, 0, 0, 0, 0, 1, this._scaleMatrix);
 
         }
 
