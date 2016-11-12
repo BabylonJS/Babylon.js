@@ -330,13 +330,16 @@
 
         public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
 
-            var rotMatInv = Tmp.Matrix[1];
+            var rotMatInv = Tmp.Matrix[0];
             
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
 
-            rotMatInv.multiplyToRef(rotMat, rotMat);
+            var rotMat2 = Tmp.Matrix[1];
+            rotMat2.copyFrom(rotMat);
+
+            rotMatInv.multiplyToRef(rotMat, rotMat2);
             
-            this._rotateWithMatrix(rotMat, space, mesh);
+            this._rotateWithMatrix(rotMat2, space, mesh);
 
         }
 
