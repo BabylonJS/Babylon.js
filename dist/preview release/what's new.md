@@ -8,6 +8,7 @@
 - Canvas2D moved to a separate folder in main repo. Now you need to also include babylon.cavans2d.js to get Canvas@D feature ([deltakosh](https://github.com/deltakosh))
 
 ### Updates
+- Added BoneIKController and BoneLookController ([abow](https://github.com/abow))
 - You can now specify an array of string when loading a texture (they will be considered as fallbacks) ([deltakosh](https://github.com/deltakosh))
 - Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))
 - Added Bone.setYawPitchRoll ([abow](https://github.com/abow))
