@@ -98,6 +98,8 @@
       "../../src/Animations/babylon.animatable.js",
       "../../src/Animations/babylon.easing.js",
       "../../src/Bones/babylon.bone.js",
+      "../../src/Bones/babylon.boneIKController.js",
+      "../../src/Bones/babylon.boneLookController.js",
       "../../src/Bones/babylon.skeleton.js",
       "../../src/PostProcess/babylon.postProcess.js",
       "../../src/PostProcess/babylon.postProcessManager.js",
