@@ -18,7 +18,7 @@ module BABYLON {
         private _tmpMat1 = Matrix.Identity();
         private _tmpMat2 = Matrix.Identity();
 
-        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, adjustYaw: number = 0, adjustPitch: number = 0, adjustRoll: number){
+        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, adjustYaw: number = 0, adjustPitch: number = 0, adjustRoll: number = 0){
 
             this.mesh = mesh;
             this.bone = bone;
@@ -27,7 +27,7 @@ module BABYLON {
             this.adjustYaw = adjustYaw;
             this.adjustPitch = adjustPitch;
             this.adjustRoll = adjustRoll;
-            
+
         }
 
         public update (): void {
