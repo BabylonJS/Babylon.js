@@ -16,6 +16,7 @@
         private _scaleMatrix = Matrix.Identity();
         private _scaleVector = new Vector3(1, 1, 1);
         private _negateScaleChildren = new Vector3(1, 1, 1);
+        private _scalingDeterminant = 1;
         
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
@@ -34,6 +35,10 @@
             }
 
             this._updateDifferenceMatrix();
+
+            if (this.getAbsoluteTransform().determinant() < 0) {
+                this._scalingDeterminant *= -1;
+            }
         }
 
         // Members
@@ -405,7 +410,7 @@
 					scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
                 }
 				rotMatInv.invert();
-                scaleMatrix.m[0] *= -1;
+                scaleMatrix.m[0] *= this._scalingDeterminant;
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             } else {
                 rotMatInv.copyFrom(this.getLocalMatrix());
@@ -418,7 +423,7 @@
                     pscaleMatrix.invert();
                     pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
                 } else {
-                    scaleMatrix.m[0] *= -1;
+                    scaleMatrix.m[0] *= this._scalingDeterminant;
                 }
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             }
