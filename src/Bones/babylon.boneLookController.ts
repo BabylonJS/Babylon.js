@@ -4,7 +4,7 @@ module BABYLON {
         public target: Vector3;
         public mesh: AbstractMesh;
         public bone: Bone;
-        public upAxis: Vector3;
+        public upAxis: Vector3 = Vector3.Up();
 
         public adjustYaw = 0;
         public adjustPitch = 0;
@@ -18,7 +18,7 @@ module BABYLON {
         private _tmpMat1 = Matrix.Identity();
         private _tmpMat2 = Matrix.Identity();
 
-        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, upAxis:Vector3 = new Vector3(0, 1, 0), adjustYaw: number = 0, adjustPitch: number = 0, adjustRoll: number){
+        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, adjustYaw: number = 0, adjustPitch: number = 0, adjustRoll: number){
 
             this.mesh = mesh;
             this.bone = bone;
@@ -27,9 +27,7 @@ module BABYLON {
             this.adjustYaw = adjustYaw;
             this.adjustPitch = adjustPitch;
             this.adjustRoll = adjustRoll;
-
-            this.upAxis = upAxis;
-
+            
         }
 
         public update (): void {
