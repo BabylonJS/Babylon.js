@@ -59,6 +59,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool useSpecularOverAlpha { get; set; }
 
+        [DataMember]
+        public bool disableLighting { get; set; }
+
         public BabylonStandardMaterial() : base()
         {
             ambient = new[] {1.0f, 1.0f, 1.0f};
