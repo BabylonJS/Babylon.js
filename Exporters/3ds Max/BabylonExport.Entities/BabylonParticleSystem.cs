@@ -6,6 +6,12 @@ namespace BabylonExport.Entities
     public class BabylonParticleSystem
     {
         [DataMember]
+        public string name { get; set; }
+
+        [DataMember]
+        public bool preventAutoStart { get; set; }
+
+        [DataMember]
         public string emitterId { get; set; }
 
         [DataMember]
