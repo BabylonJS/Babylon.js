@@ -16,6 +16,7 @@
         private _scaleMatrix = Matrix.Identity();
         private _scaleVector = new Vector3(1, 1, 1);
         private _negateScaleChildren = new Vector3(1, 1, 1);
+        private _scalingDeterminant = 1;
         
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
@@ -34,6 +35,10 @@
             }
 
             this._updateDifferenceMatrix();
+
+            if (this.getAbsoluteTransform().determinant() < 0) {
+                this._scalingDeterminant *= -1;
+            }
         }
 
         // Members
@@ -214,7 +219,6 @@
             
             this.markAsDirty();
 			
-	        
         }
 
         public setScale (x: number, y: number, z: number, scaleChildren = false): void {
@@ -331,13 +335,16 @@
 
         public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
 
-            var rotMatInv = Tmp.Matrix[1];
+            var rotMatInv = Tmp.Matrix[0];
             
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
 
-            rotMatInv.multiplyToRef(rotMat, rotMat);
+            var rotMat2 = Tmp.Matrix[1];
+            rotMat2.copyFrom(rotMat);
+
+            rotMatInv.multiplyToRef(rotMat, rotMat2);
             
-            this._rotateWithMatrix(rotMat, space, mesh);
+            this._rotateWithMatrix(rotMat2, space, mesh);
 
         }
 
@@ -387,7 +394,7 @@
             this.computeAbsoluteTransforms();
 
             this.markAsDirty();
-            
+
         }
 
         private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
@@ -403,7 +410,7 @@
 					scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
                 }
 				rotMatInv.invert();
-                scaleMatrix.m[0] *= -1;
+                scaleMatrix.m[0] *= this._scalingDeterminant;
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             } else {
                 rotMatInv.copyFrom(this.getLocalMatrix());
@@ -416,7 +423,7 @@
                     pscaleMatrix.invert();
                     pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
                 } else {
-                    scaleMatrix.m[0] *= -1;
+                    scaleMatrix.m[0] *= this._scalingDeterminant;
                 }
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             }
@@ -474,8 +481,8 @@
                 var poseMatrix = this._skeleton.getPoseMatrix();
 
                 if(poseMatrix){
-					this._absoluteTransform.multiplyToRef(poseMatrix, this._absoluteTransform);					
-				}
+                    this._absoluteTransform.multiplyToRef(poseMatrix, this._absoluteTransform);					
+                }
             }
 
             var children = this.children;
@@ -508,6 +515,8 @@
                 this._scaleVector.y /= this._parent._negateScaleChildren.y;
                 this._scaleVector.z /= this._parent._negateScaleChildren.z;
             }
+            
+            Matrix.FromValuesToRef(this._scaleVector.x, 0, 0, 0, 0,  this._scaleVector.y, 0, 0, 0, 0,  this._scaleVector.z, 0, 0, 0, 0, 1, this._scaleMatrix);
 
         }
 
@@ -535,9 +544,15 @@
 
             Vector3.TransformNormalToRef(localAxis, mat, result);
 
-            if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
-                result.normalize();
+            if(mesh){
+                result.x /= mesh.scaling.x;
+                result.y /= mesh.scaling.y;
+                result.z /= mesh.scaling.z;
             }
+
+            result.x /= this._scaleVector.x;
+            result.y /= this._scaleVector.y;
+            result.z /= this._scaleVector.z;
 
         }
 
