@@ -36,7 +36,7 @@ module BABYLON {
 
         }
 
-        constructor(mesh: AbstractMesh, bone: Bone, target: AbstractMesh, poleTarget: AbstractMesh, poleAngle: number, maxAngle: number = Math.PI){
+        constructor(mesh: AbstractMesh, bone: Bone, target: AbstractMesh, poleTarget: AbstractMesh, poleAngle: number = 0){
 
             target.computeWorldMatrix(true);
             poleTarget.computeWorldMatrix(true);
@@ -74,7 +74,7 @@ module BABYLON {
 
             }
 
-            this.maxAngle = maxAngle;
+            this.maxAngle = Math.PI;
 
         }
 
