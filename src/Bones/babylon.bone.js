@@ -18,6 +18,7 @@ var BABYLON;
             this._scaleMatrix = BABYLON.Matrix.Identity();
             this._scaleVector = new BABYLON.Vector3(1, 1, 1);
             this._negateScaleChildren = new BABYLON.Vector3(1, 1, 1);
+            this._scalingDeterminant = 1;
             this._syncScaleVector = function () {
                 var lm = this.getLocalMatrix();
                 var xsq = (lm.m[0] * lm.m[0] + lm.m[1] * lm.m[1] + lm.m[2] * lm.m[2]);
@@ -34,6 +35,7 @@ var BABYLON;
                     this._scaleVector.y /= this._parent._negateScaleChildren.y;
                     this._scaleVector.z /= this._parent._negateScaleChildren.z;
                 }
+                BABYLON.Matrix.FromValuesToRef(this._scaleVector.x, 0, 0, 0, 0, this._scaleVector.y, 0, 0, 0, 0, this._scaleVector.z, 0, 0, 0, 0, 1, this._scaleMatrix);
             };
             this._skeleton = skeleton;
             this._matrix = matrix;
@@ -48,6 +50,9 @@ var BABYLON;
                 this._parent = null;
             }
             this._updateDifferenceMatrix();
+            if (this.getAbsoluteTransform().determinant() < 0) {
+                this._scalingDeterminant *= -1;
+            }
         }
         // Members
         Bone.prototype.getParent = function () {
@@ -280,10 +285,12 @@ var BABYLON;
         Bone.prototype.setRotationMatrix = function (rotMat, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
             if (mesh === void 0) { mesh = null; }
-            var rotMatInv = BABYLON.Tmp.Matrix[1];
+            var rotMatInv = BABYLON.Tmp.Matrix[0];
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
-            rotMatInv.multiplyToRef(rotMat, rotMat);
-            this._rotateWithMatrix(rotMat, space, mesh);
+            var rotMat2 = BABYLON.Tmp.Matrix[1];
+            rotMat2.copyFrom(rotMat);
+            rotMatInv.multiplyToRef(rotMat, rotMat2);
+            this._rotateWithMatrix(rotMat2, space, mesh);
         };
         Bone.prototype._rotateWithMatrix = function (rmat, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
@@ -347,7 +354,7 @@ var BABYLON;
                     scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
                 }
                 rotMatInv.invert();
-                scaleMatrix.m[0] *= -1;
+                scaleMatrix.m[0] *= this._scalingDeterminant;
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             }
             else {
@@ -362,7 +369,7 @@ var BABYLON;
                     pscaleMatrix.multiplyToRef(rotMatInv, rotMatInv);
                 }
                 else {
-                    scaleMatrix.m[0] *= -1;
+                    scaleMatrix.m[0] *= this._scalingDeterminant;
                 }
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             }
@@ -424,9 +431,14 @@ var BABYLON;
                 mat.multiplyToRef(mesh.getWorldMatrix(), mat);
             }
             BABYLON.Vector3.TransformNormalToRef(localAxis, mat, result);
-            if (this._scaleVector.x != 1 || this._scaleVector.y != 1 || this._scaleVector.z != 1) {
-                result.normalize();
+            if (mesh) {
+                result.x /= mesh.scaling.x;
+                result.y /= mesh.scaling.y;
+                result.z /= mesh.scaling.z;
             }
+            result.x /= this._scaleVector.x;
+            result.y /= this._scaleVector.y;
+            result.z /= this._scaleVector.z;
         };
         Bone.prototype.getRotation = function (mesh) {
             var result = BABYLON.Quaternion.Identity();
