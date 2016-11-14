@@ -210,13 +210,13 @@
             }
 
             tmat.invert();
-			Vector3.TransformCoordinatesToRef(position, tmat, vec);
+            Vector3.TransformCoordinatesToRef(position, tmat, vec);
 
-			var lm = this.getLocalMatrix();
+            var lm = this.getLocalMatrix();
             lm.m[12] = vec.x;
             lm.m[13] = vec.y;
             lm.m[14] = vec.z;
-            
+
             this.markAsDirty();
 			
         }
@@ -232,7 +232,7 @@
                 this._syncScaleVector();
             }
 
-	        this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
+            this.scale(x / this._scaleVector.x, y / this._scaleVector.y, z / this._scaleVector.z, scaleChildren);
 
         }
 
@@ -284,7 +284,6 @@
             if (scaleChildren) {
                 for (var i = 0; i < len; i++) {
                     this.children[i].scale(x, y, z, scaleChildren);
-                    
                 }
             }          
 
@@ -400,16 +399,18 @@
         private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh: AbstractMesh = null): void {
 
             if (space == Space.WORLD) {
-                var scaleMatrix = BABYLON.Tmp.Matrix[2];
-				scaleMatrix.copyFrom(this._scaleMatrix);
-				rotMatInv.copyFrom(this.getAbsoluteTransform());
-				if (mesh) {
+                var scaleMatrix = Tmp.Matrix[2];
+                scaleMatrix.copyFrom(this._scaleMatrix);
+                rotMatInv.copyFrom(this.getAbsoluteTransform());
+                
+                if (mesh) {
                     rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
-					var meshScale = BABYLON.Tmp.Matrix[3];
-					BABYLON.Matrix.ScalingToRef(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z, meshScale);
-					scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
+                    var meshScale = Tmp.Matrix[3];
+                    Matrix.ScalingToRef(mesh.scaling.x, mesh.scaling.y, mesh.scaling.z, meshScale);
+                    scaleMatrix.multiplyToRef(meshScale, scaleMatrix);
                 }
-				rotMatInv.invert();
+
+                rotMatInv.invert();
                 scaleMatrix.m[0] *= this._scalingDeterminant;
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             } else {
@@ -417,6 +418,7 @@
                 rotMatInv.invert();
                 var scaleMatrix = Tmp.Matrix[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
+
                 if (this._parent) {
                     var pscaleMatrix = Tmp.Matrix[3];
                     pscaleMatrix.copyFrom(this._parent._scaleMatrix);
@@ -425,6 +427,7 @@
                 } else {
                     scaleMatrix.m[0] *= this._scalingDeterminant;
                 }
+
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             }
 
@@ -544,15 +547,7 @@
 
             Vector3.TransformNormalToRef(localAxis, mat, result);
 
-            if(mesh){
-                result.x /= mesh.scaling.x;
-                result.y /= mesh.scaling.y;
-                result.z /= mesh.scaling.z;
-            }
-
-            result.x /= this._scaleVector.x;
-            result.y /= this._scaleVector.y;
-            result.z /= this._scaleVector.z;
+            result.normalize();
 
         }
 
