@@ -609,6 +609,8 @@ declare module BABYLON {
             paddingBottom?: number | string;
             padding?: string;
         });
+        dispose(): boolean;
+        private _customWorldSpaceNode;
     }
     class ScreenSpaceCanvas2D extends Canvas2D {
         /**
@@ -1737,14 +1739,14 @@ declare module BABYLON {
          * @param dstOffset the position of the resulting area
          * @param dstArea the size of the resulting area
          */
-        compute(sourceArea: Size, dstOffset: Vector2, dstArea: Size): void;
+        compute(sourceArea: Size, dstOffset: Vector4, dstArea: Size): void;
         /**
          * Compute an area considering this thickness properties based on a given source area
          * @param sourceArea the source area
          * @param result the resulting area
          */
         computeArea(sourceArea: Size, result: Size): void;
-        enlarge(sourceArea: Size, dstOffset: Vector2, enlargedArea: Size): void;
+        enlarge(sourceArea: Size, dstOffset: Vector4, enlargedArea: Size): void;
     }
     /**
      * Main class used for the Primitive Intersection API
