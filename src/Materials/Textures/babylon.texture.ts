@@ -325,5 +325,13 @@
 
             return texture;
         }
+
+        public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): Texture {
+            if (name.substr(0, 5) !== "data:") {
+                name = "data:" + name;
+            }
+
+            return new Texture(name, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer);
+        }
     }
 } 

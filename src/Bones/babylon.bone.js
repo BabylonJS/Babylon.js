@@ -431,14 +431,7 @@ var BABYLON;
                 mat.multiplyToRef(mesh.getWorldMatrix(), mat);
             }
             BABYLON.Vector3.TransformNormalToRef(localAxis, mat, result);
-            if (mesh) {
-                result.x /= mesh.scaling.x;
-                result.y /= mesh.scaling.y;
-                result.z /= mesh.scaling.z;
-            }
-            result.x /= this._scaleVector.x;
-            result.y /= this._scaleVector.y;
-            result.z /= this._scaleVector.z;
+            result.normalize();
         };
         Bone.prototype.getRotation = function (mesh) {
             var result = BABYLON.Quaternion.Identity();
