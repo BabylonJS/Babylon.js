@@ -23455,6 +23455,18 @@ var BABYLON;
             }
             return texture;
         };
+        Texture.LoadFromDataString = function (name, buffer, scene, deleteBuffer, noMipmap, invertY, samplingMode, onLoad, onError) {
+            if (deleteBuffer === void 0) { deleteBuffer = false; }
+            if (noMipmap === void 0) { noMipmap = false; }
+            if (invertY === void 0) { invertY = true; }
+            if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
+            if (onLoad === void 0) { onLoad = null; }
+            if (onError === void 0) { onError = null; }
+            if (name.substr(0, 5) !== "data:") {
+                name = "data:" + name;
+            }
+            return new Texture(name, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer);
+        };
         // Constants
         Texture.NEAREST_SAMPLINGMODE = 1;
         Texture.BILINEAR_SAMPLINGMODE = 2;
@@ -30193,14 +30205,7 @@ var BABYLON;
                 mat.multiplyToRef(mesh.getWorldMatrix(), mat);
             }
             BABYLON.Vector3.TransformNormalToRef(localAxis, mat, result);
-            if (mesh) {
-                result.x /= mesh.scaling.x;
-                result.y /= mesh.scaling.y;
-                result.z /= mesh.scaling.z;
-            }
-            result.x /= this._scaleVector.x;
-            result.y /= this._scaleVector.y;
-            result.z /= this._scaleVector.z;
+            result.normalize();
         };
         Bone.prototype.getRotation = function (mesh) {
             var result = BABYLON.Quaternion.Identity();

@@ -9,6 +9,7 @@
 - Added BoneIKController and BoneLookController ([abow](https://github.com/abow))
 
 ### Updates
+- New `Texture.LoadFromDataString()` to help loading base64 encoded textures ([deltakosh](https://github.com/deltakosh))
 - You can now specify an array of string when loading a texture (they will be considered as fallbacks) ([deltakosh](https://github.com/deltakosh))
 - Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))
 - Added Bone.setYawPitchRoll ([abow](https://github.com/abow))
