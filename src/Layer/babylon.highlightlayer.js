@@ -57,6 +57,10 @@ var BABYLON;
              */
             this.outerGlow = true;
             /**
+             * Specifies wether the highlight layer is enabled or not.
+             */
+            this.isEnabled = true;
+            /**
              * An event triggered when the highlight layer has been disposed.
              * @type {BABYLON.Observable}
              */
@@ -307,7 +311,7 @@ var BABYLON;
          * @return true if ready otherwise, false
          */
         HighlightLayer.prototype.isReady = function (subMesh, useInstances, emissiveTexture) {
-            if (!subMesh.getMaterial().isReady()) {
+            if (!subMesh.getMaterial().isReady(subMesh.getMesh(), useInstances)) {
                 return false;
             }
             var defines = [];
@@ -521,7 +525,7 @@ var BABYLON;
          * Returns true if the layer contains information to display, otherwise false.
          */
         HighlightLayer.prototype.shouldRender = function () {
-            return this._shouldRender;
+            return this.isEnabled && this._shouldRender;
         };
         /**
          * Sets the main texture desired size which is the closest power of two
