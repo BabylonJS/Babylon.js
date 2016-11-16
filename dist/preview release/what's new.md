@@ -48,6 +48,7 @@ Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGall
 ### API doc
 
 ### Bug fixes
+- Fixed issue with instancse and viewports ([deltakosh](https://github.com/deltakosh))
 - Fixed issue with FreeCamera not working in fullscreen or when pointer locked ([abow](https://github.com/abow))
 - MapTexture: Font Characters are now correctly aligned on Chrome ([nockawa](https://github.com/nockawa))
 - Fixed some missing parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))
