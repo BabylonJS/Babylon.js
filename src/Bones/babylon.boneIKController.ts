@@ -65,9 +65,9 @@ module BABYLON {
             
                 mesh.computeWorldMatrix(true);
 
-                var pos1 = this._bone2.children[0].getPosition(Space.WORLD, mesh);
-                var pos2 = this._bone2.getPosition(Space.WORLD, mesh);
-                var pos3 = this._bone1.getPosition(Space.WORLD, mesh);
+                var pos1 = this._bone2.children[0].getAbsolutePosition(mesh);
+                var pos2 = this._bone2.getAbsolutePosition(mesh);
+                var pos3 = this._bone1.getAbsolutePosition(mesh);
 
                 this._bone1Length = Vector3.Distance(pos1, pos2);
                 this._bone2Length = Vector3.Distance(pos2, pos3);
@@ -111,7 +111,7 @@ module BABYLON {
             var mat1 = this._tmpMat1;
             var mat2 = this._tmpMat2;
 
-            bone1.getPositionToRef(bonePos, Space.WORLD, this.mesh);
+            bone1.getAbsolutePositionToRef(this.mesh, bonePos);
 
             poleTarget.subtractToRef(bonePos, upAxis);
 

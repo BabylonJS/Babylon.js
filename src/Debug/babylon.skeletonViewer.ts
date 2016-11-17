@@ -90,8 +90,8 @@
                     points = [Vector3.Zero(), Vector3.Zero()];
                     this._debugLines[boneNum] = points;
                 }
-                childBone.getPositionToRef(points[0], Space.WORLD, this.mesh);
-                parentBone.getPositionToRef(points[1], Space.WORLD, this.mesh);
+                childBone.getAbsolutePositionToRef(this.mesh, points[0]);
+				parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
                 boneNum++;
             }
         }
