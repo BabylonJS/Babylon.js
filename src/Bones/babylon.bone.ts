@@ -200,7 +200,7 @@
 
                 tmat.invert();
                 Vector3.TransformCoordinatesToRef(vec, tmat, tvec);
-                
+
                 lm.m[12] += tvec.x;
                 lm.m[13] += tvec.y;
                 lm.m[14] += tvec.z;
@@ -482,13 +482,13 @@
 
             var pos = Vector3.Zero();
 
-            this.getPositionToRef(pos, space, mesh);
+            this.getPositionToRef(space, mesh, pos);
 
             return pos;
 
         }
 
-        public getPositionToRef (result: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public getPositionToRef (space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
 
             if(space == Space.LOCAL){
 
@@ -523,15 +523,15 @@
 
             var pos = Vector3.Zero();
 
-            this.getPositionToRef(pos, Space.WORLD, mesh);
+            this.getPositionToRef(Space.WORLD, mesh, pos);
 
             return pos;
 
         }
 
-        public getAbsolutePositionToRef (result: Vector3, mesh?: AbstractMesh) {
+        public getAbsolutePositionToRef (mesh: AbstractMesh, result: Vector3) {
 
-            this.getPositionToRef(result, Space.WORLD, mesh);
+            this.getPositionToRef(Space.WORLD, mesh, result);
 
         }
 
@@ -588,13 +588,13 @@
 
             var result = Vector3.Zero();
 
-            this.getDirectionToRef(localAxis, result, mesh);
+            this.getDirectionToRef(localAxis, result,  mesh);
             
             return result;
 
         }
 
-        public getDirectionToRef (result: Vector3, localAxis: Vector3, mesh?: AbstractMesh): void {
+        public getDirectionToRef (localAxis: Vector3, result: Vector3, mesh?: AbstractMesh): void {
 
             this._skeleton.computeAbsoluteTransforms();
             
@@ -616,13 +616,13 @@
 
             var result = Quaternion.Identity();
 
-            this.getRotationToRef(result, space, mesh);
+            this.getRotationToRef(space, mesh, result);
 
             return result;
 
         }
 
-        public getRotationToRef( result: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void{
+        public getRotationToRef( space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
 
             if(space == Space.LOCAL){
 
