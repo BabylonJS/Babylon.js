@@ -91,7 +91,7 @@
                     this._debugLines[boneNum] = points;
                 }
                 childBone.getPositionToRef(points[0], Space.WORLD, this.mesh);
-				parentBone.getPositionToRef(points[1], Space.WORLD, this.mesh);
+                parentBone.getPositionToRef(points[1], Space.WORLD, this.mesh);
                 boneNum++;
             }
         }
