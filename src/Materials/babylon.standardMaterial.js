@@ -181,6 +181,14 @@ var BABYLON;
                 }
             }
             var scene = this.getScene();
+            var engine = scene.getEngine();
+            var needUVs = false;
+            var needNormals = false;
+            this._defines.reset();
+            // Lights
+            if (scene.lightsEnabled && !this.disableLighting) {
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+            }
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
                     if (this._checkCache(scene, mesh, useInstances)) {
@@ -188,10 +196,6 @@ var BABYLON;
                     }
                 }
             }
-            var engine = scene.getEngine();
-            var needNormals = false;
-            var needUVs = false;
-            this._defines.reset();
             // Textures
             if (scene.texturesEnabled) {
                 if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
@@ -368,9 +372,6 @@ var BABYLON;
             // Fog
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
-            }
-            if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
             if (StandardMaterial.FresnelEnabled) {
                 // Fresnel

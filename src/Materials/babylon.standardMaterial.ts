@@ -278,6 +278,16 @@
             }
 
             var scene = this.getScene();
+            var engine = scene.getEngine();
+            var needUVs = false;
+            var needNormals = false;
+
+            this._defines.reset();
+
+            // Lights
+            if (scene.lightsEnabled && !this.disableLighting) {
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+            }
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
@@ -286,12 +296,6 @@
                     }
                 }
             }
-
-            var engine = scene.getEngine();
-            var needNormals = false;
-            var needUVs = false;
-
-            this._defines.reset();
 
             // Textures
             if (scene.texturesEnabled) {
@@ -487,10 +491,6 @@
             // Fog
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
-            }
-
-            if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
 
             if (StandardMaterial.FresnelEnabled) {

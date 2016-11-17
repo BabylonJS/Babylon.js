@@ -10,6 +10,7 @@
 - New BoneLookController [Demo](http://www.babylonjs-playground.com/#1B1PUZ#13) - ([abow](https://github.com/abow))
 
 ### Updates
+- Added `Effect.GetVertexShaderSource()` and `Effect.GetFragmentShaderSource()` ([deltakosh](https://github.com/deltakosh))
 - New `Texture.LoadFromDataString()` to help loading base64 encoded textures ([deltakosh](https://github.com/deltakosh))
 - You can now specify an array of string when loading a texture (they will be considered as fallbacks) ([deltakosh](https://github.com/deltakosh))
 - Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))

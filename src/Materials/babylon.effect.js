@@ -125,6 +125,12 @@ var BABYLON;
         Effect.prototype.getCompilationError = function () {
             return this._compilationError;
         };
+        Effect.prototype.getVertexShaderSource = function () {
+            return this._engine.getVertexShaderSource(this._program);
+        };
+        Effect.prototype.getFragmentShaderSource = function () {
+            return this._engine.getFragmentShaderSource(this._program);
+        };
         // Methods
         Effect.prototype._loadVertexShader = function (vertex, callback) {
             // DOM element ?

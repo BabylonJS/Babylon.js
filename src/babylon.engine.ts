@@ -3033,6 +3033,18 @@
             this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
         }
 
+        public getVertexShaderSource(program: WebGLProgram): string {
+            var shaders = this._gl.getAttachedShaders(program);
+
+            return this._gl.getShaderSource(shaders[0]);
+        }
+
+        public getFragmentShaderSource(program: WebGLProgram): string {
+            var shaders = this._gl.getAttachedShaders(program);
+
+            return this._gl.getShaderSource(shaders[1]);
+        }
+
         // FPS
         public getFps(): number {
             return this.fps;

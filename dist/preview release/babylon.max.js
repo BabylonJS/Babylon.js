@@ -8819,6 +8819,14 @@ var BABYLON;
         Engine.prototype.attachContextRestoredEvent = function (callback) {
             this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
         };
+        Engine.prototype.getVertexShaderSource = function (program) {
+            var shaders = this._gl.getAttachedShaders(program);
+            return this._gl.getShaderSource(shaders[0]);
+        };
+        Engine.prototype.getFragmentShaderSource = function (program) {
+            var shaders = this._gl.getAttachedShaders(program);
+            return this._gl.getShaderSource(shaders[1]);
+        };
         // FPS
         Engine.prototype.getFps = function () {
             return this.fps;
@@ -24807,6 +24815,12 @@ var BABYLON;
         Effect.prototype.getCompilationError = function () {
             return this._compilationError;
         };
+        Effect.prototype.getVertexShaderSource = function () {
+            return this._engine.getVertexShaderSource(this._program);
+        };
+        Effect.prototype.getFragmentShaderSource = function () {
+            return this._engine.getFragmentShaderSource(this._program);
+        };
         // Methods
         Effect.prototype._loadVertexShader = function (vertex, callback) {
             // DOM element ?
@@ -26114,6 +26128,14 @@ var BABYLON;
                 }
             }
             var scene = this.getScene();
+            var engine = scene.getEngine();
+            var needUVs = false;
+            var needNormals = false;
+            this._defines.reset();
+            // Lights
+            if (scene.lightsEnabled && !this.disableLighting) {
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
+            }
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
                     if (this._checkCache(scene, mesh, useInstances)) {
@@ -26121,10 +26143,6 @@ var BABYLON;
                     }
                 }
             }
-            var engine = scene.getEngine();
-            var needNormals = false;
-            var needUVs = false;
-            this._defines.reset();
             // Textures
             if (scene.texturesEnabled) {
                 if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
@@ -26301,9 +26319,6 @@ var BABYLON;
             // Fog
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
-            }
-            if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
             if (StandardMaterial.FresnelEnabled) {
                 // Fresnel
