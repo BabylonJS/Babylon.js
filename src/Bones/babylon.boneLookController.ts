@@ -42,7 +42,7 @@ module BABYLON {
             var mat1 = this._tmpMat1;
             var mat2 = this._tmpMat2;
 
-            bone.getAbsolutePositionToRef(this.mesh, bonePos);
+            bone.getPositionToRef(bonePos, Space.WORLD, this.mesh);
 
             target.subtractToRef(bonePos, zaxis);
             zaxis.normalize();
