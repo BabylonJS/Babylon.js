@@ -168,6 +168,14 @@
             return this._compilationError;
         }
 
+        public getVertexShaderSource(): string {
+            return this._engine.getVertexShaderSource(this._program);
+        }
+
+        public getFragmentShaderSource(): string {
+            return this._engine.getFragmentShaderSource(this._program);
+        }
+
         // Methods
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
             // DOM element ?

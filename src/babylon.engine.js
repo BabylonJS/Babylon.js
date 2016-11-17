@@ -2537,6 +2537,14 @@ var BABYLON;
         Engine.prototype.attachContextRestoredEvent = function (callback) {
             this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
         };
+        Engine.prototype.getVertexShaderSource = function (program) {
+            var shaders = this._gl.getAttachedShaders(program);
+            return this._gl.getShaderSource(shaders[0]);
+        };
+        Engine.prototype.getFragmentShaderSource = function (program) {
+            var shaders = this._gl.getAttachedShaders(program);
+            return this._gl.getShaderSource(shaders[1]);
+        };
         // FPS
         Engine.prototype.getFps = function () {
             return this.fps;
