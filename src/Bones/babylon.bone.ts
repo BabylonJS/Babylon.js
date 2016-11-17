@@ -184,9 +184,8 @@
             }else{
 
                 this._skeleton.computeAbsoluteTransforms();
-
                 var tmat = Tmp.Matrix[0];
-                var vec = Tmp.Vector3[0];
+                var tvec = Tmp.Vector3[0];
 
                 if (mesh) {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
@@ -195,12 +194,16 @@
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
                 }
 
-                tmat.invert();
-                Vector3.TransformCoordinatesToRef(vec, tmat, vec);
+                tmat.m[12] = 0;
+                tmat.m[13] = 0;
+                tmat.m[14] = 0;
 
-                lm.m[12] += vec.x;
-                lm.m[13] += vec.y;
-                lm.m[14] += vec.z;
+                tmat.invert();
+                Vector3.TransformCoordinatesToRef(vec, tmat, tvec);
+                
+                lm.m[12] += tvec.x;
+                lm.m[13] += tvec.y;
+                lm.m[14] += tvec.z;
 
             }
 
