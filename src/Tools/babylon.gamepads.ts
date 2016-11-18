@@ -5,25 +5,29 @@
 
         private isMonitoring: boolean = false;
         private gamepadEventSupported: boolean = 'GamepadEvent' in window;
-        private gamepadSupportAvailable: boolean = <boolean>(navigator.getGamepads ||
-            !!navigator.webkitGetGamepads || !!navigator.msGetGamepads || !!navigator.webkitGamepads);
+        private gamepadSupport: () => Array<any> = (navigator.getGamepads ||
+            navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
 
-        private _callbackGamepadConnected: (gamepad: Gamepad) => void;
+        private _callbackGamepadConnected: (gamepad: T) => void;
 
-        private _onGamepadConnectedEvent: (evt: Event) => void;
+        private _onGamepadConnectedEvent: (evt) => void;
         private _onGamepadDisonnectedEvent: (evt: Event) => void;
 
         private static gamepadDOMInfo: HTMLElement;
 
 
-        constructor(ongamedpadconnected: (gamepad: Gamepad) => void) {
+        constructor(ongamedpadconnected: (gamepad: T) => void) {
             this._callbackGamepadConnected = ongamedpadconnected;
-            if (this.gamepadSupportAvailable) {
-
+            if (this.gamepadSupport) {
+                //first add already-connected gamepads
+                this._updateGamepadObjects();
+                if (this.babylonGamepads.length) {
+                    this._startMonitoringGamepads();
+                }
                 // Checking if the gamepad connected event is supported (like in Firefox)
                 if (this.gamepadEventSupported) {
                     this._onGamepadConnectedEvent = (evt) => {
-                        this._onGamepadConnected(evt);
+                        this._onGamepadConnected(evt.gamepad);
                     };
                     this._onGamepadDisonnectedEvent = (evt) => {
                         this._onGamepadDisconnected(evt);
@@ -50,13 +54,13 @@
             }
         }
 
-        private _onGamepadConnected(evt) {
-            var newGamepad = this._addNewGamepad(evt.gamepad);
+        private _onGamepadConnected(gamepad) {
+            var newGamepad = this._addNewGamepad(gamepad);
             if (this._callbackGamepadConnected) this._callbackGamepadConnected(newGamepad);
             this._startMonitoringGamepads();
         }
 
-        private _addNewGamepad(gamepad): Gamepad {
+        private _addNewGamepad(gamepad): T {
             if (!this.oneGamepadConnected) {
                 this.oneGamepadConnected = true;
                 if (Gamepads.gamepadDOMInfo) {
@@ -69,6 +73,9 @@
 
             if ((<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
                 newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad);
+            }
+            else if ((<string>gamepad.id).search("VR") !== -1) {
+                newGamepad = new WebVRController(gamepad.id, gamepad.index, gamepad);
             }
             else {
                 newGamepad = new GenericPad(gamepad.id, gamepad.index, gamepad);
@@ -240,7 +247,8 @@
         }
 
         private _setButtonValue(newState: VRButtonState, currentState: VRButtonState, buttonIndex: number): VRButtonState {
-            if (newState.pressed !== currentState.pressed ||
+            if (!currentState ||
+                newState.pressed !== currentState.pressed ||
                 newState.touched !== currentState.touched ||
                 newState.value !== currentState.value) {
                 this._onButtonStateChange(this.index, buttonIndex, newState);
@@ -250,9 +258,9 @@
 
         public update() {
             super.update();
-            this._buttons.forEach((button, index) => {
+            for (var index = 0; index < this._buttons.length; index++) {
                 this._buttons[index] = this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
-            });
+            };
             var pose: GamepadPose = this.vrGamepad.pose;
             if (pose) {
                 this.rawPose = pose;
