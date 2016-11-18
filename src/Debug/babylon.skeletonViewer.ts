@@ -91,7 +91,7 @@
                     this._debugLines[boneNum] = points;
                 }
                 childBone.getAbsolutePositionToRef(this.mesh, points[0]);
-				parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
+                parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
                 boneNum++;
             }
         }
