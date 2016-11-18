@@ -163,39 +163,65 @@ var BABYLON;
             this.animations[0].createRange(rangeName, from + frameOffset, to + frameOffset);
             return true;
         };
-        Bone.prototype.translate = function (vec) {
+        Bone.prototype.translate = function (vec, space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
             var lm = this.getLocalMatrix();
-            lm.m[12] += vec.x;
-            lm.m[13] += vec.y;
-            lm.m[14] += vec.z;
+            if (space == BABYLON.Space.LOCAL) {
+                lm.m[12] += vec.x;
+                lm.m[13] += vec.y;
+                lm.m[14] += vec.z;
+            }
+            else {
+                this._skeleton.computeAbsoluteTransforms();
+                var tmat = BABYLON.Tmp.Matrix[0];
+                var tvec = BABYLON.Tmp.Vector3[0];
+                if (mesh) {
+                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                }
+                else {
+                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                }
+                tmat.m[12] = 0;
+                tmat.m[13] = 0;
+                tmat.m[14] = 0;
+                tmat.invert();
+                BABYLON.Vector3.TransformCoordinatesToRef(vec, tmat, tvec);
+                lm.m[12] += tvec.x;
+                lm.m[13] += tvec.y;
+                lm.m[14] += tvec.z;
+            }
             this.markAsDirty();
         };
-        Bone.prototype.setPosition = function (position) {
+        Bone.prototype.setPosition = function (position, space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
             var lm = this.getLocalMatrix();
-            lm.m[12] = position.x;
-            lm.m[13] = position.y;
-            lm.m[14] = position.z;
+            if (space == BABYLON.Space.LOCAL) {
+                lm.m[12] = position.x;
+                lm.m[13] = position.y;
+                lm.m[14] = position.z;
+            }
+            else {
+                this._skeleton.computeAbsoluteTransforms();
+                var tmat = BABYLON.Tmp.Matrix[0];
+                var vec = BABYLON.Tmp.Vector3[0];
+                if (mesh) {
+                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                }
+                else {
+                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                }
+                tmat.invert();
+                BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, vec);
+                lm.m[12] = vec.x;
+                lm.m[13] = vec.y;
+                lm.m[14] = vec.z;
+            }
             this.markAsDirty();
         };
         Bone.prototype.setAbsolutePosition = function (position, mesh) {
-            if (mesh === void 0) { mesh = null; }
-            this._skeleton.computeAbsoluteTransforms();
-            var tmat = BABYLON.Tmp.Matrix[0];
-            var vec = BABYLON.Tmp.Vector3[0];
-            if (mesh) {
-                tmat.copyFrom(this._parent.getAbsoluteTransform());
-                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
-            }
-            else {
-                tmat.copyFrom(this._parent.getAbsoluteTransform());
-            }
-            tmat.invert();
-            BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, vec);
-            var lm = this.getLocalMatrix();
-            lm.m[12] = vec.x;
-            lm.m[13] = vec.y;
-            lm.m[14] = vec.z;
-            this.markAsDirty();
+            this.setPosition(position, BABYLON.Space.WORLD, mesh);
         };
         Bone.prototype.setScale = function (x, y, z, scaleChildren) {
             if (scaleChildren === void 0) { scaleChildren = false; }
@@ -254,7 +280,6 @@ var BABYLON;
         };
         Bone.prototype.setYawPitchRoll = function (yaw, pitch, roll, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            if (mesh === void 0) { mesh = null; }
             var rotMat = BABYLON.Tmp.Matrix[0];
             BABYLON.Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
             var rotMatInv = BABYLON.Tmp.Matrix[1];
@@ -264,7 +289,6 @@ var BABYLON;
         };
         Bone.prototype.rotate = function (axis, amount, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            if (mesh === void 0) { mesh = null; }
             var rmat = BABYLON.Tmp.Matrix[0];
             rmat.m[12] = 0;
             rmat.m[13] = 0;
@@ -274,7 +298,6 @@ var BABYLON;
         };
         Bone.prototype.setAxisAngle = function (axis, angle, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            if (mesh === void 0) { mesh = null; }
             var rotMat = BABYLON.Tmp.Matrix[0];
             BABYLON.Matrix.RotationAxisToRef(axis, angle, rotMat);
             var rotMatInv = BABYLON.Tmp.Matrix[1];
@@ -284,7 +307,6 @@ var BABYLON;
         };
         Bone.prototype.setRotationMatrix = function (rotMat, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            if (mesh === void 0) { mesh = null; }
             var rotMatInv = BABYLON.Tmp.Matrix[0];
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
             var rotMat2 = BABYLON.Tmp.Matrix[1];
@@ -294,7 +316,6 @@ var BABYLON;
         };
         Bone.prototype._rotateWithMatrix = function (rmat, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            if (mesh === void 0) { mesh = null; }
             var lmat = this.getLocalMatrix();
             var lx = lmat.m[12];
             var ly = lmat.m[13];
@@ -342,7 +363,6 @@ var BABYLON;
         };
         Bone.prototype._getNegativeRotationToRef = function (rotMatInv, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            if (mesh === void 0) { mesh = null; }
             if (space == BABYLON.Space.WORLD) {
                 var scaleMatrix = BABYLON.Tmp.Matrix[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
@@ -380,26 +400,42 @@ var BABYLON;
         Bone.prototype.getScaleToRef = function (result) {
             result.copyFrom(this._scaleVector);
         };
-        Bone.prototype.getAbsolutePosition = function (mesh) {
-            if (mesh === void 0) { mesh = null; }
+        Bone.prototype.getPosition = function (space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
             var pos = BABYLON.Vector3.Zero();
-            this.getAbsolutePositionToRef(mesh, pos);
+            this.getPositionToRef(space, mesh, pos);
+            return pos;
+        };
+        Bone.prototype.getPositionToRef = function (space, mesh, result) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            if (space == BABYLON.Space.LOCAL) {
+                var lm = this.getLocalMatrix();
+                result.x = lm.m[12];
+                result.y = lm.m[13];
+                result.z = lm.m[14];
+            }
+            else {
+                this._skeleton.computeAbsoluteTransforms();
+                var tmat = BABYLON.Tmp.Matrix[0];
+                if (mesh) {
+                    tmat.copyFrom(this.getAbsoluteTransform());
+                    tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+                }
+                else {
+                    tmat = this.getAbsoluteTransform();
+                }
+                result.x = tmat.m[12];
+                result.y = tmat.m[13];
+                result.z = tmat.m[14];
+            }
+        };
+        Bone.prototype.getAbsolutePosition = function (mesh) {
+            var pos = BABYLON.Vector3.Zero();
+            this.getPositionToRef(BABYLON.Space.WORLD, mesh, pos);
             return pos;
         };
         Bone.prototype.getAbsolutePositionToRef = function (mesh, result) {
-            if (mesh === void 0) { mesh = null; }
-            this._skeleton.computeAbsoluteTransforms();
-            var tmat = BABYLON.Tmp.Matrix[0];
-            if (mesh) {
-                tmat.copyFrom(this.getAbsoluteTransform());
-                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
-            }
-            else {
-                tmat = this.getAbsoluteTransform();
-            }
-            result.x = tmat.m[12];
-            result.y = tmat.m[13];
-            result.z = tmat.m[14];
+            this.getPositionToRef(BABYLON.Space.WORLD, mesh, result);
         };
         Bone.prototype.computeAbsoluteTransforms = function () {
             if (this._parent) {
@@ -433,17 +469,29 @@ var BABYLON;
             BABYLON.Vector3.TransformNormalToRef(localAxis, mat, result);
             result.normalize();
         };
-        Bone.prototype.getRotation = function (mesh) {
+        Bone.prototype.getRotation = function (space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
             var result = BABYLON.Quaternion.Identity();
-            this.getRotationToRef(mesh, result);
+            this.getRotationToRef(space, mesh, result);
             return result;
         };
-        Bone.prototype.getRotationToRef = function (mesh, result) {
-            var mat = BABYLON.Tmp.Matrix[0];
-            var amat = this.getAbsoluteTransform();
-            var wmat = mesh.getWorldMatrix();
-            amat.multiplyToRef(wmat, mat);
-            mat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
+        Bone.prototype.getRotationToRef = function (space, mesh, result) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            if (space == BABYLON.Space.LOCAL) {
+                this.getLocalMatrix().decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
+            }
+            else {
+                var mat = BABYLON.Tmp.Matrix[0];
+                var amat = this.getAbsoluteTransform();
+                if (mesh) {
+                    var wmat = mesh.getWorldMatrix();
+                    amat.multiplyToRef(wmat, mat);
+                    mat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
+                }
+                else {
+                    amat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
+                }
+            }
         };
         return Bone;
     }(BABYLON.Node));
