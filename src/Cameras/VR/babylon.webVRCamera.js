@@ -17,6 +17,8 @@ var BABYLON;
             this._cacheState = null;
             this._vrEnabled = false;
             this._attached = false;
+            //using the position provided as the current position offset
+            this._positionOffset = position;
             //enable VR
             this.getEngine().initWebVR();
             if (!this.getEngine().vrDisplaysPromise) {
@@ -71,7 +73,10 @@ var BABYLON;
                     this.rotationQuaternion.copyFromFloats(this._cacheState.orientation[0], this._cacheState.orientation[1], -this._cacheState.orientation[2], -this._cacheState.orientation[3]);
                     if (this.webVROptions.trackPosition && this._cacheState.position) {
                         this.position.copyFromFloats(this._cacheState.position[0], this._cacheState.position[1], -this._cacheState.position[2]);
+                        //scale the position accordingly
                         this.webVROptions.positionScale && this.position.scaleInPlace(this.webVROptions.positionScale);
+                        //add the position offset
+                        this.position.addInPlace(this._positionOffset);
                     }
                 }
             }
@@ -103,6 +108,23 @@ var BABYLON;
             //uses the vrDisplay's "resetPose()".
             //pitch and roll won't be affected.
             this._vrDevice.resetPose();
+        };
+        /**
+         *
+         * Set the position offset of the VR camera
+         * The offset will be added to the WebVR pose, after scaling it (if set).
+         *
+         * @param {Vector3} [newPosition] an optional new position. if not provided, the current camera position will be used.
+         *
+         * @memberOf WebVRFreeCamera
+         */
+        WebVRFreeCamera.prototype.setPositionOffset = function (newPosition) {
+            if (newPosition) {
+                this._positionOffset = newPosition;
+            }
+            else {
+                this._positionOffset.copyFrom(this.position);
+            }
         };
         return WebVRFreeCamera;
     }(BABYLON.FreeCamera));
