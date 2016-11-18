@@ -3,7 +3,7 @@ module BABYLON {
         camera : FreeCamera;
         
         public gamepad: Gamepad;
-        private _gamepads: Gamepads;
+        private _gamepads: Gamepads<Gamepad>;
 
         @serialize()
         public gamepadAngularSensibility = 200;

@@ -145,6 +145,17 @@ interface SIMD {
     Bool8x16: SIMD.Bool8x16Constructor;
 }
 
+interface GamepadPose {
+    angularAccelaration: number;
+    angularVelocity: Float32Array
+    hasOrientation: boolean;
+    hasPosition: boolean;
+    linearAcceleration: number;
+    linearVelocity: Float32Array;
+    orientation: Float32Array
+    position: Float32Array;
+}
+
 declare namespace SIMD {
     interface Float32x4 {
         constructor: Float32x4Constructor;

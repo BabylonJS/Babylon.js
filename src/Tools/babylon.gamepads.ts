@@ -1,6 +1,6 @@
 ﻿module BABYLON {
-    export class Gamepads {
-        private babylonGamepads: Array<Gamepad> = [];
+    export class Gamepads<T extends Gamepad> {
+        private babylonGamepads: Array<T> = [];
         private oneGamepadConnected: boolean = false;
 
         private isMonitoring: boolean = false;
@@ -41,8 +41,8 @@
             if (Gamepads.gamepadDOMInfo) {
                 document.body.removeChild(Gamepads.gamepadDOMInfo);
             }
-            
-            if (this._onGamepadConnectedEvent){
+
+            if (this._onGamepadConnectedEvent) {
                 window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
                 window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
                 this._onGamepadConnectedEvent = null;
@@ -197,6 +197,75 @@
                 this.rightStick = { x: this.browserGamepad.axes[2], y: this.browserGamepad.axes[3] };
             }
         }
+    }
+
+    export interface VRButtonState {
+        pressed: boolean;
+        touched: boolean;
+        value: number;
+    }
+
+    export class WebVRController extends Gamepad {
+        public position: Vector3;
+        public rotationQuaternion: Quaternion;
+        /**
+         * Vive mapping:
+         * 0: touchpad
+         * 1: trigger
+         * 2: left AND right buttons
+         * 3: menu button
+         */
+        private _buttons: Array<VRButtonState>;
+
+        public rawPose: GamepadPose;
+
+        private _onButtonStateChange: (controlledIndex: number, buttonIndex: number, state: VRButtonState) => void;
+
+        public onButtonStateChange(callback: (controlledIndex: number, buttonIndex: number, state: VRButtonState) => void) {
+            this._onButtonStateChange = callback;
+        }
+
+        public getButtonAxis(index: number = 0): StickValues {
+            if (index) {
+                return this.rightStick;
+            }
+            return this.leftStick;
+        }
+
+        constructor(public id: string, public index: number, public vrGamepad) {
+            super(id, index, vrGamepad);
+            this._buttons = new Array(vrGamepad.buttons.length);
+            this.position = Vector3.Zero();
+            this.rotationQuaternion = new Quaternion();
+        }
+
+        private _setButtonValue(newState: VRButtonState, currentState: VRButtonState, buttonIndex: number): VRButtonState {
+            if (newState.pressed !== currentState.pressed ||
+                newState.touched !== currentState.touched ||
+                newState.value !== currentState.value) {
+                this._onButtonStateChange(this.index, buttonIndex, newState);
+            }
+            return newState;
+        }
+
+        public update() {
+            super.update();
+            this._buttons.forEach((button, index) => {
+                this._buttons[index] = this._setButtonValue(this.vrGamepad.buttons[index], this._buttons[index], index);
+            });
+            var pose: GamepadPose = this.vrGamepad.pose;
+            if (pose) {
+                this.rawPose = pose;
+                if (pose.hasPosition) {
+                    this.position.copyFromFloats(pose.position[0], pose.position[1], pose.position[2]);
+                }
+                if (pose.hasOrientation) {
+                    this.rotationQuaternion.copyFromFloats(this.rawPose.orientation[0], this.rawPose.orientation[1], -this.rawPose.orientation[2], -this.rawPose.orientation[3]);
+                }
+            }
+        }
+
+
     }
 
     export class GenericPad extends Gamepad {
@@ -460,4 +529,9 @@ interface Navigator {
     webkitGetGamepads(func?: any): any
     msGetGamepads(func?: any): any;
     webkitGamepads(func?: any): any;
+}
+
+
+interface GamepadPose {
+
 }
