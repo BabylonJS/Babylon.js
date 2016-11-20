@@ -365,6 +365,21 @@
 
         }
 
+        public setRotation (quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
+
+            var rotMatInv = Tmp.Matrix[0];
+
+            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+
+            var rotMat = Tmp.Matrix[1];
+            Matrix.FromQuaternionToRef(quat, rotMat);
+
+            rotMatInv.multiplyToRef(rotMat, rotMat);
+
+            this._rotateWithMatrix(rotMat, space, mesh);
+
+        }
+
         public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Tmp.Matrix[0];
