@@ -365,7 +365,13 @@
 
         }
 
-        public setRotation (quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setRotation (rotation: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+            
+            this.setYawPitchRoll(rotation.y, rotation.x, rotation.z, space, mesh);
+
+        }
+
+        public setRotationQuaternion (quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Tmp.Matrix[0];
 
@@ -627,17 +633,37 @@
 
         }
 
-        public getRotation(space = Space.LOCAL, mesh?: AbstractMesh): Quaternion {
+        public getRotation(space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
+
+            var result = BABYLON.Vector3.Zero();
+
+            this.getRotationToRef(space, mesh, result);
+            
+            return result;
+
+        }
+
+        public getRotationToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
+
+            var quat = Tmp.Quaternion[0];
+
+            this.getRotationQuaternionToRef(space, mesh, quat);
+            
+            quat.toEulerAnglesToRef(result);
+
+        }
+
+        public getRotationQuaternion(space = Space.LOCAL, mesh?: AbstractMesh): Quaternion {
 
             var result = Quaternion.Identity();
 
-            this.getRotationToRef(space, mesh, result);
+            this.getRotationQuaternionToRef(space, mesh, result);
 
             return result;
 
         }
 
-        public getRotationToRef( space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
+        public getRotationQuaternionToRef( space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
 
             if(space == Space.LOCAL){
 
@@ -649,17 +675,16 @@
                 var amat = this.getAbsoluteTransform();
 
                 if(mesh){
-
-                    var wmat = mesh.getWorldMatrix();
-                    amat.multiplyToRef(wmat, mat);
-
-                    mat.decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
-
+                    amat.multiplyToRef(mesh.getWorldMatrix(), mat);
                 }else{
-
-                    amat.decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
-
+                    mat.copyFrom(amat);
                 }
+
+                mat.m[0] *= this._scalingDeterminant;
+                mat.m[1] *= this._scalingDeterminant;
+                mat.m[2] *= this._scalingDeterminant;
+
+                mat.decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
 
             }
         }
