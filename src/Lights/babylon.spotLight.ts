@@ -118,5 +118,16 @@
         public getTypeID(): number {
             return 2;
         }
+
+        public getRotation(): Vector3 {
+
+            this.direction.normalize();
+
+            var xaxis = BABYLON.Vector3.Cross(this.direction, BABYLON.Axis.Y);
+            var yaxis = BABYLON.Vector3.Cross(xaxis, this.direction);
+
+            return Vector3.RotationFromAxis(xaxis, yaxis, this.direction);
+
+        }
     }
 }
