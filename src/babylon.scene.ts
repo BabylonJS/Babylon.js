@@ -157,8 +157,8 @@
         public hoverCursor = "pointer";
 
         // Metadata
-        public metadata:any = null;
-        
+        public metadata: any = null;
+
         // Events
 
         /**
@@ -822,7 +822,7 @@
                     this.setPointerOverMesh(pickResult.pickedMesh);
 
                     if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                        if(this._pointerOverMesh.actionManager.hoverCursor){
+                        if (this._pointerOverMesh.actionManager.hoverCursor) {
                             canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
                         } else {
                             canvas.style.cursor = this.hoverCursor;
@@ -906,7 +906,7 @@
                                     pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                     break;
                             }
-							if(pickResult.pickedMesh.actionManager){
+                            if (pickResult.pickedMesh.actionManager) {
                                 pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             }
                         }
@@ -960,7 +960,7 @@
                                     pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
                                     break;
                             }
-							if(pickResult.pickedSprite.actionManager){
+                            if (pickResult.pickedSprite.actionManager) {
                                 pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
                             }
                         }
@@ -1007,7 +1007,7 @@
                     }
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                        if(pickResult.pickedMesh.actionManager){
+                        if (pickResult.pickedMesh.actionManager) {
                             if (Math.abs(this._startingPointerPosition.x - this._pointerX) < ActionManager.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < ActionManager.DragMovementThreshold) {
                                 pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             }
@@ -1037,7 +1037,7 @@
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
                             pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
-                            if(pickResult.pickedSprite.actionManager){
+                            if (pickResult.pickedSprite.actionManager) {
                                 if (Math.abs(this._startingPointerPosition.x - this._pointerX) < ActionManager.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < ActionManager.DragMovementThreshold) {
                                     pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
                                 }
