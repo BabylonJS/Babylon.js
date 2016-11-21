@@ -567,7 +567,7 @@
 
     var xhr = new XMLHttpRequest();
 
-    xhr.open('GET', "http://www.babylonjs-playground.com/babylon.d.txt", true);
+    xhr.open('GET', "babylon.d.txt", true);
 
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
