@@ -17,7 +17,9 @@
         public state = "";
 
         @serialize()
-        public metadata:any = null;
+        public metadata: any = null;
+
+        public doNotSerialize = false;
 
         public animations = new Array<Animation>();
         private _ranges: { [name: string]: AnimationRange; } = {};
