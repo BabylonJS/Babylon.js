@@ -305,6 +305,19 @@ var BABYLON;
             rotMatInv.multiplyToRef(rotMat, rotMat);
             this._rotateWithMatrix(rotMat, space, mesh);
         };
+        Bone.prototype.setRotation = function (rotation, space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            this.setYawPitchRoll(rotation.y, rotation.x, rotation.z, space, mesh);
+        };
+        Bone.prototype.setRotationQuaternion = function (quat, space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            var rotMatInv = BABYLON.Tmp.Matrix[0];
+            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+            var rotMat = BABYLON.Tmp.Matrix[1];
+            BABYLON.Matrix.FromQuaternionToRef(quat, rotMat);
+            rotMatInv.multiplyToRef(rotMat, rotMat);
+            this._rotateWithMatrix(rotMat, space, mesh);
+        };
         Bone.prototype.setRotationMatrix = function (rotMat, space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
             var rotMatInv = BABYLON.Tmp.Matrix[0];
@@ -471,11 +484,23 @@ var BABYLON;
         };
         Bone.prototype.getRotation = function (space, mesh) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
-            var result = BABYLON.Quaternion.Identity();
+            var result = BABYLON.Vector3.Zero();
             this.getRotationToRef(space, mesh, result);
             return result;
         };
         Bone.prototype.getRotationToRef = function (space, mesh, result) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            var quat = BABYLON.Tmp.Quaternion[0];
+            this.getRotationQuaternionToRef(space, mesh, quat);
+            quat.toEulerAnglesToRef(result);
+        };
+        Bone.prototype.getRotationQuaternion = function (space, mesh) {
+            if (space === void 0) { space = BABYLON.Space.LOCAL; }
+            var result = BABYLON.Quaternion.Identity();
+            this.getRotationQuaternionToRef(space, mesh, result);
+            return result;
+        };
+        Bone.prototype.getRotationQuaternionToRef = function (space, mesh, result) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
             if (space == BABYLON.Space.LOCAL) {
                 this.getLocalMatrix().decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
@@ -484,13 +509,15 @@ var BABYLON;
                 var mat = BABYLON.Tmp.Matrix[0];
                 var amat = this.getAbsoluteTransform();
                 if (mesh) {
-                    var wmat = mesh.getWorldMatrix();
-                    amat.multiplyToRef(wmat, mat);
-                    mat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
+                    amat.multiplyToRef(mesh.getWorldMatrix(), mat);
                 }
                 else {
-                    amat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
+                    mat.copyFrom(amat);
                 }
+                mat.m[0] *= this._scalingDeterminant;
+                mat.m[1] *= this._scalingDeterminant;
+                mat.m[2] *= this._scalingDeterminant;
+                mat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
             }
         };
         return Bone;

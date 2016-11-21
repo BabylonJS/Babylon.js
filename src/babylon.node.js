@@ -25,6 +25,11 @@ var BABYLON;
             this._isReady = true;
             this._currentRenderId = -1;
             this._parentRenderId = -1;
+            /**
+            * An event triggered when the mesh is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
             this.name = name;
             this.id = name;
             this._scene = scene;
@@ -51,6 +56,16 @@ var BABYLON;
                     }
                     this._parentNode._children.push(this);
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Node.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -272,6 +287,9 @@ var BABYLON;
         };
         Node.prototype.dispose = function () {
             this.parent = null;
+            // Callback
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         };
         Node.prototype.getDirection = function (localAxis) {
             var result = BABYLON.Vector3.Zero();

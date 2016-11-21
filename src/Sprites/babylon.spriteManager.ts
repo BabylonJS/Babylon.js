@@ -59,6 +59,7 @@
                return;   
             }
 
+            this._epsilon = epsilon;
             this._scene = scene;
             this._scene.spriteManagers.push(this);
 

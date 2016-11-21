@@ -13,11 +13,6 @@ var BABYLON;
             _super.call(this, name, scene);
             // Events
             /**
-            * An event triggered when the mesh is disposed.
-            * @type {BABYLON.Observable}
-            */
-            this.onDisposeObservable = new BABYLON.Observable();
-            /**
             * An event triggered when this mesh collides with another one
             * @type {BABYLON.Observable}
             */
@@ -137,16 +132,6 @@ var BABYLON;
         Object.defineProperty(AbstractMesh, "BILLBOARDMODE_ALL", {
             get: function () {
                 return AbstractMesh._BILLBOARDMODE_ALL;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AbstractMesh.prototype, "onDispose", {
-            set: function (callback) {
-                if (this._onDisposeObserver) {
-                    this.onDisposeObservable.remove(this._onDisposeObserver);
-                }
-                this._onDisposeObserver = this.onDisposeObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -1039,14 +1024,11 @@ var BABYLON;
                     child.computeWorldMatrix(true);
                 }
             }
-            _super.prototype.dispose.call(this);
             this.onAfterWorldMatrixUpdateObservable.clear();
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
             this._isDisposed = true;
-            // Callback
-            this.onDisposeObservable.notifyObservers(this);
-            this.onDisposeObservable.clear();
+            _super.prototype.dispose.call(this);
         };
         // Statics
         AbstractMesh._BILLBOARDMODE_NONE = 0;

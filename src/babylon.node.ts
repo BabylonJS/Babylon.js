@@ -65,6 +65,20 @@
         }
 
         /**
+        * An event triggered when the mesh is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Node>();
+
+        private _onDisposeObserver: Observer<Node>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        /**
          * @constructor
          * @param {string} name - the name and id to be given to this node
          * @param {BABYLON.Scene} the scene this node will be added to
@@ -341,6 +355,10 @@
 
         public dispose(): void {
             this.parent = null;
+
+            // Callback
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
 
         public getDirection(localAxis:BABYLON.Vector3): BABYLON.Vector3 {

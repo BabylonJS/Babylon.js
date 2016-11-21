@@ -80,6 +80,12 @@ var BABYLON;
         SpotLight.prototype.getTypeID = function () {
             return 2;
         };
+        SpotLight.prototype.getRotation = function () {
+            this.direction.normalize();
+            var xaxis = BABYLON.Vector3.Cross(this.direction, BABYLON.Axis.Y);
+            var yaxis = BABYLON.Vector3.Cross(xaxis, this.direction);
+            return BABYLON.Vector3.RotationFromAxis(xaxis, yaxis, this.direction);
+        };
         __decorate([
             BABYLON.serializeAsVector3()
         ], SpotLight.prototype, "position", void 0);

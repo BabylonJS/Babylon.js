@@ -462,6 +462,10 @@ var BABYLON;
             if (to < this._keys[0].frame || to > this._keys[this._keys.length - 1].frame) {
                 to = this._keys[this._keys.length - 1].frame;
             }
+            //to and from cannot be the same key
+            if (from === to) {
+                from++;
+            }
             // Compute ratio
             var range = to - from;
             var offsetValue;
