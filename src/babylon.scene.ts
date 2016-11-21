@@ -2872,6 +2872,33 @@
             return pickingInfo || new PickingInfo();
         }
 
+        private _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean): PickingInfo[] {
+            var pickingInfos = new Array<PickingInfo>();
+
+            for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+                var mesh = this.meshes[meshIndex];
+
+                if (predicate) {
+                    if (!predicate(mesh)) {
+                        continue;
+                    }
+                } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
+                    continue;
+                }
+
+                var world = mesh.getWorldMatrix();
+                var ray = rayFunction(world);
+
+                var result = mesh.intersects(ray, false);
+                if (!result || !result.hit)
+                    continue;
+
+                pickingInfos.push(result);
+            }
+
+            return pickingInfos;
+        }
+
 
         private _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
             var pickingInfo = null;
@@ -2904,27 +2931,27 @@
             return pickingInfo || new PickingInfo();
         }
 
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
-            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-            /// <param name="x">X position on screen</param>
-            /// <param name="y">Y position on screen</param>
-            /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
-            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPick(world => this.createPickingRay(x, y, world, camera), predicate, fastCheck);
         }
 
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
+        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
         public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
-            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-            /// <param name="x">X position on screen</param>
-            /// <param name="y">Y position on screen</param>
-            /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
-            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
         }
 
-        public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean) {
+        public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean): PickingInfo {
             return this._internalPick(world => {
                 if (!this._pickWithRayInverseMatrix) {
                     this._pickWithRayInverseMatrix = Matrix.Identity();
@@ -2932,6 +2959,28 @@
                 world.invertToRef(this._pickWithRayInverseMatrix);
                 return Ray.Transform(ray, this._pickWithRayInverseMatrix);
             }, predicate, fastCheck);
+        }
+
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): PickingInfo[] {
+            return this._internalMultiPick(world => this.createPickingRay(x, y, world, camera), predicate);
+        }
+
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="ray">Ray to use</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        public multiPickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean): PickingInfo[] {
+            return this._internalMultiPick(world => {
+                if (!this._pickWithRayInverseMatrix) {
+                    this._pickWithRayInverseMatrix = Matrix.Identity();
+                }
+                world.invertToRef(this._pickWithRayInverseMatrix);
+                return Ray.Transform(ray, this._pickWithRayInverseMatrix);
+            }, predicate);
         }
 
         public setPointerOverMesh(mesh: AbstractMesh): void {

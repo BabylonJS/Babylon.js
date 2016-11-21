@@ -2401,6 +2401,27 @@ var BABYLON;
             }
             return pickingInfo || new BABYLON.PickingInfo();
         };
+        Scene.prototype._internalMultiPick = function (rayFunction, predicate) {
+            var pickingInfos = new Array();
+            for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+                var mesh = this.meshes[meshIndex];
+                if (predicate) {
+                    if (!predicate(mesh)) {
+                        continue;
+                    }
+                }
+                else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
+                    continue;
+                }
+                var world = mesh.getWorldMatrix();
+                var ray = rayFunction(world);
+                var result = mesh.intersects(ray, false);
+                if (!result || !result.hit)
+                    continue;
+                pickingInfos.push(result);
+            }
+            return pickingInfos;
+        };
         Scene.prototype._internalPickSprites = function (ray, predicate, fastCheck, camera) {
             var pickingInfo = null;
             camera = camera || this.activeCamera;
@@ -2423,23 +2444,23 @@ var BABYLON;
             }
             return pickingInfo || new BABYLON.PickingInfo();
         };
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
         Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
             var _this = this;
-            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-            /// <param name="x">X position on screen</param>
-            /// <param name="y">Y position on screen</param>
-            /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
-            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate, fastCheck);
         };
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
+        /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
         Scene.prototype.pickSprite = function (x, y, predicate, fastCheck, camera) {
-            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
-            /// <param name="x">X position on screen</param>
-            /// <param name="y">Y position on screen</param>
-            /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
-            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
-            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
         };
         Scene.prototype.pickWithRay = function (ray, predicate, fastCheck) {
@@ -2451,6 +2472,28 @@ var BABYLON;
                 world.invertToRef(_this._pickWithRayInverseMatrix);
                 return BABYLON.Ray.Transform(ray, _this._pickWithRayInverseMatrix);
             }, predicate, fastCheck);
+        };
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="x">X position on screen</param>
+        /// <param name="y">Y position on screen</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+        Scene.prototype.multiPick = function (x, y, predicate, camera) {
+            var _this = this;
+            return this._internalMultiPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate);
+        };
+        /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+        /// <param name="ray">Ray to use</param>
+        /// <param name="predicate">Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true</param>
+        Scene.prototype.multiPickWithRay = function (ray, predicate) {
+            var _this = this;
+            return this._internalMultiPick(function (world) {
+                if (!_this._pickWithRayInverseMatrix) {
+                    _this._pickWithRayInverseMatrix = BABYLON.Matrix.Identity();
+                }
+                world.invertToRef(_this._pickWithRayInverseMatrix);
+                return BABYLON.Ray.Transform(ray, _this._pickWithRayInverseMatrix);
+            }, predicate);
         };
         Scene.prototype.setPointerOverMesh = function (mesh) {
             if (this._pointerOverMesh === mesh) {
