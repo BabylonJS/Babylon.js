@@ -9041,6 +9041,7 @@ var BABYLON;
         function Node(name, scene) {
             this.state = "";
             this.metadata = null;
+            this.doNotSerialize = false;
             this.animations = new Array();
             this._ranges = {};
             this._childrenFlag = -1;
@@ -42383,13 +42384,17 @@ var BABYLON;
             var light;
             for (index = 0; index < scene.lights.length; index++) {
                 light = scene.lights[index];
-                serializationObject.lights.push(light.serialize());
+                if (!light.doNotSerialize) {
+                    serializationObject.lights.push(light.serialize());
+                }
             }
             // Cameras
             serializationObject.cameras = [];
             for (index = 0; index < scene.cameras.length; index++) {
                 var camera = scene.cameras[index];
-                serializationObject.cameras.push(camera.serialize());
+                if (!camera.doNotSerialize) {
+                    serializationObject.cameras.push(camera.serialize());
+                }
             }
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
@@ -42439,8 +42444,10 @@ var BABYLON;
                 var abstractMesh = scene.meshes[index];
                 if (abstractMesh instanceof BABYLON.Mesh) {
                     var mesh = abstractMesh;
-                    if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
-                        serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                    if (!mesh.doNotSerialize) {
+                        if (mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_NONE) {
+                            serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                        }
                     }
                 }
             }

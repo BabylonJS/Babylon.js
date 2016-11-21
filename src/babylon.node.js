@@ -18,6 +18,7 @@ var BABYLON;
         function Node(name, scene) {
             this.state = "";
             this.metadata = null;
+            this.doNotSerialize = false;
             this.animations = new Array();
             this._ranges = {};
             this._childrenFlag = -1;
