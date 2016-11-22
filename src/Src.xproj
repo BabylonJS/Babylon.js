@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+
+  <Import Project="$(VSToolsPath)\DotNet\\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
+  
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>10ef6cf3-145d-41dd-8077-bb52a31894f7</ProjectGuid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Disable common capabilities that come from Microsoft.Common.Targets. Must be done prior to the Import -->
+    <DefineCommonCapabilities>false</DefineCommonCapabilities>
+
+    <!-- The project file should have paths set for these, but if not we default to the standard paths under the project -->
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
+    <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
+
+    <!-- DNX only produces assemblies -->
+    <OutputType>Library</OutputType>
+
+    <!-- The output assembly is the name of the directory the project is in -->
+    <AssemblyName>$([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)'))</AssemblyName>
+
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.Targets" />
+
+  <PropertyGroup>
+    <!-- This property returns "the" project output for this project, as is seen in traditional MSBuild projects like csproj or vbproj.
+         Since DotNet projects have multiple target outputs, there is nothing meaningful we can return. Microsoft.Common.Targets defaults
+         this property to a meaningless value, which gets picked up by ResolveProjectReferences if you have a csproj/vbproj -> xproj reference.
+         We don't want that to happen, so this ensures ResolveProjectReferences will no-op in such a scenario. -->
+    <TargetPath></TargetPath>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectCapability Include="AllTargetOutputGroups" />
+    <ProjectCapability Include="VisualStudioWellKnownOutputGroups" />
+    <ProjectCapability Include="OutputGroups" />
+    <ProjectCapability Include="ProjectJsonConfigurations" />
+    <ProjectCapability Include="TypeScript"/>
+    <ProjectCapability Include="FileSystemBasedDotnetProject" />
+  </ItemGroup>
+
+<ItemGroup>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\general.xaml;" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\general.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\general.xaml;" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\general.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\ProjectItemsSchema.xaml;" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\ProjectItemsSchema.xaml')"/>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\ProjectItemsSchema.xaml;" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\ProjectItemsSchema.xaml')"/>
+
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\debugger_general.xaml;" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\debugger_general.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\debugger_general.xaml;" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\debugger_general.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\ProjectDebugger.xaml" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\ProjectDebugger.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\ProjectDebugger.xaml" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\ProjectDebugger.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\general_file.xaml" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\general_file.xaml')">
+      <Context>File</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\general_file.xaml" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\general_file.xaml')">
+      <Context>File</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\scc.xaml" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\scc.xaml')">
+      <Context>Invisible</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\scc.xaml" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\scc.xaml')">
+      <Context>Invisible</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\csharp.xaml;" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\csharp.xaml')">
+      <Context>File</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\csharp.xaml;" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\csharp.xaml')">
+      <Context>File</Context>
+    </PropertyPageSchema>
+
+    <!--
+       Note: Keep in mind that different Contexts associated with a xaml rule file, have different expectations
+          in terms of how many files can be specified:
+            - For BrowseObject context a unique file should be specified for each data source type:
+                * <DataSource Persistence="ProjectFile" Label="Configuration" HasConfigurationCondition="false" />
+                  is a project level datasource associated with the project itself
+                * <DataSource Persistence="ProjectFile" HasConfigurationCondition="False" ItemType="Content" />
+                  is a project level data source associated only with Content item types
+
+                so if you specify another xaml rule that duplicate ItemType or has no item type specified (i.e.
+                rule for project itself) there will be runtime error and no browse object properties at all.
+
+            - For Project context as many xaml rules can be defined as needed.
+
+      BrowseObject properties are used in properties pane (F4) and via DTE.Project.Properties.Item("prop name").
+
+      If in other project system based on DotNet you would need to override some xaml rules
+      that should have Context=BrowseObject, make sure you move it out of this file to Microsoft.DotNet.Targets.
+      Browse files should be unique per Persistence + ItemType in DataSource, thus to override, each project system
+      targets should define their own BrowseObject files.
+
+      Keep in mind, all overriden xaml files should be kept in sync with core dotnet xaml files to enable properties
+      that were added to core xaml rules, otherwise some core functionality might be broken.
+
+      !!!Note!!! Never call directly members of generated cs file for BrowseObject xaml files, since if they are overriden
+      in other project system, there will be type mismatch. Overriden files should have their own names for xaml Rule,
+      which would end up into different generated class.
+    -->
+    <PropertyPageSchema Include="
+                        $(VSToolsPath)\DotNet\$(LangName)\Content.xaml;
+                        $(VSToolsPath)\DotNet\$(LangName)\folder.xaml;
+                        $(VSToolsPath)\DotNet\$(LangName)\none.xaml;
+                        $(VSToolsPath)\DotNet\$(LangName)\EmbeddedResource.xaml;
+                        $(VSToolsPath)\DotNet\$(LangName)\typescript.xaml;" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\Content.xaml')">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="
+                        $(VSToolsPath)\DotNet\en-us\Content.xaml;
+                        $(VSToolsPath)\DotNet\en-us\folder.xaml;
+                        $(VSToolsPath)\DotNet\en-us\none.xaml;
+                        $(VSToolsPath)\DotNet\en-us\EmbeddedResource.xaml;
+                        $(VSToolsPath)\DotNet\en-us\typescript.xaml;" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\Content.xaml')">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\ResolvedDesignTimeHostReferences.xaml;" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\ResolvedDesignTimeHostReferences.xaml')">
+      <Context>ProjectSubscriptionService;BrowseObject</Context>
+    </PropertyPageSchema>
+   <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\ResolvedDesignTimeHostReferences.xaml;" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\ResolvedDesignTimeHostReferences.xaml')">
+      <Context>ProjectSubscriptionService;BrowseObject</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\$(LangName)\csharp.browseobject.xaml;" Condition="Exists('$(VSToolsPath)\DotNet\$(LangName)\csharp.browseobject.xaml')">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(VSToolsPath)\DotNet\en-us\csharp.browseobject.xaml;" Condition="!Exists('$(VSToolsPath)\DotNet\$(LangName)\csharp.browseobject.xaml')">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+  <!-- Dynamic items support. This file will never exist on disk -->
+  <Import Project="$(MSBuildProjectDirectory)\_internalAspNetSourceItems.Targets" Condition="'$(_InternalTargetsFileReady)' == 'true' and Exists('$(MSBuildProjectDirectory)\_internalAspNetSourceItems.Targets')"/>
+
+  <!-- Typescript support 
+        Note that the typcscript targets have a dependency on the $(_WebPublishTargetsPath) property and this property should not be changed.
+   -->
+  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')"/>
+
+  <!-- Capabilities for web project. Conditions should be based on platform|configuration only. -->
+  <ItemGroup>
+    <ProjectCapability Include="DotNetCoreWeb" />
+  </ItemGroup>
+
+  <Target Name="Build" />
+  <Target Name="Clean" />
+  <Target Name="Compile" />
+
+</Project>
