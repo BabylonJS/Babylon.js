@@ -120,6 +120,8 @@
         public onError: (effect: Effect, errors: string) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
 
+        public doNotSerialize = false;
+
         /**
         * An event triggered when the material is disposed.
         * @type {BABYLON.Observable}
