@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -43,11 +38,12 @@ namespace TestTestTest
             contentTypeProvider.Mappings[".fx"] = "text/plain";
             contentTypeProvider.Mappings[".map"] = "text/plain";
 
-            var options = new StaticFileOptions();
-            options.RequestPath = ""; 
-            options.FileProvider = provider;
-            options.ContentTypeProvider = contentTypeProvider;
-
+            var options = new StaticFileOptions()
+            {
+                RequestPath = "",
+                FileProvider = provider,
+                ContentTypeProvider = contentTypeProvider
+            };
             app.UseStaticFiles(options);
         }
     }
