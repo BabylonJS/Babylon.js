@@ -160,7 +160,7 @@
                 }
 
                 var canvas = document.getElementById("renderCanvas");
-                engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true});
+                engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
                 document.getElementById("errorZone").innerHTML = "";
                 document.getElementById("statusBar").innerHTML = "Loading assets...Please wait";
 
