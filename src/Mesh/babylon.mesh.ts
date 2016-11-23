@@ -141,7 +141,10 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent"], ["_poseMatrix"]);
+
+                // Parent
+                this.parent = source.parent;
 
                 // Pivot                
                 this.setPivotMatrix(source.getPivotMatrix());

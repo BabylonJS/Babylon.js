@@ -1554,24 +1554,33 @@ var BABYLON;
         };
         Quaternion.prototype.toEulerAnglesToRef = function (result, order) {
             if (order === void 0) { order = "YZX"; }
+            var qz = this.z;
             var qx = this.x;
             var qy = this.y;
-            var qz = this.z;
             var qw = this.w;
-            var xsqr = qx * qx;
-            var t0 = -2.0 * (xsqr + qy * qy) + 1.0;
-            var t1 = 2.0 * (qz * qx + qw * qy);
-            var t2 = -2.0 * (qz * qy - qw * qx);
-            var t3 = 2.0 * (qx * qy + qw * qz);
-            var t4 = -2.0 * (qz * qz + xsqr) + 1.0;
-            t2 = t2 > 1.0 ? 1.0 : t2;
-            t2 = t2 < -1.0 ? -1.0 : t2;
-            result.x = Math.asin(t2);
-            result.z = Math.atan2(t3, t4);
-            result.y = Math.atan2(t1, t0);
+            var sqw = qw * qw;
+            var sqz = qz * qz;
+            var sqx = qx * qx;
+            var sqy = qy * qy;
+            var zAxisY = qy * qz - qx * qw;
+            var limit = .4999999;
+            if (zAxisY < -limit) {
+                result.y = 2 * Math.atan2(qy, qw);
+                result.x = Math.PI / 2;
+                result.z = 0;
+            }
+            else if (zAxisY > limit) {
+                result.y = 2 * Math.atan2(qy, qw);
+                result.x = -Math.PI / 2;
+                result.z = 0;
+            }
+            else {
+                result.z = Math.atan2(2.0 * (qx * qy + qz * qw), (-sqz - sqx + sqy + sqw));
+                result.x = Math.asin(-2.0 * (qz * qy - qx * qw));
+                result.y = Math.atan2(2.0 * (qz * qx + qy * qw), (sqz - sqx - sqy + sqw));
+            }
             return this;
         };
-        ;
         Quaternion.prototype.toRotationMatrix = function (result) {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
