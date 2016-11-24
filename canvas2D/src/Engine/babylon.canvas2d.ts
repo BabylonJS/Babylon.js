@@ -871,7 +871,9 @@
             let index = Canvas2D._INSTANCES.indexOf(this);
             if (index > -1) {
                 Canvas2D._INSTANCES.splice(index, 1);
-            }  
+            }
+
+            return true;
         }
 
         /**
@@ -1158,7 +1160,7 @@
                     ` - Update Positioning: ${this.updatePositioningCounter.current}, (avg:${format(this.updatePositioningCounter.lastSecAverage)}, t:${format(this.updatePositioningCounter.total)})\n` + 
                     ` - Update Local  Trans: ${this.updateLocalTransformCounter.current}, (avg:${format(this.updateLocalTransformCounter.lastSecAverage)}, t:${format(this.updateLocalTransformCounter.total)})\n` + 
                     ` - Update Global Trans: ${this.updateGlobalTransformCounter.current}, (avg:${format(this.updateGlobalTransformCounter.lastSecAverage)}, t:${format(this.updateGlobalTransformCounter.total)})\n` + 
-                    ` - BoundingInfo Recompute: ${this.boundingInfoRecomputeCounter.current}, (avg:${format(this.boundingInfoRecomputeCounter.lastSecAverage)}, t:${format(this.boundingInfoRecomputeCounter.total)})\n`;
+                    ` - BoundingInfo Recompute: ${this.boundingInfoRecomputeCounter.current}, (avg:${format(this.boundingInfoRecomputeCounter.lastSecAverage)}, t:${format(this.boundingInfoRecomputeCounter.total)})`;
             this._profileInfoText.text = p;
         }
 
@@ -1768,6 +1770,7 @@
             //}
 
             let createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
+            this._customWorldSpaceNode = !createWorldSpaceNode;
             let id = settings ? settings.id || null : null;
 
             // Set the max size of texture allowed for the adaptive render of the world space canvas cached bitmap
@@ -1811,6 +1814,19 @@
                 }
             }, Prim2DBase.isVisibleProperty.flagId);
         }
+
+        public dispose(): boolean {
+            if (!super.dispose()) {
+                return false;
+            }
+
+            if (!this._customWorldSpaceNode && this._worldSpaceNode) {
+                this._worldSpaceNode.dispose();
+                this._worldSpaceNode = null;
+            }
+        }
+
+        private _customWorldSpaceNode: boolean;
     }
 
     @className("ScreenSpaceCanvas2D", "BABYLON")

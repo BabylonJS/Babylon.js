@@ -1,0 +1,21 @@
+{
+    "version": "0.1.0",
+    "configurations": [
+        {
+            "name": "Launch playground (Edge)",
+            "type": "edge",
+            "request": "launch",
+            "url": "http://localhost/playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true
+        },
+        {
+            "name": "Launch playground (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost/playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true
+        }
+    ]
+}

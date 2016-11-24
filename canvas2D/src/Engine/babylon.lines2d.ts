@@ -572,7 +572,7 @@
 
             // If an index is given we check if the two segments formed between [index+0;detectFlip+0] and [index+2;detectFlip+2] intersect themselves.
             // It should not be the case, they should be parallel, so if they cross, we switch the order of storage to ensure we'll have parallel lines
-            if (detectFlip !== undefined) {
+            if (detectFlip != 0) {
                 // Flip if intersect
                 let flipOff = detectFlip * (borderMode ? 8 : 4);
                 if (this._intersect(array[off + 0], array[off + 1], array[flipOff + 0], array[flipOff + 1], array[off + 2], array[off + 3], array[flipOff + 2], array[flipOff + 3])) {

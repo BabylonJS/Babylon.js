@@ -1,5 +1,4 @@
-﻿/// <reference path="../../../src/canvas2d/babylon.smartpropertyprim.ts" />
-/// <reference path="testclasses.ts" />
+﻿/// <reference path="testclasses.ts" />
 
 
 describe("GUI - Data Binding", () => {
