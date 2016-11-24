@@ -133,7 +133,7 @@
         }
 
         // Statics
-        public static Intersects(box0: BoundingBox, box1: BoundingBox): boolean {
+        public static Intersects(box0: BoundingBox, box1: BoundingBox, isStrict = false): boolean {
             if (box0.maximumWorld.x < box1.minimumWorld.x || box0.minimumWorld.x > box1.maximumWorld.x)
                 return false;
 
@@ -142,6 +142,17 @@
 
             if (box0.maximumWorld.z < box1.minimumWorld.z || box0.minimumWorld.z > box1.maximumWorld.z)
                 return false;
+
+            if (isStrict) {
+                if (box0.maximumWorld.x === box1.minimumWorld.x || box0.minimumWorld.x === box1.maximumWorld.x)
+                    return false;
+
+                if (box0.maximumWorld.y === box1.minimumWorld.y || box0.minimumWorld.y === box1.maximumWorld.y)
+                    return false;
+
+                if (box0.maximumWorld.z === box1.minimumWorld.z || box0.minimumWorld.z === box1.maximumWorld.z)
+                    return false;
+            }
 
             return true;
         }

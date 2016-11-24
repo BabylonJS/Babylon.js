@@ -13,13 +13,20 @@
         };
     }
 
-    var extentsOverlap = (min0: number, max0: number, min1: number, max1: number): boolean => !(min0 > max1 || min1 > max0);
+    var extentsOverlap = (min0: number, max0: number, min1: number, max1: number, isStrict:boolean): boolean => {
+        if (isStrict)
+            return min0 < max1 && min1 < max0;
+        else
+            return min0 <= max1 && min1 <= max0;
+    }
 
-    var axisOverlap = (axis: Vector3, box0: BoundingBox, box1: BoundingBox): boolean => {
+    var axisOverlap = (axis: Vector3, box0: BoundingBox, box1: BoundingBox, isStrict:boolean): boolean => {
+        if (axis.length() === 0)
+            return true;
         var result0 = computeBoxExtents(axis, box0);
         var result1 = computeBoxExtents(axis, box1);
 
-        return extentsOverlap(result0.min, result0.max, result1.min, result1.max);
+        return extentsOverlap(result0.min, result0.max, result1.min, result1.max, isStrict);
     }
 
     export interface ICullable {
@@ -86,16 +93,16 @@
             return true;
         }
 
-        public intersects(boundingInfo: BoundingInfo, precise: boolean): boolean {
+        public intersects(boundingInfo: BoundingInfo, precise: boolean, isStrict = false): boolean {
             if (!this.boundingSphere.centerWorld || !boundingInfo.boundingSphere.centerWorld) {
                 return false;
             }
 
-            if (!BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere)) {
+            if (!BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere, isStrict)) {
                 return false;
             }
 
-            if (!BoundingBox.Intersects(this.boundingBox, boundingInfo.boundingBox)) {
+            if (!BoundingBox.Intersects(this.boundingBox, boundingInfo.boundingBox, isStrict)) {
                 return false;
             }
 
@@ -106,21 +113,21 @@
             var box0 = this.boundingBox;
             var box1 = boundingInfo.boundingBox;
 
-            if (!axisOverlap(box0.directions[0], box0, box1)) return false;
-            if (!axisOverlap(box0.directions[1], box0, box1)) return false;
-            if (!axisOverlap(box0.directions[2], box0, box1)) return false;
-            if (!axisOverlap(box1.directions[0], box0, box1)) return false;
-            if (!axisOverlap(box1.directions[1], box0, box1)) return false;
-            if (!axisOverlap(box1.directions[2], box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1)) return false;
-            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1)) return false;
+            if (!axisOverlap(box0.directions[0], box0, box1, isStrict)) return false;
+            if (!axisOverlap(box0.directions[1], box0, box1, isStrict)) return false;
+            if (!axisOverlap(box0.directions[2], box0, box1, isStrict)) return false;
+            if (!axisOverlap(box1.directions[0], box0, box1, isStrict)) return false;
+            if (!axisOverlap(box1.directions[1], box0, box1, isStrict)) return false;
+            if (!axisOverlap(box1.directions[2], box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1, isStrict)) return false;
+            if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1, isStrict)) return false;
 
             return true;
         }

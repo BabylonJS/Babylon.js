@@ -47,14 +47,17 @@
         }
 
         // Statics
-        public static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean {
+        public static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere, isStrict = false): boolean {
             var x = sphere0.centerWorld.x - sphere1.centerWorld.x;
             var y = sphere0.centerWorld.y - sphere1.centerWorld.y;
             var z = sphere0.centerWorld.z - sphere1.centerWorld.z;
 
             var distance = Math.sqrt((x * x) + (y * y) + (z * z));
 
-            if (sphere0.radiusWorld + sphere1.radiusWorld < distance)
+            var gap = distance - (sphere0.radiusWorld + sphere1.radiusWorld);
+            if (gap > 0)
+                return false;
+            if (isStrict && gap === 0)
                 return false;
 
             return true;

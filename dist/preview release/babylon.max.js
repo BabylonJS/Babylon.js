@@ -19516,7 +19516,9 @@ var BABYLON;
                     source._geometry.applyToMesh(this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent"], ["_poseMatrix"]);
+                // Parent
+                this.parent = source.parent;
                 // Pivot                
                 this.setPivotMatrix(source.getPivotMatrix());
                 this.id = name + "." + source.id;
