@@ -9613,16 +9613,12 @@ var BABYLON;
             return true;
         };
         // Statics
-        BoundingSphere.Intersects = function (sphere0, sphere1, isStrict) {
-            if (isStrict === void 0) { isStrict = false; }
+        BoundingSphere.Intersects = function (sphere0, sphere1) {
             var x = sphere0.centerWorld.x - sphere1.centerWorld.x;
             var y = sphere0.centerWorld.y - sphere1.centerWorld.y;
             var z = sphere0.centerWorld.z - sphere1.centerWorld.z;
             var distance = Math.sqrt((x * x) + (y * y) + (z * z));
-            var gap = distance - (sphere0.radiusWorld + sphere1.radiusWorld);
-            if (gap > 0)
-                return false;
-            if (isStrict && gap === 0)
+            if (sphere0.radiusWorld + sphere1.radiusWorld < distance)
                 return false;
             return true;
         };
@@ -9730,22 +9726,13 @@ var BABYLON;
             return true;
         };
         // Statics
-        BoundingBox.Intersects = function (box0, box1, isStrict) {
-            if (isStrict === void 0) { isStrict = false; }
+        BoundingBox.Intersects = function (box0, box1) {
             if (box0.maximumWorld.x < box1.minimumWorld.x || box0.minimumWorld.x > box1.maximumWorld.x)
                 return false;
             if (box0.maximumWorld.y < box1.minimumWorld.y || box0.minimumWorld.y > box1.maximumWorld.y)
                 return false;
             if (box0.maximumWorld.z < box1.minimumWorld.z || box0.minimumWorld.z > box1.maximumWorld.z)
                 return false;
-            if (isStrict) {
-                if (box0.maximumWorld.x === box1.minimumWorld.x || box0.minimumWorld.x === box1.maximumWorld.x)
-                    return false;
-                if (box0.maximumWorld.y === box1.minimumWorld.y || box0.minimumWorld.y === box1.maximumWorld.y)
-                    return false;
-                if (box0.maximumWorld.z === box1.minimumWorld.z || box0.minimumWorld.z === box1.maximumWorld.z)
-                    return false;
-            }
             return true;
         };
         BoundingBox.IntersectsSphere = function (minPoint, maxPoint, sphereCenter, sphereRadius) {
@@ -9797,18 +9784,11 @@ var BABYLON;
             max: p + r
         };
     };
-    var extentsOverlap = function (min0, max0, min1, max1, isStrict) {
-        if (isStrict)
-            return min0 < max1 && min1 < max0;
-        else
-            return min0 <= max1 && min1 <= max0;
-    };
-    var axisOverlap = function (axis, box0, box1, isStrict) {
-        if (axis.length() === 0)
-            return true;
+    var extentsOverlap = function (min0, max0, min1, max1) { return !(min0 > max1 || min1 > max0); };
+    var axisOverlap = function (axis, box0, box1) {
         var result0 = computeBoxExtents(axis, box0);
         var result1 = computeBoxExtents(axis, box1);
-        return extentsOverlap(result0.min, result0.max, result1.min, result1.max, isStrict);
+        return extentsOverlap(result0.min, result0.max, result1.min, result1.max);
     };
     var BoundingInfo = (function () {
         function BoundingInfo(minimum, maximum) {
@@ -9859,15 +9839,14 @@ var BABYLON;
             }
             return true;
         };
-        BoundingInfo.prototype.intersects = function (boundingInfo, precise, isStrict) {
-            if (isStrict === void 0) { isStrict = false; }
+        BoundingInfo.prototype.intersects = function (boundingInfo, precise) {
             if (!this.boundingSphere.centerWorld || !boundingInfo.boundingSphere.centerWorld) {
                 return false;
             }
-            if (!BABYLON.BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere, isStrict)) {
+            if (!BABYLON.BoundingSphere.Intersects(this.boundingSphere, boundingInfo.boundingSphere)) {
                 return false;
             }
-            if (!BABYLON.BoundingBox.Intersects(this.boundingBox, boundingInfo.boundingBox, isStrict)) {
+            if (!BABYLON.BoundingBox.Intersects(this.boundingBox, boundingInfo.boundingBox)) {
                 return false;
             }
             if (!precise) {
@@ -9875,35 +9854,35 @@ var BABYLON;
             }
             var box0 = this.boundingBox;
             var box1 = boundingInfo.boundingBox;
-            if (!axisOverlap(box0.directions[0], box0, box1, isStrict))
+            if (!axisOverlap(box0.directions[0], box0, box1))
                 return false;
-            if (!axisOverlap(box0.directions[1], box0, box1, isStrict))
+            if (!axisOverlap(box0.directions[1], box0, box1))
                 return false;
-            if (!axisOverlap(box0.directions[2], box0, box1, isStrict))
+            if (!axisOverlap(box0.directions[2], box0, box1))
                 return false;
-            if (!axisOverlap(box1.directions[0], box0, box1, isStrict))
+            if (!axisOverlap(box1.directions[0], box0, box1))
                 return false;
-            if (!axisOverlap(box1.directions[1], box0, box1, isStrict))
+            if (!axisOverlap(box1.directions[1], box0, box1))
                 return false;
-            if (!axisOverlap(box1.directions[2], box0, box1, isStrict))
+            if (!axisOverlap(box1.directions[2], box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1))
                 return false;
-            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1, isStrict))
+            if (!axisOverlap(BABYLON.Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1))
                 return false;
             return true;
         };
@@ -10879,12 +10858,11 @@ var BABYLON;
             return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
             ;
         };
-        AbstractMesh.prototype.intersectsMesh = function (mesh, precise, isStrict) {
-            if (isStrict === void 0) { isStrict = false; }
+        AbstractMesh.prototype.intersectsMesh = function (mesh, precise) {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
-            return this._boundingInfo.intersects(mesh._boundingInfo, precise, isStrict);
+            return this._boundingInfo.intersects(mesh._boundingInfo, precise);
         };
         AbstractMesh.prototype.intersectsPoint = function (point) {
             if (!this._boundingInfo) {
