@@ -780,12 +780,12 @@
             return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
         }
 
-        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise?: boolean): boolean {
+        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise?: boolean, isStrict = false): boolean {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
 
-            return this._boundingInfo.intersects(mesh._boundingInfo, precise);
+            return this._boundingInfo.intersects(mesh._boundingInfo, precise, isStrict);
         }
 
         public intersectsPoint(point: Vector3): boolean {
