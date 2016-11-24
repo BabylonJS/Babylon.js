@@ -25739,6 +25739,7 @@ var BABYLON;
             this.state = "";
             this.alpha = 1.0;
             this.backFaceCulling = true;
+            this.doNotSerialize = false;
             /**
             * An event triggered when the material is disposed.
             * @type {BABYLON.Observable}
@@ -42426,7 +42427,9 @@ var BABYLON;
             var material;
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
-                serializationObject.materials.push(material.serialize());
+                if (!material.doNotSerialize) {
+                    serializationObject.materials.push(material.serialize());
+                }
             }
             // MultiMaterials
             serializationObject.multiMaterials = [];
