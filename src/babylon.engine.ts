@@ -518,6 +518,9 @@
             //}
 
             if (!this._gl) {
+                if (!canvas) {
+                    throw new Error("The provided canvas is null or undefined.");
+                }
                 try {
                     this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
                 } catch (e) {
@@ -1921,8 +1924,10 @@
             texture.samplingMode = samplingMode;
         }
 
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
+        public createTexture(urlOrList: string | Array<string>, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
             var texture = this._gl.createTexture();
+
+            var url = <string>((urlOrList.constructor === Array) ? urlOrList[0] : urlOrList);
 
             var extension: string;
             var fromData: any = false;
@@ -1939,7 +1944,7 @@
                 extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
             }
 
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            var isDDS = (extension === ".dds");
             var isTGA = (extension === ".tga");
 
             scene._addPendingData(texture);
@@ -1976,6 +1981,20 @@
                     callback(buffer);
 
             } else if (isDDS) {
+                if (!this.getCaps().s3tc) {
+                    if (urlOrList instanceof Array) {
+                        var newList = (<Array<string>>urlOrList).slice(1);
+
+                        if (newList.length > 0) {
+                            return this.createTexture(newList, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer);
+                        }
+                    }
+
+                    onerror();
+
+                    return null;
+                }
+
                 callback = (data) => {
                     var info = Internals.DDSTools.GetDDSInfo(data);
 
@@ -3012,6 +3031,18 @@
 
         public attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void {
             this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+        }
+
+        public getVertexShaderSource(program: WebGLProgram): string {
+            var shaders = this._gl.getAttachedShaders(program);
+
+            return this._gl.getShaderSource(shaders[0]);
+        }
+
+        public getFragmentShaderSource(program: WebGLProgram): string {
+            var shaders = this._gl.getAttachedShaders(program);
+
+            return this._gl.getShaderSource(shaders[1]);
         }
 
         // FPS

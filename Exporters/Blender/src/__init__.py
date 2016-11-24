@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (5, 0, 7),
+    'version': (5, 1, 0),
     'blender': (2, 76, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -68,6 +68,7 @@ class JsonMain(bpy.types.Operator, ExportHelper):
     filename_ext = '.babylon'            # used as the extension on file selector
 
     filepath = bpy.props.StringProperty(subtype = 'FILE_PATH') # assigned once the file selector returns
+    filter_glob = bpy.props.StringProperty(name='.babylon',default='*.babylon', options={'HIDDEN'})
     
     def execute(self, context):
         from .json_exporter import JsonExporter

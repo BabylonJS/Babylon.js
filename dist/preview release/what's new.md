@@ -6,8 +6,15 @@
 - Babylon.js now supports right handed system with ```scene.useRightHandedSystem = true``` ([deltakosh](https://github.com/deltakosh))
 - Babylon.js is now compiled with [optimize-js](https://github.com/nolanlawson/optimize-js) to get faster initial load ([deltakosh](https://github.com/deltakosh))
 - Canvas2D moved to a separate folder in main repo. Now you need to also include babylon.cavans2d.js to get Canvas@D feature ([deltakosh](https://github.com/deltakosh))
+- New BoneIKController [Demo](http://www.babylonjs-playground.com/#1EVNNB#6) - ([abow](https://github.com/abow))
+- New BoneLookController [Demo](http://www.babylonjs-playground.com/#1B1PUZ#13) - ([abow](https://github.com/abow))
 
 ### Updates
+- Added `node.doNotSerialize` to prevent specific nodes to be serialized by `SceneSerializer` ([deltakosh](https://github.com/deltakosh))
+- Added `scene.multiPick` and `scene.multiPickWithRay` to return an array of pickedMesh objects ([deltakosh](https://github.com/deltakosh))
+- Added `Effect.GetVertexShaderSource()` and `Effect.GetFragmentShaderSource()` ([deltakosh](https://github.com/deltakosh))
+- New `Texture.LoadFromDataString()` to help loading base64 encoded textures ([deltakosh](https://github.com/deltakosh))
+- You can now specify an array of string when loading a texture (they will be considered as fallbacks) ([deltakosh](https://github.com/deltakosh))
 - Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))
 - Added Bone.setYawPitchRoll ([abow](https://github.com/abow))
 - Added Bone.rotate ([abow](https://github.com/abow))
@@ -44,6 +51,7 @@ Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGall
 ### API doc
 
 ### Bug fixes
+- Fixed issue with instancse and viewports ([deltakosh](https://github.com/deltakosh))
 - Fixed issue with FreeCamera not working in fullscreen or when pointer locked ([abow](https://github.com/abow))
 - MapTexture: Font Characters are now correctly aligned on Chrome ([nockawa](https://github.com/nockawa))
 - Fixed some missing parameter default values in `MeshBuilder.CreateGroundFromHeightMap()` and `MeshBuilder.CreateTiledGround()` ([jerome](https://github.com/jbousquie))

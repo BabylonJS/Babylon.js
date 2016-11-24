@@ -142,6 +142,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonFresnelParameters opacityFresnelParameters { get; set; }
 
+        [DataMember]
+        public bool disableLighting { get; set; }
+
         public BabylonPBRMaterial() : base()
         {
             customType = "BABYLON.PBRMaterial";

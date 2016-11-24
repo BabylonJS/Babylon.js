@@ -158,6 +158,11 @@
         public outerGlow: boolean = true;
 
         /**
+         * Specifies wether the highlight layer is enabled or not.
+         */
+        public isEnabled: boolean = true;
+
+        /**
          * Specifies the horizontal size of the blur.
          */
         public set blurHorizontalSize(value: number) {
@@ -476,7 +481,7 @@
          * @return true if ready otherwise, false
          */
         private isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Texture): boolean {
-            if (!subMesh.getMaterial().isReady()) {
+            if (!subMesh.getMaterial().isReady(subMesh.getMesh(), useInstances)) {
                 return false;
             }
 
@@ -722,7 +727,7 @@
          * Returns true if the layer contains information to display, otherwise false.
          */
         public shouldRender(): boolean {
-            return this._shouldRender;
+            return this.isEnabled && this._shouldRender;
         }
 
         /**

@@ -254,6 +254,11 @@
                     scene.enablePhysics(physicsGravity, physicsPlugin);
                 }
                 
+                // Metadata
+                if (parsedData.metadata !== undefined) {
+                    scene.metadata = parsedData.metadata;
+                }
+                
                 //collisions, if defined. otherwise, default is true
                 if (parsedData.collisionsEnabled != undefined) {
                     scene.collisionsEnabled = parsedData.collisionsEnabled;

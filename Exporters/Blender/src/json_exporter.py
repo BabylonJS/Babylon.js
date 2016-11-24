@@ -32,20 +32,21 @@ class JsonExporter:
 
             # assign texture location, purely temporary if inlining
             self.textureDir = path.dirname(filepath)
-            if not scene.inlineTextures:
+            if scene.textureMethod != INLINE:
                 self.textureDir = path.join(self.textureDir, scene.textureDir)
                 if not path.isdir(self.textureDir):
                     makedirs(self.textureDir)
-                    Logger.warn("Texture sub-directory did not already exist, created: " + self.textureDir)
+                    Logger.warn('Texture sub-directory did not already exist, created: ' + self.textureDir)
 
             Logger.log('========= Conversion from Blender to Babylon.js =========', 0)
             Logger.log('Scene settings used:', 1)
             Logger.log('selected layers only:  ' + format_bool(scene.export_onlySelectedLayer), 2)
             Logger.log('flat shading entire scene:  ' + format_bool(scene.export_flatshadeScene), 2)
-            Logger.log('inline textures:  ' + format_bool(scene.inlineTextures), 2)
-            if not scene.inlineTextures:
+            Logger.log('texture Method:  ' + scene.textureMethod, 2)
+            if scene.textureMethod != INLINE:
                 Logger.log('texture directory:  ' + self.textureDir, 2)
-
+            if scene.textureMethod == PRIORITIZED:
+                Logger.log('Priority Order:  ' + scene.texturePriority)
             self.world = World(scene)
 
             bpy.ops.screen.animation_cancel()

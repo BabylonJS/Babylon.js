@@ -120,6 +120,11 @@
             serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
 
+        // Metadata
+        if (mesh.metadata) {
+            serializationObject.metadata = mesh.metadata;
+        }
+
         // Instances
         serializationObject.instances = [];
         for (var index = 0; index < mesh.instances.length; index++) {
@@ -237,20 +242,31 @@
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
 
+            // Metadata
+            if (scene.metadata) {
+                serializationObject.metadata = scene.metadata;
+            }
+
             // Lights
             serializationObject.lights = [];
             var index: number;
             var light: Light;
             for (index = 0; index < scene.lights.length; index++) {
                 light = scene.lights[index];
-                serializationObject.lights.push(light.serialize());
+
+                if (!light.doNotSerialize) {
+                    serializationObject.lights.push(light.serialize());
+                }
             }
 
             // Cameras
             serializationObject.cameras = [];
             for (index = 0; index < scene.cameras.length; index++) {
                 var camera = scene.cameras[index];
-                serializationObject.cameras.push(camera.serialize());
+
+                if (!camera.doNotSerialize) {
+                    serializationObject.cameras.push(camera.serialize());
+                }
             }
 
             if (scene.activeCamera) {
@@ -266,7 +282,9 @@
             var material: Material;
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
-                serializationObject.materials.push(material.serialize());
+                if (!material.doNotSerialize) {
+                    serializationObject.materials.push(material.serialize());
+                }
             }
 
             // MultiMaterials
@@ -311,8 +329,10 @@
 
                 if (abstractMesh instanceof Mesh) {
                     var mesh = abstractMesh;
-                    if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
-                        serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                    if (!mesh.doNotSerialize) {
+                        if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
+                            serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                        }
                     }
                 }
             }
