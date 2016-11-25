@@ -1935,13 +1935,26 @@
             var sqx = qx * qx;
             var sqy = qy * qy;
 
-            result.z = Math.atan2(2.0 * (qx * qy + qz * qw), (-sqz - sqx + sqy + sqw));
-            result.x = Math.asin(-2.0 * (qz * qy - qx * qw));
-            result.y = Math.atan2(2.0 * (qz * qx + qy * qw), (sqz - sqx - sqy + sqw));
+            var zAxisY = qy*qz - qx*qw;
+            var limit = .4999999;
+
+            if(zAxisY < -limit){
+                result.y = 2 * Math.atan2(qy,qw);
+                result.x = Math.PI/2;
+                result.z = 0;
+            }else if(zAxisY > limit){
+                result.y = 2 * Math.atan2(qy,qw);
+                result.x = -Math.PI/2;
+                result.z = 0;
+            }else{
+                result.z = Math.atan2(2.0 * (qx * qy + qz * qw), (-sqz - sqx + sqy + sqw));
+                result.x = Math.asin(-2.0 * (qz * qy - qx * qw));
+                result.y = Math.atan2(2.0 * (qz * qx + qy * qw), (sqz - sqx - sqy + sqw));
+            }
 
             return this;
             
-        };
+        }
 
         public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
