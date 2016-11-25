@@ -9,15 +9,18 @@ var merge2 = require("merge2");
 var concat = require("gulp-concat");
 var rename = require("gulp-rename");
 var cleants = require('gulp-clean-ts-extends');
-var changed = require('gulp-changed');
+var changedInPlace = require('gulp-changed-in-place');
 var runSequence = require('run-sequence');
 var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
 var expect = require('gulp-expect-file');
 var optimisejs = require('gulp-optimize-js');
+var webserver = require('gulp-webserver');
+const path = require('path');
 
 var config = require("./config.json");
 
+var debug = require('gulp-debug');
 var includeShadersStream;
 var shadersStream;
 var workersStream;
@@ -202,4 +205,57 @@ gulp.task('watch', function () {
  */
 gulp.task('watch-typescript', function () {
     gulp.watch(config.core.typescript, ["typescript-compile", "build"]);
+});
+
+
+/**
+ * Watch typescript task, will call the default typescript task if a typescript file is updated.
+ */
+var tsProject = typescript.createProject({
+            noExternalResolve: true,
+            target: 'ES5',
+            declarationFiles: true,
+            typescript: require('typescript'),
+            experimentalDecorators: true,
+            isolatedModules: false,
+
+        });
+
+gulp.task('run-watch-compile', function () {
+    var tsResult = gulp.src(config.core.typescript)
+        //.pipe(changedInPlace())
+        .pipe(sourcemaps.init())
+        .pipe(typescript(tsProject));
+
+    return merge2([
+        tsResult.dts
+            .pipe(concat(config.build.declarationFilename))
+            .pipe(gulp.dest(config.build.outputDirectory)),
+        tsResult.js
+            .pipe(replace('"use strict";', ''))
+            //.pipe(debug())
+            .pipe(sourcemaps.write("./", 
+            {
+                includeContent:false, 
+                sourceRoot: (filePath) => {
+                    var repeatCount = filePath.relative.split(path.sep).length - 1;
+                    return '../'.repeat(repeatCount); 
+                }
+            }))
+            .pipe(gulp.dest(config.build.srcOutputDirectory))
+    ])
+});
+
+gulp.task('run-watch', ['run-watch-compile'], function () {
+    return gulp.watch(config.core.typescript, ['run-watch-compile']);
+});
+
+gulp.task('run-webserver', function () {
+    gulp.src('../../.').pipe(webserver({
+      port: 1338,
+      livereload: false
+    }));
+});
+
+gulp.task('run', ['run-watch', 'run-webserver'], function () {
 });
