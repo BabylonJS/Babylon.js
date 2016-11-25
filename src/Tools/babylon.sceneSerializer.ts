@@ -282,7 +282,9 @@
             var material: Material;
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
-                serializationObject.materials.push(material.serialize());
+                if (!material.doNotSerialize) {
+                    serializationObject.materials.push(material.serialize());
+                }
             }
 
             // MultiMaterials
