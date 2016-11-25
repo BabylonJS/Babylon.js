@@ -18,15 +18,27 @@ module BABYLON {
         private _tmpMat1 = Matrix.Identity();
         private _tmpMat2 = Matrix.Identity();
 
-        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, adjustYaw: number = 0, adjustPitch: number = 0, adjustRoll: number = 0){
+        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {adjustYaw?: number, adjustPitch?: number, adjustRoll?: number} ){
 
             this.mesh = mesh;
             this.bone = bone;
             this.target = target;
 
-            this.adjustYaw = adjustYaw;
-            this.adjustPitch = adjustPitch;
-            this.adjustRoll = adjustRoll;
+            if(options){
+
+                if(options.adjustYaw){
+                    this.adjustYaw = options.adjustYaw;
+                }
+
+                if(options.adjustPitch){
+                    this.adjustPitch = options.adjustPitch;
+                }
+
+                if(options.adjustRoll){
+                    this.adjustRoll = options.adjustRoll;
+                }
+
+            }
 
         }
 

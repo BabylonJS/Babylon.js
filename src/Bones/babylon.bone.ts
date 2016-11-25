@@ -689,5 +689,32 @@
             }
         }
 
+        public getAbsolutePositionFromLocal(position:Vector3, mesh?:AbstractMesh): Vector3{
+
+            var result = Vector3.Zero();
+
+            this.getAbsolutePositionFromLocalToRef(position, mesh, result);
+
+            return result;
+
+        }
+
+        public getAbsolutePositionFromLocalToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
+
+            this._skeleton.computeAbsoluteTransforms();
+
+            var tmat = Tmp.Matrix[0];
+            
+            if (mesh) {
+                tmat.copyFrom(this.getAbsoluteTransform());
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }else{
+                tmat = this.getAbsoluteTransform();
+            }
+
+            Vector3.TransformCoordinatesToRef(position, tmat, result);
+
+        }
+
     }
 } 
