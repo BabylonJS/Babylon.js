@@ -1,9 +1,16 @@
 module BABYLON {
     export class BoneIKController {
 
-        public target: AbstractMesh;
-        public poleTarget: AbstractMesh;
+        public targetMesh: AbstractMesh;
+        public poleTargetMesh: AbstractMesh;
+        public poleTargetBone: Bone;
+
+        public targetPosition = Vector3.Zero();
+        public poleTargetPosition = Vector3.Zero();
+        
+        public poleTargetLocalOffset = Vector3.Zero();
         public poleAngle = 0;
+
         public mesh: AbstractMesh;
 
         private _bone1: Bone;
@@ -24,6 +31,8 @@ module BABYLON {
 
         private _rightHandedSystem = false;
 
+        private _bendAxis = Vector3.Right();
+
         get maxAngle(): number {
 
             return this._maxAngle;
@@ -36,21 +45,18 @@ module BABYLON {
 
         }
 
-        constructor(mesh: AbstractMesh, bone: Bone, target: AbstractMesh, poleTarget: AbstractMesh, poleAngle: number = 0){
-
-            target.computeWorldMatrix(true);
-            poleTarget.computeWorldMatrix(true);
+        constructor(mesh: AbstractMesh, bone: Bone, options?: { targetMesh?: AbstractMesh, poleTargetMesh?: AbstractMesh, poleTargetBone?: Bone, poleTargetLocalOffset?:Vector3, poleAngle?: number, bendAxis?: Vector3, maxAngle?:number }){
 
             this._bone2 = bone;
             this._bone1 = bone.getParent();
 
-            this.target = target;
-            this.poleTarget = poleTarget;
-            this.poleAngle = poleAngle;
             this.mesh = mesh;
 
-            if(bone.getAbsoluteTransform().determinant() > 0){
+             if(bone.getAbsoluteTransform().determinant() > 0){
                 this._rightHandedSystem = true;
+                this._bendAxis.x = 0;
+                this._bendAxis.y = 0;
+                this._bendAxis.z = 1;
             }
 
             if (this._bone1.length) {
@@ -58,8 +64,8 @@ module BABYLON {
                 var boneScale1 = this._bone1.getScale();
                 var boneScale2 = this._bone2.getScale();
                 
-                this._bone1Length = this._bone1.length * boneScale1.y;
-                this._bone2Length = this._bone2.length * boneScale2.y;
+                this._bone1Length = this._bone1.length * boneScale1.y * this.mesh.scaling.y;
+                this._bone2Length = this._bone2.length * boneScale2.y * this.mesh.scaling.y;
 
             } else if (this._bone1.children[0]) {
             
@@ -75,6 +81,46 @@ module BABYLON {
             }
 
             this.maxAngle = Math.PI;
+            
+            if(options){
+
+                if(options.targetMesh){
+                    this.targetMesh = options.targetMesh;
+                    this.targetMesh.computeWorldMatrix(true);
+                }
+
+                if(options.poleTargetMesh){
+
+                    this.poleTargetMesh = options.poleTargetMesh;
+                    this.poleTargetMesh.computeWorldMatrix(true);
+
+                }else if(options.poleTargetBone){
+
+                    this.poleTargetBone = options.poleTargetBone;
+
+                }else if(this._bone1.getParent()){
+
+                    this.poleTargetBone = this._bone1.getParent();
+
+                }
+
+                if(options.poleTargetLocalOffset){
+                    this.poleTargetLocalOffset.copyFrom(options.poleTargetLocalOffset);
+                }
+
+                if(options.poleAngle){
+                    this.poleAngle = options.poleAngle;
+                }
+
+                if(options.bendAxis){
+                    this._bendAxis.copyFrom(options.bendAxis);
+                }
+
+                if(options.maxAngle){
+                    this.maxAngle = options.maxAngle;
+                }
+
+            }
 
         }
 
@@ -100,17 +146,28 @@ module BABYLON {
         public update (): void {
 	
             var bone1 = this._bone1;
-            var target = this.target.getAbsolutePosition();
-            var poleTarget = this.poleTarget.getAbsolutePosition();
+            var target = this.targetPosition;
+            var poleTarget = this.poleTargetPosition;
+
+            var mat1 = this._tmpMat1;
+            var mat2 = this._tmpMat2;
+
+            if(this.targetMesh){
+                target.copyFrom(this.targetMesh.getAbsolutePosition());
+            }
+
+            if(this.poleTargetBone){
+                this.poleTargetBone.getAbsolutePositionFromLocalToRef(this.poleTargetLocalOffset, this.mesh, poleTarget);
+            }else if(this.poleTargetMesh){
+                Vector3.TransformCoordinatesToRef(this.poleTargetLocalOffset, this.poleTargetMesh.getWorldMatrix(), poleTarget);
+            }
 
             var bonePos = this._tmpVec1;
             var zaxis = this._tmpVec2;
             var xaxis = this._tmpVec3;
             var yaxis = this._tmpVec4;
             var upAxis = this._tmpVec5;
-            var mat1 = this._tmpMat1;
-            var mat2 = this._tmpMat2;
-
+            
             bone1.getAbsolutePositionToRef(this.mesh, bonePos);
 
             poleTarget.subtractToRef(bonePos, upAxis);
@@ -165,38 +222,31 @@ module BABYLON {
 
             var angC = -angA - angB;
 
-            
-            var bendAxis = this._tmpVec1;
-            bendAxis.x = 0;
-            bendAxis.y = 0;
-            bendAxis.z = 0;
-
             if (this._rightHandedSystem) {
 
-                bendAxis.z = 1;
+                Matrix.RotationYawPitchRollToRef(0, 0, Math.PI * .5, mat2);
+                mat2.multiplyToRef(mat1, mat1);
 
-                Matrix.RotationYawPitchRollToRef(0, 0, angB + Math.PI*.5, mat2);
+                Matrix.RotationAxisToRef(this._bendAxis, angB, mat2);
+                mat2.multiplyToRef(mat1, mat1);
+
+            }else {
+
+                this._tmpVec1.copyFrom(this._bendAxis);
+                this._tmpVec1.x *= -1;
+
+                Matrix.RotationAxisToRef(this._tmpVec1, -angB, mat2);
                 mat2.multiplyToRef(mat1, mat1);
                 
-                Matrix.RotationAxisToRef(yaxis, this.poleAngle + Math.PI, mat2);
+            }
+
+            if (this.poleAngle) {
+                Matrix.RotationAxisToRef(yaxis, this.poleAngle, mat2);
                 mat1.multiplyToRef(mat2, mat1);
-
-            } else {
-
-                bendAxis.x = 1;
-
-                Matrix.RotationYawPitchRollToRef(0, angB, 0, mat2);
-                mat2.multiplyToRef(mat1, mat1);
-
-                if (this.poleAngle) {
-                    Matrix.RotationAxisToRef(yaxis, this.poleAngle, mat2);
-                    mat1.multiplyToRef(mat2, mat1);
-                }
-
             }
 
             this._bone1.setRotationMatrix(mat1, Space.WORLD, this.mesh);
-            this._bone2.setAxisAngle(bendAxis, angC, Space.LOCAL);
+            this._bone2.setAxisAngle(this._bendAxis, angC, Space.LOCAL);
 
         }
 
