@@ -1,0 +1,22 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    // Configure glob patterns for excluding files and folders.
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/.vs": true,
+        "**/.tempChromeProfileForDebug": true,
+        "**/node_modules": true
+    },
+    "files.associations": {
+        "*.fx": "glsl"
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/.vs": true,
+        "**/.tempChromeProfileForDebug": true
+    }
+}
