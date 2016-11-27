@@ -130,7 +130,6 @@ node_modules
 .idea
 
 # for VSCode
-.vscode
 /.vs
 /Playground/project.lock.json
 .tempChromeProfileForDebug
