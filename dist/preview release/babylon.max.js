@@ -19516,8 +19516,10 @@ var BABYLON;
                     source._geometry.applyToMesh(this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
-                // Pivot                
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent"], ["_poseMatrix"]);
+                // Parent
+                this.parent = source.parent;
+                // Pivot
                 this.setPivotMatrix(source.getPivotMatrix());
                 this.id = name + "." + source.id;
                 // Material
@@ -30407,6 +30409,23 @@ var BABYLON;
                 mat.decompose(BABYLON.Tmp.Vector3[0], result, BABYLON.Tmp.Vector3[1]);
             }
         };
+        Bone.prototype.getAbsolutePositionFromLocal = function (position, mesh) {
+            var result = BABYLON.Vector3.Zero();
+            this.getAbsolutePositionFromLocalToRef(position, mesh, result);
+            return result;
+        };
+        Bone.prototype.getAbsolutePositionFromLocalToRef = function (position, mesh, result) {
+            this._skeleton.computeAbsoluteTransforms();
+            var tmat = BABYLON.Tmp.Matrix[0];
+            if (mesh) {
+                tmat.copyFrom(this.getAbsoluteTransform());
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }
+            else {
+                tmat = this.getAbsoluteTransform();
+            }
+            BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, result);
+        };
         return Bone;
     }(BABYLON.Node));
     BABYLON.Bone = Bone;
@@ -30415,8 +30434,10 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var BoneIKController = (function () {
-        function BoneIKController(mesh, bone, target, poleTarget, poleAngle) {
-            if (poleAngle === void 0) { poleAngle = 0; }
+        function BoneIKController(mesh, bone, options) {
+            this.targetPosition = BABYLON.Vector3.Zero();
+            this.poleTargetPosition = BABYLON.Vector3.Zero();
+            this.poleTargetLocalOffset = BABYLON.Vector3.Zero();
             this.poleAngle = 0;
             this._maxAngle = Math.PI;
             this._tmpVec1 = BABYLON.Vector3.Zero();
@@ -30427,22 +30448,21 @@ var BABYLON;
             this._tmpMat1 = BABYLON.Matrix.Identity();
             this._tmpMat2 = BABYLON.Matrix.Identity();
             this._rightHandedSystem = false;
-            target.computeWorldMatrix(true);
-            poleTarget.computeWorldMatrix(true);
+            this._bendAxis = BABYLON.Vector3.Right();
             this._bone2 = bone;
             this._bone1 = bone.getParent();
-            this.target = target;
-            this.poleTarget = poleTarget;
-            this.poleAngle = poleAngle;
             this.mesh = mesh;
             if (bone.getAbsoluteTransform().determinant() > 0) {
                 this._rightHandedSystem = true;
+                this._bendAxis.x = 0;
+                this._bendAxis.y = 0;
+                this._bendAxis.z = 1;
             }
             if (this._bone1.length) {
                 var boneScale1 = this._bone1.getScale();
                 var boneScale2 = this._bone2.getScale();
-                this._bone1Length = this._bone1.length * boneScale1.y;
-                this._bone2Length = this._bone2.length * boneScale2.y;
+                this._bone1Length = this._bone1.length * boneScale1.y * this.mesh.scaling.y;
+                this._bone2Length = this._bone2.length * boneScale2.y * this.mesh.scaling.y;
             }
             else if (this._bone1.children[0]) {
                 mesh.computeWorldMatrix(true);
@@ -30453,6 +30473,34 @@ var BABYLON;
                 this._bone2Length = BABYLON.Vector3.Distance(pos2, pos3);
             }
             this.maxAngle = Math.PI;
+            if (options) {
+                if (options.targetMesh) {
+                    this.targetMesh = options.targetMesh;
+                    this.targetMesh.computeWorldMatrix(true);
+                }
+                if (options.poleTargetMesh) {
+                    this.poleTargetMesh = options.poleTargetMesh;
+                    this.poleTargetMesh.computeWorldMatrix(true);
+                }
+                else if (options.poleTargetBone) {
+                    this.poleTargetBone = options.poleTargetBone;
+                }
+                else if (this._bone1.getParent()) {
+                    this.poleTargetBone = this._bone1.getParent();
+                }
+                if (options.poleTargetLocalOffset) {
+                    this.poleTargetLocalOffset.copyFrom(options.poleTargetLocalOffset);
+                }
+                if (options.poleAngle) {
+                    this.poleAngle = options.poleAngle;
+                }
+                if (options.bendAxis) {
+                    this._bendAxis.copyFrom(options.bendAxis);
+                }
+                if (options.maxAngle) {
+                    this.maxAngle = options.maxAngle;
+                }
+            }
         }
         Object.defineProperty(BoneIKController.prototype, "maxAngle", {
             get: function () {
@@ -30478,15 +30526,24 @@ var BABYLON;
         };
         BoneIKController.prototype.update = function () {
             var bone1 = this._bone1;
-            var target = this.target.getAbsolutePosition();
-            var poleTarget = this.poleTarget.getAbsolutePosition();
+            var target = this.targetPosition;
+            var poleTarget = this.poleTargetPosition;
+            var mat1 = this._tmpMat1;
+            var mat2 = this._tmpMat2;
+            if (this.targetMesh) {
+                target.copyFrom(this.targetMesh.getAbsolutePosition());
+            }
+            if (this.poleTargetBone) {
+                this.poleTargetBone.getAbsolutePositionFromLocalToRef(this.poleTargetLocalOffset, this.mesh, poleTarget);
+            }
+            else if (this.poleTargetMesh) {
+                BABYLON.Vector3.TransformCoordinatesToRef(this.poleTargetLocalOffset, this.poleTargetMesh.getWorldMatrix(), poleTarget);
+            }
             var bonePos = this._tmpVec1;
             var zaxis = this._tmpVec2;
             var xaxis = this._tmpVec3;
             var yaxis = this._tmpVec4;
             var upAxis = this._tmpVec5;
-            var mat1 = this._tmpMat1;
-            var mat2 = this._tmpMat2;
             bone1.getAbsolutePositionToRef(this.mesh, bonePos);
             poleTarget.subtractToRef(bonePos, upAxis);
             if (upAxis.x == 0 && upAxis.y == 0 && upAxis.z == 0) {
@@ -30525,28 +30582,24 @@ var BABYLON;
             var angA = Math.acos(acosa);
             var angB = Math.acos(acosb);
             var angC = -angA - angB;
-            var bendAxis = this._tmpVec1;
-            bendAxis.x = 0;
-            bendAxis.y = 0;
-            bendAxis.z = 0;
             if (this._rightHandedSystem) {
-                bendAxis.z = 1;
-                BABYLON.Matrix.RotationYawPitchRollToRef(0, 0, angB + Math.PI * .5, mat2);
+                BABYLON.Matrix.RotationYawPitchRollToRef(0, 0, Math.PI * .5, mat2);
                 mat2.multiplyToRef(mat1, mat1);
-                BABYLON.Matrix.RotationAxisToRef(yaxis, this.poleAngle + Math.PI, mat2);
-                mat1.multiplyToRef(mat2, mat1);
+                BABYLON.Matrix.RotationAxisToRef(this._bendAxis, angB, mat2);
+                mat2.multiplyToRef(mat1, mat1);
             }
             else {
-                bendAxis.x = 1;
-                BABYLON.Matrix.RotationYawPitchRollToRef(0, angB, 0, mat2);
+                this._tmpVec1.copyFrom(this._bendAxis);
+                this._tmpVec1.x *= -1;
+                BABYLON.Matrix.RotationAxisToRef(this._tmpVec1, -angB, mat2);
                 mat2.multiplyToRef(mat1, mat1);
-                if (this.poleAngle) {
-                    BABYLON.Matrix.RotationAxisToRef(yaxis, this.poleAngle, mat2);
-                    mat1.multiplyToRef(mat2, mat1);
-                }
+            }
+            if (this.poleAngle) {
+                BABYLON.Matrix.RotationAxisToRef(yaxis, this.poleAngle, mat2);
+                mat1.multiplyToRef(mat2, mat1);
             }
             this._bone1.setRotationMatrix(mat1, BABYLON.Space.WORLD, this.mesh);
-            this._bone2.setAxisAngle(bendAxis, angC, BABYLON.Space.LOCAL);
+            this._bone2.setAxisAngle(this._bendAxis, angC, BABYLON.Space.LOCAL);
         };
         return BoneIKController;
     }());
@@ -30556,10 +30609,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var BoneLookController = (function () {
-        function BoneLookController(mesh, bone, target, adjustYaw, adjustPitch, adjustRoll) {
-            if (adjustYaw === void 0) { adjustYaw = 0; }
-            if (adjustPitch === void 0) { adjustPitch = 0; }
-            if (adjustRoll === void 0) { adjustRoll = 0; }
+        function BoneLookController(mesh, bone, target, options) {
             this.upAxis = BABYLON.Vector3.Up();
             this.adjustYaw = 0;
             this.adjustPitch = 0;
@@ -30573,9 +30623,17 @@ var BABYLON;
             this.mesh = mesh;
             this.bone = bone;
             this.target = target;
-            this.adjustYaw = adjustYaw;
-            this.adjustPitch = adjustPitch;
-            this.adjustRoll = adjustRoll;
+            if (options) {
+                if (options.adjustYaw) {
+                    this.adjustYaw = options.adjustYaw;
+                }
+                if (options.adjustPitch) {
+                    this.adjustPitch = options.adjustPitch;
+                }
+                if (options.adjustRoll) {
+                    this.adjustRoll = options.adjustRoll;
+                }
+            }
         }
         BoneLookController.prototype.update = function () {
             var bone = this.bone;
@@ -35149,7 +35207,12 @@ var BABYLON;
                         triggerObject.properties.push(BABYLON.Action._GetTargetProperty(triggerOptions.parameter));
                     }
                     else {
-                        triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
+                        var parameter = {};
+                        BABYLON.Tools.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
+                        if (triggerOptions.parameter.mesh) {
+                            parameter._meshId = triggerOptions.parameter.mesh.id;
+                        }
+                        triggerObject.properties.push({ name: "parameter", targetType: null, value: parameter });
                     }
                 }
                 // Serialize child action, recursively
@@ -35300,6 +35363,9 @@ var BABYLON;
                 if (trigger.properties.length > 0) {
                     var param = trigger.properties[0].value;
                     var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
+                    if (value._meshId) {
+                        value.mesh = scene.getMeshByID(value._meshId);
+                    }
                     triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
                 }
                 else
