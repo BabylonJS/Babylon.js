@@ -86,6 +86,16 @@
             return this.delayLoadState === Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === Engine.DELAYLOADSTATE_NONE;
         }
 
+        public get doNotSerialize(): boolean {
+            for (var index = 0; index < this._meshes.length; index++) {
+                if (!this._meshes[index].doNotSerialize) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
             vertexData.applyToGeometry(this, updatable);
             this.notifyUpdate();
