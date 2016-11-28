@@ -609,13 +609,13 @@
 
             var result = Vector3.Zero();
 
-            this.getDirectionToRef(localAxis, result,  mesh);
+            this.getDirectionToRef(localAxis, mesh, result);
             
             return result;
 
         }
 
-        public getDirectionToRef (localAxis: Vector3, result: Vector3, mesh?: AbstractMesh): void {
+        public getDirectionToRef (localAxis: Vector3, mesh: AbstractMesh, result: Vector3): void {
 
             this._skeleton.computeAbsoluteTransforms();
             
