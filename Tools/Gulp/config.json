@@ -218,6 +218,8 @@
       "../../src/Tools/HDR/babylon.tools.pmremgenerator.js",
       "../../src/Materials/Textures/babylon.hdrCubeTexture.js",
       "../../src/Debug/babylon.skeletonViewer.js",
+      "../../src/Debug/babylon.axesViewer.js",
+      "../../src/Debug/babylon.boneAxesViewer.js",
       "../../src/Materials/Textures/babylon.colorGradingTexture.js",
       "../../src/Materials/babylon.colorCurves.js",
       "../../src/Materials/babylon.pbrMaterial.js",      
