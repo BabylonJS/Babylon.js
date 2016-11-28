@@ -1206,5 +1206,18 @@
 
             super.dispose();
         }
+
+        public getDirection(localAxis:BABYLON.Vector3): BABYLON.Vector3 {
+            var result = BABYLON.Vector3.Zero();
+
+            this.getDirectionToRef(localAxis, result);
+            
+            return result;
+        }
+
+        public getDirectionToRef(localAxis:BABYLON.Vector3, result:BABYLON.Vector3): void {
+            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+        }
+
     }
 }
