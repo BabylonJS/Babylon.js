@@ -134,6 +134,8 @@
     <TypeScriptCompile Include="src\Collisions\babylon.collisionCoordinator.ts" />
     <TypeScriptCompile Include="src\Collisions\babylon.collisionWorker.ts" />
     <TypeScriptCompile Include="src\Culling\babylon.ray.ts" />
+    <TypeScriptCompile Include="src\Debug\babylon.axesViewer.ts" />
+    <TypeScriptCompile Include="src\Debug\babylon.boneAxesViewer.ts" />
     <TypeScriptCompile Include="src\Debug\babylon.skeletonViewer.ts" />
     <TypeScriptCompile Include="src\Debug\babylon.debugLayer.ts" />
     <TypeScriptCompile Include="src\Layer\babylon.highlightlayer.ts" />
