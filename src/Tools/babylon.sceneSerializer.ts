@@ -4,6 +4,11 @@
         if (serializedGeometries[geometry.id]) {
             return;
         }
+
+        if (geometry.doNotSerialize) {
+            return;
+        }
+
         if (geometry instanceof Geometry.Primitives.Box) {
             serializationGeometries.boxes.push(geometry.serialize());
         }
