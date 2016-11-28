@@ -72,6 +72,7 @@
         serializationObject.visibility = mesh.visibility;
 
         serializationObject.checkCollisions = mesh.checkCollisions;
+        serializationObject.isBlocker = mesh.isBlocker;
 
         // Parent
         if (mesh.parent) {
