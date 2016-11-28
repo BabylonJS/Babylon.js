@@ -705,16 +705,16 @@
             return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getTypeName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
         }
 
-        public getDirection(localAxis:BABYLON.Vector3): BABYLON.Vector3 {
-            var result = BABYLON.Vector3.Zero();
+        public getDirection(localAxis:Vector3): Vector3 {
+            var result = Vector3.Zero();
 
             this.getDirectionToRef(localAxis, result);
             
             return result;
         }
 
-        public getDirectionToRef(localAxis:BABYLON.Vector3, result:BABYLON.Vector3): void {
-            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+        public getDirectionToRef(localAxis:Vector3, result:Vector3): void {
+            Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         }
 
         static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
