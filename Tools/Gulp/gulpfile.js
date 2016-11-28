@@ -28,6 +28,15 @@ var workersStream;
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
 var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
 
+var tsProject = typescript.createProject({
+    noExternalResolve: true,
+    target: 'ES5',
+    declarationFiles: true,
+    typescript: require('typescript'),
+    experimentalDecorators: true,
+    isolatedModules: false,
+});
+
 //function to convert the shaders' filenames to variable names.
 function shadersName(filename) {
     return filename.replace('.fragment', 'Pixel')
@@ -79,14 +88,10 @@ gulp.task("workers", function (cb) {
 Compiles all typescript files and creating a declaration file.
 */
 gulp.task('typescript-compile', function () {
-    var tsResult = gulp.src(config.core.typescript).
-        pipe(typescript({
-            noExternalResolve: true,
-            target: 'ES5',
-            declarationFiles: true,
-            typescript: require('typescript'),
-            experimentalDecorators: true
-        }));
+    var tsResult = gulp.src(config.core.typescript)
+        .pipe(sourcemaps.init())
+        .pipe(typescript(tsProject));
+
     //If this gulp task is running on travis, file the build!
     if (process.env.TRAVIS) {
         var error = false;
@@ -99,29 +104,23 @@ gulp.task('typescript-compile', function () {
             }
         });
     }
+
     return merge2([
         tsResult.dts
             .pipe(concat(config.build.declarationFilename))
             //.pipe(addDtsExport("BABYLON"))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
+            .pipe(sourcemaps.write("./", 
+                {
+                    includeContent:false, 
+                    sourceRoot: (filePath) => {
+                        var repeatCount = filePath.relative.split(path.sep).length - 1;
+                        return '../'.repeat(repeatCount); 
+                    }
+                }))
             .pipe(gulp.dest(config.build.srcOutputDirectory))
     ])
-});
-
-gulp.task('typescript-sourcemaps', function () {
-    var tsResult = gulp.src(config.core.typescript)
-        .pipe(sourcemaps.init()) // sourcemaps init. currently redundant directory def, waiting for this - https://github.com/floridoo/gulp-sourcemaps/issues/111
-        .pipe(typescript({
-            noExternalResolve: true,
-            target: 'ES5',
-            declarationFiles: true,
-            typescript: require('typescript'),
-            experimentalDecorators: true
-        }));
-    return tsResult.js
-        .pipe(sourcemaps.write("./")) // sourcemaps are written.
-        .pipe(gulp.dest(config.build.srcOutputDirectory));
 });
 
 gulp.task("buildCore", ["shaders"], function () {
@@ -194,68 +193,18 @@ gulp.task('default', function (cb) {
 });
 
 /**
- * Watch task, will call the default task if a js file is updated.
- */
-gulp.task('watch', function () {
-    gulp.watch(config.core.typescript, ['build']);
-});
-
-/**
  * Watch typescript task, will call the default typescript task if a typescript file is updated.
  */
-gulp.task('watch-typescript', function () {
-    gulp.watch(config.core.typescript, ["typescript-compile", "build"]);
+gulp.task('watch', ['typescript-compile'], function () {
+    return gulp.watch(config.core.typescript, ['typescript-compile']);
 });
 
-
-/**
- * Watch typescript task, will call the default typescript task if a typescript file is updated.
- */
-var tsProject = typescript.createProject({
-            noExternalResolve: true,
-            target: 'ES5',
-            declarationFiles: true,
-            typescript: require('typescript'),
-            experimentalDecorators: true,
-            isolatedModules: false,
-
-        });
-
-gulp.task('run-watch-compile', function () {
-    var tsResult = gulp.src(config.core.typescript)
-        //.pipe(changedInPlace())
-        .pipe(sourcemaps.init())
-        .pipe(typescript(tsProject));
-
-    return merge2([
-        tsResult.dts
-            .pipe(concat(config.build.declarationFilename))
-            .pipe(gulp.dest(config.build.outputDirectory)),
-        tsResult.js
-            .pipe(replace('"use strict";', ''))
-            //.pipe(debug())
-            .pipe(sourcemaps.write("./", 
-            {
-                includeContent:false, 
-                sourceRoot: (filePath) => {
-                    var repeatCount = filePath.relative.split(path.sep).length - 1;
-                    return '../'.repeat(repeatCount); 
-                }
-            }))
-            .pipe(gulp.dest(config.build.srcOutputDirectory))
-    ])
-});
-
-gulp.task('run-watch', ['run-watch-compile'], function () {
-    return gulp.watch(config.core.typescript, ['run-watch-compile']);
-});
-
-gulp.task('run-webserver', function () {
+gulp.task('webserver', function () {
     gulp.src('../../.').pipe(webserver({
       port: 1338,
       livereload: false
     }));
 });
 
-gulp.task('run', ['run-watch', 'run-webserver'], function () {
+gulp.task('run', ['watch', 'webserver'], function () {
 });
