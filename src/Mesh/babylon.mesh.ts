@@ -1790,6 +1790,11 @@
             }
 
             mesh.checkCollisions = parsedMesh.checkCollisions;
+
+            if (parsedMesh.isBlocker !== undefined) {
+                mesh.isBlocker = parsedMesh.isBlocker;
+            }
+            
             mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
 
             // freezeWorldMatrix
