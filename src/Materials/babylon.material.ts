@@ -99,6 +99,9 @@
         public id: string;
 
         @serialize()
+        public name: string;
+
+        @serialize()
         public checkReadyOnEveryCall = false;
 
         @serialize()
@@ -206,7 +209,8 @@
         private _cachedDepthWriteState: boolean;
 
 
-        constructor(public name: string, scene: Scene, doNotAdd?: boolean) {
+        constructor(name: string, scene: Scene, doNotAdd?: boolean) {
+            this.name = name;
             this.id = name;
 
             this._scene = scene;
