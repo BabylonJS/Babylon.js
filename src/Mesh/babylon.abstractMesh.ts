@@ -1207,16 +1207,16 @@
             super.dispose();
         }
 
-        public getDirection(localAxis:BABYLON.Vector3): BABYLON.Vector3 {
-            var result = BABYLON.Vector3.Zero();
+        public getDirection(localAxis:Vector3): Vector3 {
+            var result = Vector3.Zero();
 
             this.getDirectionToRef(localAxis, result);
             
             return result;
         }
 
-        public getDirectionToRef(localAxis:BABYLON.Vector3, result:BABYLON.Vector3): void {
-            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+        public getDirectionToRef(localAxis:Vector3, result:Vector3): void {
+            Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         }
 
     }
