@@ -266,8 +266,6 @@
     }
 
     export class Xbox360Pad extends Gamepad {
-        public readonly isXboxOnePad:boolean = false;
-
         private _leftTrigger: number = 0;
         private _rightTrigger: number = 0;
 
@@ -295,9 +293,11 @@
         private _dPadLeft: number = 0;
         private _dPadRight: number = 0;
 
+        private _isXboxOnePad:boolean = false;
+
         constructor(id: string, index: number, gamepad:any, xboxOne:boolean = false) {
             super(id, index, gamepad, 0, 1, (xboxOne ? 3 : 2), (xboxOne ? 4 : 3));
-            this.isXboxOnePad = xboxOne;
+            this._isXboxOnePad = xboxOne;
         }
 
         public onlefttriggerchanged(callback: (value: number) => void) {
@@ -451,7 +451,7 @@
         }
         public update() {
             super.update();
-            if (this.isXboxOnePad) {
+            if (this._isXboxOnePad) {
                 this.buttonA = this.browserGamepad.buttons[0].value;
                 this.buttonB = this.browserGamepad.buttons[1].value;
                 this.buttonX = this.browserGamepad.buttons[2].value;
