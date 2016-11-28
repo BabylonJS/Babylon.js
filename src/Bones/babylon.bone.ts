@@ -619,7 +619,7 @@
 
             this._skeleton.computeAbsoluteTransforms();
             
-            var mat = BABYLON.Tmp.Matrix[0];
+            var mat = Tmp.Matrix[0];
 
             mat.copyFrom(this.getAbsoluteTransform());
 
@@ -635,7 +635,7 @@
 
         public getRotation(space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
 
-            var result = BABYLON.Vector3.Zero();
+            var result = Vector3.Zero();
 
             this.getRotationToRef(space, mesh, result);
             
