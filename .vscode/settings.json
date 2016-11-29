@@ -6,12 +6,9 @@
         "**/.svn": true,
         "**/.hg": true,
         "**/.DS_Store": true,
-        "**/.vs": true,
-        "**/.temp": true,        
+        "**/.vs": true,        
         "**/.tempChromeProfileForDebug": true,
-        "**/node_modules": true,
-        "**/*.js.map": true,
-        "**/*.js": {"when": "$(basename).ts"}
+        "**/node_modules": true
     },
     "files.associations": {
         "*.fx": "glsl"

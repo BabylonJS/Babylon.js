@@ -2,18 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>Procedural textures Library</title>
-	<script src="refs/dat.gui.min.js"></script>
-	<script src="refs/babylon.max.js"></script>
-	<script src="../dist/babylon.fireProceduralTexture.js"></script>
-	<script src="../dist/babylon.woodProceduralTexture.js"></script>
-	<script src="../dist/babylon.cloudProceduralTexture.js"></script>
-	<script src="../dist/babylon.grassProceduralTexture.js"></script>
-	<script src="../dist/babylon.roadProceduralTexture.js"></script>
-	<script src="../dist/babylon.brickProceduralTexture.js"></script>
-	<script src="../dist/babylon.marbleProceduralTexture.js"></script>
-	<script src="../dist/babylon.starfieldProceduralTexture.js"></script>
-	<script src="../dist/babylon.asciiArtPostProcess.js"></script>
-	<script src="../dist/babylon.digitalRainPostProcess.js"></script>
+	<script src="../assets/refs/dat.gui.min.js"></script>
+	<script src="../dist/preview release/babylon.max.js"></script>
+	<script src="../dist/proceduralTexturesLibrary/babylon.fireProceduralTexture.js"></script>
+	<script src="../dist/proceduralTexturesLibrary/babylon.woodProceduralTexture.js"></script>
+	<script src="../dist/proceduralTexturesLibrary/babylon.cloudProceduralTexture.js"></script>
+	<script src="../dist/proceduralTexturesLibrary/babylon.grassProceduralTexture.js"></script>
+	<script src="../dist/proceduralTexturesLibrary/babylon.roadProceduralTexture.js"></script>
+	<script src="../dist/proceduralTexturesLibrary/babylon.brickProceduralTexture.js"></script>
+	<script src="../dist/proceduralTexturesLibrary/babylon.marbleProceduralTexture.js"></script>
+	<script src="../dist/proceduralTexturesLibrary/babylon.starfieldProceduralTexture.js"></script>
 
 	<style>
 		html, body {
@@ -47,17 +45,15 @@
 	<div id="fps">0</div>
 	<canvas id="renderCanvas"></canvas>
 
-	<script src="index.js"></script>
-    <script src="add/addCloudPT.js"></script>
-    <script src="add/addFirePT.js"></script>
-    <script src="add/addWoodPT.js"></script>
-    <script src="add/addGrassPT.js"></script>
-    <script src="add/addRoadPT.js"></script>
-    <script src="add/addBrickPT.js"></script>
-    <script src="add/addMarblePT.js"></script>
-    <script src="add/addStarfieldPT.js"></script>
-    <script src="add/addAsciiArtPP.js"></script>
-    <script src="add/addDigitalRainPP.js"></script>
+	<script src="test/index.js"></script>
+    <script src="test/addCloudPT.js"></script>
+    <script src="test/addFirePT.js"></script>
+    <script src="test/addWoodPT.js"></script>
+    <script src="test/addGrassPT.js"></script>
+    <script src="test/addRoadPT.js"></script>
+    <script src="test/addBrickPT.js"></script>
+    <script src="test/addMarblePT.js"></script>
+    <script src="test/addStarfieldPT.js"></script>
 	<script>
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -95,7 +91,7 @@
 			var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
 			var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
 			skyboxMaterial.backFaceCulling = false;
-			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/TropicalSunnyDay", scene);
+			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("../assets/textures/skybox/TropicalSunnyDay", scene);
 			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
 			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
 			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -107,7 +103,7 @@
 
 			// Rabbit
 			var rabbit;
-			BABYLON.SceneLoader.ImportMesh("Rabbit", "meshes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
+			BABYLON.SceneLoader.ImportMesh("Rabbit", "../assets/meshes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
 				rabbit = newMeshes[1];
 				rabbit.setEnabled(false);
 				rabbit.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
@@ -166,7 +162,7 @@
 				var std = new BABYLON.StandardMaterial("std", scene);
 				std.specularColor = new BABYLON.Color3(0, 0, 0);
 				
-				var diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+				var diffuseTexture = new BABYLON.Texture("../assets/textures/amiga.jpg", scene);
 				diffuseTexture.uScale = 5;
 				diffuseTexture.vScale = 5;
 
@@ -193,14 +189,6 @@
 				
 				// Starfield Procedural Texture
                 var starfieldPT = addStarfieldPT();
-
-				// Ascii Art
-				var asciiArtPostProcess = addAsciiArtPP(camera);
-				camera.detachPostProcess(asciiArtPostProcess);
-
-				// Digital Rain
-				var digitalRainPostProcess = addDigitalRainPP(camera);
-				camera.detachPostProcess(digitalRainPostProcess);
 								
 				// Default to std
 				var currentTexture = diffuseTexture;
@@ -224,8 +212,6 @@
 				}
 				
 				var resetPTOptions = function() {
-					camera.detachPostProcess(asciiArtPostProcess);
-					camera.detachPostProcess(digitalRainPostProcess);
 					
 					//empty options
 					while(PTOptions.length > 0){
@@ -420,24 +406,6 @@
 				
 				gui.add(options, 'skybox').onChange(function() {
 					skybox.setEnabled(options.skybox);
-				});
-
-				gui.add(options, 'ascii').onChange(function() {
-					if (options.ascii) {
-						camera.attachPostProcess(asciiArtPostProcess);
-					}
-					else {
-						camera.detachPostProcess(asciiArtPostProcess);
-					}
-				});
-
-				gui.add(options, 'digitalRain').onChange(function() {
-					if (options.digitalRain) {
-						camera.attachPostProcess(digitalRainPostProcess);
-					}
-					else {
-						camera.detachPostProcess(digitalRainPostProcess);
-					}
 				});
 			});
 		}

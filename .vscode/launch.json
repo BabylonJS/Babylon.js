@@ -23,7 +23,7 @@
             "name": "Launch Post Processes Library (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "http://localhost:1338/postProcessesLibrary/index.html",
+            "url": "http://localhost:1338/postProcessLibrary/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
