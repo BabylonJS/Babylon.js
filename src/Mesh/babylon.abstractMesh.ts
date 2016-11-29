@@ -1219,5 +1219,57 @@
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         }
 
+        public setPivotPoint(point:Vector3): void{
+
+            Vector3.TransformCoordinatesToRef(point, this.getWorldMatrix(), this.position);
+
+            this._pivotMatrix.m[12] = -point.x;
+            this._pivotMatrix.m[13] = -point.y;
+            this._pivotMatrix.m[14] = -point.z;
+
+            this._cache.pivotMatrixUpdated = true;
+
+        }
+
+        public getPivotPoint(): Vector3 {
+
+            var point = Vector3.Zero();
+
+            this.getPivotPointToRef(point);
+
+            return point;
+
+        }
+
+        public getPivotPointToRef(result:Vector3): void{
+
+            result.x = -this._pivotMatrix.m[12];
+            result.y = -this._pivotMatrix.m[13];
+            result.z = -this._pivotMatrix.m[14];
+
+        }
+
+        public getAbsolutePivotPoint(): Vector3 {
+
+            var point = Vector3.Zero();
+
+            this.getAbsolutePivotPointToRef(point);
+
+            return point;
+
+        }
+
+        public getAbsolutePivotPointToRef(result:Vector3): void{
+
+            result.x = this._pivotMatrix.m[12];
+            result.y = this._pivotMatrix.m[13];
+            result.z = this._pivotMatrix.m[14];
+
+            this.getPivotPointToRef(result);
+
+            Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
+
+        }
+
     }
 }
