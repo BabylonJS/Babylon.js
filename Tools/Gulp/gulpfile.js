@@ -3,6 +3,7 @@ var uglify = require("gulp-uglify");
 var typescript = require("gulp-typescript");
 var sourcemaps = require("gulp-sourcemaps");
 var srcToVariable = require("gulp-content-to-variable");
+var appendSrcToVariable = require("./gulp-appendSrcToVariable");
 var addDtsExport = require("./gulp-addDtsExport");
 var addModuleExports = require("./gulp-addModuleExports");
 var merge2 = require("merge2");
@@ -16,7 +17,7 @@ var uncommentShader = require("./gulp-removeShaderComments");
 var expect = require('gulp-expect-file');
 var optimisejs = require('gulp-optimize-js');
 var webserver = require('gulp-webserver');
-const path = require('path');
+var path = require('path');
 
 var config = require("./config.json");
 
@@ -28,14 +29,25 @@ var workersStream;
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
 var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
 
-var tsProject = typescript.createProject({
+var tsConfig = {
     noExternalResolve: true,
     target: 'ES5',
     declarationFiles: true,
     typescript: require('typescript'),
     experimentalDecorators: true,
-    isolatedModules: false,
-});
+    isolatedModules: false
+};
+
+var externalTsConfig = {
+    noExternalResolve: false,
+    target: 'ES5',
+    declarationFiles: true,
+    typescript: require('typescript'),
+    experimentalDecorators: true,
+    isolatedModules: false
+};
+
+var tsProject = typescript.createProject(tsConfig);
 
 //function to convert the shaders' filenames to variable names.
 function shadersName(filename) {
@@ -123,6 +135,39 @@ gulp.task('typescript-compile', function () {
     ])
 });
 
+gulp.task('materialsLibrary', function () {
+    var tasks = config.materials.map(function (material) {
+
+        var compilOutput = gulp.src(material.file, { base: '../../' })
+            .pipe(sourcemaps.init())
+            .pipe(typescript(externalTsConfig));
+
+        var js = compilOutput.js;        
+        var shader = gulp.src(material.shaderFiles)
+                .pipe(uncommentShader())
+                .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
+        
+        var generatedJs = merge2(js, shader, includeShader)
+            .pipe(cleants())
+            .pipe(replace(extendsSearchRegex, ""))
+            .pipe(concat(material.output))
+            
+        var maps = generatedJs.pipe(sourcemaps.write('.temp', {
+                    includeContent:false,
+                    sourceRoot: '../../'
+                }))
+            .pipe(gulp.dest(config.materialsBuild.distOutputDirectory));
+
+        var minified = generatedJs.pipe(rename({extname: ".min.js"}))
+            .pipe(uglify())
+            .pipe(gulp.dest(config.materialsBuild.distOutputDirectory));
+
+        return merge2(maps, minified);
+    });
+
+    return merge2(tasks);
+});
+
 gulp.task("buildCore", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files).        
@@ -196,7 +241,14 @@ gulp.task('default', function (cb) {
  * Watch typescript task, will call the default typescript task if a typescript file is updated.
  */
 gulp.task('watch', ['typescript-compile'], function () {
-    return gulp.watch(config.core.typescript, ['typescript-compile']);
+    var tasks = [gulp.watch(config.core.typescript, ['typescript-compile'])];
+
+    config.materials.map(function (material) {
+        tasks.push(gulp.watch(material.file, ['materialsLibrary']));
+        tasks.push(gulp.watch(material.shaderFiles, ['materialsLibrary']));
+    });
+
+    return tasks;
 });
 
 gulp.task('webserver', function () {

@@ -2,8 +2,8 @@ window.prepareFur = function() {
 	var shells = 30;
 	var meshes = [];
 	
-	var diffuseTexture = new BABYLON.Texture("textures/leopard_fur.jpg", scene);
-	var heightTexture = new BABYLON.Texture("textures/speckles.jpg", scene);
+	var diffuseTexture = new BABYLON.Texture("../assets/textures/leopard_fur.jpg", scene);
+	var heightTexture = new BABYLON.Texture("../assets/textures/speckles.jpg", scene);
 	var furTexture = BABYLON.FurMaterial.GenerateTexture("furTexture", scene);
 	
 	var fur = new BABYLON.FurMaterial("fur", scene);

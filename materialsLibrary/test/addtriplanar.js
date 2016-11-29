@@ -1,10 +1,10 @@
 window.prepareTriPlanar = function() {
     var triPlanar = new BABYLON.TriPlanarMaterial("triplanar", scene);
-    triPlanar.diffuseTextureX = new BABYLON.Texture("textures/rock.png", scene);
-    triPlanar.diffuseTextureY = new BABYLON.Texture("textures/grass.png", scene);
+    triPlanar.diffuseTextureX = new BABYLON.Texture("../assets/textures/rock.png", scene);
+    triPlanar.diffuseTextureY = new BABYLON.Texture("../assets/textures/grass.png", scene);
     triPlanar.diffuseTextureZ = triPlanar.diffuseTextureX;
-    triPlanar.normalTextureX = new BABYLON.Texture("textures/rockn.png", scene);
-    triPlanar.normalTextureY = new BABYLON.Texture("textures/grassn.png", scene);
+    triPlanar.normalTextureX = new BABYLON.Texture("../assets/textures/rockn.png", scene);
+    triPlanar.normalTextureY = new BABYLON.Texture("../assets/textures/grassn.png", scene);
     triPlanar.normalTextureZ = triPlanar.normalTextureX;
     triPlanar.specularPower = 64;
     triPlanar.tileSize = 1.5;

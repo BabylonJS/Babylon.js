@@ -1,9 +1,9 @@
 window.prepareLava = function() {
     var lava = new BABYLON.LavaMaterial("lava", scene);
-    lava.diffuseTexture = new BABYLON.Texture("textures/lava/lavatile.jpg", scene);
+    lava.diffuseTexture = new BABYLON.Texture("../assets/textures/lava/lavatile.jpg", scene);
     lava.diffuseTexture.uScale = 0.5;
     lava.diffuseTexture.vScale = 0.5;
-    lava.noiseTexture = new BABYLON.Texture("textures/lava/cloud.png", scene);
+    lava.noiseTexture = new BABYLON.Texture("../assets/textures/lava/cloud.png", scene);
     lava.fogColor = BABYLON.Color3.Black();
     lava.speed = 2.5;
 

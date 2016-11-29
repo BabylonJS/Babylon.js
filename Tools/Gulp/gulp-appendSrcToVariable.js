@@ -5,9 +5,9 @@ var path = require('path');
 var File = gutil.File;
 
 // Consts
-const PLUGIN_NAME = 'gulp-srcToVariable';
+const PLUGIN_NAME = 'gulp-appendSrcToVariable';
 
-var srcToVariable = function srcToVariable(varName, asMap, namingCallback) {
+var appendSrcToVariable = function appendSrcToVariable(varName, asMap, namingCallback) {
 
     var content;
     var firstFile;
@@ -65,4 +65,4 @@ var srcToVariable = function srcToVariable(varName, asMap, namingCallback) {
     return through.obj(bufferContents, endStream);
 }
 
-module.exports = srcToVariable;
+module.exports = appendSrcToVariable;

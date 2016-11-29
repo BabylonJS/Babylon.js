@@ -2,19 +2,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>Shaders Library</title>
-	<script src="refs/dat.gui.min.js"></script>
-	<script src="refs/babylon.max.js"></script>
-	<script src="../dist/babylon.simpleMaterial.js"></script>
-	<script src="../dist/babylon.normalMaterial.js"></script>
-	<script src="../dist/babylon.waterMaterial.js"></script>
-	<script src="../dist/babylon.fireMaterial.js"></script>
-    <script src="../dist/babylon.lavaMaterial.js"></script>
-	<script src="../dist/babylon.terrainMaterial.js"></script>
-	<script src="../dist/babylon.furMaterial.js"></script>
-	<script src="../dist/babylon.triPlanarMaterial.js"></script>
-	<script src="../dist/babylon.gradientMaterial.js"></script>
-	<script src="../dist/babylon.skyMaterial.js"></script>
-	<script src="../dist/babylon.gridMaterial.js"></script>
+	<script src="../assets/refs/dat.gui.min.js"></script>
+	<script src="../dist/preview release/babylon.max.js"></script>
+	<script src="../dist/materialsLibrary/babylon.simpleMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.normalMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.waterMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.fireMaterial.js"></script>
+    <script src="../dist/materialsLibrary/babylon.lavaMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.terrainMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.furMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.triPlanarMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.gradientMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.skyMaterial.js"></script>
+	<script src="../dist/materialsLibrary/babylon.gridMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -48,18 +48,18 @@
 	<div id="fps">0</div>
 	<canvas id="renderCanvas"></canvas>
 
-	<script src="index.js"></script>
-    <script src="add/addlava.js"></script>
-    <script src="add/addnormal.js"></script>
-	<script src="add/addwater.js"></script>
-	<script src="add/addfur.js"></script>
-	<script src="add/addterrain.js"></script>
-	<script src="add/addfire.js"></script>
-	<script src="add/addtriplanar.js"></script>
-	<script src="add/addgradient.js"></script>
-	<script src="add/addsky.js"></script>
-	<script src="add/addgrid.js"></script>
-    <script src="add/addpbr.js"></script>
+	<script src="test/index.js"></script>
+    <script src="test/addlava.js"></script>
+    <script src="test/addnormal.js"></script>
+	<script src="test/addwater.js"></script>
+	<script src="test/addfur.js"></script>
+	<script src="test/addterrain.js"></script>
+	<script src="test/addfire.js"></script>
+	<script src="test/addtriplanar.js"></script>
+	<script src="test/addgradient.js"></script>
+	<script src="test/addsky.js"></script>
+	<script src="test/addgrid.js"></script>
+    <script src="test/addpbr.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -95,14 +95,14 @@
 			var knot = BABYLON.Mesh.CreateTorusKnot("knot", 10, 3, 128, 64, 2, 3, scene);
 			knot.setEnabled(false);
 			
-			var heightMap = BABYLON.Mesh.CreateGroundFromHeightMap("heightMap", "textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
+			var heightMap = BABYLON.Mesh.CreateGroundFromHeightMap("heightMap", "../assets/textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
 			heightMap.setEnabled(false);
 			
 			// Skybox
 			var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
 			var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
 			skyboxMaterial.backFaceCulling = false;
-			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/TropicalSunnyDay", scene);
+			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("../assets/textures/skybox/TropicalSunnyDay", scene);
 			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
 			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
 			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -114,7 +114,7 @@
 
 			// Rabbit
 			var rabbit;
-			BABYLON.SceneLoader.ImportMesh("Rabbit", "meshes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
+			BABYLON.SceneLoader.ImportMesh("Rabbit", "../assets/meshes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
 				rabbit = newMeshes[1];
 				rabbit.setEnabled(false);
 				rabbit.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
@@ -172,7 +172,7 @@
 				
 				// Create shaders
 				var std = new BABYLON.StandardMaterial("std", scene);
-				std.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+				std.diffuseTexture = new BABYLON.Texture("../assets/textures/amiga.jpg", scene);
 				std.diffuseTexture.uScale = 5;
 				std.diffuseTexture.vScale = 5;
 
@@ -180,7 +180,7 @@
                 var lava = prepareLava();
 
 				var simple = new BABYLON.SimpleMaterial("simple", scene);
-				simple.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+				simple.diffuseTexture = new BABYLON.Texture("../assets/textures/amiga.jpg", scene);
 				simple.diffuseTexture.uScale = 5;
 				simple.diffuseTexture.vScale = 5;
 

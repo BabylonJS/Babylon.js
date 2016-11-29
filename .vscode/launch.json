@@ -9,6 +9,15 @@
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+        },
+        {
+            "name": "Launch Materials Library (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/materialsLibrary/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
         }
     ]
 }

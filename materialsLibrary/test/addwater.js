@@ -2,7 +2,7 @@ window.prepareWater = function() {
 	var water = new BABYLON.WaterMaterial("water", scene);
 	water.backFaceCulling = false;
 	water.enableRenderTargets(false);
-	water.bumpTexture = new BABYLON.Texture("textures/waterbump.png", scene);
+	water.bumpTexture = new BABYLON.Texture("../assets/textures/waterbump.png", scene);
 	water.windForce = 45;
 	water.waveHeight = 1.3;
 	water.windDirection = new BABYLON.Vector2(1, 1);
