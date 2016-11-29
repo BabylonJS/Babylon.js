@@ -9,6 +9,33 @@
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+        },
+        {
+            "name": "Launch Materials Library (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/materialsLibrary/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+        },
+        {
+            "name": "Launch Post Processes Library (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/postProcessLibrary/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+        },
+        {
+            "name": "Launch Procedural Textures Library (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/proceduralTexturesLibrary/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
         }
     ]
 }

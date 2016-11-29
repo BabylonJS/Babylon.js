@@ -6,9 +6,14 @@
         "**/.svn": true,
         "**/.hg": true,
         "**/.DS_Store": true,
-        "**/.vs": true,
+        "**/.vs": true,        
         "**/.tempChromeProfileForDebug": true,
-        "**/node_modules": true
+        "**/node_modules": true,
+        "**/temp": true,
+        "**/*.js.map": true,
+        "**/*.js": { 
+            "when":"$(basename).ts"
+        }
     },
     "files.associations": {
         "*.fx": "glsl"
@@ -17,6 +22,7 @@
         "**/node_modules": true,
         "**/bower_components": true,
         "**/.vs": true,
-        "**/.tempChromeProfileForDebug": true
+        "**/.tempChromeProfileForDebug": true,
+        "**/.temp": true
     }
 }
