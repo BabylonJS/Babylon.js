@@ -8,7 +8,12 @@
         "**/.DS_Store": true,
         "**/.vs": true,        
         "**/.tempChromeProfileForDebug": true,
-        "**/node_modules": true
+        "**/node_modules": true,
+        "**/temp": true,
+        "**/*.js.map": true,
+        "**/*.js": { 
+            "when":"$(basename).ts"
+        }
     },
     "files.associations": {
         "*.fx": "glsl"
