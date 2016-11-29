@@ -133,3 +133,5 @@ node_modules
 /.vs
 /Playground/project.lock.json
 .tempChromeProfileForDebug
+.temp
+*.js.map
