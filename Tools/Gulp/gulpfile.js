@@ -134,8 +134,7 @@ gulp.task('typescript-compile', function () {
                 {
                     includeContent:false, 
                     sourceRoot: (filePath) => {
-                        var repeatCount = filePath.relative.split(path.sep).length - 1;
-                        return '../'.repeat(repeatCount); 
+                        return ''; 
                     }
                 }))
             .pipe(gulp.dest(config.build.srcOutputDirectory))
