@@ -177,18 +177,28 @@ var buildExternalLibrary= function(library, settings) {
     var shader = gulp.src(library.shaderFiles)
             .pipe(uncommentShader())
             .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
-    
-    return merge2(js, shader)
-        .pipe(cleants())
-        .pipe(replace(extendsSearchRegex, ""))
-        .pipe(concat(library.output))
-        .pipe(sourcemaps.write('.temp', {
+
+    var fulljs = merge2(js, shader)
+        .pipe(concat(library.output));
+
+    var unminifiedAndMaps = fulljs.pipe(sourcemaps.write('.temp', {
                 includeContent:false,
                 sourceRoot: function (file) {
                     return '../';
                 }
             }))
         .pipe(gulp.dest(settings.build.distOutputDirectory));
+
+    var minified = fulljs
+        .pipe(cleants())
+        .pipe(replace(extendsSearchRegex, ""))
+        .pipe(replace(decorateSearchRegex, ""))
+        .pipe(rename({extname: ".min.js"}))
+        .pipe(uglify())
+        .pipe(optimisejs())
+        .pipe(gulp.dest(settings.build.distOutputDirectory));
+
+    return merge2(unminifiedAndMaps, minified);
 }
 
 /**
