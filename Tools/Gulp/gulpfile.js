@@ -29,6 +29,9 @@ var workersStream;
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
 var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
 
+/**
+ * TS configurations shared in the gulp file.
+ */
 var tsConfig = {
     noExternalResolve: true,
     target: 'ES5',
@@ -37,6 +40,7 @@ var tsConfig = {
     experimentalDecorators: true,
     isolatedModules: false
 };
+var tsProject = typescript.createProject(tsConfig);
 
 var externalTsConfig = {
     noExternalResolve: false,
@@ -47,9 +51,9 @@ var externalTsConfig = {
     isolatedModules: false
 };
 
-var tsProject = typescript.createProject(tsConfig);
-
-//function to convert the shaders' filenames to variable names.
+/*
+ * Shader Management.
+ */
 function shadersName(filename) {
     return filename.replace('.fragment', 'Pixel')
         .replace('.vertex', 'Vertex')
@@ -60,6 +64,9 @@ function includeShadersName(filename) {
     return filename.replace('.fx', '');
 }
 
+/*
+ * Main necessary files stream Management.
+ */
 gulp.task("includeShaders", function (cb) {
     includeShadersStream = config.includeShadersDirectories.map(function (shadersDef) {
         return gulp.src(shadersDef.files).
@@ -97,7 +104,7 @@ gulp.task("workers", function (cb) {
 });
 
 /*
-Compiles all typescript files and creating a declaration file.
+* Compiles all typescript files and creating a js and a declaration file.
 */
 gulp.task('typescript-compile', function () {
     var tsResult = gulp.src(config.core.typescript)
@@ -135,39 +142,63 @@ gulp.task('typescript-compile', function () {
     ])
 });
 
+/**
+ * External library Build (mat, post processes, ...).
+ */
 gulp.task('materialsLibrary', function () {
-    var tasks = config.materials.map(function (material) {
+    return buildExternalLibraries(config.materialsLibrary);
+});
 
-        var compilOutput = gulp.src(material.file, { base: '../../' })
-            .pipe(sourcemaps.init())
-            .pipe(typescript(externalTsConfig));
+gulp.task('postProcessesLibrary', function () {
+    return buildExternalLibraries(config.postProcessesLibrary);
+});
 
-        var js = compilOutput.js;        
-        var shader = gulp.src(material.shaderFiles)
-                .pipe(uncommentShader())
-                .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
-        
-        var generatedJs = merge2(js, shader, includeShader)
-            .pipe(cleants())
-            .pipe(replace(extendsSearchRegex, ""))
-            .pipe(concat(material.output))
-            
-        var maps = generatedJs.pipe(sourcemaps.write('.temp', {
-                    includeContent:false,
-                    sourceRoot: '../../'
-                }))
-            .pipe(gulp.dest(config.materialsBuild.distOutputDirectory));
+gulp.task('proceduralTexturesLibrary', function () {
+    return buildExternalLibraries(config.proceduralTexturesLibrary);
+});
 
-        var minified = generatedJs.pipe(rename({extname: ".min.js"}))
-            .pipe(uglify())
-            .pipe(gulp.dest(config.materialsBuild.distOutputDirectory));
-
-        return merge2(maps, minified);
+/**
+ * Helper methods to build external library (mat, post processes, ...).
+ */
+var buildExternalLibraries = function(settings) {
+    var tasks = settings.libraries.map(function (library) {
+        return buildExternalLibrary(library, settings); 
     });
 
     return merge2(tasks);
-});
+}
 
+var buildExternalLibrary= function(library, settings) {
+    var compilOutput = gulp.src(library.file, { base: '../../' })
+        .pipe(sourcemaps.init())
+        .pipe(typescript(externalTsConfig));
+
+    var js = compilOutput.js;        
+    var shader = gulp.src(library.shaderFiles)
+            .pipe(uncommentShader())
+            .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
+    
+    var generatedJs = merge2(js, shader)
+        .pipe(cleants())
+        .pipe(replace(extendsSearchRegex, ""))
+        .pipe(concat(library.output))
+        
+    var maps = generatedJs.pipe(sourcemaps.write('.temp', {
+                includeContent:false,
+                sourceRoot: '../../'
+            }))
+        .pipe(gulp.dest(settings.build.distOutputDirectory));
+
+    var minified = generatedJs.pipe(rename({extname: ".min.js"}))
+        .pipe(uglify())
+        .pipe(gulp.dest(settings.build.distOutputDirectory));
+
+    return merge2(maps, minified);
+}
+
+/**
+ * Build tasks to concat minify uflify optimise the BJS js in different flavor (workers...).
+ */
 gulp.task("buildCore", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files).        
@@ -226,31 +257,54 @@ gulp.task("build", ["workers", "shaders"], function () {
         .pipe(gulp.dest(config.build.outputDirectory));
 });
 
-gulp.task("typescript", function (cb) {
-    runSequence("typescript-compile", "default", cb);
-});
-
 /**
- * The default task, call the tasks: build
+ * The default task, concat and min the main BJS files.
  */
 gulp.task('default', function (cb) {
     runSequence("buildNoWorker", "build", "buildCore", cb);
 });
 
 /**
- * Watch typescript task, will call the default typescript task if a typescript file is updated.
+ * Build the releasable files.
+ */
+gulp.task("typescript", function (cb) {
+    runSequence("typescript-compile", "default", cb);
+});
+
+gulp.task("typescript-libraries", ["materialsLibrary", "postProcessesLibrary", "proceduralTexturesLibrary"], function () {
+});
+
+gulp.task("typescript-all", function (cb) {
+    runSequence("typescript", "typescript-libraries", cb);
+});
+
+/**
+ * Watch ts files and fire repective tasks.
  */
 gulp.task('watch', ['typescript-compile'], function () {
     var tasks = [gulp.watch(config.core.typescript, ['typescript-compile'])];
 
-    config.materials.map(function (material) {
-        tasks.push(gulp.watch(material.file, ['materialsLibrary']));
-        tasks.push(gulp.watch(material.shaderFiles, ['materialsLibrary']));
+    config.materialsLibrary.libraries.map(function (material) {
+        tasks.push(gulp.watch(material.file, () => buildExternalLibrary(material, config.materialsLibrary)));
+        tasks.push(gulp.watch(material.shaderFiles, () => buildExternalLibrary(material, config.materialsLibrary)));
+    });
+
+    config.postProcessesLibrary.libraries.map(function (postProcess) {
+        tasks.push(gulp.watch(postProcess.file, buildExternalLibrary(postProcess, config.postProcessesLibrary)));
+        tasks.push(gulp.watch(postProcess.shaderFiles, buildExternalLibrary(postProcess, config.postProcessesLibrary)));
+    });
+
+    config.proceduralTexturesLibrary.libraries.map(function (proceduralTexture) {
+        tasks.push(gulp.watch(proceduralTexture.file, buildExternalLibrary(proceduralTexture, config.proceduralTexturesLibrary)));
+        tasks.push(gulp.watch(proceduralTexture.shaderFiles, buildExternalLibrary(proceduralTexture, config.proceduralTexturesLibrary)));
     });
 
     return tasks;
 });
 
+/**
+ * Embedded webserver for test convenience.
+ */
 gulp.task('webserver', function () {
     gulp.src('../../.').pipe(webserver({
       port: 1338,
@@ -258,5 +312,8 @@ gulp.task('webserver', function () {
     }));
 });
 
+/**
+ * Combine Webserver and Watch as long as vscode does not handle multi tasks.
+ */
 gulp.task('run', ['watch', 'webserver'], function () {
 });
