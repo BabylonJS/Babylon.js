@@ -9,7 +9,7 @@ sphere.material.diffuseTexture = fire;
 
 ## Adding a new procedural texture to the library
 
-To add a new procedural texture, you have to create your own folder in *proceduralTextures* folder. Then you need to add a .ts file and one .fragment.fx files:
+To add a new procedural texture, you have to create your own folder in *proceduralTextures* folder in src. Then you need to add a .ts file and one .fragment.fx files:
 * The .ts is the TypeScript code of your procedural texture
 * .fx file: GLSL code for fragment shaders
 

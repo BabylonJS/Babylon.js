@@ -15,7 +15,7 @@ sphere.material = simple;
 
 ## Adding a new material to the library
 
-To add a new material, you have to create your own folder in *materials* folder. Then you need to add a .ts file an two .fx files:
+To add a new material, you have to create your own folder in *materials* folder in src. Then you need to add a .ts file an two .fx files:
 * The .ts is the TypeScript code of your material
 * .fx files: GLSL code for vertex and fragment shaders
 
