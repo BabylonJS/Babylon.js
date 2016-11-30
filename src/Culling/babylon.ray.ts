@@ -6,6 +6,12 @@
         private _tvec: Vector3;
         private _qvec: Vector3;
 
+        private _renderPoints: Vector3[];
+        private _renderLine: LinesMesh;
+        private _renderFunction: () => void;
+        private _scene: Scene;
+        private _show = false;
+
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
 
@@ -191,6 +197,61 @@
 
                 return distance;
             }
+        }
+
+        public intersectsMesh(mesh:AbstractMesh, fastCheck?: boolean): PickingInfo {
+
+            var tm = Tmp.Matrix[0];
+
+            mesh.getWorldMatrix().invertToRef(tm);
+
+            var ray = Ray.Transform(this, tm);
+
+            return mesh.intersects(ray, fastCheck);
+
+        }
+
+        public show(scene:Scene, color:Color3): void{
+
+            this._renderFunction = this._render.bind(this);
+            this._show = true;
+            this._scene = scene;
+            this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
+            this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
+
+            if (color) {
+                this._renderLine.color.copyFrom(color);
+            }
+
+            this._scene.registerBeforeRender(this._renderFunction);
+
+        }
+
+        public hide(): void{
+
+            if(this._show){
+                this._show = false;
+                this._scene.unregisterBeforeRender(this._renderFunction);
+            }
+
+            if(this._renderLine){
+                this._renderLine.dispose();
+                this._renderLine = null;
+                this._renderPoints = null;
+            }
+
+        }
+
+        private _render(): void {
+
+            var point = this._renderPoints[1];
+
+            point.copyFrom(this.direction);
+            point.scaleInPlace(this.length);
+            point.addInPlace(this.origin);
+
+            Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
+
         }
 
         private static smallnum = 0.00000001;
