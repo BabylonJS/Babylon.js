@@ -279,7 +279,7 @@ module BABYLON {
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3", "noiseTexture"
                     ],
-                    join, fallbacks, this.onCompiled, this.onError);
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
             }
             if (!this._effect.isReady()) {
                 return false;

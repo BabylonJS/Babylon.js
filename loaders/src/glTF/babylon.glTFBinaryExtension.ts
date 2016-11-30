@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
+module BABYLON {
     const BinaryExtensionBufferName = "binary_glTF";
 
     enum EContentFormat {

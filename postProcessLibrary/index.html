@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
 	<title>Shaders Library</title>
 	<script src="../assets/refs/dat.gui.min.js"></script>
-	<script src="../dist/preview release/babylon.max.js"></script>
-	<script src="../dist/postProcessesLibrary/babylon.asciiArtPostProcess.js"></script>
-	<script src="../dist/postProcessesLibrary/babylon.digitalRainPostProcess.js"></script>
+	<script src="../tools/DevLoader/BabylonLoader.js"></script>
 
 	<style>
-		html, body {
+		html,
+		body {
 			width: 100%;
 			height: 100%;
 			padding: 0;
 			margin: 0;
 			overflow: hidden;
 		}
-
+		
 		#renderCanvas {
 			width: 100%;
 			height: 100%;
 		}
-
+		
 		#fps {
 			position: absolute;
 			background-color: black;
@@ -35,11 +35,13 @@
 		}
 	</style>
 </head>
+
 <body>
 	<div id="fps">0</div>
 	<canvas id="renderCanvas"></canvas>
-	
+
 	<script>
+	BABYLONDEVTOOLS.Loader.onReady(function() {
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
 			var engine = new BABYLON.Engine(canvas, true);
@@ -95,7 +97,9 @@
 				}
 			});
 		}
+	});
 
 	</script>
 </body>
+
 </html>
