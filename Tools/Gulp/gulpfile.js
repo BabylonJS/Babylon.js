@@ -306,6 +306,14 @@ gulp.task('watch', [], function () {
 });
 
 /**
+ * Embedded local dev env management.
+ */
+gulp.task('deployLocalDev', function () {
+    gulp.src('../../localDev/template/**.*')
+        .pipe(gulp.dest('../../localDev/src/'));
+});
+
+/**
  * Embedded webserver for test convenience.
  */
 gulp.task('webserver', function () {
