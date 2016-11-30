@@ -28,14 +28,22 @@ var BABYLONDEVTOOLS;
 
     var Loader = (function () {
         var queue;
-        var callback = null;
+        var callback;
+        var dependencies;
 
         function Loader() {
             queue = [];
+            dependencies = [];
+            callback = null;
         }
 
         Loader.prototype.onReady = function (callback) {
             this.callback = callback;
+        }
+
+        Loader.prototype.require = function (dependencies) {
+            this.dependencies = dependencies;
+            return this;
         }
 
         Loader.prototype.dequeue = function () {
@@ -104,25 +112,34 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.load = function () {
+        Loader.prototype.load = function (callback) {
             var self = this;
+            if (callback) {
+                self.callback = callback;
+            }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
                     self.loadBJSScripts(data);
+                    
+                    if (typeof self.dependencies === 'string') {
+                        self.loadScript(self.dependencies);
+                    }
+                    else {
+                        self.loadScripts(self.dependencies);
+                    }
+
                     self.dequeue();
                 },
                 function(reason) { 
                     console.error(reason);
-                });
-
+                }
+            );
         };
 
         return Loader;
     }());    
 
     var loader = new Loader();
-    loader.load();
-
     BABYLONDEVTOOLS.Loader = loader;
 
 })(BABYLONDEVTOOLS || (BABYLONDEVTOOLS = {}))
