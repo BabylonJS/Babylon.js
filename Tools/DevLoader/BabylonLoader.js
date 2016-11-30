@@ -32,21 +32,29 @@ var BABYLONDEVTOOLS;
         var dependencies;
         var useDist;
         var min;
+        var babylonJSPath;
 
         function Loader() {
             queue = [];
             dependencies = [];
             callback = null;
             min = (document.location.href.toLowerCase().indexOf('dist=min') > 0);
-            useDist = (min || document.location.href.toLowerCase().indexOf('dist=true') > 0);
+            useDist = (min || document.location.href.toLowerCase().indexOf('dist=true') > 0);            
+            babylonJSPath = '';
         }
 
-        Loader.prototype.onReady = function (callback) {
-            this.callback = callback;
+        Loader.prototype.root = function (newBabylonJSPath) {
+            babylonJSPath = newBabylonJSPath;
+            return this;
         }
 
-        Loader.prototype.require = function (dependencies) {
-            this.dependencies = dependencies;
+        Loader.prototype.require = function (newDependencies) {
+            dependencies = newDependencies;
+            return this;
+        }
+
+        Loader.prototype.onReady = function (newCallback) {
+            callback = newCallback;
             return this;
         }
 
@@ -54,8 +62,8 @@ var BABYLONDEVTOOLS;
             if (queue.length == 0) {
                 console.log('Scripts loaded');
                 BABYLON.Engine.ShadersRepository = "/src/Shaders/"; 
-                if (this.callback) {                    
-                    this.callback();
+                if (callback) {                    
+                    callback();
                 }
                 return;                
             }
@@ -90,6 +98,8 @@ var BABYLONDEVTOOLS;
                 for (; i < library.files.length; i++) {
                     var file = library.files[i];
                     file = file.replace('.ts', '.js');
+                    file = file.replace('../', '');
+                    file = babylonJSPath + '/' + file;
                     this.loadScript(file);
                 }
 
@@ -98,14 +108,16 @@ var BABYLONDEVTOOLS;
                     var endDirectoryIndex = shaderFile.lastIndexOf('/');
                     shaderFile = shaderFile.substring(0, endDirectoryIndex + 1);
                     shaderFile += library.output.replace('.js', '.js.fx');
+                    file = file.replace('../', '');
+                    file = babylonJSPath + '/' + file;
                     this.loadScript(shaderFile);
                 }
             }
             else if (min) {
-                this.loadScript('/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
+                this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
             }
             else {
-                this.loadScript('/dist/preview release' + module.build.distOutputDirectory + library.output);
+                this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
             }
         }
 
@@ -136,20 +148,20 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.load = function (callback) {
+        Loader.prototype.load = function (newCallback) {
             var self = this;
-            if (callback) {
-                self.callback = callback;
+            if (newCallback) {
+                callback = newCallback;
             }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
                     self.loadBJSScripts(data);
                     
-                    if (typeof self.dependencies === 'string') {
-                        self.loadScript(self.dependencies);
+                    if (typeof dependencies === 'string') {
+                        self.loadScript(dependencies);
                     }
-                    else if (self.dependencies) {
-                        self.loadScripts(self.dependencies);
+                    else if (dependencies) {
+                        self.loadScripts(dependencies);
                     }
 
                     self.dequeue();
