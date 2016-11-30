@@ -30,11 +30,15 @@ var BABYLONDEVTOOLS;
         var queue;
         var callback;
         var dependencies;
+        var useDist;
+        var min;
 
         function Loader() {
             queue = [];
             dependencies = [];
             callback = null;
+            min = (document.location.href.toLowerCase().indexOf('dist=min') > 0);
+            useDist = (min || document.location.href.toLowerCase().indexOf('dist=true') > 0);
         }
 
         Loader.prototype.onReady = function (callback) {
@@ -80,33 +84,50 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadLibrary = function (library) {
-            var i = 0;
-            for (; i < library.files.length; i++) {
-                var file = library.files[i];
-                file = file.replace('.ts', '.js');
-                this.loadScript(file);
-            }
+        Loader.prototype.loadLibrary = function (library, module) {
+            if (!useDist) {
+                var i = 0;
+                for (; i < library.files.length; i++) {
+                    var file = library.files[i];
+                    file = file.replace('.ts', '.js');
+                    this.loadScript(file);
+                }
 
-            if (library.shaderFiles && library.shaderFiles.length > 0) {
-                var shaderFile = library.shaderFiles[0];
-                var endDirectoryIndex = shaderFile.lastIndexOf('/');
-                shaderFile = shaderFile.substring(0, endDirectoryIndex + 1);
-                shaderFile += library.output.replace('.js', '.js.fx');
-                this.loadScript(shaderFile);
+                if (library.shaderFiles && library.shaderFiles.length > 0) {
+                    var shaderFile = library.shaderFiles[0];
+                    var endDirectoryIndex = shaderFile.lastIndexOf('/');
+                    shaderFile = shaderFile.substring(0, endDirectoryIndex + 1);
+                    shaderFile += library.output.replace('.js', '.js.fx');
+                    this.loadScript(shaderFile);
+                }
+            }
+            else if (min) {
+                this.loadScript('/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
+            }
+            else {
+                this.loadScript('/dist/preview release' + module.build.distOutputDirectory + library.output);
             }
         }
 
         Loader.prototype.loadModule = function (module) {
             for (var i = 0; i< module.libraries.length; i++) {
-                this.loadLibrary(module.libraries[i]);
+                this.loadLibrary(module.libraries[i], module);
             }
         }
 
         Loader.prototype.loadBJSScripts = function (settings) {
-            this.loadScripts(settings.core.files);
-            this.loadScripts(settings.extras.files);
-            
+
+            if (!useDist) {
+                this.loadScripts(settings.core.files);
+                this.loadScripts(settings.extras.files);
+            }
+            else if (min) {
+                this.loadScript('/dist/preview release/babylon.js');
+            }
+            else {
+                this.loadScript('/dist/preview release/babylon.max.js');
+            }
+
             for (var i = 0; i< settings.modules.length; i++) {
                 this.loadModule(settings[settings.modules[i]]);
             }
