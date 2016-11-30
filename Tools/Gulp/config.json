@@ -228,7 +228,7 @@
     ]
   },
 
-  "modules": ["materialsLibrary", "postProcessesLibrary", "proceduralTexturesLibrary", "loaders"],
+  "modules": ["materialsLibrary", "postProcessesLibrary", "proceduralTexturesLibrary", "loaders", "serializers"],
 
   "materialsLibrary": {
     "libraries": [
@@ -443,6 +443,19 @@
     "build": {
       "srcOutputDirectory": "../../loaders/",
       "distOutputDirectory": "/loaders/"
+    }
+  },
+
+  "serializers": {
+      "libraries": [    
+      {
+        "files": ["../../serializers/src/OBJ/babylon.objSerializer.ts"],
+        "output": "babylon.objSerializer.js"
+      }
+    ],
+    "build": {
+      "srcOutputDirectory": "../../serializers/",
+      "distOutputDirectory": "/serializers/"
     }
   }
 }
