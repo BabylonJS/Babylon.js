@@ -8,6 +8,9 @@
 
         private _renderPoints: Vector3[];
         private _renderLine: LinesMesh;
+        private _renderFunction: () => void;
+        private _scene: Scene;
+        private _show = false;
 
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
@@ -208,19 +211,46 @@
 
         }
 
-        public render(scene: Scene, color:Color3): void{
-            
-            if(!this._renderLine){
-                this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
-                this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
-            }else{
-                this.origin.addToRef(this.direction.scale(this.length), this._renderPoints[1]);
-                Mesh.CreateLines("ray", this._renderPoints, scene, true, this._renderLine);
-            }
+        public show(scene:Scene, color:Color3): void{
 
-            if(color){
+            this._renderFunction = this._render.bind(this);
+            this._show = true;
+            this._scene = scene;
+            this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
+            this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
+
+            if (color) {
                 this._renderLine.color.copyFrom(color);
             }
+
+            this._scene.registerBeforeRender(this._renderFunction);
+
+        }
+
+        public hide(): void{
+
+            if(this._show){
+                this._show = false;
+                this._scene.unregisterBeforeRender(this._renderFunction);
+            }
+
+            if(this._renderLine){
+                this._renderLine.dispose();
+                this._renderLine = null;
+                this._renderPoints = null;
+            }
+
+        }
+
+        private _render(): void {
+
+            var point = this._renderPoints[1];
+
+            point.copyFrom(this.direction);
+            point.scaleInPlace(this.length);
+            point.addInPlace(this.origin);
+
+            Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
 
         }
 
