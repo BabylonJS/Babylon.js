@@ -6,6 +6,9 @@
         private _tvec: Vector3;
         private _qvec: Vector3;
 
+        private _renderPoints: Vector3[];
+        private _renderLine: LinesMesh;
+
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
 
@@ -191,6 +194,34 @@
 
                 return distance;
             }
+        }
+
+        public intersectsMesh(mesh:AbstractMesh, fastCheck?: boolean): PickingInfo {
+
+            var tm = Tmp.Matrix[0];
+
+            mesh.getWorldMatrix().invertToRef(tm);
+
+            var ray = Ray.Transform(this, tm);
+
+            return mesh.intersects(ray, fastCheck);
+
+        }
+
+        public render(scene: Scene, color:Color3): void{
+            
+            if(!this._renderLine){
+                this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
+                this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
+            }else{
+                this.origin.addToRef(this.direction.scale(this.length), this._renderPoints[1]);
+                Mesh.CreateLines("ray", this._renderPoints, scene, true, this._renderLine);
+            }
+
+            if(color){
+                this._renderLine.color = color;
+            }
+
         }
 
         private static smallnum = 0.00000001;
