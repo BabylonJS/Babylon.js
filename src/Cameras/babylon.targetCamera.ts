@@ -48,7 +48,7 @@
                 return null;
             }
 
-            return this.lockedTarget.position || this.lockedTarget;
+            return this.lockedTarget.absolutePosition || this.lockedTarget;
         }
 
         // Cache
