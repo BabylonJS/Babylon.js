@@ -454,6 +454,7 @@
                 this._viewMatrix.m[12] += this.targetScreenOffset.x;
                 this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }
+            this._currentTarget = target;
             return this._viewMatrix;
         }
 
