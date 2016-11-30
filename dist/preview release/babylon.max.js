@@ -9910,6 +9910,7 @@ var BABYLON;
             this.origin = origin;
             this.direction = direction;
             this.length = length;
+            this._show = false;
         }
         // Methods
         Ray.prototype.intersectsBoxMinMax = function (minimum, maximum) {
@@ -10061,6 +10062,41 @@ var BABYLON;
                 }
                 return distance;
             }
+        };
+        Ray.prototype.intersectsMesh = function (mesh, fastCheck) {
+            var tm = BABYLON.Tmp.Matrix[0];
+            mesh.getWorldMatrix().invertToRef(tm);
+            var ray = Ray.Transform(this, tm);
+            return mesh.intersects(ray, fastCheck);
+        };
+        Ray.prototype.show = function (scene, color) {
+            this._renderFunction = this._render.bind(this);
+            this._show = true;
+            this._scene = scene;
+            this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
+            this._renderLine = BABYLON.Mesh.CreateLines("ray", this._renderPoints, scene, true);
+            if (color) {
+                this._renderLine.color.copyFrom(color);
+            }
+            this._scene.registerBeforeRender(this._renderFunction);
+        };
+        Ray.prototype.hide = function () {
+            if (this._show) {
+                this._show = false;
+                this._scene.unregisterBeforeRender(this._renderFunction);
+            }
+            if (this._renderLine) {
+                this._renderLine.dispose();
+                this._renderLine = null;
+                this._renderPoints = null;
+            }
+        };
+        Ray.prototype._render = function () {
+            var point = this._renderPoints[1];
+            point.copyFrom(this.direction);
+            point.scaleInPlace(this.length);
+            point.addInPlace(this.origin);
+            BABYLON.Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
         };
         /**
          * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
@@ -14725,7 +14761,7 @@ var BABYLON;
             if (!this.lockedTarget) {
                 return null;
             }
-            return this.lockedTarget.position || this.lockedTarget;
+            return this.lockedTarget.absolutePosition || this.lockedTarget;
         };
         // Cache
         TargetCamera.prototype._initCache = function () {
@@ -40502,12 +40538,23 @@ var BABYLON;
             this._vectors3Arrays[name] = value;
             return this;
         };
+        ShaderMaterial.prototype._checkCache = function (scene, mesh, useInstances) {
+            if (!mesh) {
+                return true;
+            }
+            if (this._effect && (this._effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
+                return false;
+            }
+            return false;
+        };
         ShaderMaterial.prototype.isReady = function (mesh, useInstances) {
             var scene = this.getScene();
             var engine = scene.getEngine();
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    return true;
+                    if (this._checkCache(scene, mesh, useInstances)) {
+                        return true;
+                    }
                 }
             }
             // Instances
