@@ -119,13 +119,16 @@ var BABYLONDEVTOOLS;
 
             if (!useDist) {
                 this.loadScripts(settings.core.files);
-                this.loadScripts(settings.extras.files);
+                this.loadScripts(settings.extras.files);                
+                this.loadScript('/dist/preview release/babylon.canvas2d.max.js');
             }
             else if (min) {
                 this.loadScript('/dist/preview release/babylon.js');
+                this.loadScript('/dist/preview release/babylon.canvas2d.js');
             }
             else {
                 this.loadScript('/dist/preview release/babylon.max.js');
+                this.loadScript('/dist/preview release/babylon.canvas2d.max.js');
             }
 
             for (var i = 0; i< settings.modules.length; i++) {
