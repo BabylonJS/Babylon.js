@@ -41,7 +41,7 @@
 	<canvas id="renderCanvas"></canvas>
 
 	<script>
-	BABYLONDEVTOOLS.Loader.onReady(function() {
+	BABYLONDEVTOOLS.Loader.load(function() {
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
 			var engine = new BABYLON.Engine(canvas, true);
