@@ -124,7 +124,7 @@ var BABYLONDEVTOOLS;
                     if (typeof self.dependencies === 'string') {
                         self.loadScript(self.dependencies);
                     }
-                    else {
+                    else if (self.dependencies) {
                         self.loadScripts(self.dependencies);
                     }
 
