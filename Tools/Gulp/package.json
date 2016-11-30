@@ -26,5 +26,8 @@
     "gulp-optimize-js": "^1.0.2",
     "gulp-webserver": "^0.9.1",
     "gulp-debug": "^3.0.0"
+  },
+  "scripts": {
+    "install": "npm --prefix ../../Playground/ install ../../Playground/ && gulp typescript-compile && gulp typescript-libraries && gulp deployLocalDev"
   }
 }

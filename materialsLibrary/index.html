@@ -3,18 +3,7 @@
 <head>
 	<title>Shaders Library</title>
 	<script src="../assets/refs/dat.gui.min.js"></script>
-	<script src="../dist/preview release/babylon.max.js"></script>
-	<script src="../dist/materialsLibrary/babylon.simpleMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.normalMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.waterMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.fireMaterial.js"></script>
-    <script src="../dist/materialsLibrary/babylon.lavaMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.terrainMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.furMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.triPlanarMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.gradientMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.skyMaterial.js"></script>
-	<script src="../dist/materialsLibrary/babylon.gridMaterial.js"></script>
+	<script src="../tools/DevLoader/BabylonLoader.js"></script>
 
 	<style>
 		html, body {
@@ -62,12 +51,13 @@
     <script src="test/addpbr.js"></script>
 	
 	<script>
+	BABYLONDEVTOOLS.Loader.load(function() {
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
 			var engine = new BABYLON.Engine(canvas, true);
 			var divFps = document.getElementById("fps");
 
-			var scene = new BABYLON.Scene(engine);
+			scene = new BABYLON.Scene(engine);
 
 			var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 6, 50, BABYLON.Vector3.Zero(), scene);
 			camera.attachControl(canvas, true);
@@ -361,7 +351,7 @@
 				});
 			});
 		}
-
+	});
 	</script>
 </body>
 </html>

@@ -33,35 +33,32 @@ But you can also start from scratch as you are not forced to support all these f
 
 ## Integrating the material in the build process
 
-To build all materials and generate the *dist* folder, just run:
+To build all materials and generate the *dist* folder, just run from the tools/gulp folder:
 
 ```
-gulp
+gulp materialsLibrary
 ```
 
-To integrate your new material to the build process, you have to edit the config.sjon file and add an entry in the "materials" section of the file:
+To integrate your new material to the build process, you have to edit the config.json file in the tools/gulp and add an entry in the "materialsLibrary/libraries" section of the file:
 
 ```
-{
-  "materials": [
-    {
-      "file": "shaders/simple/babylon.simpleMaterial.ts",
-      "shaderFiles": [
-        "shaders/simple/simple.vertex.fx",
-        "shaders/simple/simple.fragment.fx"
-      ],
-      "output": "babylon.simpleMaterial.js"
-    }
-  ],
-  "build": {
-    "distOutputDirectory": "dist/"
-  }
-}
+  "libraries": [
+    ...
+      {
+        "files": ["../../materialsLibrary/src/gradient/babylon.gradientMaterial.ts"],
+        "shaderFiles": [
+          "../../materialsLibrary/src/gradient/gradient.vertex.fx",
+          "../../materialsLibrary/src/gradient/gradient.fragment.fx"
+        ],
+        "output": "babylon.gradientMaterial.js"
+      }
+      ...
+  ]
 ```
 
 ## Testing your material
 
-To test your material, you can use the /test/index.html file by adding a reference to your .js file. Then you will need to update the code to create an instance of your material and reference it in the UI system:
+To test your material, you can use the /materialsLibrary/index.html page. References are added automatically. You only need to update the code to create an instance of your material and reference it in the UI system:
 
 ```
 gui.add(options, 'material', ['standard', 'simple']).onFinishChange(function () {
@@ -80,7 +77,7 @@ gui.add(options, 'material', ['standard', 'simple']).onFinishChange(function () 
 
 This page allows you to test your code with animated meshes, shadows, various kinds of lights and fog. Just use the UI on the right to turn features on and off.
 
-To serve this page, you can start:
+To serve this page, you can start from the tools/gulp folder the task:
 
 ```
 gulp webserver

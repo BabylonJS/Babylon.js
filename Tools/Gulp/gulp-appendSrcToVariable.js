@@ -7,7 +7,7 @@ var File = gutil.File;
 // Consts
 const PLUGIN_NAME = 'gulp-appendSrcToVariable';
 
-var appendSrcToVariable = function appendSrcToVariable(varName, asMap, namingCallback) {
+var appendSrcToVariable = function appendSrcToVariable(varName, namingCallback, output) {
 
     var content;
     var firstFile;
@@ -48,7 +48,8 @@ var appendSrcToVariable = function appendSrcToVariable(varName, asMap, namingCal
             return;
         }
 
-        var joinedPath = path.join(firstFile.base, varName);
+        var pathObject = path.parse(firstFile.path);
+        var joinedPath = path.join(pathObject.dir, output);
 
         var joinedFile = new File({
             cwd: firstFile.cwd,

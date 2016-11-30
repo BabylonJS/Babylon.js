@@ -19,7 +19,7 @@
             ]
         },
         { 
-            "taskName": "typescript",
+            "taskName": "typescript-all",
             "isBuildCommand": true,
             "problemMatcher": [
                 "$tsc"
