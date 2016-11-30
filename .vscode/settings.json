@@ -12,7 +12,7 @@
         "**/temp": true,
         "**/.temp": true,
         "**/*.js.map": true,
-        "**/*.fx.js": true,
+        "**/*.js.fx": true,
         "**/*.js": { 
             "when":"$(basename).ts"
         }
