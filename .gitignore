@@ -16,6 +16,10 @@ TestResults
 
 # javascript files
 src/**/*.js
+loaders/src/**/*.js
+materialsLibrary/src/**/*.js
+proceduralTexturesLibrary/src/**/*.js
+postProcessLibrary/src/**/*.js
 
 # Build results
 [Dd]ebug/
@@ -130,8 +134,8 @@ node_modules
 .idea
 
 # for VSCode
-/.vs
-/Playground/project.lock.json
+.vs
 .tempChromeProfileForDebug
 .temp
 *.js.map
+*.js.fx

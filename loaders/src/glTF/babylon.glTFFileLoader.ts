@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
+module BABYLON {
     /**
     * Tokenizer. Used for shaders compatibility
     * Automatically map world, view, projection, worldViewProjection, attributes and so on

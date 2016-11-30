@@ -1,4 +1,6 @@
-﻿module BABYLON {
+﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
+module BABYLON {
 
     export class STLFileLoader implements ISceneLoaderPlugin {
 

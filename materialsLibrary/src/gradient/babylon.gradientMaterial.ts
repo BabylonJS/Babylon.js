@@ -265,7 +265,7 @@ module BABYLON {
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                     ],
-                    join, fallbacks, this.onCompiled, this.onError);
+                    join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: 4 });
             }
             if (!this._effect.isReady()) {
                 return false;
