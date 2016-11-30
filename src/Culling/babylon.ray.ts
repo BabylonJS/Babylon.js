@@ -219,7 +219,7 @@
             }
 
             if(color){
-                this._renderLine.color = color;
+                this._renderLine.color.copyFrom(color);
             }
 
         }
