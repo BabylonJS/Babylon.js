@@ -1,24 +1,22 @@
 // Place your settings in this file to overwrite default and user settings.
-// "files.exclude": {
-//         "**/.git": true,
-//         "**/.svn": true,
-//         "**/.hg": true,
-//         "**/.DS_Store": true,
-//         "**/.vs": true,        
-//         "**/.tempChromeProfileForDebug": true,
-//         "**/node_modules": true,
-//         "**/temp": true,
-//         "**/.temp": true,
-//         "**/*.js.map": true,
-//         "**/*.fx.js": true,
-//         "**/*.js": { 
-//             "when":"$(basename).ts"
-//         }
-//     },
-
 {
     // Configure glob patterns for excluding files and folders.
-    
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/.vs": true,        
+        "**/.tempChromeProfileForDebug": true,
+        "**/node_modules": true,
+        "**/temp": true,
+        "**/.temp": true,
+        "**/*.js.map": true,
+        "**/*.fx.js": true,
+        "**/*.js": { 
+            "when":"$(basename).ts"
+        }
+    },
     "files.associations": {
         "*.fx": "glsl"
     },
