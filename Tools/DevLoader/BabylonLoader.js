@@ -49,7 +49,14 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.require = function (newDependencies) {
-            dependencies = newDependencies;
+            if (typeof newDependencies === 'string') {
+                dependencies.push(newDependencies);
+            }
+            else if (newDependencies) {
+                for (var i = 0; i < newDependencies.length; i++) {
+                    dependencies.push(newDependencies[i]);
+                }
+            }
             return this;
         }
 
@@ -156,11 +163,7 @@ var BABYLONDEVTOOLS;
             getJson('/Tools/Gulp/config.json',
                 function(data) {
                     self.loadBJSScripts(data);
-                    
-                    if (typeof dependencies === 'string') {
-                        self.loadScript(dependencies);
-                    }
-                    else if (dependencies) {
+                    if (dependencies) {
                         self.loadScripts(dependencies);
                     }
 
