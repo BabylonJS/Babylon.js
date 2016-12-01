@@ -59,7 +59,7 @@
 			.require(indexjs)
 			.load(function() {
 				if (BABYLON.Engine.isSupported()) {
-					engine = new BABYLON.Engine(canvas, true);				
+					engine = new BABYLON.Engine(canvas, true, { stencil: true });				
 
 					// call the scene creation from the js.
 					var scene = createScene();
