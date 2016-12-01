@@ -698,9 +698,6 @@
             this._badOS = regexp.test(navigator.userAgent);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
-            if (this._texturesSupported.length > 0) {
-                Tools.Log("Compressed textures formats HW / browser supports: " + this._texturesSupported);
-            }
         }
 
         public get webGLVersion(): string {
