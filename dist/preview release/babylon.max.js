@@ -6512,6 +6512,8 @@ var BABYLON;
             this._currentBufferPointers = [];
             this._currentInstanceLocations = new Array();
             this._currentInstanceBuffers = new Array();
+            // Hardware supported Compressed Textures
+            this._texturesSupported = new Array();
             this._onVRFullScreenTriggered = function () {
                 if (_this._vrDisplayEnabled && _this._vrDisplayEnabled.isPresenting) {
                     //get the old size before we change
@@ -6604,7 +6606,11 @@ var BABYLON;
             }
             // Extensions
             this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
+            this._caps.astc = this._gl.getExtension('WEBGL_compressed_texture_astc');
             this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
+            this._caps.pvrtc = this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc'); // 2nd is what iOS reports
+            this._caps.etc1 = this._gl.getExtension('WEBGL_compressed_texture_etc1');
+            this._caps.etc2 = this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // first is the final name, found hardware using 2nd
             this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
@@ -6619,6 +6625,21 @@ var BABYLON;
             this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
+            // Intelligently add supported commpressed formats in order to check for.
+            // Check for ASTC support first as it is most powerful and to be very cross platform.
+            // Next PVR & S3, which are probably superior to ETC1/2.  
+            // Likely no hardware which supports both PVR & S3, so order matters little.
+            // ETC2 is newer and handles ETC1, so check for first.
+            if (this._caps.astc)
+                this.texturesSupported.push('.astc');
+            if (this._caps.s3tc)
+                this.texturesSupported.push('.dds');
+            if (this._caps.pvrtc)
+                this.texturesSupported.push('.pvr');
+            if (this._caps.etc2)
+                this.texturesSupported.push('.etc2');
+            if (this._caps.etc1)
+                this.texturesSupported.push('.etc1');
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
                 this._caps.highPrecisionShaderSupported = highp.precision !== 0;
@@ -6923,6 +6944,20 @@ var BABYLON;
         Object.defineProperty(Engine, "Version", {
             get: function () {
                 return "2.5.-beta";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "texturesSupported", {
+            get: function () {
+                return this._texturesSupported;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "textureFormatInUse", {
+            get: function () {
+                return this._textureFormatInUse;
             },
             enumerable: true,
             configurable: true
@@ -7953,21 +7988,58 @@ var BABYLON;
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
             texture.samplingMode = samplingMode;
         };
-        Engine.prototype.createTexture = function (urlOrList, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
+        /**
+         * Set the compressed texture format to use, based on the formats you have,
+         * the formats supported by the hardware / browser, and those currently implemented
+         * in BJS.
+         *
+         * Note: The result of this call is not taken into account texture is base64 or when
+         * using a database / manifest.
+         *
+         * @param {Array<string>} formatsAvailable - Extension names including dot.  Case
+         * and order do not matter.
+         * @returns The extension selected.
+         */
+        Engine.prototype.setTextureFormatToUse = function (formatsAvailable) {
+            for (var i = 0, len1 = this.texturesSupported.length; i < len1; i++) {
+                // code to allow the formats to be added as they can be developed / hw tested
+                if (this._texturesSupported[i] === '.astc')
+                    continue;
+                if (this._texturesSupported[i] === '.pvr')
+                    continue;
+                if (this._texturesSupported[i] === '.etc1')
+                    continue;
+                if (this._texturesSupported[i] === '.etc2')
+                    continue;
+                for (var j = 0, len2 = formatsAvailable.length; j < len2; j++) {
+                    if (this._texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
+                        return this._textureFormatInUse = this._texturesSupported[i];
+                    }
+                }
+            }
+            // actively set format to nothing, to allow this to be called more than once
+            // and possibly fail the 2nd time
+            return this._textureFormatInUse = null;
+        };
+        Engine.prototype.createTexture = function (url, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer) {
             var _this = this;
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
             if (buffer === void 0) { buffer = null; }
             var texture = this._gl.createTexture();
-            var url = ((urlOrList.constructor === Array) ? urlOrList[0] : urlOrList);
             var extension;
             var fromData = false;
             if (url.substr(0, 5) === "data:") {
                 fromData = true;
             }
-            if (!fromData)
-                extension = url.substr(url.length - 4, 4).toLowerCase();
+            if (!fromData) {
+                var lastDot = url.lastIndexOf('.');
+                extension = url.substring(lastDot).toLowerCase();
+                if (this._textureFormatInUse && !fromData && !scene.database) {
+                    url = url.substring(0, lastDot) + this._textureFormatInUse;
+                }
+            }
             else {
                 var oldUrl = url;
                 fromData = oldUrl.split(':');
@@ -8006,16 +8078,6 @@ var BABYLON;
                     callback(buffer);
             }
             else if (isDDS) {
-                if (!this.getCaps().s3tc) {
-                    if (urlOrList instanceof Array) {
-                        var newList = urlOrList.slice(1);
-                        if (newList.length > 0) {
-                            return this.createTexture(newList, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer);
-                        }
-                    }
-                    onerror();
-                    return null;
-                }
                 callback = function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
@@ -23503,7 +23565,7 @@ var BABYLON;
 (function (BABYLON) {
     var Texture = (function (_super) {
         __extends(Texture, _super);
-        function Texture(urlOrList, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
+        function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer) {
             var _this = this;
             if (noMipmap === void 0) { noMipmap = false; }
             if (invertY === void 0) { invertY = true; }
@@ -23520,10 +23582,8 @@ var BABYLON;
             this.uAng = 0;
             this.vAng = 0;
             this.wAng = 0;
-            var url = ((urlOrList instanceof Array) ? urlOrList[0] : urlOrList);
             this.name = url;
             this.url = url;
-            this._delayReloadData = urlOrList;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
             this._samplingMode = samplingMode;
@@ -23543,7 +23603,7 @@ var BABYLON;
             };
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(urlOrList, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
+                    this._texture = scene.getEngine().createTexture(url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
@@ -23577,7 +23637,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this._delayReloadData, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
@@ -23731,12 +23791,6 @@ var BABYLON;
                     var texture;
                     if (parsedTexture.base64String) {
                         texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
-                    }
-                    else if (parsedTexture.name instanceof Array) {
-                        for (var i = 0, len = parsedTexture.name.length; i < len; i++) {
-                            parsedTexture.name[i] = rootUrl + parsedTexture.name[i];
-                        }
-                        texture = new Texture(parsedTexture.name, scene);
                     }
                     else {
                         texture = new Texture(rootUrl + parsedTexture.name, scene);
