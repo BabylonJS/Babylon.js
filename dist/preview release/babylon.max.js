@@ -36639,19 +36639,19 @@ var BABYLON;
                 serializationObject.uvs = this.getVerticesData(BABYLON.VertexBuffer.UVKind);
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-                serializationObject.uvs2 = this.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+                serializationObject.uv2s = this.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
-                serializationObject.uvs3 = this.getVerticesData(BABYLON.VertexBuffer.UV3Kind);
+                serializationObject.uv3s = this.getVerticesData(BABYLON.VertexBuffer.UV3Kind);
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
-                serializationObject.uvs4 = this.getVerticesData(BABYLON.VertexBuffer.UV4Kind);
+                serializationObject.uv4s = this.getVerticesData(BABYLON.VertexBuffer.UV4Kind);
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
-                serializationObject.uvs5 = this.getVerticesData(BABYLON.VertexBuffer.UV5Kind);
+                serializationObject.uv5s = this.getVerticesData(BABYLON.VertexBuffer.UV5Kind);
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
-                serializationObject.uvs6 = this.getVerticesData(BABYLON.VertexBuffer.UV6Kind);
+                serializationObject.uv6s = this.getVerticesData(BABYLON.VertexBuffer.UV6Kind);
             }
             if (this.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
                 serializationObject.colors = this.getVerticesData(BABYLON.VertexBuffer.ColorKind);
@@ -42804,6 +42804,12 @@ var BABYLON;
         serializationObject.ranges = mesh.serializeAnimationRanges();
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
+        // Alpha
+        serializationObject.alphaIndex = mesh.alphaIndex;
+        serializationObject.hasVertexAlpha = mesh.hasVertexAlpha;
+        serializationObject.overlayAlpha = mesh.overlayAlpha;
+        // Fog
+        serializationObject.applyFog = mesh.applyFog;
         // Action Manager
         if (mesh.actionManager) {
             serializationObject.actions = mesh.actionManager.serialize(mesh.name);
