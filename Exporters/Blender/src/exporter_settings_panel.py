@@ -1,9 +1,6 @@
 from .package_level import *
 
 import bpy
-LEGACY      = 'LEGACY'
-INLINE      = 'INLINE'
-PRIORITIZED = 'PRIORITIZED'
 # Panel displayed in Scene Tab of properties, so settings can be saved in a .blend file
 class ExporterSettingsPanel(bpy.types.Panel):
     bl_label = get_title()
@@ -36,21 +33,11 @@ class ExporterSettingsPanel(bpy.types.Panel):
         description='',
         default = True
         )
-    bpy.types.Scene.textureMethod = bpy.props.EnumProperty(
-        name='Method',
-        description='How are textures to be implemented',
-        items = (
-                 (LEGACY     , 'Legacy'     , 'Just the single Blender texture'),
-                 (INLINE     , 'Inline'     , 'Place a base64 version of texture directly in the output'),
-                 (PRIORITIZED, 'Prioritized', 'Allow various compressed texture formats to be tried first')
-                ),
-        default = LEGACY
+    bpy.types.Scene.inlineTextures = bpy.props.BoolProperty(
+        name='inline',
+        description='turn textures into encoded strings, for direct inclusion into source code',
+        default = False
     )
-    bpy.types.Scene.texturePriority = bpy.props.StringProperty(
-        name='Order',
-        description='Space delimited list of extensions to try\nnot including format supplied by Blender\nwhich will be last.',
-        default = '.ASTC .DDS .ETC'
-        )
     bpy.types.Scene.textureDir = bpy.props.StringProperty(
         name='Sub-directory',
         description='The path below the output directory to write texture files (any separators OS dependent)',
@@ -71,13 +58,10 @@ class ExporterSettingsPanel(bpy.types.Panel):
         layout.prop(scene, 'ignoreIKBones')
 
         box = layout.box()
-        box.label(text='Texture Options:')
-        box.prop(scene, 'textureMethod')
+        box.label(text='Texture Location:')
+        box.prop(scene, 'inlineTextures')
         row = box.row()
-        row.enabled = scene.textureMethod == PRIORITIZED
-        row.prop(scene, 'texturePriority')
-        row = box.row()
-        row.enabled = scene.textureMethod != INLINE
+        row.enabled = not scene.inlineTextures
         row.prop(scene, 'textureDir')
 
         box = layout.box()

@@ -14,7 +14,7 @@
 - Added `scene.multiPick` and `scene.multiPickWithRay` to return an array of pickedMesh objects ([deltakosh](https://github.com/deltakosh))
 - Added `Effect.GetVertexShaderSource()` and `Effect.GetFragmentShaderSource()` ([deltakosh](https://github.com/deltakosh))
 - New `Texture.LoadFromDataString()` to help loading base64 encoded textures ([deltakosh](https://github.com/deltakosh))
-- You can now specify an array of string when loading a texture (they will be considered as fallbacks) ([deltakosh](https://github.com/deltakosh))
+- Added Engine detection of the compresed texture formats supported by Hw / browser.  You can specify those formats you have files for using `Engine.setTextureFormatToUse()`, and an appropriate one will be chosen. ([Palmer-JC](https://github.com/Palmer-JC/))
 - Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))
 - Added Bone.setYawPitchRoll ([abow](https://github.com/abow))
 - Added Bone.rotate ([abow](https://github.com/abow))

@@ -56,7 +56,7 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Child materials
  * 32 bit vertex limit for multi-materials
 * **Textures**
- * Name(s) - Multiples for compressed texture prioritization
+ * Name
  * Associated file
  * Level
  * Use alpha
