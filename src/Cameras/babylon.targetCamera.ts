@@ -48,6 +48,10 @@
                 return null;
             }
 
+            if (this.lockedTarget.absolutePosition) {
+                this.lockedTarget.computeWorldMatrix();
+            }
+
             return this.lockedTarget.absolutePosition || this.lockedTarget;
         }
 
