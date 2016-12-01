@@ -64,6 +64,10 @@
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
         public SHADOWFULLFLOAT = false;
+        
+        public METALLICWORKFLOW = false;
+        public METALLICROUGHNESSGSTOREINALPHA = false;
+        public METALLICROUGHNESSGSTOREINGREEN = false;
 
         constructor() {
             super();
@@ -282,6 +286,12 @@
         @serializeAsTexture()
         public reflectivityTexture: BaseTexture;
 
+        /**
+         * Used to switch from specular/glossiness to metallic/roughness workflow.
+         */
+        @serializeAsTexture()
+        public metallicTexture: BaseTexture;
+
         @serializeAsTexture()
         public bumpTexture: BaseTexture;
 
@@ -313,12 +323,11 @@
         public emissiveColor = new Color3(0, 0, 0);
         
         /**
-
          * AKA Glossiness in other nomenclature.
          */
         @serialize()
         public microSurface = 0.9;
-        
+
         /**
          * source material index of refraction (IOR)' / 'destination material IOR.
          */
@@ -378,6 +387,18 @@
          */
         @serialize()
         public useMicroSurfaceFromReflectivityMapAlpha = false;
+
+        /**
+         * Specifies if the metallic texture contains the roughness information in its alpha channel.
+         */
+        @serialize()
+        public useRoughnessFromMetallicTextureAlpha = true;
+
+        /**
+         * Specifies if the metallic texture contains the roughness information in its green channel.
+         */
+        @serialize()
+        public useRoughnessFromMetallicTextureGreen = false;
         
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
@@ -725,14 +746,26 @@
                     }
                 }
 
-                if (this.reflectivityTexture && StandardMaterial.SpecularTextureEnabled) {
-                    if (!this.reflectivityTexture.isReady()) {
-                        return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.REFLECTIVITY = true;
-                        this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
-                        this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
+                if (StandardMaterial.SpecularTextureEnabled) {                        
+                    if (this.metallicTexture) {
+                        if (!this.metallicTexture.isReady()) {
+                            return false;
+                        } else {
+                            needUVs = true;
+                            this._defines.METALLICWORKFLOW = true;
+                            this._defines.METALLICROUGHNESSGSTOREINALPHA = this.useRoughnessFromMetallicTextureAlpha;
+                            this._defines.METALLICROUGHNESSGSTOREINGREEN = !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen;
+                        }
+                    }
+                    else if (this.reflectivityTexture) {
+                        if (!this.reflectivityTexture.isReady()) {
+                            return false;
+                        } else {
+                            needUVs = true;
+                            this._defines.REFLECTIVITY = true;
+                            this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
+                            this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
+                        }
                     }
                 }
 
@@ -1174,11 +1207,19 @@
                         this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
                     }
 
-                    if (this.reflectivityTexture && StandardMaterial.SpecularTextureEnabled) {
-                        this._effect.setTexture("reflectivitySampler", this.reflectivityTexture);
+                    if (StandardMaterial.SpecularTextureEnabled) {
+                        if (this.metallicTexture) {
+                            this._effect.setTexture("reflectivitySampler", this.metallicTexture);
 
-                        this._effect.setFloat2("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level);
-                        this._effect.setMatrix("reflectivityMatrix", this.reflectivityTexture.getTextureMatrix());
+                            this._effect.setFloat2("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.metallicTexture.level);
+                            this._effect.setMatrix("reflectivityMatrix", this.metallicTexture.getTextureMatrix());
+                        }
+                        else if (this.reflectivityTexture) {
+                            this._effect.setTexture("reflectivitySampler", this.reflectivityTexture);
+
+                            this._effect.setFloat2("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level);
+                            this._effect.setMatrix("reflectivityMatrix", this.reflectivityTexture.getTextureMatrix());
+                        }
                     }
 
                     if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
@@ -1331,7 +1372,10 @@
                 results.push(this.emissiveTexture);
             }
 
-            if (this.reflectivityTexture && this.reflectivityTexture.animations && this.reflectivityTexture.animations.length > 0) {
+            if (this.metallicTexture && this.metallicTexture.animations && this.metallicTexture.animations.length > 0) {
+                results.push(this.metallicTexture);
+            }
+            else if (this.reflectivityTexture && this.reflectivityTexture.animations && this.reflectivityTexture.animations.length > 0) {
                 results.push(this.reflectivityTexture);
             }
 
@@ -1374,6 +1418,10 @@
 
                 if (this.emissiveTexture) {
                     this.emissiveTexture.dispose();
+                }
+
+                if (this.metallicTexture) {
+                    this.metallicTexture.dispose();
                 }
 
                 if (this.reflectivityTexture) {
