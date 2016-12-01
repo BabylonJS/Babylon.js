@@ -165,7 +165,7 @@
         serializationObject.overlayAlpha = mesh.overlayAlpha;
 
         // Fog
-        serializationScene.applyFog = mesh.applyFog;
+        serializationObject.applyFog = mesh.applyFog;
 
         // Action Manager
         if (mesh.actionManager) {
