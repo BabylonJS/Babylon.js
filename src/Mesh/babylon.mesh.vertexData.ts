@@ -1180,7 +1180,7 @@
             return vertexData;
         }
 
-        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
+        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsZ?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1190,11 +1190,11 @@
             var width: number = options.width || 1;
             var height: number = options.height || 1;
             var subdivisionsX: number = options.subdivisionsX || options.subdivisions || 1;
-            var subdivisionsY: number = options.subdivisionsY || options.subdivisions || 1;
+            var subdivisionsZ: number = options.subdivisionsZ || options.subdivisions || 1;
 
-            for (row = 0; row <= subdivisionsY; row++) {
+            for (row = 0; row <= subdivisionsZ; row++) {
                 for (col = 0; col <= subdivisionsX; col++) {
-                    var position = new Vector3((col * width) / subdivisionsX - (width / 2.0), 0, ((subdivisionsY - row) * height) / subdivisionsY - (height / 2.0));
+                    var position = new Vector3((col * width) / subdivisionsX - (width / 2.0), 0, ((subdivisionsZ - row) * height) / subdivisionsZ - (height / 2.0));
                     var normal = new Vector3(0, 1.0, 0);
 
                     positions.push(position.x, position.y, position.z);
@@ -1203,7 +1203,7 @@
                 }
             }
 
-            for (row = 0; row < subdivisionsY; row++) {
+            for (row = 0; row < subdivisionsZ; row++) {
                 for (col = 0; col < subdivisionsX; col++) {
                     indices.push(col + 1 + (row + 1) * (subdivisionsX + 1));
                     indices.push(col + 1 + row * (subdivisionsX + 1));
