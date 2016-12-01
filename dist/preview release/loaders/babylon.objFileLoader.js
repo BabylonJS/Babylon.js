@@ -740,4 +740,4 @@ var BABYLON;
     BABYLON.SceneLoader.RegisterPlugin(new OBJFileLoader());
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=../../src/OBJ/babylon.objFileLoader.js.map
+//# sourceMappingURL=babylon.objFileLoader.js.map
