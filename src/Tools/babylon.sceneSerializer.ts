@@ -159,6 +159,14 @@
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
 
+        // Alpha
+        serializationObject.alphaIndex = mesh.alphaIndex;
+        serializationObject.hasVertexAlpha = mesh.hasVertexAlpha;
+        serializationObject.overlayAlpha = mesh.overlayAlpha;
+
+        // Fog
+        serializationObject.applyFog = mesh.applyFog;
+
         // Action Manager
         if (mesh.actionManager) {
             serializationObject.actions = mesh.actionManager.serialize(mesh.name);
