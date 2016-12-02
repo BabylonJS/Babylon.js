@@ -11,6 +11,7 @@
         private _renderFunction: () => void;
         private _scene: Scene;
         private _show = false;
+        private _tmpRay: Ray;
 
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
@@ -205,25 +206,33 @@
 
             mesh.getWorldMatrix().invertToRef(tm);
 
-            var ray = Ray.Transform(this, tm);
+            if(this._tmpRay){
+                Ray.TransformToRef(this, tm, this._tmpRay);
+            }else{
+                this._tmpRay = Ray.Transform(this, tm);
+            }
 
-            return mesh.intersects(ray, fastCheck);
+            return mesh.intersects(this._tmpRay, fastCheck);
 
         }
 
         public show(scene:Scene, color:Color3): void{
 
-            this._renderFunction = this._render.bind(this);
-            this._show = true;
-            this._scene = scene;
-            this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
-            this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
+            if(!this._show){
+
+                this._renderFunction = this._render.bind(this);
+                this._show = true;
+                this._scene = scene;
+                this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
+                this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
+
+                this._scene.registerBeforeRender(this._renderFunction);
+
+            }
 
             if (color) {
                 this._renderLine.color.copyFrom(color);
             }
-
-            this._scene.registerBeforeRender(this._renderFunction);
 
         }
 
@@ -372,6 +381,15 @@
             newDirection.normalize();
 
             return new Ray(newOrigin, newDirection, ray.length);
+        }
+
+        public static TransformToRef(ray: Ray, matrix: Matrix, result:Ray): void {
+            
+            Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
+            Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
+
+            ray.direction.normalize();
+            
         }
     }
 }
