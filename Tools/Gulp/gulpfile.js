@@ -20,6 +20,7 @@ var webserver = require('gulp-webserver');
 var path = require('path');
 
 var config = require("./config.json");
+var customConfig = require("./custom.config.json");
 
 var debug = require('gulp-debug');
 var includeShadersStream;
@@ -164,6 +165,26 @@ gulp.task("build", ["workers", "shaders"], function () {
         .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
 });
+
+gulp.task("build-custom", ["shaders"], function () {
+    return merge2(
+        gulp.src(customConfig.core.files).        
+            pipe(expect.real({ errorOnFailure: true }, customConfig.core.files)),  
+        shadersStream,
+        includeShadersStream
+        )
+        .pipe(concat(customConfig.build.filename))
+        .pipe(cleants())
+        .pipe(replace(extendsSearchRegex, ""))
+        .pipe(replace(decorateSearchRegex, ""))
+        .pipe(addModuleExports("BABYLON"))
+        .pipe(gulp.dest(customConfig.build.outputDirectory))
+        .pipe(rename(customConfig.build.minFilename))
+        .pipe(uglify())
+        .pipe(optimisejs())
+        .pipe(gulp.dest(customConfig.build.outputDirectory));
+});
+
 
 /*
 * Compiles all typescript files and creating a js and a declaration file.
