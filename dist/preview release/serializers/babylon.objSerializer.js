@@ -87,4 +87,4 @@ var BABYLON;
     BABYLON.OBJExport = OBJExport;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=../../src/OBJ/babylon.objSerializer.js.map
+//# sourceMappingURL=babylon.objSerializer.js.map

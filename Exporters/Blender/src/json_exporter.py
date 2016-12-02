@@ -32,7 +32,7 @@ class JsonExporter:
 
             # assign texture location, purely temporary if inlining
             self.textureDir = path.dirname(filepath)
-            if scene.textureMethod != INLINE:
+            if not scene.inlineTextures:
                 self.textureDir = path.join(self.textureDir, scene.textureDir)
                 if not path.isdir(self.textureDir):
                     makedirs(self.textureDir)
@@ -42,11 +42,10 @@ class JsonExporter:
             Logger.log('Scene settings used:', 1)
             Logger.log('selected layers only:  ' + format_bool(scene.export_onlySelectedLayer), 2)
             Logger.log('flat shading entire scene:  ' + format_bool(scene.export_flatshadeScene), 2)
-            Logger.log('texture Method:  ' + scene.textureMethod, 2)
-            if scene.textureMethod != INLINE:
+            Logger.log('inline textures:  ' + format_bool(scene.inlineTextures), 2)
+            if not scene.inlineTextures:
                 Logger.log('texture directory:  ' + self.textureDir, 2)
-            if scene.textureMethod == PRIORITIZED:
-                Logger.log('Priority Order:  ' + scene.texturePriority)
+                
             self.world = World(scene)
 
             bpy.ops.screen.animation_cancel()

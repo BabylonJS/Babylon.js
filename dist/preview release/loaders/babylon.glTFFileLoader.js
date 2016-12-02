@@ -90,7 +90,8 @@ var BABYLON;
     var EBlendingFunction = BABYLON.EBlendingFunction;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=../../src/glTF/babylon.glTFFileLoaderInterfaces.js.map
+//# sourceMappingURL=babylon.glTFFileLoaderInterfaces.js.map
+
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1499,7 +1500,8 @@ var BABYLON;
     BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=../../src/glTF/babylon.glTFFileLoader.js.map
+//# sourceMappingURL=babylon.glTFFileLoader.js.map
+
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1701,7 +1703,8 @@ var BABYLON;
     BABYLON.GLTFUtils = GLTFUtils;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=../../src/glTF/babylon.glTFFileLoaderUtils.js.map
+//# sourceMappingURL=babylon.glTFFileLoaderUtils.js.map
+
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1822,7 +1825,8 @@ var BABYLON;
     BABYLON.GLTFFileLoaderExtension = GLTFFileLoaderExtension;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=../../src/glTF/babylon.glTFFileLoaderExtension.js.map
+//# sourceMappingURL=babylon.glTFFileLoaderExtension.js.map
+
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1965,4 +1969,4 @@ var BABYLON;
     BABYLON.GLTFFileLoader.RegisterExtension(new GLTFBinaryExtension());
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=../../src/glTF/babylon.glTFBinaryExtension.js.map
+//# sourceMappingURL=babylon.glTFBinaryExtension.js.map
