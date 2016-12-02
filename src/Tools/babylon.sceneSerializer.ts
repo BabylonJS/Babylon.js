@@ -162,7 +162,11 @@
         // Alpha
         serializationObject.alphaIndex = mesh.alphaIndex;
         serializationObject.hasVertexAlpha = mesh.hasVertexAlpha;
+        
+        // Overlay
         serializationObject.overlayAlpha = mesh.overlayAlpha;
+        serializationObject.overlayColor = mesh.overlayColor.asArray();
+        serializationObject.renderOverlay = mesh.renderOverlay;
 
         // Fog
         serializationObject.applyFog = mesh.applyFog;
