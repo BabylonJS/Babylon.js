@@ -165,7 +165,7 @@
         
         // Overlay
         serializationObject.overlayAlpha = mesh.overlayAlpha;
-        serializationObject.overlayColor = mesh.overlayColor;
+        serializationObject.overlayColor = mesh.overlayColor.asArray();
         serializationObject.renderOverlay = mesh.renderOverlay;
 
         // Fog
