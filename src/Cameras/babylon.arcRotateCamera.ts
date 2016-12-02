@@ -288,13 +288,14 @@
             this.inputs.checkInputs();
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-                this.beta += this.inertialBetaOffset;                    
-
+                
                 if (this.getScene().useRightHandedSystem) {
                     this.alpha -= this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 } else {
                     this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 }
+
+                this.beta += this.inertialBetaOffset;
 
                 this.radius -= this.inertialRadiusOffset;
                 this.inertialAlphaOffset *= this.inertia;
