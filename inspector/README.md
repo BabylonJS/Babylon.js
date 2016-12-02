@@ -28,6 +28,7 @@ A right panel will be created containing the Babylon.js inspector.
 
 ### Tools
 ![](../screens.jpg)
+
 Several tools are available (from left to right) : 
 * Refresh
 
