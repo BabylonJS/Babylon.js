@@ -157,3 +157,5 @@ node_modules
 
 # local dev
 localDev/src/*
+/dist/preview release/babylon.custom.js
+/dist/preview release/babylon.custom.max.js
