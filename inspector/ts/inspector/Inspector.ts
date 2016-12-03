@@ -58,6 +58,7 @@ module INSPECTOR {
                 // Add split bar
                 Split([canvas, inspector], {
                     direction:'horizontal',
+                    sizes : [75, 25],
                     onDrag : () => { 
                         Helpers.SEND_EVENT('resize');
                         if (this._tabbar) {
