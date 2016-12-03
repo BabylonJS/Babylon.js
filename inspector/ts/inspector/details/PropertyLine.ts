@@ -144,6 +144,8 @@ module INSPECTOR {
                 this._property.value = newValue;
                 // Remove input
                 this.update();
+                // resume scheduler
+                Scheduler.getInstance().pause = false;
                 
             } else if (e.keyCode == 27) { 
                 // Esc : remove input
@@ -154,6 +156,11 @@ module INSPECTOR {
         /** Removes the input without validating the new value */
         private _removeInputWithoutValidating() {
             Helpers.CleanDiv(this._valueDiv);
+            this._valueDiv.textContent = "-";
+            // restore elements
+            for (let elem of this._elements) {
+                this._valueDiv.appendChild(elem.toHtml());
+            }            
             this._valueDiv.addEventListener('click', this._displayInputHandler);
         }
 
@@ -161,14 +168,15 @@ module INSPECTOR {
         private _displayInput(e) {
             // Remove the displayInput event listener
             this._valueDiv.removeEventListener('click', this._displayInputHandler);
-            // Removes the input on a click in the window
-            // window.addEventListener('click', this._removeInputHandler);
 
             // Set input value
             let valueTxt = this._valueDiv.textContent;
             this._valueDiv.textContent = "";
             this._input.value = valueTxt;
             this._valueDiv.appendChild(this._input);
+            
+            // Pause the scheduler
+            Scheduler.getInstance().pause = true;
         }
 
         /** Retrieve the correct object from its parent. 
@@ -267,7 +275,7 @@ module INSPECTOR {
             // Update the property object first
             this.updateObject();
             // Then update its value
-            this._valueDiv.textContent = " ";
+            // this._valueDiv.textContent = " "; // TOFIX this removes the elements after
             this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
             for (let elem of this._elements) {
                 elem.update(this.value);
