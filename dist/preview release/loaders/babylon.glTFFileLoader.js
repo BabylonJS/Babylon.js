@@ -596,7 +596,9 @@ var BABYLON;
             return newMesh;
         }
         var multiMat = new BABYLON.MultiMaterial("multimat" + id, gltfRuntime.scene);
-        newMesh.material = multiMat;
+        if (!newMesh.material) {
+            newMesh.material = multiMat;
+        }
         var vertexData = new BABYLON.VertexData();
         var geometry = new BABYLON.Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
         var verticesStarts = [];
