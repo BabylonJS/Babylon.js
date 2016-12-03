@@ -141,9 +141,12 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent"], ["_poseMatrix"]);
 
-                // Pivot                
+                // Parent
+                this.parent = source.parent;
+
+                // Pivot
                 this.setPivotMatrix(source.getPivotMatrix());
 
                 this.id = name + "." + source.id;
@@ -1787,6 +1790,11 @@
             }
 
             mesh.checkCollisions = parsedMesh.checkCollisions;
+
+            if (parsedMesh.isBlocker !== undefined) {
+                mesh.isBlocker = parsedMesh.isBlocker;
+            }
+            
             mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
 
             // freezeWorldMatrix

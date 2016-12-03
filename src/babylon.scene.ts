@@ -883,7 +883,7 @@
 
                 if (!this.pointerDownPredicate) {
                     this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady();
                     };
                 }
 
@@ -987,7 +987,7 @@
 
                 if (!this.pointerUpPredicate) {
                     this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)));
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady();
                     };
                 }
 

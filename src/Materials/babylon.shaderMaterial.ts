@@ -143,6 +143,18 @@
 
             return this;
         }
+
+        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
+            if (!mesh) {
+                return true;
+            }
+
+            if (this._effect && (this._effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
+                return false;
+            }
+
+            return false;
+        }
         
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             var scene = this.getScene();
@@ -150,7 +162,9 @@
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    return true;
+                    if (this._checkCache(scene, mesh, useInstances)) {
+                        return true;
+                    }
                 }
             }
 

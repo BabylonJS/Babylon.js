@@ -439,6 +439,28 @@
             }
         }
 
+        /** 
+         * Load a script (identified by an url). When the url returns, the 
+         * content of this file is added into a new script element, attached to the DOM (body element)
+         */
+        public static LoadScript(
+            scriptUrl:string, 
+            callback: (data?: any) => void, 
+            progressCallBack?: () => void,
+            onError?: () => void) {
+                // Load file
+                BABYLON.Tools.LoadFile(scriptUrl, (scriptContent:string) => {
+                    // Create script element
+                    let scriptElem         = window.document.createElement('script');
+                    scriptElem.textContent = scriptContent;        
+                    // attach the script to the body
+                    let body               = window.document.body;
+                    body.appendChild(scriptElem);
+                    callback();
+                }, progressCallBack, null, null, onError);
+
+        }
+
         public static ReadFileAsDataURL(fileToLoad, callback, progressCallback): void {
             var reader = new FileReader();
             reader.onload = e => {

@@ -67,6 +67,7 @@ void main(void)
 #if defined(GAUSSIAN_BLUR_H) || defined(GAUSSIAN_BLUR_V)
 uniform float blurOffsets[9];
 uniform float blurWeights[9];
+uniform float blurWidth;
 
 void main(void)
 {
@@ -74,11 +75,11 @@ void main(void)
 
 	for (int i = 0; i < 9; i++) {
 #ifdef GAUSSIAN_BLUR_H
-		color += (texture2D(textureSampler, vUV + vec2(blurOffsets[i] * 2.0, 0.0)) * blurWeights[i]);
-		color += (texture2D(textureSampler, vUV - vec2(blurOffsets[i] * 2.0, 0.0)) * blurWeights[i]);
+		color += (texture2D(textureSampler, vUV + vec2(blurOffsets[i] * blurWidth, 0.0)) * blurWeights[i]);
+		color += (texture2D(textureSampler, vUV - vec2(blurOffsets[i] * blurWidth, 0.0)) * blurWeights[i]);
 #else
-		color += (texture2D(textureSampler, vUV + vec2(0.0, blurOffsets[i] * 2.0)) * blurWeights[i]);
-		color += (texture2D(textureSampler, vUV - vec2(0.0, blurOffsets[i] * 2.0)) * blurWeights[i]);
+		color += (texture2D(textureSampler, vUV + vec2(0.0, blurOffsets[i] * blurWidth)) * blurWeights[i]);
+		color += (texture2D(textureSampler, vUV - vec2(0.0, blurOffsets[i] * blurWidth)) * blurWeights[i]);
 #endif
 	}
 
@@ -105,7 +106,9 @@ void main(void)
 	colour = retColor * retColor;
 	colour += colour * texture2D(lensSampler, vUV).rgb;
 
-	gl_FragColor = vec4(colour.rgb, 1.0) + texture2D(otherSampler, vUV);
+	vec4 finalColor = vec4(colour.rgb, 1.0) + texture2D(otherSampler, vUV);
+
+	gl_FragColor = finalColor;
 }
 #endif
 
@@ -118,12 +121,17 @@ uniform float strength;
 uniform float ghostDispersal;
 uniform float haloWidth;
 
-float hash(vec2 p) {
+uniform vec2 resolution;
+uniform float distortionStrength;
+
+float hash(vec2 p)
+{
 	float h = dot(p, vec2(127.1, 311.7));
 	return -1.0 + 2.0*fract(sin(h)*43758.5453123);
 }
 
-float noise(in vec2 p) {
+float noise(in vec2 p)
+{
 	vec2 i = floor(p);
 	vec2 f = fract(p);
 	vec2 u = f*f*(3.0 - 2.0*f);
@@ -134,7 +142,8 @@ float noise(in vec2 p) {
 			hash(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 
-float fbm(vec2 p) {
+float fbm(vec2 p)
+{
 	float f = 0.0;
 	f += 0.5000 * noise(p); p *= 2.02;
 	f += 0.2500 * noise(p); p *= 2.03;
@@ -160,57 +169,48 @@ float luminance(vec3 color)
 	return dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
 }
 
+vec4 textureDistorted(sampler2D tex, vec2 texcoord, vec2 direction, vec3 distortion)
+{
+	return vec4(
+		texture2D(tex, texcoord + direction * distortion.r).r,
+		texture2D(tex, texcoord + direction * distortion.g).g,
+		texture2D(tex, texcoord + direction * distortion.b).b,
+		1.0
+	);
+}
+
 void main(void)
 {
 	vec2 uv = -vUV + vec2(1.0);
 	vec2 ghostDir = (vec2(0.5) - uv) * ghostDispersal;
 
-	vec4 result = vec4(0.0);
-	for (int i = 0; i < GHOSTS; ++i)
-	{
-		vec2 offset = fract(uv + ghostDir * float(i));
-		float weight = length(vec2(0.5) - offset) / length(vec2(0.5));
-		weight = pow(1.0 - weight, 10.0);
-		result += texture2D(textureSampler, offset) * weight;
-	}
-
-	float patternWeight = 0.4 * length(vec2(0.5) - uv);
-	result = mix(result, result * vec4(pattern(uv), 1.0), 0.6);
-
-	result *= texture2D(lensColorSampler, vec2(length(vec2(0.5) - vUV) / length(vec2(0.5))));
-
-	vec2 haloVec = normalize(ghostDir) * haloWidth;
-	float weight = length(vec2(0.5) - fract(uv + haloVec)) / length(vec2(0.5));
-	weight = pow(1.0 - weight, 5.0);
-	vec4 halo = texture2D(textureSampler, uv + haloVec) * weight;
-
-	gl_FragColor = (result + halo) * strength;
-}
-#endif
-
-#if defined(LENS_FLARE_SHIFT)
-uniform vec2 resolution;
-uniform float distortionStrength;
-
-void main(void)
-{
-	const float dispersion = 0.15;
-
-	vec2 uv = -vUV + vec2(1.0);
-	vec2 ghostDir = (vec2(0.5) - vUV);
-
 	vec2 texelSize = 1.0 / resolution;
 	vec3 distortion = vec3(-texelSize.x * distortionStrength, 0.0, texelSize.x * distortionStrength);
-	vec2 direction = vec2(normalize(ghostDir));
 
-	vec4 rgbShift = vec4(
-		texture2D(textureSampler, vUV + direction * distortion.r).r,
-		texture2D(textureSampler, vUV + direction * distortion.g).g,
-		texture2D(textureSampler, vUV + direction * distortion.b).b,
-		1.0
-	);
+	vec4 result = vec4(0.0);
+	float ghostIndice = 1.0;
 
-	gl_FragColor = rgbShift;
+	for (int i = 0; i < GHOSTS; ++i)
+	{
+		vec2 offset = fract(uv + ghostDir * ghostIndice);
+		float weight = length(vec2(0.5) - offset) / length(vec2(0.5));
+		weight = pow(1.0 - weight, 10.0);
+
+		result += textureDistorted(textureSampler, offset, normalize(ghostDir), distortion) * weight * strength;
+
+		ghostIndice += 1.0;
+	}
+
+	vec2 haloVec = normalize(ghostDir) * haloWidth;
+
+	float weight = length(vec2(0.5) - fract(uv + haloVec)) / length(vec2(0.5));
+	weight = pow(1.0 - weight, 10.0);
+
+	result += textureDistorted(textureSampler, fract(uv + haloVec), normalize(ghostDir), distortion) * weight * strength;
+
+	result *= texture2D(lensColorSampler, vec2(length(vec2(0.5) - uv) / length(vec2(0.5))));
+
+	gl_FragColor = result;
 }
 #endif
 
@@ -219,27 +219,14 @@ uniform sampler2D otherSampler;
 uniform sampler2D lensDirtSampler;
 uniform sampler2D lensStarSampler;
 
-uniform mat4 viewMatrix;
-uniform mat3 scaleBias1;
-uniform mat3 scaleBias2;
+uniform mat4 lensStarMatrix;
 
 void main(void)
 {
-	vec3 camerax = viewMatrix[0].xyz;
-	vec3 cameraz = viewMatrix[1].xyz;
-	float camRot = dot(camerax, vec3(0.0, 0.0, 1.0)) + dot(cameraz, vec3(0.0, 1.0, 0.0));
-
-	mat3 rotation = mat3(
-		cos(camRot), -sin(camRot), 0.0,
-		sin(camRot), cos(camRot), 0.0,
-		0.0, 0.0, 1.0
-	);
-
-	mat3 lensMatrix = scaleBias2 * rotation * scaleBias1;
-	vec2 lensFlareCoords = (lensMatrix * vec3(vUV, 1.0)).xy;
+	vec2 lensFlareCoords = (lensStarMatrix * vec4(vUV, 1.0, 1.0)).xy;
 
 	vec4 lensMod = texture2D(lensDirtSampler, vUV);
-	lensMod += texture2D(lensStarSampler, lensFlareCoords);
+	lensMod += texture2D(lensStarSampler, vUV/*lensFlareCoords*/);
 
 	vec4 result = texture2D(textureSampler, vUV) * lensMod;
 
