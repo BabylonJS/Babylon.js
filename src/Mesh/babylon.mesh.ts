@@ -1812,6 +1812,19 @@
                 mesh._waitingActions = parsedMesh.actions;
             }
 
+            // Overlay
+            if (parsedMesh.overlayAlpha !== undefined) {
+                mesh.overlayAlpha = parsedMesh.overlayAlpha;
+            }
+
+            if (parsedMesh.overlayColor !== undefined) {
+                mesh.overlayColor = Color3.FromArray(parsedMesh.overlayColor);
+            }
+
+            if (parsedMesh.renderOverlay !== undefined) {
+                mesh.renderOverlay = parsedMesh.renderOverlay;
+            }
+
             // Geometry
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
