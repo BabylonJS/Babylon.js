@@ -613,7 +613,10 @@ module BABYLON {
             return newMesh;
         }
         var multiMat = new MultiMaterial("multimat" + id, gltfRuntime.scene);
-        newMesh.material = multiMat;
+
+        if (!newMesh.material) {
+            newMesh.material = multiMat;
+        }
 
         var vertexData = new VertexData();
         var geometry = new Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
