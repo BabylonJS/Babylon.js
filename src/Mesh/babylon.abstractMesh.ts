@@ -1219,9 +1219,21 @@
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         }
 
-        public setPivotPoint(point:Vector3): void{
+        public setPivotPoint(point:Vector3, space:Space = Space.LOCAL): void{
 
-            Vector3.TransformCoordinatesToRef(point, this.getWorldMatrix(), this.position);
+            if(this.getScene().getRenderId() == 0){
+                this.computeWorldMatrix(true);
+            }
+
+            var wm = this.getWorldMatrix();
+            
+            if (space == Space.WORLD) {
+                var tmat = Tmp.Matrix[0];
+                wm.invertToRef(tmat);
+                point = Vector3.TransformCoordinates(point, tmat);
+            }
+
+            Vector3.TransformCoordinatesToRef(point, wm, this.position);
 
             this._pivotMatrix.m[12] = -point.x;
             this._pivotMatrix.m[13] = -point.y;
