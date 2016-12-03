@@ -4,6 +4,11 @@
         if (serializedGeometries[geometry.id]) {
             return;
         }
+
+        if (geometry.doNotSerialize) {
+            return;
+        }
+
         if (geometry instanceof Geometry.Primitives.Box) {
             serializationGeometries.boxes.push(geometry.serialize());
         }
@@ -67,6 +72,7 @@
         serializationObject.visibility = mesh.visibility;
 
         serializationObject.checkCollisions = mesh.checkCollisions;
+        serializationObject.isBlocker = mesh.isBlocker;
 
         // Parent
         if (mesh.parent) {
@@ -152,6 +158,14 @@
 
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
+
+        // Alpha
+        serializationObject.alphaIndex = mesh.alphaIndex;
+        serializationObject.hasVertexAlpha = mesh.hasVertexAlpha;
+        serializationObject.overlayAlpha = mesh.overlayAlpha;
+
+        // Fog
+        serializationObject.applyFog = mesh.applyFog;
 
         // Action Manager
         if (mesh.actionManager) {

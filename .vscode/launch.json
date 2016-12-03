@@ -2,20 +2,49 @@
     "version": "0.1.0",
     "configurations": [
         {
-            "name": "Launch playground (Edge)",
-            "type": "edge",
-            "request": "launch",
-            "url": "http://localhost/playground/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true
-        },
-        {
             "name": "Launch playground (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "http://localhost/playground/index-local.html",
+            "url": "http://localhost:1338/Playground/index-local.html",
             "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+        },
+        {
+            "name": "Launch Materials Library (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/materialsLibrary/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+        },
+        {
+            "name": "Launch Post Processes Library (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/postProcessLibrary/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+        },
+        {
+            "name": "Launch Procedural Textures Library (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/proceduralTexturesLibrary/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+        },
+        {
+            "name": "Launch Local Dev (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/localDev/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
         }
     ]
 }

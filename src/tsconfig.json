@@ -1,7 +1,9 @@
 {
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "module": "commonjs", 
-        "target": "es5"
-    }
+  "compileOnSave": true,
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true
+  }
 }
