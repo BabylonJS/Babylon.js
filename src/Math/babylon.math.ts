@@ -2120,6 +2120,16 @@
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
+            
+            var result = Quaternion.Identity();
+
+            Quaternion.SlerpToRef(left, right, amount, result);
+
+            return result;
+
+        }
+
+        public static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result:Quaternion): void {
             var num2;
             var num3;
             var num = amount;
@@ -2142,7 +2152,11 @@
                 num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+            result.x = (num3 * left.x) + (num2 * right.x);
+            result.y = (num3 * left.y) + (num2 * right.y);
+            result.z = (num3 * left.z) + (num2 * right.z);
+            result.w = (num3 * left.w) + (num2 * right.w);
+
         }
     }
 
@@ -2781,6 +2795,48 @@
             }
 
             return result;
+        }
+
+        public static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void {
+            
+            var startm = startValue.m;
+            var endm = endValue.m;
+            var resultm = result.m;
+
+            var m0 = startm[0] * (1.0 - gradient) + endm[0] * gradient;
+            var m1 = startm[1] * (1.0 - gradient) + endm[1] * gradient;
+            var m2 = startm[2] * (1.0 - gradient) + endm[2] * gradient;
+            var m3 = startm[3] * (1.0 - gradient) + endm[3] * gradient;
+            var m4 = startm[4] * (1.0 - gradient) + endm[4] * gradient;
+            var m5 = startm[5] * (1.0 - gradient) + endm[5] * gradient;
+            var m6 = startm[6] * (1.0 - gradient) + endm[6] * gradient;
+            var m7 = startm[7] * (1.0 - gradient) + endm[7] * gradient;
+            var m8 = startm[8] * (1.0 - gradient) + endm[8] * gradient;
+            var m9 = startm[9] * (1.0 - gradient) + endm[9] * gradient;
+            var m10 = startm[10] * (1.0 - gradient) + endm[10] * gradient;
+            var m11 = startm[11] * (1.0 - gradient) + endm[11] * gradient;
+            var m12 = startm[12] * (1.0 - gradient) + endm[12] * gradient;
+            var m13 = startm[13] * (1.0 - gradient) + endm[13] * gradient;
+            var m14 = startm[14] * (1.0 - gradient) + endm[14] * gradient;
+            var m15 = startm[15] * (1.0 - gradient) + endm[15] * gradient;
+
+            resultm[0] = m0;
+            resultm[1] = m1;
+            resultm[2] = m2;
+            resultm[3] = m3;
+            resultm[4] = m4;
+            resultm[5] = m5;
+            resultm[6] = m6;
+            resultm[7] = m7;
+            resultm[8] = m8;
+            resultm[9] = m9;
+            resultm[10] = m10;
+            resultm[11] = m11;
+            resultm[12] = m12;
+            resultm[13] = m13;
+            resultm[14] = m14;
+            resultm[15] = m15;
+            
         }
 
         public static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
