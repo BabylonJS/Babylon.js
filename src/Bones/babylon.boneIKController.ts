@@ -11,7 +11,8 @@ module BABYLON {
         public mesh: AbstractMesh;
         public slerpAmount = 1;
 
-        private _bone1Quat: Quaternion = Quaternion.Identity();
+        private _bone1Quat = Quaternion.Identity();
+        private _bone1Mat = Matrix.Identity();
         private _bone2Ang = Math.PI;
 
         private _bone1: Bone;
@@ -51,7 +52,7 @@ module BABYLON {
 
             this._bone2 = bone;
             this._bone1 = bone.getParent();
-
+            
             this.mesh = mesh;
 
              if(bone.getAbsoluteTransform().determinant() > 0){
@@ -82,6 +83,7 @@ module BABYLON {
 
             }
 
+            this._bone1.getRotationMatrixToRef(Space.WORLD, mesh, this._bone1Mat);
             this.maxAngle = Math.PI;
             
             if(options){
@@ -253,7 +255,7 @@ module BABYLON {
 
             if(this.slerpAmount < 1){
                 if(!this._slerping){
-                    this._bone1.getRotationQuaternionToRef(Space.WORLD, this.mesh, this._bone1Quat);
+                    Quaternion.FromRotationMatrixToRef(this._bone1Mat, this._bone1Quat);
                 }
                 Quaternion.FromRotationMatrixToRef(mat1, this._tmpQuat1);
                 Quaternion.SlerpToRef(this._bone1Quat, this._tmpQuat1, this.slerpAmount, this._bone1Quat);
@@ -262,6 +264,7 @@ module BABYLON {
                 this._slerping = true;
             } else {
                 this._bone1.setRotationMatrix(mat1, Space.WORLD, this.mesh);
+                this._bone1Mat.copyFrom(mat1);
                 this._slerping = false;
             }
 
