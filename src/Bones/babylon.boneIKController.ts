@@ -9,7 +9,7 @@ module BABYLON {
         public poleTargetLocalOffset = Vector3.Zero();
         public poleAngle = 0;
         public mesh: AbstractMesh;
-        public slerpGradient = 1;
+        public slerpAmount = 1;
 
         private _bone1Quat: Quaternion = Quaternion.Identity();
         private _bone2Ang = Math.PI;
@@ -47,7 +47,7 @@ module BABYLON {
 
         }
 
-        constructor(mesh: AbstractMesh, bone: Bone, options?: { targetMesh?: AbstractMesh, poleTargetMesh?: AbstractMesh, poleTargetBone?: Bone, poleTargetLocalOffset?:Vector3, poleAngle?: number, bendAxis?: Vector3, maxAngle?:number, slerpGradient?:number }){
+        constructor(mesh: AbstractMesh, bone: Bone, options?: { targetMesh?: AbstractMesh, poleTargetMesh?: AbstractMesh, poleTargetBone?: Bone, poleTargetLocalOffset?:Vector3, poleAngle?: number, bendAxis?: Vector3, maxAngle?:number, slerpAmount?:number }){
 
             this._bone2 = bone;
             this._bone1 = bone.getParent();
@@ -122,8 +122,8 @@ module BABYLON {
                     this.maxAngle = options.maxAngle;
                 }
 
-                if(options.slerpGradient){
-                    this.slerpGradient = options.slerpGradient;
+                if(options.slerpAmount){
+                    this.slerpAmount = options.slerpAmount;
                 }
 
             }
@@ -251,13 +251,13 @@ module BABYLON {
                 mat1.multiplyToRef(mat2, mat1);
             }
 
-            if(this.slerpGradient < 1){
+            if(this.slerpAmount < 1){
                 if(!this._slerping){
                     this._bone1.getRotationQuaternionToRef(Space.WORLD, this.mesh, this._bone1Quat);
                 }
                 Quaternion.FromRotationMatrixToRef(mat1, this._tmpQuat1);
-                Quaternion.SlerpToRef(this._bone1Quat, this._tmpQuat1, this.slerpGradient, this._bone1Quat);
-                angC = this._bone2Ang * (1.0 - this.slerpGradient) + angC * this.slerpGradient;
+                Quaternion.SlerpToRef(this._bone1Quat, this._tmpQuat1, this.slerpAmount, this._bone1Quat);
+                angC = this._bone2Ang * (1.0 - this.slerpAmount) + angC * this.slerpAmount;
                 this._bone1.setRotationQuaternion(this._bone1Quat, Space.WORLD, this.mesh);
                 this._slerping = true;
             } else {
