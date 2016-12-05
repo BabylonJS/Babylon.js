@@ -19,7 +19,7 @@
 - Added Ray.intersectsMesh, Ray.show, Ray.hide ([abow](https://github.com/abow))
 - Added AbstractMesh.setPivotPoint, AbstractMesh.getPivotPoint, AbstractMesh.getAbsolutePivotPoint ([abow](https://github.com/abow))
 - Added Debug.AxesViewer and Debug.BoneAxesViewer ([abow](https://github.com/abow))
-- Added Bone.getAbsolutePositionFromLocal ([abow](https://github.com/abow))
+- Added Bone.getAbsolutePositionFromLocal and getLocalPositionFromAbsolute ([abow](https://github.com/abow))
 - Added Bone.setRotation, Bone.getRotation, Bone.setRotationQuaternion, Bone.getRotationQuaternion ([abow](https://github.com/abow))
 - Added Bone.getAbsolutePosition and Bone.getAbsolutePositionToRef ([abow](https://github.com/abow))
 - Added Bone.translate, Bone.setPosition, Bone.setAbsolutePosition ([abow](https://github.com/abow))
