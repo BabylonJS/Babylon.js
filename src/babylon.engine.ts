@@ -2000,6 +2000,7 @@
                 var lastDot = url.lastIndexOf('.')
                 extension = url.substring(lastDot).toLowerCase();
                 if (this._textureFormatInUse && !fromData && !scene.database) {
+                    extension = this._textureFormatInUse;
                     url = url.substring(0, lastDot) + this._textureFormatInUse;
                 }
             } else {
