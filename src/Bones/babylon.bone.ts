@@ -689,6 +689,43 @@
             }
         }
 
+        public getRotationMatrix(space = Space.LOCAL, mesh: AbstractMesh): Matrix {
+
+            var result = Matrix.Identity();
+
+            this.getRotationMatrixToRef(space, mesh, result);
+
+            return result;
+
+        }
+
+        public getRotationMatrixToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Matrix): void{
+
+            if(space == Space.LOCAL){
+
+                this.getLocalMatrix().getRotationMatrixToRef(result);
+
+            }else{
+
+                var mat = Tmp.Matrix[0];
+                var amat = this.getAbsoluteTransform();
+
+                if(mesh){
+                    amat.multiplyToRef(mesh.getWorldMatrix(), mat);
+                }else{
+                    mat.copyFrom(amat);
+                }
+
+                mat.m[0] *= this._scalingDeterminant;
+                mat.m[1] *= this._scalingDeterminant;
+                mat.m[2] *= this._scalingDeterminant;
+
+                mat.getRotationMatrixToRef(result);
+                
+            }
+
+        }
+
         public getAbsolutePositionFromLocal(position:Vector3, mesh?:AbstractMesh): Vector3{
 
             var result = Vector3.Zero();
