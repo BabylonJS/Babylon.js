@@ -88,6 +88,7 @@ Usefull if a mesh has multiple animations. ([agallouin](https://github.com/AGall
 	- Rendering above transparent surface is now blending correctly
 
 ### Breaking changes
+ - FollowCamera.target was renamed to FollowCamera.lockedTarget to avoid conflicts ([deltakosh](https://github.com/deltakosh)) 
  - Removed legacy shaders support ([deltakosh](https://github.com/deltakosh))
  - Canvas2D: ([nockawa](https://github.com/nockawa))
   - `WorldSpaceCanvas2D`:
