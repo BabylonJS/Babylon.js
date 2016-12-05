@@ -4,14 +4,16 @@ module BABYLON {
         public targetMesh: AbstractMesh;
         public poleTargetMesh: AbstractMesh;
         public poleTargetBone: Bone;
-
         public targetPosition = Vector3.Zero();
         public poleTargetPosition = Vector3.Zero();
-        
         public poleTargetLocalOffset = Vector3.Zero();
         public poleAngle = 0;
-
         public mesh: AbstractMesh;
+        public slerpAmount = 1;
+
+        private _bone1Quat = Quaternion.Identity();
+        private _bone1Mat = Matrix.Identity();
+        private _bone2Ang = Math.PI;
 
         private _bone1: Bone;
         private _bone2: Bone;
@@ -25,13 +27,14 @@ module BABYLON {
         private _tmpVec3 = Vector3.Zero();
         private _tmpVec4 = Vector3.Zero();
         private _tmpVec5 = Vector3.Zero();
-
         private _tmpMat1 = Matrix.Identity();
         private _tmpMat2 = Matrix.Identity();
+        private _tmpQuat1 = Quaternion.Identity();
 
         private _rightHandedSystem = false;
 
         private _bendAxis = Vector3.Right();
+        private _slerping = false;
 
         get maxAngle(): number {
 
@@ -45,11 +48,11 @@ module BABYLON {
 
         }
 
-        constructor(mesh: AbstractMesh, bone: Bone, options?: { targetMesh?: AbstractMesh, poleTargetMesh?: AbstractMesh, poleTargetBone?: Bone, poleTargetLocalOffset?:Vector3, poleAngle?: number, bendAxis?: Vector3, maxAngle?:number }){
+        constructor(mesh: AbstractMesh, bone: Bone, options?: { targetMesh?: AbstractMesh, poleTargetMesh?: AbstractMesh, poleTargetBone?: Bone, poleTargetLocalOffset?:Vector3, poleAngle?: number, bendAxis?: Vector3, maxAngle?:number, slerpAmount?:number }){
 
             this._bone2 = bone;
             this._bone1 = bone.getParent();
-
+            
             this.mesh = mesh;
 
              if(bone.getAbsoluteTransform().determinant() > 0){
@@ -80,6 +83,7 @@ module BABYLON {
 
             }
 
+            this._bone1.getRotationMatrixToRef(Space.WORLD, mesh, this._bone1Mat);
             this.maxAngle = Math.PI;
             
             if(options){
@@ -118,6 +122,10 @@ module BABYLON {
 
                 if(options.maxAngle){
                     this.maxAngle = options.maxAngle;
+                }
+
+                if(options.slerpAmount){
+                    this.slerpAmount = options.slerpAmount;
                 }
 
             }
@@ -230,7 +238,7 @@ module BABYLON {
                 Matrix.RotationAxisToRef(this._bendAxis, angB, mat2);
                 mat2.multiplyToRef(mat1, mat1);
 
-            }else {
+            } else {
 
                 this._tmpVec1.copyFrom(this._bendAxis);
                 this._tmpVec1.x *= -1;
@@ -245,8 +253,23 @@ module BABYLON {
                 mat1.multiplyToRef(mat2, mat1);
             }
 
-            this._bone1.setRotationMatrix(mat1, Space.WORLD, this.mesh);
+            if(this.slerpAmount < 1){
+                if(!this._slerping){
+                    Quaternion.FromRotationMatrixToRef(this._bone1Mat, this._bone1Quat);
+                }
+                Quaternion.FromRotationMatrixToRef(mat1, this._tmpQuat1);
+                Quaternion.SlerpToRef(this._bone1Quat, this._tmpQuat1, this.slerpAmount, this._bone1Quat);
+                angC = this._bone2Ang * (1.0 - this.slerpAmount) + angC * this.slerpAmount;
+                this._bone1.setRotationQuaternion(this._bone1Quat, Space.WORLD, this.mesh);
+                this._slerping = true;
+            } else {
+                this._bone1.setRotationMatrix(mat1, Space.WORLD, this.mesh);
+                this._bone1Mat.copyFrom(mat1);
+                this._slerping = false;
+            }
+
             this._bone2.setAxisAngle(this._bendAxis, angC, Space.LOCAL);
+            this._bone2Ang = angC;
 
         }
 
