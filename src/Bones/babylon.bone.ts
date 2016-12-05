@@ -753,5 +753,33 @@
 
         }
 
+        public getLocalPositionFromAbsolute(position:Vector3, mesh?:AbstractMesh): Vector3{
+
+            var result = Vector3.Zero();
+
+            this.getLocalPositionFromAbsoluteToRef(position, mesh, result);
+
+            return result;
+
+        }
+
+        public getLocalPositionFromAbsoluteToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
+
+            this._skeleton.computeAbsoluteTransforms();
+
+            var tmat = Tmp.Matrix[0];
+
+            tmat.copyFrom(this.getAbsoluteTransform());
+            
+            if (mesh) {
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }
+
+            tmat.invert();
+
+            Vector3.TransformCoordinatesToRef(position, tmat, result);
+
+        }
+
     }
 } 
