@@ -6966,7 +6966,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.5.-beta";
+                return "2.5";
             },
             enumerable: true,
             configurable: true
@@ -30811,6 +30811,21 @@ var BABYLON;
             }
             BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, result);
         };
+        Bone.prototype.getLocalPositionFromAbsolute = function (position, mesh) {
+            var result = BABYLON.Vector3.Zero();
+            this.getLocalPositionFromAbsoluteToRef(position, mesh, result);
+            return result;
+        };
+        Bone.prototype.getLocalPositionFromAbsoluteToRef = function (position, mesh, result) {
+            this._skeleton.computeAbsoluteTransforms();
+            var tmat = BABYLON.Tmp.Matrix[0];
+            tmat.copyFrom(this.getAbsoluteTransform());
+            if (mesh) {
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }
+            tmat.invert();
+            BABYLON.Vector3.TransformCoordinatesToRef(position, tmat, result);
+        };
         return Bone;
     }(BABYLON.Node));
     BABYLON.Bone = Bone;
@@ -51916,7 +51931,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 
