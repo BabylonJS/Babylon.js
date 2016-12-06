@@ -13715,3 +13715,7 @@ declare module BABYLON {
         dispose(): void;
     }
 }
+
+declare module "babylonjs" {
+    export = BABYLON;
+}
