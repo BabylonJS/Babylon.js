@@ -662,7 +662,7 @@
 
             let bubbleCancelled = false;
             let cur = prim;
-            while (cur) {
+            while (cur && !cur.isDisposed) {
                 // Only trigger the observers if the primitive is intersected (except for out)
                 if (!bubbleCancelled) {
                     this._updatePrimPointerPos(cur);
