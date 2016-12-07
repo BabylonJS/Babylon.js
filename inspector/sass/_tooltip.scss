@@ -1,0 +1,19 @@
+// Tooltip used when hovering on divisions
+
+.tooltip {
+    position        : absolute;
+    bottom          : 0;
+    right           : 0;
+    color           : $color;
+    transform       : translateX(100%) translateY(100%);    
+    display         : none;
+    z-index         : 4;
+    font-family     : $font;
+    
+    
+    width           : 120px;
+    padding         : 5px 5px 5px 15px;
+    line-height     : 25px;
+    background-color: $background;
+    border          : 1px solid $background-lighter3;
+}
