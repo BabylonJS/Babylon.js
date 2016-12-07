@@ -877,7 +877,10 @@ var BABYLON;
                 configureNodeFromMatrix(lastNode, node);
             }
             else {
-                configureNode(lastNode, BABYLON.Vector3.FromArray(node.translation), BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.FromArray(node.rotation).normalize(), node.rotation[3]), BABYLON.Vector3.FromArray(node.scale));
+                var translation = node.translation || [0, 0, 0];
+                var rotation = node.rotation || [0, 0, 0, 1];
+                var scale = node.scale || [1, 1, 1];
+                configureNode(lastNode, BABYLON.Vector3.FromArray(translation), BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.FromArray(rotation).normalize(), rotation[3]), BABYLON.Vector3.FromArray(scale));
             }
             lastNode.updateCache(true);
             node.babylonNode = lastNode;
@@ -982,7 +985,11 @@ var BABYLON;
         for (var unif in unTreatedUniforms) {
             var uniform = unTreatedUniforms[unif];
             var type = uniform.type;
-            var value = materialValues[techniqueUniforms[unif]] || uniform.value;
+            var value = materialValues[techniqueUniforms[unif]];
+            if (value === undefined) {
+                // In case the value is the same for all materials
+                value = uniform.value;
+            }
             if (!value) {
                 continue;
             }
