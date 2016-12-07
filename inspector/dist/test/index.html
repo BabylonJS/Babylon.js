@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inspector - test</title>
+    <meta charset='utf-8'/>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+
+    <!--Babylon-->
+    <!--<script src="../libs/split.js"></script>-->
+    <script src="../libs/babylon.max.js"></script>
+    <script src="../libs/babylon.canvas2d.max.js"></script>
+    <!--Dist-->
+    <script src="../inspector.js"></script>
+    
+    <!--Debug-->
+    <!--<link rel="stylesheet" href="../libs/main.css">
+
+    <script src="../inspector/properties.js"></script> 
+    
+    <script src="../inspector/adapters/Adapter.js"></script> 
+    <script src="../inspector/adapters/Canvas2DAdapter.js"></script> 
+    <script src="../inspector/adapters/MeshAdapter.js"></script> 
+    <script src="../inspector/adapters/MaterialAdapter.js"></script> 
+    <script src="../inspector/adapters/LightAdapter.js"></script> 
+
+    <script src="../inspector/gui/BasicElement.js"></script> 
+    <script src="../inspector/gui/ColorElement.js"></script>
+    <script src="../inspector/gui/TextureElement.js"></script>
+    <script src="../inspector/gui/CubeTextureElement.js"></script>
+    <script src="../inspector/gui/HDRCubeTextureElement.js"></script>
+    <script src="../inspector/gui/SearchBar.js"></script>
+    <script src="../inspector/gui/Tooltip.js"></script>
+
+    <script src="../inspector/details/Property.js"></script> 
+    <script src="../inspector/details/DetailPanel.js"></script>
+    <script src="../inspector/details/PropertyLine.js"></script>
+    
+    <script src="../inspector/helpers/Helpers.js"></script>
+    
+    <script src="../inspector/tabs/Tab.js"></script>
+    <script src="../inspector/tabs/PropertyTab.js"></script>
+    <script src="../inspector/tabs/Tabbar.js"></script>
+    
+    <script src="../inspector/tabs/SceneTab.js"></script>
+    <script src="../inspector/tabs/Canvas2DTab.js"></script>
+    <script src="../inspector/tabs/MeshTab.js"></script>
+    <script src="../inspector/tabs/LightTab.js"></script>
+    <script src="../inspector/tabs/MaterialTab.js"></script>
+    <script src="../inspector/tabs/ShaderTab.js"></script>
+
+    <script src="../inspector/tools/AbstractTool.js"></script>
+    <script src="../inspector/tools/PopupTool.js"></script>
+    <script src="../inspector/tools/RefreshTool.js"></script>
+    <script src="../inspector/tools/PauseScheduleTool.js"></script>
+    <script src="../inspector/tools/PickTool.js"></script>
+    <script src="../inspector/tools/Toolbar.js"></script>
+
+    <script src="../inspector/treetools/AbstractTreeTool.js"></script>
+    <script src="../inspector/treetools/Checkbox.js"></script>
+    <script src="../inspector/treetools/DebugArea.js"></script>
+    <script src="../inspector/treetools/BoundingBox.js"></script>
+    <script src="../inspector/treetools/Info.js"></script>
+
+    <script src="../inspector/tree/TreeItem.js"></script>
+    
+    <script src="../inspector/scheduler/Scheduler.js"></script> 
+    
+    <script src="../inspector/Inspector.js"></script> -->
+
+    <script src="Test.js"></script>
+
+    <style>
+        .mini {
+            width:100%;
+            margin:auto;
+            height:100%;
+        }
+        
+        html, body {
+            width: 100%;
+            height:100%;
+            margin:0;
+            padding:0;
+            overflow:hidden;
+            font-family : sans-serif;
+        }
+
+        #game-canvas {
+            width:100%;
+            height:100%; 
+        }
+
+    </style>
+
+</head>
+<body>
+
+    
+    <!--The game canvas-->
+    <div class="mini">
+        <canvas id="game-canvas"></canvas> 
+    </div>
+
+    <!--Starting the game-->
+    <script>
+        window.addEventListener("DOMContentLoaded", function(){
+            new Test('game-canvas');
+        });
+    </script>
+
+</body>
+</html>
