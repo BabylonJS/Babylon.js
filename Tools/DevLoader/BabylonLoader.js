@@ -104,6 +104,10 @@ var BABYLONDEVTOOLS;
                 var i = 0;
                 for (; i < library.files.length; i++) {
                     var file = library.files[i];
+                    if (file == 'lib.d.ts') {
+                        continue;
+                    }
+
                     file = file.replace('.ts', '.js');
                     file = file.replace('../', '');
                     file = babylonJSPath + '/' + file;
@@ -138,16 +142,13 @@ var BABYLONDEVTOOLS;
 
             if (!useDist) {
                 this.loadScripts(settings.core.files);
-                this.loadScripts(settings.extras.files);                
-                this.loadScript('/dist/preview release/babylon.canvas2d.max.js');
+                this.loadScripts(settings.extras.files);
             }
             else if (min) {
                 this.loadScript('/dist/preview release/babylon.js');
-                this.loadScript('/dist/preview release/babylon.canvas2d.js');
             }
             else {
                 this.loadScript('/dist/preview release/babylon.max.js');
-                this.loadScript('/dist/preview release/babylon.canvas2d.max.js');
             }
 
             for (var i = 0; i< settings.modules.length; i++) {
