@@ -21,6 +21,7 @@ loaders/src/**/*.js
 materialsLibrary/src/**/*.js
 proceduralTexturesLibrary/src/**/*.js
 postProcessLibrary/src/**/*.js
+canvas2D/src/**/*.js
 
 # Build results
 [Dd]ebug/
@@ -154,6 +155,9 @@ node_modules
 .temp
 *.js.map
 *.js.fx
+*.d.ts
+!dist/**/*.d.ts
+!lib.d.ts
 
 # local dev
 localDev/src/*

@@ -9,6 +9,8 @@ Build Babylon.canvas2d.js with [gulp](http://gulpjs.com/ "gulp") and npm ([nodej
 
 # How to use it
 
+From the /Tools/Gulp folder:
+
 ### First install gulp :
 ```
 npm install -g gulp
@@ -25,41 +27,23 @@ npm update
 ```
 
 ## From the javascript source
-### Build Babylon.canvas2d.js from the javascript files:
+### Build Babylon.canvas2d.js:
 
 ```
-gulp
+gulp Canvas2D
 ```
-Will be generated :
-- babylon.canvas2d.js
-- babylon.canvas2d.max.js (unminified)
+Will be generated in dist/preview release/canvas2D:
+- babylon.canvas2d.min.js
+- babylon.canvas2d.js (unminified)
+- babylon.canvas2d.d.ts
 
-### Build Babylon.canvas2d.js when you save a javascript file:
+### Build the changed files for debug when you save a typescript or shader file:
 ```
 gulp watch
 ```
 
-## From the typescript source
-### Build Babylon.canvas2d.js from the typescript files:
-
+### Watch and run a web server for debug purpose:
 ```
-gulp typescript
-```
-Will be generated :
-- babylon.canvas2d.js
-- babylon.canvas2d.d.ts
-- babylon.canvas2d.max.js (unminified)
-
-Be aware that all js files content will be overwrite.
-
-### Build Babylon.canvas2d.js when you save a typescript file:
-```
-gulp watch-typescript
+gulp run
 ```
 
-### Compile all the typscript files to their javascript respective files including declaration file
-```
-gulp typescript-compile
-```
-
-Be aware that all js files content will be overwritten.
