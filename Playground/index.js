@@ -299,7 +299,7 @@
             if (textures[index].isCube) {
                 if (textures[index]._extensions) {
                     for (var i = 0; i < 6; i++) {
-                        textures.push({ name: textures[index].name + textures[index]._extensions });
+                        textures.push({ name: textures[index].name + textures[index]._extensions[i] });
                     }
                 }
                 else {
