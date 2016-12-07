@@ -31128,6 +31128,9 @@ var BABYLON;
             if (this.needInitialSkinMatrix && mesh._bonesTransformMatrices) {
                 return mesh._bonesTransformMatrices;
             }
+            if (!this._transformMatrices) {
+                this.prepare();
+            }
             return this._transformMatrices;
         };
         Skeleton.prototype.getScene = function () {
