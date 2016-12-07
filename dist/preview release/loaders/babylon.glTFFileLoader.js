@@ -668,10 +668,21 @@ var BABYLON;
                 }
                 // Indices
                 accessor = gltfRuntime.accessors[primitive.indices];
-                buffer = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
-                tempVertexData.indices = new Int32Array(buffer.length);
-                tempVertexData.indices.set(buffer);
-                indexCounts.push(tempVertexData.indices.length);
+                if (accessor) {
+                    buffer = BABYLON.GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
+                    tempVertexData.indices = new Int32Array(buffer.length);
+                    tempVertexData.indices.set(buffer);
+                    indexCounts.push(tempVertexData.indices.length);
+                }
+                else {
+                    // Set indices on the fly
+                    var indices = [];
+                    for (var j = 0; j < tempVertexData.positions.length / 3; j++) {
+                        indices.push(j);
+                    }
+                    tempVertexData.indices = new Int32Array(indices);
+                    indexCounts.push(tempVertexData.indices.length);
+                }
                 vertexData.merge(tempVertexData);
                 tempVertexData = undefined;
                 // Sub material
