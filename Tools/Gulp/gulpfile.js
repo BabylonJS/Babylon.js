@@ -229,13 +229,13 @@ gulp.task('typescript-compile', function () {
  */
 var buildExternalLibraries = function(settings) {
     var tasks = settings.libraries.map(function (library) {
-        return buildExternalLibrary(library, settings); 
+        return buildExternalLibrary(library, settings, false); 
     });
 
     return merge2(tasks);
 }
 
-var buildExternalLibrary= function(library, settings) {
+var buildExternalLibrary= function(library, settings, watch) {
     var tsProcess = gulp.src(library.files, {base: settings.build.srcOutputDirectory})
         .pipe(sourcemaps.init())
         .pipe(typescript(externalTsConfig));
@@ -244,28 +244,38 @@ var buildExternalLibrary= function(library, settings) {
             .pipe(uncommentShader())            
             .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + '.fx'))
             .pipe(gulp.dest(settings.build.srcOutputDirectory));
-
+    
     var dev = tsProcess.js.pipe(sourcemaps.write("./", {
-                includeContent:false, 
-                sourceRoot: (filePath) => {
-                    return ''; 
-                }
-            }))
-            .pipe(gulp.dest(settings.build.srcOutputDirectory));
+        includeContent:false, 
+        sourceRoot: (filePath) => {
+            return ''; 
+        }
+    }));
 
-    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
-    var dist = merge2(tsProcess.js, shader)
-        .pipe(concat(library.output))
-        .pipe(gulp.dest(outputDirectory))
-        .pipe(cleants())
-        .pipe(replace(extendsSearchRegex, ""))
-        .pipe(replace(decorateSearchRegex, ""))
-        .pipe(rename({extname: ".min.js"}))
-        .pipe(uglify())
-        .pipe(optimisejs())
-        .pipe(gulp.dest(outputDirectory));
+    if (watch) {
+        return merge2([shader, dev]);    
+    }
+    else {
+        var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+        
+        var dist = merge2(dev, [
+            merge2([tsProcess.js, shader])
+                .pipe(concat(library.output))
+                .pipe(gulp.dest(outputDirectory))
+                .pipe(cleants())
+                .pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(rename({extname: ".min.js"}))
+                .pipe(uglify())
+                .pipe(optimisejs())
+                .pipe(gulp.dest(outputDirectory)), 
+            tsProcess.dts
+                .pipe(concat(library.output))
+                .pipe(rename({extname: ".d.ts"}))
+                .pipe(gulp.dest(outputDirectory))]);
 
-    return merge2(dev, dist);
+        return dist;   
+    }
 }
 
 /**
@@ -308,16 +318,15 @@ gulp.task('watch', [], function () {
     var tasks = [gulp.watch(config.core.typescript, ['typescript-compile'])];
 
     config.modules.map(function (module) { 
-        config[module].libraries.map(function (library) {
-            
+        config[module].libraries.map(function (library) {            
             tasks.push(gulp.watch(library.files, function() { 
                 console.log(library.output);
-                return buildExternalLibrary(library, config[module])
+                return buildExternalLibrary(library, config[module], true)
                 .pipe(debug()); 
             }));
             tasks.push(gulp.watch(library.shaderFiles, function() { 
                 console.log(library.output);
-                return buildExternalLibrary(library, config[module])
+                return buildExternalLibrary(library, config[module], true)
                 .pipe(debug()) 
             }));
         }); 
