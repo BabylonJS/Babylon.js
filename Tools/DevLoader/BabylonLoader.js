@@ -104,9 +104,9 @@ var BABYLONDEVTOOLS;
                 var i = 0;
                 for (; i < library.files.length; i++) {
                     var file = library.files[i];
-                    if (file == 'lib.d.ts') {
+                    if (file.indexOf('lib.d.ts') > 0) {
                         continue;
-                    }
+                    } 
 
                     file = file.replace('.ts', '.js');
                     file = file.replace('../', '');
