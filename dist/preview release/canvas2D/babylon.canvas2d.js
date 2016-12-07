@@ -11666,8 +11666,6 @@ var BABYLON;
     BABYLON.Lines2D = Lines2D;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.lines2d.js.map
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13324,8 +13322,6 @@ var BABYLON;
     BABYLON.ScreenSpaceCanvas2D = ScreenSpaceCanvas2D;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.canvas2d.js.map
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13353,8 +13349,6 @@ var BABYLON;
     }(BABYLON.Mesh));
     BABYLON.WorldSpaceCanvas2DNode = WorldSpaceCanvas2DNode;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.worldSpaceCanvas2dNode.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -14280,8 +14274,6 @@ var BABYLON;
     BABYLON.registerWindowRenderingTemplate = registerWindowRenderingTemplate;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.gui.UIElement.js.map
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14374,8 +14366,6 @@ var BABYLON;
     }(BABYLON.UIElementRenderingTemplateBase));
     BABYLON.DefaultStackPanelRenderingTemplate = DefaultStackPanelRenderingTemplate;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.gui.stackPanel.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -14471,8 +14461,6 @@ var BABYLON;
     }(BABYLON.UIElement));
     BABYLON.Control = Control;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.gui.control.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -14588,8 +14576,6 @@ var BABYLON;
     }(BABYLON.Control));
     BABYLON.ContentControl = ContentControl;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.gui.contentControl.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -14842,8 +14828,6 @@ var BABYLON;
     BABYLON.DefaultWindowRenderingTemplate = DefaultWindowRenderingTemplate;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.gui.window.js.map
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14920,8 +14904,6 @@ var BABYLON;
     }(BABYLON.UIElementRenderingTemplateBase));
     BABYLON.DefaultLabelRenderingTemplate = DefaultLabelRenderingTemplate;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.gui.label.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -15163,5 +15145,3 @@ var BABYLON;
     }(BABYLON.UIElementRenderingTemplateBase));
     BABYLON.DefaultButtonRenderingTemplate = DefaultButtonRenderingTemplate;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.gui.button.js.map
