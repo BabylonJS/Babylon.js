@@ -700,11 +700,23 @@ module BABYLON {
 
                 // Indices
                 accessor = gltfRuntime.accessors[primitive.indices];
-                buffer = GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
+                if (accessor) {
+                    buffer = GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
 
-                tempVertexData.indices = new Int32Array(buffer.length);
-                (<Float32Array>tempVertexData.indices).set(buffer);
-                indexCounts.push(tempVertexData.indices.length);
+                    tempVertexData.indices = new Int32Array(buffer.length);
+                    (<Float32Array>tempVertexData.indices).set(buffer);
+                    indexCounts.push(tempVertexData.indices.length);
+                }
+                else {
+                    // Set indices on the fly
+                    var indices: number[] = [];
+                    for (var j = 0; j < tempVertexData.positions.length / 3; j++) {
+                        indices.push(j);
+                    }
+
+                    tempVertexData.indices = new Int32Array(indices);
+                    indexCounts.push(tempVertexData.indices.length);
+                }
 
                 vertexData.merge(tempVertexData);
                 tempVertexData = undefined;
