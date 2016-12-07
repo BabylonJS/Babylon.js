@@ -69,7 +69,7 @@ var BABYLON;
     BABYLON.PropertyChangedBase = PropertyChangedBase;
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.iPropertyChanged.js.map
+//# sourceMappingURL=babylon.IPropertyChanged.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
