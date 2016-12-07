@@ -250,7 +250,8 @@ var buildExternalLibrary= function(library, settings, watch) {
         sourceRoot: (filePath) => {
             return ''; 
         }
-    }));
+    }))
+    .pipe(gulp.dest(settings.build.srcOutputDirectory));
 
     if (watch) {
         return merge2([shader, dev]);    
