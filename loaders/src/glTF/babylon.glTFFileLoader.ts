@@ -641,7 +641,7 @@ module BABYLON {
 
                 var primitive = mesh.primitives[i];
                 if (primitive.mode !== 4) {
-                    //continue;
+                    // continue;
                 }
 
                 var attributes = primitive.attributes;
@@ -959,7 +959,10 @@ module BABYLON {
                 configureNodeFromMatrix(lastNode, node);
             }
             else {
-                configureNode(lastNode, Vector3.FromArray(node.translation), Quaternion.RotationAxis(Vector3.FromArray(node.rotation).normalize(), node.rotation[3]), Vector3.FromArray(node.scale));
+                var translation = node.translation || [0, 0, 0];
+                var rotation = node.rotation || [0, 0, 0, 1];
+                var scale = node.scale || [1, 1, 1];
+                configureNode(lastNode, Vector3.FromArray(translation), Quaternion.RotationAxis(Vector3.FromArray(rotation).normalize(), rotation[3]), Vector3.FromArray(scale));
             }
 
             lastNode.updateCache(true);
@@ -1085,7 +1088,12 @@ module BABYLON {
         for (var unif in unTreatedUniforms) {
             var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
             var type = uniform.type;
-            var value = materialValues[techniqueUniforms[unif]] || uniform.value;
+            var value = materialValues[techniqueUniforms[unif]];
+            
+            if (value === undefined) {
+                // In case the value is the same for all materials
+                value = <any> uniform.value;
+            }
 
             if (!value) {
                 continue;
