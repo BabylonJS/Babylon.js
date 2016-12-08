@@ -2584,7 +2584,7 @@
         }
 
         public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
-            callback: (ArrayBuffer) => ArrayBufferView[],
+            callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
             mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
             var gl = this._gl;
             var texture = gl.createTexture();
