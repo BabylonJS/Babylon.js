@@ -18,6 +18,7 @@ var expect = require('gulp-expect-file');
 var optimisejs = require('gulp-optimize-js');
 var webserver = require('gulp-webserver');
 var path = require('path');
+var sass = require('gulp-sass');
 
 var config = require("./config.json");
 var customConfig = require("./custom.config.json");
@@ -244,7 +245,7 @@ var buildExternalLibrary= function(library, settings, watch) {
             .pipe(uncommentShader())            
             .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, library.output + '.fx'))
             .pipe(gulp.dest(settings.build.srcOutputDirectory));
-    
+
     var dev = tsProcess.js.pipe(sourcemaps.write("./", {
         includeContent:false, 
         sourceRoot: (filePath) => {
@@ -253,13 +254,18 @@ var buildExternalLibrary= function(library, settings, watch) {
     }))
     .pipe(gulp.dest(settings.build.srcOutputDirectory));
 
+    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+    var css = gulp.src(library.sassFiles || [])
+        .pipe(sass().on('error', sass.logError))
+        .pipe(concat(library.output.replace(".js", ".css")))
+        .pipe(gulp.dest(outputDirectory));
+
     if (watch) {
-        return merge2([shader, dev]);    
+        return merge2([shader, dev, css]);    
     }
     else {
-        var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
         
-        var dist = merge2(dev, [
+        var dist = merge2([dev, css], [
             merge2([tsProcess.js, shader])
                 .pipe(concat(library.output))
                 .pipe(gulp.dest(outputDirectory))
@@ -273,7 +279,8 @@ var buildExternalLibrary= function(library, settings, watch) {
             tsProcess.dts
                 .pipe(concat(library.output))
                 .pipe(rename({extname: ".d.ts"}))
-                .pipe(gulp.dest(outputDirectory))]);
+                .pipe(gulp.dest(outputDirectory)) 
+        ]);
 
         return dist;   
     }
@@ -326,6 +333,11 @@ gulp.task('watch', [], function () {
                 .pipe(debug()); 
             }));
             tasks.push(gulp.watch(library.shaderFiles, function() { 
+                console.log(library.output);
+                return buildExternalLibrary(library, config[module], true)
+                .pipe(debug()) 
+            }));
+            tasks.push(gulp.watch(library.sassFiles, function() { 
                 console.log(library.output);
                 return buildExternalLibrary(library, config[module], true)
                 .pipe(debug()) 
