@@ -22,6 +22,7 @@ materialsLibrary/src/**/*.js
 proceduralTexturesLibrary/src/**/*.js
 postProcessLibrary/src/**/*.js
 canvas2D/src/**/*.js
+inspector/src/**/*.js
 
 # Build results
 [Dd]ebug/
