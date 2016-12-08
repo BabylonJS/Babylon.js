@@ -15,7 +15,7 @@ it to the html page.
 ### Offline method
 If you don't have access to internet, the inspector should be imported manually in your HTML page :
 ```
-<script src="inspector.js" />
+<script src="babylon.inspector.js" />
 ``` 
 Then, call the method `show` of the scene debugLayer: 
 ```
@@ -31,7 +31,7 @@ the engine. Several tools are also available for specific actions.
 
 ##Tabs 
 
-![](https://raw.githubusercontent.com/Temechon/Babylon.js/master/inspector/screens/tab_mesh.jpg)
+![](screens/tab_mesh.jpg)
 
 Tabs are separated in two parts (although some are very specific - `Shader` for example): 
 * a tree panel, presenting a list of object relative to the current tab (meshes, materials...)
@@ -53,7 +53,7 @@ manipulate some options (like the old debug layer)
 
 Some properties (like colors, texture...) can display 
 ### Tools
-![](https://raw.githubusercontent.com/Temechon/Babylon.js/master/inspector/screens/tools.jpg)
+![](screens/tools.jpg)
 
 Several tools are available (from left to right) : 
 * Refresh - the current tab is refreshed with the last version of the list of objects
@@ -63,16 +63,10 @@ Several tools are available (from left to right) :
 
 ## Contribute
 
+From the tools/gulp folder:
 ```
 npm install
-grunt
+gulp inspector
 ```
-
-## Create the inspector from source
-
-```
-grunt dist
-```
-The library will be in the `dist` folder.
 
 
