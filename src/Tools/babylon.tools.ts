@@ -188,7 +188,7 @@
             };
         }
 
-        public static Vector2ArrayFeeder(array: Array<Vector2> | Float32Array): (i) => Vector2 {
+        public static Vector2ArrayFeeder(array: Array<Vector2> | Float32Array): (i: number) => Vector2 {
             return (index: number) => {
                 let isFloatArray = ((<Float32Array>array).BYTES_PER_ELEMENT !== undefined);
                 let length = isFloatArray ? array.length / 2 : array.length;
@@ -1065,7 +1065,7 @@
             return name;
         }
 
-        public static first<T>(array: Array<T>, predicate: (item) => boolean) {
+        public static first<T>(array: Array<T>, predicate: (item: T) => boolean) {
             for (let el of array) {
                 if (predicate(el)) {
                     return el;
@@ -1107,7 +1107,7 @@
          * This method can be used with hashCodeFromStream when your input is an array of values that are either: number, string, boolean or custom type implementing the getHashCode():number method.
          * @param array
          */
-        public static arrayOrStringFeeder(array: any): (i) => number {
+        public static arrayOrStringFeeder(array: any): (i: number) => number {
             return (index: number) => {
                 if (index >= array.length) {
                     return null;
