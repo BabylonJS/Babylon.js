@@ -169,11 +169,11 @@
         }
 
         public getVertexShaderSource(): string {
-            return this._engine.getVertexShaderSource(this._program);
+            return this._evaluateDefinesOnString(this._engine.getVertexShaderSource(this._program));
         }
 
         public getFragmentShaderSource(): string {
-            return this._engine.getFragmentShaderSource(this._program);
+            return this._evaluateDefinesOnString(this._engine.getFragmentShaderSource(this._program));
         }
 
         // Methods
@@ -705,6 +705,120 @@
                 this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
             }
             return this;
+        }
+
+        private _recombineShader(node: any): string {
+            if (node.define) {
+                if (node.condition) {
+                    // TODO
+                }
+                else if (node.ndef) {
+                    if (this.defines.indexOf("#define " + node.define) !== -1) {
+                        return null;
+                    }
+                }
+                else if (this.defines.indexOf("#define " + node.define) === -1) {
+                    return null;
+                }
+            }
+
+            var result = "";
+            for (var index = 0; index < node.children.length; index++) {
+                var line = node.children[index];
+
+                if (line.children) {
+                    var combined = this._recombineShader(line) + "\r\n";
+                    if (combined !== null) {
+                        result += combined + "\r\n";
+                    }
+
+                    continue;
+                }
+
+                result += line + "\r\n";
+            }
+
+            return result;
+        }
+
+        private _evaluateDefinesOnString(shaderString: string): string {
+            var root = <any>{
+                children: []
+            };
+            var currentNode = root;
+
+            var lines = shaderString.split("\n");
+
+            for (var index = 0; index < lines.length; index++) {
+                var line = lines[index].trim();
+
+                // #ifdef
+                var pos = line.indexOf("#ifdef ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 7);
+
+                    var newNode = {
+                        condition: null,
+                        ndef: false,
+                        define: define,
+                        children: [],
+                        parent: currentNode
+                    }
+                    
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+
+                // #ifndef
+                var pos = line.indexOf("#ifndef ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 8);
+
+                    newNode = {
+                        condition: null,
+                        define: define,
+                        ndef: true,
+                        children: [],
+                        parent: currentNode
+                    }
+                    
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+
+                // #if
+                var pos = line.indexOf("#if ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 4).trim();
+                    var conditionPos = define.indexOf(" ");
+
+                    newNode = {
+                        condition: define.substr(conditionPos + 1),
+                        define: define.substr(0, conditionPos),
+                        ndef: false,
+                        children: [],
+                        parent: currentNode
+                    }
+                    
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+
+                // #endif
+                pos = line.indexOf("#endif");
+                if (pos !== -1) {
+                    currentNode = currentNode.parent;
+                    continue;
+                }
+
+                currentNode.children.push(line);
+            }
+
+            // Recombine
+            return this._recombineShader(root);
         }
 
         // Statics
