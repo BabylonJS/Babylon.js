@@ -66,6 +66,10 @@
             return this._parentNode;
         }
 
+        public getClassName(): string {
+            return "Node";
+        }
+
         /**
         * An event triggered when the mesh is disposed.
         * @type {BABYLON.Observable}

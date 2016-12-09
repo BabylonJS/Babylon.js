@@ -32,6 +32,10 @@
             this._options = options;
         }
 
+        public getClassName(): string {
+            return "ShaderMaterial";
+        }
+
         public needAlphaBlending(): boolean {
             return this._options.needAlphaBlending;
         }

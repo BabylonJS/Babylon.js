@@ -194,6 +194,10 @@
         }
 
         // Methods
+        public getClassName(): string {
+            return "Mesh";
+        }   
+
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */

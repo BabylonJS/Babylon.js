@@ -12,6 +12,10 @@
             this.position = position;
         }
 
+        public getClassName(): string {
+            return "PointLight";
+        } 
+
         public getAbsolutePosition(): Vector3 {
             return this.transformedPosition ? this.transformedPosition : this.position;
         }

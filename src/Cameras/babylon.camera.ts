@@ -147,12 +147,16 @@
             this.position = position;
         }
 
+        public getClassName(): string {
+            return "Camera";
+        }          
+
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
         public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name;
-            ret += ", type: " + this.getTypeName();
+            ret += ", type: " + this.getClassName();
             if (this.animations) {
                 for (var i = 0; i < this.animations.length; i++) {
                     ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
@@ -680,7 +684,7 @@
             var serializationObject = SerializationHelper.Serialize(this);
 
             // Type
-            serializationObject.type = this.getTypeName();
+            serializationObject.type = this.getClassName();
 
             // Parent
             if (this.parent) {
@@ -697,12 +701,8 @@
             return serializationObject;
         }
 
-        public getTypeName(): string {
-            return "Camera";
-        }
-
         public clone(name: string): Camera {
-            return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getTypeName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+            return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
         }
 
         public getDirection(localAxis:Vector3): Vector3 {

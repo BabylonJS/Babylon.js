@@ -237,6 +237,10 @@
             return ret;
         } 
         
+        public getClassName(): string {
+            return "Material";
+        }
+        
         public get isFrozen(): boolean {
             return this.checkReadyOnlyOnce;
         }
