@@ -9232,6 +9232,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Node.prototype.getClassName = function () {
+            return "Node";
+        };
         Object.defineProperty(Node.prototype, "onDispose", {
             set: function (callback) {
                 if (this._onDisposeObserver) {
@@ -10532,6 +10535,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        AbstractMesh.prototype.getClassName = function () {
+            return "AbstractMesh";
+        };
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
@@ -11513,6 +11519,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Light.prototype.getClassName = function () {
+            return "Light";
+        };
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
@@ -11700,6 +11709,9 @@ var BABYLON;
             _super.call(this, name, scene);
             this.position = position;
         }
+        PointLight.prototype.getClassName = function () {
+            return "PointLight";
+        };
         PointLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
         };
@@ -11788,6 +11800,9 @@ var BABYLON;
             this.angle = angle;
             this.exponent = exponent;
         }
+        SpotLight.prototype.getClassName = function () {
+            return "SpotLight";
+        };
         SpotLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
         };
@@ -11888,6 +11903,9 @@ var BABYLON;
             this.groundColor = new BABYLON.Color3(0.0, 0.0, 0.0);
             this.direction = direction;
         }
+        HemisphericLight.prototype.getClassName = function () {
+            return "HemisphericLight";
+        };
         HemisphericLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(BABYLON.Vector3.Zero()));
             return this.direction;
@@ -11944,6 +11962,9 @@ var BABYLON;
             this.position = direction.scale(-1);
             this.direction = direction;
         }
+        DirectionalLight.prototype.getClassName = function () {
+            return "DirectionalLight";
+        };
         DirectionalLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
         };
@@ -13154,12 +13175,15 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Camera.prototype.getClassName = function () {
+            return "Camera";
+        };
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
         Camera.prototype.toString = function (fullDetails) {
             var ret = "Name: " + this.name;
-            ret += ", type: " + this.getTypeName();
+            ret += ", type: " + this.getClassName();
             if (this.animations) {
                 for (var i = 0; i < this.animations.length; i++) {
                     ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
@@ -13584,7 +13608,7 @@ var BABYLON;
         Camera.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             // Type
-            serializationObject.type = this.getTypeName();
+            serializationObject.type = this.getClassName();
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
@@ -13597,11 +13621,8 @@ var BABYLON;
             serializationObject.ranges = this.serializeAnimationRanges();
             return serializationObject;
         };
-        Camera.prototype.getTypeName = function () {
-            return "Camera";
-        };
         Camera.prototype.clone = function (name) {
-            return BABYLON.SerializationHelper.Clone(Camera.GetConstructorFromName(this.getTypeName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+            return BABYLON.SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
         };
         Camera.prototype.getDirection = function (localAxis) {
             var result = BABYLON.Vector3.Zero();
@@ -15154,7 +15175,7 @@ var BABYLON;
             this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
             BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         };
-        TargetCamera.prototype.getTypeName = function () {
+        TargetCamera.prototype.getClassName = function () {
             return "TargetCamera";
         };
         __decorate([
@@ -15337,7 +15358,7 @@ var BABYLON;
             this.inputs.clear();
             _super.prototype.dispose.call(this);
         };
-        FreeCamera.prototype.getTypeName = function () {
+        FreeCamera.prototype.getClassName = function () {
             return "FreeCamera";
         };
         __decorate([
@@ -15460,7 +15481,7 @@ var BABYLON;
             _super.prototype._checkInputs.call(this);
             this.follow(this.lockedTarget);
         };
-        FollowCamera.prototype.getTypeName = function () {
+        FollowCamera.prototype.getClassName = function () {
             return "FollowCamera";
         };
         __decorate([
@@ -15506,7 +15527,7 @@ var BABYLON;
             _super.prototype._checkInputs.call(this);
             this.follow();
         };
-        ArcFollowCamera.prototype.getTypeName = function () {
+        ArcFollowCamera.prototype.getClassName = function () {
             return "ArcFollowCamera";
         };
         return ArcFollowCamera;
@@ -15562,7 +15583,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        TouchCamera.prototype.getTypeName = function () {
+        TouchCamera.prototype.getClassName = function () {
             return "TouchCamera";
         };
         TouchCamera.prototype._setupInputs = function () {
@@ -16082,7 +16103,7 @@ var BABYLON;
             this.inputs.clear();
             _super.prototype.dispose.call(this);
         };
-        ArcRotateCamera.prototype.getTypeName = function () {
+        ArcRotateCamera.prototype.getClassName = function () {
             return "ArcRotateCamera";
         };
         __decorate([
@@ -19648,6 +19669,9 @@ var BABYLON;
             this.refreshBoundingInfo();
             this._syncSubMeshes();
         }
+        InstancedMesh.prototype.getClassName = function () {
+            return "InstancedMesh";
+        };
         Object.defineProperty(InstancedMesh.prototype, "receiveShadows", {
             // Methods
             get: function () {
@@ -19977,6 +20001,9 @@ var BABYLON;
             configurable: true
         });
         // Methods
+        Mesh.prototype.getClassName = function () {
+            return "Mesh";
+        };
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
@@ -26347,6 +26374,9 @@ var BABYLON;
             }
             return ret;
         };
+        Material.prototype.getClassName = function () {
+            return "Material";
+        };
         Object.defineProperty(Material.prototype, "isFrozen", {
             get: function () {
                 return this.checkReadyOnlyOnce;
@@ -26666,6 +26696,9 @@ var BABYLON;
                 return _this._renderTargets;
             };
         }
+        StandardMaterial.prototype.getClassName = function () {
+            return "StandardMaterial";
+        };
         Object.defineProperty(StandardMaterial.prototype, "useLogarithmicDepth", {
             get: function () {
                 return this._useLogarithmicDepth;
@@ -27448,6 +27481,9 @@ var BABYLON;
             return this.subMaterials[index];
         };
         // Methods
+        MultiMaterial.prototype.getClassName = function () {
+            return "MultiMaterial";
+        };
         MultiMaterial.prototype.isReady = function (mesh) {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
@@ -37548,6 +37584,9 @@ var BABYLON;
             this.generateOctree = false;
             this._worldInverse = new BABYLON.Matrix();
         }
+        GroundMesh.prototype.getClassName = function () {
+            return "GroundMesh";
+        };
         Object.defineProperty(GroundMesh.prototype, "subdivisions", {
             get: function () {
                 return Math.min(this._subdivisionsX, this._subdivisionsY);
@@ -40918,6 +40957,9 @@ var BABYLON;
             options.defines = options.defines || [];
             this._options = options;
         }
+        ShaderMaterial.prototype.getClassName = function () {
+            return "ShaderMaterial";
+        };
         ShaderMaterial.prototype.needAlphaBlending = function () {
             return this._options.needAlphaBlending;
         };
@@ -44748,6 +44790,9 @@ var BABYLON;
             _super.call(this, name, position, scene);
             this.inputs.addVirtualJoystick();
         }
+        VirtualJoysticksCamera.prototype.getClassName = function () {
+            return "VirtualJoysticksCamera";
+        };
         return VirtualJoysticksCamera;
     }(BABYLON.FreeCamera));
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
@@ -45357,7 +45402,7 @@ var BABYLON;
             BABYLON.Tools.Warn("requestVRFullscreen is deprecated. call attachControl() to start sending frames to the VR display.");
             //this.getEngine().switchFullscreen(requestPointerlock);
         };
-        WebVRFreeCamera.prototype.getTypeName = function () {
+        WebVRFreeCamera.prototype.getClassName = function () {
             return "WebVRFreeCamera";
         };
         WebVRFreeCamera.prototype.resetToCurrentRotation = function () {
@@ -46749,7 +46794,7 @@ var BABYLON;
             this._quaternionCache = new BABYLON.Quaternion();
             this.inputs.addDeviceOrientation();
         }
-        DeviceOrientationCamera.prototype.getTypeName = function () {
+        DeviceOrientationCamera.prototype.getClassName = function () {
             return "DeviceOrientationCamera";
         };
         DeviceOrientationCamera.prototype._checkInputs = function () {
@@ -46805,7 +46850,7 @@ var BABYLON;
             vrCameraMetrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
         }
-        VRDeviceOrientationFreeCamera.prototype.getTypeName = function () {
+        VRDeviceOrientationFreeCamera.prototype.getClassName = function () {
             return "VRDeviceOrientationFreeCamera";
         };
         return VRDeviceOrientationFreeCamera;
@@ -46821,7 +46866,7 @@ var BABYLON;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
             this.inputs.addVRDeviceOrientation();
         }
-        VRDeviceOrientationArcRotateCamera.prototype.getTypeName = function () {
+        VRDeviceOrientationArcRotateCamera.prototype.getClassName = function () {
             return "VRDeviceOrientationArcRotateCamera";
         };
         return VRDeviceOrientationArcRotateCamera;
@@ -46876,7 +46921,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        UniversalCamera.prototype.getTypeName = function () {
+        UniversalCamera.prototype.getClassName = function () {
             return "UniversalCamera";
         };
         return UniversalCamera;
@@ -47467,7 +47512,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        GamepadCamera.prototype.getTypeName = function () {
+        GamepadCamera.prototype.getClassName = function () {
             return "GamepadCamera";
         };
         return GamepadCamera;
@@ -48644,7 +48689,7 @@ var BABYLON;
             this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
-        AnaglyphFreeCamera.prototype.getTypeName = function () {
+        AnaglyphFreeCamera.prototype.getClassName = function () {
             return "AnaglyphFreeCamera";
         };
         return AnaglyphFreeCamera;
@@ -48657,7 +48702,7 @@ var BABYLON;
             this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
-        AnaglyphArcRotateCamera.prototype.getTypeName = function () {
+        AnaglyphArcRotateCamera.prototype.getClassName = function () {
             return "AnaglyphArcRotateCamera";
         };
         return AnaglyphArcRotateCamera;
@@ -48670,7 +48715,7 @@ var BABYLON;
             this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
-        AnaglyphGamepadCamera.prototype.getTypeName = function () {
+        AnaglyphGamepadCamera.prototype.getClassName = function () {
             return "AnaglyphGamepadCamera";
         };
         return AnaglyphGamepadCamera;
@@ -48683,7 +48728,7 @@ var BABYLON;
             this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
-        AnaglyphUniversalCamera.prototype.getTypeName = function () {
+        AnaglyphUniversalCamera.prototype.getClassName = function () {
             return "AnaglyphUniversalCamera";
         };
         return AnaglyphUniversalCamera;
@@ -48697,7 +48742,7 @@ var BABYLON;
             this.isStereoscopicSideBySide = isStereoscopicSideBySide;
             this.setCameraRigMode(isStereoscopicSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
-        StereoscopicFreeCamera.prototype.getTypeName = function () {
+        StereoscopicFreeCamera.prototype.getClassName = function () {
             return "StereoscopicFreeCamera";
         };
         return StereoscopicFreeCamera;
@@ -48711,7 +48756,7 @@ var BABYLON;
             this.isStereoscopicSideBySide = isStereoscopicSideBySide;
             this.setCameraRigMode(isStereoscopicSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
-        StereoscopicArcRotateCamera.prototype.getTypeName = function () {
+        StereoscopicArcRotateCamera.prototype.getClassName = function () {
             return "StereoscopicArcRotateCamera";
         };
         return StereoscopicArcRotateCamera;
@@ -48725,7 +48770,7 @@ var BABYLON;
             this.isStereoscopicSideBySide = isStereoscopicSideBySide;
             this.setCameraRigMode(isStereoscopicSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
-        StereoscopicGamepadCamera.prototype.getTypeName = function () {
+        StereoscopicGamepadCamera.prototype.getClassName = function () {
             return "StereoscopicGamepadCamera";
         };
         return StereoscopicGamepadCamera;
@@ -48739,7 +48784,7 @@ var BABYLON;
             this.isStereoscopicSideBySide = isStereoscopicSideBySide;
             this.setCameraRigMode(isStereoscopicSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
-        StereoscopicUniversalCamera.prototype.getTypeName = function () {
+        StereoscopicUniversalCamera.prototype.getClassName = function () {
             return "StereoscopicUniversalCamera";
         };
         return StereoscopicUniversalCamera;
@@ -53902,6 +53947,9 @@ var BABYLON;
                 return _this._renderTargets;
             };
         }
+        PBRMaterial.prototype.getClassName = function () {
+            return "PBRMaterial";
+        };
         Object.defineProperty(PBRMaterial.prototype, "useLogarithmicDepth", {
             get: function () {
                 return this._useLogarithmicDepth;
@@ -54871,13 +54919,18 @@ var BABYLON;
         }
         /** Creates the inspector window. */
         DebugLayer.prototype._createInspector = function () {
-            new INSPECTOR.Inspector(this._scene);
+            if (!this._inspector) {
+                this._inspector = new INSPECTOR.Inspector(this._scene);
+            } // else nothing to do,; instance is already existing
         };
         DebugLayer.prototype.isVisible = function () {
             return false;
         };
         DebugLayer.prototype.hide = function () {
-            console.warn('');
+            if (this._inspector) {
+                this._inspector.dispose();
+                this._inspector = null;
+            }
         };
         DebugLayer.prototype.show = function () {
             if (typeof INSPECTOR == 'undefined') {

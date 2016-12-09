@@ -228,6 +228,10 @@
             }
         }
 
+        public getClassName(): string {
+            return "StandardMaterial";
+        }        
+
         @serialize()
         public get useLogarithmicDepth(): boolean {
             return this._useLogarithmicDepth;

@@ -121,7 +121,7 @@ module BABYLON {
             //this.getEngine().switchFullscreen(requestPointerlock);
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "WebVRFreeCamera";
         }
 

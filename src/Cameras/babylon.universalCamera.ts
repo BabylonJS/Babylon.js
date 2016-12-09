@@ -32,7 +32,7 @@ module BABYLON {
             this.inputs.addGamepad();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "UniversalCamera";
         }
     }
