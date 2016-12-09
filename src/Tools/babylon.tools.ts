@@ -443,22 +443,26 @@
          * Load a script (identified by an url). When the url returns, the 
          * content of this file is added into a new script element, attached to the DOM (body element)
          */
-        public static LoadScript(
-            scriptUrl:string, 
-            callback: (data?: any) => void, 
-            progressCallBack?: () => void,
-            onError?: () => void) {
-                // Load file
-                BABYLON.Tools.LoadFile(scriptUrl, (scriptContent:string) => {
-                    // Create script element
-                    let scriptElem         = window.document.createElement('script');
-                    scriptElem.textContent = scriptContent;        
-                    // attach the script to the body
-                    let body               = window.document.body;
-                    body.appendChild(scriptElem);
-                    callback();
-                }, progressCallBack, null, null, onError);
+        public static LoadScript(scriptUrl:string, onSuccess: () => void, onError?: () => void) {
+            var head = document.getElementsByTagName('head')[0];
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = scriptUrl;
 
+            var self = this;
+            script.onload = () => {
+                if (onSuccess) {
+                    onSuccess();
+                }
+            };
+
+            script.onerror = () => {
+                if (onError) {
+                    onError();
+                }
+            };
+
+            head.appendChild(script);
         }
 
         public static ReadFileAsDataURL(fileToLoad, callback, progressCallback): void {
