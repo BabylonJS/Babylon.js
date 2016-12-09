@@ -54736,7 +54736,7 @@ var BABYLON;
             new INSPECTOR.Inspector(this._scene);
         };
         DebugLayer.prototype.isVisible = function () {
-            return true;
+            return false;
         };
         DebugLayer.prototype.hide = function () {
             console.warn('');

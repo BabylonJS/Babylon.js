@@ -15,10 +15,9 @@ module BABYLON {
         private _createInspector() {
             new INSPECTOR.Inspector(this._scene);
         }
-
         
         public isVisible(): boolean {
-            return true;
+            return false;
         }
 
         public hide() {
