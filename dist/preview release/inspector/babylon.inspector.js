@@ -2793,8 +2793,6 @@ var INSPECTOR;
                     var lastTab = this._invisibleTabs.pop();
                     this._div.appendChild(lastTab.toHtml());
                     this._visibleTabs.push(lastTab);
-                    // Update more-tab icon in last position if needed
-                    this._div.removeChild(this._moreTabsIcon);
                 }
             }
             if (this._invisibleTabs.length > 0 && !this._div.contains(this._moreTabsIcon)) {
