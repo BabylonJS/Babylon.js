@@ -395,7 +395,7 @@ class StdMaterial(Material):
 
             if mtex.use_map_normal:
                 Logger.log('Bump texture found "' + mtex.name + '"', 3)
-                self.textures.append(Texture('bumpTexture', 1.0 / mtex.normal_factor, mtex, mesh, exporter))
+                self.textures.append(Texture('bumpTexture', mtex.normal_factor, mtex, mesh, exporter))
 
             if mtex.use_map_color_spec:
                 Logger.log('Specular texture found "' + mtex.name + '"', 3)
