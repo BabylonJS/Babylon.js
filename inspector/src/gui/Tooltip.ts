@@ -1,7 +1,7 @@
 module INSPECTOR {
     
     /**
-     * Creates a tooltip for the given html element
+     * Creates a tooltip for the parent of the given html element
      */
     export class Tooltip {
         
@@ -15,7 +15,7 @@ module INSPECTOR {
             
             this._elem = elem;
             
-            this._infoDiv = Helpers.CreateDiv('tooltip', this._elem) as HTMLDivElement;
+            this._infoDiv = Helpers.CreateDiv('tooltip', this._elem.parentElement) as HTMLDivElement;
             
 
             this._elem.addEventListener('mouseover', () => { 
