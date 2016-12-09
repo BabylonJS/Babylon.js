@@ -5035,17 +5035,23 @@ var BABYLON;
          * Load a script (identified by an url). When the url returns, the
          * content of this file is added into a new script element, attached to the DOM (body element)
          */
-        Tools.LoadScript = function (scriptUrl, callback, progressCallBack, onError) {
-            // Load file
-            BABYLON.Tools.LoadFile(scriptUrl, function (scriptContent) {
-                // Create script element
-                var scriptElem = window.document.createElement('script');
-                scriptElem.textContent = scriptContent;
-                // attach the script to the body
-                var body = window.document.body;
-                body.appendChild(scriptElem);
-                callback();
-            }, progressCallBack, null, null, onError);
+        Tools.LoadScript = function (scriptUrl, onSuccess, onError) {
+            var head = document.getElementsByTagName('head')[0];
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = scriptUrl;
+            var self = this;
+            script.onload = function () {
+                if (onSuccess) {
+                    onSuccess();
+                }
+            };
+            script.onerror = function () {
+                if (onError) {
+                    onError();
+                }
+            };
+            head.appendChild(script);
         };
         Tools.ReadFileAsDataURL = function (fileToLoad, callback, progressCallback) {
             var reader = new FileReader();
@@ -5309,7 +5315,7 @@ var BABYLON;
                 scene.activeCamera = camera;
             }
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-            var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false);
+            var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = scene.meshes;
             texture.onAfterRenderObservable.add(function () {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType);
@@ -19224,19 +19230,28 @@ var BABYLON;
             mesh.physicsImpostor = null;
         };
         // Misc.
-        Scene.prototype.createDefaultCameraOrLight = function () {
+        Scene.prototype.createDefaultCameraOrLight = function (createArcRotateCamera) {
+            if (createArcRotateCamera === void 0) { createArcRotateCamera = false; }
             // Light
             if (this.lights.length === 0) {
                 new BABYLON.HemisphericLight("default light", BABYLON.Vector3.Up(), this);
             }
             // Camera
             if (!this.activeCamera) {
-                var camera = new BABYLON.FreeCamera("default camera", BABYLON.Vector3.Zero(), this);
                 // Compute position
                 var worldExtends = this.getWorldExtends();
                 var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
-                camera.position = new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
-                camera.setTarget(worldCenter);
+                var camera;
+                if (createArcRotateCamera) {
+                    camera = new BABYLON.ArcRotateCamera("default camera", 0, 0, 10, BABYLON.Vector3.Zero(), this);
+                    camera.setPosition(new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
+                    camera.setTarget(worldCenter);
+                }
+                else {
+                    camera = new BABYLON.FreeCamera("default camera", BABYLON.Vector3.Zero(), this);
+                    camera.position = new BABYLON.Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
+                    camera.setTarget(worldCenter);
+                }
                 this.activeCamera = camera;
             }
         };
@@ -22387,6 +22402,7 @@ var BABYLON;
         MeshBuilder.CreateBox = function (name, options, scene) {
             var box = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            box.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, options.updatable);
             return box;
@@ -22406,6 +22422,7 @@ var BABYLON;
         MeshBuilder.CreateSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            sphere.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -22423,6 +22440,7 @@ var BABYLON;
         MeshBuilder.CreateDisc = function (name, options, scene) {
             var disc = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            disc.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateDisc(options);
             vertexData.applyToMesh(disc, options.updatable);
             return disc;
@@ -22441,6 +22459,7 @@ var BABYLON;
         MeshBuilder.CreateIcoSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            sphere.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateIcoSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
             return sphere;
@@ -22590,6 +22609,7 @@ var BABYLON;
         MeshBuilder.CreateCylinder = function (name, options, scene) {
             var cylinder = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            cylinder.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateCylinder(options);
             vertexData.applyToMesh(cylinder, options.updatable);
             return cylinder;
@@ -22607,6 +22627,7 @@ var BABYLON;
         MeshBuilder.CreateTorus = function (name, options, scene) {
             var torus = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            torus.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateTorus(options);
             vertexData.applyToMesh(torus, options.updatable);
             return torus;
@@ -22625,6 +22646,7 @@ var BABYLON;
         MeshBuilder.CreateTorusKnot = function (name, options, scene) {
             var torusKnot = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            torusKnot.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
@@ -22900,6 +22922,7 @@ var BABYLON;
         MeshBuilder.CreatePlane = function (name, options, scene) {
             var plane = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            plane.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, options.updatable);
             if (options.sourcePlane) {
@@ -23152,6 +23175,7 @@ var BABYLON;
         MeshBuilder.CreatePolyhedron = function (name, options, scene) {
             var polyhedron = new BABYLON.Mesh(name, scene);
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            polyhedron.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePolyhedron(options);
             vertexData.applyToMesh(polyhedron, options.updatable);
             return polyhedron;
@@ -25246,10 +25270,10 @@ var BABYLON;
             return this._compilationError;
         };
         Effect.prototype.getVertexShaderSource = function () {
-            return this._engine.getVertexShaderSource(this._program);
+            return this._evaluateDefinesOnString(this._engine.getVertexShaderSource(this._program));
         };
         Effect.prototype.getFragmentShaderSource = function () {
-            return this._engine.getFragmentShaderSource(this._program);
+            return this._evaluateDefinesOnString(this._engine.getFragmentShaderSource(this._program));
         };
         // Methods
         Effect.prototype._loadVertexShader = function (vertex, callback) {
@@ -25690,6 +25714,98 @@ var BABYLON;
                 this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
             }
             return this;
+        };
+        Effect.prototype._recombineShader = function (node) {
+            if (node.define) {
+                if (node.condition) {
+                }
+                else if (node.ndef) {
+                    if (this.defines.indexOf("#define " + node.define) !== -1) {
+                        return null;
+                    }
+                }
+                else if (this.defines.indexOf("#define " + node.define) === -1) {
+                    return null;
+                }
+            }
+            var result = "";
+            for (var index = 0; index < node.children.length; index++) {
+                var line = node.children[index];
+                if (line.children) {
+                    var combined = this._recombineShader(line) + "\r\n";
+                    if (combined !== null) {
+                        result += combined + "\r\n";
+                    }
+                    continue;
+                }
+                result += line + "\r\n";
+            }
+            return result;
+        };
+        Effect.prototype._evaluateDefinesOnString = function (shaderString) {
+            var root = {
+                children: []
+            };
+            var currentNode = root;
+            var lines = shaderString.split("\n");
+            for (var index = 0; index < lines.length; index++) {
+                var line = lines[index].trim();
+                // #ifdef
+                var pos = line.indexOf("#ifdef ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 7);
+                    var newNode = {
+                        condition: null,
+                        ndef: false,
+                        define: define,
+                        children: [],
+                        parent: currentNode
+                    };
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+                // #ifndef
+                var pos = line.indexOf("#ifndef ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 8);
+                    newNode = {
+                        condition: null,
+                        define: define,
+                        ndef: true,
+                        children: [],
+                        parent: currentNode
+                    };
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+                // #if
+                var pos = line.indexOf("#if ");
+                if (pos !== -1) {
+                    var define = line.substr(pos + 4).trim();
+                    var conditionPos = define.indexOf(" ");
+                    newNode = {
+                        condition: define.substr(conditionPos + 1),
+                        define: define.substr(0, conditionPos),
+                        ndef: false,
+                        children: [],
+                        parent: currentNode
+                    };
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                    continue;
+                }
+                // #endif
+                pos = line.indexOf("#endif");
+                if (pos !== -1) {
+                    currentNode = currentNode.parent;
+                    continue;
+                }
+                currentNode.children.push(line);
+            }
+            // Recombine
+            return this._recombineShader(root);
         };
         // Statics
         Effect.ShadersStore = {};
@@ -54736,7 +54852,7 @@ var BABYLON;
             new INSPECTOR.Inspector(this._scene);
         };
         DebugLayer.prototype.isVisible = function () {
-            return true;
+            return false;
         };
         DebugLayer.prototype.hide = function () {
             console.warn('');
@@ -54751,7 +54867,7 @@ var BABYLON;
                 this._createInspector();
             }
         };
-        DebugLayer.InspectorURL = 'http://www.babylonjs.com/inspector.js';
+        DebugLayer.InspectorURL = 'http://www.babylonjs.com/babylon.inspector.bundle.js';
         return DebugLayer;
     }());
     BABYLON.DebugLayer = DebugLayer;
