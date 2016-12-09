@@ -3112,7 +3112,7 @@
         }
 
         // Misc.
-        public createDefaultCameraOrLight() {
+        public createDefaultCameraOrLight(createArcRotateCamera = false) {
             // Light
             if (this.lights.length === 0) {
                 new HemisphericLight("default light", Vector3.Up(), this);
@@ -3120,14 +3120,23 @@
 
             // Camera
             if (!this.activeCamera) {
-                var camera = new FreeCamera("default camera", Vector3.Zero(), this);
-
                 // Compute position
                 var worldExtends = this.getWorldExtends();
                 var worldCenter = worldExtends.min.add(worldExtends.max.subtract(worldExtends.min).scale(0.5));
 
-                camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
-                camera.setTarget(worldCenter);
+                var camera;
+
+                if (createArcRotateCamera) {
+                    camera = new ArcRotateCamera("default camera", 0, 0, 10, Vector3.Zero(), this);
+
+                    camera.setPosition(new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z)));
+                    camera.setTarget(worldCenter);
+                } else {
+                    camera = new FreeCamera("default camera", Vector3.Zero(), this);
+
+                    camera.position = new Vector3(worldCenter.x, worldCenter.y, worldExtends.min.z - (worldExtends.max.z - worldExtends.min.z));
+                    camera.setTarget(worldCenter);
+                }
 
                 this.activeCamera = camera;
             }

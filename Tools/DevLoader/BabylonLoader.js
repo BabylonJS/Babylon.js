@@ -43,6 +43,32 @@ var BABYLONDEVTOOLS;
             babylonJSPath = '';
         }
 
+        Loader.prototype.debugShortcut = function(engine) {
+            // Add inspector shortcut
+            var map = {};
+            var onkey = function(e){
+                e = e || event; // to deal with IE
+                map[e.keyCode] = e.type == 'keydown';
+                if(map[17] && map[16] && map[18] && map[73]) {
+                    if (engine.scenes && engine.scenes.length > 0) {
+                        for (var i = 0; i < engine.scenes.length; i ++) {
+                            if (engine.scenes[0].debugLayer.isVisible()) {
+                                engine.scenes[0].debugLayer.hide();
+                            }
+                            else {
+                                engine.scenes[0].debugLayer.show();
+                            }
+                        }
+                    }
+                    map = {};
+                    return false;
+                }
+            };
+
+            document.addEventListener("keydown", onkey);
+            document.addEventListener("keyup", onkey);
+        }
+
         Loader.prototype.root = function (newBabylonJSPath) {
             babylonJSPath = newBabylonJSPath;
             return this;
@@ -135,13 +161,18 @@ var BABYLONDEVTOOLS;
                 }
             }
             else if (min) {
-                this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
+                if (library.webpack) {
+                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.bundle.js'));
+                }
+                else {
+                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
+                }
             }
             else {
                 this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
             }
 
-            if (library.sassFiles && library.sassFiles.length > 0) {
+            if (!min && library.sassFiles && library.sassFiles.length > 0) {
                 var cssFile = library.output.replace('.js', '.css');
                 cssFile = babylonJSPath + '/dist/preview release' +  module.build.distOutputDirectory + cssFile;
                 this.loadCss(cssFile);
@@ -179,7 +210,10 @@ var BABYLONDEVTOOLS;
             }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
-                    self.loadScript('/dist/split.js');
+                    if (!min) {
+                        self.loadScript('/dist/preview release/split.js');
+                    }
+
                     self.loadBJSScripts(data);
                     if (dependencies) {
                         self.loadScripts(dependencies);

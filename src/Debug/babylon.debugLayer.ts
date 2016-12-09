@@ -5,7 +5,7 @@ module BABYLON {
 
     export class DebugLayer {
         private _scene: Scene;
-        public static InspectorURL = 'http://www.babylonjs.com/inspector.js'
+        public static InspectorURL = 'http://www.babylonjs.com/babylon.inspector.bundle.js'
 
         constructor(scene: Scene) {
             this._scene = scene;
@@ -15,10 +15,9 @@ module BABYLON {
         private _createInspector() {
             new INSPECTOR.Inspector(this._scene);
         }
-
         
         public isVisible(): boolean {
-            return true;
+            return false;
         }
 
         public hide() {

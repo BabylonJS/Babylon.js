@@ -313,7 +313,7 @@
         "output": "babylon.skyMaterial.js"
       },
       {
-        "files": ["../../materialsLibrary/src/grid/babylon.gridMaterial.ts"],
+        "files": ["../../materialsLibrary/src/grid/babylon.gridmaterial.ts"],
         "shaderFiles": [
           "../../materialsLibrary/src/grid/grid.vertex.fx",
           "../../materialsLibrary/src/grid/grid.fragment.fx",
@@ -553,7 +553,8 @@
       "sassFiles": [
         "../../inspector/sass/**/*.scss"
       ],
-      "output": "babylon.inspector.js"
+      "output": "babylon.inspector.js",
+      "webpack": "../../inspector/webpack.config.js" 
     }],
     "build": {
       "srcOutputDirectory": "../../inspector/",      
