@@ -129,7 +129,7 @@ module INSPECTOR {
         /** Remove the inspector panel when it's built as a right panel:
          * remove the right panel and remove the wrapper
          */
-        private _disposeInspector() {
+        public dispose() {
             if (!this._popupMode) {
                 // Get canvas
                 let canvas         = this._scene.getEngine().getRenderingCanvas(); 
@@ -165,7 +165,7 @@ module INSPECTOR {
                 popup.document.head.appendChild(link);              
             } 
             // Dispose the right panel
-            this._disposeInspector();
+            this.dispose();
             // set the mode as popup
             this._popupMode = true;
             // Save the HTML document

@@ -2,18 +2,17 @@
 
 .tooltip {
     position        : absolute;
-    bottom          : 0;
+    top             : 0;
     right           : 0;
-    color           : $color;
-    transform       : translateX(100%) translateY(100%);    
+    color           : $color-top;
     display         : none;
     z-index         : 4;
     font-family     : $font;
     
     
-    width           : 120px;
-    padding         : 5px 5px 5px 15px;
-    line-height     : 25px;
+    // width        : 120px;
+    padding         : 2px;
+    // line-height  : 25px;
     background-color: $background;
     border          : 1px solid $background-lighter3;
 }

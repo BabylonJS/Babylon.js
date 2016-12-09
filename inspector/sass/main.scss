@@ -38,7 +38,7 @@
       // The div that will contain the tab div
       .tab-panel-content {
         width:100%;
-        height:100%;
+        height:calc(100% - #{$tabbar-height});   
       }   
 
       // The div displaying all invisible tabs (when the tabbar width is small)
@@ -83,6 +83,7 @@
   @import 'treeTool';
   @import "tabPanel";
   @import "tabs/shaderTab";
+  @import "tabs/statsTab";
 
   @import "tree";
   @import "detailPanel";

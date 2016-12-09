@@ -7,9 +7,10 @@
     width:100%;
     overflow-x:auto;
     overflow-y:hidden;
+    box-sizing: border-box;
     
     .tab {
-        height:$tabbar-height;
+        height:calc(#{$tabbar-height} - 2px);
         width:auto;
         padding: 0 10px 0 10px;
         color:$color;
@@ -17,6 +18,7 @@
         text-align: center;
         cursor: pointer;
         margin: 0 5px 0 5px;
+        box-sizing: border-box;
        
         // Hover on it
         &:hover {

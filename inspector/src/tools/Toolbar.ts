@@ -32,6 +32,9 @@
             }
             // Pause schedule
             this._tools.push(new PauseScheduleTool(this._div, this._inspector));
+            
+            // Pause schedule
+            this._tools.push(new DisposeTool(this._div, this._inspector));
         }
 
         /** 
