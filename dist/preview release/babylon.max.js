@@ -5273,7 +5273,18 @@ var BABYLON;
             screenshotCanvas.width = width;
             screenshotCanvas.height = height;
             var renderContext = screenshotCanvas.getContext("2d");
-            renderContext.drawImage(engine.getRenderingCanvas(), 0, 0, width, height);
+            var ratio = engine.getRenderWidth() / engine.getRenderHeight();
+            var newWidth = width;
+            var newHeight = newWidth / ratio;
+            if (newHeight > height) {
+                newHeight = height;
+                newWidth = newHeight * ratio;
+            }
+            var offsetX = Math.max(0, width - newWidth) / 2;
+            var offsetY = Math.max(0, height - newHeight) / 2;
+            renderContext.fillStyle = camera.getScene().clearColor.toHexString();
+            renderContext.fillRect(0, 0, width, height);
+            renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
         Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType) {
@@ -7275,8 +7286,8 @@ var BABYLON;
          * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
          */
         Engine.prototype.setViewport = function (viewport, requiredWidth, requiredHeight) {
-            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.width);
-            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.height);
+            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this.getRenderWidth());
+            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this.getRenderHeight());
             var x = viewport.x || 0;
             var y = viewport.y || 0;
             this._cachedViewport = viewport;
@@ -24257,11 +24268,15 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
+            var engine = scene.getEngine();
             if (this.useCameraPostProcesses !== undefined) {
                 useCameraPostProcess = this.useCameraPostProcesses;
             }
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+            }
+            else {
+                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
             if (this._waitingRenderList) {
                 this.renderList = [];
@@ -24323,6 +24338,7 @@ var BABYLON;
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
+            engine.setViewport(scene.activeCamera.viewport);
             scene.resetCachedMaterial();
         };
         RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug) {
@@ -24336,6 +24352,12 @@ var BABYLON;
                 else {
                     engine.bindFramebuffer(this._texture);
                 }
+            }
+            if (this.activeCamera) {
+                engine.setViewport(this.activeCamera.viewport);
+            }
+            else {
+                engine.setViewport(scene.activeCamera.viewport);
             }
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
             // Clear

@@ -2758,247 +2758,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Collider {
-        radius: Vector3;
-        retry: number;
-        velocity: Vector3;
-        basePoint: Vector3;
-        epsilon: number;
-        collisionFound: boolean;
-        velocityWorldLength: number;
-        basePointWorld: Vector3;
-        velocityWorld: Vector3;
-        normalizedVelocity: Vector3;
-        initialVelocity: Vector3;
-        initialPosition: Vector3;
-        nearestDistance: number;
-        intersectionPoint: Vector3;
-        collidedMesh: AbstractMesh;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): any;
-        onMeshUpdated(mesh: AbstractMesh): any;
-        onMeshRemoved(mesh: AbstractMesh): any;
-        onGeometryAdded(geometry: Geometry): any;
-        onGeometryUpdated(geometry: Geometry): any;
-        onGeometryDeleted(geometry: Geometry): any;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: string;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    interface SerializedGeometry {
-        id: string;
-        positions: Float32Array;
-        indices: Int32Array;
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId?: number;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _runningCollisionTask;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (mesh: AbstractMesh) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: number;
-        bv: number;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: number, bv: number, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Vector3;
-        pickedMesh: AbstractMesh;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Sprite;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
-        getTextureCoordinates(): Vector2;
-    }
-}
-
-declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -3441,6 +3200,315 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Collider {
+        radius: Vector3;
+        retry: number;
+        velocity: Vector3;
+        basePoint: Vector3;
+        epsilon: number;
+        collisionFound: boolean;
+        velocityWorldLength: number;
+        basePointWorld: Vector3;
+        velocityWorld: Vector3;
+        normalizedVelocity: Vector3;
+        initialVelocity: Vector3;
+        initialPosition: Vector3;
+        nearestDistance: number;
+        intersectionPoint: Vector3;
+        collidedMesh: AbstractMesh;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): any;
+        onMeshUpdated(mesh: AbstractMesh): any;
+        onMeshRemoved(mesh: AbstractMesh): any;
+        onGeometryAdded(geometry: Geometry): any;
+        onGeometryUpdated(geometry: Geometry): any;
+        onGeometryDeleted(geometry: Geometry): any;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: string;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Int32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId?: number;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _runningCollisionTask;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (mesh: AbstractMesh) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: number;
+        bv: number;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: number, bv: number, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Vector3;
+        pickedMesh: AbstractMesh;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Sprite;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Vector3;
+        getTextureCoordinates(): Vector2;
+    }
+}
+
+declare module BABYLON.Debug {
+    class AxesViewer {
+        private _xline;
+        private _yline;
+        private _zline;
+        private _xmesh;
+        private _ymesh;
+        private _zmesh;
+        scene: Scene;
+        scaleLines: number;
+        constructor(scene: Scene, scaleLines?: number);
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    class BoneAxesViewer extends Debug.AxesViewer {
+        mesh: Mesh;
+        bone: Bone;
+        pos: Vector3;
+        xaxis: Vector3;
+        yaxis: Vector3;
+        zaxis: Vector3;
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector();
+        isVisible(): boolean;
+        hide(): void;
+        show(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
+    class SkeletonViewer {
+        skeleton: Skeleton;
+        mesh: AbstractMesh;
+        autoUpdateBonesMatrices: boolean;
+        renderingGroupId: number;
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
+        isEnabled: boolean;
+        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
+        private _getLinesForBonesWithLength(bones, meshMat);
+        private _getLinesForBonesNoLength(bones, meshMat);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class BoundingBox implements ICullable {
         minimum: Vector3;
         maximum: Vector3;
@@ -3554,119 +3622,6 @@ declare module BABYLON {
         static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
         static Transform(ray: Ray, matrix: Matrix): Ray;
         static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class AxesViewer {
-        private _xline;
-        private _yline;
-        private _zline;
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
-        scene: Scene;
-        scaleLines: number;
-        constructor(scene: Scene, scaleLines?: number);
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    class BoneAxesViewer extends Debug.AxesViewer {
-        mesh: Mesh;
-        bone: Bone;
-        pos: Vector3;
-        xaxis: Vector3;
-        yaxis: Vector3;
-        zaxis: Vector3;
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector();
-        isVisible(): boolean;
-        hide(): void;
-        show(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
-    */
-    class SkeletonViewer {
-        skeleton: Skeleton;
-        mesh: AbstractMesh;
-        autoUpdateBonesMatrices: boolean;
-        renderingGroupId: number;
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        constructor(skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number);
-        isEnabled: boolean;
-        private _getBonePosition(position, bone, meshMat, x?, y?, z?);
-        private _getLinesForBonesWithLength(bones, meshMat);
-        private _getLinesForBonesNoLength(bones, meshMat);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        alphaMode: number;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
     }
 }
 
@@ -3921,6 +3876,209 @@ declare module BABYLON {
         constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
         render(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Texture;
+        alphaMode: number;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class DirectionalLight extends Light implements IShadowLight {
+        position: Vector3;
+        direction: Vector3;
+        private _transformedDirection;
+        transformedPosition: Vector3;
+        private _worldMatrix;
+        shadowOrthoScale: number;
+        autoUpdateExtends: boolean;
+        private _orthoLeft;
+        private _orthoRight;
+        private _orthoTop;
+        private _orthoBottom;
+        constructor(name: string, direction: Vector3, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        setDirectionToTarget(target: Vector3): Vector3;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        needCube(): boolean;
+        getShadowDirection(faceIndex?: number): Vector3;
+        computeTransformedPosition(): boolean;
+        transferToEffect(effect: Effect, directionUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+        getTypeID(): number;
+    }
+}
+
+declare module BABYLON {
+    class HemisphericLight extends Light {
+        groundColor: Color3;
+        direction: Vector3;
+        private _worldMatrix;
+        constructor(name: string, direction: Vector3, scene: Scene);
+        setDirectionToTarget(target: Vector3): Vector3;
+        getShadowGenerator(): ShadowGenerator;
+        transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+        getTypeID(): number;
+    }
+}
+
+declare module BABYLON {
+    interface IShadowLight {
+        id: string;
+        position: Vector3;
+        transformedPosition: Vector3;
+        name: string;
+        computeTransformedPosition(): boolean;
+        getScene(): Scene;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        needCube(): boolean;
+        getShadowDirection(faceIndex?: number): Vector3;
+        _shadowGenerator: IShadowGenerator;
+    }
+    class Light extends Node {
+        private static _LIGHTMAP_DEFAULT;
+        private static _LIGHTMAP_SPECULAR;
+        private static _LIGHTMAP_SHADOWSONLY;
+        /**
+         * If every light affecting the material is in this lightmapMode,
+         * material.lightmapTexture adds or multiplies
+         * (depends on material.useLightmapAsShadowmap)
+         * after every other light calculations.
+         */
+        static LIGHTMAP_DEFAULT: number;
+        /**
+         * material.lightmapTexture as only diffuse lighting from this light
+         * adds pnly specular lighting from this light
+         * adds dynamic shadows
+         */
+        static LIGHTMAP_SPECULAR: number;
+        /**
+         * material.lightmapTexture as only lighting
+         * no light calculation from this light
+         * only adds dynamic shadows from this light
+         */
+        static LIGHTMAP_SHADOWSONLY: number;
+        diffuse: Color3;
+        specular: Color3;
+        intensity: number;
+        range: number;
+        includeOnlyWithLayerMask: number;
+        includedOnlyMeshes: AbstractMesh[];
+        excludedMeshes: AbstractMesh[];
+        excludeWithLayerMask: number;
+        lightmapMode: number;
+        radius: number;
+        _shadowGenerator: IShadowGenerator;
+        private _parentedWorldMatrix;
+        _excludedMeshesIds: string[];
+        _includedOnlyMeshesIds: string[];
+        constructor(name: string, scene: Scene);
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        toString(fullDetails?: boolean): string;
+        getShadowGenerator(): IShadowGenerator;
+        getAbsolutePosition(): Vector3;
+        transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void;
+        _getWorldMatrix(): Matrix;
+        canAffectMesh(mesh: AbstractMesh): boolean;
+        getWorldMatrix(): Matrix;
+        dispose(): void;
+        getTypeID(): number;
+        clone(name: string): Light;
+        serialize(): any;
+        static GetConstructorFromName(type: number, name: string, scene: Scene): () => Light;
+        static Parse(parsedLight: any, scene: Scene): Light;
+    }
+}
+
+declare module BABYLON {
+    class PointLight extends Light implements IShadowLight {
+        private _worldMatrix;
+        transformedPosition: Vector3;
+        position: Vector3;
+        constructor(name: string, position: Vector3, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        computeTransformedPosition(): boolean;
+        transferToEffect(effect: Effect, positionUniformName: string): void;
+        needCube(): boolean;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        getShadowDirection(faceIndex?: number): Vector3;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        _getWorldMatrix(): Matrix;
+        getTypeID(): number;
+    }
+}
+
+declare module BABYLON {
+    class SpotLight extends Light implements IShadowLight {
+        position: Vector3;
+        direction: Vector3;
+        angle: number;
+        exponent: number;
+        transformedPosition: Vector3;
+        private _transformedDirection;
+        private _worldMatrix;
+        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        needCube(): boolean;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        getShadowDirection(faceIndex?: number): Vector3;
+        setDirectionToTarget(target: Vector3): Vector3;
+        computeTransformedPosition(): boolean;
+        transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+        getTypeID(): number;
+        getRotation(): Vector3;
     }
 }
 
@@ -5550,164 +5708,6 @@ declare module BABYLON {
         static Vector4: Vector4[];
         static Quaternion: Quaternion[];
         static Matrix: Matrix[];
-    }
-}
-
-declare module BABYLON {
-    class DirectionalLight extends Light implements IShadowLight {
-        position: Vector3;
-        direction: Vector3;
-        private _transformedDirection;
-        transformedPosition: Vector3;
-        private _worldMatrix;
-        shadowOrthoScale: number;
-        autoUpdateExtends: boolean;
-        private _orthoLeft;
-        private _orthoRight;
-        private _orthoTop;
-        private _orthoBottom;
-        constructor(name: string, direction: Vector3, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        setDirectionToTarget(target: Vector3): Vector3;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        needCube(): boolean;
-        getShadowDirection(faceIndex?: number): Vector3;
-        computeTransformedPosition(): boolean;
-        transferToEffect(effect: Effect, directionUniformName: string): void;
-        _getWorldMatrix(): Matrix;
-        getTypeID(): number;
-    }
-}
-
-declare module BABYLON {
-    class HemisphericLight extends Light {
-        groundColor: Color3;
-        direction: Vector3;
-        private _worldMatrix;
-        constructor(name: string, direction: Vector3, scene: Scene);
-        setDirectionToTarget(target: Vector3): Vector3;
-        getShadowGenerator(): ShadowGenerator;
-        transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void;
-        _getWorldMatrix(): Matrix;
-        getTypeID(): number;
-    }
-}
-
-declare module BABYLON {
-    interface IShadowLight {
-        id: string;
-        position: Vector3;
-        transformedPosition: Vector3;
-        name: string;
-        computeTransformedPosition(): boolean;
-        getScene(): Scene;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        needCube(): boolean;
-        getShadowDirection(faceIndex?: number): Vector3;
-        _shadowGenerator: IShadowGenerator;
-    }
-    class Light extends Node {
-        private static _LIGHTMAP_DEFAULT;
-        private static _LIGHTMAP_SPECULAR;
-        private static _LIGHTMAP_SHADOWSONLY;
-        /**
-         * If every light affecting the material is in this lightmapMode,
-         * material.lightmapTexture adds or multiplies
-         * (depends on material.useLightmapAsShadowmap)
-         * after every other light calculations.
-         */
-        static LIGHTMAP_DEFAULT: number;
-        /**
-         * material.lightmapTexture as only diffuse lighting from this light
-         * adds pnly specular lighting from this light
-         * adds dynamic shadows
-         */
-        static LIGHTMAP_SPECULAR: number;
-        /**
-         * material.lightmapTexture as only lighting
-         * no light calculation from this light
-         * only adds dynamic shadows from this light
-         */
-        static LIGHTMAP_SHADOWSONLY: number;
-        diffuse: Color3;
-        specular: Color3;
-        intensity: number;
-        range: number;
-        includeOnlyWithLayerMask: number;
-        includedOnlyMeshes: AbstractMesh[];
-        excludedMeshes: AbstractMesh[];
-        excludeWithLayerMask: number;
-        lightmapMode: number;
-        radius: number;
-        _shadowGenerator: IShadowGenerator;
-        private _parentedWorldMatrix;
-        _excludedMeshesIds: string[];
-        _includedOnlyMeshesIds: string[];
-        constructor(name: string, scene: Scene);
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         */
-        toString(fullDetails?: boolean): string;
-        getShadowGenerator(): IShadowGenerator;
-        getAbsolutePosition(): Vector3;
-        transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void;
-        _getWorldMatrix(): Matrix;
-        canAffectMesh(mesh: AbstractMesh): boolean;
-        getWorldMatrix(): Matrix;
-        dispose(): void;
-        getTypeID(): number;
-        clone(name: string): Light;
-        serialize(): any;
-        static GetConstructorFromName(type: number, name: string, scene: Scene): () => Light;
-        static Parse(parsedLight: any, scene: Scene): Light;
-    }
-}
-
-declare module BABYLON {
-    class PointLight extends Light implements IShadowLight {
-        private _worldMatrix;
-        transformedPosition: Vector3;
-        position: Vector3;
-        constructor(name: string, position: Vector3, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        computeTransformedPosition(): boolean;
-        transferToEffect(effect: Effect, positionUniformName: string): void;
-        needCube(): boolean;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        getShadowDirection(faceIndex?: number): Vector3;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        _getWorldMatrix(): Matrix;
-        getTypeID(): number;
-    }
-}
-
-declare module BABYLON {
-    class SpotLight extends Light implements IShadowLight {
-        position: Vector3;
-        direction: Vector3;
-        angle: number;
-        exponent: number;
-        transformedPosition: Vector3;
-        private _transformedDirection;
-        private _worldMatrix;
-        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        needCube(): boolean;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        getShadowDirection(faceIndex?: number): Vector3;
-        setDirectionToTarget(target: Vector3): Vector3;
-        computeTransformedPosition(): boolean;
-        transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
-        _getWorldMatrix(): Matrix;
-        getTypeID(): number;
-        getRotation(): Vector3;
     }
 }
 
@@ -9212,76 +9212,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _frameCount;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         private _passedProcess;
         constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
@@ -9953,6 +9883,76 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _frameCount;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
+        /**
+        * An event triggered when the manager is disposed.
+        * @type {BABYLON.Observable}
+        */
+        onDisposeObservable: Observable<SpriteManager>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -11166,6 +11166,82 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        aspectRatio: number;
+        aspectRatioFov: number;
+        leftHMatrix: Matrix;
+        rightHMatrix: Matrix;
+        leftPreViewMatrix: Matrix;
+        rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getTypeName(): string;
+    }
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        getTypeName(): string;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var VRDisplay: any;
+declare var VRFrameData: any;
+declare module BABYLON {
+    interface WebVROptions {
+        trackPosition?: boolean;
+        positionScale?: number;
+        displayName?: string;
+    }
+    class WebVRFreeCamera extends FreeCamera {
+        private webVROptions;
+        _vrDevice: any;
+        private _cacheState;
+        private _vrEnabled;
+        private _attached;
+        private _oldSize;
+        private _oldHardwareScaleFactor;
+        private _frameData;
+        private _quaternionCache;
+        private _positionOffset;
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, webVROptions?: WebVROptions);
+        _checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        requestVRFullscreen(requestPointerlock: boolean): void;
+        getTypeName(): string;
+        resetToCurrentRotation(): void;
+        /**
+         *
+         * Set the position offset of the VR camera
+         * The offset will be added to the WebVR pose, after scaling it (if set).
+         *
+         * @param {Vector3} [newPosition] an optional new position. if not provided, the current camera position will be used.
+         *
+         * @memberOf WebVRFreeCamera
+         */
+        setPositionOffset(newPosition?: Vector3): void;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -11372,82 +11448,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        aspectRatio: number;
-        aspectRatioFov: number;
-        leftHMatrix: Matrix;
-        rightHMatrix: Matrix;
-        leftPreViewMatrix: Matrix;
-        rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getTypeName(): string;
-    }
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
-        getTypeName(): string;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var VRDisplay: any;
-declare var VRFrameData: any;
-declare module BABYLON {
-    interface WebVROptions {
-        trackPosition?: boolean;
-        positionScale?: number;
-        displayName?: string;
-    }
-    class WebVRFreeCamera extends FreeCamera {
-        private webVROptions;
-        _vrDevice: any;
-        private _cacheState;
-        private _vrEnabled;
-        private _attached;
-        private _oldSize;
-        private _oldHardwareScaleFactor;
-        private _frameData;
-        private _quaternionCache;
-        private _positionOffset;
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, webVROptions?: WebVROptions);
-        _checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        requestVRFullscreen(requestPointerlock: boolean): void;
-        getTypeName(): string;
-        resetToCurrentRotation(): void;
-        /**
-         *
-         * Set the position offset of the VR camera
-         * The offset will be added to the WebVR pose, after scaling it (if set).
-         *
-         * @param {Vector3} [newPosition] an optional new position. if not provided, the current camera position will be used.
-         *
-         * @memberOf WebVRFreeCamera
-         */
-        setPositionOffset(newPosition?: Vector3): void;
-    }
-}
-
-declare module BABYLON {
     interface IOctreeContainer<T> {
         blocks: Array<OctreeBlock<T>>;
     }
@@ -11491,6 +11491,69 @@ declare module BABYLON {
         intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void;
         intersectsRay(ray: Ray, selection: SmartArray<T>): void;
         createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
+    interface IShadowGenerator {
+        getShadowMap(): RenderTargetTexture;
+        dispose(): void;
+    }
+    class ShadowGenerator implements IShadowGenerator {
+        private static _FILTER_NONE;
+        private static _FILTER_VARIANCESHADOWMAP;
+        private static _FILTER_POISSONSAMPLING;
+        private static _FILTER_BLURVARIANCESHADOWMAP;
+        static FILTER_NONE: number;
+        static FILTER_VARIANCESHADOWMAP: number;
+        static FILTER_POISSONSAMPLING: number;
+        static FILTER_BLURVARIANCESHADOWMAP: number;
+        private _filter;
+        blurScale: number;
+        private _blurBoxOffset;
+        private _bias;
+        private _lightDirection;
+        forceBackFacesOnly: boolean;
+        bias: number;
+        blurBoxOffset: number;
+        filter: number;
+        useVarianceShadowMap: boolean;
+        usePoissonSampling: boolean;
+        useBlurVarianceShadowMap: boolean;
+        private _light;
+        private _scene;
+        private _shadowMap;
+        private _shadowMap2;
+        private _darkness;
+        private _transparencyShadow;
+        private _effect;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedPosition;
+        private _cachedDirection;
+        private _cachedDefines;
+        private _currentRenderID;
+        private _downSamplePostprocess;
+        private _boxBlurPostprocess;
+        private _mapSize;
+        private _currentFaceIndex;
+        private _currentFaceIndexCache;
+        private _useFullFloat;
+        constructor(mapSize: number, light: IShadowLight);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getShadowMap(): RenderTargetTexture;
+        getShadowMapForRendering(): RenderTargetTexture;
+        getLight(): IShadowLight;
+        getTransformMatrix(): Matrix;
+        getDarkness(): number;
+        setDarkness(darkness: number): void;
+        setTransparencyShadow(hasShadow: boolean): void;
+        private _packHalf(depth);
+        dispose(): void;
+        serialize(): any;
+        static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
 }
 
@@ -12093,69 +12156,6 @@ declare module BABYLON {
         constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
         private _createTexture();
         update(): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface IShadowGenerator {
-        getShadowMap(): RenderTargetTexture;
-        dispose(): void;
-    }
-    class ShadowGenerator implements IShadowGenerator {
-        private static _FILTER_NONE;
-        private static _FILTER_VARIANCESHADOWMAP;
-        private static _FILTER_POISSONSAMPLING;
-        private static _FILTER_BLURVARIANCESHADOWMAP;
-        static FILTER_NONE: number;
-        static FILTER_VARIANCESHADOWMAP: number;
-        static FILTER_POISSONSAMPLING: number;
-        static FILTER_BLURVARIANCESHADOWMAP: number;
-        private _filter;
-        blurScale: number;
-        private _blurBoxOffset;
-        private _bias;
-        private _lightDirection;
-        forceBackFacesOnly: boolean;
-        bias: number;
-        blurBoxOffset: number;
-        filter: number;
-        useVarianceShadowMap: boolean;
-        usePoissonSampling: boolean;
-        useBlurVarianceShadowMap: boolean;
-        private _light;
-        private _scene;
-        private _shadowMap;
-        private _shadowMap2;
-        private _darkness;
-        private _transparencyShadow;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedPosition;
-        private _cachedDirection;
-        private _cachedDefines;
-        private _currentRenderID;
-        private _downSamplePostprocess;
-        private _boxBlurPostprocess;
-        private _mapSize;
-        private _currentFaceIndex;
-        private _currentFaceIndexCache;
-        private _useFullFloat;
-        constructor(mapSize: number, light: IShadowLight);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getShadowMap(): RenderTargetTexture;
-        getShadowMapForRendering(): RenderTargetTexture;
-        getLight(): IShadowLight;
-        getTransformMatrix(): Matrix;
-        getDarkness(): number;
-        setDarkness(darkness: number): void;
-        setTransparencyShadow(hasShadow: boolean): void;
-        private _packHalf(depth);
-        dispose(): void;
-        serialize(): any;
-        static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
 }
 
