@@ -5035,17 +5035,23 @@ var BABYLON;
          * Load a script (identified by an url). When the url returns, the
          * content of this file is added into a new script element, attached to the DOM (body element)
          */
-        Tools.LoadScript = function (scriptUrl, callback, progressCallBack, onError) {
-            // Load file
-            BABYLON.Tools.LoadFile(scriptUrl, function (scriptContent) {
-                // Create script element
-                var scriptElem = window.document.createElement('script');
-                scriptElem.textContent = scriptContent;
-                // attach the script to the body
-                var body = window.document.body;
-                body.appendChild(scriptElem);
-                callback();
-            }, progressCallBack, null, null, onError);
+        Tools.LoadScript = function (scriptUrl, onSuccess, onError) {
+            var head = document.getElementsByTagName('head')[0];
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = scriptUrl;
+            var self = this;
+            script.onload = function () {
+                if (onSuccess) {
+                    onSuccess();
+                }
+            };
+            script.onerror = function () {
+                if (onError) {
+                    onError();
+                }
+            };
+            head.appendChild(script);
         };
         Tools.ReadFileAsDataURL = function (fileToLoad, callback, progressCallback) {
             var reader = new FileReader();
@@ -54861,7 +54867,7 @@ var BABYLON;
                 this._createInspector();
             }
         };
-        DebugLayer.InspectorURL = 'http://www.babylonjs.com/inspector.js';
+        DebugLayer.InspectorURL = 'http://www.babylonjs.com/babylon.inspector.bundle.js';
         return DebugLayer;
     }());
     BABYLON.DebugLayer = DebugLayer;
