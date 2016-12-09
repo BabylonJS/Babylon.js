@@ -104,7 +104,7 @@ var INSPECTOR;
         /** Remove the inspector panel when it's built as a right panel:
          * remove the right panel and remove the wrapper
          */
-        Inspector.prototype._disposeInspector = function () {
+        Inspector.prototype.dispose = function () {
             if (!this._popupMode) {
                 // Get canvas
                 var canvas = this._scene.getEngine().getRenderingCanvas();
@@ -139,7 +139,7 @@ var INSPECTOR;
                 popup.document.head.appendChild(link);
             }
             // Dispose the right panel
-            this._disposeInspector();
+            this.dispose();
             // set the mode as popup
             this._popupMode = true;
             // Save the HTML document
@@ -1537,13 +1537,13 @@ var INSPECTOR;
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
-     * Creates a tooltip for the given html element
+     * Creates a tooltip for the parent of the given html element
      */
     var Tooltip = (function () {
         function Tooltip(elem, tip) {
             var _this = this;
             this._elem = elem;
-            this._infoDiv = INSPECTOR.Helpers.CreateDiv('tooltip', this._elem);
+            this._infoDiv = INSPECTOR.Helpers.CreateDiv('tooltip', this._elem.parentElement);
             this._elem.addEventListener('mouseover', function () {
                 _this._infoDiv.textContent = tip;
                 _this._infoDiv.style.display = 'block';
@@ -2369,6 +2369,268 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var INSPECTOR;
 (function (INSPECTOR) {
+    var StatsTab = (function (_super) {
+        __extends(StatsTab, _super);
+        function StatsTab(tabbar, insp) {
+            var _this = this;
+            _super.call(this, tabbar, 'Stats');
+            /**
+             * Properties in this array will be updated
+             * in a render loop - Mostly stats properties
+             */
+            this._updatableProperties = [];
+            this._inspector = insp;
+            this._scene = this._inspector.scene;
+            this._engine = this._scene.getEngine();
+            this._glInfo = this._engine.getGlInfo();
+            // Build the stats panel: a div that will contains all stats
+            this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            this._panel.classList.add("stats-panel");
+            var title = INSPECTOR.Helpers.CreateDiv('stat-title1', this._panel);
+            title.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + ' - <b>' + BABYLON.Tools.Format(this._inspector.scene.getEngine().getFps(), 0) + " fps</b>";
+            this._updateLoopHandler = this._update.bind(this);
+            // Count block
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title.textContent = "Count";
+            {
+                var elemLabel = this._createStatLabel("Total meshes", this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.meshes.length.toString(); }
+                });
+                elemLabel = this._createStatLabel("Draw calls", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._engine.drawCalls.toString(); }
+                });
+                elemLabel = this._createStatLabel("Total lights", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.lights.length.toString(); }
+                });
+                elemLabel = this._createStatLabel("Total lights", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.lights.length.toString(); }
+                });
+                elemLabel = this._createStatLabel("Total vertices", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.getTotalVertices().toString(); }
+                });
+                elemLabel = this._createStatLabel("Total materials", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.materials.length.toString(); }
+                });
+                elemLabel = this._createStatLabel("Total textures", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.textures.length.toString(); }
+                });
+                elemLabel = this._createStatLabel("Active meshes", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.getActiveMeshes().length.toString(); }
+                });
+                elemLabel = this._createStatLabel("Active indices", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.getActiveIndices().toString(); }
+                });
+                elemLabel = this._createStatLabel("Active bones", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.getActiveBones().toString(); }
+                });
+                elemLabel = this._createStatLabel("Active particles", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._scene.getActiveParticles().toString(); }
+                });
+            }
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title.textContent = "Duration";
+            {
+                var elemLabel = this._createStatLabel("Meshes selection", this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getEvaluateActiveMeshesDuration()); }
+                });
+                elemLabel = this._createStatLabel("Render targets", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getRenderTargetsDuration()); }
+                });
+                elemLabel = this._createStatLabel("Particles", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getParticlesDuration()); }
+                });
+                elemLabel = this._createStatLabel("Sprites", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getSpritesDuration()); }
+                });
+                elemLabel = this._createStatLabel("Render", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getRenderDuration()); }
+                });
+                elemLabel = this._createStatLabel("Frame", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(_this._scene.getLastFrameDuration()); }
+                });
+                elemLabel = this._createStatLabel("Potential FPS", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return BABYLON.Tools.Format(1000.0 / _this._scene.getLastFrameDuration(), 0); }
+                });
+                elemLabel = this._createStatLabel("Resolution", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._engine.getRenderWidth() + "x" + _this._engine.getRenderHeight(); }
+                });
+            }
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title.textContent = "Extensions";
+            {
+                var elemLabel = this._createStatLabel("Std derivatives", this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().standardDerivatives ? "Yes" : "No"); }
+                });
+                elemLabel = this._createStatLabel("Compressed textures", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().s3tc ? "Yes" : "No"); }
+                });
+                elemLabel = this._createStatLabel("Hardware instances", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().instancedArrays ? "Yes" : "No"); }
+                });
+                elemLabel = this._createStatLabel("Texture float", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().textureFloat ? "Yes" : "No"); }
+                });
+                elemLabel = this._createStatLabel("32bits indices", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().uintIndices ? "Yes" : "No"); }
+                });
+                elemLabel = this._createStatLabel("Fragment depth", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().fragmentDepthSupported ? "Yes" : "No"); }
+                });
+                elemLabel = this._createStatLabel("High precision shaders", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No"); }
+                });
+                elemLabel = this._createStatLabel("Draw buffers", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().drawBuffersExtension ? "Yes" : "No"); }
+                });
+            }
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title.textContent = "Caps.";
+            {
+                var elemLabel = this._createStatLabel("Stencil", this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.isStencilEnable ? "Enabled" : "Disabled"); }
+                });
+                elemLabel = this._createStatLabel("Max textures units", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._engine.getCaps().maxTexturesImageUnits.toString(); }
+                });
+                elemLabel = this._createStatLabel("Max textures size", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._engine.getCaps().maxTextureSize.toString(); }
+                });
+                elemLabel = this._createStatLabel("Max anisotropy", this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._engine.getCaps().maxAnisotropy.toString(); }
+                });
+            }
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title.textContent = "Info";
+            {
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-infos', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._engine.webGLVersion + " - " + _this._glInfo.version + " - " + _this._glInfo.renderer; }
+                });
+            }
+            // Register the update loop
+            this._scene.registerAfterRender(this._updateLoopHandler);
+        }
+        StatsTab.prototype._createStatLabel = function (content, parent) {
+            var elem = INSPECTOR.Helpers.CreateDiv('stat-label', parent);
+            elem.textContent = content;
+            return elem;
+        };
+        /** Update each properties of the stats panel */
+        StatsTab.prototype._update = function () {
+            for (var _i = 0, _a = this._updatableProperties; _i < _a.length; _i++) {
+                var prop = _a[_i];
+                prop.elem.textContent = prop.updateFct();
+            }
+        };
+        StatsTab.prototype.dispose = function () {
+            this._scene.unregisterAfterRender(this._updateLoopHandler);
+        };
+        return StatsTab;
+    }(INSPECTOR.Tab));
+    INSPECTOR.StatsTab = StatsTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
     /**
      * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...
      * The default active tab is the first one of the list.
@@ -2385,6 +2647,7 @@ var INSPECTOR;
             this._visibleTabs = [];
             this._inspector = inspector;
             this._tabs.push(new INSPECTOR.SceneTab(this, this._inspector));
+            this._tabs.push(new INSPECTOR.StatsTab(this, this._inspector));
             this._meshTab = new INSPECTOR.MeshTab(this, this._inspector);
             this._tabs.push(this._meshTab);
             this._tabs.push(new INSPECTOR.ShaderTab(this, this._inspector));
@@ -2530,6 +2793,8 @@ var INSPECTOR;
                     var lastTab = this._invisibleTabs.pop();
                     this._div.appendChild(lastTab.toHtml());
                     this._visibleTabs.push(lastTab);
+                    // Update more-tab icon in last position if needed
+                    this._div.removeChild(this._moreTabsIcon);
                 }
             }
             if (this._invisibleTabs.length > 0 && !this._div.contains(this._moreTabsIcon)) {
@@ -2740,6 +3005,8 @@ var INSPECTOR;
             }
             // Pause schedule
             this._tools.push(new INSPECTOR.PauseScheduleTool(this._div, this._inspector));
+            // Pause schedule
+            this._tools.push(new INSPECTOR.DisposeTool(this._div, this._inspector));
         };
         /**
          * Returns the total width in pixel of the tabbar,
@@ -2756,6 +3023,30 @@ var INSPECTOR;
         return Toolbar;
     }(INSPECTOR.BasicElement));
     INSPECTOR.Toolbar = Toolbar;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
+    /**
+     * Removes the inspector panel
+     */
+    var DisposeTool = (function (_super) {
+        __extends(DisposeTool, _super);
+        function DisposeTool(parent, inspector) {
+            _super.call(this, 'fa-times', parent, inspector, 'Close the inspector panel');
+        }
+        // Action : refresh the whole panel
+        DisposeTool.prototype.action = function () {
+            this._inspector.dispose();
+        };
+        return DisposeTool;
+    }(INSPECTOR.AbstractTool));
+    INSPECTOR.DisposeTool = DisposeTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || function (d, b) {

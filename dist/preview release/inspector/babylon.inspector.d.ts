@@ -37,7 +37,7 @@ declare module INSPECTOR {
         /** Remove the inspector panel when it's built as a right panel:
          * remove the right panel and remove the wrapper
          */
-        private _disposeInspector();
+        dispose(): void;
         /** Open the inspector in a new popup */
         openPopup(): void;
     }
@@ -466,7 +466,7 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     /**
-     * Creates a tooltip for the given html element
+     * Creates a tooltip for the parent of the given html element
      */
     class Tooltip {
         /** The tooltip is displayed for this element */
@@ -656,6 +656,26 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class StatsTab extends Tab {
+        private _inspector;
+        /**
+         * Properties in this array will be updated
+         * in a render loop - Mostly stats properties
+         */
+        private _updatableProperties;
+        private _scene;
+        private _engine;
+        private _glInfo;
+        private _updateLoopHandler;
+        constructor(tabbar: TabBar, insp: Inspector);
+        private _createStatLabel(content, parent);
+        /** Update each properties of the stats panel */
+        private _update();
+        dispose(): void;
+    }
+}
+
+declare module INSPECTOR {
     /**
      * A tab bar will contains each view the inspector can have : Canvas2D, Meshes...
      * The default active tab is the first one of the list.
@@ -771,6 +791,16 @@ declare module INSPECTOR {
          * that corresponds to the sum of the width of each tab + toolbar width
         */
         getPixelWidth(): number;
+    }
+}
+
+declare module INSPECTOR {
+    /**
+     * Removes the inspector panel
+     */
+    class DisposeTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
     }
 }
 
