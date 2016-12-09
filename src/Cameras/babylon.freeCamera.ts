@@ -178,7 +178,7 @@
             super.dispose();
         }
         
-        public getTypeName(): string {
+        public getClassName(): string {
             return "FreeCamera";
         }
     }    

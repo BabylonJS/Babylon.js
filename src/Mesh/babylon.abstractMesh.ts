@@ -192,6 +192,10 @@
             scene.addMesh(this);
         }
 
+        public getClassName(): string {
+            return "AbstractMesh";
+        }
+
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */

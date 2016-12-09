@@ -212,7 +212,7 @@
             this.getViewMatrix();
             this.inputs = new ArcRotateCameraInputsManager(this);
             this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
-        }
+        }      
 
         // Cache
         public _initCache(): void {
@@ -588,7 +588,7 @@
             super.dispose();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "ArcRotateCamera";
         }
     }

@@ -508,6 +508,10 @@
             }
         }
 
+        public getClassName(): string {
+            return "PBRMaterial";
+        }
+
         @serialize()
         public get useLogarithmicDepth(): boolean {
             return this._useLogarithmicDepth;

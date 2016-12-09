@@ -6,7 +6,7 @@
             this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "AnaglyphFreeCamera";
         }
     }
@@ -18,7 +18,7 @@
             this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "AnaglyphArcRotateCamera";
         }
     }
@@ -30,7 +30,7 @@
             this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "AnaglyphGamepadCamera";
         }
     }
@@ -42,7 +42,7 @@
             this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "AnaglyphUniversalCamera";
         }
     }
@@ -55,7 +55,7 @@
             this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "StereoscopicFreeCamera";
         }
     }
@@ -68,7 +68,7 @@
             this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "StereoscopicArcRotateCamera";
         }
     }
@@ -81,7 +81,7 @@
             this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "StereoscopicGamepadCamera";
         }
     }
@@ -94,7 +94,7 @@
             this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "StereoscopicUniversalCamera";
         }
     }

@@ -94,6 +94,10 @@
             scene.addLight(this);
         }
 
+        public getClassName(): string {
+            return "Light";
+        }        
+
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
