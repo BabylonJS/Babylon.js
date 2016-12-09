@@ -43,6 +43,32 @@ var BABYLONDEVTOOLS;
             babylonJSPath = '';
         }
 
+        Loader.prototype.debugShortcut = function(engine) {
+            // Add inspector shortcut
+            var map = {};
+            var onkey = function(e){
+                e = e || event; // to deal with IE
+                map[e.keyCode] = e.type == 'keydown';
+                if(map[17] && map[16] && map[18] && map[73]) {
+                    if (engine.scenes && engine.scenes.length > 0) {
+                        for (var i = 0; i < engine.scenes.length; i ++) {
+                            if (engine.scenes[0].debugLayer.isVisible()) {
+                                engine.scenes[0].debugLayer.hide();
+                            }
+                            else {
+                                engine.scenes[0].debugLayer.show();
+                            }
+                        }
+                    }
+                    map = {};
+                    return false;
+                }
+            };
+
+            document.addEventListener("keydown", onkey);
+            document.addEventListener("keyup", onkey);
+        }
+
         Loader.prototype.root = function (newBabylonJSPath) {
             babylonJSPath = newBabylonJSPath;
             return this;

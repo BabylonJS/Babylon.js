@@ -5,7 +5,8 @@ var Test = (function () {
     function Test(canvasId) {
         var _this = this;
         var canvas = document.getElementById(canvasId);
-        this.engine = new BABYLON.Engine(canvas, true);
+        this.engine = new BABYLON.Engine(canvas, true);					
+		BABYLONDEVTOOLS.Loader.debugShortcut(engine);
         this.scene = null;
         window.addEventListener("resize", function () {
             _this.engine.resize();
