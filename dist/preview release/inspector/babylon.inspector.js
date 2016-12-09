@@ -557,7 +557,14 @@ var INSPECTOR;
         /** Returns the list of properties to be displayed for this adapter */
         MaterialAdapter.prototype.getProperties = function () {
             var propertiesLines = [];
-            var propToDisplay = INSPECTOR.PROPERTIES[this.type()].properties;
+            var propToDisplay = [];
+            // The if is there to work with the min version of babylon
+            if (this._obj instanceof BABYLON.StandardMaterial) {
+                propToDisplay = INSPECTOR.PROPERTIES['StandardMaterial'].properties;
+            }
+            else if (this._obj instanceof BABYLON.PBRMaterial) {
+                propToDisplay = INSPECTOR.PROPERTIES['PBRMaterial'].properties;
+            }
             for (var _i = 0, propToDisplay_1 = propToDisplay; _i < propToDisplay_1.length; _i++) {
                 var dirty = propToDisplay_1[_i];
                 var infos = new INSPECTOR.Property(dirty, this._obj);
@@ -2793,6 +2800,10 @@ var INSPECTOR;
                     var lastTab = this._invisibleTabs.pop();
                     this._div.appendChild(lastTab.toHtml());
                     this._visibleTabs.push(lastTab);
+                    // Update more-tab icon in last position if needed
+                    if (this._div.contains(this._moreTabsIcon)) {
+                        this._div.removeChild(this._moreTabsIcon);
+                    }
                 }
             }
             if (this._invisibleTabs.length > 0 && !this._div.contains(this._moreTabsIcon)) {
