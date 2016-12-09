@@ -19,6 +19,7 @@ var optimisejs = require('gulp-optimize-js');
 var webserver = require('gulp-webserver');
 var path = require('path');
 var sass = require('gulp-sass');
+var webpack = require('webpack-stream');
 
 var config = require("./config.json");
 var customConfig = require("./custom.config.json");
@@ -264,9 +265,7 @@ var buildExternalLibrary= function(library, settings, watch) {
         return merge2([shader, dev, css]);    
     }
     else {
-        
-        var dist = merge2([dev, css], [
-            merge2([tsProcess.js, shader])
+        var code = merge2([tsProcess.js, shader])
                 .pipe(concat(library.output))
                 .pipe(gulp.dest(outputDirectory))
                 .pipe(cleants())
@@ -275,14 +274,25 @@ var buildExternalLibrary= function(library, settings, watch) {
                 .pipe(rename({extname: ".min.js"}))
                 .pipe(uglify())
                 .pipe(optimisejs())
-                .pipe(gulp.dest(outputDirectory)), 
-            tsProcess.dts
+                .pipe(gulp.dest(outputDirectory));
+        
+        var dts = tsProcess.dts
                 .pipe(concat(library.output))
                 .pipe(rename({extname: ".d.ts"}))
-                .pipe(gulp.dest(outputDirectory)) 
-        ]);
+                .pipe(gulp.dest(outputDirectory));
 
-        return dist;   
+        var waitAll =  merge2([dev, code, css, dts]);
+
+        if (library.webpack) {
+            return waitAll.on('end', function() {
+                webpack(require(library.webpack))
+                    .pipe(rename(library.output.replace(".js", ".bundle.js")))
+                    .pipe(gulp.dest(outputDirectory))
+            });
+        }
+        else {
+            return waitAll;
+        }
     }
 }
 
