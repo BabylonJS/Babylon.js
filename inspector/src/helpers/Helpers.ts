@@ -16,12 +16,43 @@ module INSPECTOR {
                         classname = this._GetFnName(obj.constructor);
                     }
                 }
+                // If the class name has no matching properties, check every type
+                if (!this._CheckIfTypeExists(classname)) {
+                    return this._GetTypeFor(obj);
+                }
                 return classname;
             } else {
-                return '';
+                return 'type_not_defined';
             }
         }
+        
+        /**
+         * Check if some properties are defined for the given type.
+         */
+        private static _CheckIfTypeExists(type:string) {
+            let properties = PROPERTIES[type];
+            if (properties) {
+                return true;
+            } 
+            return false;
+        }
 
+        /** 
+         * Returns the name of the type of the given object, where the name 
+         * is in PROPERTIES constant.
+         * Returns 'Undefined' if no type exists for this object
+         */
+        private static _GetTypeFor(obj:any) {
+            for (let type in PROPERTIES) {
+                let typeBlock = PROPERTIES[type];
+                if (typeBlock.type) {
+                    if (obj instanceof typeBlock.type) {
+                        return type;
+                    }
+                }
+            }
+            return 'type_not_defined';
+        }
         /**
          * Returns the name of a function (workaround to get object type for IE11)
          */
