@@ -1007,8 +1007,8 @@
          * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
          */
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.width);
-            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.height);
+            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this.getRenderWidth());
+            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this.getRenderHeight());
             var x = viewport.x || 0;
             var y = viewport.y || 0;
 

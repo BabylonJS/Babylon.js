@@ -11,7 +11,7 @@
         "**/node_modules": true,
         "**/temp": true,
         "**/.temp": true,
-        "**/.d.ts": true,
+        "**/*.d.ts": true,
         "**/*.js.map": true,
         "**/*.js.fx": true,
         "**/*.js": { 
