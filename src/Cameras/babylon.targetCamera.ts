@@ -310,7 +310,7 @@
             Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "TargetCamera";
         }
     }

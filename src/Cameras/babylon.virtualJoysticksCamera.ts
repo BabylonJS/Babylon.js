@@ -6,5 +6,9 @@
             super(name, position, scene);
             this.inputs.addVirtualJoystick();
         }
+
+        public getClassName(): string {
+            return "VirtualJoysticksCamera";
+        }
     }
 }

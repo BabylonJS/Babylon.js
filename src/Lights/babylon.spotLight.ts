@@ -26,6 +26,10 @@
             this.exponent = exponent;
         }
 
+        public getClassName(): string {
+            return "SpotLight";
+        }         
+
         public getAbsolutePosition(): Vector3 {
             return this.transformedPosition ? this.transformedPosition : this.position;
         }

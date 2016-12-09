@@ -53,6 +53,10 @@
             this._positionBuffer[VertexBuffer.PositionKind] = null;
         }
 
+        public getClassName(): string {
+            return "LinesMesh";
+        }      
+
         public get material(): Material {
             return this._colorShader;
         }

@@ -72,7 +72,7 @@
             this.follow(this.lockedTarget);
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "FollowCamera";
         }
     }
@@ -100,7 +100,7 @@
             this.follow();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "ArcFollowCamera";
         }
     }

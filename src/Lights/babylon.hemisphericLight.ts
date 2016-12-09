@@ -13,6 +13,10 @@
 
             this.direction = direction;
         }
+        
+        public getClassName(): string {
+            return "HemisphericLight";
+        }          
 
         public setDirectionToTarget(target: Vector3): Vector3 {
             this.direction = Vector3.Normalize(target.subtract(Vector3.Zero()));

@@ -34,7 +34,7 @@ module BABYLON {
             this._setupInputs();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "TouchCamera";
         }
 

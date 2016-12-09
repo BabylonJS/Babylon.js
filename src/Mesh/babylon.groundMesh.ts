@@ -18,6 +18,10 @@
             super(name, scene);
         }
 
+        public getClassName(): string {
+            return "GroundMesh";
+        }        
+
         public get subdivisions(): number {
             return Math.min(this._subdivisionsX, this._subdivisionsY);
         }
