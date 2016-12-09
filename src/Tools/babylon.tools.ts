@@ -709,12 +709,26 @@
             if (!screenshotCanvas) {
                 screenshotCanvas = document.createElement('canvas');
             }
+            
             screenshotCanvas.width = width;
             screenshotCanvas.height = height;
 
             var renderContext = screenshotCanvas.getContext("2d");
 
-            renderContext.drawImage(engine.getRenderingCanvas(), 0, 0, width, height);
+            var ratio = engine.getRenderWidth() / engine.getRenderHeight();
+            var newWidth = width;
+            var newHeight = newWidth / ratio;
+            if (newHeight > height) {
+                newHeight = height;
+                newWidth = newHeight * ratio;
+            }
+
+            var offsetX = Math.max(0, width - newWidth) / 2;
+            var offsetY = Math.max(0, height - newHeight) / 2;
+
+            renderContext.fillStyle = camera.getScene().clearColor.toHexString();
+            renderContext.fillRect(0, 0, width, height);
+            renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
 
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
