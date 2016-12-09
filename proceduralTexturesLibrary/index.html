@@ -53,7 +53,8 @@
 		BABYLONDEVTOOLS.Loader.load(function() {
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
-			var engine = new BABYLON.Engine(canvas, true);
+			var engine = new BABYLON.Engine(canvas, true);					
+			BABYLONDEVTOOLS.Loader.debugShortcut(engine);
 			var divFps = document.getElementById("fps");
 
 			scene = new BABYLON.Scene(engine);
