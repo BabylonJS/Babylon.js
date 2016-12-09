@@ -135,13 +135,18 @@ var BABYLONDEVTOOLS;
                 }
             }
             else if (min) {
-                this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
+                if (library.webpack) {
+                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.bundle.js'));
+                }
+                else {
+                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
+                }
             }
             else {
                 this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
             }
 
-            if (library.sassFiles && library.sassFiles.length > 0) {
+            if (!min && library.sassFiles && library.sassFiles.length > 0) {
                 var cssFile = library.output.replace('.js', '.css');
                 cssFile = babylonJSPath + '/dist/preview release' +  module.build.distOutputDirectory + cssFile;
                 this.loadCss(cssFile);
@@ -179,7 +184,10 @@ var BABYLONDEVTOOLS;
             }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
-                    self.loadScript('/dist/split.js');
+                    if (!min) {
+                        self.loadScript('/dist/preview release/split.js');
+                    }
+
                     self.loadBJSScripts(data);
                     if (dependencies) {
                         self.loadScripts(dependencies);
