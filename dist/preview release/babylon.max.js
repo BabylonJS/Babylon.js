@@ -37845,6 +37845,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        LinesMesh.prototype.getClassName = function () {
+            return "LinesMesh";
+        };
         Object.defineProperty(LinesMesh.prototype, "material", {
             get: function () {
                 return this._colorShader;
