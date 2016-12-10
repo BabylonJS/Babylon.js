@@ -455,6 +455,10 @@
           "../../sceneManager/src/babylon.scenecomponents.ts"
         ],
         "output": "babylon.manager.js"
+    },
+    {
+        "files": [ "../../sceneManager/src/babylon.navmesh.js" ],
+        "output": "babylon.navmesh.js"
     }],
     "build": {
       "srcOutputDirectory": "../../sceneManager/",
