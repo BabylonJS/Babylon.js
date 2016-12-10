@@ -89,7 +89,9 @@
             // Type
             let type = Inspector.DOCUMENT.createElement('span'); 
             type.className = 'property-type';
-            type.textContent = ' - '+this._adapter.type(); 
+            if (this._adapter.type() !== 'type_not_defined') {
+                type.textContent = ' - '+this._adapter.type();
+            } 
             this._div.appendChild(type);
             
             this._lineContent = Helpers.CreateDiv('line-content', this._div);

@@ -46,58 +46,77 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     const PROPERTIES: {
         format: (obj: any) => any;
+        'type_not_defined': {
+            properties: any[];
+            format: () => string;
+        };
         'Vector2': {
+            type: typeof BABYLON.Vector2;
             properties: string[];
             format: (vec: BABYLON.Vector2) => string;
         };
         'Vector3': {
+            type: typeof BABYLON.Vector3;
             properties: string[];
             format: (vec: BABYLON.Vector3) => string;
         };
         'Color3': {
+            type: typeof BABYLON.Color3;
             properties: string[];
             format: (color: BABYLON.Color3) => string;
         };
         'Quaternion': {
+            type: typeof BABYLON.Quaternion;
             properties: string[];
         };
         'Size': {
+            type: typeof BABYLON.Size;
             properties: string[];
             format: (size: BABYLON.Size) => string;
         };
         'Texture': {
+            type: typeof BABYLON.Texture;
             properties: string[];
         };
         'ArcRotateCamera': {
             properties: string[];
         };
         'Scene': {
+            type: typeof BABYLON.Scene;
             properties: string[];
         };
         'Mesh': {
+            type: typeof BABYLON.Mesh;
             properties: string[];
             format: (m: BABYLON.Mesh) => string;
         };
         'StandardMaterial': {
+            type: typeof BABYLON.StandardMaterial;
             properties: string[];
             format: (mat: BABYLON.StandardMaterial) => string;
         };
         'PrimitiveAlignment': {
+            type: typeof BABYLON.PrimitiveAlignment;
             properties: string[];
         };
         'PrimitiveThickness': {
+            type: typeof BABYLON.PrimitiveThickness;
             properties: string[];
         };
         'BoundingInfo2D': {
+            type: typeof BABYLON.BoundingInfo2D;
             properties: string[];
         };
         'SolidColorBrush2D': {
+            type: typeof BABYLON.SolidColorBrush2D;
             properties: string[];
         };
         'GradientColorBrush2D': {
+            type: typeof BABYLON.GradientColorBrush2D;
             properties: string[];
         };
         'PBRMaterial': {
+            type: typeof BABYLON.PBRMaterial;
             properties: string[];
         };
     };
@@ -484,6 +503,16 @@ declare module INSPECTOR {
          * uses getClassName. If nothing is returned, used the type of the constructor
          */
         static GET_TYPE(obj: any): string;
+        /**
+         * Check if some properties are defined for the given type.
+         */
+        private static _CheckIfTypeExists(type);
+        /**
+         * Returns the name of the type of the given object, where the name
+         * is in PROPERTIES constant.
+         * Returns 'Undefined' if no type exists for this object
+         */
+        private static _GetTypeFor(obj);
         /**
          * Returns the name of a function (workaround to get object type for IE11)
          */

@@ -167,7 +167,7 @@ var INSPECTOR;
          * If a format function exists, returns the result of this function.
          * If this function doesn't exists, return the object type instead */
         format: function (obj) {
-            var type = INSPECTOR.Helpers.GET_TYPE(obj) || 'default';
+            var type = INSPECTOR.Helpers.GET_TYPE(obj) || 'type_not_defined';
             if (INSPECTOR.PROPERTIES[type] && INSPECTOR.PROPERTIES[type].format) {
                 return INSPECTOR.PROPERTIES[type].format(obj);
             }
@@ -175,26 +175,36 @@ var INSPECTOR;
                 return INSPECTOR.Helpers.GET_TYPE(obj);
             }
         },
+        'type_not_defined': {
+            properties: [],
+            format: function () { return ''; }
+        },
         'Vector2': {
+            type: BABYLON.Vector2,
             properties: ['x', 'y'],
             format: function (vec) { return "x:" + INSPECTOR.Helpers.Trunc(vec.x) + ", y:" + INSPECTOR.Helpers.Trunc(vec.y); }
         },
         'Vector3': {
+            type: BABYLON.Vector3,
             properties: ['x', 'y', 'z'],
             format: function (vec) { return "x:" + INSPECTOR.Helpers.Trunc(vec.x) + ", y:" + INSPECTOR.Helpers.Trunc(vec.y) + ", z:" + INSPECTOR.Helpers.Trunc(vec.z); }
         },
         'Color3': {
+            type: BABYLON.Color3,
             properties: ['r', 'g', 'b'],
             format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; }
         },
         'Quaternion': {
+            type: BABYLON.Quaternion,
             properties: ['x', 'y', 'z', 'w']
         },
         'Size': {
+            type: BABYLON.Size,
             properties: ['width', 'height'],
             format: function (size) { return "Size - w:" + INSPECTOR.Helpers.Trunc(size.width) + ", h:" + INSPECTOR.Helpers.Trunc(size.height); }
         },
         'Texture': {
+            type: BABYLON.Texture,
             properties: [
                 'hasAlpha',
                 'level',
@@ -211,12 +221,15 @@ var INSPECTOR;
             ],
         },
         'ArcRotateCamera': {
+            // type: BABYLON.ArcRotateCamera,
             properties: ['alpha', 'beta', 'radius']
         },
         'Scene': {
+            type: BABYLON.Scene,
             properties: ['actionManager', 'activeCamera', 'ambientColor', 'clearColor']
         },
         'Mesh': {
+            type: BABYLON.Mesh,
             properties: [
                 'name',
                 'position',
@@ -228,6 +241,7 @@ var INSPECTOR;
             format: function (m) { return m.name; }
         },
         'StandardMaterial': {
+            type: BABYLON.StandardMaterial,
             properties: [
                 'name',
                 'alpha',
@@ -261,21 +275,27 @@ var INSPECTOR;
             format: function (mat) { return mat.name; }
         },
         'PrimitiveAlignment': {
+            type: BABYLON.PrimitiveAlignment,
             properties: ['horizontal', 'vertical']
         },
         'PrimitiveThickness': {
+            type: BABYLON.PrimitiveThickness,
             properties: ['topPixels', 'leftPixels', 'rightPixels', 'bottomPixels']
         },
         'BoundingInfo2D': {
+            type: BABYLON.BoundingInfo2D,
             properties: ['radius', 'center', 'extent']
         },
         'SolidColorBrush2D': {
+            type: BABYLON.SolidColorBrush2D,
             properties: ['color']
         },
         'GradientColorBrush2D': {
+            type: BABYLON.GradientColorBrush2D,
             properties: ['color1', 'color2', 'translation', 'rotation', 'scale']
         },
         'PBRMaterial': {
+            type: BABYLON.PBRMaterial,
             properties: [
                 'name',
                 'albedoColor',
@@ -1195,7 +1215,7 @@ var INSPECTOR;
          * Returns true if the value is null
          */
         PropertyLine.prototype._isSimple = function () {
-            if (this.value != null) {
+            if (this.value != null && this.type !== 'type_not_defined') {
                 if (PropertyLine._SIMPLE_TYPE.indexOf(this.type) == -1) {
                     // complex type : return the type name
                     return false;
@@ -1581,11 +1601,41 @@ var INSPECTOR;
                         classname = this._GetFnName(obj.constructor);
                     }
                 }
+                // If the class name has no matching properties, check every type
+                if (!this._CheckIfTypeExists(classname)) {
+                    return this._GetTypeFor(obj);
+                }
                 return classname;
             }
             else {
-                return '';
+                return 'type_not_defined';
             }
+        };
+        /**
+         * Check if some properties are defined for the given type.
+         */
+        Helpers._CheckIfTypeExists = function (type) {
+            var properties = INSPECTOR.PROPERTIES[type];
+            if (properties) {
+                return true;
+            }
+            return false;
+        };
+        /**
+         * Returns the name of the type of the given object, where the name
+         * is in PROPERTIES constant.
+         * Returns 'Undefined' if no type exists for this object
+         */
+        Helpers._GetTypeFor = function (obj) {
+            for (var type in INSPECTOR.PROPERTIES) {
+                var typeBlock = INSPECTOR.PROPERTIES[type];
+                if (typeBlock.type) {
+                    if (obj instanceof typeBlock.type) {
+                        return type;
+                    }
+                }
+            }
+            return 'type_not_defined';
         };
         /**
          * Returns the name of a function (workaround to get object type for IE11)
@@ -3139,7 +3189,9 @@ var INSPECTOR;
             // Type
             var type = INSPECTOR.Inspector.DOCUMENT.createElement('span');
             type.className = 'property-type';
-            type.textContent = ' - ' + this._adapter.type();
+            if (this._adapter.type() !== 'type_not_defined') {
+                type.textContent = ' - ' + this._adapter.type();
+            }
             this._div.appendChild(type);
             this._lineContent = INSPECTOR.Helpers.CreateDiv('line-content', this._div);
             this._addEvent();

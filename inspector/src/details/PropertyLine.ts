@@ -304,7 +304,7 @@ module INSPECTOR {
          * Returns true if the value is null
          */
         private _isSimple() : boolean {
-            if (this.value != null) {
+            if (this.value != null && this.type !== 'type_not_defined') {
                 if (PropertyLine._SIMPLE_TYPE.indexOf(this.type) == -1) {
                     // complex type : return the type name
                     return false;
