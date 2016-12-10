@@ -1,26 +1,26 @@
 module BABYLON {
 
     export class SceneManager {
-        public static GetInstance(scene: Scene): BABYLON.SceneManager {
+        public static GetInstance(scene: BABYLON.Scene): BABYLON.SceneManager {
             return ((<any>scene).manager) ? (<any>scene).manager as BABYLON.SceneManager : null;
         }
 
-        public static CreateScene(name: string, engine: Engine): BABYLON.Scene {
+        public static CreateScene(name: string, engine: BABYLON.Engine): BABYLON.Scene {
             var result: BABYLON.Scene = new BABYLON.Scene(engine);
             BABYLON.SceneManager.parseSceneMetadata("/", name, result);
             return result;
         }
 
-        public static LoadScene(rootUrl: string, sceneFilename: string, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
-            var onparse = (scene: Scene) => {
+        public static LoadScene(rootUrl: string, sceneFilename: string, engine: BABYLON.Engine, onsuccess?: (scene: BABYLON.Scene) => void, progressCallBack?: any, onerror?: (scene: BABYLON.Scene) => void): void {
+            var onparse = (scene: BABYLON.Scene) => {
                 BABYLON.SceneManager.parseSceneMetadata(rootUrl, sceneFilename, scene);
                 if (onsuccess) onsuccess(scene);
             };
-            BABYLON.SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onparse, progressCallBack, onerror);
+            BABYLON.SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onparse, progressCallBack, onerror);
         }
 
-        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void {
-            var onparse = (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => {
+        public static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: BABYLON.Scene, onsuccess?: (meshes: BABYLON.AbstractMesh[], particleSystems: BABYLON.ParticleSystem[], skeletons: BABYLON.Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: BABYLON.Scene, message: string, exception?: any) => void): void {
+            var onparse = (meshes: BABYLON.AbstractMesh[], particleSystems: BABYLON.ParticleSystem[], skeletons: BABYLON.Skeleton[]) => {
                 BABYLON.SceneManager.parseMeshMetadata(meshes, scene);
                 if (onsuccess) onsuccess(meshes, particleSystems, skeletons);
             };
@@ -783,7 +783,7 @@ module BABYLON {
         // *   Update Camera Helper Support   * //
         // ************************************ //
 
-        public updateCameraPosition(camera: FreeCamera, horizontal: number, vertical: number, speed: number): void {
+        public updateCameraPosition(camera: BABYLON.FreeCamera, horizontal: number, vertical: number, speed: number): void {
             if (camera != null) {
                 var local = camera._computeLocalCameraSpeed() * speed;
                 var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
@@ -791,12 +791,12 @@ module BABYLON {
                 camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
             }
         }
-        public updateCameraRotation(camera: FreeCamera, mousex: number, mousey: number, speed: number): void {
+        public updateCameraRotation(camera: BABYLON.FreeCamera, mousex: number, mousey: number, speed: number): void {
             if (camera != null) {
                 camera.cameraRotation = camera.cameraRotation.add(new BABYLON.Vector2(mousey * speed, mousex * speed));
             }
         }
-        public updateCameraUserInput(camera: FreeCamera, movementSpeed: number, rotationSpeed: number): void {
+        public updateCameraUserInput(camera: BABYLON.FreeCamera, movementSpeed: number, rotationSpeed: number): void {
             if (camera != null) {
                 var horizontal: number = this.getUserInput(BABYLON.UserInputAxis.Horizontal);
                 var vertical: number = this.getUserInput(BABYLON.UserInputAxis.Vertical);
