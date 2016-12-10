@@ -710,7 +710,17 @@
         private _recombineShader(node: any): string {
             if (node.define) {
                 if (node.condition) {
-                    // TODO
+                    var defineIndex = this.defines.indexOf("#define " + node.define);
+                    if (defineIndex === -1) {
+                        return null;
+                    }
+
+                    var nextComma = this.defines.indexOf("\n", defineIndex);
+                    var defineValue = this.defines.substr(defineIndex + 7, nextComma - defineIndex - 7).replace(node.define, "").trim();
+                    var condition = defineValue + node.condition;
+                    if (!eval(condition)) {
+                        return null;
+                    }
                 }
                 else if (node.ndef) {
                     if (this.defines.indexOf("#define " + node.define) !== -1) {
@@ -727,7 +737,7 @@
                 var line = node.children[index];
 
                 if (line.children) {
-                    var combined = this._recombineShader(line) + "\r\n";
+                    var combined = this._recombineShader(line);
                     if (combined !== null) {
                         result += combined + "\r\n";
                     }
@@ -735,7 +745,9 @@
                     continue;
                 }
 
-                result += line + "\r\n";
+                if (line.length > 0) {
+                    result += line + "\r\n";
+                }
             }
 
             return result;
