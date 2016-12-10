@@ -228,7 +228,7 @@
     ]
   },
 
-  "modules": ["canvas2D", "materialsLibrary", "postProcessesLibrary", "proceduralTexturesLibrary", "loaders", "serializers", "inspector"],
+  "modules": ["canvas2D", "materialsLibrary", "postProcessesLibrary", "proceduralTexturesLibrary", "loaders", "serializers", "inspector", "sceneManager"],
 
   "materialsLibrary": {
     "libraries": [
@@ -446,6 +446,23 @@
     }
   },
 
+  "sceneManager": {
+      "libraries": [    
+      {
+        "files": [
+		  "../../sceneManager/src/babylon.scenemanager.ts",
+		  "../../sceneManager/src/babylon.scenenavagent.ts",
+		  "../../sceneManager/src/babylon.scenecomponents.ts"
+		],
+        "output": "babylon.manager.js"
+      }
+    ],
+    "build": {
+      "srcOutputDirectory": "../../sceneManager/",
+      "distOutputDirectory": "/sceneManager/"
+    }
+  },
+  
   "serializers": {
       "libraries": [    
       {
