@@ -6,7 +6,7 @@ module INSPECTOR {
         private _pickHandler;
 
         constructor(parent:HTMLElement, inspector:Inspector) {
-            super('fa-mouse-pointer', parent, inspector, 'Pick a mesh in the scene to display its details');
+            super('fa-mouse-pointer', parent, inspector, 'Select a mesh in the scene');
             
             // Create handler
             this._pickHandler = this._pickMesh.bind(this);
