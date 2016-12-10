@@ -1,19 +1,19 @@
 ﻿module BABYLON {
 
     export abstract class SceneComponent {
-        public readonly engine: BABYLON.Engine = null;
-        public readonly scene: BABYLON.Scene = null;
         public register: () => void = null;
         public dispose: () => void = null;
         public tick: boolean = false;
 
+        private _engine: BABYLON.Engine = null;
+        private _scene: BABYLON.Scene = null;
         private _before: () => void = null;
         private _after: () => void = null;
         private _started: boolean = false;
         private _initialized: boolean = false;
         private _properties: any = null;
         private _manager: BABYLON.SceneManager = null;
-        private readonly _owned: BABYLON.AbstractMesh | BABYLON.Camera | BABYLON.Light = null;
+        private _owned: BABYLON.AbstractMesh | BABYLON.Camera | BABYLON.Light = null;
 
         public constructor(owner: BABYLON.AbstractMesh | BABYLON.Camera | BABYLON.Light, host: BABYLON.Scene, enableUpdate: boolean = true, propertyBag: any = {}) {
             if (owner == null) throw new Error("Null owner scene obejct specified.");
@@ -23,8 +23,8 @@
             this._manager = null;
             this._initialized = false;
             this._properties = propertyBag;
-            this.engine = host.getEngine();
-            this.scene = host;
+            this._engine = host.getEngine();
+            this._scene = host;
             this.tick = enableUpdate;
 
             /* Scene Component Instance Handlers */
@@ -33,6 +33,14 @@
             instance._before = function () { instance.updateInstance(instance); };
             instance._after = function () { instance.afterInstance(instance); };
             instance.dispose = function () { instance.disposeInstance(instance); };
+        }
+
+        public get scene(): BABYLON.Scene { 
+            return this._scene;
+        }
+
+        public get engine(): BABYLON.Engine { 
+            return this._engine;
         }
 
         /* Scene Component Life Cycle Functions */
@@ -100,6 +108,8 @@
             instance._after = null;
             instance._started = false;
             instance._properties = null;
+            instance._engine = null;
+            instance._scene = null;
             instance._manager = null;
             instance.register = null;
             instance.dispose = null;
@@ -107,26 +117,35 @@
     }
 
     export abstract class CameraComponent extends BABYLON.SceneComponent {
-        public readonly camera: BABYLON.UniversalCamera;
+        private _camera: BABYLON.UniversalCamera;
         public constructor(owner: BABYLON.UniversalCamera, scene: BABYLON.Scene, enableUpdate: boolean = true, propertyBag: any = {}) {
             super(owner, scene, enableUpdate, propertyBag);
-            this.camera = owner;
+            this._camera = owner;
+        }
+        public get camera():BABYLON.UniversalCamera {
+            return this._camera;
         }
     }
 
     export abstract class LightComponent extends BABYLON.SceneComponent {
-        public readonly light: BABYLON.Light;
+        private _light: BABYLON.Light;
         public constructor(owner: BABYLON.Light, scene: BABYLON.Scene, enableUpdate: boolean = true, propertyBag: any = {}) {
             super(owner, scene, enableUpdate, propertyBag);
-            this.light = owner;
+            this._light = owner;
+        }
+        public get light():BABYLON.Light {
+            return this._light;
         }
     }
 
     export abstract class MeshComponent extends BABYLON.SceneComponent {
-        public readonly mesh:BABYLON.AbstractMesh;
+        private _mesh:BABYLON.AbstractMesh;
         public constructor(owner: BABYLON.AbstractMesh, scene: BABYLON.Scene, enableUpdate: boolean = true, propertyBag: any = {}) {
             super(owner, scene, enableUpdate, propertyBag);
-            this.mesh = owner;
+            this._mesh = owner;
+        }
+        public get mesh():BABYLON.AbstractMesh {
+            return this._mesh;
         }
     }
 
@@ -139,48 +158,48 @@
 
     export class ObjectMetadata {
         public get type(): string {
-            return this.metadata.type;
+            return this._metadata.type;
         }
         public get objectId(): string {
-            return this.metadata.objectId;
+            return this._metadata.objectId;
         }
         public get objectName(): string {
-            return this.metadata.objectName;
+            return this._metadata.objectName;
         }
         public get tagName(): string {
-            return this.metadata.tagName;
+            return this._metadata.tagName;
         }
         public get layerIndex(): number {
-            return this.metadata.layerIndex;
+            return this._metadata.layerIndex;
         }
         public get layerName(): string {
-            return this.metadata.layerName;
+            return this._metadata.layerName;
         }
         public get areaIndex(): number {
-            return this.metadata.areaIndex;
+            return this._metadata.areaIndex;
         }
         public get navAgent(): BABYLON.INavigationAgent {
-            return this.metadata.navAgent;
+            return this._metadata.navAgent;
         }
         public get meshLink(): BABYLON.INavigationLink {
-            return this.metadata.meshLink;
+            return this._metadata.meshLink;
         }
         public get meshObstacle(): BABYLON.INavigationObstacle {
-            return this.metadata.meshObstacle;
+            return this._metadata.meshObstacle;
         }
-        private readonly metadata: IObjectMetadata = null;
+        private _metadata: IObjectMetadata = null;
         public constructor(data: IObjectMetadata) {
-            this.metadata = data;
+            this._metadata = data;
         }
         public setProperty(name: string, propertyValue: any): void {
-            if (this.metadata.properties != null) {
-                this.metadata.properties[name] = propertyValue;
+            if (this._metadata.properties != null) {
+                this._metadata.properties[name] = propertyValue;
             }
         }
         public getProperty<T>(name: string, defaultValue: T = null): T {
             var result: any = null
-            if (this.metadata.properties != null) {
-                result = this.metadata.properties[name];
+            if (this._metadata.properties != null) {
+                result = this._metadata.properties[name];
             }
             if (result == null) result = defaultValue;
             return (result != null) ? result as T : null;

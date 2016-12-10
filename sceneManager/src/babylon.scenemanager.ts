@@ -35,12 +35,12 @@ module BABYLON {
         // * Babylon Scene Manager Component * //
         // *********************************** //
 
-        public readonly ie: boolean = false;
-        public readonly url: string = "";
-        public readonly filename: string = "";
         public onrender: () => void = null;
         public controller: BABYLON.SceneController = null;
 
+        private _ie: boolean = false;
+        private _url: string = "";
+        private _filename: string = "";
         private _render: () => void = null;
         private _running: boolean = false;
         private _markup: string = "";
@@ -101,9 +101,9 @@ module BABYLON {
 
         public constructor(rootUrl: string, sceneFilename: string, scene: BABYLON.Scene) {
             if (scene == null) throw new Error("Null host scene obejct specified.");
-            this.ie = document.all ? true : false
-            this.url = rootUrl;
-            this.filename = sceneFilename;
+            this._ie = document.all ? true : false
+            this._url = rootUrl;
+            this._filename = sceneFilename;
             this._scene = scene;
             this._input = false;
             this._navmesh = null;
@@ -240,6 +240,12 @@ module BABYLON {
                 }
             };
         }
+        public get ie():boolean {
+            return this._ie;
+        }
+        public get url():string {
+            return this._url;
+        }
         public dispose(): void {
             this.disableUserInput();
             this._gui = null;
@@ -276,7 +282,7 @@ module BABYLON {
             }
         }
         public getSceneName(): string {
-            return this.filename;
+            return this._filename;
         }
         public getScenePath(): string {
             var result: string = "/";

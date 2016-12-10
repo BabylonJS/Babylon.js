@@ -14,12 +14,18 @@ module BABYLON {
 
     /* Babylon Scene Navigation Agent AI */
     export class NavigationAgent {
-        public readonly mesh:BABYLON.AbstractMesh;
-        public readonly info:BABYLON.INavigationAgent;
+        private _mesh:BABYLON.AbstractMesh;
+        private _info:BABYLON.INavigationAgent;
         constructor(owner: BABYLON.AbstractMesh) {
             if (owner == null) throw new Error("Null owner agent mesh specified.");
-            this.mesh = owner;
-            this.info = (this.mesh.metadata != null && this.mesh.metadata.navAgent != null) ? this.mesh.metadata.navAgent : null;
+            this._mesh = owner;
+            this._info = (this._mesh.metadata != null && this._mesh.metadata.navAgent != null) ? this._mesh.metadata.navAgent : null;
+        }
+        public get mesh():BABYLON.AbstractMesh {
+            return this._mesh;
+        }
+        public get info():BABYLON.INavigationAgent {
+            return this._info;
         }
         public get hasAgentInfo(): boolean {
             return (this.info != null);

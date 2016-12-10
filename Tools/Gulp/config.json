@@ -447,16 +447,15 @@
   },
 
   "sceneManager": {
-      "libraries": [    
-      {
+   "libraries": [    
+    {
         "files": [
-		  "../../sceneManager/src/babylon.scenemanager.ts",
-		  "../../sceneManager/src/babylon.scenenavagent.ts",
-		  "../../sceneManager/src/babylon.scenecomponents.ts"
-		],
+          "../../sceneManager/src/babylon.scenemanager.ts",
+          "../../sceneManager/src/babylon.scenenavagent.ts",
+          "../../sceneManager/src/babylon.scenecomponents.ts"
+        ],
         "output": "babylon.manager.js"
-      }
-    ],
+    }],
     "build": {
       "srcOutputDirectory": "../../sceneManager/",
       "distOutputDirectory": "/sceneManager/"
