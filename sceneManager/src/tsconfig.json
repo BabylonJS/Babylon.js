@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
-        "module": "commonjs", 
+        "module": "system", 
         "target": "es5"
     }
 }
