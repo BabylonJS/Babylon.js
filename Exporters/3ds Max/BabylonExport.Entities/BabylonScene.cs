@@ -86,6 +86,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public object metadata { get; set; }
 
+        [DataMember]
+        public bool workerCollisions { get; set; }
+
         public BabylonVector3 MaxVector { get; set; }
         public BabylonVector3 MinVector { get; set; }
 
