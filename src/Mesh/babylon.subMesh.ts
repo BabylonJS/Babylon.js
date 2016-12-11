@@ -42,6 +42,10 @@
             return this._boundingInfo;
         }
 
+        public setBoundingInfo(boundingInfo: BoundingInfo): void {
+            this._boundingInfo = boundingInfo;
+        }
+
         public getMesh(): AbstractMesh {
             return this._mesh;
         }
