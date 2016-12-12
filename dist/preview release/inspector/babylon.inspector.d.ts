@@ -12,10 +12,12 @@ declare module INSPECTOR {
         private _scene;
         /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
         static DOCUMENT: HTMLDocument;
+        /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
+        static WINDOW: Window;
         /** True if the inspector is built as a popup tab */
         private _popupMode;
-        /** The original canvas size, before applying the inspector*/
-        private _canvasSize;
+        /** The original canvas style, before applying the inspector*/
+        private _canvasStyle;
         /** The inspector is created with the given engine.
          * If a HTML parent is not given as a parameter, the inspector is created as a right panel on the main window.
          * If a HTML parent is given, the inspector is created in this element, taking full size of its parent.

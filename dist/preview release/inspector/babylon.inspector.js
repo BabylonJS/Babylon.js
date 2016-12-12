@@ -11,8 +11,9 @@ var INSPECTOR;
             this._popupMode = false;
             // get canvas parent only if needed.
             this._scene = scene;
-            // Save HTML document
+            // Save HTML document and window
             Inspector.DOCUMENT = window.document;
+            Inspector.WINDOW = window;
             // POPUP MODE if parent is defined
             if (parent) {
                 // Build the inspector in the given parent
@@ -25,13 +26,44 @@ var INSPECTOR;
                 // resize canvas
                 // canvas.style.width = 'calc(100% - 750px - 12px)';
                 // get canvas style                
-                var canvasStyle = window.getComputedStyle(canvas);
-                this._canvasSize = { width: canvasStyle.width, height: canvasStyle.height };
+                var canvasOrigStyle = window.getComputedStyle(canvas);
+                this._canvasStyle = {
+                    width: canvasOrigStyle.width,
+                    height: canvasOrigStyle.height,
+                    position: canvasOrigStyle.position,
+                    padding: canvasOrigStyle.padding,
+                    paddingBottom: canvasOrigStyle.paddingBottom,
+                    paddingLeft: canvasOrigStyle.paddingLeft,
+                    paddingTop: canvasOrigStyle.paddingTop,
+                    paddingRight: canvasOrigStyle.paddingRight,
+                    margin: canvasOrigStyle.margin,
+                    marginBottom: canvasOrigStyle.marginBottom,
+                    marginLeft: canvasOrigStyle.marginLeft,
+                    marginTop: canvasOrigStyle.marginTop,
+                    marginRight: canvasOrigStyle.marginRight
+                };
                 // Create c2di wrapper
-                this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', canvasParent);
-                this._c2diwrapper.style.width = this._canvasSize.width;
-                this._c2diwrapper.style.height = this._canvasSize.height;
-                // Add canvas to the wrapper
+                this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper');
+                // copy style from canvas to wrapper
+                for (var prop in this._canvasStyle) {
+                    this._c2diwrapper.style[prop] = this._canvasStyle[prop];
+                }
+                // reset canvas style
+                canvas.style.position = "static";
+                canvas.style.width = "100%";
+                canvas.style.height = "100%";
+                canvas.style.paddingBottom = "0";
+                canvas.style.paddingLeft = "0";
+                canvas.style.paddingTop = "0";
+                canvas.style.paddingRight = "0";
+                canvas.style.margin = "0";
+                canvas.style.marginBottom = "0";
+                canvas.style.marginLeft = "0";
+                canvas.style.marginTop = "0";
+                canvas.style.marginRight = "0";
+                // Replace canvas with the wrapper...
+                canvasParent.replaceChild(this._c2diwrapper, canvas);
+                // ... and add canvas to the wrapper
                 this._c2diwrapper.appendChild(canvas);
                 // add inspector     
                 var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
@@ -108,9 +140,10 @@ var INSPECTOR;
             if (!this._popupMode) {
                 // Get canvas
                 var canvas = this._scene.getEngine().getRenderingCanvas();
-                // restore canvas size
-                canvas.style.width = this._canvasSize.width;
-                canvas.style.height = this._canvasSize.height;
+                // restore canvas style
+                for (var prop in this._canvasStyle) {
+                    canvas.style[prop] = this._canvasStyle[prop];
+                }
                 // Get parent of the wrapper           
                 var canvasParent = canvas.parentElement.parentElement;
                 canvasParent.appendChild(canvas);
@@ -144,6 +177,7 @@ var INSPECTOR;
             this._popupMode = true;
             // Save the HTML document
             Inspector.DOCUMENT = popup.document;
+            Inspector.WINDOW = popup;
             // Build the inspector wrapper
             this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', popup.document.body);
             // add inspector     
@@ -776,7 +810,7 @@ var INSPECTOR;
             // Create header row
             this._createHeaderRow();
             this._div.appendChild(this._headerRow);
-            window.addEventListener('resize', function (e) {
+            INSPECTOR.Inspector.WINDOW.addEventListener('resize', function (e) {
                 // adapt the header row max width according to its parent size;
                 _this._headerRow.style.maxWidth = _this._headerRow.parentElement.clientWidth + 'px';
             });
@@ -2942,7 +2976,7 @@ var INSPECTOR;
     var PickTool = (function (_super) {
         __extends(PickTool, _super);
         function PickTool(parent, inspector) {
-            _super.call(this, 'fa-mouse-pointer', parent, inspector, 'Pick a mesh in the scene to display its details');
+            _super.call(this, 'fa-mouse-pointer', parent, inspector, 'Select a mesh in the scene');
             this._isActive = false;
             // Create handler
             this._pickHandler = this._pickMesh.bind(this);
@@ -2998,7 +3032,7 @@ var INSPECTOR;
     var PopupTool = (function (_super) {
         __extends(PopupTool, _super);
         function PopupTool(parent, inspector) {
-            _super.call(this, 'fa-external-link', parent, inspector, 'Creates the inspector in an external popup');
+            _super.call(this, 'fa-external-link', parent, inspector, 'Open the inspector in a popup');
         }
         // Action : refresh the whole panel
         PopupTool.prototype.action = function () {
