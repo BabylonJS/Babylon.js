@@ -985,30 +985,32 @@ var INSPECTOR;
         PropertyFormatter.format = function (obj, prop) {
             // Get original value;
             var value = obj[prop];
-            // PrimitiveAlignment
-            if (obj instanceof BABYLON.PrimitiveAlignment) {
-                if (prop === 'horizontal') {
-                    switch (value) {
-                        case BABYLON.PrimitiveAlignment.AlignLeft:
-                            return 'left';
-                        case BABYLON.PrimitiveAlignment.AlignRight:
-                            return 'right';
-                        case BABYLON.PrimitiveAlignment.AlignCenter:
-                            return 'center';
-                        case BABYLON.PrimitiveAlignment.AlignStretch:
-                            return 'stretch';
+            // test if type PrimitiveAlignment is available (only included in canvas2d)
+            if (BABYLON.PrimitiveAlignment) {
+                if (obj instanceof BABYLON.PrimitiveAlignment) {
+                    if (prop === 'horizontal') {
+                        switch (value) {
+                            case BABYLON.PrimitiveAlignment.AlignLeft:
+                                return 'left';
+                            case BABYLON.PrimitiveAlignment.AlignRight:
+                                return 'right';
+                            case BABYLON.PrimitiveAlignment.AlignCenter:
+                                return 'center';
+                            case BABYLON.PrimitiveAlignment.AlignStretch:
+                                return 'stretch';
+                        }
                     }
-                }
-                else if (prop === 'vertical') {
-                    switch (value) {
-                        case BABYLON.PrimitiveAlignment.AlignTop:
-                            return 'top';
-                        case BABYLON.PrimitiveAlignment.AlignBottom:
-                            return 'bottom';
-                        case BABYLON.PrimitiveAlignment.AlignCenter:
-                            return 'center';
-                        case BABYLON.PrimitiveAlignment.AlignStretch:
-                            return 'stretch';
+                    else if (prop === 'vertical') {
+                        switch (value) {
+                            case BABYLON.PrimitiveAlignment.AlignTop:
+                                return 'top';
+                            case BABYLON.PrimitiveAlignment.AlignBottom:
+                                return 'bottom';
+                            case BABYLON.PrimitiveAlignment.AlignCenter:
+                                return 'center';
+                            case BABYLON.PrimitiveAlignment.AlignStretch:
+                                return 'stretch';
+                        }
                     }
                 }
             }
@@ -2743,7 +2745,10 @@ var INSPECTOR;
             this._tabs.push(this._meshTab);
             this._tabs.push(new INSPECTOR.ShaderTab(this, this._inspector));
             this._tabs.push(new INSPECTOR.LightTab(this, this._inspector));
-            this._tabs.push(new INSPECTOR.Canvas2DTab(this, this._inspector));
+            // Add only the tab canvas2D if Canvas2D is defined
+            if (BABYLON.Canvas2D) {
+                this._tabs.push(new INSPECTOR.Canvas2DTab(this, this._inspector));
+            }
             this._tabs.push(new INSPECTOR.MaterialTab(this, this._inspector));
             this._toolBar = new INSPECTOR.Toolbar(this._inspector);
             this._build();
