@@ -47,22 +47,23 @@ module INSPECTOR {
                 // canvas.style.width = 'calc(100% - 750px - 12px)';
 
                 // get canvas style                
-                let canvasOrigStyle  = window.getComputedStyle(canvas);
-                this._canvasStyle = { 
-                    width        : canvasOrigStyle.width, 
-                    height       : canvasOrigStyle.height,
-                    position     : canvasOrigStyle.position,
-                    padding      : canvasOrigStyle.padding,
-                    paddingBottom: canvasOrigStyle.paddingBottom,
-                    paddingLeft  : canvasOrigStyle.paddingLeft,
-                    paddingTop   : canvasOrigStyle.paddingTop,
-                    paddingRight : canvasOrigStyle.paddingRight,
+                let canvasComputedStyle  = Inspector.WINDOW.getComputedStyle(canvas);
 
-                    margin       : canvasOrigStyle.margin,
-                    marginBottom : canvasOrigStyle.marginBottom,
-                    marginLeft   : canvasOrigStyle.marginLeft,
-                    marginTop    : canvasOrigStyle.marginTop,
-                    marginRight  : canvasOrigStyle.marginRight
+                this._canvasStyle = { 
+                    width        : canvasComputedStyle.width, 
+                    height       : canvasComputedStyle.height,
+                    position     : canvasComputedStyle.position,
+                    padding      : canvasComputedStyle.padding,
+                    paddingBottom: canvasComputedStyle.paddingBottom,
+                    paddingLeft  : canvasComputedStyle.paddingLeft,
+                    paddingTop   : canvasComputedStyle.paddingTop,
+                    paddingRight : canvasComputedStyle.paddingRight,
+
+                    margin       : canvasComputedStyle.margin,
+                    marginBottom : canvasComputedStyle.marginBottom,
+                    marginLeft   : canvasComputedStyle.marginLeft,
+                    marginTop    : canvasComputedStyle.marginTop,
+                    marginRight  : canvasComputedStyle.marginRight
 
                 };
                 
@@ -73,6 +74,18 @@ module INSPECTOR {
                 for (let prop in this._canvasStyle) {
                     this._c2diwrapper.style[prop] = this._canvasStyle[prop];
                 }
+                // Convert wrapper size in % (because getComputedStyle returns px only)
+                let widthPx        = parseFloat(canvasComputedStyle.width.substr(0,canvasComputedStyle.width.length-2)) || 0;
+                let heightPx       = parseFloat(canvasComputedStyle.height.substr(0,canvasComputedStyle.height.length-2)) || 0;
+
+                let windowWidthPx  = window.innerWidth;
+                let windowHeightPx = window.innerHeight;
+                let pWidth = widthPx / windowWidthPx * 100;
+                let pheight = heightPx / windowHeightPx * 100;
+
+                this._c2diwrapper.style.width = pWidth+"%";
+                this._c2diwrapper.style.height = pheight+"%";
+            
 
                 // reset canvas style
                 canvas.style.position = "static";
