@@ -60,7 +60,7 @@ module INSPECTOR{
          * Returns the total width in pixel of this tab, 0 by default
         */
         public getPixelWidth() : number {
-            let style = window.getComputedStyle(this._div);
+            let style = Inspector.WINDOW.getComputedStyle(this._div);
             let left = parseFloat(style.marginLeft.substr(0,style.marginLeft.length-2)) ||0;
             let right = parseFloat(style.marginRight.substr(0,style.marginRight.length-2)) ||0;
             return (this._div.clientWidth || 0) + left + right;
