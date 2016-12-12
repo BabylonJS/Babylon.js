@@ -26,21 +26,21 @@ var INSPECTOR;
                 // resize canvas
                 // canvas.style.width = 'calc(100% - 750px - 12px)';
                 // get canvas style                
-                var canvasOrigStyle = window.getComputedStyle(canvas);
+                var canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);
                 this._canvasStyle = {
-                    width: canvasOrigStyle.width,
-                    height: canvasOrigStyle.height,
-                    position: canvasOrigStyle.position,
-                    padding: canvasOrigStyle.padding,
-                    paddingBottom: canvasOrigStyle.paddingBottom,
-                    paddingLeft: canvasOrigStyle.paddingLeft,
-                    paddingTop: canvasOrigStyle.paddingTop,
-                    paddingRight: canvasOrigStyle.paddingRight,
-                    margin: canvasOrigStyle.margin,
-                    marginBottom: canvasOrigStyle.marginBottom,
-                    marginLeft: canvasOrigStyle.marginLeft,
-                    marginTop: canvasOrigStyle.marginTop,
-                    marginRight: canvasOrigStyle.marginRight
+                    width: canvasComputedStyle.width,
+                    height: canvasComputedStyle.height,
+                    position: canvasComputedStyle.position,
+                    padding: canvasComputedStyle.padding,
+                    paddingBottom: canvasComputedStyle.paddingBottom,
+                    paddingLeft: canvasComputedStyle.paddingLeft,
+                    paddingTop: canvasComputedStyle.paddingTop,
+                    paddingRight: canvasComputedStyle.paddingRight,
+                    margin: canvasComputedStyle.margin,
+                    marginBottom: canvasComputedStyle.marginBottom,
+                    marginLeft: canvasComputedStyle.marginLeft,
+                    marginTop: canvasComputedStyle.marginTop,
+                    marginRight: canvasComputedStyle.marginRight
                 };
                 // Create c2di wrapper
                 this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper');
@@ -48,6 +48,15 @@ var INSPECTOR;
                 for (var prop in this._canvasStyle) {
                     this._c2diwrapper.style[prop] = this._canvasStyle[prop];
                 }
+                // Convert wrapper size in % (because getComputedStyle returns px only)
+                var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
+                var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
+                var windowWidthPx = window.innerWidth;
+                var windowHeightPx = window.innerHeight;
+                var pWidth = widthPx / windowWidthPx * 100;
+                var pheight = heightPx / windowHeightPx * 100;
+                this._c2diwrapper.style.width = pWidth + "%";
+                this._c2diwrapper.style.height = pheight + "%";
                 // reset canvas style
                 canvas.style.position = "static";
                 canvas.style.width = "100%";
@@ -1847,7 +1856,7 @@ var INSPECTOR;
          * Returns the total width in pixel of this tab, 0 by default
         */
         Tab.prototype.getPixelWidth = function () {
-            var style = window.getComputedStyle(this._div);
+            var style = INSPECTOR.Inspector.WINDOW.getComputedStyle(this._div);
             var left = parseFloat(style.marginLeft.substr(0, style.marginLeft.length - 2)) || 0;
             var right = parseFloat(style.marginRight.substr(0, style.marginRight.length - 2)) || 0;
             return (this._div.clientWidth || 0) + left + right;
@@ -2925,7 +2934,7 @@ var INSPECTOR;
          * Returns the total width in pixel of this tool, 0 by default
         */
         AbstractTool.prototype.getPixelWidth = function () {
-            var style = window.getComputedStyle(this._elem);
+            var style = INSPECTOR.Inspector.WINDOW.getComputedStyle(this._elem);
             var left = parseFloat(style.marginLeft.substr(0, style.marginLeft.length - 2)) || 0;
             var right = parseFloat(style.marginRight.substr(0, style.marginRight.length - 2)) || 0;
             return (this._elem.clientWidth || 0) + left + right;

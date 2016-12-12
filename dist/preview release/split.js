@@ -369,6 +369,9 @@ var global = this
                 calculateSizes.call(pairs[i])
                 fitMinReverse.call(pairs[i])
             }
+            for (i = pairs.length - 1; i >= 0; i--) {
+                adjust.call(pairs[i],pairs[i].a[getBoundingClientRect]()[dimension])
+            }
         }
       , setElementSize = function (el, size, gutterSize) {
             // Split.js allows setting sizes via numbers (ideally), or if you must,

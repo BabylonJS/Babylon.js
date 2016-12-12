@@ -25,7 +25,7 @@
          * Returns the total width in pixel of this tool, 0 by default
         */
         public getPixelWidth() : number {
-            let style = window.getComputedStyle(this._elem);
+            let style = Inspector.WINDOW.getComputedStyle(this._elem);
             let left = parseFloat(style.marginLeft.substr(0,style.marginLeft.length-2)) ||0;
             let right = parseFloat(style.marginRight.substr(0,style.marginRight.length-2)) ||0;
             return (this._elem.clientWidth || 0) + left + right;
