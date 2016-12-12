@@ -22256,6 +22256,9 @@ var BABYLON;
             }
             return this._boundingInfo;
         };
+        SubMesh.prototype.setBoundingInfo = function (boundingInfo) {
+            this._boundingInfo = boundingInfo;
+        };
         SubMesh.prototype.getMesh = function () {
             return this._mesh;
         };
@@ -52142,7 +52145,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 
