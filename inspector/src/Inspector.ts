@@ -15,6 +15,8 @@ module INSPECTOR {
         private _scene          : BABYLON.Scene;
         /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
         public static DOCUMENT  : HTMLDocument;
+        /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
+        public static WINDOW : Window;
         /** True if the inspector is built as a popup tab */
         private _popupMode      : boolean = false;
         /** The original canvas style, before applying the inspector*/
@@ -29,8 +31,9 @@ module INSPECTOR {
             // get canvas parent only if needed.
             this._scene     = scene;
             
-            // Save HTML document
-            Inspector.DOCUMENT = window.document;                       
+            // Save HTML document and window
+            Inspector.DOCUMENT = window.document;   
+            Inspector.WINDOW = window;                       
             
             // POPUP MODE if parent is defined
             if (parent) {    
@@ -209,6 +212,7 @@ module INSPECTOR {
             this._popupMode = true;
             // Save the HTML document
             Inspector.DOCUMENT = popup.document;
+            Inspector.WINDOW = popup;
             // Build the inspector wrapper
             this._c2diwrapper  = Helpers.CreateDiv('insp-wrapper', popup.document.body);
             // add inspector     

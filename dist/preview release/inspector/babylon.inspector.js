@@ -11,8 +11,9 @@ var INSPECTOR;
             this._popupMode = false;
             // get canvas parent only if needed.
             this._scene = scene;
-            // Save HTML document
+            // Save HTML document and window
             Inspector.DOCUMENT = window.document;
+            Inspector.WINDOW = window;
             // POPUP MODE if parent is defined
             if (parent) {
                 // Build the inspector in the given parent
@@ -176,6 +177,7 @@ var INSPECTOR;
             this._popupMode = true;
             // Save the HTML document
             Inspector.DOCUMENT = popup.document;
+            Inspector.WINDOW = popup;
             // Build the inspector wrapper
             this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', popup.document.body);
             // add inspector     
@@ -808,7 +810,7 @@ var INSPECTOR;
             // Create header row
             this._createHeaderRow();
             this._div.appendChild(this._headerRow);
-            window.addEventListener('resize', function (e) {
+            INSPECTOR.Inspector.WINDOW.addEventListener('resize', function (e) {
                 // adapt the header row max width according to its parent size;
                 _this._headerRow.style.maxWidth = _this._headerRow.parentElement.clientWidth + 'px';
             });

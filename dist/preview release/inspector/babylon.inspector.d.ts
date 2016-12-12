@@ -12,6 +12,8 @@ declare module INSPECTOR {
         private _scene;
         /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
         static DOCUMENT: HTMLDocument;
+        /** The HTML window. In popup mode, it's the popup itself. Otherwise, it's the current tab */
+        static WINDOW: Window;
         /** True if the inspector is built as a popup tab */
         private _popupMode;
         /** The original canvas style, before applying the inspector*/
