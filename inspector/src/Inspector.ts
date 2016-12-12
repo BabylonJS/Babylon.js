@@ -17,8 +17,8 @@ module INSPECTOR {
         public static DOCUMENT  : HTMLDocument;
         /** True if the inspector is built as a popup tab */
         private _popupMode      : boolean = false;
-        /** The original canvas size, before applying the inspector*/
-        private _canvasSize : {width:string, height:string};
+        /** The original canvas style, before applying the inspector*/
+        private _canvasStyle :any ;
 
         /** The inspector is created with the given engine.
          * If a HTML parent is not given as a parameter, the inspector is created as a right panel on the main window.
@@ -44,14 +44,52 @@ module INSPECTOR {
                 // canvas.style.width = 'calc(100% - 750px - 12px)';
 
                 // get canvas style                
-                let canvasStyle       = window.getComputedStyle(canvas);
-                this._canvasSize = { width:canvasStyle.width, height:canvasStyle.height};
+                let canvasOrigStyle  = window.getComputedStyle(canvas);
+                this._canvasStyle = { 
+                    width        : canvasOrigStyle.width, 
+                    height       : canvasOrigStyle.height,
+                    position     : canvasOrigStyle.position,
+                    padding      : canvasOrigStyle.padding,
+                    paddingBottom: canvasOrigStyle.paddingBottom,
+                    paddingLeft  : canvasOrigStyle.paddingLeft,
+                    paddingTop   : canvasOrigStyle.paddingTop,
+                    paddingRight : canvasOrigStyle.paddingRight,
 
+                    margin       : canvasOrigStyle.margin,
+                    marginBottom : canvasOrigStyle.marginBottom,
+                    marginLeft   : canvasOrigStyle.marginLeft,
+                    marginTop    : canvasOrigStyle.marginTop,
+                    marginRight  : canvasOrigStyle.marginRight
+
+                };
+                
                 // Create c2di wrapper
-                this._c2diwrapper  = Helpers.CreateDiv('insp-wrapper', canvasParent);
-                this._c2diwrapper.style.width = this._canvasSize.width;
-                this._c2diwrapper.style.height = this._canvasSize.height;
-                // Add canvas to the wrapper
+                this._c2diwrapper  = Helpers.CreateDiv('insp-wrapper');
+                
+                // copy style from canvas to wrapper
+                for (let prop in this._canvasStyle) {
+                    this._c2diwrapper.style[prop] = this._canvasStyle[prop];
+                }
+
+                // reset canvas style
+                canvas.style.position = "static";
+                canvas.style.width    = "100%";
+                canvas.style.height   = "100%";
+                canvas.style.paddingBottom = "0";
+                canvas.style.paddingLeft = "0";
+                canvas.style.paddingTop = "0";
+                canvas.style.paddingRight = "0";
+
+                canvas.style.margin = "0";
+                canvas.style.marginBottom = "0";
+                canvas.style.marginLeft = "0";
+                canvas.style.marginTop = "0";
+                canvas.style.marginRight = "0";
+
+
+                // Replace canvas with the wrapper...
+                canvasParent.replaceChild(this._c2diwrapper, canvas);
+                // ... and add canvas to the wrapper
                 this._c2diwrapper.appendChild(canvas);
                 // add inspector     
                 let inspector      = Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
@@ -133,9 +171,10 @@ module INSPECTOR {
             if (!this._popupMode) {
                 // Get canvas
                 let canvas         = this._scene.getEngine().getRenderingCanvas(); 
-                // restore canvas size
-                canvas.style.width = this._canvasSize.width;
-                canvas.style.height = this._canvasSize.height;
+                // restore canvas style
+                for (let prop in this._canvasStyle) {
+                    canvas.style[prop] = this._canvasStyle[prop];
+                }
                 // Get parent of the wrapper           
                 let canvasParent   = canvas.parentElement.parentElement;  
                 canvasParent.appendChild(canvas);                              
