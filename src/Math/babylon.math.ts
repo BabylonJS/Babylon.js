@@ -1139,11 +1139,17 @@
         }
 
         public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3 {
-            var x = start.x + ((end.x - start.x) * amount);
-            var y = start.y + ((end.y - start.y) * amount);
-            var z = start.z + ((end.z - start.z) * amount);
+            var result = new Vector3(0, 0, 0);
 
-            return new Vector3(x, y, z);
+            Vector3.LerpToRef(start, end, amount, result);
+
+            return result;
+        }
+
+        public static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void {
+            result.x = start.x + ((end.x - start.x) * amount);
+            result.y = start.y + ((end.y - start.y) * amount);
+            result.z = start.z + ((end.z - start.z) * amount);
         }
 
         public static Dot(left: Vector3, right: Vector3): number {
