@@ -81,37 +81,40 @@
          * @param customRenderFunction Used to override the default render behaviour of the group.
          * @returns true if rendered some submeshes.
          */
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): boolean {
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): void {
             if (customRenderFunction) {
                 customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
-                return true;
+                return;
             }
 
-            if (this._opaqueSubMeshes.length === 0 && this._alphaTestSubMeshes.length === 0 && this._transparentSubMeshes.length === 0) {
-                if (this.onBeforeTransparentRendering) {
-                    this.onBeforeTransparentRendering();
-                }
-                return false;
-            }
             var engine = this._scene.getEngine();
             
             // Opaque
-            this._renderOpaque(this._opaqueSubMeshes);
+            if (this._opaqueSubMeshes.length !== 0) {
+                this._renderOpaque(this._opaqueSubMeshes);
+            }
 
             // Alpha test
-            engine.setAlphaTesting(true);
-            this._renderAlphaTest(this._alphaTestSubMeshes);
-            engine.setAlphaTesting(false);
+            if (this._alphaTestSubMeshes.length !== 0) {
+                engine.setAlphaTesting(true);
+                this._renderAlphaTest(this._alphaTestSubMeshes);
+                engine.setAlphaTesting(false);
+            }
+
+            // Quadframe
+            for (let index = 0; index < this._scene.quadframeRenderers.length; index++) {
+                this._scene.quadframeRenderers[index].render();
+            }
 
             if (this.onBeforeTransparentRendering) {
                 this.onBeforeTransparentRendering();
             }
 
             // Transparent
-            this._renderTransparent(this._transparentSubMeshes);
-            engine.setAlphaMode(Engine.ALPHA_DISABLE);
-            
-            return true;
+            if (this._transparentSubMeshes.length === 0) {
+                this._renderTransparent(this._transparentSubMeshes);
+                engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            }
         }
 
         /**

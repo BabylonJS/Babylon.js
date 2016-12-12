@@ -157,11 +157,7 @@
                         observable.notifyObservers(info, renderingGroupMask);
                     }
 
-                    if (!renderingGroup.render(customRenderFunction)) {
-                        this._renderingGroups.splice(index, 1);
-                        needToStepBack = true;
-                        this._renderSpritesAndParticles();
-                    }
+                    renderingGroup.render(customRenderFunction);
 
                     // Fire POSTTRANSPARENT stage
                     if (observable) {
