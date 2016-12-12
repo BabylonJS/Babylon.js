@@ -19,7 +19,7 @@ module INSPECTOR{
             this._obj = obj;
             this._elem.classList.add('fa-eye');
             this._on = this._obj.isVisible();
-            this._check();
+            this._check(true);
         }
 
         // For a checkbox, set visible/invisible the corresponding prim
@@ -29,7 +29,7 @@ module INSPECTOR{
             this._check();
         }
 
-        private _check() {
+        private _check(dontEnable?:boolean) {
              if (this._on) {
                 // set icon eye
                 this._elem.classList.add('fa-eye');
@@ -41,7 +41,9 @@ module INSPECTOR{
                 this._elem.classList.remove('active');
                 this._elem.classList.add('fa-eye-slash');
             }
-            this._obj.setVisible(this._on);
+            if (!dontEnable) {
+                this._obj.setVisible(this._on);
+            }
         }
     }
 }

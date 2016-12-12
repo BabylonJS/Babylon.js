@@ -3416,7 +3416,7 @@ var INSPECTOR;
             this._obj = obj;
             this._elem.classList.add('fa-eye');
             this._on = this._obj.isVisible();
-            this._check();
+            this._check(true);
         }
         // For a checkbox, set visible/invisible the corresponding prim
         Checkbox.prototype.action = function () {
@@ -3424,7 +3424,7 @@ var INSPECTOR;
             // update object and gui according to the new status
             this._check();
         };
-        Checkbox.prototype._check = function () {
+        Checkbox.prototype._check = function (dontEnable) {
             if (this._on) {
                 // set icon eye
                 this._elem.classList.add('fa-eye');
@@ -3437,7 +3437,9 @@ var INSPECTOR;
                 this._elem.classList.remove('active');
                 this._elem.classList.add('fa-eye-slash');
             }
-            this._obj.setVisible(this._on);
+            if (!dontEnable) {
+                this._obj.setVisible(this._on);
+            }
         };
         return Checkbox;
     }(INSPECTOR.AbstractTreeTool));

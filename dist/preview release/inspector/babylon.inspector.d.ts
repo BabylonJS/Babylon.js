@@ -930,7 +930,7 @@ declare module INSPECTOR {
         private _obj;
         constructor(obj: IToolVisible);
         protected action(): void;
-        private _check();
+        private _check(dontEnable?);
     }
 }
 
