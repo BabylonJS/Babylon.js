@@ -19,10 +19,10 @@ declare module INSPECTOR {
         /** The original canvas style, before applying the inspector*/
         private _canvasStyle;
         /** The inspector is created with the given engine.
-         * If a HTML parent is not given as a parameter, the inspector is created as a right panel on the main window.
-         * If a HTML parent is given, the inspector is created in this element, taking full size of its parent.
+         * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
+         * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, parent?: HTMLElement);
+        constructor(scene: BABYLON.Scene, popup?: boolean);
         /** Build the inspector panel in the given HTML element */
         private _buildInspector(parent);
         scene: BABYLON.Scene;
@@ -40,8 +40,10 @@ declare module INSPECTOR {
          * remove the right panel and remove the wrapper
          */
         dispose(): void;
-        /** Open the inspector in a new popup */
-        openPopup(): void;
+        /** Open the inspector in a new popup
+         * Set 'firstTime' to true if there is no inspector created beforehands
+         */
+        openPopup(firstTime?: boolean): void;
     }
 }
 
