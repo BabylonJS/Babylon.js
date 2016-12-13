@@ -52,7 +52,13 @@ module INSPECTOR {
                 this._canvasStyle = { 
                     width        : canvasComputedStyle.width, 
                     height       : canvasComputedStyle.height,
+                    
                     position     : canvasComputedStyle.position,
+                    top          : canvasComputedStyle.top,
+                    bottom       : canvasComputedStyle.top,
+                    left         : canvasComputedStyle.top,
+                    right        : canvasComputedStyle.top,
+
                     padding      : canvasComputedStyle.padding,
                     paddingBottom: canvasComputedStyle.paddingBottom,
                     paddingLeft  : canvasComputedStyle.paddingLeft,
@@ -78,10 +84,11 @@ module INSPECTOR {
                 let widthPx        = parseFloat(canvasComputedStyle.width.substr(0,canvasComputedStyle.width.length-2)) || 0;
                 let heightPx       = parseFloat(canvasComputedStyle.height.substr(0,canvasComputedStyle.height.length-2)) || 0;
 
-                let windowWidthPx  = window.innerWidth;
-                let windowHeightPx = window.innerHeight;
-                let pWidth = widthPx / windowWidthPx * 100;
-                let pheight = heightPx / windowHeightPx * 100;
+                // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
+                let parentWidthPx  = canvas.parentElement.clientWidth;
+                let parentHeightPx = canvas.parentElement.clientHeight;
+                let pWidth = widthPx / parentWidthPx * 100;
+                let pheight = heightPx / parentHeightPx * 100;
 
                 this._c2diwrapper.style.width = pWidth+"%";
                 this._c2diwrapper.style.height = pheight+"%";
