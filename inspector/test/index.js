@@ -17,7 +17,7 @@ var Test = (function () {
         var _this = this;
         this._initScene();
         // BABYLON.DebugLayer.InspectorURL = 'http://localhost:1338/dist/preview release/inspector/babylon.inspector.js';
-        this.scene.debugLayer.show();
+        this.scene.debugLayer.show(true);
         this.scene.executeWhenReady(function () {
             _this._initGame();
             _this.engine.runRenderLoop(function () {
