@@ -52172,7 +52172,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 
@@ -54963,9 +54963,9 @@ var BABYLON;
             this._scene = scene;
         }
         /** Creates the inspector window. */
-        DebugLayer.prototype._createInspector = function () {
+        DebugLayer.prototype._createInspector = function (popup) {
             if (!this._inspector) {
-                this._inspector = new INSPECTOR.Inspector(this._scene);
+                this._inspector = new INSPECTOR.Inspector(this._scene, popup);
             } // else nothing to do,; instance is already existing
         };
         DebugLayer.prototype.isVisible = function () {
@@ -54977,14 +54977,14 @@ var BABYLON;
                 this._inspector = null;
             }
         };
-        DebugLayer.prototype.show = function () {
+        DebugLayer.prototype.show = function (popup) {
             if (typeof INSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
-                BABYLON.Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this));
+                BABYLON.Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, popup));
             }
             else {
                 // Otherwise creates the inspector
-                this._createInspector();
+                this._createInspector(popup);
             }
         };
         DebugLayer.InspectorURL = 'http://www.babylonjs.com/babylon.inspector.bundle.js';
