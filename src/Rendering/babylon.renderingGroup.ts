@@ -101,11 +101,6 @@
                 engine.setAlphaTesting(false);
             }
 
-            // Quadframe
-            for (let index = 0; index < this._scene.quadframeRenderers.length; index++) {
-                this._scene.quadframeRenderers[index].render();
-            }
-
             if (this.onBeforeTransparentRendering) {
                 this.onBeforeTransparentRendering();
             }
