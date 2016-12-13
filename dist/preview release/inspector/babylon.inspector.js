@@ -31,6 +31,10 @@ var INSPECTOR;
                     width: canvasComputedStyle.width,
                     height: canvasComputedStyle.height,
                     position: canvasComputedStyle.position,
+                    top: canvasComputedStyle.top,
+                    bottom: canvasComputedStyle.top,
+                    left: canvasComputedStyle.top,
+                    right: canvasComputedStyle.top,
                     padding: canvasComputedStyle.padding,
                     paddingBottom: canvasComputedStyle.paddingBottom,
                     paddingLeft: canvasComputedStyle.paddingLeft,
@@ -51,10 +55,12 @@ var INSPECTOR;
                 // Convert wrapper size in % (because getComputedStyle returns px only)
                 var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
                 var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
-                var windowWidthPx = window.innerWidth;
-                var windowHeightPx = window.innerHeight;
-                var pWidth = widthPx / windowWidthPx * 100;
-                var pheight = heightPx / windowHeightPx * 100;
+                // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
+                var parent_1 = canvas.offsetParent;
+                var parentWidthPx = parent_1.clientWidth;
+                var parentHeightPx = parent_1.clientHeight;
+                var pWidth = widthPx / parentWidthPx * 100;
+                var pheight = heightPx / parentHeightPx * 100;
                 this._c2diwrapper.style.width = pWidth + "%";
                 this._c2diwrapper.style.height = pheight + "%";
                 // reset canvas style

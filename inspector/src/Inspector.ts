@@ -52,7 +52,7 @@ module INSPECTOR {
                 this._canvasStyle = { 
                     width        : canvasComputedStyle.width, 
                     height       : canvasComputedStyle.height,
-                    
+
                     position     : canvasComputedStyle.position,
                     top          : canvasComputedStyle.top,
                     bottom       : canvasComputedStyle.top,
@@ -85,8 +85,10 @@ module INSPECTOR {
                 let heightPx       = parseFloat(canvasComputedStyle.height.substr(0,canvasComputedStyle.height.length-2)) || 0;
 
                 // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
-                let parentWidthPx  = canvas.parentElement.clientWidth;
-                let parentHeightPx = canvas.parentElement.clientHeight;
+                let parent = canvas.offsetParent;
+
+                let parentWidthPx  = parent.clientWidth;
+                let parentHeightPx = parent.clientHeight;
                 let pWidth = widthPx / parentWidthPx * 100;
                 let pheight = heightPx / parentHeightPx * 100;
 
