@@ -208,7 +208,6 @@
       "../../src/Cameras/babylon.stereoscopicCameras.js",
       "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
       "../../src/Rendering/babylon.edgesRenderer.js",
-      "../../src/Rendering/babylon.quadframeRenderer.js",
       "../../src/PostProcess/babylon.tonemapPostProcess.js",
       "../../src/Probes/babylon.reflectionProbe.js",
       "../../src/Particles/babylon.solidParticle.js",
