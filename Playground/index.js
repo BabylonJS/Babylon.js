@@ -16,7 +16,7 @@
             document.getElementById('safemodeToggle').checked = true;
         });
 
-        var snippetUrl = "http://babylonjs-api.azurewebsites.net/api/snippet";
+        var snippetUrl = "https://babylonjs-api.azurewebsites.net/api/snippet";
         var currentSnippetToken;
         var engine;
         var fpsLabel = document.getElementById("fpsLabel");
