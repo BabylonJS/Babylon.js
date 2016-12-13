@@ -121,7 +121,6 @@
             for (var index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
-                var needToStepBack = false;
 
                 this._currentIndex = index;
 
@@ -176,10 +175,6 @@
                         info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
                         observable.notifyObservers(info, renderingGroupMask);
                     }
-                }
-
-                if (needToStepBack) {
-                    index--;
                 }
             }
         }
