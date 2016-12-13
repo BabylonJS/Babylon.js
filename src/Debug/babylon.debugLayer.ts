@@ -14,9 +14,9 @@ module BABYLON {
         }
 
         /** Creates the inspector window. */
-        private _createInspector() {
+        private _createInspector(popup?:boolean) {
             if (!this._inspector) {
-                this._inspector = new INSPECTOR.Inspector(this._scene);
+                this._inspector = new INSPECTOR.Inspector(this._scene, popup);
             } // else nothing to do,; instance is already existing
         }
         
@@ -31,13 +31,13 @@ module BABYLON {
             }
         }
         
-        public show() {
+        public show(popup?:boolean) {
             if (typeof INSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
-                Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this));
+                Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, popup));
             } else {
                 // Otherwise creates the inspector
-                this._createInspector();
+                this._createInspector(popup);
             }
         }
 

@@ -23,10 +23,10 @@ module INSPECTOR {
         private _canvasStyle :any ;
 
         /** The inspector is created with the given engine.
-         * If a HTML parent is not given as a parameter, the inspector is created as a right panel on the main window.
-         * If a HTML parent is given, the inspector is created in this element, taking full size of its parent.
+         * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
+         * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, parent?:HTMLElement) {
+        constructor(scene: BABYLON.Scene, popup?:boolean) {
 
             // get canvas parent only if needed.
             this._scene     = scene;
@@ -36,9 +36,9 @@ module INSPECTOR {
             Inspector.WINDOW = window;                       
             
             // POPUP MODE if parent is defined
-            if (parent) {    
+            if (popup) {    
                 // Build the inspector in the given parent
-                this._buildInspector(parent);
+                this.openPopup(true);// set to true in order to NOT dispose the inspector (done in openPopup), as it's not existing yet
             } else {        
                 // Get canvas and its DOM parent
                 let canvas            = this._scene.getEngine().getRenderingCanvas();            
@@ -202,8 +202,10 @@ module INSPECTOR {
             }
         }
         
-        /** Open the inspector in a new popup */
-        public openPopup() {    
+        /** Open the inspector in a new popup
+         * Set 'firstTime' to true if there is no inspector created beforehands
+         */
+        public openPopup(firstTime?:boolean) {    
             // Create popup
             let popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
             popup.document.title = 'Babylon.js INSPECTOR';
@@ -219,8 +221,10 @@ module INSPECTOR {
                 link.href = (links[l] as HTMLLinkElement).href;
                 popup.document.head.appendChild(link);              
             } 
-            // Dispose the right panel
-            this.dispose();
+            // Dispose the right panel if existing
+            if (!firstTime) {
+                this.dispose();
+            }
             // set the mode as popup
             this._popupMode = true;
             // Save the HTML document
