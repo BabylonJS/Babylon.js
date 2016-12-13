@@ -36,7 +36,7 @@ var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
  * TS configurations shared in the gulp file.
  */
 var tsConfig = {
-    noExternalResolve: true,
+    noResolve: true,
     target: 'ES5',
     declarationFiles: true,
     typescript: require('typescript'),
@@ -46,7 +46,7 @@ var tsConfig = {
 var tsProject = typescript.createProject(tsConfig);
 
 var externalTsConfig = {
-    noExternalResolve: false,
+    noResolve: false,
     target: 'ES5',
     declarationFiles: true,
     typescript: require('typescript'),
@@ -194,7 +194,7 @@ gulp.task("build-custom", ["shaders"], function () {
 gulp.task('typescript-compile', function () {
     var tsResult = gulp.src(config.core.typescript)
         .pipe(sourcemaps.init())
-        .pipe(typescript(tsProject));
+        .pipe(tsProject());
 
     //If this gulp task is running on travis, file the build!
     if (process.env.TRAVIS) {
