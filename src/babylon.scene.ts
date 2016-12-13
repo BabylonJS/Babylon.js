@@ -428,7 +428,6 @@
         // Layers
         public layers = new Array<Layer>();
         public highlightLayers = new Array<HighlightLayer>();
-        public quadframeRenderers = new Array<QuadframeRenderer>();
 
         // Skeletons
         public skeletonsEnabled = true;
