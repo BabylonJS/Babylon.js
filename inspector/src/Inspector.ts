@@ -41,8 +41,9 @@ module INSPECTOR {
                 this.openPopup(true);// set to true in order to NOT dispose the inspector (done in openPopup), as it's not existing yet
             } else {        
                 // Get canvas and its DOM parent
-                let canvas            = this._scene.getEngine().getRenderingCanvas();            
-                let canvasParent      = canvas.parentElement;                                
+                let canvas                    = this._scene.getEngine().getRenderingCanvas();            
+                let canvasParent              = canvas.parentElement;            
+                let canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);            
                 // resize canvas
                 // canvas.style.width = 'calc(100% - 750px - 12px)';
 
@@ -55,9 +56,9 @@ module INSPECTOR {
 
                     position     : canvasComputedStyle.position,
                     top          : canvasComputedStyle.top,
-                    bottom       : canvasComputedStyle.top,
-                    left         : canvasComputedStyle.top,
-                    right        : canvasComputedStyle.top,
+                    bottom       : canvasComputedStyle.bottom,
+                    left         : canvasComputedStyle.left,
+                    right        : canvasComputedStyle.right,
 
                     padding      : canvasComputedStyle.padding,
                     paddingBottom: canvasComputedStyle.paddingBottom,
@@ -85,16 +86,16 @@ module INSPECTOR {
                 let heightPx       = parseFloat(canvasComputedStyle.height.substr(0,canvasComputedStyle.height.length-2)) || 0;
 
                 // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
-                let parent = canvas.offsetParent;
+                let parent = this._getRelativeParent(canvas);
 
                 let parentWidthPx  = parent.clientWidth;
                 let parentHeightPx = parent.clientHeight;
+                
                 let pWidth = widthPx / parentWidthPx * 100;
                 let pheight = heightPx / parentHeightPx * 100;
 
                 this._c2diwrapper.style.width = pWidth+"%";
-                this._c2diwrapper.style.height = pheight+"%";
-            
+                this._c2diwrapper.style.height = pheight+"%";            
 
                 // reset canvas style
                 canvas.style.position = "static";
@@ -138,6 +139,39 @@ module INSPECTOR {
 
             // Refresh the inspector
             this.refresh();
+        }
+        
+        /**
+         * If the given element has a position 'asbolute' or 'relative', 
+         * returns the first parent of the given element that has a position 'relative' or 'absolute'.
+         * If the given element has no position, returns the first parent
+         * 
+         */
+        private _getRelativeParent(elem:HTMLElement, lookForAbsoluteOrRelative?:boolean) : HTMLElement{
+            // If the elem has no parent, returns himself
+            if (!elem.parentElement) {
+                return elem;
+            } 
+            let computedStyle = Inspector.WINDOW.getComputedStyle(elem);
+            // looking for the first element absolute or relative
+            if (lookForAbsoluteOrRelative) {
+                // if found, return this one
+                if (computedStyle.position === "relative" || computedStyle.position === "absolute") {
+                    return elem;
+                }else {
+                    // otherwise keep looking
+                    return this._getRelativeParent(elem.parentElement, true);
+                }
+            }
+            // looking for the relative parent of the element 
+            else {
+                if (computedStyle.position == "static") {
+                    return elem.parentElement;
+                } else {
+                    // the elem has a position relative or absolute, look for the closest relative/absolute parent
+                    return this._getRelativeParent(elem.parentElement, true);
+                }         
+            }   
         }
         
         /** Build the inspector panel in the given HTML element */
