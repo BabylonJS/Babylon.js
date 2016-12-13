@@ -16294,7 +16294,6 @@ var BABYLON;
             for (var index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
-                var needToStepBack = false;
                 this._currentIndex = index;
                 if (renderingGroup) {
                     var renderingGroupMask = 0;
@@ -16339,9 +16338,6 @@ var BABYLON;
                         info.renderStage = BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT;
                         observable.notifyObservers(info, renderingGroupMask);
                     }
-                }
-                if (needToStepBack) {
-                    index--;
                 }
             }
         };
@@ -16507,7 +16503,7 @@ var BABYLON;
                 this.onBeforeTransparentRendering();
             }
             // Transparent
-            if (this._transparentSubMeshes.length === 0) {
+            if (this._transparentSubMeshes.length !== 0) {
                 this._renderTransparent(this._transparentSubMeshes);
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             }
@@ -16943,7 +16939,6 @@ var BABYLON;
             // Layers
             this.layers = new Array();
             this.highlightLayers = new Array();
-            this.quadframeRenderers = new Array();
             // Skeletons
             this.skeletonsEnabled = true;
             this.skeletons = new Array();
@@ -52145,7 +52140,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 
