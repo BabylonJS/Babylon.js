@@ -25038,6 +25038,9 @@ var BABYLON;
             this._lastUpdate = BABYLON.Tools.Now;
         }
         VideoTexture.prototype._createTexture = function () {
+            if (this.video.videoWidth === 0 || this.video.videoHeight === 0) {
+                return;
+            }
             this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
             this._texture.isReady = true;
         };
@@ -25053,6 +25056,38 @@ var BABYLON;
             this._lastUpdate = now;
             this.getScene().getEngine().updateVideoTexture(this._texture, this.video, this._invertY);
             return true;
+        };
+        VideoTexture.CreateFromWebCam = function (scene, onReady, constraints) {
+            var video = document.createElement("video");
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+            if (navigator.getUserMedia) {
+                navigator.getUserMedia({
+                    video: {
+                        width: {
+                            min: (constraints && constraints.minWidth) || 256,
+                            max: (constraints && constraints.maxWidth) || 640
+                        },
+                        height: {
+                            min: (constraints && constraints.minHeight) || 256,
+                            max: (constraints && constraints.maxHeight) || 480
+                        }
+                    }
+                }, function (stream) {
+                    if (video.mozSrcObject !== undefined) {
+                        video.mozSrcObject = stream;
+                    }
+                    else {
+                        video.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
+                    }
+                    video.play();
+                    if (onReady) {
+                        onReady(new BABYLON.VideoTexture("video", video, scene, true, true));
+                    }
+                }, function (e) {
+                    BABYLON.Tools.Error(e.name);
+                });
+            }
         };
         return VideoTexture;
     }(BABYLON.Texture));
