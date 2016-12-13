@@ -23,6 +23,13 @@ declare module INSPECTOR {
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
         constructor(scene: BABYLON.Scene, popup?: boolean);
+        /**
+         * If the given element has a position 'asbolute' or 'relative',
+         * returns the first parent of the given element that has a position 'relative' or 'absolute'.
+         * If the given element has no position, returns the first parent
+         *
+         */
+        private _getRelativeParent(elem, lookForAbsoluteOrRelative?);
         /** Build the inspector panel in the given HTML element */
         private _buildInspector(parent);
         scene: BABYLON.Scene;
