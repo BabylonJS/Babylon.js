@@ -106,7 +106,7 @@
             }
 
             // Transparent
-            if (this._transparentSubMeshes.length === 0) {
+            if (this._transparentSubMeshes.length !== 0) {
                 this._renderTransparent(this._transparentSubMeshes);
                 engine.setAlphaMode(Engine.ALPHA_DISABLE);
             }
