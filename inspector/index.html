@@ -19,10 +19,10 @@
             font-family:sans-serif;
         }
 
+        /* First try : PG-like
         #game-canvas {
             width:75%;
-            height:60%; 
-            position:absolute;
+            height:100%; 
             top:0;
             left:0;
         }
@@ -30,13 +30,36 @@
             height:150px;
             background-color: #333;
         }
+        .mini {
+            display:flex;
+            height:calc(100% - 150px);
+        }
+        .fakeBarAgain {
+            width:50%;
+            background-color: #333;
+        }*/
+        
+        #game-canvas {
+            position:absolute;
+            width:100%;
+            height:100%; 
+            top:0;
+            left : 150px;
+        }
 
     </style>
 
 </head>
 <body>
+    
+    <!-- First try : PG-like
     <div class="fakeToolbar"></div>
-    <!--The game canvas-->
+    <div class="mini">
+        <div class="fakeBarAgain"></div>
+        <canvas id="game-canvas"></canvas> 
+    </div>
+    -->
+    <!--Second try : Sandbox-like-->
     <canvas id="game-canvas"></canvas> 
 
     <!--Starting the game-->
