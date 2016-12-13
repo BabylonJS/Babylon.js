@@ -2,10 +2,10 @@ var INSPECTOR;
 (function (INSPECTOR) {
     var Inspector = (function () {
         /** The inspector is created with the given engine.
-         * If a HTML parent is not given as a parameter, the inspector is created as a right panel on the main window.
-         * If a HTML parent is given, the inspector is created in this element, taking full size of its parent.
+         * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
+         * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        function Inspector(scene, parent) {
+        function Inspector(scene, popup) {
             var _this = this;
             /** True if the inspector is built as a popup tab */
             this._popupMode = false;
@@ -15,9 +15,9 @@ var INSPECTOR;
             Inspector.DOCUMENT = window.document;
             Inspector.WINDOW = window;
             // POPUP MODE if parent is defined
-            if (parent) {
+            if (popup) {
                 // Build the inspector in the given parent
-                this._buildInspector(parent);
+                this.openPopup(true); // set to true in order to NOT dispose the inspector (done in openPopup), as it's not existing yet
             }
             else {
                 // Get canvas and its DOM parent
@@ -31,6 +31,10 @@ var INSPECTOR;
                     width: canvasComputedStyle.width,
                     height: canvasComputedStyle.height,
                     position: canvasComputedStyle.position,
+                    top: canvasComputedStyle.top,
+                    bottom: canvasComputedStyle.top,
+                    left: canvasComputedStyle.top,
+                    right: canvasComputedStyle.top,
                     padding: canvasComputedStyle.padding,
                     paddingBottom: canvasComputedStyle.paddingBottom,
                     paddingLeft: canvasComputedStyle.paddingLeft,
@@ -51,10 +55,12 @@ var INSPECTOR;
                 // Convert wrapper size in % (because getComputedStyle returns px only)
                 var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
                 var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
-                var windowWidthPx = window.innerWidth;
-                var windowHeightPx = window.innerHeight;
-                var pWidth = widthPx / windowWidthPx * 100;
-                var pheight = heightPx / windowHeightPx * 100;
+                // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
+                var parent_1 = canvas.offsetParent;
+                var parentWidthPx = parent_1.clientWidth;
+                var parentHeightPx = parent_1.clientHeight;
+                var pWidth = widthPx / parentWidthPx * 100;
+                var pheight = heightPx / parentHeightPx * 100;
                 this._c2diwrapper.style.width = pWidth + "%";
                 this._c2diwrapper.style.height = pheight + "%";
                 // reset canvas style
@@ -163,8 +169,10 @@ var INSPECTOR;
                 INSPECTOR.Helpers.SEND_EVENT('resize');
             }
         };
-        /** Open the inspector in a new popup */
-        Inspector.prototype.openPopup = function () {
+        /** Open the inspector in a new popup
+         * Set 'firstTime' to true if there is no inspector created beforehands
+         */
+        Inspector.prototype.openPopup = function (firstTime) {
             // Create popup
             var popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
             popup.document.title = 'Babylon.js INSPECTOR';
@@ -180,8 +188,10 @@ var INSPECTOR;
                 link.href = links[l].href;
                 popup.document.head.appendChild(link);
             }
-            // Dispose the right panel
-            this.dispose();
+            // Dispose the right panel if existing
+            if (!firstTime) {
+                this.dispose();
+            }
             // set the mode as popup
             this._popupMode = true;
             // Save the HTML document
