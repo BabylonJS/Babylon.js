@@ -39242,12 +39242,12 @@ var BABYLON;
                     return;
                 }
                 // Excluded Mesh
-                if (_this._excludedMeshes[mesh.id]) {
+                if (_this._excludedMeshes[mesh.uniqueId]) {
                     return;
                 }
                 ;
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
-                var highlightLayerMesh = _this._meshes[mesh.id];
+                var highlightLayerMesh = _this._meshes[mesh.uniqueId];
                 var material = subMesh.getMaterial();
                 var emissiveTexture = null;
                 if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
@@ -39445,9 +39445,9 @@ var BABYLON;
          * @param mesh The mesh to exclude from the highlight layer
          */
         HighlightLayer.prototype.addExcludedMesh = function (mesh) {
-            var meshExcluded = this._excludedMeshes[mesh.id];
+            var meshExcluded = this._excludedMeshes[mesh.uniqueId];
             if (!meshExcluded) {
-                this._excludedMeshes[mesh.id] = {
+                this._excludedMeshes[mesh.uniqueId] = {
                     mesh: mesh,
                     beforeRender: mesh.onBeforeRenderObservable.add(function (mesh) {
                         mesh.getEngine().setStencilBuffer(false);
@@ -39463,12 +39463,12 @@ var BABYLON;
           * @param mesh The mesh to highlight
           */
         HighlightLayer.prototype.removeExcludedMesh = function (mesh) {
-            var meshExcluded = this._excludedMeshes[mesh.id];
+            var meshExcluded = this._excludedMeshes[mesh.uniqueId];
             if (meshExcluded) {
                 mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
                 mesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
             }
-            this._excludedMeshes[mesh.id] = undefined;
+            this._excludedMeshes[mesh.uniqueId] = undefined;
         };
         /**
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.
@@ -39479,17 +39479,17 @@ var BABYLON;
         HighlightLayer.prototype.addMesh = function (mesh, color, glowEmissiveOnly) {
             var _this = this;
             if (glowEmissiveOnly === void 0) { glowEmissiveOnly = false; }
-            var meshHighlight = this._meshes[mesh.id];
+            var meshHighlight = this._meshes[mesh.uniqueId];
             if (meshHighlight) {
                 meshHighlight.color = color;
             }
             else {
-                this._meshes[mesh.id] = {
+                this._meshes[mesh.uniqueId] = {
                     mesh: mesh,
                     color: color,
                     // Lambda required for capture due to Observable this context
                     observerHighlight: mesh.onBeforeRenderObservable.add(function (mesh) {
-                        if (_this._excludedMeshes[mesh.id]) {
+                        if (_this._excludedMeshes[mesh.uniqueId]) {
                             _this.defaultStencilReference(mesh);
                         }
                         else {
@@ -39507,12 +39507,12 @@ var BABYLON;
          * @param mesh The mesh to highlight
          */
         HighlightLayer.prototype.removeMesh = function (mesh) {
-            var meshHighlight = this._meshes[mesh.id];
+            var meshHighlight = this._meshes[mesh.uniqueId];
             if (meshHighlight) {
                 mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
                 mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
             }
-            this._meshes[mesh.id] = undefined;
+            this._meshes[mesh.uniqueId] = undefined;
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
                 if (meshHighlightToCheck) {
