@@ -405,13 +405,13 @@
                 }
 
                 // Excluded Mesh
-                if (this._excludedMeshes[mesh.id]) {
+                if (this._excludedMeshes[mesh.uniqueId]) {
                     return;
                 };
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
-                var highlightLayerMesh = this._meshes[mesh.id];
+                var highlightLayerMesh = this._meshes[mesh.uniqueId];
                 var material = subMesh.getMaterial();
                 var emissiveTexture: Texture = null;
                 if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
@@ -656,9 +656,9 @@
          * @param mesh The mesh to exclude from the highlight layer
          */
         public addExcludedMesh(mesh: Mesh) {
-            var meshExcluded = this._excludedMeshes[mesh.id];
+            var meshExcluded = this._excludedMeshes[mesh.uniqueId];
             if (!meshExcluded) {
-                this._excludedMeshes[mesh.id] = {
+                this._excludedMeshes[mesh.uniqueId] = {
                     mesh: mesh,
                     beforeRender: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
                         mesh.getEngine().setStencilBuffer(false);
@@ -675,13 +675,13 @@
           * @param mesh The mesh to highlight
           */
         public removeExcludedMesh(mesh: Mesh) {
-            var meshExcluded = this._excludedMeshes[mesh.id];
+            var meshExcluded = this._excludedMeshes[mesh.uniqueId];
             if (meshExcluded) {
                 mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
                 mesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
             }
 
-            this._excludedMeshes[mesh.id] = undefined;
+            this._excludedMeshes[mesh.uniqueId] = undefined;
         }
 
         /**
@@ -691,17 +691,17 @@
          * @param glowEmissiveOnly Extract the glow from the emissive texture
          */
         public addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly = false) {
-            var meshHighlight = this._meshes[mesh.id];
+            var meshHighlight = this._meshes[mesh.uniqueId];
             if (meshHighlight) {
                 meshHighlight.color = color;
             }
             else {
-                this._meshes[mesh.id] = {
+                this._meshes[mesh.uniqueId] = {
                     mesh: mesh,
                     color: color,
                     // Lambda required for capture due to Observable this context
                     observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
-                        if (this._excludedMeshes[mesh.id]) {
+                        if (this._excludedMeshes[mesh.uniqueId]) {
                             this.defaultStencilReference(mesh);
                         }
                         else {
@@ -721,13 +721,13 @@
          * @param mesh The mesh to highlight
          */
         public removeMesh(mesh: Mesh) {
-            var meshHighlight = this._meshes[mesh.id];
+            var meshHighlight = this._meshes[mesh.uniqueId];
             if (meshHighlight) {
                 mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
                 mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
             }
 
-            this._meshes[mesh.id] = undefined;
+            this._meshes[mesh.uniqueId] = undefined;
 
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
