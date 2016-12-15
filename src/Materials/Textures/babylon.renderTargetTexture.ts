@@ -213,12 +213,6 @@
                 useCameraPostProcess = this.useCameraPostProcesses;
             }
 
-            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
-            } else {
-                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));               
-            }
-
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
@@ -309,12 +303,21 @@
                     engine.bindFramebuffer(this._texture);
                 }
             }
-            
-            if (this.activeCamera) {
-                engine.setViewport(this.activeCamera.viewport);
-            }
-            else {
-                engine.setViewport(scene.activeCamera.viewport);
+
+            // Set states for projection (this does not change accross faces)
+            if (!this.isCube || faceIndex === 0) {            
+                if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                    scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+                } else {
+                    scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));               
+                }
+
+                if (this.activeCamera) {
+                    engine.setViewport(this.activeCamera.viewport);
+                }
+                else {
+                    engine.setViewport(scene.activeCamera.viewport);
+                }
             }
 
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
