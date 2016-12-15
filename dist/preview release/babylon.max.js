@@ -7563,26 +7563,17 @@ var BABYLON;
                 this._cachedVertexBuffers = vertexBuffer;
                 this._cachedEffectForVertexBuffers = effect;
                 var attributesCount = effect.getAttributesCount();
+                this.unbindAllAttributes();
                 var offset = 0;
                 for (var index = 0; index < attributesCount; index++) {
                     if (index < vertexDeclaration.length) {
                         var order = effect.getAttributeLocation(index);
                         if (order >= 0) {
-                            if (!this._vertexAttribArraysEnabled[order]) {
-                                this._gl.enableVertexAttribArray(order);
-                                this._vertexAttribArraysEnabled[order] = true;
-                            }
+                            this._gl.enableVertexAttribArray(order);
+                            this._vertexAttribArraysEnabled[order] = true;
                             this.vertexAttribPointer(vertexBuffer, order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
                         }
                         offset += vertexDeclaration[index] * 4;
-                    }
-                    else {
-                        //disable effect attributes that have no data
-                        var order = effect.getAttributeLocation(index);
-                        if (this._vertexAttribArraysEnabled[order]) {
-                            this._gl.disableVertexAttribArray(order);
-                            this._vertexAttribArraysEnabled[order] = false;
-                        }
                     }
                 }
             }
@@ -7597,21 +7588,16 @@ var BABYLON;
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
                 var attributes = effect.getAttributesNames();
+                this.unbindAllAttributes();
                 for (var index = 0; index < attributes.length; index++) {
                     var order = effect.getAttributeLocation(index);
                     if (order >= 0) {
                         var vertexBuffer = vertexBuffers[attributes[index]];
                         if (!vertexBuffer) {
-                            if (this._vertexAttribArraysEnabled[order]) {
-                                this._gl.disableVertexAttribArray(order);
-                                this._vertexAttribArraysEnabled[order] = false;
-                            }
                             continue;
                         }
-                        if (!this._vertexAttribArraysEnabled[order]) {
-                            this._gl.enableVertexAttribArray(order);
-                            this._vertexAttribArraysEnabled[order] = true;
-                        }
+                        this._gl.enableVertexAttribArray(order);
+                        this._vertexAttribArraysEnabled[order] = true;
                         var buffer = vertexBuffer.getBuffer();
                         this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
                         if (vertexBuffer.getIsInstanced()) {
@@ -8924,8 +8910,10 @@ var BABYLON;
                 if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
-                this._vertexAttribArraysEnabled[i] = false;
+                if (this._vertexAttribArraysEnabled[i]) {
+                    this._gl.disableVertexAttribArray(i);
+                    this._vertexAttribArraysEnabled[i] = false;
+                }
             }
         };
         // Dispose
