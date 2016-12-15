@@ -1955,6 +1955,7 @@ var INSPECTOR;
             _this._inspector = insp;
             // Build the properties panel : a div that will contains the tree and the detail panel
             _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            _this._panel.classList.add('searchable');
             // Search bar
             _this._searchBar = new INSPECTOR.SearchBar(_this);
             // Add searchbar
