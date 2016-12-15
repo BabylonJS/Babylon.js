@@ -3173,6 +3173,51 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var INSPECTOR;
 (function (INSPECTOR) {
+    var LabelTool = (function (_super) {
+        __extends(LabelTool, _super);
+        function LabelTool(parent, inspector) {
+            var _this = _super.call(this, 'fa-tags', parent, inspector, 'Display mesh names on the canvas') || this;
+            /** True if label are displayed, false otherwise */
+            _this._isDisplayed = false;
+            _this._labels = [];
+            _this._transformationMatrix = BABYLON.Matrix.Identity();
+            return _this;
+        }
+        // Action : Display/hide mesh names on the canvas
+        LabelTool.prototype.action = function () {
+            if (this._isDisplayed) {
+            }
+        };
+        LabelTool.prototype._update = function () {
+            this._camera = this._inspector.scene.activeCamera;
+            var engine = this._inspector.scene.getEngine();
+            var viewport = this._camera.viewport;
+            var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            this._camera.getViewMatrix().multiplyToRef(this._camera.getProjectionMatrix(), this._transformationMatrix);
+            // Old method
+            // let meshes = this._camera.getActiveMeshes();
+            // let projectedPosition: BABYLON.Vector3;
+            // for (let index = 0; index < meshes.length; index++) {
+            //     let mesh = meshes.data[index];
+            //     let position = mesh.getBoundingInfo().boundingSphere.center;
+            //     projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), this._transformationMatrix, globalViewport);
+            //     this._renderLabel(mesh.name, projectedPosition, 12,
+            //         () => { mesh.renderOverlay = !mesh.renderOverlay },
+            //         () => { return mesh.renderOverlay ? 'red' : 'black'; });
+            // }
+        };
+        return LabelTool;
+    }(INSPECTOR.AbstractTool));
+    INSPECTOR.LabelTool = LabelTool;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
     var Toolbar = (function (_super) {
         __extends(Toolbar, _super);
         function Toolbar(inspector) {
@@ -3193,6 +3238,8 @@ var INSPECTOR;
         Toolbar.prototype._addTools = function () {
             // Refresh
             this._tools.push(new INSPECTOR.RefreshTool(this._div, this._inspector));
+            // Display labels
+            this._tools.push(new INSPECTOR.LabelTool(this._div, this._inspector));
             // Pick object
             this._tools.push(new INSPECTOR.PickTool(this._div, this._inspector));
             // Add the popup mode only if the inspector is not in popup mode and if the brower is not edge

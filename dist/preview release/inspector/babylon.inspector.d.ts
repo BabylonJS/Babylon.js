@@ -823,6 +823,19 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class LabelTool extends AbstractTool {
+        /** True if label are displayed, false otherwise */
+        private _isDisplayed;
+        private _labels;
+        private _camera;
+        private _transformationMatrix;
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+        private _update();
+    }
+}
+
+declare module INSPECTOR {
     class Toolbar extends BasicElement {
         private _inspector;
         private _tools;
