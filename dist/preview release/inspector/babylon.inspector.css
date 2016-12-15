@@ -269,7 +269,8 @@
     .insp-wrapper .insp-details .header-row {
       background-color: #2c2c2c;
       color: #ccc;
-      width: 100%; }
+      width: 100%;
+      max-width: 100%; }
       .insp-wrapper .insp-details .header-row > * {
         color: #ccc !important;
         padding: 5px 0 5px 5px !important;

@@ -71,7 +71,7 @@
     background-color: $background-lighter; 
     color           : $color;
     width           : 100%;
-    // Max-width is set in js
+    max-width       : 100%;
     
     // Special definition for text color: the color is the default one
     // All header columns
