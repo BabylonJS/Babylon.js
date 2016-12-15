@@ -484,10 +484,10 @@ var INSPECTOR;
         /** Should be overriden in subclasses */
         Adapter.prototype.highlight = function (b) { };
         ;
-        // a unique name for this adapter, to retrieve its own key in the local storage
-        Adapter._name = BABYLON.Geometry.RandomId();
         return Adapter;
     }());
+    // a unique name for this adapter, to retrieve its own key in the local storage
+    Adapter._name = BABYLON.Geometry.RandomId();
     INSPECTOR.Adapter = Adapter;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -503,7 +503,7 @@ var INSPECTOR;
     var Canvas2DAdapter = (function (_super) {
         __extends(Canvas2DAdapter, _super);
         function Canvas2DAdapter(obj) {
-            _super.call(this, obj);
+            return _super.call(this, obj) || this;
         }
         /** Returns the name displayed in the tree */
         Canvas2DAdapter.prototype.id = function () {
@@ -532,7 +532,8 @@ var INSPECTOR;
             var toAddDirty = [
                 'actualZOffset', 'isSizeAuto', 'layoutArea', 'layoutAreaPos', 'contentArea',
                 'marginOffset', 'paddingOffset', 'isPickable', 'isContainer', 'boundingInfo',
-                'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo'];
+                'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo'
+            ];
             for (var _i = 0, toAddDirty_1 = toAddDirty; _i < toAddDirty_1.length; _i++) {
                 var dirty = toAddDirty_1[_i];
                 var infos = new INSPECTOR.Property(dirty, this.actualObject);
@@ -577,7 +578,7 @@ var INSPECTOR;
     var LightAdapter = (function (_super) {
         __extends(LightAdapter, _super);
         function LightAdapter(obj) {
-            _super.call(this, obj);
+            return _super.call(this, obj) || this;
         }
         /** Returns the name displayed in the tree */
         LightAdapter.prototype.id = function () {
@@ -622,16 +623,16 @@ var INSPECTOR;
             this.actualObject.outlineWidth = 0.25;
             this.actualObject.outlineColor = BABYLON.Color3.Yellow();
         };
-        LightAdapter._PROPERTIES = [
-            'position',
-            'diffuse',
-            'intensity',
-            'radius',
-            'range',
-            'specular'
-        ];
         return LightAdapter;
     }(INSPECTOR.Adapter));
+    LightAdapter._PROPERTIES = [
+        'position',
+        'diffuse',
+        'intensity',
+        'radius',
+        'range',
+        'specular'
+    ];
     INSPECTOR.LightAdapter = LightAdapter;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -647,7 +648,7 @@ var INSPECTOR;
     var MaterialAdapter = (function (_super) {
         __extends(MaterialAdapter, _super);
         function MaterialAdapter(obj) {
-            _super.call(this, obj);
+            return _super.call(this, obj) || this;
         }
         /** Returns the name displayed in the tree */
         MaterialAdapter.prototype.id = function () {
@@ -713,9 +714,10 @@ var INSPECTOR;
     var MeshAdapter = (function (_super) {
         __extends(MeshAdapter, _super);
         function MeshAdapter(obj) {
-            _super.call(this, obj);
+            var _this = _super.call(this, obj) || this;
             /** Keep track of the axis of the actual object */
-            this._axis = [];
+            _this._axis = [];
+            return _this;
         }
         /** Returns the name displayed in the tree */
         MeshAdapter.prototype.id = function () {
@@ -835,16 +837,17 @@ var INSPECTOR;
     var DetailPanel = (function (_super) {
         __extends(DetailPanel, _super);
         function DetailPanel(dr) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             // Contains all details rows that belongs to the item above
-            this._detailRows = [];
+            _this._detailRows = [];
             // Store the sort direction of each header column
-            this._sortDirection = {};
-            this._build();
+            _this._sortDirection = {};
+            _this._build();
             if (dr) {
-                this._detailRows = dr;
-                this.update();
+                _this._detailRows = dr;
+                _this.update();
             }
+            return _this;
         }
         Object.defineProperty(DetailPanel.prototype, "details", {
             set: function (detailsRow) {
@@ -864,6 +867,7 @@ var INSPECTOR;
             this._createHeaderRow();
             this._div.appendChild(this._headerRow);
             INSPECTOR.Inspector.WINDOW.addEventListener('resize', function (e) {
+                console.log(_this._headerRow.parentElement.clientWidth);
                 // adapt the header row max width according to its parent size;
                 _this._headerRow.style.maxWidth = _this._headerRow.parentElement.clientWidth + 'px';
             });
@@ -1355,12 +1359,12 @@ var INSPECTOR;
                 }
             }
         };
-        // Array representing the simple type. All others are considered 'complex'
-        PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
-        // The number of pixel at each children step
-        PropertyLine._MARGIN_LEFT = 15;
         return PropertyLine;
     }());
+    // Array representing the simple type. All others are considered 'complex'
+    PropertyLine._SIMPLE_TYPE = ['number', 'string', 'boolean'];
+    // The number of pixel at each children step
+    PropertyLine._MARGIN_LEFT = 15;
     INSPECTOR.PropertyLine = PropertyLine;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -1380,9 +1384,10 @@ var INSPECTOR;
         __extends(ColorElement, _super);
         // The color as hexadecimal string
         function ColorElement(color) {
-            _super.call(this);
-            this._div.className = 'color-element';
-            this._div.style.backgroundColor = this._toRgba(color);
+            var _this = _super.call(this) || this;
+            _this._div.className = 'color-element';
+            _this._div.style.backgroundColor = _this._toRgba(color);
+            return _this;
         }
         ColorElement.prototype.update = function (color) {
             if (color) {
@@ -1426,19 +1431,20 @@ var INSPECTOR;
         __extends(CubeTextureElement, _super);
         /** The texture given as a parameter should be cube. */
         function CubeTextureElement(tex) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             // On pause the engine will not render anything
-            this._pause = false;
-            this._div.className = 'fa fa-search texture-element';
+            _this._pause = false;
+            _this._div.className = 'fa fa-search texture-element';
             // Create the texture viewer
-            this._textureDiv = INSPECTOR.Helpers.CreateDiv('texture-viewer', this._div);
+            _this._textureDiv = INSPECTOR.Helpers.CreateDiv('texture-viewer', _this._div);
             // canvas
-            this._canvas = INSPECTOR.Helpers.CreateElement('canvas', 'texture-viewer-img', this._textureDiv);
+            _this._canvas = INSPECTOR.Helpers.CreateElement('canvas', 'texture-viewer-img', _this._textureDiv);
             if (tex) {
-                this._textureUrl = tex.name;
+                _this._textureUrl = tex.name;
             }
-            this._div.addEventListener('mouseover', this._showViewer.bind(this, 'flex'));
-            this._div.addEventListener('mouseout', this._showViewer.bind(this, 'none'));
+            _this._div.addEventListener('mouseover', _this._showViewer.bind(_this, 'flex'));
+            _this._div.addEventListener('mouseout', _this._showViewer.bind(_this, 'none'));
+            return _this;
         }
         CubeTextureElement.prototype.update = function (tex) {
             if (tex && tex.url === this._textureUrl) {
@@ -1538,7 +1544,7 @@ var INSPECTOR;
         __extends(HDRCubeTextureElement, _super);
         /** The texture given as a parameter should be cube. */
         function HDRCubeTextureElement(tex) {
-            _super.call(this, tex);
+            return _super.call(this, tex) || this;
         }
         /** Creates the box  */
         HDRCubeTextureElement.prototype._populateScene = function () {
@@ -1578,21 +1584,21 @@ var INSPECTOR;
     var SearchBar = (function (_super) {
         __extends(SearchBar, _super);
         function SearchBar(tab) {
-            var _this = this;
-            _super.call(this);
-            this._tab = tab;
-            this._div.classList.add('searchbar');
+            var _this = _super.call(this) || this;
+            _this._tab = tab;
+            _this._div.classList.add('searchbar');
             var filter = INSPECTOR.Inspector.DOCUMENT.createElement('i');
             filter.className = 'fa fa-search';
-            this._div.appendChild(filter);
+            _this._div.appendChild(filter);
             // Create input
-            this._inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
-            this._inputElement.placeholder = 'Filter by name...';
-            this._div.appendChild(this._inputElement);
-            this._inputElement.addEventListener('keyup', function (evt) {
+            _this._inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
+            _this._inputElement.placeholder = 'Filter by name...';
+            _this._div.appendChild(_this._inputElement);
+            _this._inputElement.addEventListener('keyup', function (evt) {
                 var filter = _this._inputElement.value;
                 _this._tab.filter(filter);
             });
+            return _this;
         }
         /** Delete all characters typped in the input element */
         SearchBar.prototype.reset = function () {
@@ -1621,22 +1627,23 @@ var INSPECTOR;
     var TextureElement = (function (_super) {
         __extends(TextureElement, _super);
         function TextureElement(tex) {
-            _super.call(this);
-            this._div.className = 'fa fa-search texture-element';
+            var _this = _super.call(this) || this;
+            _this._div.className = 'fa fa-search texture-element';
             // Create the texture viewer
-            this._textureDiv = INSPECTOR.Helpers.CreateDiv('texture-viewer', this._div);
+            _this._textureDiv = INSPECTOR.Helpers.CreateDiv('texture-viewer', _this._div);
             // Img
-            var imgDiv = INSPECTOR.Helpers.CreateDiv('texture-viewer-img', this._textureDiv);
+            var imgDiv = INSPECTOR.Helpers.CreateDiv('texture-viewer-img', _this._textureDiv);
             // Texture size
-            var sizeDiv = INSPECTOR.Helpers.CreateDiv(null, this._textureDiv);
+            var sizeDiv = INSPECTOR.Helpers.CreateDiv(null, _this._textureDiv);
             if (tex) {
                 sizeDiv.textContent = tex.getBaseSize().width + "px x " + tex.getBaseSize().height + "px";
                 imgDiv.style.backgroundImage = "url('" + tex.url + "')";
                 imgDiv.style.width = tex.getBaseSize().width + "px";
                 imgDiv.style.height = tex.getBaseSize().height + "px";
             }
-            this._div.addEventListener('mouseover', this._showViewer.bind(this, 'flex'));
-            this._div.addEventListener('mouseout', this._showViewer.bind(this, 'none'));
+            _this._div.addEventListener('mouseover', _this._showViewer.bind(_this, 'flex'));
+            _this._div.addEventListener('mouseout', _this._showViewer.bind(_this, 'none'));
+            return _this;
         }
         TextureElement.prototype.update = function (tex) {
         };
@@ -1840,10 +1847,10 @@ var INSPECTOR;
                 }
             }
         };
-        /** All properties are refreshed every 250ms */
-        Scheduler.REFRESH_TIME = 250;
         return Scheduler;
     }());
+    /** All properties are refreshed every 250ms */
+    Scheduler.REFRESH_TIME = 250;
     INSPECTOR.Scheduler = Scheduler;
 })(INSPECTOR || (INSPECTOR = {}));
 
@@ -1857,11 +1864,12 @@ var INSPECTOR;
     var Tab = (function (_super) {
         __extends(Tab, _super);
         function Tab(tabbar, name) {
-            _super.call(this);
-            this._isActive = false;
-            this._tabbar = tabbar;
-            this.name = name;
-            this._build();
+            var _this = _super.call(this) || this;
+            _this._isActive = false;
+            _this._tabbar = tabbar;
+            _this.name = name;
+            _this._build();
+            return _this;
         }
         /** True if the tab is active, false otherwise */
         Tab.prototype.isActive = function () {
@@ -1926,22 +1934,23 @@ var INSPECTOR;
     var PropertyTab = (function (_super) {
         __extends(PropertyTab, _super);
         function PropertyTab(tabbar, name, insp) {
-            _super.call(this, tabbar, name);
-            this._treeItems = [];
-            this._inspector = insp;
+            var _this = _super.call(this, tabbar, name) || this;
+            _this._treeItems = [];
+            _this._inspector = insp;
             // Build the properties panel : a div that will contains the tree and the detail panel
-            this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             // Search bar
-            this._searchBar = new INSPECTOR.SearchBar(this);
+            _this._searchBar = new INSPECTOR.SearchBar(_this);
             // Add searchbar
-            this._panel.appendChild(this._searchBar.toHtml());
+            _this._panel.appendChild(_this._searchBar.toHtml());
             // Build the treepanel
-            this._treePanel = INSPECTOR.Helpers.CreateDiv('insp-tree', this._panel);
+            _this._treePanel = INSPECTOR.Helpers.CreateDiv('insp-tree', _this._panel);
             // Build the detail panel
-            this._detailsPanel = new INSPECTOR.DetailPanel();
-            this._panel.appendChild(this._detailsPanel.toHtml());
-            Split([this._treePanel, this._detailsPanel.toHtml()], { direction: 'vertical' });
-            this.update();
+            _this._detailsPanel = new INSPECTOR.DetailPanel();
+            _this._panel.appendChild(_this._detailsPanel.toHtml());
+            Split([_this._treePanel, _this._detailsPanel.toHtml()], { direction: 'vertical' });
+            _this.update();
+            return _this;
         }
         /** Overrides dispose */
         PropertyTab.prototype.dispose = function () {
@@ -2045,7 +2054,7 @@ var INSPECTOR;
     var Canvas2DTab = (function (_super) {
         __extends(Canvas2DTab, _super);
         function Canvas2DTab(tabbar, inspector) {
-            _super.call(this, tabbar, 'Canvas2D', inspector);
+            return _super.call(this, tabbar, 'Canvas2D', inspector) || this;
         }
         /* Overrides */
         Canvas2DTab.prototype._getTree = function () {
@@ -2098,7 +2107,7 @@ var INSPECTOR;
     var LightTab = (function (_super) {
         __extends(LightTab, _super);
         function LightTab(tabbar, inspector) {
-            _super.call(this, tabbar, 'Light', inspector);
+            return _super.call(this, tabbar, 'Light', inspector) || this;
         }
         /* Overrides super */
         LightTab.prototype._getTree = function () {
@@ -2126,7 +2135,7 @@ var INSPECTOR;
     var MaterialTab = (function (_super) {
         __extends(MaterialTab, _super);
         function MaterialTab(tabbar, inspector) {
-            _super.call(this, tabbar, 'Material', inspector);
+            return _super.call(this, tabbar, 'Material', inspector) || this;
         }
         /* Overrides super */
         MaterialTab.prototype._getTree = function () {
@@ -2154,7 +2163,7 @@ var INSPECTOR;
     var MeshTab = (function (_super) {
         __extends(MeshTab, _super);
         function MeshTab(tabbar, inspector) {
-            _super.call(this, tabbar, 'Mesh', inspector);
+            return _super.call(this, tabbar, 'Mesh', inspector) || this;
         }
         /* Overrides super */
         MeshTab.prototype._getTree = function () {
@@ -2188,92 +2197,91 @@ var INSPECTOR;
     var SceneTab = (function (_super) {
         __extends(SceneTab, _super);
         function SceneTab(tabbar, insp) {
-            var _this = this;
-            _super.call(this, tabbar, 'Scene');
+            var _this = _super.call(this, tabbar, 'Scene') || this;
             /** The list of skeleton viewer */
-            this._skeletonViewers = [];
-            this._inspector = insp;
+            _this._skeletonViewers = [];
+            _this._inspector = insp;
             // Build the properties panel : a div that will contains the tree and the detail panel
-            this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
-            this._actions = INSPECTOR.Helpers.CreateDiv('scene-actions', this._panel);
-            this._detailsPanel = new INSPECTOR.DetailPanel();
-            this._panel.appendChild(this._detailsPanel.toHtml());
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            _this._actions = INSPECTOR.Helpers.CreateDiv('scene-actions', _this._panel);
+            _this._detailsPanel = new INSPECTOR.DetailPanel();
+            _this._panel.appendChild(_this._detailsPanel.toHtml());
             // build propertiesline
             var details = [];
             for (var _i = 0, _a = INSPECTOR.PROPERTIES['Scene'].properties; _i < _a.length; _i++) {
                 var prop = _a[_i];
-                details.push(new INSPECTOR.PropertyLine(new INSPECTOR.Property(prop, this._inspector.scene)));
+                details.push(new INSPECTOR.PropertyLine(new INSPECTOR.Property(prop, _this._inspector.scene)));
             }
-            this._detailsPanel.details = details;
-            Split([this._actions, this._detailsPanel.toHtml()], {
+            _this._detailsPanel.details = details;
+            Split([_this._actions, _this._detailsPanel.toHtml()], {
                 sizes: [50, 50],
                 direction: 'vertical'
             });
             // Build actions
             {
                 // Rendering mode
-                var title = INSPECTOR.Helpers.CreateDiv('actions-title', this._actions);
+                var title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
                 title.textContent = 'Rendering mode';
-                var point = INSPECTOR.Helpers.CreateDiv('action-radio', this._actions);
-                var wireframe = INSPECTOR.Helpers.CreateDiv('action-radio', this._actions);
-                var solid = INSPECTOR.Helpers.CreateDiv('action-radio', this._actions);
+                var point = INSPECTOR.Helpers.CreateDiv('action-radio', _this._actions);
+                var wireframe = INSPECTOR.Helpers.CreateDiv('action-radio', _this._actions);
+                var solid = INSPECTOR.Helpers.CreateDiv('action-radio', _this._actions);
                 point.textContent = 'Point';
                 wireframe.textContent = 'Wireframe';
                 solid.textContent = 'Solid';
-                if (this._inspector.scene.forcePointsCloud) {
+                if (_this._inspector.scene.forcePointsCloud) {
                     point.classList.add('active');
                 }
-                else if (this._inspector.scene.forceWireframe) {
+                else if (_this._inspector.scene.forceWireframe) {
                     wireframe.classList.add('active');
                 }
                 else {
                     solid.classList.add('active');
                 }
-                this._generateRadioAction([point, wireframe, solid]);
+                _this._generateRadioAction([point, wireframe, solid]);
                 point.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = true; _this._inspector.scene.forceWireframe = false; });
                 wireframe.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = false; _this._inspector.scene.forceWireframe = true; });
                 solid.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = false; _this._inspector.scene.forceWireframe = false; });
                 // Textures
-                title = INSPECTOR.Helpers.CreateDiv('actions-title', this._actions);
+                title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
                 title.textContent = 'Textures channels';
-                this._generateActionLine('Diffuse Texture', BABYLON.StandardMaterial.DiffuseTextureEnabled, function (b) { BABYLON.StandardMaterial.DiffuseTextureEnabled = b; });
-                this._generateActionLine('Ambient Texture', BABYLON.StandardMaterial.AmbientTextureEnabled, function (b) { BABYLON.StandardMaterial.AmbientTextureEnabled = b; });
-                this._generateActionLine('Specular Texture', BABYLON.StandardMaterial.SpecularTextureEnabled, function (b) { BABYLON.StandardMaterial.SpecularTextureEnabled = b; });
-                this._generateActionLine('Emissive Texture', BABYLON.StandardMaterial.EmissiveTextureEnabled, function (b) { BABYLON.StandardMaterial.EmissiveTextureEnabled = b; });
-                this._generateActionLine('Bump Texture', BABYLON.StandardMaterial.BumpTextureEnabled, function (b) { BABYLON.StandardMaterial.BumpTextureEnabled = b; });
-                this._generateActionLine('Opacity Texture', BABYLON.StandardMaterial.OpacityTextureEnabled, function (b) { BABYLON.StandardMaterial.OpacityTextureEnabled = b; });
-                this._generateActionLine('Reflection Texture', BABYLON.StandardMaterial.ReflectionTextureEnabled, function (b) { BABYLON.StandardMaterial.ReflectionTextureEnabled = b; });
-                this._generateActionLine('Refraction Texture', BABYLON.StandardMaterial.RefractionTextureEnabled, function (b) { BABYLON.StandardMaterial.RefractionTextureEnabled = b; });
-                this._generateActionLine('ColorGrading', BABYLON.StandardMaterial.ColorGradingTextureEnabled, function (b) { BABYLON.StandardMaterial.ColorGradingTextureEnabled = b; });
-                this._generateActionLine('Lightmap Texture', BABYLON.StandardMaterial.LightmapTextureEnabled, function (b) { BABYLON.StandardMaterial.LightmapTextureEnabled = b; });
-                this._generateActionLine('Fresnel', BABYLON.StandardMaterial.FresnelEnabled, function (b) { BABYLON.StandardMaterial.FresnelEnabled = b; });
+                _this._generateActionLine('Diffuse Texture', BABYLON.StandardMaterial.DiffuseTextureEnabled, function (b) { BABYLON.StandardMaterial.DiffuseTextureEnabled = b; });
+                _this._generateActionLine('Ambient Texture', BABYLON.StandardMaterial.AmbientTextureEnabled, function (b) { BABYLON.StandardMaterial.AmbientTextureEnabled = b; });
+                _this._generateActionLine('Specular Texture', BABYLON.StandardMaterial.SpecularTextureEnabled, function (b) { BABYLON.StandardMaterial.SpecularTextureEnabled = b; });
+                _this._generateActionLine('Emissive Texture', BABYLON.StandardMaterial.EmissiveTextureEnabled, function (b) { BABYLON.StandardMaterial.EmissiveTextureEnabled = b; });
+                _this._generateActionLine('Bump Texture', BABYLON.StandardMaterial.BumpTextureEnabled, function (b) { BABYLON.StandardMaterial.BumpTextureEnabled = b; });
+                _this._generateActionLine('Opacity Texture', BABYLON.StandardMaterial.OpacityTextureEnabled, function (b) { BABYLON.StandardMaterial.OpacityTextureEnabled = b; });
+                _this._generateActionLine('Reflection Texture', BABYLON.StandardMaterial.ReflectionTextureEnabled, function (b) { BABYLON.StandardMaterial.ReflectionTextureEnabled = b; });
+                _this._generateActionLine('Refraction Texture', BABYLON.StandardMaterial.RefractionTextureEnabled, function (b) { BABYLON.StandardMaterial.RefractionTextureEnabled = b; });
+                _this._generateActionLine('ColorGrading', BABYLON.StandardMaterial.ColorGradingTextureEnabled, function (b) { BABYLON.StandardMaterial.ColorGradingTextureEnabled = b; });
+                _this._generateActionLine('Lightmap Texture', BABYLON.StandardMaterial.LightmapTextureEnabled, function (b) { BABYLON.StandardMaterial.LightmapTextureEnabled = b; });
+                _this._generateActionLine('Fresnel', BABYLON.StandardMaterial.FresnelEnabled, function (b) { BABYLON.StandardMaterial.FresnelEnabled = b; });
                 // Options
-                title = INSPECTOR.Helpers.CreateDiv('actions-title', this._actions);
+                title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
                 title.textContent = 'Options';
-                this._generateActionLine('Animations', this._inspector.scene.animationsEnabled, function (b) { _this._inspector.scene.animationsEnabled = b; });
-                this._generateActionLine('Collisions', this._inspector.scene.collisionsEnabled, function (b) { _this._inspector.scene.collisionsEnabled = b; });
-                this._generateActionLine('Fog', this._inspector.scene.fogEnabled, function (b) { _this._inspector.scene.fogEnabled = b; });
-                this._generateActionLine('Lens flares', this._inspector.scene.lensFlaresEnabled, function (b) { _this._inspector.scene.lensFlaresEnabled = b; });
-                this._generateActionLine('Lights', this._inspector.scene.lightsEnabled, function (b) { _this._inspector.scene.lightsEnabled = b; });
-                this._generateActionLine('Particles', this._inspector.scene.particlesEnabled, function (b) { _this._inspector.scene.particlesEnabled = b; });
-                this._generateActionLine('Post-processes', this._inspector.scene.postProcessesEnabled, function (b) { _this._inspector.scene.postProcessesEnabled = b; });
-                this._generateActionLine('Probes', this._inspector.scene.probesEnabled, function (b) { _this._inspector.scene.probesEnabled = b; });
-                this._generateActionLine('Procedural textures', this._inspector.scene.proceduralTexturesEnabled, function (b) { _this._inspector.scene.proceduralTexturesEnabled = b; });
-                this._generateActionLine('Render targets', this._inspector.scene.renderTargetsEnabled, function (b) { _this._inspector.scene.renderTargetsEnabled = b; });
-                this._generateActionLine('Shadows', this._inspector.scene.shadowsEnabled, function (b) { _this._inspector.scene.shadowsEnabled = b; });
-                this._generateActionLine('Skeletons', this._inspector.scene.skeletonsEnabled, function (b) { _this._inspector.scene.skeletonsEnabled = b; });
-                this._generateActionLine('Sprites', this._inspector.scene.spritesEnabled, function (b) { _this._inspector.scene.spritesEnabled = b; });
-                this._generateActionLine('Textures', this._inspector.scene.texturesEnabled, function (b) { _this._inspector.scene.texturesEnabled = b; });
+                _this._generateActionLine('Animations', _this._inspector.scene.animationsEnabled, function (b) { _this._inspector.scene.animationsEnabled = b; });
+                _this._generateActionLine('Collisions', _this._inspector.scene.collisionsEnabled, function (b) { _this._inspector.scene.collisionsEnabled = b; });
+                _this._generateActionLine('Fog', _this._inspector.scene.fogEnabled, function (b) { _this._inspector.scene.fogEnabled = b; });
+                _this._generateActionLine('Lens flares', _this._inspector.scene.lensFlaresEnabled, function (b) { _this._inspector.scene.lensFlaresEnabled = b; });
+                _this._generateActionLine('Lights', _this._inspector.scene.lightsEnabled, function (b) { _this._inspector.scene.lightsEnabled = b; });
+                _this._generateActionLine('Particles', _this._inspector.scene.particlesEnabled, function (b) { _this._inspector.scene.particlesEnabled = b; });
+                _this._generateActionLine('Post-processes', _this._inspector.scene.postProcessesEnabled, function (b) { _this._inspector.scene.postProcessesEnabled = b; });
+                _this._generateActionLine('Probes', _this._inspector.scene.probesEnabled, function (b) { _this._inspector.scene.probesEnabled = b; });
+                _this._generateActionLine('Procedural textures', _this._inspector.scene.proceduralTexturesEnabled, function (b) { _this._inspector.scene.proceduralTexturesEnabled = b; });
+                _this._generateActionLine('Render targets', _this._inspector.scene.renderTargetsEnabled, function (b) { _this._inspector.scene.renderTargetsEnabled = b; });
+                _this._generateActionLine('Shadows', _this._inspector.scene.shadowsEnabled, function (b) { _this._inspector.scene.shadowsEnabled = b; });
+                _this._generateActionLine('Skeletons', _this._inspector.scene.skeletonsEnabled, function (b) { _this._inspector.scene.skeletonsEnabled = b; });
+                _this._generateActionLine('Sprites', _this._inspector.scene.spritesEnabled, function (b) { _this._inspector.scene.spritesEnabled = b; });
+                _this._generateActionLine('Textures', _this._inspector.scene.texturesEnabled, function (b) { _this._inspector.scene.texturesEnabled = b; });
                 // Audio
-                title = INSPECTOR.Helpers.CreateDiv('actions-title', this._actions);
+                title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
                 title.textContent = 'Audio';
-                var headphones = INSPECTOR.Helpers.CreateDiv('action-radio', this._actions);
-                var normalSpeaker = INSPECTOR.Helpers.CreateDiv('action-radio', this._actions);
-                this._generateActionLine('Disable audio', !this._inspector.scene.audioEnabled, function (b) { _this._inspector.scene.audioEnabled = !b; });
+                var headphones = INSPECTOR.Helpers.CreateDiv('action-radio', _this._actions);
+                var normalSpeaker = INSPECTOR.Helpers.CreateDiv('action-radio', _this._actions);
+                _this._generateActionLine('Disable audio', !_this._inspector.scene.audioEnabled, function (b) { _this._inspector.scene.audioEnabled = !b; });
                 headphones.textContent = 'Headphones';
                 normalSpeaker.textContent = 'Normal speakers';
-                this._generateRadioAction([headphones, normalSpeaker]);
-                if (this._inspector.scene.headphone) {
+                _this._generateRadioAction([headphones, normalSpeaker]);
+                if (_this._inspector.scene.headphone) {
                     headphones.classList.add('active');
                 }
                 else {
@@ -2282,9 +2290,9 @@ var INSPECTOR;
                 headphones.addEventListener('click', function () { _this._inspector.scene.headphone = true; });
                 normalSpeaker.addEventListener('click', function () { _this._inspector.scene.headphone = false; });
                 // Viewers
-                title = INSPECTOR.Helpers.CreateDiv('actions-title', this._actions);
+                title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
                 title.textContent = 'Viewer';
-                this._generateActionLine('Skeletons', false, function (b) {
+                _this._generateActionLine('Skeletons', false, function (b) {
                     if (b) {
                         for (var index = 0; index < _this._inspector.scene.meshes.length; index++) {
                             var mesh = _this._inspector.scene.meshes[index];
@@ -2313,6 +2321,7 @@ var INSPECTOR;
                     }
                 });
             }
+            return _this;
         }
         /** Overrides super.dispose */
         SceneTab.prototype.dispose = function () {
@@ -2364,29 +2373,30 @@ var INSPECTOR;
     var ShaderTab = (function (_super) {
         __extends(ShaderTab, _super);
         function ShaderTab(tabbar, insp) {
-            _super.call(this, tabbar, 'Shader');
-            this._inspector = insp;
+            var _this = _super.call(this, tabbar, 'Shader') || this;
+            _this._inspector = insp;
             // Build the shaders panel : a div that will contains the shaders tree and both shaders panels
-            this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
             var shaderPanel = INSPECTOR.Helpers.CreateDiv('shader-tree-panel');
-            this._vertexPanel = INSPECTOR.Helpers.CreateDiv('shader-panel');
-            this._fragmentPanel = INSPECTOR.Helpers.CreateDiv('shader-panel');
-            this._panel.appendChild(shaderPanel);
-            this._panel.appendChild(this._vertexPanel);
-            this._panel.appendChild(this._fragmentPanel);
+            _this._vertexPanel = INSPECTOR.Helpers.CreateDiv('shader-panel');
+            _this._fragmentPanel = INSPECTOR.Helpers.CreateDiv('shader-panel');
+            _this._panel.appendChild(shaderPanel);
+            _this._panel.appendChild(_this._vertexPanel);
+            _this._panel.appendChild(_this._fragmentPanel);
             INSPECTOR.Helpers.LoadScript();
-            Split([this._vertexPanel, this._fragmentPanel], {
+            Split([_this._vertexPanel, _this._fragmentPanel], {
                 sizes: [50, 50],
-                direction: 'vertical' });
+                direction: 'vertical'
+            });
             var comboBox = INSPECTOR.Helpers.CreateElement('select', '', shaderPanel);
-            comboBox.addEventListener('change', this._selectShader.bind(this));
+            comboBox.addEventListener('change', _this._selectShader.bind(_this));
             var option = INSPECTOR.Helpers.CreateElement('option', '', comboBox);
             option.textContent = 'Select a shader';
             option.setAttribute('value', "");
             option.setAttribute('disabled', 'true');
             option.setAttribute('selected', 'true');
             // Build shaders combobox
-            for (var _i = 0, _a = this._inspector.scene.materials; _i < _a.length; _i++) {
+            for (var _i = 0, _a = _this._inspector.scene.materials; _i < _a.length; _i++) {
                 var mat = _a[_i];
                 if (mat instanceof BABYLON.ShaderMaterial) {
                     var option_1 = INSPECTOR.Helpers.CreateElement('option', '', comboBox);
@@ -2394,6 +2404,7 @@ var INSPECTOR;
                     option_1.textContent = mat.name + " - " + mat.id;
                 }
             }
+            return _this;
         }
         ShaderTab.prototype._selectShader = function (event) {
             var id = event.target.value;
@@ -2518,237 +2529,245 @@ var INSPECTOR;
     var StatsTab = (function (_super) {
         __extends(StatsTab, _super);
         function StatsTab(tabbar, insp) {
-            var _this = this;
-            _super.call(this, tabbar, 'Stats');
+            var _this = _super.call(this, tabbar, 'Stats') || this;
             /**
              * Properties in this array will be updated
              * in a render loop - Mostly stats properties
              */
-            this._updatableProperties = [];
-            this._inspector = insp;
-            this._scene = this._inspector.scene;
-            this._engine = this._scene.getEngine();
-            this._glInfo = this._engine.getGlInfo();
+            _this._updatableProperties = [];
+            _this._inspector = insp;
+            _this._scene = _this._inspector.scene;
+            _this._engine = _this._scene.getEngine();
+            _this._glInfo = _this._engine.getGlInfo();
             // Build the stats panel: a div that will contains all stats
-            this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
-            this._panel.classList.add("stats-panel");
-            var title = INSPECTOR.Helpers.CreateDiv('stat-title1', this._panel);
-            title.innerHTML = "Babylon.js v" + BABYLON.Engine.Version + ' - <b>' + BABYLON.Tools.Format(this._inspector.scene.getEngine().getFps(), 0) + " fps</b>";
-            this._updateLoopHandler = this._update.bind(this);
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            _this._panel.classList.add("stats-panel");
+            var title = INSPECTOR.Helpers.CreateDiv('stat-title1', _this._panel);
+            var fpsSpan = INSPECTOR.Helpers.CreateElement('span', 'stats-fps');
+            _this._updatableProperties.push({
+                elem: fpsSpan,
+                updateFct: function () { return BABYLON.Tools.Format(_this._inspector.scene.getEngine().getFps(), 0) + " fps"; }
+            });
+            var versionSpan = INSPECTOR.Helpers.CreateElement('span');
+            versionSpan.textContent = "Babylon.js v" + BABYLON.Engine.Version + " - ";
+            title.appendChild(versionSpan);
+            title.appendChild(fpsSpan);
+            _this._updateLoopHandler = _this._update.bind(_this);
             // Count block
-            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Count";
             {
-                var elemLabel = this._createStatLabel("Total meshes", this._panel);
-                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                var elemLabel = _this._createStatLabel("Total meshes", _this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.meshes.length.toString(); }
                 });
-                elemLabel = this._createStatLabel("Draw calls", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Draw calls", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._engine.drawCalls.toString(); }
                 });
-                elemLabel = this._createStatLabel("Total lights", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Total lights", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.lights.length.toString(); }
                 });
-                elemLabel = this._createStatLabel("Total lights", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Total lights", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.lights.length.toString(); }
                 });
-                elemLabel = this._createStatLabel("Total vertices", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Total vertices", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getTotalVertices().toString(); }
                 });
-                elemLabel = this._createStatLabel("Total materials", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Total materials", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.materials.length.toString(); }
                 });
-                elemLabel = this._createStatLabel("Total textures", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Total textures", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.textures.length.toString(); }
                 });
-                elemLabel = this._createStatLabel("Active meshes", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Active meshes", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getActiveMeshes().length.toString(); }
                 });
-                elemLabel = this._createStatLabel("Active indices", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Active indices", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getActiveIndices().toString(); }
                 });
-                elemLabel = this._createStatLabel("Active bones", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Active bones", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getActiveBones().toString(); }
                 });
-                elemLabel = this._createStatLabel("Active particles", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Active particles", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getActiveParticles().toString(); }
                 });
             }
-            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Duration";
             {
-                var elemLabel = this._createStatLabel("Meshes selection", this._panel);
-                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                var elemLabel = _this._createStatLabel("Meshes selection", _this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._scene.getEvaluateActiveMeshesDuration()); }
                 });
-                elemLabel = this._createStatLabel("Render targets", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Render targets", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._scene.getRenderTargetsDuration()); }
                 });
-                elemLabel = this._createStatLabel("Particles", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Particles", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._scene.getParticlesDuration()); }
                 });
-                elemLabel = this._createStatLabel("Sprites", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Sprites", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._scene.getSpritesDuration()); }
                 });
-                elemLabel = this._createStatLabel("Render", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Render", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._scene.getRenderDuration()); }
                 });
-                elemLabel = this._createStatLabel("Frame", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Frame", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._scene.getLastFrameDuration()); }
                 });
-                elemLabel = this._createStatLabel("Potential FPS", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Potential FPS", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(1000.0 / _this._scene.getLastFrameDuration(), 0); }
                 });
-                elemLabel = this._createStatLabel("Resolution", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Resolution", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._engine.getRenderWidth() + "x" + _this._engine.getRenderHeight(); }
                 });
             }
-            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Extensions";
             {
-                var elemLabel = this._createStatLabel("Std derivatives", this._panel);
-                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                var elemLabel = _this._createStatLabel("Std derivatives", _this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().standardDerivatives ? "Yes" : "No"); }
                 });
-                elemLabel = this._createStatLabel("Compressed textures", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Compressed textures", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().s3tc ? "Yes" : "No"); }
                 });
-                elemLabel = this._createStatLabel("Hardware instances", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Hardware instances", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().instancedArrays ? "Yes" : "No"); }
                 });
-                elemLabel = this._createStatLabel("Texture float", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Texture float", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().textureFloat ? "Yes" : "No"); }
                 });
-                elemLabel = this._createStatLabel("32bits indices", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("32bits indices", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().uintIndices ? "Yes" : "No"); }
                 });
-                elemLabel = this._createStatLabel("Fragment depth", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Fragment depth", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().fragmentDepthSupported ? "Yes" : "No"); }
                 });
-                elemLabel = this._createStatLabel("High precision shaders", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("High precision shaders", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No"); }
                 });
-                elemLabel = this._createStatLabel("Draw buffers", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Draw buffers", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().drawBuffersExtension ? "Yes" : "No"); }
                 });
             }
-            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Caps.";
             {
-                var elemLabel = this._createStatLabel("Stencil", this._panel);
-                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                var elemLabel = _this._createStatLabel("Stencil", _this._panel);
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.isStencilEnable ? "Enabled" : "Disabled"); }
                 });
-                elemLabel = this._createStatLabel("Max textures units", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Max textures units", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._engine.getCaps().maxTexturesImageUnits.toString(); }
                 });
-                elemLabel = this._createStatLabel("Max textures size", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Max textures size", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._engine.getCaps().maxTextureSize.toString(); }
                 });
-                elemLabel = this._createStatLabel("Max anisotropy", this._panel);
-                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', this._panel);
-                this._updatableProperties.push({
+                elemLabel = _this._createStatLabel("Max anisotropy", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._engine.getCaps().maxAnisotropy.toString(); }
                 });
             }
-            title = INSPECTOR.Helpers.CreateDiv('stat-title2', this._panel);
+            title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Info";
             {
-                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-infos', this._panel);
-                this._updatableProperties.push({
+                var elemValue = INSPECTOR.Helpers.CreateDiv('stat-infos', _this._panel);
+                _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._engine.webGLVersion + " - " + _this._glInfo.version + " - " + _this._glInfo.renderer; }
                 });
             }
             // Register the update loop
-            this._scene.registerAfterRender(this._updateLoopHandler);
+            _this._scene.registerAfterRender(_this._updateLoopHandler);
+            return _this;
         }
         StatsTab.prototype._createStatLabel = function (content, parent) {
             var elem = INSPECTOR.Helpers.CreateDiv('stat-label', parent);
@@ -2784,34 +2803,35 @@ var INSPECTOR;
     var TabBar = (function (_super) {
         __extends(TabBar, _super);
         function TabBar(inspector) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             // The list of available tabs
-            this._tabs = [];
+            _this._tabs = [];
             /** The list of tab displayed by clicking on the remainingIcon */
-            this._invisibleTabs = [];
+            _this._invisibleTabs = [];
             /** The list of tabs visible, displayed in the tab bar */
-            this._visibleTabs = [];
-            this._inspector = inspector;
-            this._tabs.push(new INSPECTOR.SceneTab(this, this._inspector));
-            this._tabs.push(new INSPECTOR.StatsTab(this, this._inspector));
-            this._meshTab = new INSPECTOR.MeshTab(this, this._inspector);
-            this._tabs.push(this._meshTab);
-            this._tabs.push(new INSPECTOR.ShaderTab(this, this._inspector));
-            this._tabs.push(new INSPECTOR.LightTab(this, this._inspector));
+            _this._visibleTabs = [];
+            _this._inspector = inspector;
+            _this._tabs.push(new INSPECTOR.SceneTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.StatsTab(_this, _this._inspector));
+            _this._meshTab = new INSPECTOR.MeshTab(_this, _this._inspector);
+            _this._tabs.push(_this._meshTab);
+            _this._tabs.push(new INSPECTOR.ShaderTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.LightTab(_this, _this._inspector));
             // Add only the tab canvas2D if Canvas2D is defined
             if (BABYLON.Canvas2D) {
-                this._tabs.push(new INSPECTOR.Canvas2DTab(this, this._inspector));
+                _this._tabs.push(new INSPECTOR.Canvas2DTab(_this, _this._inspector));
             }
-            this._tabs.push(new INSPECTOR.MaterialTab(this, this._inspector));
-            this._toolBar = new INSPECTOR.Toolbar(this._inspector);
-            this._build();
+            _this._tabs.push(new INSPECTOR.MaterialTab(_this, _this._inspector));
+            _this._toolBar = new INSPECTOR.Toolbar(_this._inspector);
+            _this._build();
             // Active the first tab
-            this._tabs[0].active(true);
+            _this._tabs[0].active(true);
             // set all tab as visible
-            for (var _i = 0, _a = this._tabs; _i < _a.length; _i++) {
+            for (var _i = 0, _a = _this._tabs; _i < _a.length; _i++) {
                 var tab = _a[_i];
-                this._visibleTabs.push(tab);
+                _this._visibleTabs.push(tab);
             }
+            return _this;
         }
         // No update
         TabBar.prototype.update = function () { };
@@ -3004,8 +3024,9 @@ var INSPECTOR;
     var PauseScheduleTool = (function (_super) {
         __extends(PauseScheduleTool, _super);
         function PauseScheduleTool(parent, inspector) {
-            _super.call(this, 'fa-pause', parent, inspector, 'Pause the automatic update of properties');
-            this._isPause = false;
+            var _this = _super.call(this, 'fa-pause', parent, inspector, 'Pause the automatic update of properties') || this;
+            _this._isPause = false;
+            return _this;
         }
         // Action : refresh the whole panel
         PauseScheduleTool.prototype.action = function () {
@@ -3034,10 +3055,11 @@ var INSPECTOR;
     var PickTool = (function (_super) {
         __extends(PickTool, _super);
         function PickTool(parent, inspector) {
-            _super.call(this, 'fa-mouse-pointer', parent, inspector, 'Select a mesh in the scene');
-            this._isActive = false;
+            var _this = _super.call(this, 'fa-mouse-pointer', parent, inspector, 'Select a mesh in the scene') || this;
+            _this._isActive = false;
             // Create handler
-            this._pickHandler = this._pickMesh.bind(this);
+            _this._pickHandler = _this._pickMesh.bind(_this);
+            return _this;
         }
         // Action : find the corresponding tree item in the correct tab and display it
         PickTool.prototype.action = function () {
@@ -3090,7 +3112,7 @@ var INSPECTOR;
     var PopupTool = (function (_super) {
         __extends(PopupTool, _super);
         function PopupTool(parent, inspector) {
-            _super.call(this, 'fa-external-link', parent, inspector, 'Open the inspector in a popup');
+            return _super.call(this, 'fa-external-link', parent, inspector, 'Open the inspector in a popup') || this;
         }
         // Action : refresh the whole panel
         PopupTool.prototype.action = function () {
@@ -3111,7 +3133,7 @@ var INSPECTOR;
     var RefreshTool = (function (_super) {
         __extends(RefreshTool, _super);
         function RefreshTool(parent, inspector) {
-            _super.call(this, 'fa-refresh', parent, inspector, 'Refresh the current tab');
+            return _super.call(this, 'fa-refresh', parent, inspector, 'Refresh the current tab') || this;
         }
         // Action : refresh the whole panel
         RefreshTool.prototype.action = function () {
@@ -3132,11 +3154,12 @@ var INSPECTOR;
     var Toolbar = (function (_super) {
         __extends(Toolbar, _super);
         function Toolbar(inspector) {
-            _super.call(this);
-            this._tools = [];
-            this._inspector = inspector;
-            this._build();
-            this._addTools();
+            var _this = _super.call(this) || this;
+            _this._tools = [];
+            _this._inspector = inspector;
+            _this._build();
+            _this._addTools();
+            return _this;
         }
         // A toolbar cannot be updated
         Toolbar.prototype.update = function () { };
@@ -3189,7 +3212,7 @@ var INSPECTOR;
     var DisposeTool = (function (_super) {
         __extends(DisposeTool, _super);
         function DisposeTool(parent, inspector) {
-            _super.call(this, 'fa-times', parent, inspector, 'Close the inspector panel');
+            return _super.call(this, 'fa-times', parent, inspector, 'Close the inspector panel') || this;
         }
         // Action : refresh the whole panel
         DisposeTool.prototype.action = function () {
@@ -3210,12 +3233,13 @@ var INSPECTOR;
     var TreeItem = (function (_super) {
         __extends(TreeItem, _super);
         function TreeItem(tab, obj) {
-            _super.call(this);
-            this._children = [];
-            this._tab = tab;
-            this._adapter = obj;
-            this._tools = this._adapter.getTools();
-            this._build();
+            var _this = _super.call(this) || this;
+            _this._children = [];
+            _this._tab = tab;
+            _this._adapter = obj;
+            _this._tools = _this._adapter.getTools();
+            _this._build();
+            return _this;
         }
         Object.defineProperty(TreeItem.prototype, "id", {
             /** Returns the item ID == its adapter ID */
@@ -3415,11 +3439,12 @@ var INSPECTOR;
     var BoundingBox = (function (_super) {
         __extends(BoundingBox, _super);
         function BoundingBox(obj) {
-            _super.call(this);
-            this._obj = obj;
-            this._elem.classList.add('fa-square-o');
-            this._on = this._obj.isBoxVisible();
-            this._check();
+            var _this = _super.call(this) || this;
+            _this._obj = obj;
+            _this._elem.classList.add('fa-square-o');
+            _this._on = _this._obj.isBoxVisible();
+            _this._check();
+            return _this;
         }
         // For a checkbox, set visible/invisible the corresponding prim
         BoundingBox.prototype.action = function () {
@@ -3456,11 +3481,12 @@ var INSPECTOR;
     var Checkbox = (function (_super) {
         __extends(Checkbox, _super);
         function Checkbox(obj) {
-            _super.call(this);
-            this._obj = obj;
-            this._elem.classList.add('fa-eye');
-            this._on = this._obj.isVisible();
-            this._check(true);
+            var _this = _super.call(this) || this;
+            _this._obj = obj;
+            _this._elem.classList.add('fa-eye');
+            _this._on = _this._obj.isVisible();
+            _this._check(true);
+            return _this;
         }
         // For a checkbox, set visible/invisible the corresponding prim
         Checkbox.prototype.action = function () {
@@ -3500,9 +3526,10 @@ var INSPECTOR;
     var DebugArea = (function (_super) {
         __extends(DebugArea, _super);
         function DebugArea(obj) {
-            _super.call(this);
-            this._obj = obj;
-            this._elem.classList.add('fa-wrench');
+            var _this = _super.call(this) || this;
+            _this._obj = obj;
+            _this._elem.classList.add('fa-wrench');
+            return _this;
         }
         DebugArea.prototype.action = function () {
             _super.prototype.action.call(this);
@@ -3534,10 +3561,11 @@ var INSPECTOR;
     var Info = (function (_super) {
         __extends(Info, _super);
         function Info(obj) {
-            _super.call(this);
-            this._obj = obj;
-            this._elem.classList.add('fa-info-circle');
-            this._tooltip = new INSPECTOR.Tooltip(this._elem, this._obj.getInfo());
+            var _this = _super.call(this) || this;
+            _this._obj = obj;
+            _this._elem.classList.add('fa-info-circle');
+            _this._tooltip = new INSPECTOR.Tooltip(_this._elem, _this._obj.getInfo());
+            return _this;
         }
         // Nothing to do on click
         Info.prototype.action = function () {

@@ -167,6 +167,9 @@
       margin-bottom: 10px; }
   .insp-wrapper .tab-panel.stats-panel {
     overflow-y: auto; }
+  .insp-wrapper .tab-panel .stats-fps {
+    font-weight: 600;
+    color: #f29766; }
   .insp-wrapper .tab-panel .stat-title1 {
     font-size: 1.1em;
     padding: 10px; }

@@ -32,8 +32,8 @@ declare module INSPECTOR {
         private _getRelativeParent(elem, lookForAbsoluteOrRelative?);
         /** Build the inspector panel in the given HTML element */
         private _buildInspector(parent);
-        scene: BABYLON.Scene;
-        popupMode: boolean;
+        readonly scene: BABYLON.Scene;
+        readonly popupMode: boolean;
         /**
          * Filter the list of item present in the tree.
          * All item returned should have the given filter contained in the item id.
@@ -170,11 +170,11 @@ declare module INSPECTOR {
         /** Returns the list of properties to be displayed for this adapter */
         abstract getProperties(): Array<PropertyLine>;
         /** Returns the actual object behind this adapter */
-        actualObject: any;
+        readonly actualObject: any;
         /** Returns true if the given object correspond to this  */
         correspondsTo(obj: any): boolean;
         /** Returns the adapter unique name */
-        name: string;
+        readonly name: string;
         /** Returns the list of tools available for this adapter */
         abstract getTools(): Array<AbstractTreeTool>;
         /** Should be overriden in subclasses */
@@ -308,9 +308,9 @@ declare module INSPECTOR {
         /** The obj this property refers to */
         private _obj;
         constructor(prop: string, obj: any);
-        name: string;
+        readonly name: string;
         value: any;
-        type: string;
+        readonly type: string;
         obj: any;
     }
 }
@@ -374,9 +374,9 @@ declare module INSPECTOR {
          * (example : mesh.position = new BABYLON.Vector3 ; the original vector3 object is deleted from the mesh).
         */
         updateObject(): any;
-        name: string;
-        value: any;
-        type: string;
+        readonly name: string;
+        readonly value: any;
+        readonly type: string;
         /**
          * Creates elements that wil be displayed on a property line, depending on the
          * type of the property.
@@ -751,7 +751,7 @@ declare module INSPECTOR {
         switchMeshTab(mesh?: BABYLON.AbstractMesh): void;
         /** Returns the active tab */
         getActiveTab(): Tab;
-        inspector: Inspector;
+        readonly inspector: Inspector;
         /**
          * Returns the total width in pixel of the tabbar,
          * that corresponds to the sum of the width of each visible tab + toolbar width
@@ -853,7 +853,7 @@ declare module INSPECTOR {
         private _lineContent;
         constructor(tab: PropertyTab, obj: Adapter);
         /** Returns the item ID == its adapter ID */
-        id: string;
+        readonly id: string;
         /** Add the given item as a child of this one */
         add(child: TreeItem): void;
         /**

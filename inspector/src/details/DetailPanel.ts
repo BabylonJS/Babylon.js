@@ -38,6 +38,7 @@
             this._div.appendChild(this._headerRow);
             
             Inspector.WINDOW.addEventListener('resize', (e) => {
+                console.log(this._headerRow.parentElement.clientWidth);
                 // adapt the header row max width according to its parent size;
                 this._headerRow.style.maxWidth = this._headerRow.parentElement.clientWidth+'px';
             });
