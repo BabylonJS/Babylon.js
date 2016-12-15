@@ -25,6 +25,7 @@ module INSPECTOR {
             Helpers.LoadScript();
             
             Split([this._vertexPanel, this._fragmentPanel], {
+                blockDrag : this._inspector.popupMode,
                 sizes:[50, 50],
                 direction:'vertical'}
             );  

@@ -9,7 +9,8 @@ interface ISplit {
 
 
 declare function Split (element : Array<HTMLElement> | Array<string>, options:{
-    sizes?      : Array<number>, 
+    sizes?      : Array<number>,
+    blockDrag?  : boolean, 
     minSize?    : number,
     gutterSize? : number,
     snapOffset? : number,
