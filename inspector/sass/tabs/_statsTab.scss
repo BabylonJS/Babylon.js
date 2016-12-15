@@ -3,6 +3,11 @@
     &.stats-panel {
         overflow-y      : auto;
     }
+    
+    .stats-fps {
+        font-weight:600;
+        color:$color-top;
+    }
 
     .stat-title1 {        
         font-size       : 1.1em;

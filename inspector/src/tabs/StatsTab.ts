@@ -30,8 +30,17 @@ module INSPECTOR {
             this._panel.classList.add("stats-panel")
             
             let title               = Helpers.CreateDiv('stat-title1', this._panel);
-            title.innerHTML         = "Babylon.js v" + BABYLON.Engine.Version + ' - <b>' +BABYLON.Tools.Format(this._inspector.scene.getEngine().getFps(), 0) + " fps</b>";
-            
+            let fpsSpan             = Helpers.CreateElement('span', 'stats-fps');
+            this._updatableProperties.push({ 
+                elem:fpsSpan, 
+                updateFct:() => { return BABYLON.Tools.Format(this._inspector.scene.getEngine().getFps(), 0) + " fps"}
+            });
+                
+            let versionSpan = Helpers.CreateElement('span');
+            versionSpan.textContent = `Babylon.js v${BABYLON.Engine.Version} - `;
+            title.appendChild(versionSpan);
+            title.appendChild(fpsSpan);
+                        
             this._updateLoopHandler = this._update.bind(this);
 
             // Count block
