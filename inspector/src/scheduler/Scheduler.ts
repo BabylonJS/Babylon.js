@@ -22,7 +22,6 @@ module INSPECTOR {
         public static getInstance() : Scheduler {
             if (!Scheduler._instance) {
                 Scheduler._instance = new Scheduler();
-                console.log('create '); 
             }
             return Scheduler._instance;
         }
