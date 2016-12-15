@@ -22,7 +22,9 @@
 
         private _addTools() {
             // Refresh
-            this._tools.push(new RefreshTool(this._div, this._inspector));            
+            this._tools.push(new RefreshTool(this._div, this._inspector));  
+            // Display labels
+            this._tools.push(new LabelTool(this._div, this._inspector));          
             // Pick object
             this._tools.push(new PickTool(this._div, this._inspector));
             
