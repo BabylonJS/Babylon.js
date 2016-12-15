@@ -14,7 +14,7 @@ var INSPECTOR;
             // Save HTML document and window
             Inspector.DOCUMENT = window.document;
             Inspector.WINDOW = window;
-            // POPUP MODE if parent is defined
+            // POPUP MODE
             if (popup) {
                 // Build the inspector in the given parent
                 this.openPopup(true); // set to true in order to NOT dispose the inspector (done in openPopup), as it's not existing yet
@@ -56,6 +56,14 @@ var INSPECTOR;
                 // Convert wrapper size in % (because getComputedStyle returns px only)
                 var widthPx = parseFloat(canvasComputedStyle.width.substr(0, canvasComputedStyle.width.length - 2)) || 0;
                 var heightPx = parseFloat(canvasComputedStyle.height.substr(0, canvasComputedStyle.height.length - 2)) || 0;
+                // If the canvas position is absolute, restrain the wrapper width to the window width + left positionning
+                if (canvasComputedStyle.position === "absolute" || canvasComputedStyle.position === "relative") {
+                    // compute only left as it takes predominance if right is also specified (and it will be for the wrapper)
+                    var leftPx = parseFloat(canvasComputedStyle.left.substr(0, canvasComputedStyle.left.length - 2)) || 0;
+                    if (widthPx + leftPx >= Inspector.WINDOW.innerWidth) {
+                        this._c2diwrapper.style.maxWidth = widthPx - leftPx + "px";
+                    }
+                }
                 // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
                 var parent_1 = this._getRelativeParent(canvas);
                 var parentWidthPx = parent_1.clientWidth;
@@ -99,8 +107,10 @@ var INSPECTOR;
                 // Send resize event to the window
                 INSPECTOR.Helpers.SEND_EVENT('resize');
             }
-            // Refresh the inspector
-            this.refresh();
+            // Refresh the inspector if the browser is not edge
+            if (!INSPECTOR.Helpers.IsBrowserEdge()) {
+                this.refresh();
+            }
         }
         /**
          * If the given element has a position 'asbolute' or 'relative',
@@ -207,38 +217,43 @@ var INSPECTOR;
          * Set 'firstTime' to true if there is no inspector created beforehands
          */
         Inspector.prototype.openPopup = function (firstTime) {
-            // Create popup
-            var popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
-            popup.document.title = 'Babylon.js INSPECTOR';
-            // Get the inspector style      
-            var styles = Inspector.DOCUMENT.querySelectorAll('style');
-            for (var s = 0; s < styles.length; s++) {
-                popup.document.body.appendChild(styles[s].cloneNode(true));
+            if (INSPECTOR.Helpers.IsBrowserEdge()) {
+                console.warn('Inspector - Popup mode is disabled in Edge, as the popup DOM cannot be updated from the main window for security reasons');
             }
-            var links = document.querySelectorAll('link');
-            for (var l = 0; l < links.length; l++) {
-                var link = popup.document.createElement("link");
-                link.rel = "stylesheet";
-                link.href = links[l].href;
-                popup.document.head.appendChild(link);
+            else {
+                // Create popup
+                var popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
+                popup.document.title = 'Babylon.js INSPECTOR';
+                // Get the inspector style      
+                var styles = Inspector.DOCUMENT.querySelectorAll('style');
+                for (var s = 0; s < styles.length; s++) {
+                    popup.document.body.appendChild(styles[s].cloneNode(true));
+                }
+                var links = document.querySelectorAll('link');
+                for (var l = 0; l < links.length; l++) {
+                    var link = popup.document.createElement("link");
+                    link.rel = "stylesheet";
+                    link.href = links[l].href;
+                    popup.document.head.appendChild(link);
+                }
+                // Dispose the right panel if existing
+                if (!firstTime) {
+                    this.dispose();
+                }
+                // set the mode as popup
+                this._popupMode = true;
+                // Save the HTML document
+                Inspector.DOCUMENT = popup.document;
+                Inspector.WINDOW = popup;
+                // Build the inspector wrapper
+                this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', popup.document.body);
+                // add inspector     
+                var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                // and build it in the popup  
+                this._buildInspector(inspector);
+                // Rebuild it
+                this.refresh();
             }
-            // Dispose the right panel if existing
-            if (!firstTime) {
-                this.dispose();
-            }
-            // set the mode as popup
-            this._popupMode = true;
-            // Save the HTML document
-            Inspector.DOCUMENT = popup.document;
-            Inspector.WINDOW = popup;
-            // Build the inspector wrapper
-            this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', popup.document.body);
-            // add inspector     
-            var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
-            // and build it in the popup  
-            this._buildInspector(inspector);
-            // Rebuild it
-            this.refresh();
         };
         return Inspector;
     }());
@@ -860,17 +875,11 @@ var INSPECTOR;
             configurable: true
         });
         DetailPanel.prototype._build = function () {
-            var _this = this;
             this._div.className = 'insp-details';
             this._div.id = 'insp-details';
             // Create header row
             this._createHeaderRow();
             this._div.appendChild(this._headerRow);
-            INSPECTOR.Inspector.WINDOW.addEventListener('resize', function (e) {
-                console.log(_this._headerRow.parentElement.clientWidth);
-                // adapt the header row max width according to its parent size;
-                _this._headerRow.style.maxWidth = _this._headerRow.parentElement.clientWidth + 'px';
-            });
         };
         /** Updates the HTML of the detail panel */
         DetailPanel.prototype.update = function () {
@@ -1718,6 +1727,14 @@ var INSPECTOR;
             return false;
         };
         /**
+         * Returns true if the user browser is edge.
+         */
+        Helpers.IsBrowserEdge = function () {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Edge/;
+            return regexp.test(navigator.userAgent);
+        };
+        /**
          * Returns the name of the type of the given object, where the name
          * is in PROPERTIES constant.
          * Returns 'Undefined' if no type exists for this object
@@ -1823,7 +1840,6 @@ var INSPECTOR;
         Scheduler.getInstance = function () {
             if (!Scheduler._instance) {
                 Scheduler._instance = new Scheduler();
-                console.log('create ');
             }
             return Scheduler._instance;
         };
@@ -1948,7 +1964,10 @@ var INSPECTOR;
             // Build the detail panel
             _this._detailsPanel = new INSPECTOR.DetailPanel();
             _this._panel.appendChild(_this._detailsPanel.toHtml());
-            Split([_this._treePanel, _this._detailsPanel.toHtml()], { direction: 'vertical' });
+            Split([_this._treePanel, _this._detailsPanel.toHtml()], {
+                blockDrag: _this._inspector.popupMode,
+                direction: 'vertical'
+            });
             _this.update();
             return _this;
         }
@@ -2214,6 +2233,7 @@ var INSPECTOR;
             }
             _this._detailsPanel.details = details;
             Split([_this._actions, _this._detailsPanel.toHtml()], {
+                blockDrag: _this._inspector.popupMode,
                 sizes: [50, 50],
                 direction: 'vertical'
             });
@@ -2385,6 +2405,7 @@ var INSPECTOR;
             _this._panel.appendChild(_this._fragmentPanel);
             INSPECTOR.Helpers.LoadScript();
             Split([_this._vertexPanel, _this._fragmentPanel], {
+                blockDrag: _this._inspector.popupMode,
                 sizes: [50, 50],
                 direction: 'vertical'
             });
@@ -3173,8 +3194,9 @@ var INSPECTOR;
             this._tools.push(new INSPECTOR.RefreshTool(this._div, this._inspector));
             // Pick object
             this._tools.push(new INSPECTOR.PickTool(this._div, this._inspector));
-            // Add the popup mode only if the inspector is not in popup mode
-            if (!this._inspector.popupMode) {
+            // Add the popup mode only if the inspector is not in popup mode and if the brower is not edge
+            // Edge is 
+            if (!this._inspector.popupMode && !INSPECTOR.Helpers.IsBrowserEdge()) {
                 this._tools.push(new INSPECTOR.PopupTool(this._div, this._inspector));
             }
             // Pause schedule

@@ -519,6 +519,10 @@ declare module INSPECTOR {
          */
         private static _CheckIfTypeExists(type);
         /**
+         * Returns true if the user browser is edge.
+         */
+        static IsBrowserEdge(): boolean;
+        /**
          * Returns the name of the type of the given object, where the name
          * is in PROPERTIES constant.
          * Returns 'Undefined' if no type exists for this object
