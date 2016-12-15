@@ -23,6 +23,7 @@ module INSPECTOR{
             
             // Build the properties panel : a div that will contains the tree and the detail panel
             this._panel = Helpers.CreateDiv('tab-panel') as HTMLDivElement;
+            this._panel.classList.add('searchable');
             
             // Search bar
             this._searchBar = new SearchBar(this);
@@ -36,7 +37,10 @@ module INSPECTOR{
             this._detailsPanel = new DetailPanel();
             this._panel.appendChild(this._detailsPanel.toHtml());
             
-            Split([this._treePanel, this._detailsPanel.toHtml()], {direction:'vertical'});       
+            Split([this._treePanel, this._detailsPanel.toHtml()], {
+                blockDrag : this._inspector.popupMode,
+                direction:'vertical'
+            });       
             
             this.update();   
         }

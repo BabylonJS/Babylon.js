@@ -6,10 +6,10 @@
   // Style for resize bar
   .gutter {
     background-color: $background-lighter;
-    &.gutter-vertical {
+    &.gutter-vertical:not(.blocked) {
       cursor        : ns-resize;
     }
-    &.gutter-horizontal {
+    &.gutter-horizontal:not(.blocked) {
       cursor        : ew-resize;
     }
   }

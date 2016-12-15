@@ -36,6 +36,15 @@ module INSPECTOR {
             } 
             return false;
         }
+        
+        /**
+         * Returns true if the user browser is edge.
+         */
+        public static IsBrowserEdge() : boolean {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Edge/
+            return regexp.test(navigator.userAgent);
+        }
 
         /** 
          * Returns the name of the type of the given object, where the name 

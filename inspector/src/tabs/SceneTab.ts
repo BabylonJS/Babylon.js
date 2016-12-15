@@ -32,6 +32,7 @@ module INSPECTOR {
             this._detailsPanel.details = details;
             
             Split([this._actions, this._detailsPanel.toHtml()], {  
+                blockDrag : this._inspector.popupMode,
                 sizes:[50, 50],
                 direction:'vertical'
             });  
