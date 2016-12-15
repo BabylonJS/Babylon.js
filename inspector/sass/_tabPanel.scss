@@ -1,5 +1,8 @@
 .tab-panel {
     height:100%;     
+    &.searchable {
+        height:calc(100% - #{$searchbar-height} - 10px);   
+    }  
     
     .scene-actions {
         overflow-y: auto;

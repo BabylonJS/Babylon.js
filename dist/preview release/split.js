@@ -134,6 +134,7 @@ var global = this
         paddingB = 'paddingBottom'
         if (!options.cursor) options.cursor = 'ns-resize'
     }
+    if (options.blockDrag) gutterClass += ' blocked'
 
     // 3. Define the dragging helper functions, and a few helpers to go with them.
     // Each helper is bound to a pair object that contains it's metadata. This
@@ -149,103 +150,107 @@ var global = this
     // startDragging calls `calculateSizes` to store the inital size in the pair object.
     // It also adds event listeners for mouse/touch events,
     // and prevents selection while dragging so avoid the selecting text.
-    var startDragging = function (e) {
-            // Alias frequently used variables to save space. 200 bytes.
-            var self = this
-              , a = self.a
-              , b = self.b
+        var startDragging = function (e) {
+            if (!options.blockDrag) {
+                // Alias frequently used variables to save space. 200 bytes.
+                var self = this
+                , a = self.a
+                , b = self.b
 
-            // Call the onDragStart callback.
-            if (!self.dragging && options.onDragStart) {
-                options.onDragStart()
+                // Call the onDragStart callback.
+                if (!self.dragging && options.onDragStart) {
+                    options.onDragStart()
+                }
+
+                // Don't actually drag the element. We emulate that in the drag function.
+                e.preventDefault()
+
+                // Set the dragging property of the pair object.
+                self.dragging = true
+
+                // Create two event listeners bound to the same pair object and store
+                // them in the pair object.
+                self.move = drag.bind(self)
+                self.stop = stopDragging.bind(self)
+
+                // All the binding. `window` gets the stop events in case we drag out of the elements.
+                global[addEventListener]('mouseup', self.stop)
+                global[addEventListener]('touchend', self.stop)
+                global[addEventListener]('touchcancel', self.stop)
+
+                self.parent[addEventListener]('mousemove', self.move)
+                self.parent[addEventListener]('touchmove', self.move)
+
+                // Disable selection. Disable!
+                a[addEventListener]('selectstart', noop)
+                a[addEventListener]('dragstart', noop)
+                b[addEventListener]('selectstart', noop)
+                b[addEventListener]('dragstart', noop)
+
+                a.style.userSelect = 'none'
+                a.style.webkitUserSelect = 'none'
+                a.style.MozUserSelect = 'none'
+                a.style.pointerEvents = 'none'
+
+                b.style.userSelect = 'none'
+                b.style.webkitUserSelect = 'none'
+                b.style.MozUserSelect = 'none'
+                b.style.pointerEvents = 'none'
+
+                // Set the cursor, both on the gutter and the parent element.
+                // Doing only a, b and gutter causes flickering.
+                self.gutter.style.cursor = options.cursor
+                self.parent.style.cursor = options.cursor
+
+                // Cache the initial sizes of the pair.
+                calculateSizes.call(self)
             }
-
-            // Don't actually drag the element. We emulate that in the drag function.
-            e.preventDefault()
-
-            // Set the dragging property of the pair object.
-            self.dragging = true
-
-            // Create two event listeners bound to the same pair object and store
-            // them in the pair object.
-            self.move = drag.bind(self)
-            self.stop = stopDragging.bind(self)
-
-            // All the binding. `window` gets the stop events in case we drag out of the elements.
-            global[addEventListener]('mouseup', self.stop)
-            global[addEventListener]('touchend', self.stop)
-            global[addEventListener]('touchcancel', self.stop)
-
-            self.parent[addEventListener]('mousemove', self.move)
-            self.parent[addEventListener]('touchmove', self.move)
-
-            // Disable selection. Disable!
-            a[addEventListener]('selectstart', noop)
-            a[addEventListener]('dragstart', noop)
-            b[addEventListener]('selectstart', noop)
-            b[addEventListener]('dragstart', noop)
-
-            a.style.userSelect = 'none'
-            a.style.webkitUserSelect = 'none'
-            a.style.MozUserSelect = 'none'
-            a.style.pointerEvents = 'none'
-
-            b.style.userSelect = 'none'
-            b.style.webkitUserSelect = 'none'
-            b.style.MozUserSelect = 'none'
-            b.style.pointerEvents = 'none'
-
-            // Set the cursor, both on the gutter and the parent element.
-            // Doing only a, b and gutter causes flickering.
-            self.gutter.style.cursor = options.cursor
-            self.parent.style.cursor = options.cursor
-
-            // Cache the initial sizes of the pair.
-            calculateSizes.call(self)
         }
 
       // stopDragging is very similar to startDragging in reverse.
-      , stopDragging = function () {
-            var self = this
-              , a = self.a
-              , b = self.b
+      , stopDragging = function () {          
+            if (!options.blockDrag) {
+                var self = this
+                , a = self.a
+                , b = self.b
 
-            if (self.dragging && options.onDragEnd) {
-                options.onDragEnd()
+                if (self.dragging && options.onDragEnd) {
+                    options.onDragEnd()
+                }
+
+                self.dragging = false
+
+                // Remove the stored event listeners. This is why we store them.
+                global[removeEventListener]('mouseup', self.stop)
+                global[removeEventListener]('touchend', self.stop)
+                global[removeEventListener]('touchcancel', self.stop)
+
+                self.parent[removeEventListener]('mousemove', self.move)
+                self.parent[removeEventListener]('touchmove', self.move)
+
+                // Delete them once they are removed. I think this makes a difference
+                // in memory usage with a lot of splits on one page. But I don't know for sure.
+                delete self.stop
+                delete self.move
+
+                a[removeEventListener]('selectstart', noop)
+                a[removeEventListener]('dragstart', noop)
+                b[removeEventListener]('selectstart', noop)
+                b[removeEventListener]('dragstart', noop)
+
+                a.style.userSelect = ''
+                a.style.webkitUserSelect = ''
+                a.style.MozUserSelect = ''
+                a.style.pointerEvents = ''
+
+                b.style.userSelect = ''
+                b.style.webkitUserSelect = ''
+                b.style.MozUserSelect = ''
+                b.style.pointerEvents = ''
+
+                self.gutter.style.cursor = ''
+                self.parent.style.cursor = ''
             }
-
-            self.dragging = false
-
-            // Remove the stored event listeners. This is why we store them.
-            global[removeEventListener]('mouseup', self.stop)
-            global[removeEventListener]('touchend', self.stop)
-            global[removeEventListener]('touchcancel', self.stop)
-
-            self.parent[removeEventListener]('mousemove', self.move)
-            self.parent[removeEventListener]('touchmove', self.move)
-
-            // Delete them once they are removed. I think this makes a difference
-            // in memory usage with a lot of splits on one page. But I don't know for sure.
-            delete self.stop
-            delete self.move
-
-            a[removeEventListener]('selectstart', noop)
-            a[removeEventListener]('dragstart', noop)
-            b[removeEventListener]('selectstart', noop)
-            b[removeEventListener]('dragstart', noop)
-
-            a.style.userSelect = ''
-            a.style.webkitUserSelect = ''
-            a.style.MozUserSelect = ''
-            a.style.pointerEvents = ''
-
-            b.style.userSelect = ''
-            b.style.webkitUserSelect = ''
-            b.style.MozUserSelect = ''
-            b.style.pointerEvents = ''
-
-            self.gutter.style.cursor = ''
-            self.parent.style.cursor = ''
         }
 
       // drag, where all the magic happens. The logic is really quite simple:

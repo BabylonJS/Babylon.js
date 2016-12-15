@@ -26,8 +26,9 @@
             // Pick object
             this._tools.push(new PickTool(this._div, this._inspector));
             
-            // Add the popup mode only if the inspector is not in popup mode
-            if (!this._inspector.popupMode) {
+            // Add the popup mode only if the inspector is not in popup mode and if the brower is not edge
+            // Edge is 
+            if (!this._inspector.popupMode && !Helpers.IsBrowserEdge()) {
                 this._tools.push(new PopupTool(this._div, this._inspector));
             }
             // Pause schedule
