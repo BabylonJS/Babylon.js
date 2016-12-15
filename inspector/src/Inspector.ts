@@ -81,10 +81,20 @@ module INSPECTOR {
                 for (let prop in this._canvasStyle) {
                     this._c2diwrapper.style[prop] = this._canvasStyle[prop];
                 }
+                
                 // Convert wrapper size in % (because getComputedStyle returns px only)
                 let widthPx        = parseFloat(canvasComputedStyle.width.substr(0,canvasComputedStyle.width.length-2)) || 0;
                 let heightPx       = parseFloat(canvasComputedStyle.height.substr(0,canvasComputedStyle.height.length-2)) || 0;
 
+                // If the canvas position is absolute, restrain the wrapper width to the window width + left positionning
+                if (canvasComputedStyle.position === "absolute" || canvasComputedStyle.position === "relative") {
+                    // compute only left as it takes predominance if right is also specified (and it will be for the wrapper)
+                    let leftPx = parseFloat(canvasComputedStyle.left.substr(0,canvasComputedStyle.left.length-2)) || 0;
+                    if (widthPx + leftPx >= Inspector.WINDOW.innerWidth) {
+                        this._c2diwrapper.style.maxWidth = `${widthPx-leftPx}px`;
+                    }
+                }
+                
                 // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
                 let parent = this._getRelativeParent(canvas);
 
