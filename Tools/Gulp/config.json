@@ -540,6 +540,7 @@
         "../../inspector/src/tools/PickTool.ts",
         "../../inspector/src/tools/PopupTool.ts",
         "../../inspector/src/tools/RefreshTool.ts",
+        "../../inspector/src/tools/LabelTool.ts",
         "../../inspector/src/tools/Toolbar.ts",
         "../../inspector/src/tools/DisposeTool.ts",
         "../../inspector/src/tree/TreeItem.ts",
