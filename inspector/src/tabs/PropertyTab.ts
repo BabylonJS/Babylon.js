@@ -23,6 +23,7 @@ module INSPECTOR{
             
             // Build the properties panel : a div that will contains the tree and the detail panel
             this._panel = Helpers.CreateDiv('tab-panel') as HTMLDivElement;
+            this._panel.classList.add('searchable');
             
             // Search bar
             this._searchBar = new SearchBar(this);
