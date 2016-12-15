@@ -1,4 +1,15 @@
 ﻿module BABYLON {
+
+    /**
+     * Interface describing the different options available in the rendering manager
+     * regarding Auto Clear between groups.
+     */
+    interface RenderingManageAutoClearOptions {
+        autoClear: boolean;
+        depth: boolean;
+        stencil: boolean;
+    }
+
     export class RenderingManager {
         /**
          * The max id used for rendering groups (not included)
@@ -19,7 +30,7 @@
         private _currentRenderParticles: boolean;
         private _currentRenderSprites: boolean;
 
-        private _autoClearDepthStencil: { [id:number]: boolean } = {};
+        private _autoClearDepthStencil: { [id:number]: RenderingManageAutoClearOptions } = {};
         private _customOpaqueSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
         private _customAlphaTestSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
         private _customTransparentSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
@@ -29,7 +40,7 @@
             this._scene = scene;
 
             for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
-                this._autoClearDepthStencil[i] = true;
+                this._autoClearDepthStencil[i] = { autoClear: true, depth:true, stencil: true };
             }
         }
 
@@ -80,12 +91,12 @@
             this._scene._spritesDuration.endMonitoring(false);
         }
 
-        private _clearDepthStencilBuffer(): void {
+        private _clearDepthStencilBuffer(depth = true, stencil = true): void {
             if (this._depthStencilBufferAlreadyCleaned) {
                 return;
             }
 
-            this._scene.getEngine().clear(0, false, true, true);
+            this._scene.getEngine().clear(0, false, depth, stencil);
             this._depthStencilBufferAlreadyCleaned = true;
         }
 
@@ -136,8 +147,9 @@
                     }
 
                     // Clear depth/stencil if needed
-                    if (this._autoClearDepthStencil[index]) {
-                        this._clearDepthStencilBuffer();
+                    let autoClear = this._autoClearDepthStencil[index];
+                    if (autoClear && autoClear.autoClear) {
+                        this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
                     }
 
                     // Fire PREOPAQUE stage
@@ -234,9 +246,17 @@
          * 
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
          */
-        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void {            
-            this._autoClearDepthStencil[renderingGroupId] = autoClearDepthStencil;
+        public setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean,
+            depth = true,
+            stencil = true): void {            
+            this._autoClearDepthStencil[renderingGroupId] = { 
+                autoClear: autoClearDepthStencil,
+                depth: depth,
+                stencil: stencil
+            };
         }
     }
 } 
