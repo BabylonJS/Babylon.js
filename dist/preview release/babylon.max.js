@@ -16231,7 +16231,7 @@ var BABYLON;
             this._renderinGroupInfo = null;
             this._scene = scene;
             for (var i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
-                this._autoClearDepthStencil[i] = true;
+                this._autoClearDepthStencil[i] = { autoClear: true, depth: true, stencil: true };
             }
         }
         RenderingManager.prototype._renderParticles = function (index, activeMeshes) {
@@ -16272,11 +16272,13 @@ var BABYLON;
             }
             this._scene._spritesDuration.endMonitoring(false);
         };
-        RenderingManager.prototype._clearDepthStencilBuffer = function () {
+        RenderingManager.prototype._clearDepthStencilBuffer = function (depth, stencil) {
+            if (depth === void 0) { depth = true; }
+            if (stencil === void 0) { stencil = true; }
             if (this._depthStencilBufferAlreadyCleaned) {
                 return;
             }
-            this._scene.getEngine().clear(0, false, true, true);
+            this._scene.getEngine().clear(0, false, depth, stencil);
             this._depthStencilBufferAlreadyCleaned = true;
         };
         RenderingManager.prototype._renderSpritesAndParticles = function () {
@@ -16316,8 +16318,9 @@ var BABYLON;
                         observable.notifyObservers(info, renderingGroupMask);
                     }
                     // Clear depth/stencil if needed
-                    if (this._autoClearDepthStencil[index]) {
-                        this._clearDepthStencilBuffer();
+                    var autoClear = this._autoClearDepthStencil[index];
+                    if (autoClear && autoClear.autoClear) {
+                        this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
                     }
                     // Fire PREOPAQUE stage
                     if (observable) {
@@ -16396,9 +16399,17 @@ var BABYLON;
          *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
          */
-        RenderingManager.prototype.setRenderingAutoClearDepthStencil = function (renderingGroupId, autoClearDepthStencil) {
-            this._autoClearDepthStencil[renderingGroupId] = autoClearDepthStencil;
+        RenderingManager.prototype.setRenderingAutoClearDepthStencil = function (renderingGroupId, autoClearDepthStencil, depth, stencil) {
+            if (depth === void 0) { depth = true; }
+            if (stencil === void 0) { stencil = true; }
+            this._autoClearDepthStencil[renderingGroupId] = {
+                autoClear: autoClearDepthStencil,
+                depth: depth,
+                stencil: stencil
+            };
         };
         return RenderingManager;
     }());
@@ -19344,9 +19355,13 @@ var BABYLON;
          *
          * @param renderingGroupId The rendering group id corresponding to its index
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
          */
-        Scene.prototype.setRenderingAutoClearDepthStencil = function (renderingGroupId, autoClearDepthStencil) {
-            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil);
+        Scene.prototype.setRenderingAutoClearDepthStencil = function (renderingGroupId, autoClearDepthStencil, depth, stencil) {
+            if (depth === void 0) { depth = true; }
+            if (stencil === void 0) { stencil = true; }
+            this._renderingManager.setRenderingAutoClearDepthStencil(renderingGroupId, autoClearDepthStencil, depth, stencil);
         };
         return Scene;
     }());
@@ -24314,12 +24329,6 @@ var BABYLON;
             if (this.useCameraPostProcesses !== undefined) {
                 useCameraPostProcess = this.useCameraPostProcesses;
             }
-            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
-            }
-            else {
-                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
-            }
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
@@ -24395,11 +24404,20 @@ var BABYLON;
                     engine.bindFramebuffer(this._texture);
                 }
             }
-            if (this.activeCamera) {
-                engine.setViewport(this.activeCamera.viewport);
-            }
-            else {
-                engine.setViewport(scene.activeCamera.viewport);
+            // Set states for projection (this does not change accross faces)
+            if (!this.isCube || faceIndex === 0) {
+                if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                    scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+                }
+                else {
+                    scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+                }
+                if (this.activeCamera) {
+                    engine.setViewport(this.activeCamera.viewport);
+                }
+                else {
+                    engine.setViewport(scene.activeCamera.viewport);
+                }
             }
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
             // Clear
