@@ -19,9 +19,9 @@
  */ }
   .insp-wrapper .gutter {
     background-color: #2c2c2c; }
-    .insp-wrapper .gutter.gutter-vertical {
+    .insp-wrapper .gutter.gutter-vertical:not(.blocked) {
       cursor: ns-resize; }
-    .insp-wrapper .gutter.gutter-horizontal {
+    .insp-wrapper .gutter.gutter-horizontal:not(.blocked) {
       cursor: ew-resize; }
   .insp-wrapper .insp-right-panel {
     width: 750px;
