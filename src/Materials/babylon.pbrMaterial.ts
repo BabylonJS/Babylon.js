@@ -620,8 +620,7 @@
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-
-            if (this.checkReadyOnlyOnce) {
+            if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
                 }
