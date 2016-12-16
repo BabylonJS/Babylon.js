@@ -24349,6 +24349,17 @@ var BABYLON;
             if (this.renderList && this.renderList.length === 0) {
                 return;
             }
+            // Set custom projection.
+            // Needs to be before binding to prevent changing the aspect ratio.
+            if (this.activeCamera) {
+                engine.setViewport(this.activeCamera.viewport);
+                if (this.activeCamera !== scene.activeCamera) {
+                    scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+                }
+            }
+            else {
+                engine.setViewport(scene.activeCamera.viewport);
+            }
             // Prepare renderingManager
             this._renderingManager.reset();
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
@@ -24400,21 +24411,6 @@ var BABYLON;
                 }
                 else {
                     engine.bindFramebuffer(this._texture);
-                }
-            }
-            // Set states for projection (this does not change accross faces)
-            if (!this.isCube || faceIndex === 0) {
-                if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                    scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
-                }
-                else {
-                    scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
-                }
-                if (this.activeCamera) {
-                    engine.setViewport(this.activeCamera.viewport);
-                }
-                else {
-                    engine.setViewport(scene.activeCamera.viewport);
                 }
             }
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
@@ -54746,8 +54742,7 @@ var BABYLON;
                 this._overloadedIntensity.z = this.overloadedReflectivityIntensity;
                 this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
                 this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
-                this.convertColorToLinearSpaceToRef(this.overloadedAmbient, this._tempColor);
-                this._effect.setColor3("vOverloadedAmbient", this._tempColor);
+                this._effect.setColor3("vOverloadedAmbient", this.overloadedAmbient);
                 this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
                 this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
                 this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
