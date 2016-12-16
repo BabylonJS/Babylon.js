@@ -4,6 +4,8 @@
         private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
         private _transparentSubMeshes = new SmartArray<SubMesh>(256);
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
+        private _particleSystems = new SmartArray<ParticleSystem>(256);
+        private _spriteManagers = new SmartArray<SpriteManager>(256);        
         private _activeVertices: number;
 
         private _opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
@@ -81,7 +83,7 @@
          * @param customRenderFunction Used to override the default render behaviour of the group.
          * @returns true if rendered some submeshes.
          */
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): void {
+        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, renderSprites: boolean, renderParticles: boolean, activeMeshes: AbstractMesh[]): void {
             if (customRenderFunction) {
                 customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
                 return;
@@ -99,6 +101,16 @@
                 engine.setAlphaTesting(true);
                 this._renderAlphaTest(this._alphaTestSubMeshes);
                 engine.setAlphaTesting(false);
+            }
+
+            // Sprites
+            if (renderSprites) {
+                this._renderSprites();
+            }
+            
+            // Particles
+            if (renderParticles) {
+                this._renderParticles(activeMeshes);
             }
 
             if (this.onBeforeTransparentRendering) {
@@ -240,6 +252,8 @@
             this._opaqueSubMeshes.reset();
             this._transparentSubMeshes.reset();
             this._alphaTestSubMeshes.reset();
+            this._particleSystems.reset();
+            this._spriteManagers.reset();
         }
 
         /**
@@ -257,6 +271,53 @@
             } else {
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
+        }
+
+        public dispatchSprites(spriteManager: SpriteManager) {
+            this._spriteManagers.push(spriteManager);
+        }
+
+        public dispatchParticles(particleSystem: ParticleSystem) {
+            this._particleSystems.push(particleSystem);
+        }
+
+        private _renderParticles(activeMeshes: AbstractMesh[]): void {
+            if (this._particleSystems.length === 0) {
+                return;
+            }
+
+            // Particles
+            var activeCamera = this._scene.activeCamera;
+            this._scene._particlesDuration.beginMonitoring();
+            for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
+                var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
+
+                if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
+                    continue;
+                }
+                if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
+                    this._scene._activeParticles.addCount(particleSystem.render(), false);
+                }
+            }
+            this._scene._particlesDuration.endMonitoring(false);
+        }
+
+        private _renderSprites(): void {
+            if (!this._scene.spritesEnabled || this._spriteManagers.length === 0) {
+                return;
+            }
+
+            // Sprites       
+            var activeCamera = this._scene.activeCamera;
+            this._scene._spritesDuration.beginMonitoring();
+            for (var id = 0; id < this._spriteManagers.length; id++) {
+                var spriteManager = this._scene.spriteManagers[id];
+
+                if (((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
+                    spriteManager.render();
+                }
+            }
+            this._scene._spritesDuration.endMonitoring(false);
         }
     }
 } 

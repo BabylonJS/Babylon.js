@@ -2046,6 +2046,7 @@
                     if (!particleSystem.emitter.position || (particleSystem.emitter && particleSystem.emitter.isEnabled())) {
                         this._activeParticleSystems.push(particleSystem);
                         particleSystem.animate();
+                        this._renderingManager.dispatchParticles(particleSystem);
                     }
                 }
                 Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
