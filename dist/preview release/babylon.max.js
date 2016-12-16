@@ -6535,7 +6535,7 @@ var BABYLON;
          * @param options - further options to be sent to the getContext function
          */
         function Engine(canvas, antialias, options, adaptToDeviceRatio) {
-            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = true; }
+            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
             var _this = this;
             // Public members
             this.isFullscreen = false;
