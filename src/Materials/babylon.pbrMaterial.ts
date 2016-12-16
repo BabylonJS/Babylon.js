@@ -1328,8 +1328,7 @@
                 this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
                 this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
 
-                this.convertColorToLinearSpaceToRef(this.overloadedAmbient, this._tempColor);
-                this._effect.setColor3("vOverloadedAmbient", this._tempColor);
+                this._effect.setColor3("vOverloadedAmbient", this.overloadedAmbient);
                 this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
                 this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
                 this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
