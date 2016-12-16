@@ -23,6 +23,7 @@ proceduralTexturesLibrary/src/**/*.js
 postProcessLibrary/src/**/*.js
 canvas2D/src/**/*.js
 inspector/src/**/*.js
+serializers/src/**/*.js
 
 # Build results
 [Dd]ebug/
