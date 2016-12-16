@@ -64,8 +64,9 @@
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
         public SHADOWFULLFLOAT = false;
-        
+
         public METALLICWORKFLOW = false;
+        public METALLICROUGHNESSMAP = false;
         public METALLICROUGHNESSGSTOREINALPHA = false;
         public METALLICROUGHNESSGSTOREINGREEN = false;
 
@@ -291,6 +292,12 @@
          */
         @serializeAsTexture()
         public metallicTexture: BaseTexture;
+
+        @serialize()
+        public metallic: number;
+
+        @serialize()
+        public roughness: number;
 
         @serializeAsTexture()
         public bumpTexture: BaseTexture;
@@ -750,13 +757,14 @@
                     }
                 }
 
-                if (StandardMaterial.SpecularTextureEnabled) {                        
+                if (StandardMaterial.SpecularTextureEnabled) {
                     if (this.metallicTexture) {
                         if (!this.metallicTexture.isReady()) {
                             return false;
                         } else {
                             needUVs = true;
                             this._defines.METALLICWORKFLOW = true;
+                            this._defines.METALLICROUGHNESSMAP = true;
                             this._defines.METALLICROUGHNESSGSTOREINALPHA = this.useRoughnessFromMetallicTextureAlpha;
                             this._defines.METALLICROUGHNESSGSTOREINGREEN = !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen;
                         }
@@ -916,6 +924,10 @@
 
             if (this.useRadianceOverAlpha) {
                 this._defines.RADIANCEOVERALPHA = true;
+            }
+
+            if (this.metallic !== undefined || this.roughness !== undefined) {
+                this._defines.METALLICWORKFLOW = true;
             }
 
             // Attribs
@@ -1269,13 +1281,20 @@
 
                 // Colors
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                
-                // GAMMA CORRECTION.
-                this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
+
+                if (this.metallic !== undefined || this.roughness !== undefined || this.metallicTexture) {
+                    var metallic = this.metallic === undefined ? 1 : this.metallic;
+                    var roughness = this.roughness === undefined ? 1 : this.roughness;
+                    this._effect.setColor4("vReflectivityColor", new Color3(metallic, roughness), 0);
+                }
+                else {
+                    // GAMMA CORRECTION.
+                    this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
+                    this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
+                }
 
                 this._effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-                this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
 
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(this.emissiveColor, PBRMaterial._scaledEmissive);
