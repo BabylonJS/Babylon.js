@@ -26,9 +26,6 @@
         private _depthStencilBufferAlreadyCleaned: boolean;
 
         private _currentIndex: number;
-        private _currentActiveMeshes: AbstractMesh[];
-        private _currentRenderParticles: boolean;
-        private _currentRenderSprites: boolean;
 
         private _autoClearDepthStencil: { [id:number]: RenderingManageAutoClearOptions } = {};
         private _customOpaqueSortCompareFn: { [id:number]: (a: SubMesh, b: SubMesh) => number } = {};
@@ -42,54 +39,7 @@
             for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
                 this._autoClearDepthStencil[i] = { autoClear: true, depth:true, stencil: true };
             }
-        }
-
-        private _renderParticles(index: number, activeMeshes: AbstractMesh[]): void {
-            if (this._scene._activeParticleSystems.length === 0) {
-                return;
-            }
-
-            // Particles
-            var activeCamera = this._scene.activeCamera;
-            this._scene._particlesDuration.beginMonitoring();
-            for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
-                var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
-
-                if (particleSystem.renderingGroupId !== index) {
-                    continue;
-                }
-
-                if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
-                    continue;
-                }
-
-                this._clearDepthStencilBuffer();
-
-                if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
-                    this._scene._activeParticles.addCount(particleSystem.render(), false);
-                }
-            }
-            this._scene._particlesDuration.endMonitoring(false);
-        }
-
-        private _renderSprites(index: number): void {
-            if (!this._scene.spritesEnabled || this._scene.spriteManagers.length === 0) {
-                return;
-            }
-
-            // Sprites       
-            var activeCamera = this._scene.activeCamera;
-            this._scene._spritesDuration.beginMonitoring();
-            for (var id = 0; id < this._scene.spriteManagers.length; id++) {
-                var spriteManager = this._scene.spriteManagers[id];
-
-                if (spriteManager.renderingGroupId === index && ((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
-                    this._clearDepthStencilBuffer();
-                    spriteManager.render();
-                }
-            }
-            this._scene._spritesDuration.endMonitoring(false);
-        }
+        }        
 
         private _clearDepthStencilBuffer(depth = true, stencil = true): void {
             if (this._depthStencilBufferAlreadyCleaned) {
@@ -100,19 +50,9 @@
             this._depthStencilBufferAlreadyCleaned = true;
         }
 
-        private _renderSpritesAndParticles() {
-            if (this._currentRenderSprites) {
-                this._renderSprites(this._currentIndex);
-            }
-
-            if (this._currentRenderParticles) {
-                this._renderParticles(this._currentIndex, this._currentActiveMeshes);
-            }
-        }
-
         public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void,
-            activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void {
-
+            activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void {          
+                  
             // Check if there's at least on observer on the onRenderingGroupObservable and initialize things to fire it
             let observable = this._scene.onRenderingGroupObservable.hasObservers() ? this._scene.onRenderingGroupObservable : null;
             let info: RenderingGroupInfo = null;
@@ -125,11 +65,16 @@
                 info.camera = this._scene.activeCamera;
             }
 
-            this._currentActiveMeshes = activeMeshes;
-            this._currentRenderParticles = renderParticles;
-            this._currentRenderSprites = renderSprites;
+            // Dispatch sprites
+            if (renderSprites) {
+                for (let index = 0; index < this._scene.spriteManagers.length; index++) {
+                    var manager = this._scene.spriteManagers[index];
+                    this.dispatchSprites(manager);
+                }
+            }
 
-            for (var index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
+            // Render
+            for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
 
@@ -158,32 +103,16 @@
                         observable.notifyObservers(info, renderingGroupMask);
                     }
 
-                    if (!renderingGroup.onBeforeTransparentRendering) {
-                        renderingGroup.onBeforeTransparentRendering = this._renderSpritesAndParticles.bind(this);
-                    }
-
                     // Fire PRETRANSPARENT stage
                     if (observable) {
                         info.renderStage = RenderingGroupInfo.STAGE_PRETRANSPARENT;
                         observable.notifyObservers(info, renderingGroupMask);
                     }
 
-                    renderingGroup.render(customRenderFunction);
+                    renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
 
                     // Fire POSTTRANSPARENT stage
                     if (observable) {
-                        info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
-                        observable.notifyObservers(info, renderingGroupMask);
-                    }
-                } else {
-                    this._renderSpritesAndParticles();
-
-                    if (observable) {
-                        let renderingGroupMask = Math.pow(2, index);
-                        info.renderStage = RenderingGroupInfo.STAGE_PRECLEAR;
-                        info.renderingGroupId = index;
-                        observable.notifyObservers(info, renderingGroupMask);
-
                         info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
                         observable.notifyObservers(info, renderingGroupMask);
                     }
@@ -192,7 +121,7 @@
         }
 
         public reset(): void {
-            for (var index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
+            for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 var renderingGroup = this._renderingGroups[index];
                 if (renderingGroup) {
                     renderingGroup.prepare();
@@ -200,10 +129,7 @@
             }
         }
 
-        public dispatch(subMesh: SubMesh): void {
-            var mesh = subMesh.getMesh();
-            var renderingGroupId = mesh.renderingGroupId || 0;
-
+        private _prepareRenderingGroup(renderingGroupId: number): void {
             if (!this._renderingGroups[renderingGroupId]) {
                 this._renderingGroups[renderingGroupId] = new RenderingGroup(renderingGroupId, this._scene,
                     this._customOpaqueSortCompareFn[renderingGroupId],
@@ -211,6 +137,29 @@
                     this._customTransparentSortCompareFn[renderingGroupId]
                 );
             }
+        }
+
+        public dispatchSprites(spriteManager: SpriteManager) {
+            var renderingGroupId = spriteManager.renderingGroupId || 0;
+
+            this._prepareRenderingGroup(renderingGroupId);
+
+            this._renderingGroups[renderingGroupId].dispatchSprites(spriteManager);
+        }
+
+        public dispatchParticles(particleSystem: ParticleSystem) {
+            var renderingGroupId = particleSystem.renderingGroupId || 0;
+
+            this._prepareRenderingGroup(renderingGroupId);
+
+            this._renderingGroups[renderingGroupId].dispatchParticles(particleSystem);
+        }
+
+        public dispatch(subMesh: SubMesh): void {
+            var mesh = subMesh.getMesh();
+            var renderingGroupId = mesh.renderingGroupId || 0;
+
+            this._prepareRenderingGroup(renderingGroupId);
 
             this._renderingGroups[renderingGroupId].dispatch(subMesh);
         }

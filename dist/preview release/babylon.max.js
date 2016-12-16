@@ -16222,44 +16222,6 @@ var BABYLON;
                 this._autoClearDepthStencil[i] = { autoClear: true, depth: true, stencil: true };
             }
         }
-        RenderingManager.prototype._renderParticles = function (index, activeMeshes) {
-            if (this._scene._activeParticleSystems.length === 0) {
-                return;
-            }
-            // Particles
-            var activeCamera = this._scene.activeCamera;
-            this._scene._particlesDuration.beginMonitoring();
-            for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
-                var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
-                if (particleSystem.renderingGroupId !== index) {
-                    continue;
-                }
-                if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
-                    continue;
-                }
-                this._clearDepthStencilBuffer();
-                if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
-                    this._scene._activeParticles.addCount(particleSystem.render(), false);
-                }
-            }
-            this._scene._particlesDuration.endMonitoring(false);
-        };
-        RenderingManager.prototype._renderSprites = function (index) {
-            if (!this._scene.spritesEnabled || this._scene.spriteManagers.length === 0) {
-                return;
-            }
-            // Sprites       
-            var activeCamera = this._scene.activeCamera;
-            this._scene._spritesDuration.beginMonitoring();
-            for (var id = 0; id < this._scene.spriteManagers.length; id++) {
-                var spriteManager = this._scene.spriteManagers[id];
-                if (spriteManager.renderingGroupId === index && ((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
-                    this._clearDepthStencilBuffer();
-                    spriteManager.render();
-                }
-            }
-            this._scene._spritesDuration.endMonitoring(false);
-        };
         RenderingManager.prototype._clearDepthStencilBuffer = function (depth, stencil) {
             if (depth === void 0) { depth = true; }
             if (stencil === void 0) { stencil = true; }
@@ -16268,14 +16230,6 @@ var BABYLON;
             }
             this._scene.getEngine().clear(0, false, depth, stencil);
             this._depthStencilBufferAlreadyCleaned = true;
-        };
-        RenderingManager.prototype._renderSpritesAndParticles = function () {
-            if (this._currentRenderSprites) {
-                this._renderSprites(this._currentIndex);
-            }
-            if (this._currentRenderParticles) {
-                this._renderParticles(this._currentIndex, this._currentActiveMeshes);
-            }
         };
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
             // Check if there's at least on observer on the onRenderingGroupObservable and initialize things to fire it
@@ -16289,9 +16243,14 @@ var BABYLON;
                 info.scene = this._scene;
                 info.camera = this._scene.activeCamera;
             }
-            this._currentActiveMeshes = activeMeshes;
-            this._currentRenderParticles = renderParticles;
-            this._currentRenderSprites = renderSprites;
+            // Dispatch sprites
+            if (renderSprites) {
+                for (var index = 0; index < this._scene.spriteManagers.length; index++) {
+                    var manager = this._scene.spriteManagers[index];
+                    this.dispatchSprites(manager);
+                }
+            }
+            // Render
             for (var index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
@@ -16315,28 +16274,14 @@ var BABYLON;
                         info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PREOPAQUE;
                         observable.notifyObservers(info, renderingGroupMask);
                     }
-                    if (!renderingGroup.onBeforeTransparentRendering) {
-                        renderingGroup.onBeforeTransparentRendering = this._renderSpritesAndParticles.bind(this);
-                    }
                     // Fire PRETRANSPARENT stage
                     if (observable) {
                         info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRETRANSPARENT;
                         observable.notifyObservers(info, renderingGroupMask);
                     }
-                    renderingGroup.render(customRenderFunction);
+                    renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
                     // Fire POSTTRANSPARENT stage
                     if (observable) {
-                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT;
-                        observable.notifyObservers(info, renderingGroupMask);
-                    }
-                }
-                else {
-                    this._renderSpritesAndParticles();
-                    if (observable) {
-                        var renderingGroupMask = Math.pow(2, index);
-                        info.renderStage = BABYLON.RenderingGroupInfo.STAGE_PRECLEAR;
-                        info.renderingGroupId = index;
-                        observable.notifyObservers(info, renderingGroupMask);
                         info.renderStage = BABYLON.RenderingGroupInfo.STAGE_POSTTRANSPARENT;
                         observable.notifyObservers(info, renderingGroupMask);
                     }
@@ -16351,12 +16296,25 @@ var BABYLON;
                 }
             }
         };
-        RenderingManager.prototype.dispatch = function (subMesh) {
-            var mesh = subMesh.getMesh();
-            var renderingGroupId = mesh.renderingGroupId || 0;
+        RenderingManager.prototype._prepareRenderingGroup = function (renderingGroupId) {
             if (!this._renderingGroups[renderingGroupId]) {
                 this._renderingGroups[renderingGroupId] = new BABYLON.RenderingGroup(renderingGroupId, this._scene, this._customOpaqueSortCompareFn[renderingGroupId], this._customAlphaTestSortCompareFn[renderingGroupId], this._customTransparentSortCompareFn[renderingGroupId]);
             }
+        };
+        RenderingManager.prototype.dispatchSprites = function (spriteManager) {
+            var renderingGroupId = spriteManager.renderingGroupId || 0;
+            this._prepareRenderingGroup(renderingGroupId);
+            this._renderingGroups[renderingGroupId].dispatchSprites(spriteManager);
+        };
+        RenderingManager.prototype.dispatchParticles = function (particleSystem) {
+            var renderingGroupId = particleSystem.renderingGroupId || 0;
+            this._prepareRenderingGroup(renderingGroupId);
+            this._renderingGroups[renderingGroupId].dispatchParticles(particleSystem);
+        };
+        RenderingManager.prototype.dispatch = function (subMesh) {
+            var mesh = subMesh.getMesh();
+            var renderingGroupId = mesh.renderingGroupId || 0;
+            this._prepareRenderingGroup(renderingGroupId);
             this._renderingGroups[renderingGroupId].dispatch(subMesh);
         };
         /**
@@ -16432,6 +16390,8 @@ var BABYLON;
             this._opaqueSubMeshes = new BABYLON.SmartArray(256);
             this._transparentSubMeshes = new BABYLON.SmartArray(256);
             this._alphaTestSubMeshes = new BABYLON.SmartArray(256);
+            this._particleSystems = new BABYLON.SmartArray(256);
+            this._spriteManagers = new BABYLON.SmartArray(256);
             this._scene = scene;
             this.opaqueSortCompareFn = opaqueSortCompareFn;
             this.alphaTestSortCompareFn = alphaTestSortCompareFn;
@@ -16493,7 +16453,7 @@ var BABYLON;
          * @param customRenderFunction Used to override the default render behaviour of the group.
          * @returns true if rendered some submeshes.
          */
-        RenderingGroup.prototype.render = function (customRenderFunction) {
+        RenderingGroup.prototype.render = function (customRenderFunction, renderSprites, renderParticles, activeMeshes) {
             if (customRenderFunction) {
                 customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
                 return;
@@ -16508,6 +16468,14 @@ var BABYLON;
                 engine.setAlphaTesting(true);
                 this._renderAlphaTest(this._alphaTestSubMeshes);
                 engine.setAlphaTesting(false);
+            }
+            // Sprites
+            if (renderSprites) {
+                this._renderSprites();
+            }
+            // Particles
+            if (renderParticles) {
+                this._renderParticles(activeMeshes);
             }
             if (this.onBeforeTransparentRendering) {
                 this.onBeforeTransparentRendering();
@@ -16633,6 +16601,8 @@ var BABYLON;
             this._opaqueSubMeshes.reset();
             this._transparentSubMeshes.reset();
             this._alphaTestSubMeshes.reset();
+            this._particleSystems.reset();
+            this._spriteManagers.reset();
         };
         /**
          * Inserts the submesh in its correct queue depending on its material.
@@ -16650,6 +16620,45 @@ var BABYLON;
             else {
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
+        };
+        RenderingGroup.prototype.dispatchSprites = function (spriteManager) {
+            this._spriteManagers.push(spriteManager);
+        };
+        RenderingGroup.prototype.dispatchParticles = function (particleSystem) {
+            this._particleSystems.push(particleSystem);
+        };
+        RenderingGroup.prototype._renderParticles = function (activeMeshes) {
+            if (this._particleSystems.length === 0) {
+                return;
+            }
+            // Particles
+            var activeCamera = this._scene.activeCamera;
+            this._scene._particlesDuration.beginMonitoring();
+            for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
+                var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
+                if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
+                    continue;
+                }
+                if (!particleSystem.emitter.position || !activeMeshes || activeMeshes.indexOf(particleSystem.emitter) !== -1) {
+                    this._scene._activeParticles.addCount(particleSystem.render(), false);
+                }
+            }
+            this._scene._particlesDuration.endMonitoring(false);
+        };
+        RenderingGroup.prototype._renderSprites = function () {
+            if (!this._scene.spritesEnabled || this._spriteManagers.length === 0) {
+                return;
+            }
+            // Sprites       
+            var activeCamera = this._scene.activeCamera;
+            this._scene._spritesDuration.beginMonitoring();
+            for (var id = 0; id < this._spriteManagers.length; id++) {
+                var spriteManager = this._scene.spriteManagers[id];
+                if (((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
+                    spriteManager.render();
+                }
+            }
+            this._scene._spritesDuration.endMonitoring(false);
         };
         return RenderingGroup;
     }());
@@ -18392,6 +18401,7 @@ var BABYLON;
                     if (!particleSystem.emitter.position || (particleSystem.emitter && particleSystem.emitter.isEnabled())) {
                         this._activeParticleSystems.push(particleSystem);
                         particleSystem.animate();
+                        this._renderingManager.dispatchParticles(particleSystem);
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Particles", this.particleSystems.length > 0);
