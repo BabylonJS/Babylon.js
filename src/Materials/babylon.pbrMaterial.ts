@@ -293,9 +293,17 @@
         @serializeAsTexture()
         public metallicTexture: BaseTexture;
 
+        /**
+         * Specifies the metallic scalar of the metallic/roughness workflow.
+         * Can also be used to scale the metalness values of the metallic texture.
+         */
         @serialize()
         public metallic: number;
 
+        /**
+         * Specifies the roughness scalar of the metallic/roughness workflow.
+         * Can also be used to scale the roughness values of the metallic texture.
+         */
         @serialize()
         public roughness: number;
 
@@ -1282,10 +1290,10 @@
                 // Colors
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                if (this.metallic !== undefined || this.roughness !== undefined || this.metallicTexture) {
-                    var metallic = this.metallic === undefined ? 1 : this.metallic;
-                    var roughness = this.roughness === undefined ? 1 : this.roughness;
-                    this._effect.setColor4("vReflectivityColor", new Color3(metallic, roughness), 0);
+                if (this._defines.METALLICWORKFLOW) {
+                    PBRMaterial._scaledReflectivity.r = this.metallic === undefined ? 1 : this.metallic;
+                    PBRMaterial._scaledReflectivity.g = this.roughness === undefined ? 1 : this.roughness;
+                    this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
                 }
                 else {
                     // GAMMA CORRECTION.
