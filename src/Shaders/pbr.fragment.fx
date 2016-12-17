@@ -269,35 +269,40 @@ void main(void) {
 #endif
 
 #ifdef METALLICWORKFLOW
-	vec4 surfaceMetallicColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+	vec2 metallicRoughness = surfaceReflectivityColor.rg;
 
-	// No gamma space fro the metallic map in metallic workflow.
-	float metallic = surfaceMetallicColorMap.r; // Unity like base channel for metallness.
+	#ifdef METALLICROUGHNESSMAP
+		vec4 surfaceMetallicColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+
+		// No gamma space from the metallic map in metallic workflow.
+		metallicRoughness.r *= surfaceMetallicColorMap.r;
+		#ifdef METALLICROUGHNESSGSTOREINALPHA
+			metallicRoughness.g *= surfaceMetallicColorMap.a;
+		#else
+			#ifdef METALLICROUGHNESSGSTOREINGREEN
+				metallicRoughness.g *= surfaceMetallicColorMap.g;
+			#endif
+		#endif
+	#endif
 
 	// Diffuse is used as the base of the reflectivity.
 	vec3 baseColor = surfaceAlbedo.rgb;
 
 	// Drop the surface diffuse by the 1.0 - metalness.
-	surfaceAlbedo.rgb *= (1.0 - metallic);
+	surfaceAlbedo.rgb *= (1.0 - metallicRoughness.r);
 	
 	// Default specular reflectance at normal incidence.
-	// 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.    
+	// 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
 	const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);
 
 	// Compute the converted reflectivity.
-	surfaceReflectivityColor = mix(DefaultSpecularReflectanceDielectric, baseColor, metallic);
+	surfaceReflectivityColor = mix(DefaultSpecularReflectanceDielectric, baseColor, metallicRoughness.r);
 
 	#ifdef OVERLOADEDVALUES
 		surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
 	#endif
 
-	#ifdef METALLICROUGHNESSGSTOREINALPHA
-		microSurface = 1.0 - surfaceMetallicColorMap.a;
-	#else
-		#ifdef METALLICROUGHNESSGSTOREINGREEN
-			microSurface = 1.0 - surfaceMetallicColorMap.g;
-		#endif
-	#endif
+	microSurface = 1.0 - metallicRoughness.g;
 #endif
 
 #ifdef OVERLOADEDVALUES
