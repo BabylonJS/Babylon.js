@@ -1,0 +1,19 @@
+/* Babylon Editor Script Component (C# UnityScript) */
+using UnityEditor;
+using UnityEngine;
+
+namespace MyProject
+{
+	public class NewScriptComponent : BabylonScriptComponent
+	{
+        [Header("New Script Component")]
+
+        [BabylonProperty]
+        public string hello = "Hello World";
+
+		protected NewScriptComponent()
+		{
+			this.babylonClass = "PROJECT.BabylonSceneComponent";
+		}
+	}
+}
