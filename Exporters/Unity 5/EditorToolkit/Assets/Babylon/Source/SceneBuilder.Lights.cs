@@ -67,8 +67,8 @@ namespace Unity3D2Babylon
 
         private void ConvertUnityLightToBabylon(Light light, GameObject gameObject, float progress, ref UnityMetaData metaData, ref List<BabylonExport.Entities.BabylonParticleSystem> particleSystems, ref List<UnityFlareSystem> lensFlares, ref string componentTags)
         {
-            // No Baking Or Inactive Lights
-            if (exportationOptions.DefaultLightmapMode == (int)BabylonLightmapMode.FullLightBaking || light.type == LightType.Area || light.isActiveAndEnabled == false) return;
+            // No Inactive Or Baking Lights
+            if (light.isActiveAndEnabled == false || light.type == LightType.Area || light.lightmappingMode == LightmappingMode.Baked) return;
 
             ExporterWindow.ReportProgress(progress, "Exporting light: " + light.name);
             BabylonLight babylonLight = new BabylonLight
@@ -120,7 +120,7 @@ namespace Unity3D2Babylon
             ParseParticleSystems(gameObject, babylonLight.id, ref particleSystems);
 
             // Shadow Maps
-            if (exportationOptions.ExportShadows && light.lightmappingMode != LightmappingMode.Baked)
+            if (exportationOptions.ExportShadows)
             {
                 if ((light.type == LightType.Directional || light.type == LightType.Spot) && light.shadows != LightShadows.None)
                 {
