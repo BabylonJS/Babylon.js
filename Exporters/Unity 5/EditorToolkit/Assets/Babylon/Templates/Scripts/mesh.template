@@ -1,0 +1,23 @@
+/* Babylon Mesh Component Template */
+/* <reference path="{*path*}/Assets/Babylon/Library/babylon.d.ts" /> */
+
+module PROJECT {
+    export class NewMeshComponent extends BABYLON.MeshComponent {
+
+        public start() :void {
+            // Start component function
+        }
+
+        public update() :void {
+            // Update render loop function
+        }
+
+        public after() :void {
+            // After render loop function
+        }
+
+        public destroy() :void {
+            // Destroy component function
+        }
+    }
+}
