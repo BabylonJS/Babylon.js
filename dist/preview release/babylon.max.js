@@ -6535,7 +6535,7 @@ var BABYLON;
          * @param options - further options to be sent to the getContext function
          */
         function Engine(canvas, antialias, options, adaptToDeviceRatio) {
-            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = true; }
+            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
             var _this = this;
             // Public members
             this.isFullscreen = false;
@@ -6609,14 +6609,14 @@ var BABYLON;
             var renderToFullFloat = this._canRenderToFloatTexture();
             var renderToHalfFloat = this._canRenderToHalfFloatTexture();
             // GL
-            //try {
-            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-            //    if (this._gl) {
-            //        this._webGLVersion = "2.0";
-            //    }
-            //} catch (e) {
-            //    // Do nothing
-            //}
+            try {
+                this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                if (this._gl) {
+                    this._webGLVersion = "2.0";
+                }
+            }
+            catch (e) {
+            }
             if (!this._gl) {
                 if (!canvas) {
                     throw new Error("The provided canvas is null or undefined.");
@@ -24349,6 +24349,17 @@ var BABYLON;
             if (this.renderList && this.renderList.length === 0) {
                 return;
             }
+            // Set custom projection.
+            // Needs to be before binding to prevent changing the aspect ratio.
+            if (this.activeCamera) {
+                engine.setViewport(this.activeCamera.viewport);
+                if (this.activeCamera !== scene.activeCamera) {
+                    scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+                }
+            }
+            else {
+                engine.setViewport(scene.activeCamera.viewport);
+            }
             // Prepare renderingManager
             this._renderingManager.reset();
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
@@ -24400,21 +24411,6 @@ var BABYLON;
                 }
                 else {
                     engine.bindFramebuffer(this._texture);
-                }
-            }
-            // Set states for projection (this does not change accross faces)
-            if (!this.isCube || faceIndex === 0) {
-                if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                    scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
-                }
-                else {
-                    scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
-                }
-                if (this.activeCamera) {
-                    engine.setViewport(this.activeCamera.viewport);
-                }
-                else {
-                    engine.setViewport(scene.activeCamera.viewport);
                 }
             }
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
@@ -54183,7 +54179,7 @@ var BABYLON;
             }
         };
         PBRMaterial.prototype.isReady = function (mesh, useInstances) {
-            if (this.checkReadyOnlyOnce) {
+            if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
                 }
@@ -54746,8 +54742,7 @@ var BABYLON;
                 this._overloadedIntensity.z = this.overloadedReflectivityIntensity;
                 this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
                 this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
-                this.convertColorToLinearSpaceToRef(this.overloadedAmbient, this._tempColor);
-                this._effect.setColor3("vOverloadedAmbient", this._tempColor);
+                this._effect.setColor3("vOverloadedAmbient", this.overloadedAmbient);
                 this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
                 this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
                 this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);

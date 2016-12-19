@@ -1,0 +1,23 @@
+/* Babylon Light Component Template */
+/* <reference path="{*path*}/Assets/Babylon/Library/babylon.d.ts" /> */
+
+module PROJECT {
+    export class NewLightComponent extends BABYLON.LightComponent {
+
+        public start() :void {
+            // Start component function
+        }
+
+        public update() :void {
+            // Update render loop function
+        }
+
+        public after() :void {
+            // After render loop function
+        }
+
+        public destroy() :void {
+            // Destroy component function
+        }
+    }
+}
