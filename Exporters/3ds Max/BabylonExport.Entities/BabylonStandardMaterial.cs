@@ -62,6 +62,12 @@ namespace BabylonExport.Entities
         [DataMember]
         public bool disableLighting { get; set; }
 
+        [DataMember]
+        public bool useEmissiveAsIllumination { get; set; }
+
+        [DataMember]
+        public bool linkEmissiveWithDiffuse { get; set; }
+
         public BabylonStandardMaterial() : base()
         {
             ambient = new[] {1.0f, 1.0f, 1.0f};
@@ -70,6 +76,8 @@ namespace BabylonExport.Entities
             emissive = new[] { 0f, 0f, 0f };
             specularPower = 64;
             useSpecularOverAlpha = true;
+            useEmissiveAsIllumination = false;
+            linkEmissiveWithDiffuse = false;
         }
     }
 }

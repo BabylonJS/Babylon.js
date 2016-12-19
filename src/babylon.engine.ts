@@ -504,7 +504,7 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = true) {
+        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             this._renderingCanvas = canvas;
 
             this._externalData = new StringDictionary<Object>();
@@ -524,14 +524,14 @@
             var renderToHalfFloat = this._canRenderToHalfFloatTexture();
 
             // GL
-            //try {
-            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-            //    if (this._gl) {
-            //        this._webGLVersion = "2.0";
-            //    }
-            //} catch (e) {
-            //    // Do nothing
-            //}
+            try {
+               this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+               if (this._gl) {
+                   this._webGLVersion = "2.0";
+               }
+            } catch (e) {
+               // Do nothing
+            }
 
             if (!this._gl) {
                 if (!canvas) {

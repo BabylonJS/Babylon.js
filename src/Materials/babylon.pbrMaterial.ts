@@ -64,8 +64,9 @@
         public INVERTNORMALMAPX = false;
         public INVERTNORMALMAPY = false;
         public SHADOWFULLFLOAT = false;
-        
+
         public METALLICWORKFLOW = false;
+        public METALLICROUGHNESSMAP = false;
         public METALLICROUGHNESSGSTOREINALPHA = false;
         public METALLICROUGHNESSGSTOREINGREEN = false;
 
@@ -291,6 +292,20 @@
          */
         @serializeAsTexture()
         public metallicTexture: BaseTexture;
+
+        /**
+         * Specifies the metallic scalar of the metallic/roughness workflow.
+         * Can also be used to scale the metalness values of the metallic texture.
+         */
+        @serialize()
+        public metallic: number;
+
+        /**
+         * Specifies the roughness scalar of the metallic/roughness workflow.
+         * Can also be used to scale the roughness values of the metallic texture.
+         */
+        @serialize()
+        public roughness: number;
 
         @serializeAsTexture()
         public bumpTexture: BaseTexture;
@@ -620,8 +635,7 @@
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-
-            if (this.checkReadyOnlyOnce) {
+            if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
                 }
@@ -750,13 +764,14 @@
                     }
                 }
 
-                if (StandardMaterial.SpecularTextureEnabled) {                        
+                if (StandardMaterial.SpecularTextureEnabled) {
                     if (this.metallicTexture) {
                         if (!this.metallicTexture.isReady()) {
                             return false;
                         } else {
                             needUVs = true;
                             this._defines.METALLICWORKFLOW = true;
+                            this._defines.METALLICROUGHNESSMAP = true;
                             this._defines.METALLICROUGHNESSGSTOREINALPHA = this.useRoughnessFromMetallicTextureAlpha;
                             this._defines.METALLICROUGHNESSGSTOREINGREEN = !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen;
                         }
@@ -916,6 +931,10 @@
 
             if (this.useRadianceOverAlpha) {
                 this._defines.RADIANCEOVERALPHA = true;
+            }
+
+            if (this.metallic !== undefined || this.roughness !== undefined) {
+                this._defines.METALLICWORKFLOW = true;
             }
 
             // Attribs
@@ -1269,13 +1288,20 @@
 
                 // Colors
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                
-                // GAMMA CORRECTION.
-                this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
+
+                if (this._defines.METALLICWORKFLOW) {
+                    PBRMaterial._scaledReflectivity.r = this.metallic === undefined ? 1 : this.metallic;
+                    PBRMaterial._scaledReflectivity.g = this.roughness === undefined ? 1 : this.roughness;
+                    this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
+                }
+                else {
+                    // GAMMA CORRECTION.
+                    this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
+                    this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
+                }
 
                 this._effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-                this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
 
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(this.emissiveColor, PBRMaterial._scaledEmissive);
@@ -1329,8 +1355,7 @@
                 this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
                 this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
 
-                this.convertColorToLinearSpaceToRef(this.overloadedAmbient, this._tempColor);
-                this._effect.setColor3("vOverloadedAmbient", this._tempColor);
+                this._effect.setColor3("vOverloadedAmbient", this.overloadedAmbient);
                 this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
                 this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
                 this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
