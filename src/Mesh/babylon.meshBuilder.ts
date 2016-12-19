@@ -548,7 +548,7 @@
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
         public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, cap?: number, invertUV?: boolean }, scene: Scene): Mesh {
-            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+            var arc: number = options.arc ? ((options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc) : 1.0;
             var closed: boolean = (options.closed === undefined) ? true : options.closed;
             var shape = options.shape;
             var radius = options.radius || 1;
