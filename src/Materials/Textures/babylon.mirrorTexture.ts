@@ -6,8 +6,8 @@
         private _mirrorMatrix = Matrix.Zero();
         private _savedViewMatrix: Matrix;
 
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean) {
-            super(name, size, scene, generateMipMaps, true);
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
+            super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.onBeforeRenderObservable.add(() => {
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
@@ -35,7 +35,15 @@
 
         public clone(): MirrorTexture {
             var textureSize = this.getSize();
-            var newTexture = new MirrorTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new MirrorTexture(
+                this.name,
+                textureSize.width,
+                this.getScene(),
+                this._renderTargetOptions.generateMipMaps,
+                this._renderTargetOptions.type,
+                this._renderTargetOptions.samplingMode,
+                this._renderTargetOptions.generateDepthBuffer
+            );
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;
