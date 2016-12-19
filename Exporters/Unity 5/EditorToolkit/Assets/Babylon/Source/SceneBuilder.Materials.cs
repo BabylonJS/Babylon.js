@@ -173,8 +173,8 @@ namespace Unity3D2Babylon
                         {
                             ExporterWindow.ReportProgress(1, "Exporting texture cube item: " + textureName);
                             var tempTexture = new Texture2D(textureFace.width, textureFace.height, TextureFormat.ARGB32, false);
-                            Color[] pixels = textureFace.GetPixels();
-                            tempTexture.SetPixels(pixels);
+                            Color32[] pixels = textureFace.GetPixels32();
+                            tempTexture.SetPixels32(pixels);
                             tempTexture.Apply();
                             if (png)
                             {
@@ -207,8 +207,15 @@ namespace Unity3D2Babylon
             {
                 string srcTexturePath = AssetDatabase.GetAssetPath(texture2D);
                 var importTool = new BabylonTextureImporter(srcTexturePath);
-                bool isReadable = importTool.IsReadable();
-                if (!isReadable) importTool.SetReadable();
+                var previousConvertToNormalmap = importTool.textureImporter.convertToNormalmap;
+                var previousAlphaSource = importTool.textureImporter.alphaSource;
+                var previousTextureType = importTool.textureImporter.textureType;
+                importTool.SetReadable();
+                importTool.textureImporter.textureType = TextureImporterType.Default;
+                importTool.textureImporter.alphaSource = TextureImporterAlphaSource.FromInput;
+                importTool.textureImporter.convertToNormalmap = false;
+                AssetDatabase.ImportAsset(texturePath);
+
                 try
                 {
                     var usePNG = texture2D.alphaIsTransparency;
@@ -248,7 +255,10 @@ namespace Unity3D2Babylon
                 }
                 finally
                 {
-                    if (!isReadable) importTool.ForceUpdate();
+                    importTool.textureImporter.textureType = previousTextureType;
+                    importTool.textureImporter.alphaSource = previousAlphaSource;
+                    importTool.textureImporter.convertToNormalmap = previousConvertToNormalmap;
+                    importTool.ForceUpdate();
                 }
             }
             else if (texture2D.alphaIsTransparency || texturePath.EndsWith(".png"))
