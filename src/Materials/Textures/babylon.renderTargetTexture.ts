@@ -20,7 +20,7 @@
         * Use this predicate to dynamically define the list of mesh you want to render.
         * If set, the renderList property will be overwritten.
         */
-        public renderListPredicate: (AbstractMesh) => boolean;
+        public renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
 
         /**
         * Use this list to define the list of mesh you want to render.
