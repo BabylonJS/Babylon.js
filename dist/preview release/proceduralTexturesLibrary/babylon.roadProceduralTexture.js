@@ -9,9 +9,10 @@ var BABYLON;
     var RoadProceduralTexture = (function (_super) {
         __extends(RoadProceduralTexture, _super);
         function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "roadProceduralTexture", scene, fallbackTexture, generateMipMaps);
-            this._roadColor = new BABYLON.Color3(0.53, 0.53, 0.53);
-            this.updateShaderUniforms();
+            var _this = _super.call(this, name, size, "roadProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
+            _this._roadColor = new BABYLON.Color3(0.53, 0.53, 0.53);
+            _this.updateShaderUniforms();
+            return _this;
         }
         RoadProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setColor3("roadColor", this._roadColor);

@@ -9,12 +9,13 @@ var BABYLON;
     var MarbleProceduralTexture = (function (_super) {
         __extends(MarbleProceduralTexture, _super);
         function MarbleProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "marbleProceduralTexture", scene, fallbackTexture, generateMipMaps);
-            this._numberOfTilesHeight = 3;
-            this._numberOfTilesWidth = 3;
-            this._amplitude = 9.0;
-            this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
-            this.updateShaderUniforms();
+            var _this = _super.call(this, name, size, "marbleProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
+            _this._numberOfTilesHeight = 3;
+            _this._numberOfTilesWidth = 3;
+            _this._amplitude = 9.0;
+            _this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
+            _this.updateShaderUniforms();
+            return _this;
         }
         MarbleProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("numberOfTilesHeight", this._numberOfTilesHeight);

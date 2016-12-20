@@ -28,24 +28,24 @@ var BABYLON;
          * @param scene the scene that owns the texture
          */
         function DigitalRainFontTexture(name, font, text, scene) {
-            _super.call(this, scene);
-            this.name = name;
-            this._text == text;
-            this._font == font;
-            this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            var _this = _super.call(this, scene) || this;
+            _this.name = name;
+            _this._text == text;
+            _this._font == font;
+            _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             //this.anisotropicFilteringLevel = 1;
             // Get the font specific info.
-            var maxCharHeight = this.getFontHeight(font);
-            var maxCharWidth = this.getFontWidth(font);
-            this._charSize = Math.max(maxCharHeight.height, maxCharWidth);
+            var maxCharHeight = _this.getFontHeight(font);
+            var maxCharWidth = _this.getFontWidth(font);
+            _this._charSize = Math.max(maxCharHeight.height, maxCharWidth);
             // This is an approximate size, but should always be able to fit at least the maxCharCount.
-            var textureWidth = this._charSize;
-            var textureHeight = Math.ceil(this._charSize * text.length);
+            var textureWidth = _this._charSize;
+            var textureHeight = Math.ceil(_this._charSize * text.length);
             // Create the texture that will store the font characters.
-            this._texture = scene.getEngine().createDynamicTexture(textureWidth, textureHeight, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+            _this._texture = scene.getEngine().createDynamicTexture(textureWidth, textureHeight, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
             //scene.getEngine().setclamp
-            var textureSize = this.getSize();
+            var textureSize = _this.getSize();
             // Create a canvas with the final size: the one matching the texture.
             var canvas = document.createElement("canvas");
             canvas.width = textureSize.width;
@@ -57,10 +57,11 @@ var BABYLON;
             context.imageSmoothingEnabled = false;
             // Sets the text in the texture.
             for (var i = 0; i < text.length; i++) {
-                context.fillText(text[i], 0, i * this._charSize - maxCharHeight.offset);
+                context.fillText(text[i], 0, i * _this._charSize - maxCharHeight.offset);
             }
             // Flush the text in the dynamic texture.
-            this.getScene().getEngine().updateDynamicTexture(this._texture, canvas, false, true);
+            _this.getScene().getEngine().updateDynamicTexture(_this._texture, canvas, false, true);
+            return _this;
         }
         Object.defineProperty(DigitalRainFontTexture.prototype, "charSize", {
             /**
@@ -139,14 +140,14 @@ var BABYLON;
             var texture = BABYLON.SerializationHelper.Parse(function () { return new DigitalRainFontTexture(source.name, source.font, source.text, scene); }, source, scene, null);
             return texture;
         };
-        __decorate([
-            BABYLON.serialize("font")
-        ], DigitalRainFontTexture.prototype, "_font", void 0);
-        __decorate([
-            BABYLON.serialize("text")
-        ], DigitalRainFontTexture.prototype, "_text", void 0);
         return DigitalRainFontTexture;
     }(BABYLON.BaseTexture));
+    __decorate([
+        BABYLON.serialize("font")
+    ], DigitalRainFontTexture.prototype, "_font", void 0);
+    __decorate([
+        BABYLON.serialize("text")
+    ], DigitalRainFontTexture.prototype, "_text", void 0);
     BABYLON.DigitalRainFontTexture = DigitalRainFontTexture;
     /**
      * DigitalRainPostProcess helps rendering everithing in digital rain.
@@ -163,21 +164,20 @@ var BABYLON;
          * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
          */
         function DigitalRainPostProcess(name, camera, options) {
-            var _this = this;
-            _super.call(this, name, 'digitalrain', ['digitalRainFontInfos', 'digitalRainOptions', 'cosTimeZeroOne', 'matrixSpeed'], ['digitalRainFont'], {
+            var _this = _super.call(this, name, 'digitalrain', ['digitalRainFontInfos', 'digitalRainOptions', 'cosTimeZeroOne', 'matrixSpeed'], ['digitalRainFont'], {
                 width: camera.getEngine().getRenderWidth(),
                 height: camera.getEngine().getRenderHeight()
-            }, camera, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, camera.getEngine(), true);
+            }, camera, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, camera.getEngine(), true) || this;
             /**
              * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
              * This number is defined between 0 and 1;
              */
-            this.mixToTile = 0;
+            _this.mixToTile = 0;
             /**
              * This defines the amount you want to mix the normal rendering pass in the digital rain.
              * This number is defined between 0 and 1;
              */
-            this.mixToNormal = 0;
+            _this.mixToNormal = 0;
             // Default values.
             var font = "15px Monospace";
             var characterSet = "古池や蛙飛び込む水の音ふるいけやかわずとびこむみずのおと初しぐれ猿も小蓑をほしげ也はつしぐれさるもこみのをほしげなり江戸の雨何石呑んだ時鳥えどのあめなんごくのんだほととぎす";
@@ -188,19 +188,19 @@ var BABYLON;
                 }
                 else {
                     font = options.font || font;
-                    this.mixToTile = options.mixToTile || this.mixToTile;
-                    this.mixToNormal = options.mixToNormal || this.mixToNormal;
+                    _this.mixToTile = options.mixToTile || _this.mixToTile;
+                    _this.mixToNormal = options.mixToNormal || _this.mixToNormal;
                 }
             }
-            this._digitalRainFontTexture = new DigitalRainFontTexture(name, font, characterSet, camera.getScene());
-            var textureSize = this._digitalRainFontTexture.getSize();
+            _this._digitalRainFontTexture = new DigitalRainFontTexture(name, font, characterSet, camera.getScene());
+            var textureSize = _this._digitalRainFontTexture.getSize();
             var alpha = 0.0;
             var cosTimeZeroOne = 0.0;
             var matrix = new BABYLON.Matrix();
             for (var i = 0; i < 16; i++) {
                 matrix.m[i] = Math.random();
             }
-            this.onApply = function (effect) {
+            _this.onApply = function (effect) {
                 effect.setTexture("digitalRainFont", _this._digitalRainFontTexture);
                 effect.setFloat4("digitalRainFontInfos", _this._digitalRainFontTexture.charSize, characterSet.length, textureSize.width, textureSize.height);
                 effect.setFloat4("digitalRainOptions", _this.width, _this.height, _this.mixToNormal, _this.mixToTile);
@@ -209,6 +209,7 @@ var BABYLON;
                 cosTimeZeroOne = alpha;
                 effect.setFloat('cosTimeZeroOne', cosTimeZeroOne);
             };
+            return _this;
         }
         return DigitalRainPostProcess;
     }(BABYLON.PostProcess));

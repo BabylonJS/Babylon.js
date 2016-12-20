@@ -13,7 +13,7 @@ declare module BABYLON {
         /**
          * Gets the size of one char in the texture (each char fits in size * size space in the texture).
          */
-        charSize: number;
+        readonly charSize: number;
         /**
          * Create a new instance of the Digital Rain FontTexture class
          * @param name the name of the texture

@@ -9,19 +9,20 @@ var BABYLON;
     var StarfieldProceduralTexture = (function (_super) {
         __extends(StarfieldProceduralTexture, _super);
         function StarfieldProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "starfieldProceduralTexture", scene, fallbackTexture, generateMipMaps);
-            this._time = 1;
-            this._alpha = 0.5;
-            this._beta = 0.8;
-            this._zoom = 0.8;
-            this._formuparam = 0.53;
-            this._stepsize = 0.1;
-            this._tile = 0.850;
-            this._brightness = 0.0015;
-            this._darkmatter = 0.400;
-            this._distfading = 0.730;
-            this._saturation = 0.850;
-            this.updateShaderUniforms();
+            var _this = _super.call(this, name, size, "starfieldProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
+            _this._time = 1;
+            _this._alpha = 0.5;
+            _this._beta = 0.8;
+            _this._zoom = 0.8;
+            _this._formuparam = 0.53;
+            _this._stepsize = 0.1;
+            _this._tile = 0.850;
+            _this._brightness = 0.0015;
+            _this._darkmatter = 0.400;
+            _this._distfading = 0.730;
+            _this._saturation = 0.850;
+            _this.updateShaderUniforms();
+            return _this;
         }
         StarfieldProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("time", this._time);

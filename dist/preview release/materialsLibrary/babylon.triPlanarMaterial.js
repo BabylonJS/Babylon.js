@@ -16,42 +16,44 @@ var BABYLON;
     var TriPlanarMaterialDefines = (function (_super) {
         __extends(TriPlanarMaterialDefines, _super);
         function TriPlanarMaterialDefines() {
-            _super.call(this);
-            this.DIFFUSEX = false;
-            this.DIFFUSEY = false;
-            this.DIFFUSEZ = false;
-            this.BUMPX = false;
-            this.BUMPY = false;
-            this.BUMPZ = false;
-            this.CLIPPLANE = false;
-            this.ALPHATEST = false;
-            this.POINTSIZE = false;
-            this.FOG = false;
-            this.SPECULARTERM = false;
-            this.NORMAL = false;
-            this.VERTEXCOLOR = false;
-            this.VERTEXALPHA = false;
-            this.NUM_BONE_INFLUENCERS = 0;
-            this.BonesPerMesh = 0;
-            this.INSTANCES = false;
-            this.rebuild();
+            var _this = _super.call(this) || this;
+            _this.DIFFUSEX = false;
+            _this.DIFFUSEY = false;
+            _this.DIFFUSEZ = false;
+            _this.BUMPX = false;
+            _this.BUMPY = false;
+            _this.BUMPZ = false;
+            _this.CLIPPLANE = false;
+            _this.ALPHATEST = false;
+            _this.POINTSIZE = false;
+            _this.FOG = false;
+            _this.SPECULARTERM = false;
+            _this.NORMAL = false;
+            _this.VERTEXCOLOR = false;
+            _this.VERTEXALPHA = false;
+            _this.NUM_BONE_INFLUENCERS = 0;
+            _this.BonesPerMesh = 0;
+            _this.INSTANCES = false;
+            _this.rebuild();
+            return _this;
         }
         return TriPlanarMaterialDefines;
     }(BABYLON.MaterialDefines));
     var TriPlanarMaterial = (function (_super) {
         __extends(TriPlanarMaterial, _super);
         function TriPlanarMaterial(name, scene) {
-            _super.call(this, name, scene);
-            this.tileSize = 1;
-            this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            this.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-            this.specularPower = 64;
-            this.disableLighting = false;
-            this.maxSimultaneousLights = 4;
-            this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            this._defines = new TriPlanarMaterialDefines();
-            this._cachedDefines = new TriPlanarMaterialDefines();
-            this._cachedDefines.BonesPerMesh = -1;
+            var _this = _super.call(this, name, scene) || this;
+            _this.tileSize = 1;
+            _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            _this.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+            _this.specularPower = 64;
+            _this.disableLighting = false;
+            _this.maxSimultaneousLights = 4;
+            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
+            _this._defines = new TriPlanarMaterialDefines();
+            _this._cachedDefines = new TriPlanarMaterialDefines();
+            _this._cachedDefines.BonesPerMesh = -1;
+            return _this;
         }
         TriPlanarMaterial.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0);
@@ -293,47 +295,47 @@ var BABYLON;
         TriPlanarMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new TriPlanarMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TriPlanarMaterial.prototype, "mixTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TriPlanarMaterial.prototype, "diffuseTextureX", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TriPlanarMaterial.prototype, "diffuseTextureY", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TriPlanarMaterial.prototype, "diffuseTextureZ", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TriPlanarMaterial.prototype, "normalTextureX", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TriPlanarMaterial.prototype, "normalTextureY", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TriPlanarMaterial.prototype, "normalTextureZ", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TriPlanarMaterial.prototype, "tileSize", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], TriPlanarMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], TriPlanarMaterial.prototype, "specularColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TriPlanarMaterial.prototype, "specularPower", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TriPlanarMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TriPlanarMaterial.prototype, "maxSimultaneousLights", void 0);
         return TriPlanarMaterial;
     }(BABYLON.Material));
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TriPlanarMaterial.prototype, "mixTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TriPlanarMaterial.prototype, "diffuseTextureX", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TriPlanarMaterial.prototype, "diffuseTextureY", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TriPlanarMaterial.prototype, "diffuseTextureZ", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TriPlanarMaterial.prototype, "normalTextureX", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TriPlanarMaterial.prototype, "normalTextureY", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TriPlanarMaterial.prototype, "normalTextureZ", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], TriPlanarMaterial.prototype, "tileSize", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], TriPlanarMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], TriPlanarMaterial.prototype, "specularColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], TriPlanarMaterial.prototype, "specularPower", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], TriPlanarMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], TriPlanarMaterial.prototype, "maxSimultaneousLights", void 0);
     BABYLON.TriPlanarMaterial = TriPlanarMaterial;
 })(BABYLON || (BABYLON = {}));
 

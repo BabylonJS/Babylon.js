@@ -884,7 +884,7 @@ declare module INSPECTOR {
         private _tab;
         private _adapter;
         private _tools;
-        private _children;
+        children: Array<TreeItem>;
         private _lineContent;
         constructor(tab: PropertyTab, obj: Adapter);
         /** Returns the item ID == its adapter ID */

@@ -9,10 +9,10 @@ declare module BABYLON {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
-        static PurpleFireColors: Color3[];
-        static GreenFireColors: Color3[];
-        static RedFireColors: Color3[];
-        static BlueFireColors: Color3[];
+        static readonly PurpleFireColors: Color3[];
+        static readonly GreenFireColors: Color3[];
+        static readonly RedFireColors: Color3[];
+        static readonly BlueFireColors: Color3[];
         fireColors: Color3[];
         time: number;
         speed: Vector2;

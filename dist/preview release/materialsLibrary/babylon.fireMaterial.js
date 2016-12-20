@@ -16,33 +16,35 @@ var BABYLON;
     var FireMaterialDefines = (function (_super) {
         __extends(FireMaterialDefines, _super);
         function FireMaterialDefines() {
-            _super.call(this);
-            this.DIFFUSE = false;
-            this.CLIPPLANE = false;
-            this.ALPHATEST = false;
-            this.POINTSIZE = false;
-            this.FOG = false;
-            this.UV1 = false;
-            this.VERTEXCOLOR = false;
-            this.VERTEXALPHA = false;
-            this.BonesPerMesh = 0;
-            this.NUM_BONE_INFLUENCERS = 0;
-            this.INSTANCES = false;
-            this._keys = Object.keys(this);
+            var _this = _super.call(this) || this;
+            _this.DIFFUSE = false;
+            _this.CLIPPLANE = false;
+            _this.ALPHATEST = false;
+            _this.POINTSIZE = false;
+            _this.FOG = false;
+            _this.UV1 = false;
+            _this.VERTEXCOLOR = false;
+            _this.VERTEXALPHA = false;
+            _this.BonesPerMesh = 0;
+            _this.NUM_BONE_INFLUENCERS = 0;
+            _this.INSTANCES = false;
+            _this._keys = Object.keys(_this);
+            return _this;
         }
         return FireMaterialDefines;
     }(BABYLON.MaterialDefines));
     var FireMaterial = (function (_super) {
         __extends(FireMaterial, _super);
         function FireMaterial(name, scene) {
-            _super.call(this, name, scene);
-            this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            this.speed = 1.0;
-            this._scaledDiffuse = new BABYLON.Color3();
-            this._defines = new FireMaterialDefines();
-            this._cachedDefines = new FireMaterialDefines();
-            this._lastTime = 0;
-            this._cachedDefines.BonesPerMesh = -1;
+            var _this = _super.call(this, name, scene) || this;
+            _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            _this.speed = 1.0;
+            _this._scaledDiffuse = new BABYLON.Color3();
+            _this._defines = new FireMaterialDefines();
+            _this._cachedDefines = new FireMaterialDefines();
+            _this._lastTime = 0;
+            _this._cachedDefines.BonesPerMesh = -1;
+            return _this;
         }
         FireMaterial.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0);
@@ -290,23 +292,23 @@ var BABYLON;
             }
             return material;
         };
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], FireMaterial.prototype, "diffuseTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], FireMaterial.prototype, "distortionTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], FireMaterial.prototype, "opacityTexture", void 0);
-        __decorate([
-            BABYLON.serialize("diffuseColor")
-        ], FireMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FireMaterial.prototype, "speed", void 0);
         return FireMaterial;
     }(BABYLON.Material));
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], FireMaterial.prototype, "diffuseTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], FireMaterial.prototype, "distortionTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], FireMaterial.prototype, "opacityTexture", void 0);
+    __decorate([
+        BABYLON.serialize("diffuseColor")
+    ], FireMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FireMaterial.prototype, "speed", void 0);
     BABYLON.FireMaterial = FireMaterial;
 })(BABYLON || (BABYLON = {}));
 

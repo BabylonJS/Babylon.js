@@ -2141,6 +2141,12 @@ var INSPECTOR;
                 if (item.id.toLowerCase().indexOf(filter.toLowerCase()) != -1) {
                     items.push(item);
                 }
+                for (var _b = 0, _c = item.children; _b < _c.length; _b++) {
+                    var child = _c[_b];
+                    if (child.id.toLowerCase().indexOf(filter.toLowerCase()) != -1) {
+                        items.push(item);
+                    }
+                }
             }
             this.update(items);
         };
@@ -3337,7 +3343,6 @@ var INSPECTOR;
             }
             // Create the canvas that will be used to display the labels
             this._canvas = new BABYLON.ScreenSpaceCanvas2D(this._scene, { id: "###Label Canvas###" /*, cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS*/ });
-            this._canvas.createCanvasProfileInfoCanvas();
             // Create label for all the Meshes, Lights and Cameras
             // Those that will be created/removed after this method is called will be taken care by the event handlers added below
             for (var _i = 0, _a = this._scene.meshes; _i < _a.length; _i++) {
@@ -3519,7 +3524,7 @@ var INSPECTOR;
         __extends(TreeItem, _super);
         function TreeItem(tab, obj) {
             var _this = _super.call(this) || this;
-            _this._children = [];
+            _this.children = [];
             _this._tab = tab;
             _this._adapter = obj;
             _this._tools = _this._adapter.getTools();
@@ -3536,7 +3541,7 @@ var INSPECTOR;
         });
         /** Add the given item as a child of this one */
         TreeItem.prototype.add = function (child) {
-            this._children.push(child);
+            this.children.push(child);
             this.update();
         };
         /**
@@ -3555,8 +3560,8 @@ var INSPECTOR;
         /** hide all children of this item */
         TreeItem.prototype.fold = function () {
             // Do nothing id no children
-            if (this._children.length > 0) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            if (this.children.length > 0) {
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                     var elem = _a[_i];
                     elem.toHtml().style.display = 'none';
                 }
@@ -3567,8 +3572,8 @@ var INSPECTOR;
         /** Show all children of this item */
         TreeItem.prototype.unfold = function () {
             // Do nothing id no children
-            if (this._children.length > 0) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            if (this.children.length > 0) {
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                     var elem = _a[_i];
                     elem.toHtml().style.display = 'block';
                 }
@@ -3606,12 +3611,12 @@ var INSPECTOR;
         TreeItem.prototype.update = function () {
             // Clean division holding all children
             INSPECTOR.Helpers.CleanDiv(this._lineContent);
-            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                 var child = _a[_i];
                 var elem = child.toHtml();
                 this._lineContent.appendChild(elem);
             }
-            if (this._children.length > 0) {
+            if (this.children.length > 0) {
                 // Check if folded or not
                 if (!this._div.classList.contains('folded') && !this._div.classList.contains('unfolded')) {
                     this._div.classList.add('folded');
@@ -3651,7 +3656,7 @@ var INSPECTOR;
         TreeItem.prototype.highlight = function (b) {
             // Remove highlight for all children 
             if (!b) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     child._adapter.highlight(b);
                 }
@@ -3666,7 +3671,7 @@ var INSPECTOR;
         /** Set this item as active (background lighter) in the tree panel */
         TreeItem.prototype.active = function (b) {
             this._div.classList.remove('active');
-            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                 var child = _a[_i];
                 child.active(false);
             }
