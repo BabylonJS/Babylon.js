@@ -2349,10 +2349,6 @@
             }
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
-            if (generateMipMaps) {
-                this._gl.generateMipmap(this._gl.TEXTURE_2D);
-            }
-
             // Unbind
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
