@@ -211,7 +211,7 @@ namespace Unity3D2Babylon
                 var previousAlphaSource = importTool.textureImporter.alphaSource;
                 var previousTextureType = importTool.textureImporter.textureType;
                 importTool.SetReadable();
-                importTool.textureImporter.textureType = TextureImporterType.Default;
+                importTool.textureImporter.textureType = (isLightmap) ? TextureImporterType.Lightmap : TextureImporterType.Default;
                 importTool.textureImporter.alphaSource = TextureImporterAlphaSource.FromInput;
                 importTool.textureImporter.convertToNormalmap = false;
                 AssetDatabase.ImportAsset(texturePath);

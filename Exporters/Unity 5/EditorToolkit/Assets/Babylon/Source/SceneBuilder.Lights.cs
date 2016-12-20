@@ -98,11 +98,14 @@ namespace Unity3D2Babylon
 
             var direction = new Vector3(0, 0, 1);
             var transformedDirection = light.transform.TransformDirection(direction);
+            transformedDirection[0] += exportationOptions.LightRotationOffset.X;
+            transformedDirection[1] += exportationOptions.LightRotationOffset.Y;
+            transformedDirection[2] += exportationOptions.LightRotationOffset.Z;
             babylonLight.direction = transformedDirection.ToFloat();
-
+            
             babylonLight.diffuse = light.color.ToFloat();
 
-            babylonLight.intensity = light.intensity;
+            babylonLight.intensity = light.intensity * exportationOptions.LightIntensityFactor;
 
             babylonLight.angle = light.spotAngle * (float)Math.PI / 180;
             babylonLight.exponent = 1.0f;
