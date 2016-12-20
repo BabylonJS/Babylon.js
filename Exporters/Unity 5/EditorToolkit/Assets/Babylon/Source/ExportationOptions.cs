@@ -13,6 +13,8 @@ namespace Unity3D2Babylon
         public bool AttachUnityEditor { get; set; }
         public bool ShowDebugControls { get; set; }
         public float ReflectionDefaultLevel { get; set; }
+        public SerializableVector3 LightRotationOffset { get; set; }
+        public float LightIntensityFactor { get; set; }
         public int DefaultQualityLevel { get; set; }
         public bool EmbeddedShaders { get; set; }
         public bool ExportLightmaps { get; set; }
@@ -53,6 +55,8 @@ namespace Unity3D2Babylon
             CompileTypeScript = true;
             AttachUnityEditor = true;
             ShowDebugControls = true;
+            LightRotationOffset = new Vector3(0,0,0);
+            LightIntensityFactor = 1f;
             ReflectionDefaultLevel = 0.25f;
             DefaultQualityLevel = 90;
             EmbeddedShaders = true;

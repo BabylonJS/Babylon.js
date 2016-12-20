@@ -460,6 +460,13 @@ namespace Unity3D2Babylon
             exportationOptions.DefaultPhysicsEngine = (int)(BabylonPhysicsEngine)EditorGUILayout.EnumPopup("Default Physics Engine", (BabylonPhysicsEngine)exportationOptions.DefaultPhysicsEngine, GUILayout.ExpandWidth(true));
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label(" Light Rotation Offset");
+            exportationOptions.LightRotationOffset = EditorGUILayout.Vector3Field("", exportationOptions.LightRotationOffset, GUILayout.ExpandWidth(false));
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+            exportationOptions.LightIntensityFactor = EditorGUILayout.Slider(" Light Intensity Factor", exportationOptions.LightIntensityFactor, 0, 10.0f);
+            EditorGUILayout.Space();
             exportationOptions.ReflectionDefaultLevel = EditorGUILayout.Slider(" Default Reflection Level", exportationOptions.ReflectionDefaultLevel, 0, 1.0f);
             EditorGUILayout.Space();
             exportationOptions.DefaultImageFormat = (int)(BabylonImageFormat)EditorGUILayout.EnumPopup(" Prefered Texture Format", (BabylonImageFormat)exportationOptions.DefaultImageFormat, GUILayout.ExpandWidth(true));
