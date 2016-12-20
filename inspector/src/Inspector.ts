@@ -240,13 +240,14 @@ module INSPECTOR {
             if (!this._popupMode) {
                 // Get canvas
                 let canvas         = this._scene.getEngine().getRenderingCanvas(); 
+
                 // restore canvas style
                 for (let prop in this._canvasStyle) {
                     canvas.style[prop] = this._canvasStyle[prop];
                 }
-                // Get parent of the wrapper           
+                // Get parent of the wrapper 
                 let canvasParent   = canvas.parentElement.parentElement;  
-                canvasParent.appendChild(canvas);                              
+                canvasParent.insertBefore(canvas, this._c2diwrapper);
                 // Remove wrapper
                 Helpers.CleanDiv(this._c2diwrapper);
                 this._c2diwrapper.remove();                   
