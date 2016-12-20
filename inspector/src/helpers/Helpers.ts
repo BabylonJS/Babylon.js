@@ -144,5 +144,11 @@ module INSPECTOR {
             
         }
 
+        public static IsSystemName(name: string): boolean {
+            if (name==null) {
+                return false;
+            }
+            return name.indexOf("###")===0 && name.lastIndexOf("###")===(name.length-3);
+        }
     }
 }
