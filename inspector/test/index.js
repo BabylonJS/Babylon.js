@@ -89,11 +89,7 @@ var Test = (function () {
     };
     Test.prototype._initGame = function () {
         this._createCanvas();
-        BABYLON.SceneLoader.ImportMesh('', 'test/', 'Rabbit.babylon', this.scene, (meshes) => {
-            meshes.forEach((mesh) => {
-                console.log(mesh.name);
-            })
-        });
+        BABYLON.SceneLoader.ImportMesh('', 'test/', 'Rabbit.babylon', this.scene);
     };
     /**
      * Create the canvas2D
