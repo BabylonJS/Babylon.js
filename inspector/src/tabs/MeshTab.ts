@@ -10,15 +10,10 @@ module INSPECTOR{
         protected _getTree() : Array<TreeItem> {
             let arr = [];
             
-            // Returns true if the id of the given object starts and ends with '###'
-            let shouldExcludeThisMesh = (obj:BABYLON.AbstractMesh) : boolean => {
-                return (obj.name && obj.name.indexOf('###') == 0 && obj.name.lastIndexOf('###', 0) === 0);
-            };
-            
             // get all meshes from the first scene
             let instances = this._inspector.scene;
             for (let mesh of instances.meshes) {
-                if (!shouldExcludeThisMesh(mesh)){
+                if (!Helpers.IsSystemName(mesh.name)){
                     arr.push(new TreeItem(this, new MeshAdapter(mesh)));
                 }
             }
