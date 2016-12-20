@@ -88,8 +88,10 @@ declare module INSPECTOR {
         'Texture': {
             type: typeof BABYLON.Texture;
             properties: string[];
+            format: (tex: BABYLON.Texture) => string;
         };
         'ArcRotateCamera': {
+            type: typeof BABYLON.ArcRotateCamera;
             properties: string[];
         };
         'Scene': {
@@ -503,7 +505,7 @@ declare module INSPECTOR {
         private _elem;
         /** The tooltip div */
         private _infoDiv;
-        constructor(elem: HTMLElement, tip: string);
+        constructor(elem: HTMLElement, tip: string, attachTo?: HTMLElement);
     }
 }
 
@@ -545,7 +547,12 @@ declare module INSPECTOR {
          * Removes all children of the given div.
          */
         static CleanDiv(div: HTMLElement): void;
+        /**
+         * Returns the true value of the given CSS Attribute from the given element (in percentage or in pixel, as it was specified in the css)
+         */
+        static Css(elem: HTMLElement, cssAttribute: string): string;
         static LoadScript(): void;
+        static IsSystemName(name: string): boolean;
     }
 }
 
@@ -826,12 +833,23 @@ declare module INSPECTOR {
     class LabelTool extends AbstractTool {
         /** True if label are displayed, false otherwise */
         private _isDisplayed;
-        private _labels;
-        private _camera;
-        private _transformationMatrix;
+        private _canvas;
+        private _labelInitialized;
+        private _scene;
+        private _canvas2DLoaded;
+        private _newMeshObserver;
+        private _removedMeshObserver;
+        private _newLightObserver;
+        private _removedLightObserver;
+        private _newCameraObserver;
+        private _removedCameraObserver;
         constructor(parent: HTMLElement, inspector: Inspector);
+        dispose(): void;
+        private _checkC2DLoaded();
+        private _initializeLabels();
+        private _createLabel(node);
+        private _removeLabel(node);
         action(): void;
-        private _update();
     }
 }
 

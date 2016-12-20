@@ -16,10 +16,7 @@ var Test = (function () {
     Test.prototype._run = function () {
         var _this = this;
         this._initScene();
-        // BABYLON.DebugLayer.InspectorURL = 'http://localhost:1338/dist/preview release/inspector/babylon.inspector.js';
-        window.addEventListener('click', () => {
-            this.scene.debugLayer.show();
-        })
+        this.scene.debugLayer.show();
         this.scene.executeWhenReady(function () {
             _this._initGame();
             _this.engine.runRenderLoop(function () {
@@ -92,6 +89,7 @@ var Test = (function () {
     };
     Test.prototype._initGame = function () {
         this._createCanvas();
+        BABYLON.SceneLoader.ImportMesh('', 'test/', 'Rabbit.babylon', this.scene);
     };
     /**
      * Create the canvas2D

@@ -48,16 +48,14 @@ module INSPECTOR {
                 // Get canvas and its DOM parent
                 let canvas                    = this._scene.getEngine().getRenderingCanvas();            
                 let canvasParent              = canvas.parentElement;            
-                let canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);            
-                // resize canvas
-                // canvas.style.width = 'calc(100% - 750px - 12px)';
+                let canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
 
                 // get canvas style                
                 let canvasComputedStyle  = Inspector.WINDOW.getComputedStyle(canvas);
 
                 this._canvasStyle = { 
-                    width        : canvasComputedStyle.width, 
-                    height       : canvasComputedStyle.height,
+                    width        : Helpers.Css(canvas, 'width'),
+                    height       : Helpers.Css(canvas, 'height'),
 
                     position     : canvasComputedStyle.position,
                     top          : canvasComputedStyle.top,
@@ -247,13 +245,14 @@ module INSPECTOR {
             if (!this._popupMode) {
                 // Get canvas
                 let canvas         = this._scene.getEngine().getRenderingCanvas(); 
+
                 // restore canvas style
                 for (let prop in this._canvasStyle) {
                     canvas.style[prop] = this._canvasStyle[prop];
                 }
-                // Get parent of the wrapper           
+                // Get parent of the wrapper 
                 let canvasParent   = canvas.parentElement.parentElement;  
-                canvasParent.appendChild(canvas);                              
+                canvasParent.insertBefore(canvas, this._c2diwrapper);
                 // Remove wrapper
                 Helpers.CleanDiv(this._c2diwrapper);
                 this._c2diwrapper.remove();                   
