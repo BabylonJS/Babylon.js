@@ -527,7 +527,8 @@
             }
 
             // Postprocesses
-            for (var i = 0; i < this._postProcesses.length; ++i) {
+            var i = this._postProcesses.length;
+            while (--i >= 0) {
                 this._postProcesses[i].dispose(this);
             }
 
