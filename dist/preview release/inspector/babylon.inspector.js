@@ -24,13 +24,11 @@ var INSPECTOR;
                 var canvas = this._scene.getEngine().getRenderingCanvas();
                 var canvasParent = canvas.parentElement;
                 var canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
-                // resize canvas
-                // canvas.style.width = 'calc(100% - 750px - 12px)';
                 // get canvas style                
                 var canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);
                 this._canvasStyle = {
-                    width: canvasComputedStyle.width,
-                    height: canvasComputedStyle.height,
+                    width: INSPECTOR.Helpers.Css(canvas, 'width'),
+                    height: INSPECTOR.Helpers.Css(canvas, 'height'),
                     position: canvasComputedStyle.position,
                     top: canvasComputedStyle.top,
                     bottom: canvasComputedStyle.bottom,
@@ -1260,12 +1258,10 @@ var INSPECTOR;
          * (example : mesh.position = new BABYLON.Vector3 ; the original vector3 object is deleted from the mesh).
         */
         PropertyLine.prototype.updateObject = function () {
-            if (!this._parent) {
-                return this._property.value;
-            }
-            else {
+            if (this._parent) {
                 this._property.obj = this._parent.updateObject();
             }
+            return this._property.value;
         };
         Object.defineProperty(PropertyLine.prototype, "name", {
             // Returns the property name
@@ -1865,6 +1861,18 @@ var INSPECTOR;
             while (div.firstChild) {
                 div.removeChild(div.firstChild);
             }
+        };
+        /**
+         * Returns the true value of the given CSS Attribute from the given element (in percentage or in pixel, as it was specified in the css)
+         */
+        Helpers.Css = function (elem, cssAttribute) {
+            var clone = elem.cloneNode(true);
+            var div = Helpers.CreateDiv('', INSPECTOR.Inspector.DOCUMENT.body);
+            div.style.display = 'none';
+            div.appendChild(clone);
+            var value = INSPECTOR.Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
+            div.remove();
+            return value;
         };
         Helpers.LoadScript = function () {
             BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js", function (elem) {

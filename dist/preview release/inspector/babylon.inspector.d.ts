@@ -547,6 +547,10 @@ declare module INSPECTOR {
          * Removes all children of the given div.
          */
         static CleanDiv(div: HTMLElement): void;
+        /**
+         * Returns the true value of the given CSS Attribute from the given element (in percentage or in pixel, as it was specified in the css)
+         */
+        static Css(elem: HTMLElement, cssAttribute: string): string;
         static LoadScript(): void;
     }
 }
