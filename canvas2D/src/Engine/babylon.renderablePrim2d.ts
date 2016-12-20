@@ -928,7 +928,7 @@
          */
         protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);    // Compute the transformation into the renderGroup's space
-            let rgScale = this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            let rgScale = (this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
             let size = (<Size>this.renderGroup.viewportSize);
             let zBias = this.actualZOffset;
 
@@ -951,12 +951,6 @@
             let invZBias = 1 / zBias;
             let tx = new Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
             let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
-
-            if (!this.applyActualScaleOnTransform()) {
-                let las = this.actualScale;
-                tx.x /= las.x;
-                ty.y /= las.y;
-            }
 
             part.transformX = tx;
             part.transformY = ty;
