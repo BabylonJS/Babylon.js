@@ -143,7 +143,7 @@
 
         // Members
         public autoClear = true;
-        public clearColor: any = new Color3(0.2, 0.2, 0.3);
+        public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
         public ambientColor = new Color3(0, 0, 0);
 
         public forceWireframe = false;
@@ -2464,7 +2464,7 @@
             if (this.activeCameras.length > 0) {
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     if (cameraIndex > 0) {
-                        this._engine.clear(0, false, true, true);
+                        this._engine.clear(null, false, true, true);
                     }
 
                     this._processSubCameras(this.activeCameras[cameraIndex]);
