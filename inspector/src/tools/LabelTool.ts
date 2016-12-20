@@ -64,8 +64,6 @@ module INSPECTOR {
             // Create the canvas that will be used to display the labels
             this._canvas = new BABYLON.ScreenSpaceCanvas2D(this._scene, {id: "###Label Canvas###"/*, cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS*/});
 
-            this._canvas.createCanvasProfileInfoCanvas();
-
             // Create label for all the Meshes, Lights and Cameras
             // Those that will be created/removed after this method is called will be taken care by the event handlers added below
 
