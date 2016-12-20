@@ -7,7 +7,7 @@
         // The object this item is linked to (should be a primitive or a canvas) TODO should be superclass of all primitives
         private _adapter    : Adapter;
         private _tools      : Array<AbstractTreeTool>;
-        private _children   : Array<TreeItem> = [];
+        public children     : Array<TreeItem> = [];
         // Div element that contains all children of this node.
         private _lineContent: HTMLElement;  
 
@@ -29,7 +29,7 @@
 
         /** Add the given item as a child of this one */
         public add(child:TreeItem) {
-            this._children.push(child);
+            this.children.push(child);
             this.update();
         }
 
@@ -51,8 +51,8 @@
         /** hide all children of this item */
         public fold() {
             // Do nothing id no children
-            if (this._children.length > 0) {
-                for (let elem of this._children) {
+            if (this.children.length > 0) {
+                for (let elem of this.children) {
                     elem.toHtml().style.display = 'none';
                 }
                 this._div.classList.add('folded');
@@ -62,8 +62,8 @@
         /** Show all children of this item */
         public unfold() {
             // Do nothing id no children
-            if (this._children.length > 0) {
-                for (let elem of this._children) {
+            if (this.children.length > 0) {
+                for (let elem of this.children) {
                     elem.toHtml().style.display = 'block';
                 }
                 this._div.classList.add('unfolded');
@@ -110,11 +110,11 @@
             // Clean division holding all children
             Helpers.CleanDiv(this._lineContent);
 
-            for (let child of this._children) {
+            for (let child of this.children) {
                 let elem = child.toHtml();
                 this._lineContent.appendChild(elem);
             }
-            if (this._children.length > 0) {
+            if (this.children.length > 0) {
                 // Check if folded or not
                 if (!this._div.classList.contains('folded') && !this._div.classList.contains('unfolded')) {
                     this._div.classList.add('folded');
@@ -155,7 +155,7 @@
         public highlight(b:boolean) {
             // Remove highlight for all children 
             if (!b) {
-                for (let child of this._children) {
+                for (let child of this.children) {
                     child._adapter.highlight(b);
                 }
             }
@@ -171,7 +171,7 @@
         /** Set this item as active (background lighter) in the tree panel */
         public active(b:boolean) {
             this._div.classList.remove('active');
-            for (let child of this._children) {
+            for (let child of this.children) {
                 child.active(false);
             }
             if (b) {
