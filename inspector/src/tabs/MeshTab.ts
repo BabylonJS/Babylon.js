@@ -26,7 +26,7 @@ module INSPECTOR{
                     alreadyIn.push(node);
                     for (let child of descendants) {     
                         if (child instanceof BABYLON.AbstractMesh) {
-                            if (!shouldExcludeThisMesh(child)) {  
+                            if (!Helpers.IsSystemName(child.name)) {  
                                 let n = createNode(child);
                                 node.add(n); 
                             }
