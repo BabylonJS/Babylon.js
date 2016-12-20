@@ -19,8 +19,8 @@
             font-family:sans-serif;
         }
 
-        /* First try : PG-like
-        #game-canvas {
+        /* First try : PG-like */
+        /*#game-canvas {
             width:75%;
             height:100%; 
             top:0;
@@ -39,12 +39,19 @@
             background-color: #333;
         }*/
         
+        /*Second : sandbox like*/
         #game-canvas {
             position:absolute;
             width:100%;
-            height:650px; 
+            height:100%; 
             top:0;
-            left : 150px;
+        }
+        .fakeFooter {
+            position:absolute;
+            width:100%;
+            height:50px;
+            background-color: #333;
+            bottom: 0;
         }
 
     </style>
@@ -52,15 +59,15 @@
 </head>
 <body>
     
-    <!-- First try : PG-like
+    <!-- First try : PG-like 
     <div class="fakeToolbar"></div>
     <div class="mini">
         <div class="fakeBarAgain"></div>
         <canvas id="game-canvas"></canvas> 
-    </div>
-    -->
-    <!--Second try : Sandbox-like-->
-    <canvas id="game-canvas"></canvas> 
+    </div>-->
+    <!--Second try : Sandbox-like -->
+    <canvas id="game-canvas"></canvas>
+    <div class="fakeFooter"></div>
 
     <!--Starting the game-->
     <script>
