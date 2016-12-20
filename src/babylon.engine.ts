@@ -957,12 +957,12 @@
             }
         }
 
-        public clear(color: any, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
             this.applyStates();
 
             var mode = 0;
-            if (backBuffer) {
-                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+            if (backBuffer && color) {
+                this._gl.clearColor(color.r, color.g, color.b, color.a);
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
             if (depth) {
