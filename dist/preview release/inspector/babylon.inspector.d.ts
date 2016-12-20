@@ -88,8 +88,10 @@ declare module INSPECTOR {
         'Texture': {
             type: typeof BABYLON.Texture;
             properties: string[];
+            format: (tex: BABYLON.Texture) => string;
         };
         'ArcRotateCamera': {
+            type: typeof BABYLON.ArcRotateCamera;
             properties: string[];
         };
         'Scene': {

@@ -43,16 +43,14 @@ module INSPECTOR {
                 // Get canvas and its DOM parent
                 let canvas                    = this._scene.getEngine().getRenderingCanvas();            
                 let canvasParent              = canvas.parentElement;            
-                let canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);            
-                // resize canvas
-                // canvas.style.width = 'calc(100% - 750px - 12px)';
+                let canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
 
                 // get canvas style                
                 let canvasComputedStyle  = Inspector.WINDOW.getComputedStyle(canvas);
 
                 this._canvasStyle = { 
-                    width        : canvasComputedStyle.width, 
-                    height       : canvasComputedStyle.height,
+                    width        : Helpers.Css(canvas, 'width'),
+                    height       : Helpers.Css(canvas, 'height'),
 
                     position     : canvasComputedStyle.position,
                     top          : canvasComputedStyle.top,
