@@ -116,6 +116,15 @@ namespace BabylonExport.Entities
         public float[] emissive { get; set; }
 
         [DataMember]
+        public float roughness { get; set; }
+
+        [DataMember]
+        public bool useRoughnessFromMetallicTextureAlpha { get; set; }
+
+        [DataMember]
+        public bool useRoughnessFromMetallicTextureGreen { get; set; }
+
+        [DataMember]
         public bool useAlphaFromAlbedoTexture { get; set; }
 
         [DataMember]
@@ -156,6 +165,10 @@ namespace BabylonExport.Entities
             cameraExposure = 1.0f;
             cameraContrast = 1.0f;
             useEmissiveAsIllumination = false;
+
+            roughness = 1.0f;
+            useRoughnessFromMetallicTextureAlpha = false;
+            useRoughnessFromMetallicTextureGreen = false;
 
             overloadedShadowIntensity = 1.0f;
             overloadedShadeIntensity = 1.0f;
