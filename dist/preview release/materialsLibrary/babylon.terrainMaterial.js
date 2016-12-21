@@ -16,39 +16,41 @@ var BABYLON;
     var TerrainMaterialDefines = (function (_super) {
         __extends(TerrainMaterialDefines, _super);
         function TerrainMaterialDefines() {
-            _super.call(this);
-            this.DIFFUSE = false;
-            this.BUMP = false;
-            this.CLIPPLANE = false;
-            this.ALPHATEST = false;
-            this.POINTSIZE = false;
-            this.FOG = false;
-            this.SPECULARTERM = false;
-            this.NORMAL = false;
-            this.UV1 = false;
-            this.UV2 = false;
-            this.VERTEXCOLOR = false;
-            this.VERTEXALPHA = false;
-            this.NUM_BONE_INFLUENCERS = 0;
-            this.BonesPerMesh = 0;
-            this.INSTANCES = false;
-            this.rebuild();
+            var _this = _super.call(this) || this;
+            _this.DIFFUSE = false;
+            _this.BUMP = false;
+            _this.CLIPPLANE = false;
+            _this.ALPHATEST = false;
+            _this.POINTSIZE = false;
+            _this.FOG = false;
+            _this.SPECULARTERM = false;
+            _this.NORMAL = false;
+            _this.UV1 = false;
+            _this.UV2 = false;
+            _this.VERTEXCOLOR = false;
+            _this.VERTEXALPHA = false;
+            _this.NUM_BONE_INFLUENCERS = 0;
+            _this.BonesPerMesh = 0;
+            _this.INSTANCES = false;
+            _this.rebuild();
+            return _this;
         }
         return TerrainMaterialDefines;
     }(BABYLON.MaterialDefines));
     var TerrainMaterial = (function (_super) {
         __extends(TerrainMaterial, _super);
         function TerrainMaterial(name, scene) {
-            _super.call(this, name, scene);
-            this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            this.specularColor = new BABYLON.Color3(0, 0, 0);
-            this.specularPower = 64;
-            this.disableLighting = false;
-            this.maxSimultaneousLights = 4;
-            this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            this._defines = new TerrainMaterialDefines();
-            this._cachedDefines = new TerrainMaterialDefines();
-            this._cachedDefines.BonesPerMesh = -1;
+            var _this = _super.call(this, name, scene) || this;
+            _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            _this.specularColor = new BABYLON.Color3(0, 0, 0);
+            _this.specularPower = 64;
+            _this.disableLighting = false;
+            _this.maxSimultaneousLights = 4;
+            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
+            _this._defines = new TerrainMaterialDefines();
+            _this._cachedDefines = new TerrainMaterialDefines();
+            _this._cachedDefines.BonesPerMesh = -1;
+            return _this;
         }
         TerrainMaterial.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0);
@@ -303,44 +305,44 @@ var BABYLON;
         TerrainMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new TerrainMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TerrainMaterial.prototype, "mixTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TerrainMaterial.prototype, "diffuseTexture1", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TerrainMaterial.prototype, "diffuseTexture2", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TerrainMaterial.prototype, "diffuseTexture3", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TerrainMaterial.prototype, "bumpTexture1", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TerrainMaterial.prototype, "bumpTexture2", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], TerrainMaterial.prototype, "bumpTexture3", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], TerrainMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], TerrainMaterial.prototype, "specularColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TerrainMaterial.prototype, "specularPower", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TerrainMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TerrainMaterial.prototype, "maxSimultaneousLights", void 0);
         return TerrainMaterial;
     }(BABYLON.Material));
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TerrainMaterial.prototype, "mixTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TerrainMaterial.prototype, "diffuseTexture1", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TerrainMaterial.prototype, "diffuseTexture2", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TerrainMaterial.prototype, "diffuseTexture3", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TerrainMaterial.prototype, "bumpTexture1", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TerrainMaterial.prototype, "bumpTexture2", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], TerrainMaterial.prototype, "bumpTexture3", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], TerrainMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], TerrainMaterial.prototype, "specularColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], TerrainMaterial.prototype, "specularPower", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], TerrainMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], TerrainMaterial.prototype, "maxSimultaneousLights", void 0);
     BABYLON.TerrainMaterial = TerrainMaterial;
 })(BABYLON || (BABYLON = {}));
 

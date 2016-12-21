@@ -14,6 +14,10 @@ var INSPECTOR;
             // Save HTML document and window
             Inspector.DOCUMENT = window.document;
             Inspector.WINDOW = window;
+            // Load the Canvas2D library if it's not already done
+            if (!BABYLON.Canvas2D) {
+                BABYLON.Tools.LoadScript("http://www.babylonjs.com/babylon.canvas2d.js", function () { });
+            }
             // POPUP MODE
             if (popup) {
                 // Build the inspector in the given parent
@@ -24,13 +28,11 @@ var INSPECTOR;
                 var canvas = this._scene.getEngine().getRenderingCanvas();
                 var canvasParent = canvas.parentElement;
                 var canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
-                // resize canvas
-                // canvas.style.width = 'calc(100% - 750px - 12px)';
                 // get canvas style                
                 var canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);
                 this._canvasStyle = {
-                    width: canvasComputedStyle.width,
-                    height: canvasComputedStyle.height,
+                    width: INSPECTOR.Helpers.Css(canvas, 'width'),
+                    height: INSPECTOR.Helpers.Css(canvas, 'height'),
                     position: canvasComputedStyle.position,
                     top: canvasComputedStyle.top,
                     bottom: canvasComputedStyle.bottom,
@@ -203,9 +205,9 @@ var INSPECTOR;
                 for (var prop in this._canvasStyle) {
                     canvas.style[prop] = this._canvasStyle[prop];
                 }
-                // Get parent of the wrapper           
+                // Get parent of the wrapper 
                 var canvasParent = canvas.parentElement.parentElement;
-                canvasParent.appendChild(canvas);
+                canvasParent.insertBefore(canvas, this._c2diwrapper);
                 // Remove wrapper
                 INSPECTOR.Helpers.CleanDiv(this._c2diwrapper);
                 this._c2diwrapper.remove();
@@ -321,14 +323,56 @@ var INSPECTOR;
                 'uOffset',
                 'vOffset'
             ],
+            format: function (tex) { return tex.name; }
         },
         'ArcRotateCamera': {
-            // type: BABYLON.ArcRotateCamera,
-            properties: ['alpha', 'beta', 'radius']
+            type: BABYLON.ArcRotateCamera,
+            properties: [
+                'alpha',
+                'beta',
+                'radius',
+                'angularSensibilityX',
+                'angularSensibilityY',
+                'target',
+                'lowerAlphaLimit',
+                'lowerBetaLimit',
+                'upperAlphaLimit',
+                'upperBetaLimit',
+                'lowerRadiusLimit',
+                'upperRadiusLimit',
+                'pinchPrecision',
+                'wheelPrecision',
+                'allowUpsideDown',
+                'checkCollisions'
+            ]
         },
         'Scene': {
             type: BABYLON.Scene,
-            properties: ['actionManager', 'activeCamera', 'ambientColor', 'clearColor']
+            properties: [
+                'actionManager',
+                'activeCamera',
+                'ambientColor',
+                'clearColor',
+                'forceWireframe',
+                'forcePointsCloud',
+                'forceShowBoundingBoxes',
+                'useRightHandedSystem',
+                'hoverCursor',
+                'cameraToUseForPointers',
+                'fogEnabled',
+                'fogColor',
+                'fogDensity',
+                'fogStart',
+                'fogEnd',
+                'shadowsEnabled',
+                'lightsEnabled',
+                'collisionsEnabled',
+                'gravity',
+                'meshUnderPointer',
+                'pointerX',
+                'pointerY',
+                'uid'
+            ]
         },
         'Mesh': {
             type: BABYLON.Mesh,
@@ -338,7 +382,29 @@ var INSPECTOR;
                 'rotation',
                 'rotationQuaternion',
                 'absolutePosition',
-                'material'
+                'material',
+                'actionManager',
+                'visibility',
+                'isVisible',
+                'isPickable',
+                'renderingGroupId',
+                'receiveShadows',
+                'renderOutline',
+                'outlineColor',
+                'outlineWidth',
+                'renderOverlay',
+                'overlayColor',
+                'overlayAlpha',
+                'hasVertexAlpha',
+                'useVertexColors',
+                'layerMask',
+                'alwaysSelectAsActiveMesh',
+                'ellipsoid',
+                'ellipsoidOffset',
+                'edgesWidth',
+                'edgesColor',
+                'checkCollisions',
+                'hasLODLevels'
             ],
             format: function (m) { return m.name; }
         },
@@ -1196,12 +1262,10 @@ var INSPECTOR;
          * (example : mesh.position = new BABYLON.Vector3 ; the original vector3 object is deleted from the mesh).
         */
         PropertyLine.prototype.updateObject = function () {
-            if (!this._parent) {
-                return this._property.value;
-            }
-            else {
+            if (this._parent) {
                 this._property.obj = this._parent.updateObject();
             }
+            return this._property.value;
         };
         Object.defineProperty(PropertyLine.prototype, "name", {
             // Returns the property name
@@ -1672,10 +1736,13 @@ var INSPECTOR;
      * Creates a tooltip for the parent of the given html element
      */
     var Tooltip = (function () {
-        function Tooltip(elem, tip) {
+        function Tooltip(elem, tip, attachTo) {
             var _this = this;
             this._elem = elem;
-            this._infoDiv = INSPECTOR.Helpers.CreateDiv('tooltip', this._elem.parentElement);
+            if (!attachTo) {
+                attachTo = this._elem.parentElement;
+            }
+            this._infoDiv = INSPECTOR.Helpers.CreateDiv('tooltip', attachTo);
             this._elem.addEventListener('mouseover', function () {
                 _this._infoDiv.textContent = tip;
                 _this._infoDiv.style.display = 'block';
@@ -1802,6 +1869,18 @@ var INSPECTOR;
                 div.removeChild(div.firstChild);
             }
         };
+        /**
+         * Returns the true value of the given CSS Attribute from the given element (in percentage or in pixel, as it was specified in the css)
+         */
+        Helpers.Css = function (elem, cssAttribute) {
+            var clone = elem.cloneNode(true);
+            var div = Helpers.CreateDiv('', INSPECTOR.Inspector.DOCUMENT.body);
+            div.style.display = 'none';
+            div.appendChild(clone);
+            var value = INSPECTOR.Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
+            div.remove();
+            return value;
+        };
         Helpers.LoadScript = function () {
             BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js", function (elem) {
                 var script = Helpers.CreateElement('script', '', INSPECTOR.Inspector.DOCUMENT.body);
@@ -1821,6 +1900,12 @@ var INSPECTOR;
             }, null, null, null, function () {
                 console.log("erreur");
             });
+        };
+        Helpers.IsSystemName = function (name) {
+            if (name == null) {
+                return false;
+            }
+            return name.indexOf("###") === 0 && name.lastIndexOf("###") === (name.length - 3);
         };
         return Helpers;
     }());
@@ -2056,6 +2141,12 @@ var INSPECTOR;
                 if (item.id.toLowerCase().indexOf(filter.toLowerCase()) != -1) {
                     items.push(item);
                 }
+                for (var _b = 0, _c = item.children; _b < _c.length; _b++) {
+                    var child = _c[_b];
+                    if (child.id.toLowerCase().indexOf(filter.toLowerCase()) != -1) {
+                        items.push(item);
+                    }
+                }
             }
             this.update(items);
         };
@@ -2082,17 +2173,13 @@ var INSPECTOR;
             var arr = [];
             // get all canvas2D
             var instances = BABYLON.Canvas2D.instances || [];
-            // Returns true if the id of the given object starts and ends with '###'
-            var shouldExcludeThisPrim = function (obj) {
-                return (obj.id && obj.id.indexOf('###') == 0 && obj.id.lastIndexOf('###', 0) === 0);
-            };
             // Recursive method building the tree panel
             var createNode = function (obj) {
                 if (obj.children && obj.children.length > 0) {
                     var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.Canvas2DAdapter(obj));
                     for (var _i = 0, _a = obj.children; _i < _a.length; _i++) {
                         var child = _a[_i];
-                        if (!shouldExcludeThisPrim(child)) {
+                        if (!INSPECTOR.Helpers.IsSystemName(child.id)) {
                             var n = createNode(child);
                             node.add(n);
                         }
@@ -2106,6 +2193,9 @@ var INSPECTOR;
             };
             for (var _i = 0, instances_1 = instances; _i < instances_1.length; _i++) {
                 var inst = instances_1[_i];
+                if (INSPECTOR.Helpers.IsSystemName(inst.id)) {
+                    continue;
+                }
                 var c2d = inst;
                 var nodes = createNode(c2d);
                 arr.push(nodes);
@@ -2187,17 +2277,44 @@ var INSPECTOR;
         }
         /* Overrides super */
         MeshTab.prototype._getTree = function () {
+            var _this = this;
             var arr = [];
+            // Tab containign mesh already in results
+            var alreadyIn = [];
             // Returns true if the id of the given object starts and ends with '###'
             var shouldExcludeThisMesh = function (obj) {
                 return (obj.name && obj.name.indexOf('###') == 0 && obj.name.lastIndexOf('###', 0) === 0);
+            };
+            // Recursive method building the tree panel
+            var createNode = function (obj) {
+                var descendants = obj.getDescendants(true);
+                if (descendants.length > 0) {
+                    var node = new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
+                    alreadyIn.push(node);
+                    for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
+                        var child = descendants_1[_i];
+                        if (child instanceof BABYLON.AbstractMesh) {
+                            if (!INSPECTOR.Helpers.IsSystemName(child.name)) {
+                                var n = createNode(child);
+                                node.add(n);
+                            }
+                        }
+                    }
+                    node.update();
+                    return node;
+                }
+                else {
+                    alreadyIn.push(obj);
+                    return new INSPECTOR.TreeItem(_this, new INSPECTOR.MeshAdapter(obj));
+                }
             };
             // get all meshes from the first scene
             var instances = this._inspector.scene;
             for (var _i = 0, _a = instances.meshes; _i < _a.length; _i++) {
                 var mesh = _a[_i];
-                if (!shouldExcludeThisMesh(mesh)) {
-                    arr.push(new INSPECTOR.TreeItem(this, new INSPECTOR.MeshAdapter(mesh)));
+                if (alreadyIn.indexOf(mesh) == -1) {
+                    var node = createNode(mesh);
+                    arr.push(node);
                 }
             }
             return arr;
@@ -3179,32 +3296,135 @@ var INSPECTOR;
             var _this = _super.call(this, 'fa-tags', parent, inspector, 'Display mesh names on the canvas') || this;
             /** True if label are displayed, false otherwise */
             _this._isDisplayed = false;
-            _this._labels = [];
-            _this._transformationMatrix = BABYLON.Matrix.Identity();
+            _this._canvas = null;
+            _this._labelInitialized = false;
+            _this._scene = null;
+            _this._canvas2DLoaded = false;
+            _this._newMeshObserver = null;
+            _this._removedMeshObserver = null;
+            _this._newLightObserver = null;
+            _this._removedLightObserver = null;
+            _this._newCameraObserver = null;
+            _this._removedCameraObserver = null;
+            _this._scene = inspector.scene;
             return _this;
         }
-        // Action : Display/hide mesh names on the canvas
-        LabelTool.prototype.action = function () {
-            if (this._isDisplayed) {
+        LabelTool.prototype.dispose = function () {
+            if (this._newMeshObserver) {
+                this._scene.onNewMeshAddedObservable.remove(this._newMeshObserver);
+                this._scene.onMeshRemovedObservable.remove(this._removedMeshObserver);
+                this._scene.onNewLightAddedObservable.remove(this._newLightObserver);
+                this._scene.onLightRemovedObservable.remove(this._removedLightObserver);
+                this._scene.onNewCameraAddedObservable.remove(this._newCameraObserver);
+                this._scene.onCameraRemovedObservable.remove(this._removedCameraObserver);
+                this._newMeshObserver = this._newLightObserver = this._newCameraObserver = this._removedMeshObserver = this._removedLightObserver = this._removedCameraObserver = null;
+            }
+            this._canvas.dispose();
+            this._canvas = null;
+        };
+        LabelTool.prototype._checkC2DLoaded = function () {
+            if (this._canvas2DLoaded === true) {
+                return true;
+            }
+            if (BABYLON.Canvas2D) {
+                this._canvas2DLoaded = true;
+            }
+            return this._canvas2DLoaded;
+        };
+        LabelTool.prototype._initializeLabels = function () {
+            var _this = this;
+            // Check if the label are already initialized and quit if it's the case
+            if (this._labelInitialized) {
+                return;
+            }
+            // Can't initialize them if the Canvas2D lib is not loaded yet
+            if (!this._checkC2DLoaded()) {
+                return;
+            }
+            // Create the canvas that will be used to display the labels
+            this._canvas = new BABYLON.ScreenSpaceCanvas2D(this._scene, { id: "###Label Canvas###" /*, cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS*/ });
+            // Create label for all the Meshes, Lights and Cameras
+            // Those that will be created/removed after this method is called will be taken care by the event handlers added below
+            for (var _i = 0, _a = this._scene.meshes; _i < _a.length; _i++) {
+                var m = _a[_i];
+                this._createLabel(m);
+            }
+            for (var _b = 0, _c = this._scene.lights; _b < _c.length; _b++) {
+                var l = _c[_b];
+                this._createLabel(l);
+            }
+            for (var _d = 0, _e = this._scene.cameras; _d < _e.length; _d++) {
+                var c = _e[_d];
+                this._createLabel(c);
+            }
+            // Add handlers for new/removed meshes, camera and lights
+            this._newMeshObserver = this._scene.onNewMeshAddedObservable.add(function (e, s) {
+                _this._createLabel(e);
+            });
+            this._removedMeshObserver = this._scene.onMeshRemovedObservable.add(function (e, s) {
+                _this._removeLabel(e);
+            });
+            this._newLightObserver = this._scene.onNewLightAddedObservable.add(function (e, s) {
+                _this._createLabel(e);
+            });
+            this._removedLightObserver = this._scene.onLightRemovedObservable.add(function (e, s) {
+                _this._removeLabel(e);
+            });
+            this._newCameraObserver = this._scene.onNewCameraAddedObservable.add(function (e, s) {
+                _this._createLabel(e);
+            });
+            this._removedCameraObserver = this._scene.onCameraRemovedObservable.add(function (e, s) {
+                _this._removeLabel(e);
+            });
+            this._labelInitialized = true;
+        };
+        LabelTool.prototype._createLabel = function (node) {
+            // Don't create label for "system nodes" (starting and ending with ###)
+            var name = node.name;
+            if (INSPECTOR.Helpers.IsSystemName(name)) {
+                return;
+            }
+            var labelGroup = new BABYLON.Group2D({ parent: this._canvas, id: "Label of " + node.name, trackNode: node, origin: BABYLON.Vector2.Zero(),
+                children: [
+                    new BABYLON.Rectangle2D({ id: "LabelRect", x: 0, y: 0, width: 100, height: 30, origin: BABYLON.Vector2.Zero(), border: "#FFFFFFFF", fill: "#808080B0", children: [
+                            new BABYLON.Text2D(node.name, { x: 10, y: 4, fontName: "bold 16px Arial", fontSignedDistanceField: true })
+                        ]
+                    })
+                ] });
+            var r = labelGroup.children[0];
+            var t = r.children[0];
+            var ts = t.textSize.width;
+            r.width = ts + 20;
+            r.height = t.textSize.height + 12;
+            labelGroup.addExternalData("owner", node);
+            return labelGroup;
+        };
+        LabelTool.prototype._removeLabel = function (node) {
+            for (var _i = 0, _a = this._canvas.children; _i < _a.length; _i++) {
+                var g = _a[_i];
+                var ed = g.getExternalData("owner");
+                if (ed === node) {
+                    g.dispose();
+                    break;
+                }
             }
         };
-        LabelTool.prototype._update = function () {
-            this._camera = this._inspector.scene.activeCamera;
-            var engine = this._inspector.scene.getEngine();
-            var viewport = this._camera.viewport;
-            var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-            this._camera.getViewMatrix().multiplyToRef(this._camera.getProjectionMatrix(), this._transformationMatrix);
-            // Old method
-            // let meshes = this._camera.getActiveMeshes();
-            // let projectedPosition: BABYLON.Vector3;
-            // for (let index = 0; index < meshes.length; index++) {
-            //     let mesh = meshes.data[index];
-            //     let position = mesh.getBoundingInfo().boundingSphere.center;
-            //     projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), this._transformationMatrix, globalViewport);
-            //     this._renderLabel(mesh.name, projectedPosition, 12,
-            //         () => { mesh.renderOverlay = !mesh.renderOverlay },
-            //         () => { return mesh.renderOverlay ? 'red' : 'black'; });
-            // }
+        // Action : Display/hide mesh names on the canvas
+        LabelTool.prototype.action = function () {
+            // Don't toggle if the script is not loaded
+            if (!this._checkC2DLoaded()) {
+                return;
+            }
+            // Toggle the label display state
+            this._isDisplayed = !this._isDisplayed;
+            // Check if we have to display the labels
+            if (this._isDisplayed) {
+                this._initializeLabels();
+                this._canvas.levelVisible = true;
+            }
+            else {
+                this._canvas.levelVisible = false;
+            }
         };
         return LabelTool;
     }(INSPECTOR.AbstractTool));
@@ -3304,7 +3524,7 @@ var INSPECTOR;
         __extends(TreeItem, _super);
         function TreeItem(tab, obj) {
             var _this = _super.call(this) || this;
-            _this._children = [];
+            _this.children = [];
             _this._tab = tab;
             _this._adapter = obj;
             _this._tools = _this._adapter.getTools();
@@ -3321,7 +3541,7 @@ var INSPECTOR;
         });
         /** Add the given item as a child of this one */
         TreeItem.prototype.add = function (child) {
-            this._children.push(child);
+            this.children.push(child);
             this.update();
         };
         /**
@@ -3340,8 +3560,8 @@ var INSPECTOR;
         /** hide all children of this item */
         TreeItem.prototype.fold = function () {
             // Do nothing id no children
-            if (this._children.length > 0) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            if (this.children.length > 0) {
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                     var elem = _a[_i];
                     elem.toHtml().style.display = 'none';
                 }
@@ -3352,8 +3572,8 @@ var INSPECTOR;
         /** Show all children of this item */
         TreeItem.prototype.unfold = function () {
             // Do nothing id no children
-            if (this._children.length > 0) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            if (this.children.length > 0) {
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                     var elem = _a[_i];
                     elem.toHtml().style.display = 'block';
                 }
@@ -3391,12 +3611,12 @@ var INSPECTOR;
         TreeItem.prototype.update = function () {
             // Clean division holding all children
             INSPECTOR.Helpers.CleanDiv(this._lineContent);
-            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                 var child = _a[_i];
                 var elem = child.toHtml();
                 this._lineContent.appendChild(elem);
             }
-            if (this._children.length > 0) {
+            if (this.children.length > 0) {
                 // Check if folded or not
                 if (!this._div.classList.contains('folded') && !this._div.classList.contains('unfolded')) {
                     this._div.classList.add('folded');
@@ -3436,7 +3656,7 @@ var INSPECTOR;
         TreeItem.prototype.highlight = function (b) {
             // Remove highlight for all children 
             if (!b) {
-                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     child._adapter.highlight(b);
                 }
@@ -3451,7 +3671,7 @@ var INSPECTOR;
         /** Set this item as active (background lighter) in the tree panel */
         TreeItem.prototype.active = function (b) {
             this._div.classList.remove('active');
-            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                 var child = _a[_i];
                 child.active(false);
             }
@@ -3634,7 +3854,7 @@ var INSPECTOR;
             var _this = _super.call(this) || this;
             _this._obj = obj;
             _this._elem.classList.add('fa-info-circle');
-            _this._tooltip = new INSPECTOR.Tooltip(_this._elem, _this._obj.getInfo());
+            _this._tooltip = new INSPECTOR.Tooltip(_this._elem, _this._obj.getInfo(), _this._elem);
             return _this;
         }
         // Nothing to do on click

@@ -16,27 +16,28 @@ var BABYLON;
     var WaterMaterialDefines = (function (_super) {
         __extends(WaterMaterialDefines, _super);
         function WaterMaterialDefines() {
-            _super.call(this);
-            this.BUMP = false;
-            this.REFLECTION = false;
-            this.CLIPPLANE = false;
-            this.ALPHATEST = false;
-            this.POINTSIZE = false;
-            this.FOG = false;
-            this.NORMAL = false;
-            this.UV1 = false;
-            this.UV2 = false;
-            this.VERTEXCOLOR = false;
-            this.VERTEXALPHA = false;
-            this.NUM_BONE_INFLUENCERS = 0;
-            this.BonesPerMesh = 0;
-            this.INSTANCES = false;
-            this.SPECULARTERM = false;
-            this.LOGARITHMICDEPTH = false;
-            this.FRESNELSEPARATE = false;
-            this.BUMPSUPERIMPOSE = false;
-            this.BUMPAFFECTSREFLECTION = false;
-            this.rebuild();
+            var _this = _super.call(this) || this;
+            _this.BUMP = false;
+            _this.REFLECTION = false;
+            _this.CLIPPLANE = false;
+            _this.ALPHATEST = false;
+            _this.POINTSIZE = false;
+            _this.FOG = false;
+            _this.NORMAL = false;
+            _this.UV1 = false;
+            _this.UV2 = false;
+            _this.VERTEXCOLOR = false;
+            _this.VERTEXALPHA = false;
+            _this.NUM_BONE_INFLUENCERS = 0;
+            _this.BonesPerMesh = 0;
+            _this.INSTANCES = false;
+            _this.SPECULARTERM = false;
+            _this.LOGARITHMICDEPTH = false;
+            _this.FRESNELSEPARATE = false;
+            _this.BUMPSUPERIMPOSE = false;
+            _this.BUMPAFFECTSREFLECTION = false;
+            _this.rebuild();
+            return _this;
         }
         return WaterMaterialDefines;
     }(BABYLON.MaterialDefines));
@@ -47,75 +48,76 @@ var BABYLON;
         */
         function WaterMaterial(name, scene, renderTargetSize) {
             if (renderTargetSize === void 0) { renderTargetSize = new BABYLON.Vector2(512, 512); }
-            _super.call(this, name, scene);
-            this.renderTargetSize = renderTargetSize;
-            this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            this.specularColor = new BABYLON.Color3(0, 0, 0);
-            this.specularPower = 64;
-            this.disableLighting = false;
-            this.maxSimultaneousLights = 4;
+            var _this = _super.call(this, name, scene) || this;
+            _this.renderTargetSize = renderTargetSize;
+            _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            _this.specularColor = new BABYLON.Color3(0, 0, 0);
+            _this.specularPower = 64;
+            _this.disableLighting = false;
+            _this.maxSimultaneousLights = 4;
             /**
             * @param {number}: Represents the wind force
             */
-            this.windForce = 6;
+            _this.windForce = 6;
             /**
             * @param {Vector2}: The direction of the wind in the plane (X, Z)
             */
-            this.windDirection = new BABYLON.Vector2(0, 1);
+            _this.windDirection = new BABYLON.Vector2(0, 1);
             /**
             * @param {number}: Wave height, represents the height of the waves
             */
-            this.waveHeight = 0.4;
+            _this.waveHeight = 0.4;
             /**
             * @param {number}: Bump height, represents the bump height related to the bump map
             */
-            this.bumpHeight = 0.4;
+            _this.bumpHeight = 0.4;
             /**
              * @param {boolean}: Add a smaller moving bump to less steady waves.
              */
-            this.bumpSuperimpose = false;
+            _this.bumpSuperimpose = false;
             /**
              * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
              */
-            this.fresnelSeparate = false;
+            _this.fresnelSeparate = false;
             /**
              * @param {boolean}: bump Waves modify the reflection.
              */
-            this.bumpAffectsReflection = false;
+            _this.bumpAffectsReflection = false;
             /**
             * @param {number}: The water color blended with the refraction (near)
             */
-            this.waterColor = new BABYLON.Color3(0.1, 0.1, 0.6);
+            _this.waterColor = new BABYLON.Color3(0.1, 0.1, 0.6);
             /**
             * @param {number}: The blend factor related to the water color
             */
-            this.colorBlendFactor = 0.2;
+            _this.colorBlendFactor = 0.2;
             /**
              * @param {number}: The water color blended with the reflection (far)
              */
-            this.waterColor2 = new BABYLON.Color3(0.1, 0.1, 0.6);
+            _this.waterColor2 = new BABYLON.Color3(0.1, 0.1, 0.6);
             /**
              * @param {number}: The blend factor related to the water color (reflection, far)
              */
-            this.colorBlendFactor2 = 0.2;
+            _this.colorBlendFactor2 = 0.2;
             /**
             * @param {number}: Represents the maximum length of a wave
             */
-            this.waveLength = 0.1;
+            _this.waveLength = 0.1;
             /**
             * @param {number}: Defines the waves speed
             */
-            this.waveSpeed = 1.0;
+            _this.waveSpeed = 1.0;
             /*
             * Private members
             */
-            this._mesh = null;
-            this._reflectionTransform = BABYLON.Matrix.Zero();
-            this._lastTime = 0;
-            this._defines = new WaterMaterialDefines();
-            this._cachedDefines = new WaterMaterialDefines();
+            _this._mesh = null;
+            _this._reflectionTransform = BABYLON.Matrix.Zero();
+            _this._lastTime = 0;
+            _this._defines = new WaterMaterialDefines();
+            _this._cachedDefines = new WaterMaterialDefines();
             // Create render targets
-            this._createRenderTargets(scene, renderTargetSize);
+            _this._createRenderTargets(scene, renderTargetSize);
+            return _this;
         }
         Object.defineProperty(WaterMaterial.prototype, "useLogarithmicDepth", {
             get: function () {
@@ -516,68 +518,68 @@ var BABYLON;
             var mesh = BABYLON.Mesh.CreateGround(name, 512, 512, 32, scene, false);
             return mesh;
         };
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], WaterMaterial.prototype, "bumpTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], WaterMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], WaterMaterial.prototype, "specularColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "specularPower", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "windForce", void 0);
-        __decorate([
-            BABYLON.serializeAsVector2()
-        ], WaterMaterial.prototype, "windDirection", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "waveHeight", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "bumpHeight", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "bumpSuperimpose", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "fresnelSeparate", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "bumpAffectsReflection", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], WaterMaterial.prototype, "waterColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "colorBlendFactor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], WaterMaterial.prototype, "waterColor2", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "colorBlendFactor2", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "waveLength", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "waveSpeed", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], WaterMaterial.prototype, "useLogarithmicDepth", null);
         return WaterMaterial;
     }(BABYLON.Material));
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], WaterMaterial.prototype, "bumpTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], WaterMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], WaterMaterial.prototype, "specularColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "specularPower", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "windForce", void 0);
+    __decorate([
+        BABYLON.serializeAsVector2()
+    ], WaterMaterial.prototype, "windDirection", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "waveHeight", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "bumpHeight", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "bumpSuperimpose", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "fresnelSeparate", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "bumpAffectsReflection", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], WaterMaterial.prototype, "waterColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "colorBlendFactor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], WaterMaterial.prototype, "waterColor2", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "colorBlendFactor2", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "waveLength", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "waveSpeed", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], WaterMaterial.prototype, "useLogarithmicDepth", null);
     BABYLON.WaterMaterial = WaterMaterial;
 })(BABYLON || (BABYLON = {}));
 

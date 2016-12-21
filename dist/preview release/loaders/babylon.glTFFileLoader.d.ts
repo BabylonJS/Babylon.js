@@ -431,7 +431,7 @@ declare module BABYLON {
     abstract class GLTFFileLoaderExtension {
         private _name;
         constructor(name: string);
-        name: string;
+        readonly name: string;
         /**
         * Defines an override for loading the runtime
         * Return true to stop further extensions from loading the runtime

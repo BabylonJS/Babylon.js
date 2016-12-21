@@ -9,13 +9,14 @@ var BABYLON;
     var FireProceduralTexture = (function (_super) {
         __extends(FireProceduralTexture, _super);
         function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps);
-            this._time = 0.0;
-            this._speed = new BABYLON.Vector2(0.5, 0.3);
-            this._autoGenerateTime = true;
-            this._alphaThreshold = 0.5;
-            this._fireColors = FireProceduralTexture.RedFireColors;
-            this.updateShaderUniforms();
+            var _this = _super.call(this, name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
+            _this._time = 0.0;
+            _this._speed = new BABYLON.Vector2(0.5, 0.3);
+            _this._autoGenerateTime = true;
+            _this._alphaThreshold = 0.5;
+            _this._fireColors = FireProceduralTexture.RedFireColors;
+            _this.updateShaderUniforms();
+            return _this;
         }
         FireProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("time", this._time);

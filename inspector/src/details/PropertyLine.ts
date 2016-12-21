@@ -187,12 +187,10 @@ module INSPECTOR {
          * (example : mesh.position = new BABYLON.Vector3 ; the original vector3 object is deleted from the mesh).
         */
         public updateObject() {
-            if (!this._parent) {
-                return this._property.value;
-            }
-            else {
+            if (this._parent) {
                 this._property.obj = this._parent.updateObject();
-            } 
+            }
+            return this._property.value;            
         }
 
         // Returns the property name

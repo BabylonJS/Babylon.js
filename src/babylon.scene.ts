@@ -143,7 +143,7 @@
 
         // Members
         public autoClear = true;
-        public clearColor: any = new Color3(0.2, 0.2, 0.3);
+        public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
         public ambientColor = new Color3(0, 0, 0);
 
         public forceWireframe = false;
@@ -509,7 +509,10 @@
 
         private _animationRatio: number;
 
-        private _animationStartDate: number;
+        private _animationTimeLast: number;
+        private _animationTime: number = 0;
+        public animationTimeScale: number = 1;
+
         public _cachedMaterial: Material;
 
         private _renderId = 0;
@@ -1283,19 +1286,19 @@
                 return;
             }
 
-            if (!this._animationStartDate) {
+            // Getting time
+            var now = Tools.Now;
+            if (!this._animationTimeLast) {
                 if (this._pendingData.length > 0) {
                     return;
                 }
-
-                this._animationStartDate = Tools.Now;
+                this._animationTimeLast = now;
             }
-            // Getting time
-            var now = Tools.Now;
-            var delay = now - this._animationStartDate;
-
+            var deltaTime = (now - this._animationTimeLast) * this.animationTimeScale;
+            this._animationTime += deltaTime;
+            this._animationTimeLast = now;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
-                this._activeAnimatables[index]._animate(delay);
+                this._activeAnimatables[index]._animate(this._animationTime);
             }
         }
 
@@ -2464,7 +2467,7 @@
             if (this.activeCameras.length > 0) {
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     if (cameraIndex > 0) {
-                        this._engine.clear(0, false, true, true);
+                        this._engine.clear(null, false, true, true);
                     }
 
                     this._processSubCameras(this.activeCameras[cameraIndex]);

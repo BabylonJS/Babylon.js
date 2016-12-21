@@ -43,7 +43,7 @@ declare module BABYLON {
          * An observable that is triggered when a property (using of the XXXXLevelProperty decorator) has its value changing.
          * You can add an observer that will be triggered only for a given set of Properties using the Mask feature of the Observable and the corresponding Prim2DPropInfo.flagid value (e.g. Prim2DBase.positionProperty.flagid|Prim2DBase.rotationProperty.flagid to be notified only about position or rotation change)
          */
-        propertyChanged: Observable<PropertyChangedInfo>;
+        readonly propertyChanged: Observable<PropertyChangedInfo>;
         _propertyChanged: Observable<PropertyChangedInfo>;
         private static pci;
         private static calling;
@@ -97,28 +97,28 @@ declare module BABYLON {
         /**
          * The content of the array was totally cleared
          */
-        static clearAction: number;
+        static readonly clearAction: number;
         /**
          * A new item was added, the newItems field contains the key/value pairs
          */
-        static newItemsAction: number;
+        static readonly newItemsAction: number;
         /**
          * An existing item was removed, the removedKey field contains its key
          */
-        static removedItemsAction: number;
+        static readonly removedItemsAction: number;
         /**
          * One or many items in the array were changed, the
          */
-        static changedItemAction: number;
+        static readonly changedItemAction: number;
         /**
          * The array's content was totally changed
          * Depending on the method that used this mode the ChangedArray object may contains more information
          */
-        static replacedArrayAction: number;
+        static readonly replacedArrayAction: number;
         /**
          * The length of the array changed
          */
-        static lengthChangedAction: number;
+        static readonly lengthChangedAction: number;
         private static _clearAction;
         private static _newItemsAction;
         private static _removedItemsAction;
@@ -262,14 +262,14 @@ declare module BABYLON {
           * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
           */
         reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
-        arrayChanged: Observable<ArrayChanged<T>>;
+        readonly arrayChanged: Observable<ArrayChanged<T>>;
         protected getArrayChangedObject(): ArrayChanged<T>;
         protected feedNotifArray(array: {
             index: number;
             value: T;
         }[], startindIndex: number, ...items: T[]): void;
         protected callArrayChanged(ac: ArrayChanged<T>): void;
-        watchedObjectChanged: Observable<OAWatchedObjectChangedInfo<T>>;
+        readonly watchedObjectChanged: Observable<OAWatchedObjectChangedInfo<T>>;
         private _addWatchedElement(...items);
         private _removeWatchedElement(...items);
         protected onWatchedObjectChanged(key: string, object: T, propChanged: PropertyChangedInfo): void;
@@ -317,24 +317,24 @@ declare module BABYLON {
         /**
          * The content of the dictionary was totally cleared
          */
-        static clearAction: number;
+        static readonly clearAction: number;
         /**
          * A new item was added, the newItem field contains the key/value pair
          */
-        static newItemAction: number;
+        static readonly newItemAction: number;
         /**
          * An existing item was removed, the removedKey field contains its key
          */
-        static removedItemAction: number;
+        static readonly removedItemAction: number;
         /**
          * An existing item had a value change, the changedItem field contains the key/value
          */
-        static itemValueChangedAction: number;
+        static readonly itemValueChangedAction: number;
         /**
          * The dictionary's content was reset and replaced by the content of another dictionary.
          * DictionaryChanged<T> contains no further information about this action
          */
-        static replacedAction: number;
+        static readonly replacedAction: number;
         private static _clearAction;
         private static _newItemAction;
         private static _removedItemAction;
@@ -386,9 +386,9 @@ declare module BABYLON {
          * Clear the whole content of the dictionary
          */
         clear(): void;
-        propertyChanged: Observable<PropertyChangedInfo>;
+        readonly propertyChanged: Observable<PropertyChangedInfo>;
         protected onPropertyChanged<T>(propName: string, oldValue: T, newValue: T, mask?: number): void;
-        dictionaryChanged: Observable<DictionaryChanged<T>>;
+        readonly dictionaryChanged: Observable<DictionaryChanged<T>>;
         protected onDictionaryChanged(action: number, newItem: {
             key: string;
             value: T;
@@ -397,7 +397,7 @@ declare module BABYLON {
             oldValue: T;
             newValue: T;
         }): void;
-        watchedObjectChanged: Observable<OSDWatchedObjectChangedInfo<T>>;
+        readonly watchedObjectChanged: Observable<OSDWatchedObjectChangedInfo<T>>;
         protected onWatchedObjectChanged(key: string, object: T, propChanged: PropertyChangedInfo): void;
         private _propertyChanged;
         private static pci;
@@ -533,7 +533,7 @@ declare module BABYLON {
     class LayoutEngineBase implements ILockable {
         constructor();
         updateLayout(prim: Prim2DBase): void;
-        isChildPositionAllowed: boolean;
+        readonly isChildPositionAllowed: boolean;
         isLocked(): boolean;
         lock(): boolean;
         layoutDirtyOnPropertyChangedMask: any;
@@ -543,12 +543,12 @@ declare module BABYLON {
         static Singleton: CanvasLayoutEngine;
         updateLayout(prim: Prim2DBase): void;
         private _doUpdate(prim);
-        isChildPositionAllowed: boolean;
+        readonly isChildPositionAllowed: boolean;
     }
     class StackPanelLayoutEngine extends LayoutEngineBase {
         constructor();
-        static Horizontal: StackPanelLayoutEngine;
-        static Vertical: StackPanelLayoutEngine;
+        static readonly Horizontal: StackPanelLayoutEngine;
+        static readonly Vertical: StackPanelLayoutEngine;
         private static _horizontal;
         private static _vertical;
         isHorizontal: boolean;
@@ -556,7 +556,7 @@ declare module BABYLON {
         private static dstOffset;
         private static dstArea;
         updateLayout(prim: Prim2DBase): void;
-        isChildPositionAllowed: boolean;
+        readonly isChildPositionAllowed: boolean;
     }
 }
 
@@ -690,10 +690,10 @@ declare module BABYLON {
     }
     class ClassTreeInfo<TClass, TProp> {
         constructor(baseClass: ClassTreeInfo<TClass, TProp>, type: Object, classContentFactory: (base: TClass) => TClass);
-        classContent: TClass;
-        type: Object;
-        levelContent: StringDictionary<TProp>;
-        fullContent: StringDictionary<TProp>;
+        readonly classContent: TClass;
+        readonly type: Object;
+        readonly levelContent: StringDictionary<TProp>;
+        readonly fullContent: StringDictionary<TProp>;
         getLevelOf(type: Object): ClassTreeInfo<TClass, TProp>;
         getOrAddType(baseType: Object, type: Object): ClassTreeInfo<TClass, TProp>;
         static get<TClass, TProp>(type: Object): ClassTreeInfo<TClass, TProp>;
@@ -806,12 +806,12 @@ declare module BABYLON {
     }
     abstract class SmartPropertyBase extends PropertyChangedBase {
         constructor();
-        disposeObservable: Observable<SmartPropertyBase>;
+        readonly disposeObservable: Observable<SmartPropertyBase>;
         /**
          * Check if the object is disposed or not.
          * @returns true if the object is dispose, false otherwise.
          */
-        isDisposed: boolean;
+        readonly isDisposed: boolean;
         /**
          * Disposable pattern, this method must be overloaded by derived types in order to clean up hardware related resources.
          * @returns false if the object is already dispose, true otherwise. Your implementation must call super.dispose() and check for a false return and return immediately if it's the case.
@@ -870,7 +870,7 @@ declare module BABYLON {
          * Access the dictionary of properties metadata. Only properties decorated with XXXXLevelProperty are concerned
          * @returns the dictionary, the key is the property name as declared in Javascript, the value is the metadata object
          */
-        protected propDic: StringDictionary<Prim2DPropInfo>;
+        protected readonly propDic: StringDictionary<Prim2DPropInfo>;
         private static _checkUnchanged(curValue, newValue);
         private static propChangedInfo;
         private static propChangeGuarding;
@@ -919,12 +919,12 @@ declare module BABYLON {
          * This value is constructed from the type of the primitive and all the name/value of its properties declared with the modelLevelProperty decorator
          * @returns the model key string.
          */
-        modelKey: string;
+        readonly modelKey: string;
         /**
          * States if the Primitive is dirty and should be rendered again next time.
          * @returns true is dirty, false otherwise
          */
-        isDirty: boolean;
+        readonly isDirty: boolean;
         protected _boundingBoxDirty(): void;
         protected _handlePropChanged<T>(curValue: T, newValue: T, propName: string, propInfo: Prim2DPropInfo, typeLevelCompare: boolean): void;
         protected onPrimitivePropertyDirty(propFlagId: number): void;
@@ -933,7 +933,7 @@ declare module BABYLON {
         /**
          * Retrieve the boundingInfo for this Primitive, computed based on the primitive itself and NOT its children
          */
-        levelBoundingInfo: BoundingInfo2D;
+        readonly levelBoundingInfo: BoundingInfo2D;
         /**
          * This method must be overridden by a given Primitive implementation to compute its boundingInfo
          */
@@ -1025,7 +1025,7 @@ declare module BABYLON {
         /**
          * Define which render Mode should be used to render the primitive: one of Render2DContext.RenderModeXxxx property
          */
-        renderMode: number;
+        readonly renderMode: number;
         /**
          * If true hardware instancing is supported and must be used for the rendering. The groupInfoPartData._partBuffer must be used.
          * If false rendering on a per primitive basis must be made. The following properties must be used
@@ -1058,17 +1058,17 @@ declare module BABYLON {
          * The set of primitives to render is opaque.
          * This is the first rendering pass. All Opaque primitives are rendered. Depth Compare and Write are both enabled.
          */
-        static RenderModeOpaque: number;
+        static readonly RenderModeOpaque: number;
         /**
          * The set of primitives to render is using Alpha Test (aka masking).
          * Alpha Blend is enabled, the AlphaMode must be manually set, the render occurs after the RenderModeOpaque and is depth independent (i.e. primitives are not sorted by depth). Depth Compare and Write are both enabled.
          */
-        static RenderModeAlphaTest: number;
+        static readonly RenderModeAlphaTest: number;
         /**
          * The set of primitives to render is transparent.
          * Alpha Blend is enabled, the AlphaMode must be manually set, the render occurs after the RenderModeAlphaTest and is depth dependent (i.e. primitives are stored by depth and rendered back to front). Depth Compare is on, but Depth write is Off.
          */
-        static RenderModeTransparent: number;
+        static readonly RenderModeTransparent: number;
         private static _renderModeOpaque;
         private static _renderModeAlphaTest;
         private static _renderModeTransparent;
@@ -1094,53 +1094,53 @@ declare module BABYLON {
          * This event type is raised when a pointing device is moved into the hit test boundaries of a primitive.
          * Bubbles: yes
          */
-        static PointerOver: number;
+        static readonly PointerOver: number;
         /**
          * This event type is raised when a pointing device is moved into the hit test boundaries of a primitive or one of its descendants.
          * Bubbles: no
          */
-        static PointerEnter: number;
+        static readonly PointerEnter: number;
         /**
          * This event type is raised when a pointer enters the active button state (non-zero value in the buttons property). For mouse it's when the device transitions from no buttons depressed to at least one button depressed. For touch/pen this is when a physical contact is made.
          * Bubbles: yes
          */
-        static PointerDown: number;
+        static readonly PointerDown: number;
         /**
          * This event type is raised when the pointer is a mouse and it's wheel is rolling
          * Bubbles: yes
          */
-        static PointerMouseWheel: number;
+        static readonly PointerMouseWheel: number;
         /**
          * This event type is raised when a pointer change coordinates or when a pointer changes button state, pressure, tilt, or contact geometry and the circumstances produce no other pointers events.
          * Bubbles: yes
          */
-        static PointerMove: number;
+        static readonly PointerMove: number;
         /**
          * This event type is raised when the pointer leaves the active buttons states (zero value in the buttons property). For mouse, this is when the device transitions from at least one button depressed to no buttons depressed. For touch/pen, this is when physical contact is removed.
          * Bubbles: yes
          */
-        static PointerUp: number;
+        static readonly PointerUp: number;
         /**
          * This event type is raised when a pointing device is moved out of the hit test the boundaries of a primitive.
          * Bubbles: yes
          */
-        static PointerOut: number;
+        static readonly PointerOut: number;
         /**
          * This event type is raised when a pointing device is moved out of the hit test boundaries of a primitive and all its descendants.
          * Bubbles: no
          */
-        static PointerLeave: number;
+        static readonly PointerLeave: number;
         /**
          * This event type is raised when a primitive receives the pointer capture. This event is fired at the element that is receiving pointer capture. Subsequent events for that pointer will be fired at this element.
          * Bubbles: yes
          */
-        static PointerGotCapture: number;
+        static readonly PointerGotCapture: number;
         /**
          * This event type is raised after pointer capture is released for a pointer.
          * Bubbles: yes
          */
-        static PointerLostCapture: number;
-        static MouseWheelPrecision: number;
+        static readonly PointerLostCapture: number;
+        static readonly MouseWheelPrecision: number;
         /**
          * Event Type, one of the static PointerXXXX property defined above (PrimitivePointerInfo.PointerOver to PrimitivePointerInfo.PointerLostCapture)
          */
@@ -1217,27 +1217,27 @@ declare module BABYLON {
         /**
          * Alignment is made relative to the left edge of the Primitive. Valid for horizontal alignment only.
          */
-        static AlignLeft: number;
+        static readonly AlignLeft: number;
         /**
          * Alignment is made relative to the top edge of the Primitive. Valid for vertical alignment only.
          */
-        static AlignTop: number;
+        static readonly AlignTop: number;
         /**
          * Alignment is made relative to the right edge of the Primitive. Valid for horizontal alignment only.
          */
-        static AlignRight: number;
+        static readonly AlignRight: number;
         /**
          * Alignment is made relative to the bottom edge of the Primitive. Valid for vertical alignment only.
          */
-        static AlignBottom: number;
+        static readonly AlignBottom: number;
         /**
          * Alignment is made to center the content from equal distance to the opposite edges of the Primitive
          */
-        static AlignCenter: number;
+        static readonly AlignCenter: number;
         /**
          * The content is stretched toward the opposite edges of the Primitive
          */
-        static AlignStretch: number;
+        static readonly AlignStretch: number;
         private static _AlignLeft;
         private static _AlignTop;
         private static _AlignRight;
@@ -1272,7 +1272,7 @@ declare module BABYLON {
          */
         fromString(value: string): void;
         copyFrom(pa: PrimitiveAlignment): void;
-        isDefault: boolean;
+        readonly isDefault: boolean;
     }
     /**
      * Stores information about a Primitive that was intersected
@@ -1406,7 +1406,7 @@ declare module BABYLON {
          * Get/set the bottom mode. The setter shouldn't be used, other setters with value should be preferred
          */
         bottomMode: number;
-        isDefault: boolean;
+        readonly isDefault: boolean;
         private _parentAccess;
         private _changedCallback;
         private _pixels;
@@ -1472,7 +1472,7 @@ declare module BABYLON {
         /**
          * true if at least one primitive intersected during the test
          */
-        isIntersected: boolean;
+        readonly isIntersected: boolean;
         isPrimIntersected(prim: Prim2DBase): Vector2;
         _exit(firstLevel: boolean): void;
     }
@@ -1513,7 +1513,7 @@ declare module BABYLON {
             paddingBottom?: number | string;
             padding?: string;
         });
-        actionManager: ActionManager;
+        readonly actionManager: ActionManager;
         /**
          * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
          * @param predicate the predicate to test on each parent
@@ -1523,15 +1523,15 @@ declare module BABYLON {
         /**
          * Retrieve the owner Canvas2D
          */
-        owner: Canvas2D;
+        readonly owner: Canvas2D;
         /**
          * Get the parent primitive (can be the Canvas, only the Canvas has no parent)
          */
-        parent: Prim2DBase;
+        readonly parent: Prim2DBase;
         /**
          * The array of direct children primitives
          */
-        children: Prim2DBase[];
+        readonly children: Prim2DBase[];
         /**
          * The identifier of this primitive, may not be unique, it's for information purpose only
          */
@@ -1701,7 +1701,7 @@ declare module BABYLON {
          * Shortcut to actualPosition.height
          */
         actualHeight: number;
-        actualZOffset: number;
+        readonly actualZOffset: number;
         /**
          * Get or set the minimal size the Layout Engine should respect when computing the primitive's actualSize.
          * The Primitive's size won't be less than specified.
@@ -1727,19 +1727,19 @@ declare module BABYLON {
         levelVisible: boolean;
         isVisible: boolean;
         zOrder: number;
-        isManualZOrder: boolean;
+        readonly isManualZOrder: boolean;
         margin: PrimitiveThickness;
         /**
          * Check for both margin and marginAlignment, return true if at least one of them is specified with a non default value
          */
-        _hasMargin: boolean;
+        readonly _hasMargin: boolean;
         padding: PrimitiveThickness;
-        private _hasPadding;
+        private readonly _hasPadding;
         marginAlignment: PrimitiveAlignment;
         /**
          * Check if there a marginAlignment specified (non null and not default)
          */
-        _hasMarginAlignment: boolean;
+        readonly _hasMarginAlignment: boolean;
         opacity: number;
         scaleX: number;
         scaleY: number;
@@ -1747,19 +1747,19 @@ declare module BABYLON {
         /**
          * Returns the actual scale of this Primitive, the value is computed from the scale property of this primitive, multiplied by the actualScale of its parent one (if any). The Vector2 object returned contains the scale for both X and Y axis
          */
-        actualScale: Vector2;
+        readonly actualScale: Vector2;
         /**
          * Get the actual Scale of the X axis, shortcut for this.actualScale.x
          */
-        actualScaleX: number;
+        readonly actualScaleX: number;
         /**
          * Get the actual Scale of the Y axis, shortcut for this.actualScale.y
          */
-        actualScaleY: number;
+        readonly actualScaleY: number;
         /**
          * Get the actual opacity level, this property is computed from the opacity property, multiplied by the actualOpacity of its parent (if any)
          */
-        actualOpacity: number;
+        readonly actualOpacity: number;
         /**
          * Get/set the layout engine to use for this primitive.
          * The default layout engine is the CanvasLayoutEngine.
@@ -1790,15 +1790,15 @@ declare module BABYLON {
         /**
          * Return the depth level of the Primitive into the Canvas' Graph. A Canvas will be 0, its direct children 1, and so on.
          */
-        hierarchyDepth: number;
+        readonly hierarchyDepth: number;
         /**
          * Retrieve the Group that is responsible to render this primitive
          */
-        renderGroup: Group2D;
+        readonly renderGroup: Group2D;
         /**
          * Get the global transformation matrix of the primitive
          */
-        globalTransform: Matrix;
+        readonly globalTransform: Matrix;
         /**
          * return the global position of the primitive, relative to its canvas
          */
@@ -1811,44 +1811,44 @@ declare module BABYLON {
         /**
          * Get invert of the global transformation matrix of the primitive
          */
-        invGlobalTransform: Matrix;
+        readonly invGlobalTransform: Matrix;
         /**
          * Get the local transformation of the primitive
          */
-        localTransform: Matrix;
+        readonly localTransform: Matrix;
         private static _bMax;
         private static _tpsBB;
         /**
          * Get the boundingInfo associated to the primitive and its children.
          * The value is supposed to be always up to date
          */
-        boundingInfo: BoundingInfo2D;
+        readonly boundingInfo: BoundingInfo2D;
         /**
          * Get the boundingInfo of the primitive's content arranged by a layout Engine
          * If a particular child is not arranged by layout, it's boundingInfo is used instead to produce something as accurate as possible
          */
-        layoutBoundingInfo: BoundingInfo2D;
+        readonly layoutBoundingInfo: BoundingInfo2D;
         /**
          * Determine if the size is automatically computed or fixed because manually specified.
          * Use the actualSize property to get the final/real size of the primitive
          * @returns true if the size is automatically computed, false if it were manually specified.
          */
-        isSizeAuto: boolean;
+        readonly isSizeAuto: boolean;
         /**
          * Return true if this prim has an auto size which is set by the children's global bounding box
          */
-        isSizedByContent: boolean;
+        readonly isSizedByContent: boolean;
         /**
          * Determine if the position is automatically computed or fixed because manually specified.
          * Use the actualPosition property to get the final/real position of the primitive
          * @returns true if the position is automatically computed, false if it were manually specified.
          */
-        isPositionAuto: boolean;
+        readonly isPositionAuto: boolean;
         /**
          * Interaction with the primitive can be create using this Observable. See the PrimitivePointerInfo class for more information
          */
-        pointerEventObservable: Observable<PrimitivePointerInfo>;
-        zActualOrderChangedObservable: Observable<number>;
+        readonly pointerEventObservable: Observable<PrimitivePointerInfo>;
+        readonly zActualOrderChangedObservable: Observable<number>;
         displayDebugAreas: boolean;
         private _updateDebugArea();
         findById(id: string): Prim2DBase;
@@ -1932,7 +1932,7 @@ declare module BABYLON {
          * Get the content are of this primitive, this area is computed using the padding property and also possibly the primitive type itself.
          * Children of this primitive will be positioned relative to the bottom/left corner of this area.
          */
-        contentArea: Size;
+        readonly contentArea: Size;
         _patchHierarchy(owner: Canvas2D): void;
         private static _zOrderChangedNotifList;
         private static _zRebuildReentrency;
@@ -2027,19 +2027,19 @@ declare module BABYLON {
         owner: Group2D;
         modelRenderCache: ModelRenderCache;
         partIndexFromId: StringDictionary<number>;
-        hasOpaqueData: boolean;
-        hasAlphaTestData: boolean;
-        hasTransparentData: boolean;
+        readonly hasOpaqueData: boolean;
+        readonly hasAlphaTestData: boolean;
+        readonly hasTransparentData: boolean;
         opaqueDirty: boolean;
-        opaqueData: GroupInfoPartData[];
+        readonly opaqueData: GroupInfoPartData[];
         alphaTestDirty: boolean;
-        alphaTestData: GroupInfoPartData[];
+        readonly alphaTestData: GroupInfoPartData[];
         transparentOrderDirty: boolean;
         transparentDirty: boolean;
-        transparentData: TransparentGroupInfoPartData[];
+        readonly transparentData: TransparentGroupInfoPartData[];
         sortTransparentData(): void;
-        usedShaderCategories: string[];
-        strides: number[];
+        readonly usedShaderCategories: string[];
+        readonly strides: number[];
         private _partCount;
         private _strides;
         private _usedShaderCategories;
@@ -2071,9 +2071,9 @@ declare module BABYLON {
     class ModelRenderCache {
         constructor(engine: Engine, modelKey: string);
         dispose(): boolean;
-        isDisposed: boolean;
+        readonly isDisposed: boolean;
         addRef(): number;
-        modelKey: string;
+        readonly modelKey: string;
         /**
          * Render the model instances
          * @param instanceInfo
@@ -2153,9 +2153,9 @@ declare module BABYLON {
         static RENDERABLEPRIM2D_PROPCOUNT: number;
         static isAlphaTestProperty: Prim2DPropInfo;
         static isTransparentProperty: Prim2DPropInfo;
-        isAlphaTest: boolean;
-        isTransparent: boolean;
-        renderMode: number;
+        readonly isAlphaTest: boolean;
+        readonly isTransparent: boolean;
+        readonly renderMode: number;
         constructor(settings?: {
             parent?: Prim2DBase;
             id?: string;
@@ -2202,7 +2202,7 @@ declare module BABYLON {
             uniforms: string[];
             defines: string;
         };
-        protected modelRenderCache: ModelRenderCache;
+        protected readonly modelRenderCache: ModelRenderCache;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): void;
         protected createInstanceDataParts(): InstanceDataBase[];
@@ -2376,17 +2376,17 @@ declare module BABYLON {
          * Allow you to access the information regarding the cached rectangle of the Group2D into the MapTexture.
          * If the `noWorldSpaceNode` options was used at the creation of a WorldSpaceCanvas, the rendering of the canvas must be made by the caller, so typically you want to bind the cacheTexture property to some material/mesh and you MUST use the Group2D.cachedUVs property to get the UV coordinates to use for your quad that will display the Canvas and NOT the PackedRect.UVs property which are incorrect because the allocated surface may be bigger (due to over-provisioning or shrinking without deallocating) than what the Group is actually using.
          */
-        cachedRect: PackedRect;
+        readonly cachedRect: PackedRect;
         /**
          * The UVs into the MapTexture that map the cached group
          */
-        cachedUVs: Vector2[];
-        cachedUVsChanged: Observable<Vector2[]>;
+        readonly cachedUVs: Vector2[];
+        readonly cachedUVsChanged: Observable<Vector2[]>;
         /**
          * Access the texture that maintains a cached version of the Group2D.
          * This is useful only if you're not using a WorldSpaceNode for your WorldSpace Canvas and therefore need to perform the rendering yourself.
          */
-        cacheTexture: MapTexture;
+        readonly cacheTexture: MapTexture;
         /**
          * Call this method to remove this Group and its children from the Canvas
          */
@@ -2394,24 +2394,24 @@ declare module BABYLON {
         /**
          * @returns Returns true if the Group render content, false if it's a logical group only
          */
-        isRenderableGroup: boolean;
+        readonly isRenderableGroup: boolean;
         /**
          * @returns only meaningful for isRenderableGroup, will be true if the content of the Group is cached into a texture, false if it's rendered every time
          */
-        isCachedGroup: boolean;
+        readonly isCachedGroup: boolean;
         /**
          * Get/Set the size of the group. If null the size of the group will be determine from its content.
          * BEWARE: if the Group is a RenderableGroup and its content is cache the texture will be resized each time the group is getting bigger. For performance reason the opposite won't be true: the texture won't shrink if the group does.
          */
         size: Size;
-        viewportSize: ISize;
+        readonly viewportSize: ISize;
         actualSize: Size;
         /**
          * Get/set the Cache Behavior, used in case the Canvas Cache Strategy is set to CACHESTRATEGY_ALLGROUPS. Can be either GROUPCACHEBEHAVIOR_CACHEINPARENTGROUP, GROUPCACHEBEHAVIOR_DONTCACHEOVERRIDE or GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY. See their documentation for more information.
          * GROUPCACHEBEHAVIOR_NORESIZEONSCALE can also be set if you set it at creation time.
          * It is critical to understand than you HAVE TO play with this behavior in order to achieve a good performance/memory ratio. Caching all groups would certainly be the worst strategy of all.
          */
-        cacheBehavior: number;
+        readonly cacheBehavior: number;
         _addPrimToDirtyList(prim: Prim2DBase): void;
         _renderCachedCanvas(): void;
         /**
@@ -2894,18 +2894,18 @@ declare module BABYLON {
         defaultFontColor: Color4;
         text: string;
         size: Size;
-        fontSuperSample: boolean;
-        fontSignedDistanceField: boolean;
-        isSizeAuto: boolean;
+        readonly fontSuperSample: boolean;
+        readonly fontSignedDistanceField: boolean;
+        readonly isSizeAuto: boolean;
         /**
          * Get the actual size of the Text2D primitive
          */
-        actualSize: Size;
+        readonly actualSize: Size;
         /**
          * Get the area that bounds the text associated to the primitive
          */
-        textSize: Size;
-        protected fontTexture: FontTexture;
+        readonly textSize: Size;
+        protected readonly fontTexture: FontTexture;
         /**
          * Dispose the primitive, remove it from its parent
          */
@@ -3039,31 +3039,31 @@ declare module BABYLON {
         /**
          * No Cap to apply on the extremity
          */
-        static NoCap: number;
+        static readonly NoCap: number;
         /**
          * A round cap, will use the line thickness as diameter
          */
-        static RoundCap: number;
+        static readonly RoundCap: number;
         /**
          * Creates a triangle at the extremity.
          */
-        static TriangleCap: number;
+        static readonly TriangleCap: number;
         /**
          * Creates a Square anchor at the extremity, the square size is twice the thickness of the line
          */
-        static SquareAnchorCap: number;
+        static readonly SquareAnchorCap: number;
         /**
          * Creates a round anchor at the extremity, the diameter is twice the thickness of the line
          */
-        static RoundAnchorCap: number;
+        static readonly RoundAnchorCap: number;
         /**
          * Creates a diamond anchor at the extremity.
          */
-        static DiamondAnchorCap: number;
+        static readonly DiamondAnchorCap: number;
         /**
          * Creates an arrow anchor at the extremity. the arrow base size is twice the thickness of the line
          */
-        static ArrowCap: number;
+        static readonly ArrowCap: number;
         static pointsProperty: Prim2DPropInfo;
         static fillThicknessProperty: Prim2DPropInfo;
         static closedProperty: Prim2DPropInfo;
@@ -3079,8 +3079,8 @@ declare module BABYLON {
         private static _curA;
         private static _curB;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected boundingMin: Vector2;
-        protected boundingMax: Vector2;
+        protected readonly boundingMin: Vector2;
+        protected readonly boundingMax: Vector2;
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
         protected updateLevelBoundingInfo(): void;
         /**
@@ -3180,7 +3180,7 @@ declare module BABYLON {
         private _buildLine(vb, contour, ht, bt?);
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Lines2DRenderCache;
         private _computeLines2D();
-        size: Size;
+        readonly size: Size;
         protected createInstanceDataParts(): InstanceDataBase[];
         protected applyActualScaleOnTransform(): boolean;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
@@ -3270,19 +3270,19 @@ declare module BABYLON {
             backgroundBorder?: IBrush2D | string;
             backgroundBorderThickNess?: number;
         });
-        drawCallsOpaqueCounter: PerfCounter;
-        drawCallsAlphaTestCounter: PerfCounter;
-        drawCallsTransparentCounter: PerfCounter;
-        groupRenderCounter: PerfCounter;
-        updateTransparentDataCounter: PerfCounter;
-        cachedGroupRenderCounter: PerfCounter;
-        updateCachedStateCounter: PerfCounter;
-        updateLayoutCounter: PerfCounter;
-        updatePositioningCounter: PerfCounter;
-        updateLocalTransformCounter: PerfCounter;
-        updateGlobalTransformCounter: PerfCounter;
-        boundingInfoRecomputeCounter: PerfCounter;
-        static instances: Array<Canvas2D>;
+        readonly drawCallsOpaqueCounter: PerfCounter;
+        readonly drawCallsAlphaTestCounter: PerfCounter;
+        readonly drawCallsTransparentCounter: PerfCounter;
+        readonly groupRenderCounter: PerfCounter;
+        readonly updateTransparentDataCounter: PerfCounter;
+        readonly cachedGroupRenderCounter: PerfCounter;
+        readonly updateCachedStateCounter: PerfCounter;
+        readonly updateLayoutCounter: PerfCounter;
+        readonly updatePositioningCounter: PerfCounter;
+        readonly updateLocalTransformCounter: PerfCounter;
+        readonly updateGlobalTransformCounter: PerfCounter;
+        readonly boundingInfoRecomputeCounter: PerfCounter;
+        static readonly instances: Array<Canvas2D>;
         protected _canvasPreInit(settings: any): void;
         static _zMinDelta: number;
         private _setupInteraction(enable);
@@ -3330,34 +3330,34 @@ declare module BABYLON {
          * Accessor to the Scene that owns the Canvas
          * @returns The instance of the Scene object
          */
-        scene: Scene;
+        readonly scene: Scene;
         /**
          * Accessor to the Engine that drives the Scene used by this Canvas
          * @returns The instance of the Engine object
          */
-        engine: Engine;
+        readonly engine: Engine;
         /**
          * return a unique identifier for the Canvas2D
          */
-        uid: string;
+        readonly uid: string;
         /**
          * And observable called during the Canvas rendering process.
          * This observable is called twice per render, each time with a different mask:
          *  - 1: before render is executed
          *  - 2: after render is executed
          */
-        renderObservable: Observable<Canvas2D>;
+        readonly renderObservable: Observable<Canvas2D>;
         /**
          * Accessor of the Caching Strategy used by this Canvas.
          * See Canvas2D.CACHESTRATEGY_xxxx static members for more information
          * @returns the value corresponding to the used strategy.
          */
-        cachingStrategy: number;
+        readonly cachingStrategy: number;
         /**
          * Return true if the Canvas is a Screen Space one, false if it's a World Space one.
          * @returns {}
          */
-        isScreenSpace: boolean;
+        readonly isScreenSpace: boolean;
         /**
          * Only valid for World Space Canvas, returns the scene node that displays the canvas
          */
@@ -3365,7 +3365,7 @@ declare module BABYLON {
         /**
          * Check if the WebGL Instanced Array extension is supported or not
          */
-        supportInstancedArray: boolean;
+        readonly supportInstancedArray: boolean;
         /**
          * Property that defines the fill object used to draw the background of the Canvas.
          * Note that Canvas with a Caching Strategy of
@@ -3392,18 +3392,18 @@ declare module BABYLON {
          * When enabled the Prim2DBase.pointerEventObservable property will notified when appropriate events occur
          */
         interactionEnabled: boolean;
-        fitRenderingDevice: boolean;
-        designSize: Size;
-        designSizeUseHorizAxis: boolean;
+        readonly fitRenderingDevice: boolean;
+        readonly designSize: Size;
+        readonly designSizeUseHorizAxis: boolean;
         /**
          * Return
          */
-        overPrim: Prim2DBase;
+        readonly overPrim: Prim2DBase;
         /**
          * Access the babylon.js' engine bound data, do not invoke this method, it's for internal purpose only
          * @returns {}
          */
-        _engineData: Canvas2DEngineBoundData;
+        readonly _engineData: Canvas2DEngineBoundData;
         createCanvasProfileInfoCanvas(): Canvas2D;
         /**
          * Instanced Array will be create if there's at least this number of parts/prim that can fit into it
@@ -3685,16 +3685,16 @@ declare module BABYLON {
         constructor(execute: (p) => void, canExecute: (p) => boolean);
         canExecute(parameter: any): boolean;
         execute(parameter: any): void;
-        canExecuteChanged: Observable<void>;
+        readonly canExecuteChanged: Observable<void>;
         private _lastCanExecuteResult;
         private _execute;
         private _canExecute;
         private _canExecuteChanged;
     }
     abstract class UIElement extends SmartPropertyBase {
-        static enabledState: string;
-        static disabledState: string;
-        static mouseOverState: string;
+        static readonly enabledState: string;
+        static readonly disabledState: string;
+        static readonly mouseOverState: string;
         static UIELEMENT_PROPCOUNT: number;
         static parentProperty: Prim2DPropInfo;
         static widthProperty: Prim2DPropInfo;
@@ -3751,7 +3751,7 @@ declare module BABYLON {
          */
         getAnimatables(): IAnimatable[];
         findById(id: string): UIElement;
-        ownerWindow: Window;
+        readonly ownerWindow: Window;
         style: string;
         /**
          * A string that identifies the UIElement.
@@ -3762,32 +3762,32 @@ declare module BABYLON {
          * Return a unique id automatically generated.
          * This property is mainly used for serialization to ensure a perfect way of identifying a UIElement
          */
-        uid: string;
-        hierarchyDepth: number;
+        readonly uid: string;
+        readonly hierarchyDepth: number;
         parent: UIElement;
         width: number;
         height: number;
         minWidth: number;
-        minHheight: number;
+        readonly minHheight: number;
         minHeight: number;
         maxWidth: number;
         maxHeight: number;
         actualWidth: number;
         actualHeight: number;
         margin: PrimitiveThickness;
-        _hasMargin: boolean;
+        readonly _hasMargin: boolean;
         padding: PrimitiveThickness;
-        private _hasPadding;
+        private readonly _hasPadding;
         marginAlignment: PrimitiveAlignment;
         /**
          * Check if there a marginAlignment specified (non null and not default)
          */
-        _hasMarginAlignment: boolean;
+        readonly _hasMarginAlignment: boolean;
         paddingAlignment: PrimitiveAlignment;
         /**
          * Check if there a marginAlignment specified (non null and not default)
          */
-        _hasPaddingAlignment: boolean;
+        readonly _hasPaddingAlignment: boolean;
         isVisible: boolean;
         isEnabled: boolean;
         isFocused: boolean;
@@ -3835,10 +3835,10 @@ declare module BABYLON {
         _patchUIElement(ownerWindow: Window, parent: UIElement): void;
         protected _getDataSource(): IPropertyChanged;
         protected createVisualTree(): void;
-        protected visualPlaceholder: Prim2DBase;
-        protected visualTemplateRoot: Prim2DBase;
-        protected visualChildrenPlaceholder: Prim2DBase;
-        protected _position: Vector2;
+        protected readonly visualPlaceholder: Prim2DBase;
+        protected readonly visualTemplateRoot: Prim2DBase;
+        protected readonly visualChildrenPlaceholder: Prim2DBase;
+        protected readonly _position: Vector2;
         protected abstract _getChildren(): Array<UIElement>;
         static flagVisualToBuild: number;
         static flagIsVisible: number;
@@ -3878,7 +3878,7 @@ declare module BABYLON {
     abstract class UIElementStyle {
         abstract removeStyle(uiel: UIElement): any;
         abstract applyStyle(uiel: UIElement): any;
-        name: string;
+        readonly name: string;
     }
     class GUIManager {
         static registerDataTemplate(className: string, factory: (parent: UIElement, dataObject: any) => UIElement): void;
@@ -3896,7 +3896,7 @@ declare module BABYLON {
     abstract class UIElementRenderingTemplateBase {
         attach(owner: UIElement): void;
         detach(): void;
-        owner: UIElement;
+        readonly owner: UIElement;
         abstract createVisualTree(owner: UIElement, visualPlaceholder: Group2D): {
             root: Prim2DBase;
             contentPlaceholder: Prim2DBase;
@@ -3936,7 +3936,7 @@ declare module BABYLON {
         });
         isOrientationHorizontal: boolean;
         protected createVisualTree(): void;
-        children: Array<UIElement>;
+        readonly children: Array<UIElement>;
         protected _getChildren(): Array<UIElement>;
         private _childrenPlaceholder;
         private _children;
@@ -3989,7 +3989,7 @@ declare module BABYLON {
         });
         dispose(): boolean;
         content: any;
-        protected _contentUIElement: UIElement;
+        protected readonly _contentUIElement: UIElement;
         _createVisualTree(): void;
         private _buildContentUIElement();
         private _contentPlaceholder;
@@ -4045,13 +4045,13 @@ declare module BABYLON {
             paddingVAlignment?: number;
             paddingAlignment?: string;
         });
-        canvas: Canvas2D;
+        readonly canvas: Canvas2D;
         left: number;
         bottom: number;
         position: Vector2;
         isActive: boolean;
-        focusManager: FocusManager;
-        protected _position: Vector2;
+        readonly focusManager: FocusManager;
+        protected readonly _position: Vector2;
         protected createVisualTree(): void;
         _registerVisualToBuild(uiel: UIElement): void;
         private _overPrimChanged(oldPrim, newPrim);
@@ -4101,7 +4101,7 @@ declare module BABYLON {
             paddingBottom?: number | string;
             padding?: string;
         });
-        protected _position: Vector2;
+        protected readonly _position: Vector2;
         private static _emptyArray;
         protected _getChildren(): UIElement[];
         protected createVisualTree(): void;
@@ -4118,7 +4118,7 @@ declare module BABYLON {
 
 declare module BABYLON {
     class Button extends ContentControl {
-        static pushedState: string;
+        static readonly pushedState: string;
         static BUTTON_PROPCOUNT: number;
         static isPushedProperty: Prim2DPropInfo;
         static isDefaultProperty: Prim2DPropInfo;
@@ -4149,13 +4149,13 @@ declare module BABYLON {
         isPushed: boolean;
         isDefault: boolean;
         isOutline: boolean;
-        clickObservable: Observable<Button>;
+        readonly clickObservable: Observable<Button>;
         _raiseClick(): void;
         protected createVisualTree(): void;
-        normalStateBackground: ObservableStringDictionary<IBrush2D>;
-        defaultStateBackground: ObservableStringDictionary<IBrush2D>;
-        normalStateBorder: ObservableStringDictionary<IBrush2D>;
-        defaultStateBorder: ObservableStringDictionary<IBrush2D>;
+        readonly normalStateBackground: ObservableStringDictionary<IBrush2D>;
+        readonly defaultStateBackground: ObservableStringDictionary<IBrush2D>;
+        readonly normalStateBorder: ObservableStringDictionary<IBrush2D>;
+        readonly defaultStateBorder: ObservableStringDictionary<IBrush2D>;
         private _normalStateBackground;
         private _normalStateBorder;
         private _defaultStateBackground;

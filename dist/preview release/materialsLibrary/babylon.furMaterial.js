@@ -16,47 +16,49 @@ var BABYLON;
     var FurMaterialDefines = (function (_super) {
         __extends(FurMaterialDefines, _super);
         function FurMaterialDefines() {
-            _super.call(this);
-            this.DIFFUSE = false;
-            this.HEIGHTMAP = false;
-            this.CLIPPLANE = false;
-            this.ALPHATEST = false;
-            this.POINTSIZE = false;
-            this.FOG = false;
-            this.NORMAL = false;
-            this.UV1 = false;
-            this.UV2 = false;
-            this.VERTEXCOLOR = false;
-            this.VERTEXALPHA = false;
-            this.NUM_BONE_INFLUENCERS = 0;
-            this.BonesPerMesh = 0;
-            this.INSTANCES = false;
-            this.HIGHLEVEL = false;
-            this.rebuild();
+            var _this = _super.call(this) || this;
+            _this.DIFFUSE = false;
+            _this.HEIGHTMAP = false;
+            _this.CLIPPLANE = false;
+            _this.ALPHATEST = false;
+            _this.POINTSIZE = false;
+            _this.FOG = false;
+            _this.NORMAL = false;
+            _this.UV1 = false;
+            _this.UV2 = false;
+            _this.VERTEXCOLOR = false;
+            _this.VERTEXALPHA = false;
+            _this.NUM_BONE_INFLUENCERS = 0;
+            _this.BonesPerMesh = 0;
+            _this.INSTANCES = false;
+            _this.HIGHLEVEL = false;
+            _this.rebuild();
+            return _this;
         }
         return FurMaterialDefines;
     }(BABYLON.MaterialDefines));
     var FurMaterial = (function (_super) {
         __extends(FurMaterial, _super);
         function FurMaterial(name, scene) {
-            _super.call(this, name, scene);
-            this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            this.furLength = 1;
-            this.furAngle = 0;
-            this.furColor = new BABYLON.Color3(0.44, 0.21, 0.02);
-            this.furOffset = 0.0;
-            this.furSpacing = 12;
-            this.furGravity = new BABYLON.Vector3(0, 0, 0);
-            this.furSpeed = 100;
-            this.furDensity = 20;
-            this.disableLighting = false;
-            this.highLevelFur = true;
-            this.maxSimultaneousLights = 4;
-            this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            this._furTime = 0;
-            this._defines = new FurMaterialDefines();
-            this._cachedDefines = new FurMaterialDefines();
-            this._cachedDefines.BonesPerMesh = -1;
+            var _this = _super.call(this, name, scene) || this;
+            _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            _this.furLength = 1;
+            _this.furAngle = 0;
+            _this.furColor = new BABYLON.Color3(0.44, 0.21, 0.02);
+            _this.furOffset = 0.0;
+            _this.furSpacing = 12;
+            _this.furGravity = new BABYLON.Vector3(0, 0, 0);
+            _this.furSpeed = 100;
+            _this.furDensity = 20;
+            _this.disableLighting = false;
+            _this.highLevelFur = true;
+            _this.maxSimultaneousLights = 4;
+            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
+            _this._furTime = 0;
+            _this._defines = new FurMaterialDefines();
+            _this._cachedDefines = new FurMaterialDefines();
+            _this._cachedDefines.BonesPerMesh = -1;
+            return _this;
         }
         Object.defineProperty(FurMaterial.prototype, "furTime", {
             get: function () {
@@ -408,53 +410,53 @@ var BABYLON;
             sourceMesh.material._meshes = meshes;
             return meshes;
         };
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], FurMaterial.prototype, "diffuseTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], FurMaterial.prototype, "heightTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], FurMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furLength", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furAngle", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], FurMaterial.prototype, "furColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furOffset", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furSpacing", void 0);
-        __decorate([
-            BABYLON.serializeAsVector3()
-        ], FurMaterial.prototype, "furGravity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furSpeed", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furDensity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "highLevelFur", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FurMaterial.prototype, "furTime", null);
         return FurMaterial;
     }(BABYLON.Material));
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], FurMaterial.prototype, "diffuseTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], FurMaterial.prototype, "heightTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], FurMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furLength", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furAngle", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], FurMaterial.prototype, "furColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furOffset", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furSpacing", void 0);
+    __decorate([
+        BABYLON.serializeAsVector3()
+    ], FurMaterial.prototype, "furGravity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furSpeed", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furDensity", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "highLevelFur", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "maxSimultaneousLights", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], FurMaterial.prototype, "furTime", null);
     BABYLON.FurMaterial = FurMaterial;
 })(BABYLON || (BABYLON = {}));
 

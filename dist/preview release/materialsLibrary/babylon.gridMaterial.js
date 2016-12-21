@@ -15,10 +15,11 @@ var BABYLON;
     var GRIDMaterialDefines = (function (_super) {
         __extends(GRIDMaterialDefines, _super);
         function GRIDMaterialDefines() {
-            _super.call(this);
-            this.TRANSPARENT = false;
-            this.FOG = false;
-            this._keys = Object.keys(this);
+            var _this = _super.call(this) || this;
+            _this.TRANSPARENT = false;
+            _this.FOG = false;
+            _this._keys = Object.keys(_this);
+            return _this;
         }
         return GRIDMaterialDefines;
     }(BABYLON.MaterialDefines));
@@ -34,34 +35,35 @@ var BABYLON;
          * @param scene The scene the material is used in.
          */
         function GridMaterial(name, scene) {
-            _super.call(this, name, scene);
+            var _this = _super.call(this, name, scene) || this;
             /**
              * Main color of the grid (e.g. between lines)
              */
-            this.mainColor = BABYLON.Color3.White();
+            _this.mainColor = BABYLON.Color3.White();
             /**
              * Color of the grid lines.
              */
-            this.lineColor = BABYLON.Color3.Black();
+            _this.lineColor = BABYLON.Color3.Black();
             /**
              * The scale of the grid compared to unit.
              */
-            this.gridRatio = 1.0;
+            _this.gridRatio = 1.0;
             /**
              * The frequency of thicker lines.
              */
-            this.majorUnitFrequency = 10;
+            _this.majorUnitFrequency = 10;
             /**
              * The visibility of minor units in the grid.
              */
-            this.minorUnitVisibility = 0.33;
+            _this.minorUnitVisibility = 0.33;
             /**
              * The grid opacity outside of the lines.
              */
-            this.opacity = 1.0;
-            this._gridControl = new BABYLON.Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
-            this._defines = new GRIDMaterialDefines();
-            this._cachedDefines = new GRIDMaterialDefines();
+            _this.opacity = 1.0;
+            _this._gridControl = new BABYLON.Vector4(_this.gridRatio, _this.majorUnitFrequency, _this.minorUnitVisibility, _this.opacity);
+            _this._defines = new GRIDMaterialDefines();
+            _this._cachedDefines = new GRIDMaterialDefines();
+            return _this;
         }
         /**
          * Returns wehter or not the grid requires alpha blending.
@@ -164,26 +166,26 @@ var BABYLON;
         GridMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new GridMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GridMaterial.prototype, "mainColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GridMaterial.prototype, "lineColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "gridRatio", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "majorUnitFrequency", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "minorUnitVisibility", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GridMaterial.prototype, "opacity", void 0);
         return GridMaterial;
     }(BABYLON.Material));
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GridMaterial.prototype, "mainColor", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GridMaterial.prototype, "lineColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "gridRatio", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "majorUnitFrequency", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "minorUnitVisibility", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GridMaterial.prototype, "opacity", void 0);
     BABYLON.GridMaterial = GridMaterial;
 })(BABYLON || (BABYLON = {}));
 

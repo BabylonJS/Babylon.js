@@ -732,9 +732,9 @@ var BABYLON;
             //Return an array with all BABYLON.Mesh
             return babylonMeshesArray;
         };
-        OBJFileLoader.OPTIMIZE_WITH_UV = false;
         return OBJFileLoader;
     }());
+    OBJFileLoader.OPTIMIZE_WITH_UV = false;
     BABYLON.OBJFileLoader = OBJFileLoader;
     //Add this loader into the register plugin
     BABYLON.SceneLoader.RegisterPlugin(new OBJFileLoader());
