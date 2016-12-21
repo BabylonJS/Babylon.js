@@ -2934,15 +2934,21 @@
         }
 
         public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
-            var hw = 2.0 / width;
-            var hh = 2.0 / height;
-            var id = 1.0 / (zfar - znear);
-            var nid = znear / (znear - zfar);
+            let n = znear;
+            let f = zfar;
 
-            Matrix.FromValuesToRef(hw, 0, 0, 0,
-                0, hh, 0, 0,
-                0, 0, id, 0,
-                0, 0, nid, 1, result);
+            let a = 2.0 / width;
+            let b = 2.0 / height;
+            let c = 2.0 / (f - n);
+            let d = -(f + n)/(f - n);
+
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c, 0,
+                0, 0, d, 1,
+                result
+            );
         }
 
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
@@ -2954,16 +2960,21 @@
         }
 
         public static OrthoOffCenterLHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
-            result.m[0] = 2.0 / (right - left);
-            result.m[1] = result.m[2] = result.m[3] = 0;
-            result.m[5] = 2.0 / (top - bottom);
-            result.m[4] = result.m[6] = result.m[7] = 0;
-            result.m[10] = 1.0 / (zfar - znear);
-            result.m[8] = result.m[9] = result.m[11] = 0;
-            result.m[12] = (left + right) / (left - right);
-            result.m[13] = (top + bottom) / (bottom - top);
-            result.m[14] = -znear / (zfar - znear);
-            result.m[15] = 1.0;
+            let n = znear;
+            let f = zfar;
+
+            let a = 2.0 / (right - left);
+            let b = 2.0 / (top - bottom);
+            let c = 2.0 / (f - n);
+            let d = -(f + n)/(f - n);
+
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c, 0,
+                0, 0, d, 1,
+                result
+            );
         }
 
         public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
@@ -2982,15 +2993,21 @@
         public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
-            matrix.m[0] = (2.0 * znear) / width;
-            matrix.m[1] = matrix.m[2] = matrix.m[3] = 0.0;
-            matrix.m[5] = (2.0 * znear) / height;
-            matrix.m[4] = matrix.m[6] = matrix.m[7] = 0.0;
-            matrix.m[10] = -zfar / (znear - zfar);
-            matrix.m[8] = matrix.m[9] = 0.0;
-            matrix.m[11] = 1.0;
-            matrix.m[12] = matrix.m[13] = matrix.m[15] = 0.0;
-            matrix.m[14] = (znear * zfar) / (znear - zfar);
+            let n = znear;
+            let f = zfar;
+
+            let a = 2.0 * n / width;
+            let b = 2.0 * n / height;
+            let c = (f + n)/(f - n);
+            let d = -2.0 * f * n/(f - n);
+
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c, 1,
+                0, 0, d, 0,
+                matrix
+            );
 
             return matrix;
         }
@@ -3004,30 +3021,22 @@
         }
 
         public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
-            var tan = 1.0 / (Math.tan(fov * 0.5));
+            let n = znear;
+            let f = zfar;
 
-            if (isVerticalFovFixed) {
-                result.m[0] = tan / aspect;
-            }
-            else {
-                result.m[0] = tan;
-            }
+            let t = 1.0 / (Math.tan(fov * 0.5));
+            let a = isVerticalFovFixed ? (t / aspect) : t;
+            let b = isVerticalFovFixed ? t : (t * aspect);
+            let c = (f + n)/(f - n);
+            let d = -2.0 * f * n/(f - n);
 
-            result.m[1] = result.m[2] = result.m[3] = 0.0;
-
-            if (isVerticalFovFixed) {
-                result.m[5] = tan;
-            }
-            else {
-                result.m[5] = tan * aspect;
-            }
-
-            result.m[4] = result.m[6] = result.m[7] = 0.0;
-            result.m[8] = result.m[9] = 0.0;
-            result.m[10] = zfar / (zfar - znear);
-            result.m[11] = 1.0;
-            result.m[12] = result.m[13] = result.m[15] = 0.0;
-            result.m[14] = -(znear * zfar) / (zfar - znear);
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c, 1,
+                0, 0, d, 0,
+                result
+            );
         }
 
         public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
@@ -3039,33 +3048,31 @@
         }
 
         public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
-            var tan = 1.0 / (Math.tan(fov * 0.5));
+            //alternatively this could be expressed as:
+            //    m = PerspectiveFovLHToRef
+            //    m[10] *= -1.0;
+            //    m[11] *= -1.0;
 
-            if (isVerticalFovFixed) {
-                result.m[0] = tan / aspect;
-            }
-            else {
-                result.m[0] = tan;
-            }
+            let n = znear;
+            let f = zfar;
 
-            result.m[1] = result.m[2] = result.m[3] = 0.0;
+            let t = 1.0 / (Math.tan(fov * 0.5));
+            let a = isVerticalFovFixed ? (t / aspect) : t;
+            let b = isVerticalFovFixed ? t : (t * aspect);
+            let c = -(f + n)/(f - n);
+            let d = -2*f*n/(f - n);
 
-            if (isVerticalFovFixed) {
-                result.m[5] = tan;
-            }
-            else {
-                result.m[5] = tan * aspect;
-            }
-
-            result.m[4] = result.m[6] = result.m[7] = 0.0;
-            result.m[8] = result.m[9] = 0.0;
-            result.m[10] = zfar / (znear - zfar);
-            result.m[11] = -1.0;
-            result.m[12] = result.m[13] = result.m[15] = 0.0;
-            result.m[14] = (znear * zfar) / (znear - zfar);
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c,-1,
+                0, 0, d, 0,
+                result
+            );
         }
 
         public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+            //left handed
             var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
             var downTan = Math.tan(fov.downDegrees * Math.PI / 180.0);
             var leftTan = Math.tan(fov.leftDegrees * Math.PI / 180.0);
@@ -3078,12 +3085,12 @@
             result.m[6] = result.m[7] =  0.0;
             result.m[8] = ((leftTan - rightTan) * xScale * 0.5);
             result.m[9] = -((upTan - downTan) * yScale * 0.5);
-            //result.m[10] = -(znear + zfar) / (zfar - znear);
-            result.m[10] = -zfar / (znear - zfar);
+            result.m[10] = -(znear + zfar) / (zfar - znear);
+            // result.m[10] = -zfar / (znear - zfar);
             result.m[11] = 1.0;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
-            //result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
-            result.m[14] = (znear * zfar) / (znear - zfar);
+            result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
+            // result.m[14] = (znear * zfar) / (znear - zfar);
         }
 
         public static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix {
