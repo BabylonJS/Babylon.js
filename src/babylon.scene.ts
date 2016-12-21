@@ -543,7 +543,11 @@
 
         private _viewMatrix: Matrix;
         private _projectionMatrix: Matrix;
+        
         private _frustumPlanes: Plane[];
+        public get frustumPlanes(): Plane[] {
+            return this._frustumPlanes;
+        }
 
         private _selectionOctree: Octree<AbstractMesh>;
 
@@ -560,7 +564,6 @@
         private _pickedDownSprite: Sprite;
         private _externalData: StringDictionary<Object>;
         private _uid: string;
-
 
         /**
          * @constructor
@@ -1982,8 +1985,6 @@
             this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
             this._edgesRenderers.reset();
-
-            this.activeCamera.computeFrustumPlanes(this._frustumPlanes);
 
             // Meshes
             var meshes: AbstractMesh[];
