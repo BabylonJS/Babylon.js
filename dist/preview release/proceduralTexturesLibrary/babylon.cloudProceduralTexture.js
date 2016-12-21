@@ -9,10 +9,11 @@ var BABYLON;
     var CloudProceduralTexture = (function (_super) {
         __extends(CloudProceduralTexture, _super);
         function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "cloudProceduralTexture", scene, fallbackTexture, generateMipMaps);
-            this._skyColor = new BABYLON.Color4(0.15, 0.68, 1.0, 1.0);
-            this._cloudColor = new BABYLON.Color4(1, 1, 1, 1.0);
-            this.updateShaderUniforms();
+            var _this = _super.call(this, name, size, "cloudProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
+            _this._skyColor = new BABYLON.Color4(0.15, 0.68, 1.0, 1.0);
+            _this._cloudColor = new BABYLON.Color4(1, 1, 1, 1.0);
+            _this.updateShaderUniforms();
+            return _this;
         }
         CloudProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setColor4("skyColor", this._skyColor);

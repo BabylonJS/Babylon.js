@@ -76,12 +76,12 @@ declare module BABYLON {
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);
         useLogarithmicDepth: boolean;
-        refractionTexture: RenderTargetTexture;
-        reflectionTexture: RenderTargetTexture;
+        readonly refractionTexture: RenderTargetTexture;
+        readonly reflectionTexture: RenderTargetTexture;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
         getRenderList(): AbstractMesh[];
-        renderTargetsEnabled: boolean;
+        readonly renderTargetsEnabled: boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BaseTexture;

@@ -4,19 +4,20 @@ var BABYLON;
     /**
     * Enums
     */
+    var EComponentType;
     (function (EComponentType) {
         EComponentType[EComponentType["BYTE"] = 5120] = "BYTE";
         EComponentType[EComponentType["UNSIGNED_BYTE"] = 5121] = "UNSIGNED_BYTE";
         EComponentType[EComponentType["SHORT"] = 5122] = "SHORT";
         EComponentType[EComponentType["UNSIGNED_SHORT"] = 5123] = "UNSIGNED_SHORT";
         EComponentType[EComponentType["FLOAT"] = 5126] = "FLOAT";
-    })(BABYLON.EComponentType || (BABYLON.EComponentType = {}));
-    var EComponentType = BABYLON.EComponentType;
+    })(EComponentType = BABYLON.EComponentType || (BABYLON.EComponentType = {}));
+    var EShaderType;
     (function (EShaderType) {
         EShaderType[EShaderType["FRAGMENT"] = 35632] = "FRAGMENT";
         EShaderType[EShaderType["VERTEX"] = 35633] = "VERTEX";
-    })(BABYLON.EShaderType || (BABYLON.EShaderType = {}));
-    var EShaderType = BABYLON.EShaderType;
+    })(EShaderType = BABYLON.EShaderType || (BABYLON.EShaderType = {}));
+    var EParameterType;
     (function (EParameterType) {
         EParameterType[EParameterType["BYTE"] = 5120] = "BYTE";
         EParameterType[EParameterType["UNSIGNED_BYTE"] = 5121] = "UNSIGNED_BYTE";
@@ -39,14 +40,14 @@ var BABYLON;
         EParameterType[EParameterType["FLOAT_MAT3"] = 35675] = "FLOAT_MAT3";
         EParameterType[EParameterType["FLOAT_MAT4"] = 35676] = "FLOAT_MAT4";
         EParameterType[EParameterType["SAMPLER_2D"] = 35678] = "SAMPLER_2D";
-    })(BABYLON.EParameterType || (BABYLON.EParameterType = {}));
-    var EParameterType = BABYLON.EParameterType;
+    })(EParameterType = BABYLON.EParameterType || (BABYLON.EParameterType = {}));
+    var ETextureWrapMode;
     (function (ETextureWrapMode) {
         ETextureWrapMode[ETextureWrapMode["CLAMP_TO_EDGE"] = 33071] = "CLAMP_TO_EDGE";
         ETextureWrapMode[ETextureWrapMode["MIRRORED_REPEAT"] = 33648] = "MIRRORED_REPEAT";
         ETextureWrapMode[ETextureWrapMode["REPEAT"] = 10497] = "REPEAT";
-    })(BABYLON.ETextureWrapMode || (BABYLON.ETextureWrapMode = {}));
-    var ETextureWrapMode = BABYLON.ETextureWrapMode;
+    })(ETextureWrapMode = BABYLON.ETextureWrapMode || (BABYLON.ETextureWrapMode = {}));
+    var ETextureFilterType;
     (function (ETextureFilterType) {
         ETextureFilterType[ETextureFilterType["NEAREST"] = 9728] = "NEAREST";
         ETextureFilterType[ETextureFilterType["LINEAR"] = 9728] = "LINEAR";
@@ -54,22 +55,22 @@ var BABYLON;
         ETextureFilterType[ETextureFilterType["LINEAR_MIPMAP_NEAREST"] = 9985] = "LINEAR_MIPMAP_NEAREST";
         ETextureFilterType[ETextureFilterType["NEAREST_MIPMAP_LINEAR"] = 9986] = "NEAREST_MIPMAP_LINEAR";
         ETextureFilterType[ETextureFilterType["LINEAR_MIPMAP_LINEAR"] = 9987] = "LINEAR_MIPMAP_LINEAR";
-    })(BABYLON.ETextureFilterType || (BABYLON.ETextureFilterType = {}));
-    var ETextureFilterType = BABYLON.ETextureFilterType;
+    })(ETextureFilterType = BABYLON.ETextureFilterType || (BABYLON.ETextureFilterType = {}));
+    var ETextureFormat;
     (function (ETextureFormat) {
         ETextureFormat[ETextureFormat["ALPHA"] = 6406] = "ALPHA";
         ETextureFormat[ETextureFormat["RGB"] = 6407] = "RGB";
         ETextureFormat[ETextureFormat["RGBA"] = 6408] = "RGBA";
         ETextureFormat[ETextureFormat["LUMINANCE"] = 6409] = "LUMINANCE";
         ETextureFormat[ETextureFormat["LUMINANCE_ALPHA"] = 6410] = "LUMINANCE_ALPHA";
-    })(BABYLON.ETextureFormat || (BABYLON.ETextureFormat = {}));
-    var ETextureFormat = BABYLON.ETextureFormat;
+    })(ETextureFormat = BABYLON.ETextureFormat || (BABYLON.ETextureFormat = {}));
+    var ECullingType;
     (function (ECullingType) {
         ECullingType[ECullingType["FRONT"] = 1028] = "FRONT";
         ECullingType[ECullingType["BACK"] = 1029] = "BACK";
         ECullingType[ECullingType["FRONT_AND_BACK"] = 1032] = "FRONT_AND_BACK";
-    })(BABYLON.ECullingType || (BABYLON.ECullingType = {}));
-    var ECullingType = BABYLON.ECullingType;
+    })(ECullingType = BABYLON.ECullingType || (BABYLON.ECullingType = {}));
+    var EBlendingFunction;
     (function (EBlendingFunction) {
         EBlendingFunction[EBlendingFunction["ZERO"] = 0] = "ZERO";
         EBlendingFunction[EBlendingFunction["ONE"] = 1] = "ONE";
@@ -86,8 +87,7 @@ var BABYLON;
         EBlendingFunction[EBlendingFunction["CONSTANT_ALPHA"] = 32771] = "CONSTANT_ALPHA";
         EBlendingFunction[EBlendingFunction["ONE_MINUS_CONSTANT_ALPHA"] = 32772] = "ONE_MINUS_CONSTANT_ALPHA";
         EBlendingFunction[EBlendingFunction["SRC_ALPHA_SATURATE"] = 776] = "SRC_ALPHA_SATURATE";
-    })(BABYLON.EBlendingFunction || (BABYLON.EBlendingFunction = {}));
-    var EBlendingFunction = BABYLON.EBlendingFunction;
+    })(EBlendingFunction = BABYLON.EBlendingFunction || (BABYLON.EBlendingFunction = {}));
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.glTFFileLoaderInterfaces.js.map
@@ -1503,18 +1503,18 @@ var BABYLON;
                 traverseNodes(gltfRuntime, currentScene.nodes[i], null);
             }
         };
-        /**
-        * Private members
-        */
-        // None
-        /**
-        * Static members
-        */
-        GLTFFileLoader.MakeYUP = false;
-        GLTFFileLoader.HomogeneousCoordinates = false;
-        GLTFFileLoader.Extensions = {};
         return GLTFFileLoader;
     }());
+    /**
+    * Private members
+    */
+    // None
+    /**
+    * Static members
+    */
+    GLTFFileLoader.MakeYUP = false;
+    GLTFFileLoader.HomogeneousCoordinates = false;
+    GLTFFileLoader.Extensions = {};
     BABYLON.GLTFFileLoader = GLTFFileLoader;
     ;
     BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
@@ -1867,7 +1867,7 @@ var BABYLON;
     var GLTFBinaryExtension = (function (_super) {
         __extends(GLTFBinaryExtension, _super);
         function GLTFBinaryExtension() {
-            _super.call(this, "KHR_binary_glTF");
+            return _super.call(this, "KHR_binary_glTF") || this;
         }
         GLTFBinaryExtension.prototype.loadRuntimeAsync = function (scene, data, rootUrl, onSuccess, onError) {
             var _this = this;

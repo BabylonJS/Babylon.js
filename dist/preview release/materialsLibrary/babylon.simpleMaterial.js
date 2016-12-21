@@ -15,36 +15,38 @@ var BABYLON;
     var SimpleMaterialDefines = (function (_super) {
         __extends(SimpleMaterialDefines, _super);
         function SimpleMaterialDefines() {
-            _super.call(this);
-            this.DIFFUSE = false;
-            this.CLIPPLANE = false;
-            this.ALPHATEST = false;
-            this.POINTSIZE = false;
-            this.FOG = false;
-            this.NORMAL = false;
-            this.UV1 = false;
-            this.UV2 = false;
-            this.VERTEXCOLOR = false;
-            this.VERTEXALPHA = false;
-            this.NUM_BONE_INFLUENCERS = 0;
-            this.BonesPerMesh = 0;
-            this.INSTANCES = false;
-            this.rebuild();
+            var _this = _super.call(this) || this;
+            _this.DIFFUSE = false;
+            _this.CLIPPLANE = false;
+            _this.ALPHATEST = false;
+            _this.POINTSIZE = false;
+            _this.FOG = false;
+            _this.NORMAL = false;
+            _this.UV1 = false;
+            _this.UV2 = false;
+            _this.VERTEXCOLOR = false;
+            _this.VERTEXALPHA = false;
+            _this.NUM_BONE_INFLUENCERS = 0;
+            _this.BonesPerMesh = 0;
+            _this.INSTANCES = false;
+            _this.rebuild();
+            return _this;
         }
         return SimpleMaterialDefines;
     }(BABYLON.MaterialDefines));
     var SimpleMaterial = (function (_super) {
         __extends(SimpleMaterial, _super);
         function SimpleMaterial(name, scene) {
-            _super.call(this, name, scene);
-            this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            this.disableLighting = false;
-            this.maxSimultaneousLights = 4;
-            this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            this._scaledDiffuse = new BABYLON.Color3();
-            this._defines = new SimpleMaterialDefines();
-            this._cachedDefines = new SimpleMaterialDefines();
-            this._cachedDefines.BonesPerMesh = -1;
+            var _this = _super.call(this, name, scene) || this;
+            _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            _this.disableLighting = false;
+            _this.maxSimultaneousLights = 4;
+            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
+            _this._scaledDiffuse = new BABYLON.Color3();
+            _this._defines = new SimpleMaterialDefines();
+            _this._cachedDefines = new SimpleMaterialDefines();
+            _this._cachedDefines.BonesPerMesh = -1;
+            return _this;
         }
         SimpleMaterial.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0);
@@ -262,20 +264,20 @@ var BABYLON;
         SimpleMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new SimpleMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serializeAsTexture()
-        ], SimpleMaterial.prototype, "diffuseTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("diffuseColor")
-        ], SimpleMaterial.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SimpleMaterial.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], SimpleMaterial.prototype, "maxSimultaneousLights", void 0);
         return SimpleMaterial;
     }(BABYLON.Material));
+    __decorate([
+        BABYLON.serializeAsTexture()
+    ], SimpleMaterial.prototype, "diffuseTexture", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3("diffuseColor")
+    ], SimpleMaterial.prototype, "diffuseColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SimpleMaterial.prototype, "disableLighting", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], SimpleMaterial.prototype, "maxSimultaneousLights", void 0);
     BABYLON.SimpleMaterial = SimpleMaterial;
 })(BABYLON || (BABYLON = {}));
 

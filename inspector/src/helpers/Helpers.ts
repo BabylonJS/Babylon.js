@@ -118,6 +118,19 @@ module INSPECTOR {
                 div.removeChild(div.firstChild);
             }
         }
+
+        /**
+         * Returns the true value of the given CSS Attribute from the given element (in percentage or in pixel, as it was specified in the css)
+         */
+        public static Css(elem:HTMLElement, cssAttribute:string) : string{
+            let clone = elem.cloneNode(true) as HTMLElement;
+            let div = Helpers.CreateDiv('', Inspector.DOCUMENT.body);
+            div.style.display = 'none';
+            div.appendChild(clone);
+            let value = Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
+            div.remove();
+            return value;
+        }
         
         public static LoadScript() {
             BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js", (elem) => {
@@ -144,5 +157,11 @@ module INSPECTOR {
             
         }
 
+        public static IsSystemName(name: string): boolean {
+            if (name==null) {
+                return false;
+            }
+            return name.indexOf("###")===0 && name.lastIndexOf("###")===(name.length-3);
+        }
     }
 }

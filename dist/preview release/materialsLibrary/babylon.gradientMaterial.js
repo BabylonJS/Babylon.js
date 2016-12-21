@@ -16,76 +16,78 @@ var BABYLON;
     var GradientMaterialDefines = (function (_super) {
         __extends(GradientMaterialDefines, _super);
         function GradientMaterialDefines() {
-            _super.call(this);
-            this.DIFFUSE = false;
-            this.CLIPPLANE = false;
-            this.ALPHATEST = false;
-            this.POINTSIZE = false;
-            this.FOG = false;
-            this.LIGHT0 = false;
-            this.LIGHT1 = false;
-            this.LIGHT2 = false;
-            this.LIGHT3 = false;
-            this.SPOTLIGHT0 = false;
-            this.SPOTLIGHT1 = false;
-            this.SPOTLIGHT2 = false;
-            this.SPOTLIGHT3 = false;
-            this.HEMILIGHT0 = false;
-            this.HEMILIGHT1 = false;
-            this.HEMILIGHT2 = false;
-            this.HEMILIGHT3 = false;
-            this.DIRLIGHT0 = false;
-            this.DIRLIGHT1 = false;
-            this.DIRLIGHT2 = false;
-            this.DIRLIGHT3 = false;
-            this.POINTLIGHT0 = false;
-            this.POINTLIGHT1 = false;
-            this.POINTLIGHT2 = false;
-            this.POINTLIGHT3 = false;
-            this.SHADOW0 = false;
-            this.SHADOW1 = false;
-            this.SHADOW2 = false;
-            this.SHADOW3 = false;
-            this.SHADOWS = false;
-            this.SHADOWVSM0 = false;
-            this.SHADOWVSM1 = false;
-            this.SHADOWVSM2 = false;
-            this.SHADOWVSM3 = false;
-            this.SHADOWPCF0 = false;
-            this.SHADOWPCF1 = false;
-            this.SHADOWPCF2 = false;
-            this.SHADOWPCF3 = false;
-            this.NORMAL = false;
-            this.UV1 = false;
-            this.UV2 = false;
-            this.VERTEXCOLOR = false;
-            this.VERTEXALPHA = false;
-            this.NUM_BONE_INFLUENCERS = 0;
-            this.BonesPerMesh = 0;
-            this.INSTANCES = false;
-            this._keys = Object.keys(this);
+            var _this = _super.call(this) || this;
+            _this.DIFFUSE = false;
+            _this.CLIPPLANE = false;
+            _this.ALPHATEST = false;
+            _this.POINTSIZE = false;
+            _this.FOG = false;
+            _this.LIGHT0 = false;
+            _this.LIGHT1 = false;
+            _this.LIGHT2 = false;
+            _this.LIGHT3 = false;
+            _this.SPOTLIGHT0 = false;
+            _this.SPOTLIGHT1 = false;
+            _this.SPOTLIGHT2 = false;
+            _this.SPOTLIGHT3 = false;
+            _this.HEMILIGHT0 = false;
+            _this.HEMILIGHT1 = false;
+            _this.HEMILIGHT2 = false;
+            _this.HEMILIGHT3 = false;
+            _this.DIRLIGHT0 = false;
+            _this.DIRLIGHT1 = false;
+            _this.DIRLIGHT2 = false;
+            _this.DIRLIGHT3 = false;
+            _this.POINTLIGHT0 = false;
+            _this.POINTLIGHT1 = false;
+            _this.POINTLIGHT2 = false;
+            _this.POINTLIGHT3 = false;
+            _this.SHADOW0 = false;
+            _this.SHADOW1 = false;
+            _this.SHADOW2 = false;
+            _this.SHADOW3 = false;
+            _this.SHADOWS = false;
+            _this.SHADOWVSM0 = false;
+            _this.SHADOWVSM1 = false;
+            _this.SHADOWVSM2 = false;
+            _this.SHADOWVSM3 = false;
+            _this.SHADOWPCF0 = false;
+            _this.SHADOWPCF1 = false;
+            _this.SHADOWPCF2 = false;
+            _this.SHADOWPCF3 = false;
+            _this.NORMAL = false;
+            _this.UV1 = false;
+            _this.UV2 = false;
+            _this.VERTEXCOLOR = false;
+            _this.VERTEXALPHA = false;
+            _this.NUM_BONE_INFLUENCERS = 0;
+            _this.BonesPerMesh = 0;
+            _this.INSTANCES = false;
+            _this._keys = Object.keys(_this);
+            return _this;
         }
         return GradientMaterialDefines;
     }(BABYLON.MaterialDefines));
     var GradientMaterial = (function (_super) {
         __extends(GradientMaterial, _super);
         function GradientMaterial(name, scene) {
-            _super.call(this, name, scene);
+            var _this = _super.call(this, name, scene) || this;
             // The gradient top color, red by default
-            this.topColor = new BABYLON.Color3(1, 0, 0);
-            this.topColorAlpha = 1.0;
+            _this.topColor = new BABYLON.Color3(1, 0, 0);
+            _this.topColorAlpha = 1.0;
             // The gradient top color, blue by default
-            this.bottomColor = new BABYLON.Color3(0, 0, 1);
-            this.bottomColorAlpha = 1.0;
+            _this.bottomColor = new BABYLON.Color3(0, 0, 1);
+            _this.bottomColorAlpha = 1.0;
             // Gradient offset
-            this.offset = 0;
-            this.smoothness = 1.0;
-            this.disableLighting = false;
-            this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            this._scaledDiffuse = new BABYLON.Color3();
-            this._defines = new GradientMaterialDefines();
-            this._cachedDefines = new GradientMaterialDefines();
-            this._cachedDefines.BonesPerMesh = -1;
+            _this.offset = 0;
+            _this.smoothness = 1.0;
+            _this.disableLighting = false;
+            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
+            _this._scaledDiffuse = new BABYLON.Color3();
+            _this._defines = new GradientMaterialDefines();
+            _this._cachedDefines = new GradientMaterialDefines();
+            _this._cachedDefines.BonesPerMesh = -1;
+            return _this;
         }
         GradientMaterial.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0 || this.topColorAlpha < 1.0 || this.bottomColorAlpha < 1.0);
@@ -288,29 +290,29 @@ var BABYLON;
         GradientMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new GradientMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GradientMaterial.prototype, "topColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "topColorAlpha", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], GradientMaterial.prototype, "bottomColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "bottomColorAlpha", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "offset", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "smoothness", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], GradientMaterial.prototype, "disableLighting", void 0);
         return GradientMaterial;
     }(BABYLON.Material));
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GradientMaterial.prototype, "topColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "topColorAlpha", void 0);
+    __decorate([
+        BABYLON.serializeAsColor3()
+    ], GradientMaterial.prototype, "bottomColor", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "bottomColorAlpha", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "offset", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "smoothness", void 0);
+    __decorate([
+        BABYLON.serialize()
+    ], GradientMaterial.prototype, "disableLighting", void 0);
     BABYLON.GradientMaterial = GradientMaterial;
 })(BABYLON || (BABYLON = {}));
 

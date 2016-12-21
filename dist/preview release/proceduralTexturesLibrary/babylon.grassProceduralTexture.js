@@ -9,17 +9,18 @@ var BABYLON;
     var GrassProceduralTexture = (function (_super) {
         __extends(GrassProceduralTexture, _super);
         function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps);
-            this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
-            this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
-            this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
-            this._groundColor = new BABYLON.Color3(1, 1, 1);
-            this._grassColors = [
+            var _this = _super.call(this, name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
+            _this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
+            _this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
+            _this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
+            _this._groundColor = new BABYLON.Color3(1, 1, 1);
+            _this._grassColors = [
                 new BABYLON.Color3(0.29, 0.38, 0.02),
                 new BABYLON.Color3(0.36, 0.49, 0.09),
                 new BABYLON.Color3(0.51, 0.6, 0.28)
             ];
-            this.updateShaderUniforms();
+            _this.updateShaderUniforms();
+            return _this;
         }
         GrassProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setColor3("herb1Color", this._grassColors[0]);

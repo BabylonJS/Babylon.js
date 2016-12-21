@@ -3,7 +3,7 @@ Build Babylon.js with Gulp
 
 Build Babylon.js with [gulp](http://gulpjs.com/ "gulp") and npm ([nodejs](http://nodejs.org/ "nodejs")), easy and cross-platform
 
-(Paths in this file are relative to this file location.)
+**Paths in this file are relative to this file location, currently [Tools/Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp).**
 
 # How to use it
 
@@ -53,7 +53,7 @@ Will be generated :
 - babylon.noworker.js (minified version without collisions workers)
 - babylon.max.js (unminified)
 
-Be aware that all js files content will be overwrite.
+Be aware that all js files content will be overwritten.
 
 ### Build Babylon.js when you save a typescript file:
 ```

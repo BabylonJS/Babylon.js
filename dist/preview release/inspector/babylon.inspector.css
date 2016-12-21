@@ -63,7 +63,7 @@
             background-color: #454545; }
   .insp-wrapper .tooltip {
     position: absolute;
-    top: 0;
+    top: 32px;
     right: 0;
     color: #f29766;
     display: none;

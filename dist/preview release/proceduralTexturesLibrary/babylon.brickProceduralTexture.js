@@ -9,12 +9,13 @@ var BABYLON;
     var BrickProceduralTexture = (function (_super) {
         __extends(BrickProceduralTexture, _super);
         function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps);
-            this._numberOfBricksHeight = 15;
-            this._numberOfBricksWidth = 5;
-            this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
-            this._brickColor = new BABYLON.Color3(0.77, 0.47, 0.40);
-            this.updateShaderUniforms();
+            var _this = _super.call(this, name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
+            _this._numberOfBricksHeight = 15;
+            _this._numberOfBricksWidth = 5;
+            _this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
+            _this._brickColor = new BABYLON.Color3(0.77, 0.47, 0.40);
+            _this.updateShaderUniforms();
+            return _this;
         }
         BrickProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
