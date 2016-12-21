@@ -46,7 +46,7 @@
                 return;
             }
 
-            this._scene.getEngine().clear(0, false, depth, stencil);
+            this._scene.getEngine().clear(null, false, depth, stencil);
             this._depthStencilBufferAlreadyCleaned = true;
         }
 

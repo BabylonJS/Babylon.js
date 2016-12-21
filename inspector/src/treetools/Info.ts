@@ -20,7 +20,7 @@ module INSPECTOR{
             this._obj = obj;
             this._elem.classList.add('fa-info-circle');
 
-            this._tooltip = new Tooltip(this._elem, this._obj.getInfo());
+            this._tooltip = new Tooltip(this._elem, this._obj.getInfo(), this._elem);
         }
 
         // Nothing to do on click

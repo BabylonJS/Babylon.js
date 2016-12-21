@@ -57,16 +57,60 @@ module INSPECTOR {
                 'uOffset', 
                 'vOffset'
             ],
+            format: (tex:BABYLON.Texture) => { return tex.name} 
         },
         
         'ArcRotateCamera' : {
-            // type: BABYLON.ArcRotateCamera,
-            properties : ['alpha', 'beta', 'radius']  
+            type: BABYLON.ArcRotateCamera,
+            properties : [
+                'alpha', 
+                'beta', 
+                'radius',
+                'angularSensibilityX',
+                'angularSensibilityY',
+                'target', 
+
+                'lowerAlphaLimit',
+                'lowerBetaLimit',
+                'upperAlphaLimit',
+                'upperBetaLimit',
+                'lowerRadiusLimit',
+                'upperRadiusLimit',
+
+                'pinchPrecision',
+                'wheelPrecision',
+                'allowUpsideDown',
+                'checkCollisions'
+            ]  
         },
         
         'Scene' : {
             type: BABYLON.Scene,
-            properties:['actionManager', 'activeCamera', 'ambientColor', 'clearColor']  
+            properties:[
+                'actionManager', 
+                'activeCamera', 
+                'ambientColor', 
+                'clearColor',
+                'forceWireframe',
+                'forcePointsCloud',
+                'forceShowBoundingBoxes',
+                'useRightHandedSystem',
+                'hoverCursor',
+                'cameraToUseForPointers', 
+                'fogEnabled', 
+                'fogColor', 
+                'fogDensity', 
+                'fogStart', 
+                'fogEnd', 
+                'shadowsEnabled', 
+                'lightsEnabled', 
+                'collisionsEnabled',
+                'gravity',
+                'meshUnderPointer', 
+                'pointerX', 
+                'pointerY', 
+                'uid'
+            ]  
         },
         'Mesh': {
             type: BABYLON.Mesh,
@@ -76,7 +120,29 @@ module INSPECTOR {
                 'rotation', 
                 'rotationQuaternion', 
                 'absolutePosition', 
-                'material'
+                'material',
+                'actionManager', 
+                'visibility', 
+                'isVisible', 
+                'isPickable', 
+                'renderingGroupId',
+                'receiveShadows', 
+                'renderOutline', 
+                'outlineColor',
+                'outlineWidth',
+                'renderOverlay',
+                'overlayColor',
+                'overlayAlpha',
+                'hasVertexAlpha',
+                'useVertexColors',
+                'layerMask',
+                'alwaysSelectAsActiveMesh',
+                'ellipsoid', 
+                'ellipsoidOffset', 
+                'edgesWidth', 
+                'edgesColor', 
+                'checkCollisions',
+                'hasLODLevels'
             ],
             format : (m:BABYLON.Mesh) : string => {return m.name;}
         },        

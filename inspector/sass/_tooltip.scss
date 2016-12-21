@@ -2,17 +2,13 @@
 
 .tooltip {
     position        : absolute;
-    top             : 0;
+    top             : $tabbar-height;
     right           : 0;
     color           : $color-top;
     display         : none;
     z-index         : 4;
-    font-family     : $font;
-    
-    
-    // width        : 120px;
+    font-family     : $font;  
     padding         : 2px;
-    // line-height  : 25px;
     background-color: $background;
     border          : 1px solid $background-lighter3;
 }
