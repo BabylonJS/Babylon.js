@@ -214,6 +214,7 @@
         private static _ALPHA_MULTIPLY = 4;
         private static _ALPHA_MAXIMIZED = 5;
         private static _ALPHA_ONEONE = 6;
+        private static _ALPHA_PREMULTIPLIED = 7;
 
         private static _DELAYLOADSTATE_NONE = 0;
         private static _DELAYLOADSTATE_LOADED = 1;
@@ -335,6 +336,10 @@
 
         public static get ALPHA_MAXIMIZED(): number {
             return Engine._ALPHA_MAXIMIZED;
+        }
+
+        public static get ALPHA_PREMULTIPLIED(): number {
+            return Engine._ALPHA_PREMULTIPLIED;
         }
 
         public static get DELAYLOADSTATE_NONE(): number {
@@ -1858,6 +1863,10 @@
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
                     this._alphaState.alphaBlend = false;
+                    break;
+                case Engine.ALPHA_PREMULTIPLIED:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                    this._alphaState.alphaBlend = true;
                     break;
                 case Engine.ALPHA_COMBINE:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
