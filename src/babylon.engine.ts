@@ -172,6 +172,9 @@
         public maxCubemapTextureSize: number;
         public maxRenderTextureSize: number;
         public maxVertexAttribs: number;
+        public maxVaryingVectors: number;
+        public maxVertexUniformVectors: number;
+        public maxFragmentUniformVectors: number;
         public standardDerivatives: boolean;
         public s3tc: WEBGL_compressed_texture_s3tc;
         public pvrtc: any; //WEBGL_compressed_texture_pvrtc;
@@ -572,6 +575,9 @@
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
             this._caps.maxVertexAttribs = this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS);
+            this._caps.maxVaryingVectors = this._gl.getParameter(this._gl.MAX_VARYING_VECTORS);
+            this._caps.maxFragmentUniformVectors = this._gl.getParameter(this._gl.MAX_FRAGMENT_UNIFORM_VECTORS);
+            this._caps.maxVertexUniformVectors = this._gl.getParameter(this._gl.MAX_VERTEX_UNIFORM_VECTORS);
 
             // Infos
             this._glVersion = this._gl.getParameter(this._gl.VERSION);
@@ -957,12 +963,12 @@
             }
         }
 
-        public clear(color: any, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
             this.applyStates();
 
             var mode = 0;
-            if (backBuffer) {
-                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+            if (backBuffer && color) {
+                this._gl.clearColor(color.r, color.g, color.b, color.a);
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
             if (depth) {

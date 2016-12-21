@@ -155,6 +155,7 @@ namespace BabylonExport.Entities
             specularIntensity = 1.0f;
             cameraExposure = 1.0f;
             cameraContrast = 1.0f;
+            useEmissiveAsIllumination = false;
 
             overloadedShadowIntensity = 1.0f;
             overloadedShadeIntensity = 1.0f;

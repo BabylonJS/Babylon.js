@@ -136,6 +136,11 @@ module INSPECTOR{
                 if (item.id.toLowerCase().indexOf(filter.toLowerCase()) != -1) {
                     items.push(item);
                 }
+                for (let child of item.children) {
+                    if (child.id.toLowerCase().indexOf(filter.toLowerCase()) != -1) {
+                        items.push(item);
+                    }
+                }
             }    
             this.update(items);
         }
