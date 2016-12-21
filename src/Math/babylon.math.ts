@@ -2967,12 +2967,14 @@
             let b = 2.0 / (top - bottom);
             let c = 2.0 / (f - n);
             let d = -(f + n)/(f - n);
+            let i0 = (left + right) / (left - right);
+            let i1 = (top + bottom) / (bottom - top);
 
             BABYLON.Matrix.FromValuesToRef(
                 a, 0, 0, 0,
                 0, b, 0, 0,
                 0, 0, c, 0,
-                0, 0, d, 1,
+                i0, i1, d, 1,
                 result
             );
         }
