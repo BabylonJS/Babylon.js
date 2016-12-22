@@ -395,7 +395,6 @@ namespace Unity3D2Babylon
                                 collisionMesh = new BabylonMesh();
                                 collisionMesh.tags = "[MESHCOLLIDER]";
                                 // Generate Mesh Collider Geometry
-                               
                                 if(!meshCollider.sharedMesh)
                                 {
                                     UnityEngine.Debug.LogWarning(meshCollider.gameObject+" has a Mesh Collider component without a mesh");
@@ -404,8 +403,6 @@ namespace Unity3D2Babylon
                                 {
                                     Tools.GenerateBabylonMeshData(meshCollider.sharedMesh, collisionMesh);
                                 }
-
-                            
                                 collisionMesh.position = Vector3.zero.ToFloat();
                                 collisionMesh.rotation = Vector3.zero.ToFloat();
                                 float factorX = 1f, factorY = 1f, factorZ = 1f;

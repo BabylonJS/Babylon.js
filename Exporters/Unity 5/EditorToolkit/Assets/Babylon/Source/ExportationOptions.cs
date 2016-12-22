@@ -28,6 +28,7 @@ namespace Unity3D2Babylon
         public float ShadowMapBias { get; set; }
         public float ShadowBlurScale { get; set; }
         public float ProductionVersion { get; set; }
+        public float DefaultAspectRatio { get; set; }
         public int DefaultUpdateOptions { get; set; }
         public int DefaultPreviewWindow { get; set; }
         public int DefaultLightFilter { get; set; }
@@ -70,10 +71,11 @@ namespace Unity3D2Babylon
             ShadowMapSize = 1024;
             ShadowMapBias = 0.0001f;
             ShadowBlurScale = 0;
+            DefaultAspectRatio = 1f;
             DefaultUpdateOptions = 0;
             DefaultPreviewWindow = 0;
             DefaultLightFilter = 4;
-            DefaultImageFormat = 0;
+            DefaultImageFormat = 1;
             DefaultLightmapMode = 0;
             DefaultLightmapBaking = 0;
             DefaultCoordinatesIndex = 1;
