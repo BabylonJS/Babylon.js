@@ -1,4 +1,10 @@
-﻿module BABYLON {
+﻿interface Window { 
+    holographicViewMatrix: boolean;
+    getViewMatrix(): Float32Array;
+    getCameraPositionVector(): Float32Array;
+} 
+
+module BABYLON {
     export class HolographicCamera extends Camera {
         
         private _identityProjection: Matrix;
@@ -33,8 +39,11 @@
 
             var self = this;
             this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(function (scene) {
-                self._holographicViewMatrix.m = (<any>window).getViewMatrix();
+                self._holographicViewMatrix.m = window.getViewMatrix();
                 self.setViewMatrix(self._holographicViewMatrix);
+
+                var position = window.getCameraPositionVector();
+                self.position.copyFromFloats(-position[0], position[1], -position[2]);
             })
             this._onBeforeCameraRenderObserver = scene.onBeforeCameraRenderObservable.add(function() {
                 if (scene.frustumPlanes) {
@@ -63,9 +72,16 @@
 
         public setViewMatrix(view: Matrix) : void {
             this._holographicViewMatrix = view;
-            this.position.x = view.m[12];
-            this.position.y = view.m[13];
-            this.position.z = -view.m[14];
+
+            view.m[0] = -view.m[0];
+            view.m[1] = -view.m[1];
+            view.m[2] = -view.m[2];
+            view.m[3] = -view.m[3];
+
+            view.m[8] = -view.m[8];
+            view.m[9] = -view.m[9];
+            view.m[10] = -view.m[10];
+            view.m[11] = -view.m[11];
         };
         
         public _initCache(): void { };
