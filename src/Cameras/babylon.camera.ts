@@ -808,5 +808,9 @@
 
             return camera;
         }
+
+        public computeFrustumPlanes(frustumPlanes: Plane[]) { 
+            // NOP by default.
+        }
     }
 }

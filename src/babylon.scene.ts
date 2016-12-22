@@ -1983,6 +1983,8 @@
             this._boundingBoxRenderer.reset();
             this._edgesRenderers.reset();
 
+            this.activeCamera.computeFrustumPlanes(this._frustumPlanes);
+
             // Meshes
             var meshes: AbstractMesh[];
             var len: number;
