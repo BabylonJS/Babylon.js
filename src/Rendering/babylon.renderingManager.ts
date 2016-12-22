@@ -77,45 +77,43 @@
             for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
                 var renderingGroup = this._renderingGroups[index];
+                if(!renderingGroup && !observable)
+                    continue;
 
                 this._currentIndex = index;
 
-                if (renderingGroup) {
-                    let renderingGroupMask = 0;
+                let renderingGroupMask = 0;
 
-                    // Fire PRECLEAR stage
-                    if (observable) {
-                        renderingGroupMask = Math.pow(2, index);
-                        info.renderStage = RenderingGroupInfo.STAGE_PRECLEAR;
-                        info.renderingGroupId = index;
-                        observable.notifyObservers(info, renderingGroupMask);
-                    }
+                // Fire PRECLEAR stage
+                if (observable) {
+                    renderingGroupMask = Math.pow(2, index);
+                    info.renderStage = RenderingGroupInfo.STAGE_PRECLEAR;
+                    info.renderingGroupId = index;
+                    observable.notifyObservers(info, renderingGroupMask);
+                }
 
-                    // Clear depth/stencil if needed
-                    let autoClear = this._autoClearDepthStencil[index];
-                    if (autoClear && autoClear.autoClear) {
-                        this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
-                    }
+                // Clear depth/stencil if needed
+                let autoClear = this._autoClearDepthStencil[index];
+                if (autoClear && autoClear.autoClear) {
+                    this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
+                }
 
+                if (observable) {
                     // Fire PREOPAQUE stage
-                    if (observable) {
-                        info.renderStage = RenderingGroupInfo.STAGE_PREOPAQUE;
-                        observable.notifyObservers(info, renderingGroupMask);
-                    }
-
+                    info.renderStage = RenderingGroupInfo.STAGE_PREOPAQUE;
+                    observable.notifyObservers(info, renderingGroupMask);
                     // Fire PRETRANSPARENT stage
-                    if (observable) {
-                        info.renderStage = RenderingGroupInfo.STAGE_PRETRANSPARENT;
-                        observable.notifyObservers(info, renderingGroupMask);
-                    }
+                    info.renderStage = RenderingGroupInfo.STAGE_PRETRANSPARENT;
+                    observable.notifyObservers(info, renderingGroupMask);
+                }
 
+                if (renderingGroup)
                     renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
 
-                    // Fire POSTTRANSPARENT stage
-                    if (observable) {
-                        info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
-                        observable.notifyObservers(info, renderingGroupMask);
-                    }
+                // Fire POSTTRANSPARENT stage
+                if (observable) {
+                    info.renderStage = RenderingGroupInfo.STAGE_POSTTRANSPARENT;
+                    observable.notifyObservers(info, renderingGroupMask);
                 }
             }
         }
