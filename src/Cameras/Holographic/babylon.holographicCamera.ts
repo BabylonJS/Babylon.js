@@ -17,8 +17,8 @@ module BABYLON {
         private _onBeforeRenderObserver: Observer<Scene>;
         private _onBeforeCameraRenderObserver: Observer<Camera>;
 
-        constructor(name: string, position: Vector3, scene: Scene) {            
-            super(name, position, scene);
+        constructor(name: string, scene: Scene) {            
+            super(name, BABYLON.Vector3.Zero(), scene);
 
             scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
             
