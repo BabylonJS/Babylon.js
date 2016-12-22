@@ -3132,11 +3132,21 @@
         }
 
         private _canRenderToFloatTexture(): boolean {
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            try {
+                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            }
+            catch (e) {
+                return false;
+            }
         }
 
-        private _canRenderToHalfFloatTexture(): boolean {
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+        private _canRenderToHalfFloatTexture(): boolean {            
+            try {
+                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+            }
+            catch (e) {
+                return false;
+            }
         }
 
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
