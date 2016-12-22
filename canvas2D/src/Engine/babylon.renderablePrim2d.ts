@@ -933,9 +933,9 @@
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);    // Compute the transformation into the renderGroup's space
             let rgScale = this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
 
-            if (!this.applyActualScaleOnTransform()) {
+            if (!this.applyActualScaleOnTransform() || rgScale.x!==1 || rgScale.y!==1) {
                 t.decompose(RenderablePrim2D._s, RenderablePrim2D._r, RenderablePrim2D._t);
-                t = Matrix.Compose(RenderablePrim2D._uV3, RenderablePrim2D._r, RenderablePrim2D._t);
+                t = Matrix.Compose((!this.applyActualScaleOnTransform() ? RenderablePrim2D._uV3 : RenderablePrim2D._s).divide(new Vector3(rgScale.x, rgScale.y, 1)), RenderablePrim2D._r, RenderablePrim2D._t);
             }
 
             //let rgScale = (this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
@@ -959,8 +959,8 @@
             let w = size.width;
             let h = size.height;
             let invZBias = 1 / zBias;
-            let tx = new Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - 1);
+            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
 
             part.transformX = tx;
             part.transformY = ty;
