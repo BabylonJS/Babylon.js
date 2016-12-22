@@ -2212,6 +2212,10 @@ declare module BABYLON {
         protected applyActualScaleOnTransform(): boolean;
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
         private static _uV;
+        private static _s;
+        private static _r;
+        private static _t;
+        private static _uV3;
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update

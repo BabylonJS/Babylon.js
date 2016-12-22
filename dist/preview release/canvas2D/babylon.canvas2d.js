@@ -7336,7 +7336,12 @@ var BABYLON;
         RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
             if (positionOffset === void 0) { positionOffset = null; }
             var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform); // Compute the transformation into the renderGroup's space
-            var rgScale = (this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D_1._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            var rgScale = this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D_1._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            if (!this.applyActualScaleOnTransform()) {
+                t.decompose(RenderablePrim2D_1._s, RenderablePrim2D_1._r, RenderablePrim2D_1._t);
+                t = BABYLON.Matrix.Compose(RenderablePrim2D_1._uV3, RenderablePrim2D_1._r, RenderablePrim2D_1._t);
+            }
+            //let rgScale = (this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
@@ -7378,6 +7383,10 @@ var BABYLON;
     }(BABYLON.Prim2DBase));
     RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
     RenderablePrim2D._uV = new BABYLON.Vector2(1, 1);
+    RenderablePrim2D._s = BABYLON.Vector3.Zero();
+    RenderablePrim2D._r = BABYLON.Quaternion.Identity();
+    RenderablePrim2D._t = BABYLON.Vector3.Zero();
+    RenderablePrim2D._uV3 = new BABYLON.Vector3(1, 1, 1);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, function (pi) { return RenderablePrim2D_1.isAlphaTestProperty = pi; })
     ], RenderablePrim2D.prototype, "isAlphaTest", null);
