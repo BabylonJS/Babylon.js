@@ -7336,7 +7336,12 @@ var BABYLON;
         RenderablePrim2D.prototype.updateInstanceDataPart = function (part, positionOffset) {
             if (positionOffset === void 0) { positionOffset = null; }
             var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform); // Compute the transformation into the renderGroup's space
-            var rgScale = (this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D_1._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            var rgScale = this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D_1._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            if (!this.applyActualScaleOnTransform() || rgScale.x !== 1 || rgScale.y !== 1) {
+                t.decompose(RenderablePrim2D_1._s, RenderablePrim2D_1._r, RenderablePrim2D_1._t);
+                t = BABYLON.Matrix.Compose((!this.applyActualScaleOnTransform() ? RenderablePrim2D_1._uV3.divide(new BABYLON.Vector3(rgScale.x, rgScale.y, 1)) : RenderablePrim2D_1._s), RenderablePrim2D_1._r, RenderablePrim2D_1._t);
+            }
+            //let rgScale = (this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
@@ -7355,8 +7360,8 @@ var BABYLON;
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
@@ -7378,6 +7383,10 @@ var BABYLON;
     }(BABYLON.Prim2DBase));
     RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
     RenderablePrim2D._uV = new BABYLON.Vector2(1, 1);
+    RenderablePrim2D._s = BABYLON.Vector3.Zero();
+    RenderablePrim2D._r = BABYLON.Quaternion.Identity();
+    RenderablePrim2D._t = BABYLON.Vector3.Zero();
+    RenderablePrim2D._uV3 = new BABYLON.Vector3(1, 1, 1);
     __decorate([
         BABYLON.dynamicLevelProperty(BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 0, function (pi) { return RenderablePrim2D_1.isAlphaTestProperty = pi; })
     ], RenderablePrim2D.prototype, "isAlphaTest", null);

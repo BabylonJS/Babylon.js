@@ -294,13 +294,21 @@ namespace Unity3D2Babylon
                     if (mesh.subMeshCount > 1)
                     {
                         BabylonMultiMaterial bMultiMat;
-                        if (!multiMatDictionary.ContainsKey(renderer.sharedMaterial.name))
+
+                        string multiMatName = "";
+                        for (int i = 0; i < renderer.sharedMaterials.Length; i++)
+                        {
+                            multiMatName += renderer.sharedMaterials[i].name;
+                        }
+                    
+
+                        if (!multiMatDictionary.ContainsKey(multiMatName))
                         {
                             bMultiMat = new BabylonMultiMaterial
                             {
                                 materials = new string[mesh.subMeshCount],
                                 id = Guid.NewGuid().ToString(),
-                                name = renderer.sharedMaterial.name
+                                name = multiMatName
                             };
 
                             for (int i = 0; i < renderer.sharedMaterials.Length; i++)
@@ -319,7 +327,7 @@ namespace Unity3D2Babylon
                         }
                         else
                         {
-                            bMultiMat = multiMatDictionary[renderer.sharedMaterial.name];
+                            bMultiMat = multiMatDictionary[multiMatName];
                         }
 
                         babylonMesh.materialId = bMultiMat.id;
