@@ -6589,14 +6589,14 @@ var BABYLON;
             var renderToFullFloat = this._canRenderToFloatTexture();
             var renderToHalfFloat = this._canRenderToHalfFloatTexture();
             // GL
-            try {
-                this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-                if (this._gl) {
-                    this._webGLVersion = "2.0";
-                }
-            }
-            catch (e) {
-            }
+            // try {
+            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+            //    if (this._gl) {
+            //        this._webGLVersion = "2.0";
+            //    }
+            // } catch (e) {
+            //    // Do nothing
+            // }
             if (!this._gl) {
                 if (!canvas) {
                     throw new Error("The provided canvas is null or undefined.");
@@ -9015,10 +9015,20 @@ var BABYLON;
             }
         };
         Engine.prototype._canRenderToFloatTexture = function () {
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            try {
+                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            }
+            catch (e) {
+                return false;
+            }
         };
         Engine.prototype._canRenderToHalfFloatTexture = function () {
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+            try {
+                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+            }
+            catch (e) {
+                return false;
+            }
         };
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
         Engine.prototype._canRenderToTextureOfType = function (format, extension) {
@@ -17131,6 +17141,13 @@ var BABYLON;
                     this._defaultMaterial = new BABYLON.StandardMaterial("default material", this);
                 }
                 return this._defaultMaterial;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "frustumPlanes", {
+            get: function () {
+                return this._frustumPlanes;
             },
             enumerable: true,
             configurable: true
@@ -48935,6 +48952,107 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.stereoscopicCameras.js.map
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
+    var HolographicCamera = (function (_super) {
+        __extends(HolographicCamera, _super);
+        function HolographicCamera(name, scene) {
+            var _this = _super.call(this, name, BABYLON.Vector3.Zero(), scene) || this;
+            scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+            _this._holographicViewMatrix = new BABYLON.Matrix();
+            _this._identityProjection = BABYLON.Matrix.Identity();
+            _this._scriptProjection = BABYLON.Matrix.Transpose(BABYLON.Matrix.PerspectiveFovLH(30, window.innerWidth / window.innerHeight, 1, 20));
+            _this._scriptViewProjection = BABYLON.Matrix.Identity();
+            _this.fov = 30;
+            _this.minZ = 1.0;
+            _this.maxZ = 20;
+            _this.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+            _this.isIntermediate = false;
+            _this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
+            _this.layerMask = 0x0FFFFFFF;
+            _this.fovMode = BABYLON.Camera.FOVMODE_VERTICAL_FIXED;
+            _this.cameraRigMode = BABYLON.Camera.RIG_MODE_NONE;
+            var self = _this;
+            _this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(function (scene) {
+                self._holographicViewMatrix.m = window.getViewMatrix();
+                self.setViewMatrix(self._holographicViewMatrix);
+                var position = window.getCameraPositionVector();
+                self.position.copyFromFloats(-position[0], position[1], -position[2]);
+            });
+            _this._onBeforeCameraRenderObserver = scene.onBeforeCameraRenderObservable.add(function () {
+                if (scene.frustumPlanes) {
+                    self.getFrustumPlanesToRef(scene.frustumPlanes);
+                }
+            });
+            scene.addCamera(_this);
+            if (!scene.activeCamera) {
+                scene.activeCamera = _this;
+            }
+            return _this;
+        }
+        HolographicCamera.prototype.getTypeName = function () {
+            return "HolographicCamera";
+        };
+        ;
+        HolographicCamera.prototype.getProjectionMatrix = function () {
+            return this._identityProjection;
+        };
+        ;
+        HolographicCamera.prototype.getViewMatrix = function () {
+            return this._holographicViewMatrix;
+        };
+        ;
+        HolographicCamera.prototype.setViewMatrix = function (view) {
+            this._holographicViewMatrix = view;
+            view.m[0] = -view.m[0];
+            view.m[1] = -view.m[1];
+            view.m[2] = -view.m[2];
+            view.m[3] = -view.m[3];
+            view.m[8] = -view.m[8];
+            view.m[9] = -view.m[9];
+            view.m[10] = -view.m[10];
+            view.m[11] = -view.m[11];
+        };
+        ;
+        HolographicCamera.prototype._initCache = function () { };
+        ;
+        HolographicCamera.prototype._updateCache = function () { };
+        ;
+        HolographicCamera.prototype._updateFromScene = function () { };
+        ;
+        // Synchronized
+        HolographicCamera.prototype._isSynchronizedViewMatrix = function () {
+            return true;
+        };
+        ;
+        HolographicCamera.prototype._isSynchronizedProjectionMatrix = function () {
+            return true;
+        };
+        ;
+        HolographicCamera.prototype.getFrustumPlanesToRef = function (result) {
+            this._holographicViewMatrix.multiplyToRef(this._scriptProjection, this._scriptViewProjection);
+            BABYLON.Frustum.GetPlanesToRef(this._scriptViewProjection, result);
+            return result;
+        };
+        ;
+        HolographicCamera.prototype.dispose = function () {
+            this.getScene().onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this.getScene().onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
+            _super.prototype.dispose.call(this);
+        };
+        return HolographicCamera;
+    }(BABYLON.Camera));
+    BABYLON.HolographicCamera = HolographicCamera;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.holographicCamera.js.map
 
 
 
