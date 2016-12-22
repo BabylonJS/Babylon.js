@@ -935,7 +935,7 @@
 
             if (!this.applyActualScaleOnTransform() || rgScale.x!==1 || rgScale.y!==1) {
                 t.decompose(RenderablePrim2D._s, RenderablePrim2D._r, RenderablePrim2D._t);
-                t = Matrix.Compose((!this.applyActualScaleOnTransform() ? RenderablePrim2D._uV3 : RenderablePrim2D._s).divide(new Vector3(rgScale.x, rgScale.y, 1)), RenderablePrim2D._r, RenderablePrim2D._t);
+                t = Matrix.Compose((!this.applyActualScaleOnTransform() ? RenderablePrim2D._uV3.divide(new Vector3(rgScale.x, rgScale.y, 1)) : RenderablePrim2D._s), RenderablePrim2D._r, RenderablePrim2D._t);
             }
 
             //let rgScale = (this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
