@@ -88,6 +88,8 @@ namespace Unity3D2Babylon
         [MenuItem("BabylonJS/Update Libraries", false, 2)]
         public static void InitUpdate()
         {
+            Tools.EnableRemoteCertificates();
+            
             string prodVersion = ExporterWindow.exportationOptions.ProductionVersion.ToString();
             if (prodVersion.IndexOf(".", StringComparison.OrdinalIgnoreCase) < 0)
             {
@@ -467,11 +469,13 @@ namespace Unity3D2Babylon
             EditorGUILayout.Space();
             exportationOptions.LightIntensityFactor = EditorGUILayout.Slider(" Light Intensity Factor", exportationOptions.LightIntensityFactor, 0, 10.0f);
             EditorGUILayout.Space();
+            exportationOptions.DefaultAspectRatio = EditorGUILayout.Slider(" Viewport Camera Ratio", exportationOptions.DefaultAspectRatio, 0, 10.0f);
+            EditorGUILayout.Space();
             exportationOptions.ReflectionDefaultLevel = EditorGUILayout.Slider(" Default Reflection Level", exportationOptions.ReflectionDefaultLevel, 0, 1.0f);
             EditorGUILayout.Space();
-            exportationOptions.DefaultImageFormat = (int)(BabylonImageFormat)EditorGUILayout.EnumPopup(" Prefered Texture Format", (BabylonImageFormat)exportationOptions.DefaultImageFormat, GUILayout.ExpandWidth(true));
-            EditorGUILayout.Space();
             exportationOptions.DefaultQualityLevel = (int)EditorGUILayout.Slider(" Texture Image Quality", exportationOptions.DefaultQualityLevel, 0, 100);
+            EditorGUILayout.Space();
+            exportationOptions.DefaultImageFormat = (int)(BabylonImageFormat)EditorGUILayout.EnumPopup(" Prefered Texture Format", (BabylonImageFormat)exportationOptions.DefaultImageFormat, GUILayout.ExpandWidth(true));
             EditorGUILayout.Space();
 
             showCollision = EditorGUILayout.Foldout(showCollision, "Scene Collision Options");
@@ -479,6 +483,8 @@ namespace Unity3D2Babylon
             {
                 EditorGUILayout.Space();
                 exportationOptions.ExportCollisions = EditorGUILayout.Toggle("   Enable Collisions", exportationOptions.ExportCollisions);
+                EditorGUILayout.Space();
+                exportationOptions.WorkerCollisions = EditorGUILayout.Toggle("   Worker Collisions", exportationOptions.WorkerCollisions);
                 EditorGUILayout.Space();
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.Label("   Camera Ellipsoid");
@@ -491,8 +497,6 @@ namespace Unity3D2Babylon
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space();
                 exportationOptions.DefaultColliderDetail = (int)(BabylonColliderDetail)EditorGUILayout.EnumPopup("   Default Collider Detail", (BabylonColliderDetail)exportationOptions.DefaultColliderDetail, GUILayout.ExpandWidth(true));
-                EditorGUILayout.Space();
-                exportationOptions.WorkerCollisions = EditorGUILayout.Toggle("   Enable Worker Collisions", exportationOptions.WorkerCollisions);
                 EditorGUILayout.Space();
             }
 
