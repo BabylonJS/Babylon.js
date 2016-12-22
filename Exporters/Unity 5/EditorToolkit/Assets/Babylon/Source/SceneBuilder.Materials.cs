@@ -299,15 +299,19 @@ namespace Unity3D2Babylon
 
         private BabylonMaterial DumpMaterial(Material material, int lightmapIndex = -1, Vector4 lightmapScaleOffset = default(Vector4), int lightmapCoordIndex = -1)
         {
-            if (material.shader.name == "Standard")
+            if (material.shader.name == "Standard" || material.shader.name == "BabylonJS/Materials/PBR Material")
             {
                 return DumpPBRMaterial(material, lightmapIndex, lightmapScaleOffset, true, lightmapCoordIndex);
             }
-            else if (material.shader.name == "Standard (Specular setup)")
+            else if (material.shader.name == "Standard (Specular setup)" || material.shader.name == "BabylonJS/Materials/PBR Material (Specular)")
             {
                 return DumpPBRMaterial(material, lightmapIndex, lightmapScaleOffset, false, lightmapCoordIndex);
             }
-            else if (material.shader.name.Substring(0, 10) == "BabylonJS/")
+            else if (material.shader.name.StartsWith("BabylonJS/Materials/", StringComparison.OrdinalIgnoreCase))
+            {
+                return DumpStandardMaterial(material, lightmapIndex, lightmapScaleOffset, lightmapCoordIndex);
+            }
+            else if (material.shader.name.StartsWith("BabylonJS/", StringComparison.OrdinalIgnoreCase))
             {
                 return DumpShaderMaterial(material);
             }
@@ -328,11 +332,6 @@ namespace Unity3D2Babylon
                 };
 
                 ExporterWindow.ReportProgress(1, "Exporting standard material: " + material.name);
-                if (exportationOptions.DefaultLightmapMode == (int)BabylonLightmapMode.FullLightBaking)
-                {
-                    bMat.disableLighting = true;
-                    bMat.useEmissiveAsIllumination = true;
-                }
 
                 // Default diffuse
                 bMat.diffuse[0] = 1.0f;
@@ -379,6 +378,22 @@ namespace Unity3D2Babylon
                         UnityEngine.Debug.LogWarning("Material Emission Is Float Not Color: " + material.name);
                     }
                 }
+
+                if (material.HasProperty("_AlphaMode"))
+                {
+                    bMat.alphaMode = material.GetInt("_AlphaMode");
+                }
+
+                if (material.HasProperty("_DisableLighting"))
+                {
+                    bMat.disableLighting = (material.GetInt("_DisableLighting") != 0);
+                }
+                
+                if (material.HasProperty("_UseEmissiveAsIllumination"))
+                {
+                    bMat.useEmissiveAsIllumination = (material.GetInt("_UseEmissiveAsIllumination") != 0);
+                }
+
                 if (material.mainTexture && !materialNotSupported)
                 {
                     var mainTexture2D = material.mainTexture as Texture2D;
@@ -413,6 +428,13 @@ namespace Unity3D2Babylon
                 bMat.emissiveTexture = DumpTextureFromMaterial(material, "_Illum");
                 bMat.ambientTexture = DumpTextureFromMaterial(material, "_LightMap");
                 bMat.reflectionTexture = DumpTextureFromMaterial(material, "_Cube");
+
+                // Baking override
+                if (exportationOptions.DefaultLightmapMode == (int)BabylonLightmapMode.FullLightBaking)
+                {
+                    bMat.disableLighting = true;
+                    bMat.useEmissiveAsIllumination = true;
+                }
 
                 // If no ambient texture already (ambientTexture manually set for lightmaps on standard material)
                 bool hasLightmap = (exportationOptions.ExportLightmaps && lightmapIndex >= 0 && lightmapIndex != 65535 && LightmapSettings.lightmaps.Length > lightmapIndex);
@@ -460,16 +482,41 @@ namespace Unity3D2Babylon
 
             ExporterWindow.ReportProgress(1, "Exporting physical material: " + material.name);
             babylonPbrMaterial.environmentIntensity = RenderSettings.ambientIntensity;
-            if (exportationOptions.DefaultLightmapMode == (int)BabylonLightmapMode.FullLightBaking)
-            {
-                babylonPbrMaterial.disableLighting = true;
-                babylonPbrMaterial.useEmissiveAsIllumination = true;
-            }
 
             if (material.mainTexture && material.mainTexture.GetType().FullName == "UnityEngine.ProceduralTexture")
             {
                 materialNotSupported = true;
                 Debug.LogWarning("ProceduralTexture: " + material.mainTexture.name + " not supported by Babylon.js");
+            }
+
+            if (material.HasProperty("_Roughness"))
+            {
+                babylonPbrMaterial.roughness = material.GetInt("_Roughness");
+            }
+
+            if (material.HasProperty("_UseRoughnessFromMetallicTextureAlpha"))
+            {
+                babylonPbrMaterial.useRoughnessFromMetallicTextureAlpha = (material.GetInt("_UseRoughnessFromMetallicTextureAlpha") != 0);
+            }
+
+            if (material.HasProperty("_UseRoughnessFromMetallicTextureGreen"))
+            {
+                babylonPbrMaterial.useRoughnessFromMetallicTextureGreen = (material.GetInt("_UseRoughnessFromMetallicTextureGreen") != 0);
+            }
+
+            if (material.HasProperty("_AlphaMode"))
+            {
+                babylonPbrMaterial.alphaMode = material.GetInt("_AlphaMode");
+            }
+
+            if (material.HasProperty("_DisableLighting"))
+            {
+                babylonPbrMaterial.disableLighting = (material.GetInt("_DisableLighting") != 0);
+            }
+            
+            if (material.HasProperty("_UseEmissiveAsIllumination"))
+            {
+                babylonPbrMaterial.useEmissiveAsIllumination = (material.GetInt("_UseEmissiveAsIllumination") != 0);
             }
 
             // Albedo
@@ -516,6 +563,13 @@ namespace Unity3D2Babylon
 
             // Reflection
             babylonPbrMaterial.reflectionTexture = DumpReflectionTexture();
+
+            // Baking Override
+            if (exportationOptions.DefaultLightmapMode == (int)BabylonLightmapMode.FullLightBaking)
+            {
+                babylonPbrMaterial.disableLighting = true;
+                babylonPbrMaterial.useEmissiveAsIllumination = true;
+            }
 
             // Lightmapping
             bool hasLightmap = (exportationOptions.ExportLightmaps && lightmapIndex >= 0 && lightmapIndex != 65535 && LightmapSettings.lightmaps.Length > lightmapIndex);
@@ -805,7 +859,20 @@ namespace Unity3D2Babylon
                 }
             }
 
+            if (material.HasProperty("_AlphaMode")) {
+                babylonShaderMaterial.alphaMode = material.GetInt("_AlphaMode");
+            }
+            bool needsAlphaBlending = false;
+            if (material.HasProperty("_NeedsAlphaBlending")) {
+                needsAlphaBlending = (material.GetInt("_NeedsAlphaBlending") != 0);
+            }
+            bool needsAlphaTesting = false;
+            if (material.HasProperty("_NeedsAlphaTesting")) {
+                needsAlphaTesting = (material.GetInt("_NeedsAlphaTesting") != 0);
+            }
             babylonShaderMaterial.options = new BabylonShaderOptions();
+            babylonShaderMaterial.options.needAlphaBlending = needsAlphaBlending;
+            babylonShaderMaterial.options.needAlphaTesting = needsAlphaTesting;
             babylonShaderMaterial.options.attributes = attributeList.ToArray();
             babylonShaderMaterial.options.uniforms = uniformList.ToArray();
             babylonShaderMaterial.options.samplers = samplerList.ToArray();
