@@ -920,7 +920,10 @@
         }
 
         private static _uV = new Vector2(1, 1);
-
+        private static _s = Vector3.Zero();
+        private static _r = Quaternion.Identity();
+        private static _t = Vector3.Zero();
+        private static _uV3 = new Vector3(1, 1, 1);
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
@@ -928,7 +931,14 @@
          */
         protected updateInstanceDataPart(part: InstanceDataBase, positionOffset: Vector2 = null) {
             let t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform);    // Compute the transformation into the renderGroup's space
-            let rgScale = (this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
+            let rgScale = this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
+
+            if (!this.applyActualScaleOnTransform()) {
+                t.decompose(RenderablePrim2D._s, RenderablePrim2D._r, RenderablePrim2D._t);
+                t = Matrix.Compose(RenderablePrim2D._uV3, RenderablePrim2D._r, RenderablePrim2D._t);
+            }
+
+            //let rgScale = (this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
             let size = (<Size>this.renderGroup.viewportSize);
             let zBias = this.actualZOffset;
 
