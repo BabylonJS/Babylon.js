@@ -239,6 +239,7 @@
         public static Magenta(): Color3 { return new Color3(1, 0, 1); }
         public static Yellow(): Color3 { return new Color3(1, 1, 0); }
         public static Gray(): Color3 { return new Color3(0.5, 0.5, 0.5); }
+        public static Random(): Color3 { return new Color3(Math.Random(), Math.Random(), Math.Random()); }
     }
 
     export class Color4 {
