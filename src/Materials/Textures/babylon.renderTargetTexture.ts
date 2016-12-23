@@ -20,7 +20,7 @@
         * Use this predicate to dynamically define the list of mesh you want to render.
         * If set, the renderList property will be overwritten.
         */
-        public renderListPredicate: (AbstractMesh) => boolean;
+        public renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
 
         /**
         * Use this list to define the list of mesh you want to render.
@@ -99,9 +99,15 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
         private _textureMatrix: Matrix;
+        protected _renderTargetOptions: {
+            generateMipMaps: boolean,
+            type: number,
+            samplingMode: number,
+            generateDepthBuffer: boolean,
+            generateStencilBuffer: boolean
+        };
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, 
-            generateDepthBuffer = true, generateStencilBuffer = false) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
@@ -110,28 +116,25 @@
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
+            this._renderTargetOptions = {
+                generateMipMaps: generateMipMaps,
+                type: type,
+                samplingMode: samplingMode,
+                generateDepthBuffer: generateDepthBuffer,
+                generateStencilBuffer: generateStencilBuffer
+            };
+
             if (samplingMode === Texture.NEAREST_SAMPLINGMODE) {
                 this.wrapU = Texture.CLAMP_ADDRESSMODE;
                 this.wrapV = Texture.CLAMP_ADDRESSMODE;
             }
 
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { 
-                    generateMipMaps: generateMipMaps, 
-                    samplingMode: samplingMode,
-                    generateDepthBuffer: generateDepthBuffer,
-                    generateStencilBuffer: generateStencilBuffer 
-                });
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
                 this.coordinatesMode = Texture.INVCUBIC_MODE;
                 this._textureMatrix = Matrix.Identity();
             } else {
-                this._texture = scene.getEngine().createRenderTargetTexture(size, { 
-                    generateMipMaps: generateMipMaps, 
-                    type: type, 
-                    samplingMode: samplingMode,
-                    generateDepthBuffer: generateDepthBuffer,
-                    generateStencilBuffer: generateStencilBuffer 
-                });
+                this._texture = scene.getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
 
             // Rendering groups
@@ -185,7 +188,7 @@
         public scale(ratio: number): void {
             var newSize = this._size * ratio;
 
-            this.resize(newSize, this._generateMipMaps);
+            this.resize(newSize);
         }
 
         public getReflectionTextureMatrix(): Matrix {
@@ -196,24 +199,21 @@
             return super.getReflectionTextureMatrix();
         }
 
-        public resize(size: any, generateMipMaps?: boolean) {
+        public resize(size: any) {
             this.releaseInternalTexture();
             if (this.isCube) {
-                this._texture = this.getScene().getEngine().createRenderTargetCubeTexture(size);
+                this._texture = this.getScene().getEngine().createRenderTargetCubeTexture(size, this._renderTargetOptions);
             } else {
-                this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
+                this._texture = this.getScene().getEngine().createRenderTargetTexture(size, this._renderTargetOptions);
             }
         }
 
         public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
             var scene = this.getScene();
+            var engine = scene.getEngine();
 
             if (this.useCameraPostProcesses !== undefined) {
                 useCameraPostProcess = this.useCameraPostProcesses;
-            }
-
-            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
             }
 
             if (this._waitingRenderList) {
@@ -242,6 +242,20 @@
 
             if (this.renderList && this.renderList.length === 0) {
                 return;
+            }
+
+            // Set custom projection.
+            // Needs to be before binding to prevent changing the aspect ratio.
+            if (this.activeCamera) {
+                engine.setViewport(this.activeCamera.viewport);
+
+                if (this.activeCamera !== scene.activeCamera)
+                {
+                    scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+                }
+            }
+            else {
+                engine.setViewport(scene.activeCamera.viewport);
             }
 
             // Prepare renderingManager
@@ -289,6 +303,7 @@
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
+            engine.setViewport(scene.activeCamera.viewport);
 
             scene.resetCachedMaterial();
         }
@@ -382,7 +397,18 @@
 
         public clone(): RenderTargetTexture {
             var textureSize = this.getSize();
-            var newTexture = new RenderTargetTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            var newTexture = new RenderTargetTexture(
+                this.name,
+                textureSize.width,
+                this.getScene(),
+                this._renderTargetOptions.generateMipMaps,
+                this._doNotChangeAspectRatio,
+                this._renderTargetOptions.type,
+                this.isCube,
+                this._renderTargetOptions.samplingMode,
+                this._renderTargetOptions.generateDepthBuffer,
+                this._renderTargetOptions.generateStencilBuffer
+            );
 
             // Base texture
             newTexture.hasAlpha = this.hasAlpha;

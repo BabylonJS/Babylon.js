@@ -5,6 +5,9 @@ module BABYLON {
         camera: ArcRotateCamera;
 
         @serialize()
+        public buttons = [0, 1, 2];
+
+        @serialize()
         public angularSensibilityX = 1000.0;
 
         @serialize()
@@ -38,6 +41,11 @@ module BABYLON {
 
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
+
+                if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
+                    return;
+                }
+
                 if (p.type === PointerEventTypes.POINTERDOWN) {
                     try {
                         evt.srcElement.setPointerCapture(evt.pointerId);

@@ -1,0 +1,434 @@
+<!doctype html>
+<html>
+<head>
+    <title>###TITLE###</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            min-height:100%;            
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            position: fixed;
+            font-family: "Segoe UI", "Segoe WP", "Verdana", "Arial";
+            background-color: #000000;
+        }
+
+        button {
+            cursor: hand;
+            border: 1px solid #888888;
+            background-color: #DEDEDE;
+            color: #888888;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        button:hover {
+            background-color: #EEEEEE;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            -webkit-transform: scale(0.98);
+        }
+
+        .warning {
+            color: red;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tag {
+            position: absolute;
+            height: 34px;
+            width: 160px;
+            left: 50%;
+            padding: 6px;
+            font-size: 14px;
+            text-align: center;
+            margin-left: -80px;
+            top: -34px;
+            border-top-left-radius: 6px 6px;
+            border-top-right-radius: 6px 6px;
+            background-color: #EEEEEE;
+            color: #888888;
+        }
+
+        #cvs {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            opacity: 0;
+            z-index: 0;
+            outline: none;
+            touch-action: none;
+            -ms-touch-action: none;
+            background-color: #000000;
+        }
+
+        #gui {
+            width: 100%;
+            height: 100%;
+            min-height:100%;            
+            z-index: 1;
+            outline: none;
+            background-color: transparent;
+        }
+
+        #sts {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            font-size: 14px;
+            z-index: 2;
+            color: white;
+            text-shadow: 2px 2px 0 black;
+        }
+
+        #fps {
+            position: absolute;
+            right: 20px;
+            top: 1em;
+            z-index: 2;
+            font-size: 18px;
+            color: white;
+            text-shadow: 2px 2px 0 black;
+        }
+
+        #project {
+            position: absolute;
+            left: 20px;
+            top: 1em;
+            z-index: 2;
+            font-size: 18px;
+            color: white;
+            text-shadow: 2px 2px 0 black;
+        }
+
+        #controlPanel {
+            position: absolute;
+            height: 100px;
+            bottom: 0px;
+            width: 220px;
+            left: 50%;
+            margin-left: -120px;
+            z-index: 2;
+            transition: transform 0.25s ease-in-out;
+            transform: translateY(100px);
+            -webkit-transition: -webkit-transform 0.25s ease-in-out;
+            -webkit-transform: translateY(100px);
+        }
+
+        #clickableTag {
+            cursor: hand;
+            background-color: transparent;
+        }
+
+        #controlsZone {
+            width: 100%;
+            height: 100%;
+            background-color: #EEEEEE;
+            color: #888888;
+            border-top-left-radius: 6px 6px;
+            border-top-right-radius: 6px 6px;
+            padding: 6px;
+        }
+
+        #togglePause {
+            width: 24px;
+        }
+
+        #frameStep {
+            width: 28px;
+        }
+
+        #enableDebug, #fullscreen {
+            width: 160px;
+            margin-left: 30px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="cvs"></canvas>
+    <div id="sts">Please wait...</div>
+    <div id="gui" class="hidden"></div>
+    <div id="fps" class="hidden"></div>
+    <div id="project" class="hidden"></div>
+    <div id="controlPanel" class="hidden">
+        <div id="controlsZone">
+            <p>
+                <button id="enableDebug">Debug Layer</button>
+            </p>
+            <p>
+                <button id="fullscreen">Full Screen</button>
+            </p>
+        </div>
+        <div class="tag" id="controlTab" >
+            <button id="togglePause">||</button>
+            <button id="clickableTag">Control Panel</button>
+            <button id="frameStep">>></button>
+        </div>
+    </div>
+	<script type="text/javascript" src="###SCRIPT###/hand.js"></script>
+	<script type="text/javascript" src="###SCRIPT###/oimo.js"></script>
+	<script type="text/javascript" src="###SCRIPT###/cannon.js"></script>
+	<script type="text/javascript" src="###SCRIPT###/babylon.js"></script>
+	<script type="text/javascript" src="###SCRIPT###/canvas2d.js"></script>
+	<script type="text/javascript" src="###SCRIPT###/navmesh.js"></script>
+	<script type="text/javascript" src="###SCRIPT###/manager.js"></script>
+	<script type="text/javascript" src="###PATH###/###PROJECT###.js"></script>
+    <script type="text/javascript">
+        var clickableTag = document.getElementById("clickableTag");
+        var controlsZone = document.getElementById("controlsZone");
+        var controlPanel = document.getElementById("controlPanel");
+        var togglePause = document.getElementById("togglePause");
+        var enableDebug = document.getElementById("enableDebug");
+        var fullscreen = document.getElementById("fullscreen");
+        var frameStep = document.getElementById("frameStep");
+        var project = document.getElementById("project");
+        var canvas = document.getElementById("cvs");
+        var divgui = document.getElementById("gui");
+        var divfps = document.getElementById("fps");
+        var divsts = document.getElementById("sts");
+        var folder = "###PATH###/";
+        var title = "###TITLE###";
+        var controls = ###DEBUG###;
+        var paused = false;
+        var loaded = false;
+        var scene = null;
+        var last = -1;
+
+        // Start project scene loader
+        var engine = new BABYLON.Engine(canvas, true);
+        engine.clear(new BABYLON.Color3(0.0,0.0,0.0), true, true);
+        var loadBabylonScene = function(root, name) {
+            last = -1;
+            scene = null;
+            loaded = false;
+            paused = false;
+            project.innerHTML = "";
+            divfps.innerHTML = "";
+            divgui.innerHTML = "";
+            divsts.innerHTML = "";
+            divsts.className = "";
+            project.className = "hidden";
+            divfps.className = "hidden";
+            divgui.className = "hidden";
+            controlPanel.className = "hidden";
+            canvas.style.opacity = "0";
+            engine.clear(new BABYLON.Color3(0.0,0.0,0.0), true, true);
+            BABYLON.SceneLoader.ShowLoadingScreen = false;
+            engine.loadingUIText = title;
+            engine.displayLoadingUI();
+            project.innerHTML = name;
+            togglePause.style.backgroundColor = "#DEDEDE";
+            divsts.innerHTML = "Streaming items...";
+            setTimeout(function(){ executeSceneLoader(root, name); }, 1000);   
+        };
+        var progressSceneLoader = function() {
+            if (engine && scene) {
+                if (!loaded) {
+                    var waiting = scene.getWaitingItemsCount();
+                    divsts.innerHTML = (waiting > 0) ? "Streaming items..." + waiting + " remaining" : "Loading scene...";
+                    setTimeout(progressSceneLoader, 100);
+                }
+            }
+        };
+        var executeSceneLoader = function(root, name) {
+            BABYLON.SceneManager.LoadScene(root, name, engine, function (newscene) {
+                scene = newscene;
+                progressSceneLoader();
+                scene.executeWhenReady(function () {
+                    loaded = true;
+                    startRenderLoop();
+                    engine.hideLoadingUI();
+                    BABYLON.SceneLoader.ShowLoadingScreen = true;
+                    canvas.style.opacity = "1";
+                    divsts.className = "hidden";
+                    project.className = "";
+                    divfps.className = "";
+                    divgui.className = "";
+                    controlPanel.className = "";
+                });
+            });
+        };
+
+        // Register scene loader (load-level)
+        BABYLON.SceneManager.RegisterLoader(loadBabylonScene);        
+        window.addEventListener("DOMContentLoaded", function () {
+            loadBabylonScene(folder, "###SCENE###");
+        });
+
+        // Developer page render loop function
+        var renderFunction = function () {
+            if (engine && scene) {
+                if (controls) {
+                    // Show
+                    if (project.className === "hidden") {
+                        project.className = "";
+                        console.log("Showing debug project label...");
+                    }
+                    if (divfps.className === "hidden") {
+                        divfps.className = "";
+                        console.log("Showing debug fps status...");
+                    }
+                    if (controlPanel.className === "hidden") {
+                        controlPanel.className = "";
+                        console.log("Showing debug control panel...");
+                    }
+                    var current = engine.getFps().toFixed();
+                    if (current != last) {
+                        divfps.innerHTML = ("" + current + " fps");
+                        last = current;
+                    }
+                } else {
+                    // Hide
+                    if (project.className !== "hidden") {
+                        project.className = "hidden";
+                        console.log("Hiding debug project label...");
+                    }
+                    if (divfps.className !== "hidden") {
+                        divfps.className = "hidden";
+                        console.log("Hiding debug fps status...");
+                    }
+                    if (controlPanel.className !== "hidden") {
+                        controlPanel.className = "hidden";
+                        console.log("Hiding debug control panel...");
+                    }
+                    if (divfps.innerHTML !== "") {
+                        divfps.innerHTML = "";
+                    }
+                }
+            }
+        };
+
+        // Start managed render loop
+        var startRenderLoop = function() {
+            if (scene.manager) {
+                scene.manager.onrender = renderFunction;
+                scene.manager.start();
+            } else {
+                console.log("Index.html: Null scene manager detected.");
+            }
+        };
+
+        // Stop managed render loop
+        var stopRenderLoop = function() {
+            if (scene.manager) {
+                scene.manager.stop();
+            } else {
+                console.log("Index.html: Null scene manager detected.");
+            }
+        };
+
+        // Toggle managed render loop
+        var toggleRenderLoop = function() {
+            if (scene.manager) {
+                scene.manager.toggle();
+                paused = !scene.manager.isRunning();
+                if (paused) {
+                    togglePause.style.backgroundColor = "#800000";
+                } else {
+                    togglePause.style.backgroundColor = "#DEDEDE";
+                }
+            } else {
+                console.log("Index.html: Null scene manager detected.");
+            }
+        };
+
+        // Step managed render loop
+        var stepRenderLoop = function() {
+            if (scene.manager) {
+                scene.manager.stepFrame();
+                var running = scene.manager.isRunning();
+                if (!running) {
+                    frameStep.style.backgroundColor = "#008000";
+                    setTimeout(function(){ frameStep.style.backgroundColor = "#DEDEDE"; }, 25);
+                }
+                if (!running) {
+                    togglePause.style.backgroundColor = "#800000";
+                } else {
+                    togglePause.style.backgroundColor = "#DEDEDE";
+                }
+                
+            } else {
+                console.log("Index.html: Null scene manager detected.");
+            }
+        };
+
+        // Show window fullscreen
+        var showFullscreen = function() {
+            if (scene.manager) {
+                scene.manager.showFullscreen();
+            } else {
+                console.log("Index.html: Null scene manager detected.");
+            }
+        };
+
+        // Toggle debug layer
+        var toggleDebugLayer = function() {
+            if (scene.manager) {
+                scene.manager.toggleDebug();
+            } else {
+                console.log("Index.html: Null scene manager detected.");
+            }
+        };
+
+        // Toggle scene pause
+        if (togglePause) {
+            togglePause.addEventListener("click", function () {
+                toggleRenderLoop();
+            });
+        };
+
+        // Frame step scene
+        if (frameStep) {
+            frameStep.addEventListener("click", function () {
+                stepRenderLoop();
+            });
+        };
+
+        // Toggle control panel
+        var panelIsClosed = true;
+        if (clickableTag) {
+            clickableTag.addEventListener("click", function () {
+                if (panelIsClosed) {
+                    panelIsClosed = false;
+                    controlPanel.style.webkitTransform = "translateY(0px)";
+                    controlPanel.style.transform = "translateY(0px)";
+                } else {
+                    panelIsClosed = true;
+                    controlPanel.style.webkitTransform = "translateY(100px)";
+                    controlPanel.style.transform = "translateY(100px)";
+                }
+            });
+        };
+
+        // Show debug layer
+        if (enableDebug) {
+            enableDebug.addEventListener("click", function () {
+                toggleDebugLayer();
+            });
+        };
+
+        // Switch full screen
+        if (fullscreen) {
+            fullscreen.addEventListener("click", function () {
+                showFullscreen();
+            });
+        };
+
+        // Resize window handler
+        if (engine) {
+            window.addEventListener("resize", function () {
+                engine.resize();
+            });
+        }
+    </script>
+</body>
+</html>

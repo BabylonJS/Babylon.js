@@ -30,20 +30,6 @@
         // Events
 
         /**
-        * An event triggered when the mesh is disposed.
-        * @type {BABYLON.Observable}
-        */
-        public onDisposeObservable = new Observable<AbstractMesh>();
-
-        private _onDisposeObserver: Observer<AbstractMesh>;
-        public set onDispose(callback: () => void) {
-            if (this._onDisposeObserver) {
-                this.onDisposeObservable.remove(this._onDisposeObserver);
-            }
-            this._onDisposeObserver = this.onDisposeObservable.add(callback);
-        }
-
-        /**
         * An event triggered when this mesh collides with another one
         * @type {BABYLON.Observable}
         */
@@ -204,6 +190,10 @@
             super(name, scene);
 
             scene.addMesh(this);
+        }
+
+        public getClassName(): string {
+            return "AbstractMesh";
         }
 
         /**
@@ -1212,17 +1202,90 @@
                 }
             }
 
-            super.dispose();
-
             this.onAfterWorldMatrixUpdateObservable.clear();
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
 
             this._isDisposed = true;
 
-            // Callback
-            this.onDisposeObservable.notifyObservers(this);
-            this.onDisposeObservable.clear();
+            super.dispose();
         }
+
+        public getDirection(localAxis:Vector3): Vector3 {
+            var result = Vector3.Zero();
+
+            this.getDirectionToRef(localAxis, result);
+            
+            return result;
+        }
+
+        public getDirectionToRef(localAxis:Vector3, result:Vector3): void {
+            Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+        }
+
+        public setPivotPoint(point:Vector3, space:Space = Space.LOCAL): void{
+
+            if(this.getScene().getRenderId() == 0){
+                this.computeWorldMatrix(true);
+            }
+
+            var wm = this.getWorldMatrix();
+            
+            if (space == Space.WORLD) {
+                var tmat = Tmp.Matrix[0];
+                wm.invertToRef(tmat);
+                point = Vector3.TransformCoordinates(point, tmat);
+            }
+
+            Vector3.TransformCoordinatesToRef(point, wm, this.position);
+
+            this._pivotMatrix.m[12] = -point.x;
+            this._pivotMatrix.m[13] = -point.y;
+            this._pivotMatrix.m[14] = -point.z;
+
+            this._cache.pivotMatrixUpdated = true;
+
+        }
+
+        public getPivotPoint(): Vector3 {
+
+            var point = Vector3.Zero();
+
+            this.getPivotPointToRef(point);
+
+            return point;
+
+        }
+
+        public getPivotPointToRef(result:Vector3): void{
+
+            result.x = -this._pivotMatrix.m[12];
+            result.y = -this._pivotMatrix.m[13];
+            result.z = -this._pivotMatrix.m[14];
+
+        }
+
+        public getAbsolutePivotPoint(): Vector3 {
+
+            var point = Vector3.Zero();
+
+            this.getAbsolutePivotPointToRef(point);
+
+            return point;
+
+        }
+
+        public getAbsolutePivotPointToRef(result:Vector3): void{
+
+            result.x = this._pivotMatrix.m[12];
+            result.y = this._pivotMatrix.m[13];
+            result.z = this._pivotMatrix.m[14];
+
+            this.getPivotPointToRef(result);
+
+            Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
+
+        }
+
     }
 }

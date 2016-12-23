@@ -133,8 +133,8 @@
         private _vertexBuffers: { [key: string]: VertexBuffer } = {};
         private _indexBuffer: WebGLBuffer;
         private _downSamplePostprocess: PassPostProcess;
-        private _horizontalBlurPostprocess: GlowBlurPostProcess;
-        private _verticalBlurPostprocess: GlowBlurPostProcess;
+        private _horizontalBlurPostprocess: BlurPostProcess;
+        private _verticalBlurPostprocess: BlurPostProcess;
         private _cachedDefines: string;
         private _glowMapGenerationEffect: Effect;
         private _glowMapMergeEffect: Effect;
@@ -156,6 +156,11 @@
          * Specifies whether or not the outer glow is ACTIVE in the layer.
          */
         public outerGlow: boolean = true;
+
+        /**
+         * Specifies wether the highlight layer is enabled or not.
+         */
+        public isEnabled: boolean = true;
 
         /**
          * Specifies the horizontal size of the blur.
@@ -347,17 +352,32 @@
                 effect.setTexture("textureSampler", this._mainTexture);
             });
 
-            this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
-                null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-            this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
-                effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
-            });
+            if (this._options.alphaBlendingMode === Engine.ALPHA_COMBINE) {
+                this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
+                    effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
+                });
 
-            this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
+                this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                this._verticalBlurPostprocess.onApplyObservable.add(effect => {
+                    effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
+                });
+            }
+            else {
+                this._horizontalBlurPostprocess = new BlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-            this._verticalBlurPostprocess.onApplyObservable.add(effect => {
-                effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
-            });
+                this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
+                    effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
+                });
+
+                this._verticalBlurPostprocess = new BlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                this._verticalBlurPostprocess.onApplyObservable.add(effect => {
+                    effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
+                });
+            }
 
             this._mainTexture.onAfterUnbindObservable.add(() => {
                 this.onBeforeBlurObservable.notifyObservers(this);
@@ -385,13 +405,13 @@
                 }
 
                 // Excluded Mesh
-                if (this._excludedMeshes[mesh.id]) {
+                if (this._excludedMeshes[mesh.uniqueId]) {
                     return;
                 };
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
-                var highlightLayerMesh = this._meshes[mesh.id];
+                var highlightLayerMesh = this._meshes[mesh.uniqueId];
                 var material = subMesh.getMaterial();
                 var emissiveTexture: Texture = null;
                 if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
@@ -476,7 +496,7 @@
          * @return true if ready otherwise, false
          */
         private isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Texture): boolean {
-            if (!subMesh.getMaterial().isReady()) {
+            if (!subMesh.getMaterial().isReady(subMesh.getMesh(), useInstances)) {
                 return false;
             }
 
@@ -636,9 +656,9 @@
          * @param mesh The mesh to exclude from the highlight layer
          */
         public addExcludedMesh(mesh: Mesh) {
-            var meshExcluded = this._excludedMeshes[mesh.id];
+            var meshExcluded = this._excludedMeshes[mesh.uniqueId];
             if (!meshExcluded) {
-                this._excludedMeshes[mesh.id] = {
+                this._excludedMeshes[mesh.uniqueId] = {
                     mesh: mesh,
                     beforeRender: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
                         mesh.getEngine().setStencilBuffer(false);
@@ -655,13 +675,13 @@
           * @param mesh The mesh to highlight
           */
         public removeExcludedMesh(mesh: Mesh) {
-            var meshExcluded = this._excludedMeshes[mesh.id];
+            var meshExcluded = this._excludedMeshes[mesh.uniqueId];
             if (meshExcluded) {
                 mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
                 mesh.onAfterRenderObservable.remove(meshExcluded.afterRender);
             }
 
-            this._excludedMeshes[mesh.id] = undefined;
+            this._excludedMeshes[mesh.uniqueId] = undefined;
         }
 
         /**
@@ -671,17 +691,17 @@
          * @param glowEmissiveOnly Extract the glow from the emissive texture
          */
         public addMesh(mesh: Mesh, color: Color3, glowEmissiveOnly = false) {
-            var meshHighlight = this._meshes[mesh.id];
+            var meshHighlight = this._meshes[mesh.uniqueId];
             if (meshHighlight) {
                 meshHighlight.color = color;
             }
             else {
-                this._meshes[mesh.id] = {
+                this._meshes[mesh.uniqueId] = {
                     mesh: mesh,
                     color: color,
                     // Lambda required for capture due to Observable this context
                     observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
-                        if (this._excludedMeshes[mesh.id]) {
+                        if (this._excludedMeshes[mesh.uniqueId]) {
                             this.defaultStencilReference(mesh);
                         }
                         else {
@@ -701,13 +721,13 @@
          * @param mesh The mesh to highlight
          */
         public removeMesh(mesh: Mesh) {
-            var meshHighlight = this._meshes[mesh.id];
+            var meshHighlight = this._meshes[mesh.uniqueId];
             if (meshHighlight) {
                 mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
                 mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
             }
 
-            this._meshes[mesh.id] = undefined;
+            this._meshes[mesh.uniqueId] = undefined;
 
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
@@ -722,7 +742,7 @@
          * Returns true if the layer contains information to display, otherwise false.
          */
         public shouldRender(): boolean {
-            return this._shouldRender;
+            return this.isEnabled && this._shouldRender;
         }
 
         /**

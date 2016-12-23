@@ -3,6 +3,9 @@ module BABYLON {
         camera: FreeCamera;
 
         @serialize()
+        public buttons = [0, 1, 2];
+
+        @serialize()
         public angularSensibility = 2000.0;
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
@@ -22,6 +25,10 @@ module BABYLON {
                     var evt = <PointerEvent>p.event;
 
                     if (!this.touchEnabled && evt.pointerType === "touch") {
+                        return;
+                    }
+
+                    if(p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1){
                         return;
                     }
 

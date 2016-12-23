@@ -99,6 +99,9 @@
         public id: string;
 
         @serialize()
+        public name: string;
+
+        @serialize()
         public checkReadyOnEveryCall = false;
 
         @serialize()
@@ -119,6 +122,8 @@
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+
+        public doNotSerialize = false;
 
         /**
         * An event triggered when the material is disposed.
@@ -204,7 +209,8 @@
         private _cachedDepthWriteState: boolean;
 
 
-        constructor(public name: string, scene: Scene, doNotAdd?: boolean) {
+        constructor(name: string, scene: Scene, doNotAdd?: boolean) {
+            this.name = name;
             this.id = name;
 
             this._scene = scene;
@@ -230,6 +236,10 @@
             }
             return ret;
         } 
+        
+        public getClassName(): string {
+            return "Material";
+        }
         
         public get isFrozen(): boolean {
             return this.checkReadyOnlyOnce;

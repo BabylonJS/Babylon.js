@@ -200,8 +200,8 @@ void main(void) {
 #include<fogVertex>
 #include<shadowsVertex>[0..maxSimultaneousLights]
 
-	// Vertex color
 #ifdef VERTEXCOLOR
+	// Vertex color
 	vColor = color;
 #endif
 

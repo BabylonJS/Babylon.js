@@ -9,7 +9,7 @@ module BABYLON {
         }
 
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "VRDeviceOrientationFreeCamera";
         }
     }
@@ -25,7 +25,7 @@ module BABYLON {
             this.inputs.addVRDeviceOrientation();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "VRDeviceOrientationArcRotateCamera";
         }
     }

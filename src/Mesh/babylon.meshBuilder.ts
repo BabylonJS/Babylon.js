@@ -27,7 +27,8 @@
             var box = new Mesh(name, scene);
 
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            box.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateBox(options);
 
             vertexData.applyToMesh(box, options.updatable);
@@ -51,7 +52,8 @@
             var sphere = new Mesh(name, scene);
 
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            sphere.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateSphere(options);
 
             vertexData.applyToMesh(sphere, options.updatable);
@@ -73,7 +75,8 @@
             var disc = new Mesh(name, scene);
 
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            disc.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateDisc(options);
 
             vertexData.applyToMesh(disc, options.updatable);
@@ -96,7 +99,8 @@
             var sphere = new Mesh(name, scene);
 
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            sphere.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateIcoSphere(options);
 
             vertexData.applyToMesh(sphere, options.updatable);
@@ -256,9 +260,10 @@
          */
         public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, sideOrientation?: number }, scene: any): Mesh {
             var cylinder = new Mesh(name, scene);
-
+            
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            cylinder.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateCylinder(options);
 
             vertexData.applyToMesh(cylinder, options.updatable);
@@ -280,7 +285,8 @@
             var torus = new Mesh(name, scene);
 
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            torus.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateTorus(options);
 
             vertexData.applyToMesh(torus, options.updatable);
@@ -303,7 +309,8 @@
             var torusKnot = new Mesh(name, scene);
 
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            torusKnot.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreateTorusKnot(options);
 
             vertexData.applyToMesh(torusKnot, options.updatable);
@@ -541,7 +548,7 @@
          * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.  
          */
         public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, cap?: number, invertUV?: boolean }, scene: Scene): Mesh {
-            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+            var arc: number = options.arc ? ((options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc) : 1.0;
             var closed: boolean = (options.closed === undefined) ? true : options.closed;
             var shape = options.shape;
             var radius = options.radius || 1;
@@ -594,7 +601,8 @@
             var plane = new Mesh(name, scene);
 
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            plane.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreatePlane(options);
 
             vertexData.applyToMesh(plane, options.updatable);
@@ -880,7 +888,8 @@
             var polyhedron = new Mesh(name, scene);
 
             options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
-
+            polyhedron.sideOrientation = options.sideOrientation;
+            
             var vertexData = VertexData.CreatePolyhedron(options);
 
             vertexData.applyToMesh(polyhedron, options.updatable);

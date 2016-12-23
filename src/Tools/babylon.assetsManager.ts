@@ -145,9 +145,15 @@
         }
     }
 
-    export class TextureAssetTask implements IAssetTask {
-        public onSuccess: (task: IAssetTask) => void;
-        public onError: (task: IAssetTask) => void;
+    export interface ITextureAssetTask extends IAssetTask {
+        onSuccess: (task: ITextureAssetTask) => void;
+        onError: (task: ITextureAssetTask) => void;
+        texture: Texture;
+    }
+
+    export class TextureAssetTask implements ITextureAssetTask {
+        public onSuccess: (task: ITextureAssetTask) => void;
+        public onError: (task: ITextureAssetTask) => void;
 
         public isCompleted = false;
         public texture: Texture;
@@ -257,7 +263,7 @@
             return task;
         }
 
-        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): IAssetTask {
+        public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): ITextureAssetTask {
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
             this.tasks.push(task);
 

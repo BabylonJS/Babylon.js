@@ -1,0 +1,19 @@
+/* Babylon Editor Scene Controller (C# UnityScript) */
+using UnityEditor;
+using UnityEngine;
+
+namespace MyProject
+{
+	public class NewSceneController : BabylonSceneController
+	{
+        [Header("New Scene Controller")]
+
+        [BabylonProperty]
+        public string hello = "Hello World";
+
+		protected NewSceneController()
+		{
+			this.babylonClass = "PROJECT.BabylonSceneController";
+		}
+	}
+}

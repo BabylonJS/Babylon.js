@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class StandardRenderingPipeline extends PostProcessRenderPipeline implements IDisposable {
+    export class StandardRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         /**
         * Public members
         */
@@ -14,16 +14,14 @@
         public textureAdderFinalPostProcess: PostProcess = null;
 
         public lensFlarePostProcess: PostProcess = null;
-        public lensFlareShiftPostProcess: PostProcess = null;
         public lensFlareComposePostProcess: PostProcess = null;
 
         public depthOfFieldPostProcess: PostProcess = null;
 
-        public motionBlurPostProcess: PostProcess = null;
-
         // Values
         public brightThreshold: number = 1.0;
 
+        public blurWidth: number = 2.0;
         public gaussianCoefficient: number = 0.25;
         public gaussianMean: number = 1.0;
         public gaussianStandardDeviation: number = 1.0;
@@ -32,14 +30,17 @@
         public lensTexture: Texture = null;
 
         public lensColorTexture: Texture = null;
-        public lensFlareStrength: number = 1.0;
-        public lensFlareGhostDispersal: number = 1.0;
-        public lensFlareHaloWidth: number = 0.4;
-        public lensFlareDistortionStrength: number = 4.0;
+        public lensFlareStrength: number = 20.0;
+        public lensFlareGhostDispersal: number = 1.4;
+        public lensFlareHaloWidth: number = 0.7;
+        public lensFlareDistortionStrength: number = 16.0;
         public lensStarTexture: Texture = null;
         public lensFlareDirtTexture: Texture = null;
 
         public depthOfFieldDistance: number = 10.0;
+
+        // IAnimatable
+        public animations: Animation[] = [];
 
         /**
         * Private members
@@ -83,7 +84,6 @@
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurH" + blurIndex, this._scene.cameras);
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRGaussianBlurV" + blurIndex, this._scene.cameras);
                 this._scene.postProcessRenderPipelineManager.enableEffectInPipeline(this._name, "HDRLensFlareCompose", this._scene.cameras);
-                this._depthRenderer = this._scene.enableDepthRenderer();
             }
             else if (!enabled && this._lensFlareEnabled) {
                 this._scene.postProcessRenderPipelineManager.disableEffectInPipeline(this._name, "HDRLensFlare", this._scene.cameras);
@@ -140,7 +140,7 @@
             this._createTextureAdderPostProcess(scene, ratio);
 
             // Create depth-of-field source post-process
-            this.textureAdderFinalPostProcess = new PostProcess("HDRTextureAdderPostProcess", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), true, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.textureAdderFinalPostProcess = new PostProcess("HDRDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), true, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDepthOfFieldSource", () => { return this.textureAdderFinalPostProcess; }, true));
 
             // Create lens flare post-process
@@ -216,7 +216,7 @@
         private _createGaussianBlurPostProcesses(scene: Scene, ratio: number, indice: number): void {
             var blurOffsets = new Array<number>(9);
             var blurWeights = new Array<number>(9);
-            var uniforms: string[] = ["blurOffsets", "blurWeights"];
+            var uniforms: string[] = ["blurOffsets", "blurWeights", "blurWidth"];
 
             var callback = (height: boolean) => {
                 return (effect: Effect) => {
@@ -243,6 +243,7 @@
 
                     effect.setArray("blurOffsets", blurOffsets);
                     effect.setArray("blurWeights", blurWeights);
+                    effect.setFloat("blurWidth", this.blurWidth);
                 };
             };
 
@@ -281,60 +282,69 @@
 
         // Create lens flare post-process
         private _createLensFlarePostProcess(scene: Scene, ratio: number): void {
-            this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth"], ["lensColorSampler"], ratio / 8, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), true, "#define LENS_FLARE", Engine.TEXTURETYPE_UNSIGNED_INT);
-            this.lensFlareShiftPostProcess = new PostProcess("HDRLensFlareShift", "standard", ["resolution", "distortionStrength"], [], ratio / 8, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_SHIFT", Engine.TEXTURETYPE_UNSIGNED_INT);
-            this._createGaussianBlurPostProcesses(scene, ratio / 8, 4);
-            this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["viewMatrix", "scaleBias1", "scaleBias2"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"], ["lensColorSampler"], ratio / 2, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), true, "#define LENS_FLARE", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlare", () => { return this.lensFlarePostProcess; }, false));
+
+            this._createGaussianBlurPostProcesses(scene, ratio / 4, 4);
+
+            this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["lensStarMatrix"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Engine.TEXTURETYPE_UNSIGNED_INT);
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareCompose", () => { return this.lensFlareComposePostProcess; }, false));
 
             var resolution = new Vector2(0, 0);
 
             // Lens flare
             this.lensFlarePostProcess.onApply = (effect: Effect) => {
-                effect.setTextureFromPostProcess("textureSampler", this.textureAdderPostProcess);
+                effect.setTextureFromPostProcess("textureSampler", this.gaussianBlurHPostProcesses[0]);
                 effect.setTexture("lensColorSampler", this.lensColorTexture);
                 effect.setFloat("strength", this.lensFlareStrength);
                 effect.setFloat("ghostDispersal", this.lensFlareGhostDispersal);
                 effect.setFloat("haloWidth", this.lensFlareHaloWidth);
-            };
 
-            // Shift
-            this.lensFlareShiftPostProcess.onApply = (effect: Effect) => {
-                resolution.x = this.lensFlareShiftPostProcess.width;
-                resolution.y = this.lensFlareShiftPostProcess.height;
+                // Shift
+                resolution.x = this.lensFlarePostProcess.width;
+                resolution.y = this.lensFlarePostProcess.height;
                 effect.setVector2("resolution", resolution);
 
                 effect.setFloat("distortionStrength", this.lensFlareDistortionStrength);
             };
 
             // Compose
-            var scaleBias1 = Matrix.GetAsMatrix3x3(Matrix.FromValues(
+            var scaleBias1 = Matrix.FromValues(
                 2.0, 0.0, -1.0, 0.0,
                 0.0, 2.0, -1.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 0.0
-            ));
+                0.0, 0.0, 0.0, 1.0
+            );
 
-            var scaleBias2 = Matrix.GetAsMatrix3x3(Matrix.FromValues(
+            var scaleBias2 = Matrix.FromValues(
                 0.5, 0.0, 0.5, 0.0,
                 0.0, 0.5, 0.5, 0.0,
                 0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 0.0
-            ));
+                0.0, 0.0, 0.0, 1.0
+            );
 
             this.lensFlareComposePostProcess.onApply = (effect: Effect) => {
                 effect.setTextureFromPostProcess("otherSampler", this.textureAdderFinalPostProcess);
                 effect.setTexture("lensDirtSampler", this.lensFlareDirtTexture);
                 effect.setTexture("lensStarSampler", this.lensStarTexture);
 
-                effect.setMatrix("viewMatrix", this._scene.activeCamera.getViewMatrix());
-                effect.setMatrix3x3("scaleBias1", scaleBias1);
-                effect.setMatrix3x3("scaleBias2", scaleBias2);
-            };
+                // Lens start rotation matrix
+                var camerax = this._scene.activeCamera.getViewMatrix().getRow(0);
+                var cameraz = this._scene.activeCamera.getViewMatrix().getRow(2);
+                var camRot = Vector3.Dot(camerax.toVector3(), new Vector3(1.0, 0.0, 0.0)) + Vector3.Dot(cameraz.toVector3(), new Vector3(0.0, 0.0, 1.0));
+                camRot *= 4.0;
 
-            // Add to pipeline
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlare", () => { return this.lensFlarePostProcess; }, false));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareShift", () => { return this.lensFlareShiftPostProcess; }, false));
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareCompose", () => { return this.lensFlareComposePostProcess; }, false));
+                var starRotation = Matrix.FromValues(
+                    Math.cos(camRot) * 0.5, -Math.sin(camRot), 0.0, 0.0,
+                    Math.sin(camRot), Math.cos(camRot) * 0.5, 0.0, 0.0,
+                    0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 1.0
+                );
+
+                var lensStarMatrix = scaleBias2.multiply(starRotation).multiply(scaleBias1);
+
+                effect.setMatrix("lensStarMatrix", lensStarMatrix);
+            };
         }
 
         // Create depth-of-field post-process
@@ -349,6 +359,35 @@
 
             // Add to pipeline
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDepthOfField", () => { return this.depthOfFieldPostProcess; }, true));
+        }
+
+        // Dispose
+        public dispose(): void {
+            for (var i = 0; i < this._scene.cameras.length; i++) {
+                var camera = this._scene.cameras[i];
+
+                this.originalPostProcess.dispose(camera);
+                this.downSampleX4PostProcess.dispose(camera);
+                this.brightPassPostProcess.dispose(camera);
+                this.textureAdderPostProcess.dispose(camera);
+
+                for (var j = 0; j < this.gaussianBlurHPostProcesses.length; j++) {
+                    this.gaussianBlurHPostProcesses[j].dispose(camera);
+                }
+
+                for (var j = 0; j < this.gaussianBlurVPostProcesses.length; j++) {
+                    this.gaussianBlurVPostProcesses[j].dispose(camera);
+                }
+
+                this.textureAdderFinalPostProcess.dispose(camera);
+                this.lensFlarePostProcess.dispose(camera);
+                this.lensFlareComposePostProcess.dispose(camera);
+                this.depthOfFieldPostProcess.dispose(camera);
+            }
+
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+
+            super.dispose();
         }
     }
 }

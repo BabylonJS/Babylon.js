@@ -11,7 +11,7 @@ module BABYLON {
             this.inputs.addDeviceOrientation();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "DeviceOrientationCamera";
         }
 

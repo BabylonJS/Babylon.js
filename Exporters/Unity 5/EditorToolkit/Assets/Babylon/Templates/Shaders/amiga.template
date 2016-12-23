@@ -1,0 +1,99 @@
+﻿Shader "BabylonJS/NewShaderProgram" {
+	Properties {
+		_Color ("Color", Color) = (1,1,1,1)
+		_Brightness ("Intensity", Range(1.0, 10.0)) = 1.0
+		[NoScaleOffset] _MainTex ("Albedo (RGB)", 2D) = "white" {}
+		_ScaleX ("Scale Factor X", Range (0.0, 10.0)) = 1.0
+		_ScaleY ("Scale Factor Y", Range (0.0, 10.0)) = 1.0
+		_Metallic ("Metallic", Range(0,1)) = 0.0
+		_Glossiness ("Smoothness", Range(0,1)) = 0.5
+		[ToggleOff] _NeedsAlphaTesting ("Needs Alpha Testing", Int) = 0
+		[ToggleOff] _NeedsAlphaBlending ("Needs Alpha Blending", Int) = 0
+		[Enum(Disable,0,Additive,1,Combine,2,Subtract,3,Multiply,4,Maximized,5,OneOne,6)] _AlphaMode ("Alpha Blending Mode", int) = 2
+	}
+	SubShader {
+		Tags { "RenderType"="Opaque" }
+		Pass {
+			CGPROGRAM
+
+			//////////////////////////////////////////////////////////
+			// BABYLON WEBGL RUNTIME SHADER PROGRAM SECTIONS (GLSL) //
+			//////////////////////////////////////////////////////////
+
+			#ifdef BABYLON
+			attributes: ["position", "normal", "uv"]
+			uniforms: ["worldViewProjection, _Color, _Brightness, _Glossiness, _Metallic, _ScaleX, _ScaleY"]
+			samplers: []
+			defines: []
+			#endif //BABYLON-END
+
+
+			#ifdef VERTEX
+			attribute vec3 position;
+			attribute vec3 normal;
+			attribute vec2 uv;
+			uniform mat4 worldViewProjection;
+			precision highp float;
+
+			varying vec2 vUV;
+			
+			void main(void)
+			{
+				gl_Position = worldViewProjection * vec4(position, 1.0);
+				vUV = uv;
+			}
+			#endif //VERTEX-END
+
+
+			#ifdef FRAGMENT
+			precision highp float;
+
+			varying vec2 vUV;
+			uniform vec4 _Color;
+			uniform float _Brightness;
+			uniform float _Glossiness;
+			uniform float _Metallic;
+			uniform float _ScaleX;
+			uniform float _ScaleY;
+			uniform sampler2D _MainTex;
+
+			void main(void)
+			{
+				gl_FragColor = texture2D(_MainTex, vec2(vUV.x * _ScaleX, vUV.y * _ScaleY)) * _Color * _Brightness;
+			}
+			#endif //FRAGMENT-END 
+
+
+			////////////////////////////////////////////////////////
+			// DEFAULT UNITY EDITOR SHADER PROGRAM SECTION (HLSL) //
+			////////////////////////////////////////////////////////
+
+			#pragma exclude_renderers d3d11 xbox360 gles
+			#pragma surface surf Standard fullforwardshadows
+			#pragma target 3.0
+			sampler2D _MainTex;
+			struct Input {
+				float2 uv_MainTex;
+			};
+			half _Brightness;
+			half _Glossiness;
+			half _Metallic;
+			half _ScaleX;
+			half _ScaleY;
+			fixed4 _Color;
+			void surf (Input IN, inout SurfaceOutputStandard o) {
+				// Albedo comes from a texture tinted by color
+				float2 vUV = IN.uv_MainTex;
+				fixed4 c = tex2D (_MainTex, float2(vUV.x * _ScaleX, vUV.y * _ScaleY)) * _Color * _Brightness;
+				o.Albedo = c.rgb;
+				// Metallic and smoothness come from slider variables
+				o.Metallic = _Metallic;
+				o.Smoothness = _Glossiness;
+				o.Alpha = c.a;
+			}
+
+			ENDCG
+		}
+	}
+	FallBack "Diffuse"
+}

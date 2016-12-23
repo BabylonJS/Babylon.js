@@ -1,0 +1,124 @@
+﻿html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: #272822;
+}
+
+x-splitbox {
+    position: absolute;
+    left: 0px;
+    top: 50px;
+    width: 100%;
+    bottom: 40px;
+    height: auto;
+}
+
+    x-splitbox > [splitter]:after {
+        display: none;
+    }
+
+
+#jsEditor {
+    min-width: 250px;
+}
+
+#canvasZone {
+    min-width: 250px;
+    height: 100%;
+}
+
+#renderCanvas {
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+ul#scriptsList {
+    overflow-y: auto;
+    height: 600px;
+    -webkit-column-count: 3;
+    -moz-column-count: 3;
+    column-count: 3;
+    padding: 10px
+}
+
+#fpsLabel {
+    position: absolute;
+    right: 10px;
+    top: 70px;
+    cursor: default;
+}
+
+#topbar {
+    padding: 5px;
+}
+
+.navbar .brand {
+    margin-left: 0px;
+}
+
+#errorZone {
+    position: absolute;
+    width: 50%;
+    left: 25%;
+    bottom: 40px;
+}
+
+#statusBar {
+    padding: 10px 15px 10px;
+    color: #999;
+}
+
+@media (max-width: 800px) {
+    .desktopOnly {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1100px) {
+    .largeOnly {
+        display: none !important;
+    }
+}
+
+@media (max-width: 550px) {
+    .btn-group > .btn, .btn-group > .dropdown-menu, .btn-group > .popover {
+        font-size: 12px !important;
+    }
+}
+
+/* MONACO */
+.monaco-editor .container:before, .monaco-editor .row:before {
+    content: "";
+    display: inherit;
+}
+
+.monaco-editor .container:after, .monaco-editor .row:after {
+    clear: inherit;
+}
+
+.monaco-editor .container {
+    width: auto;
+    margin: inherit;
+    padding: inherit;
+}
+
+.monaco-editor .close {
+    float: none;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    text-shadow: inherit;
+    opacity: inherit;
+    filter: inherit;
+}
+
+.monaco-editor .row {
+    margin: inherit;
+}
+
+.monaco-editor .invisible {
+    visibility: visible;
+}

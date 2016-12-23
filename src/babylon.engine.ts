@@ -172,8 +172,15 @@
         public maxCubemapTextureSize: number;
         public maxRenderTextureSize: number;
         public maxVertexAttribs: number;
+        public maxVaryingVectors: number;
+        public maxVertexUniformVectors: number;
+        public maxFragmentUniformVectors: number;
         public standardDerivatives: boolean;
         public s3tc: WEBGL_compressed_texture_s3tc;
+        public pvrtc: any; //WEBGL_compressed_texture_pvrtc;
+        public etc1: any; //WEBGL_compressed_texture_etc1;
+        public etc2: any; //WEBGL_compressed_texture_etc;
+        public astc: any; //WEBGL_compressed_texture_astc;
         public textureFloat: boolean;
         public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
         public maxAnisotropy: number;
@@ -207,6 +214,7 @@
         private static _ALPHA_MULTIPLY = 4;
         private static _ALPHA_MAXIMIZED = 5;
         private static _ALPHA_ONEONE = 6;
+        private static _ALPHA_PREMULTIPLIED = 7;
 
         private static _DELAYLOADSTATE_NONE = 0;
         private static _DELAYLOADSTATE_LOADED = 1;
@@ -330,6 +338,10 @@
             return Engine._ALPHA_MAXIMIZED;
         }
 
+        public static get ALPHA_PREMULTIPLIED(): number {
+            return Engine._ALPHA_PREMULTIPLIED;
+        }
+
         public static get DELAYLOADSTATE_NONE(): number {
             return Engine._DELAYLOADSTATE_NONE;
         }
@@ -379,7 +391,7 @@
         }
 
         public static get Version(): string {
-            return "2.5.-beta";
+            return "2.6-alpha";
         }
 
         // Updatable statics so stick with vars here
@@ -481,14 +493,26 @@
 
         private _externalData: StringDictionary<Object>;
         private _bindedRenderFunction: any;
-
+        
+        // Hardware supported Compressed Textures
+        private _texturesSupported = new Array<string>();
+        private _textureFormatInUse : string; 
+        
+        public get texturesSupported(): Array<string> {
+            return this._texturesSupported;
+        }
+        
+        public get textureFormatInUse(): string {
+            return this._textureFormatInUse;
+        }
+        
         /**
          * @constructor
          * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = true) {
+        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
             this._renderingCanvas = canvas;
 
             this._externalData = new StringDictionary<Object>();
@@ -508,16 +532,19 @@
             var renderToHalfFloat = this._canRenderToHalfFloatTexture();
 
             // GL
-            //try {
+            // try {
             //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
             //    if (this._gl) {
             //        this._webGLVersion = "2.0";
             //    }
-            //} catch (e) {
+            // } catch (e) {
             //    // Do nothing
-            //}
+            // }
 
             if (!this._gl) {
+                if (!canvas) {
+                    throw new Error("The provided canvas is null or undefined.");
+                }
                 try {
                     this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
                 } catch (e) {
@@ -553,6 +580,9 @@
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
             this._caps.maxVertexAttribs = this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS);
+            this._caps.maxVaryingVectors = this._gl.getParameter(this._gl.MAX_VARYING_VECTORS);
+            this._caps.maxFragmentUniformVectors = this._gl.getParameter(this._gl.MAX_FRAGMENT_UNIFORM_VECTORS);
+            this._caps.maxVertexUniformVectors = this._gl.getParameter(this._gl.MAX_VERTEX_UNIFORM_VECTORS);
 
             // Infos
             this._glVersion = this._gl.getParameter(this._gl.VERSION);
@@ -573,7 +603,13 @@
 
             // Extensions
             this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
-            this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
+            
+            this._caps.astc  = this._gl.getExtension('WEBGL_compressed_texture_astc');
+            this._caps.s3tc  = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
+            this._caps.pvrtc = this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc'); // 2nd is what iOS reports
+            this._caps.etc1  = this._gl.getExtension('WEBGL_compressed_texture_etc1');
+            this._caps.etc2  = this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // first is the final name, found hardware using 2nd
+            
             this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
@@ -589,7 +625,18 @@
             this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
-
+            
+            // Intelligently add supported commpressed formats in order to check for.
+            // Check for ASTC support first as it is most powerful and to be very cross platform.
+            // Next PVR & S3, which are probably superior to ETC1/2.  
+            // Likely no hardware which supports both PVR & S3, so order matters little.
+            // ETC2 is newer and handles ETC1, so check for first.
+            if (this._caps.astc ) this.texturesSupported.push('.astc');
+            if (this._caps.s3tc ) this.texturesSupported.push('.dds');
+            if (this._caps.pvrtc) this.texturesSupported.push('.pvr');
+            if (this._caps.etc2 ) this.texturesSupported.push('.etc2');
+            if (this._caps.etc1 ) this.texturesSupported.push('.etc1');
+            
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
                 this._caps.highPrecisionShaderSupported = highp.precision !== 0;
@@ -921,12 +968,12 @@
             }
         }
 
-        public clear(color: any, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
             this.applyStates();
 
             var mode = 0;
-            if (backBuffer) {
-                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+            if (backBuffer && color) {
+                this._gl.clearColor(color.r, color.g, color.b, color.a);
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
             if (depth) {
@@ -971,8 +1018,8 @@
          * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
          */
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.width);
-            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.height);
+            var width = requiredWidth || (navigator.isCocoonJS ? window.innerWidth : this.getRenderWidth());
+            var height = requiredHeight || (navigator.isCocoonJS ? window.innerHeight : this.getRenderHeight());
             var x = viewport.x || 0;
             var y = viewport.y || 0;
 
@@ -1023,13 +1070,6 @@
             var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
 
             this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
-
-            for (var index = 0; index < this.scenes.length; index++) {
-                var scene = this.scenes[index];
-                if (DebugLayer && scene.debugLayer.isVisible()) {
-                    scene.debugLayer._syncPositions();
-                }
-            }
         }
 
         /**
@@ -1310,6 +1350,8 @@
 
                 let attributesCount = effect.getAttributesCount();
 
+                this.unbindAllAttributes();
+
                 var offset = 0;
                 for (var index = 0; index < attributesCount; index++) {
 
@@ -1318,26 +1360,13 @@
                         var order = effect.getAttributeLocation(index);
 
                         if (order >= 0) {
-                            if (!this._vertexAttribArraysEnabled[order]) {
-                                this._gl.enableVertexAttribArray(order);
-                                this._vertexAttribArraysEnabled[order] = true;
-                            }
+                            this._gl.enableVertexAttribArray(order);
+                            this._vertexAttribArraysEnabled[order] = true;
                             this.vertexAttribPointer(vertexBuffer, order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
                         }
 
                         offset += vertexDeclaration[index] * 4;
-
-                    } else {
-
-                        //disable effect attributes that have no data
-                        var order = effect.getAttributeLocation(index);
-                        if (this._vertexAttribArraysEnabled[order]) {
-                            this._gl.disableVertexAttribArray(order);
-                            this._vertexAttribArraysEnabled[order] = false;
-                        }
-
                     }
-
                 }
             }
 
@@ -1355,6 +1384,8 @@
 
                 var attributes = effect.getAttributesNames();
 
+                this.unbindAllAttributes();
+
                 for (var index = 0; index < attributes.length; index++) {
                     var order = effect.getAttributeLocation(index);
 
@@ -1362,17 +1393,11 @@
                         var vertexBuffer = vertexBuffers[attributes[index]];
 
                         if (!vertexBuffer) {
-                            if (this._vertexAttribArraysEnabled[order]) {
-                                this._gl.disableVertexAttribArray(order);
-                                this._vertexAttribArraysEnabled[order] = false;
-                            }
                             continue;
                         }
 
-                        if (!this._vertexAttribArraysEnabled[order]) {
-                            this._gl.enableVertexAttribArray(order);
-                            this._vertexAttribArraysEnabled[order] = true;
-                        }
+                        this._gl.enableVertexAttribArray(order);
+                        this._vertexAttribArraysEnabled[order] = true;
 
                         var buffer = vertexBuffer.getBuffer();
                         this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
@@ -1839,6 +1864,10 @@
                 case Engine.ALPHA_DISABLE:
                     this._alphaState.alphaBlend = false;
                     break;
+                case Engine.ALPHA_PREMULTIPLIED:
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                    this._alphaState.alphaBlend = true;
+                    break;
                 case Engine.ALPHA_COMBINE:
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
@@ -1920,6 +1949,36 @@
 
             texture.samplingMode = samplingMode;
         }
+        /**
+         * Set the compressed texture format to use, based on the formats you have,
+         * the formats supported by the hardware / browser, and those currently implemented
+         * in BJS.
+         * 
+         * Note: The result of this call is not taken into account texture is base64 or when
+         * using a database / manifest.
+         * 
+         * @param {Array<string>} formatsAvailable - Extension names including dot.  Case
+         * and order do not matter.
+         * @returns The extension selected.
+         */
+        public setTextureFormatToUse(formatsAvailable : Array<string>) : string {
+            for (var i = 0, len1 = this.texturesSupported.length; i < len1; i++) {
+                // code to allow the formats to be added as they can be developed / hw tested
+                if (this._texturesSupported[i] === '.astc') continue;
+                if (this._texturesSupported[i] === '.pvr' ) continue;
+                if (this._texturesSupported[i] === '.etc1') continue;
+                if (this._texturesSupported[i] === '.etc2') continue;
+                
+                for (var j = 0, len2 = formatsAvailable.length; j < len2; j++) {
+                    if (this._texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
+                        return this._textureFormatInUse = this._texturesSupported[i];
+                    }
+                }
+            }
+            // actively set format to nothing, to allow this to be called more than once
+            // and possibly fail the 2nd time
+            return this._textureFormatInUse = null;
+        }
 
         public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
             var texture = this._gl.createTexture();
@@ -1930,16 +1989,21 @@
                 fromData = true;
             }
 
-            if (!fromData)
-                extension = url.substr(url.length - 4, 4).toLowerCase();
-            else {
+            if (!fromData) {
+                var lastDot = url.lastIndexOf('.')
+                extension = url.substring(lastDot).toLowerCase();
+                if (this._textureFormatInUse && !fromData && !scene.database) {
+                    extension = this._textureFormatInUse;
+                    url = url.substring(0, lastDot) + this._textureFormatInUse;
+                }
+            } else {
                 var oldUrl = url;
                 fromData = oldUrl.split(':');
                 url = oldUrl;
                 extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
             }
 
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            var isDDS = (extension === ".dds");
             var isTGA = (extension === ".tga");
 
             scene._addPendingData(texture);
@@ -2097,6 +2161,11 @@
 
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+
+            if (generateMipMaps) {
+                this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            }
+
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
 
             texture.samplingMode = samplingMode;
@@ -2520,7 +2589,7 @@
         }
 
         public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
-            callback: (ArrayBuffer) => ArrayBufferView[],
+            callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
             mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
             var gl = this._gl;
             var texture = gl.createTexture();
@@ -2936,8 +3005,11 @@
                 if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
-                this._vertexAttribArraysEnabled[i] = false;
+
+                if (this._vertexAttribArraysEnabled[i]) {
+                    this._gl.disableVertexAttribArray(i);
+                    this._vertexAttribArraysEnabled[i] = false;
+                }
             }
         }
 
@@ -3014,6 +3086,18 @@
             this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
         }
 
+        public getVertexShaderSource(program: WebGLProgram): string {
+            var shaders = this._gl.getAttachedShaders(program);
+
+            return this._gl.getShaderSource(shaders[0]);
+        }
+
+        public getFragmentShaderSource(program: WebGLProgram): string {
+            var shaders = this._gl.getAttachedShaders(program);
+
+            return this._gl.getShaderSource(shaders[1]);
+        }
+
         // FPS
         public getFps(): number {
             return this.fps;
@@ -3048,11 +3132,21 @@
         }
 
         private _canRenderToFloatTexture(): boolean {
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            try {
+                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            }
+            catch (e) {
+                return false;
+            }
         }
 
-        private _canRenderToHalfFloatTexture(): boolean {
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+        private _canRenderToHalfFloatTexture(): boolean {            
+            try {
+                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+            }
+            catch (e) {
+                return false;
+            }
         }
 
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture

@@ -18,3 +18,9 @@ BABYLON.SceneLoader.Load("/Files/", "ch9.stl", engine, function (newScene) {
    }); 
 });
 ```
+
+To compile, from the tools/gulp folder:
+
+```
+gulp loaders
+```

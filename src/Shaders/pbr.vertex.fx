@@ -53,7 +53,7 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#if defined(REFLECTIVITY)
+#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
 varying vec2 vReflectivityUV;
 uniform vec2 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
@@ -178,7 +178,7 @@ void main(void) {
     }
 #endif
 
-#if defined(REFLECTIVITY)
+#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
     if (vReflectivityInfos.x == 0.)
     {
         vReflectivityUV = vec2(reflectivityMatrix * vec4(uv, 1.0, 0.0));

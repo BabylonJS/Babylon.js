@@ -455,6 +455,7 @@
             if (this.targetPropertyPath.length > 1) {
                 var property = this._target[this.targetPropertyPath[0]];
 
+
                 for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
                     property = property[this.targetPropertyPath[index]];
                 }
@@ -532,6 +533,11 @@
                 to = this._keys[this._keys.length - 1].frame;
             }
 
+            //to and from cannot be the same key
+            if(from === to) {
+                from++;
+            }
+            
             // Compute ratio
             var range = to - from;
             var offsetValue;
