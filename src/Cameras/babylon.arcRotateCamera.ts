@@ -212,7 +212,7 @@
             this.getViewMatrix();
             this.inputs = new ArcRotateCameraInputsManager(this);
             this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
-        }
+        }      
 
         // Cache
         public _initCache(): void {
@@ -288,13 +288,14 @@
             this.inputs.checkInputs();
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-                this.beta += this.inertialBetaOffset;                    
-
+                
                 if (this.getScene().useRightHandedSystem) {
                     this.alpha -= this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 } else {
                     this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 }
+
+                this.beta += this.inertialBetaOffset;
 
                 this.radius -= this.inertialRadiusOffset;
                 this.inertialAlphaOffset *= this.inertia;
@@ -454,6 +455,7 @@
                 this._viewMatrix.m[12] += this.targetScreenOffset.x;
                 this._viewMatrix.m[13] += this.targetScreenOffset.y;
             }
+            this._currentTarget = target;
             return this._viewMatrix;
         }
 
@@ -586,7 +588,7 @@
             super.dispose();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "ArcRotateCamera";
         }
     }

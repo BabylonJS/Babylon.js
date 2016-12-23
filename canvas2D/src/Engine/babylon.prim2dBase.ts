@@ -1239,7 +1239,7 @@
          * @param dstOffset the position of the resulting area
          * @param dstArea the size of the resulting area
          */
-        public compute(sourceArea: Size, dstOffset: Vector2, dstArea: Size) {
+        public compute(sourceArea: Size, dstOffset: Vector4, dstArea: Size) {
             this._computePixels(0, sourceArea, true);
             this._computePixels(1, sourceArea, true);
             this._computePixels(2, sourceArea, true);
@@ -1250,6 +1250,9 @@
 
             dstOffset.y = this.bottomPixels;
             dstArea.height = sourceArea.height - (dstOffset.y + this.topPixels);
+
+            dstOffset.z = this.rightPixels;
+            dstOffset.w = this.topPixels;
         }
 
         /**
@@ -1267,7 +1270,7 @@
             result.height = this.bottomPixels + sourceArea.height + this.topPixels;
         }
 
-        enlarge(sourceArea: Size, dstOffset: Vector2, enlargedArea: Size) {
+        enlarge(sourceArea: Size, dstOffset: Vector4, enlargedArea: Size) {
             this._computePixels(0, sourceArea, true);
             this._computePixels(1, sourceArea, true);
             this._computePixels(2, sourceArea, true);
@@ -1278,6 +1281,9 @@
 
             dstOffset.y = this.bottomPixels;
             enlargedArea.height = sourceArea.height + (dstOffset.y + this.topPixels);
+
+            dstOffset.z = this.rightPixels;
+            dstOffset.w = this.topPixels;
         }
     }
 
@@ -2427,7 +2433,7 @@
             }
             this._positioningDirty();
             if (this.parent) {
-                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty | SmartPropertyPrim.flagGlobalTransformDirty);
             }
             this._layoutArea = val;
         }
@@ -2448,7 +2454,7 @@
                 return;
             }
             if (this.parent) {
-                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty);
+                this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty | SmartPropertyPrim.flagGlobalTransformDirty);
             }
             this._positioningDirty();
             this._layoutAreaPos = val;
@@ -3466,13 +3472,12 @@
                 this.actualSize = Prim2DBase._size.clone();
             }
 
-            let po = new Vector2(this._paddingOffset.x, this._paddingOffset.y);
             if (this._hasPadding) {
-                // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so me resize the primitive itself
+                // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so we resize the primitive itself
                 if (isSizeAuto) {
                     let content = this.size.clone();
                     this._getActualSizeFromContentToRef(content, Prim2DBase._icArea);
-                    this.padding.enlarge(Prim2DBase._icArea, po, Prim2DBase._size);
+                    this.padding.enlarge(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
                     this._contentArea.copyFrom(content);
                     this.actualSize = Prim2DBase._size.clone();
 
@@ -3485,9 +3490,7 @@
                     this._getInitialContentAreaToRef(this.actualSize, Prim2DBase._icZone, Prim2DBase._icArea);
                     Prim2DBase._icArea.width = Math.max(0, Prim2DBase._icArea.width);
                     Prim2DBase._icArea.height = Math.max(0, Prim2DBase._icArea.height);
-                    this.padding.compute(Prim2DBase._icArea, po, Prim2DBase._size);
-                    this._paddingOffset.x = po.x;
-                    this._paddingOffset.y = po.y;
+                    this.padding.compute(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
                     this._paddingOffset.x += Prim2DBase._icZone.x;
                     this._paddingOffset.y += Prim2DBase._icZone.y;
                     this._paddingOffset.z -= Prim2DBase._icZone.z;
@@ -3501,7 +3504,7 @@
                 this._paddingOffset.x = Prim2DBase._icZone.x;
                 this._paddingOffset.y = Prim2DBase._icZone.y;
                 this._paddingOffset.z = Prim2DBase._icZone.z;
-                this._paddingOffset.w = Prim2DBase._icZone.z;
+                this._paddingOffset.w = Prim2DBase._icZone.w;
                 this._contentArea.copyFrom(Prim2DBase._icArea);
             }
 

@@ -33,7 +33,7 @@ module BABYLON {
             super(name, position, scene);
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "GamepadCamera";
         }
     }

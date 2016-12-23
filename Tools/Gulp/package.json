@@ -1,6 +1,6 @@
 {
   "name": "BabylonJS",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Babylon.js is a 3D engine based on webgl and javascript",
   "main": "",
   "repository": { "url": "https://github.com/BabylonJS/Babylon.js/" },
@@ -9,20 +9,31 @@
   "devDependencies": {
     "gulp": "^3.8.11",
     "gulp-uglify": "~1.5.3",
-    "gulp-sourcemaps": "~1.5.2",
-    "typescript": "^1.7.5",
-    "gulp-typescript": "~2.13.0",
+    "gulp-sourcemaps": "~1.9.1",
+    "typescript": "^2.1.4",
+    "gulp-typescript": "^3.1.3",
     "through2": "~0.6.5",
     "gulp-util": "~3.0.4",
     "gulp-concat": "~2.5.2",
     "merge2": "~0.3.5",
     "gulp-rename": "~1.2.2",
     "gulp-clean-ts-extends": "~0.1.1",
-    "gulp-changed": "~1.2.1",
+    "gulp-changed-in-place": "2.0.3",
     "run-sequence": "~1.1.0",
     "gulp-replace": "~0.5.3",
     "gulp-content-to-variable": "^0.1.0",
     "gulp-expect-file": "^0.0.7",
-    "gulp-optimize-js": "^1.0.2"
+    "gulp-optimize-js": "^1.0.2",
+    "gulp-webserver": "^0.9.1",
+    "gulp-debug": "^3.0.0",
+    "gulp-sass": "2.3.2",
+    "webpack-stream": "^3.2.0",
+    "css-loader": "^0.25.0",
+    "style-loader": "^0.13.1",
+    "exports-loader": "^0.6.3",
+    "imports-loader": "^0.7.0"
+  },
+  "scripts": {
+    "install": "npm --prefix ../../Playground/ install ../../Playground/ && gulp typescript-compile && gulp typescript-libraries && gulp deployLocalDev"
   }
 }

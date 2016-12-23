@@ -29,6 +29,10 @@
             this.direction = direction;
         }
 
+        public getClassName(): string {
+            return "DirectionalLight";
+        }           
+
         public getAbsolutePosition(): Vector3 {
             return this.transformedPosition ? this.transformedPosition : this.position;
         }

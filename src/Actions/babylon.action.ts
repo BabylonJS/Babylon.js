@@ -103,7 +103,7 @@
             };
             
             // Serialize child
-            if (this._child) {
+            if (this._child) { 
                 this._child.serialize(serializationObject);
             }
             

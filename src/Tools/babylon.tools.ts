@@ -188,7 +188,7 @@
             };
         }
 
-        public static Vector2ArrayFeeder(array: Array<Vector2> | Float32Array): (i) => Vector2 {
+        public static Vector2ArrayFeeder(array: Array<Vector2> | Float32Array): (i: number) => Vector2 {
             return (index: number) => {
                 let isFloatArray = ((<Float32Array>array).BYTES_PER_ELEMENT !== undefined);
                 let length = isFloatArray ? array.length / 2 : array.length;
@@ -439,6 +439,32 @@
             }
         }
 
+        /** 
+         * Load a script (identified by an url). When the url returns, the 
+         * content of this file is added into a new script element, attached to the DOM (body element)
+         */
+        public static LoadScript(scriptUrl:string, onSuccess: () => void, onError?: () => void) {
+            var head = document.getElementsByTagName('head')[0];
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = scriptUrl;
+
+            var self = this;
+            script.onload = () => {
+                if (onSuccess) {
+                    onSuccess();
+                }
+            };
+
+            script.onerror = () => {
+                if (onError) {
+                    onError();
+                }
+            };
+
+            head.appendChild(script);
+        }
+
         public static ReadFileAsDataURL(fileToLoad, callback, progressCallback): void {
             var reader = new FileReader();
             reader.onload = e => {
@@ -683,12 +709,26 @@
             if (!screenshotCanvas) {
                 screenshotCanvas = document.createElement('canvas');
             }
+            
             screenshotCanvas.width = width;
             screenshotCanvas.height = height;
 
             var renderContext = screenshotCanvas.getContext("2d");
 
-            renderContext.drawImage(engine.getRenderingCanvas(), 0, 0, width, height);
+            var ratio = engine.getRenderWidth() / engine.getRenderHeight();
+            var newWidth = width;
+            var newHeight = newWidth / ratio;
+            if (newHeight > height) {
+                newHeight = height;
+                newWidth = newHeight * ratio;
+            }
+
+            var offsetX = Math.max(0, width - newWidth) / 2;
+            var offsetY = Math.max(0, height - newHeight) / 2;
+
+            renderContext.fillStyle = camera.getScene().clearColor.toHexString();
+            renderContext.fillRect(0, 0, width, height);
+            renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
 
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
@@ -738,7 +778,7 @@
             }
 
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-            var texture = new RenderTargetTexture("screenShot", size, scene, false, false);
+            var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = scene.meshes;
 
             texture.onAfterRenderObservable.add(() => {
@@ -1043,7 +1083,7 @@
             return name;
         }
 
-        public static first<T>(array: Array<T>, predicate: (item) => boolean) {
+        public static first<T>(array: Array<T>, predicate: (item: T) => boolean) {
             for (let el of array) {
                 if (predicate(el)) {
                     return el;
@@ -1085,7 +1125,7 @@
          * This method can be used with hashCodeFromStream when your input is an array of values that are either: number, string, boolean or custom type implementing the getHashCode():number method.
          * @param array
          */
-        public static arrayOrStringFeeder(array: any): (i) => number {
+        public static arrayOrStringFeeder(array: any): (i: number) => number {
             return (index: number) => {
                 if (index >= array.length) {
                     return null;

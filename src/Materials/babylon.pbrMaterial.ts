@@ -65,6 +65,11 @@
         public INVERTNORMALMAPY = false;
         public SHADOWFULLFLOAT = false;
 
+        public METALLICWORKFLOW = false;
+        public METALLICROUGHNESSMAP = false;
+        public METALLICROUGHNESSGSTOREINALPHA = false;
+        public METALLICROUGHNESSGSTOREINGREEN = false;
+
         constructor() {
             super();
             this.rebuild();
@@ -282,6 +287,26 @@
         @serializeAsTexture()
         public reflectivityTexture: BaseTexture;
 
+        /**
+         * Used to switch from specular/glossiness to metallic/roughness workflow.
+         */
+        @serializeAsTexture()
+        public metallicTexture: BaseTexture;
+
+        /**
+         * Specifies the metallic scalar of the metallic/roughness workflow.
+         * Can also be used to scale the metalness values of the metallic texture.
+         */
+        @serialize()
+        public metallic: number;
+
+        /**
+         * Specifies the roughness scalar of the metallic/roughness workflow.
+         * Can also be used to scale the roughness values of the metallic texture.
+         */
+        @serialize()
+        public roughness: number;
+
         @serializeAsTexture()
         public bumpTexture: BaseTexture;
 
@@ -313,12 +338,11 @@
         public emissiveColor = new Color3(0, 0, 0);
         
         /**
-
          * AKA Glossiness in other nomenclature.
          */
         @serialize()
         public microSurface = 0.9;
-        
+
         /**
          * source material index of refraction (IOR)' / 'destination material IOR.
          */
@@ -378,6 +402,18 @@
          */
         @serialize()
         public useMicroSurfaceFromReflectivityMapAlpha = false;
+
+        /**
+         * Specifies if the metallic texture contains the roughness information in its alpha channel.
+         */
+        @serialize()
+        public useRoughnessFromMetallicTextureAlpha = true;
+
+        /**
+         * Specifies if the metallic texture contains the roughness information in its green channel.
+         */
+        @serialize()
+        public useRoughnessFromMetallicTextureGreen = false;
         
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
@@ -485,6 +521,10 @@
 
                 return this._renderTargets;
             }
+        }
+
+        public getClassName(): string {
+            return "PBRMaterial";
         }
 
         @serialize()
@@ -595,14 +635,22 @@
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-
-            if (this.checkReadyOnlyOnce) {
+            if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
                 }
             }
 
             var scene = this.getScene();
+            var engine = scene.getEngine();
+            var needNormals = false;
+            var needUVs = false;
+
+            this._defines.reset();
+
+            if (scene.lightsEnabled && !this.disableLighting) {
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
+            }
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
@@ -611,12 +659,6 @@
                     }
                 }
             }
-
-            var engine = scene.getEngine();
-            var needNormals = false;
-            var needUVs = false;
-
-            this._defines.reset();
 
             if (scene.texturesEnabled) {
                 if (scene.getEngine().getCaps().textureLOD) {
@@ -722,14 +764,27 @@
                     }
                 }
 
-                if (this.reflectivityTexture && StandardMaterial.SpecularTextureEnabled) {
-                    if (!this.reflectivityTexture.isReady()) {
-                        return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.REFLECTIVITY = true;
-                        this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
-                        this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
+                if (StandardMaterial.SpecularTextureEnabled) {
+                    if (this.metallicTexture) {
+                        if (!this.metallicTexture.isReady()) {
+                            return false;
+                        } else {
+                            needUVs = true;
+                            this._defines.METALLICWORKFLOW = true;
+                            this._defines.METALLICROUGHNESSMAP = true;
+                            this._defines.METALLICROUGHNESSGSTOREINALPHA = this.useRoughnessFromMetallicTextureAlpha;
+                            this._defines.METALLICROUGHNESSGSTOREINGREEN = !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen;
+                        }
+                    }
+                    else if (this.reflectivityTexture) {
+                        if (!this.reflectivityTexture.isReady()) {
+                            return false;
+                        } else {
+                            needUVs = true;
+                            this._defines.REFLECTIVITY = true;
+                            this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
+                            this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
+                        }
                     }
                 }
 
@@ -848,10 +903,6 @@
                 this._defines.FOG = true;
             }
 
-            if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
-            }
-
             if (StandardMaterial.FresnelEnabled) {
                 // Fresnel
                 if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled ||
@@ -880,6 +931,10 @@
 
             if (this.useRadianceOverAlpha) {
                 this._defines.RADIANCEOVERALPHA = true;
+            }
+
+            if (this.metallic !== undefined || this.roughness !== undefined) {
+                this._defines.METALLICWORKFLOW = true;
             }
 
             // Attribs
@@ -1175,11 +1230,19 @@
                         this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
                     }
 
-                    if (this.reflectivityTexture && StandardMaterial.SpecularTextureEnabled) {
-                        this._effect.setTexture("reflectivitySampler", this.reflectivityTexture);
+                    if (StandardMaterial.SpecularTextureEnabled) {
+                        if (this.metallicTexture) {
+                            this._effect.setTexture("reflectivitySampler", this.metallicTexture);
 
-                        this._effect.setFloat2("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level);
-                        this._effect.setMatrix("reflectivityMatrix", this.reflectivityTexture.getTextureMatrix());
+                            this._effect.setFloat2("vReflectivityInfos", this.metallicTexture.coordinatesIndex, this.metallicTexture.level);
+                            this._effect.setMatrix("reflectivityMatrix", this.metallicTexture.getTextureMatrix());
+                        }
+                        else if (this.reflectivityTexture) {
+                            this._effect.setTexture("reflectivitySampler", this.reflectivityTexture);
+
+                            this._effect.setFloat2("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level);
+                            this._effect.setMatrix("reflectivityMatrix", this.reflectivityTexture.getTextureMatrix());
+                        }
                     }
 
                     if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
@@ -1225,13 +1288,20 @@
 
                 // Colors
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                
-                // GAMMA CORRECTION.
-                this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
+
+                if (this._defines.METALLICWORKFLOW) {
+                    PBRMaterial._scaledReflectivity.r = this.metallic === undefined ? 1 : this.metallic;
+                    PBRMaterial._scaledReflectivity.g = this.roughness === undefined ? 1 : this.roughness;
+                    this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, 0);
+                }
+                else {
+                    // GAMMA CORRECTION.
+                    this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
+                    this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
+                }
 
                 this._effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-                this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
 
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(this.emissiveColor, PBRMaterial._scaledEmissive);
@@ -1285,8 +1355,7 @@
                 this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
                 this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
 
-                this.convertColorToLinearSpaceToRef(this.overloadedAmbient, this._tempColor);
-                this._effect.setColor3("vOverloadedAmbient", this._tempColor);
+                this._effect.setColor3("vOverloadedAmbient", this.overloadedAmbient);
                 this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
                 this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
                 this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
@@ -1332,7 +1401,10 @@
                 results.push(this.emissiveTexture);
             }
 
-            if (this.reflectivityTexture && this.reflectivityTexture.animations && this.reflectivityTexture.animations.length > 0) {
+            if (this.metallicTexture && this.metallicTexture.animations && this.metallicTexture.animations.length > 0) {
+                results.push(this.metallicTexture);
+            }
+            else if (this.reflectivityTexture && this.reflectivityTexture.animations && this.reflectivityTexture.animations.length > 0) {
                 results.push(this.reflectivityTexture);
             }
 
@@ -1375,6 +1447,10 @@
 
                 if (this.emissiveTexture) {
                     this.emissiveTexture.dispose();
+                }
+
+                if (this.metallicTexture) {
+                    this.metallicTexture.dispose();
                 }
 
                 if (this.reflectivityTexture) {

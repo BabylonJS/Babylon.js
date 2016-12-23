@@ -30,6 +30,10 @@
             this._syncSubMeshes();
         }
 
+        public getClassName(): string {
+            return "InstancedMesh";
+        }          
+
         // Methods
         public get receiveShadows(): boolean {
             return this._sourceMesh.receiveShadows;

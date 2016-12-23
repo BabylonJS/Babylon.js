@@ -141,9 +141,12 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent"], ["_poseMatrix"]);
 
-                // Pivot                
+                // Parent
+                this.parent = source.parent;
+
+                // Pivot
                 this.setPivotMatrix(source.getPivotMatrix());
 
                 this.id = name + "." + source.id;
@@ -191,6 +194,10 @@
         }
 
         // Methods
+        public getClassName(): string {
+            return "Mesh";
+        }   
+
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
@@ -1787,6 +1794,11 @@
             }
 
             mesh.checkCollisions = parsedMesh.checkCollisions;
+
+            if (parsedMesh.isBlocker !== undefined) {
+                mesh.isBlocker = parsedMesh.isBlocker;
+            }
+            
             mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
 
             // freezeWorldMatrix
@@ -1802,6 +1814,19 @@
             // Actions
             if (parsedMesh.actions !== undefined) {
                 mesh._waitingActions = parsedMesh.actions;
+            }
+
+            // Overlay
+            if (parsedMesh.overlayAlpha !== undefined) {
+                mesh.overlayAlpha = parsedMesh.overlayAlpha;
+            }
+
+            if (parsedMesh.overlayColor !== undefined) {
+                mesh.overlayColor = Color3.FromArray(parsedMesh.overlayColor);
+            }
+
+            if (parsedMesh.renderOverlay !== undefined) {
+                mesh.renderOverlay = parsedMesh.renderOverlay;
             }
 
             // Geometry
@@ -2509,7 +2534,9 @@
             }
 
             if (!this._sourcePositions) {
+                var submeshes = this.subMeshes.slice();
                 this.setPositionsForCPUSkinning();
+                this.subMeshes = submeshes;
             }
 
             if (!this._sourceNormals) {

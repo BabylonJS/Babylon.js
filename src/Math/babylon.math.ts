@@ -1139,11 +1139,17 @@
         }
 
         public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3 {
-            var x = start.x + ((end.x - start.x) * amount);
-            var y = start.y + ((end.y - start.y) * amount);
-            var z = start.z + ((end.z - start.z) * amount);
+            var result = new Vector3(0, 0, 0);
 
-            return new Vector3(x, y, z);
+            Vector3.LerpToRef(start, end, amount, result);
+
+            return result;
+        }
+
+        public static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void {
+            result.x = start.x + ((end.x - start.x) * amount);
+            result.y = start.y + ((end.y - start.y) * amount);
+            result.z = start.z + ((end.z - start.z) * amount);
         }
 
         public static Dot(left: Vector3, right: Vector3): number {
@@ -1925,28 +1931,36 @@
 
         public toEulerAnglesToRef(result: Vector3, order = "YZX"): Quaternion {
             
+            var qz = this.z;
             var qx = this.x;
             var qy = this.y;
-            var qz = this.z;
             var qw = this.w;
-            var xsqr = qx * qx;
 
-            var t0 = -2.0 * (xsqr + qy * qy) + 1.0;
-            var t1 = 2.0 * (qz * qx + qw * qy);
-            var t2 = -2.0 * (qz * qy - qw * qx);
-            var t3 = 2.0 * (qx * qy + qw * qz);
-            var t4 = -2.0 * (qz * qz + xsqr) + 1.0;
+            var sqw = qw * qw;
+            var sqz = qz * qz;
+            var sqx = qx * qx;
+            var sqy = qy * qy;
 
-            t2 = t2 > 1.0 ? 1.0 : t2;
-            t2 = t2 < -1.0 ? -1.0 : t2;
+            var zAxisY = qy*qz - qx*qw;
+            var limit = .4999999;
 
-            result.x = Math.asin(t2);
-            result.z = Math.atan2(t3, t4);
-            result.y = Math.atan2(t1, t0);
+            if(zAxisY < -limit){
+                result.y = 2 * Math.atan2(qy,qw);
+                result.x = Math.PI/2;
+                result.z = 0;
+            }else if(zAxisY > limit){
+                result.y = 2 * Math.atan2(qy,qw);
+                result.x = -Math.PI/2;
+                result.z = 0;
+            }else{
+                result.z = Math.atan2(2.0 * (qx * qy + qz * qw), (-sqz - sqx + sqy + sqw));
+                result.x = Math.asin(-2.0 * (qz * qy - qx * qw));
+                result.y = Math.atan2(2.0 * (qz * qx + qy * qw), (sqz - sqx - sqy + sqw));
+            }
 
             return this;
             
-        };
+        }
 
         public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
@@ -2112,6 +2126,16 @@
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
+            
+            var result = Quaternion.Identity();
+
+            Quaternion.SlerpToRef(left, right, amount, result);
+
+            return result;
+
+        }
+
+        public static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result:Quaternion): void {
             var num2;
             var num3;
             var num = amount;
@@ -2134,7 +2158,11 @@
                 num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+            result.x = (num3 * left.x) + (num2 * right.x);
+            result.y = (num3 * left.y) + (num2 * right.y);
+            result.z = (num3 * left.z) + (num2 * right.z);
+            result.w = (num3 * left.w) + (num2 * right.w);
+
         }
     }
 
@@ -2438,6 +2466,36 @@
             Quaternion.FromRotationMatrixToRef(Tmp.Matrix[0], rotation);
 
             return true;
+        }
+
+        public getRotationMatrix(): Matrix{
+
+            var result = Matrix.Identity();
+
+            this.getRotationMatrixToRef(result);
+
+            return result;
+
+        }
+
+        public getRotationMatrixToRef(result:Matrix): void{
+
+            var m = this.m;
+
+            var xs = m[0] * m[1] * m[2] * m[3] < 0 ? -1 : 1;
+            var ys = m[4] * m[5] * m[6] * m[7] < 0 ? -1 : 1;
+            var zs = m[8] * m[9] * m[10] * m[11] < 0 ? -1 : 1;
+
+            var sx = xs * Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+            var sy = ys * Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
+            var sz = zs * Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
+
+            Matrix.FromValuesToRef(
+                m[0] / sx, m[1] / sx, m[2] / sx, 0,
+                m[4] / sy, m[5] / sy, m[6] / sy, 0,
+                m[8] / sz, m[9] / sz, m[10] / sz, 0,
+                0, 0, 0, 1, result);
+
         }
 
         // Statics
@@ -2876,15 +2934,21 @@
         }
 
         public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
-            var hw = 2.0 / width;
-            var hh = 2.0 / height;
-            var id = 1.0 / (zfar - znear);
-            var nid = znear / (znear - zfar);
+            let n = znear;
+            let f = zfar;
 
-            Matrix.FromValuesToRef(hw, 0, 0, 0,
-                0, hh, 0, 0,
-                0, 0, id, 0,
-                0, 0, nid, 1, result);
+            let a = 2.0 / width;
+            let b = 2.0 / height;
+            let c = 2.0 / (f - n);
+            let d = -(f + n)/(f - n);
+
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c, 0,
+                0, 0, d, 1,
+                result
+            );
         }
 
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
@@ -2896,16 +2960,23 @@
         }
 
         public static OrthoOffCenterLHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
-            result.m[0] = 2.0 / (right - left);
-            result.m[1] = result.m[2] = result.m[3] = 0;
-            result.m[5] = 2.0 / (top - bottom);
-            result.m[4] = result.m[6] = result.m[7] = 0;
-            result.m[10] = 1.0 / (zfar - znear);
-            result.m[8] = result.m[9] = result.m[11] = 0;
-            result.m[12] = (left + right) / (left - right);
-            result.m[13] = (top + bottom) / (bottom - top);
-            result.m[14] = -znear / (zfar - znear);
-            result.m[15] = 1.0;
+            let n = znear;
+            let f = zfar;
+
+            let a = 2.0 / (right - left);
+            let b = 2.0 / (top - bottom);
+            let c = 2.0 / (f - n);
+            let d = -(f + n)/(f - n);
+            let i0 = (left + right) / (left - right);
+            let i1 = (top + bottom) / (bottom - top);
+
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c, 0,
+                i0, i1, d, 1,
+                result
+            );
         }
 
         public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
@@ -2924,15 +2995,21 @@
         public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
 
-            matrix.m[0] = (2.0 * znear) / width;
-            matrix.m[1] = matrix.m[2] = matrix.m[3] = 0.0;
-            matrix.m[5] = (2.0 * znear) / height;
-            matrix.m[4] = matrix.m[6] = matrix.m[7] = 0.0;
-            matrix.m[10] = -zfar / (znear - zfar);
-            matrix.m[8] = matrix.m[9] = 0.0;
-            matrix.m[11] = 1.0;
-            matrix.m[12] = matrix.m[13] = matrix.m[15] = 0.0;
-            matrix.m[14] = (znear * zfar) / (znear - zfar);
+            let n = znear;
+            let f = zfar;
+
+            let a = 2.0 * n / width;
+            let b = 2.0 * n / height;
+            let c = (f + n)/(f - n);
+            let d = -2.0 * f * n/(f - n);
+
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c, 1,
+                0, 0, d, 0,
+                matrix
+            );
 
             return matrix;
         }
@@ -2946,30 +3023,22 @@
         }
 
         public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
-            var tan = 1.0 / (Math.tan(fov * 0.5));
+            let n = znear;
+            let f = zfar;
 
-            if (isVerticalFovFixed) {
-                result.m[0] = tan / aspect;
-            }
-            else {
-                result.m[0] = tan;
-            }
+            let t = 1.0 / (Math.tan(fov * 0.5));
+            let a = isVerticalFovFixed ? (t / aspect) : t;
+            let b = isVerticalFovFixed ? t : (t * aspect);
+            let c = (f + n)/(f - n);
+            let d = -2.0 * f * n/(f - n);
 
-            result.m[1] = result.m[2] = result.m[3] = 0.0;
-
-            if (isVerticalFovFixed) {
-                result.m[5] = tan;
-            }
-            else {
-                result.m[5] = tan * aspect;
-            }
-
-            result.m[4] = result.m[6] = result.m[7] = 0.0;
-            result.m[8] = result.m[9] = 0.0;
-            result.m[10] = zfar / (zfar - znear);
-            result.m[11] = 1.0;
-            result.m[12] = result.m[13] = result.m[15] = 0.0;
-            result.m[14] = -(znear * zfar) / (zfar - znear);
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c, 1,
+                0, 0, d, 0,
+                result
+            );
         }
 
         public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
@@ -2981,33 +3050,31 @@
         }
 
         public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
-            var tan = 1.0 / (Math.tan(fov * 0.5));
+            //alternatively this could be expressed as:
+            //    m = PerspectiveFovLHToRef
+            //    m[10] *= -1.0;
+            //    m[11] *= -1.0;
 
-            if (isVerticalFovFixed) {
-                result.m[0] = tan / aspect;
-            }
-            else {
-                result.m[0] = tan;
-            }
+            let n = znear;
+            let f = zfar;
 
-            result.m[1] = result.m[2] = result.m[3] = 0.0;
+            let t = 1.0 / (Math.tan(fov * 0.5));
+            let a = isVerticalFovFixed ? (t / aspect) : t;
+            let b = isVerticalFovFixed ? t : (t * aspect);
+            let c = -(f + n)/(f - n);
+            let d = -2*f*n/(f - n);
 
-            if (isVerticalFovFixed) {
-                result.m[5] = tan;
-            }
-            else {
-                result.m[5] = tan * aspect;
-            }
-
-            result.m[4] = result.m[6] = result.m[7] = 0.0;
-            result.m[8] = result.m[9] = 0.0;
-            result.m[10] = zfar / (znear - zfar);
-            result.m[11] = -1.0;
-            result.m[12] = result.m[13] = result.m[15] = 0.0;
-            result.m[14] = (znear * zfar) / (znear - zfar);
+            BABYLON.Matrix.FromValuesToRef(
+                a, 0, 0, 0,
+                0, b, 0, 0,
+                0, 0, c,-1,
+                0, 0, d, 0,
+                result
+            );
         }
 
         public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+            //left handed
             var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
             var downTan = Math.tan(fov.downDegrees * Math.PI / 180.0);
             var leftTan = Math.tan(fov.leftDegrees * Math.PI / 180.0);
@@ -3020,12 +3087,12 @@
             result.m[6] = result.m[7] =  0.0;
             result.m[8] = ((leftTan - rightTan) * xScale * 0.5);
             result.m[9] = -((upTan - downTan) * yScale * 0.5);
-            //result.m[10] = -(znear + zfar) / (zfar - znear);
-            result.m[10] = -zfar / (znear - zfar);
+            result.m[10] = -(znear + zfar) / (zfar - znear);
+            // result.m[10] = -zfar / (znear - zfar);
             result.m[11] = 1.0;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
-            //result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
-            result.m[14] = (znear * zfar) / (znear - zfar);
+            result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
+            // result.m[14] = (znear * zfar) / (znear - zfar);
         }
 
         public static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix {
@@ -3116,6 +3183,68 @@
             result.m[14] = temp3 * plane.d;
             result.m[15] = 1.0;
         }
+
+        public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, mat: Matrix) {
+            
+            mat.m[0] = xaxis.x;
+            mat.m[1] = xaxis.y;
+            mat.m[2] = xaxis.z;
+
+            mat.m[3] = 0;
+            
+            mat.m[4] = yaxis.x;
+            mat.m[5] = yaxis.y;
+            mat.m[6] = yaxis.z;
+            
+            mat.m[7] = 0;
+            
+            mat.m[8] = zaxis.x;
+            mat.m[9] = zaxis.y;
+            mat.m[10] = zaxis.z;
+            
+            mat.m[11] = 0;
+            
+            mat.m[12] = 0;
+            mat.m[13] = 0;
+            mat.m[14] = 0;
+            
+            mat.m[15] = 1;
+
+        }
+
+        public static FromQuaternionToRef(quat:Quaternion, result:Matrix){
+
+            var xx = quat.x * quat.x;
+            var yy = quat.y * quat.y;
+            var zz = quat.z * quat.z;
+            var xy = quat.x * quat.y;
+            var zw = quat.z * quat.w;
+            var zx = quat.z * quat.x;
+            var yw = quat.y * quat.w;
+            var yz = quat.y * quat.z;
+            var xw = quat.x * quat.w;
+
+            result.m[0] = 1.0 - (2.0 * (yy + zz));
+            result.m[1] = 2.0 * (xy + zw);
+            result.m[2] = 2.0 * (zx - yw);
+            result.m[3] = 0;
+            result.m[4] = 2.0 * (xy - zw);
+            result.m[5] = 1.0 - (2.0 * (zz + xx));
+            result.m[6] = 2.0 * (yz + xw);
+            result.m[7] = 0;
+            result.m[8] = 2.0 * (zx + yw);
+            result.m[9] = 2.0 * (yz - xw);
+            result.m[10] = 1.0 - (2.0 * (yy + xx));
+            result.m[11] = 0;
+
+            result.m[12] = 0;
+            result.m[13] = 0;
+            result.m[14] = 0;
+
+            result.m[15] = 1.0;
+
+        }
+
     }
 
     export class Plane {

@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Babylon.js Playground</title>
+    <script src="https://babylonjs.azurewebsites.net/poly2tri.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.js"></script>
+    <!--x-tag-->
+    <script src="xtag.js"></script>
+    <script src="splitbox.js"></script>
+    <link href="splitbox.css" rel="stylesheet" />
+    <!-- jszip -->
+    <script src="jszip.js"></script>
+    <script src="fileSaver.js"></script>
+    <!-- Bootstrap -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+    <!-- Babylon.js -->
+    <script src="https://babylonjs.azurewebsites.net/cannon.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/Oimo.js"></script>
+    <!--<script src="../babylon.js"></script>-->
+    <script src="https://babylonjs.azurewebsites.net/babylon.max.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/babylon.canvas2d.max.js"></script>
+    
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.fireMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.waterMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.lavaMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.normalMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.skyMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.triPlanarMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.terrainMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.gradientMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.furMaterial.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.gridMaterial.js"></script>
+
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.brickProceduralTexture.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.cloudProceduralTexture.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.fireProceduralTexture.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.grassProceduralTexture.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.marbleProceduralTexture.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.roadProceduralTexture.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.starfieldProceduralTexture.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.woodProceduralTexture.js"></script>
+
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.asciiArtPostProcess.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.digitalRainPostProcess.js"></script>    
+
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.glTFFileLoader.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.objFileLoader.js"></script>
+    <script src="https://babylonjs.azurewebsites.net/lib/babylon.stlFileLoader.js"></script>
+
+    <link href="index.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner" id="topbar">
+            <a class="brand largeOnly" href="#" id="mainTitle">Babylon.js Playground</a>
+            <div class="btn-group">
+                <button class="btn" id="runButton">Run</button>
+                <button class="btn" id="saveButton">Save</button>
+                <button class="btn desktopOnly" id="zipButton">Get .zip</button>
+                <button class="btn desktopOnly" id="newButton">New</button>
+                <button class="btn desktopOnly" id="clearButton">Clear</button>
+            </div>
+            <div class="btn-group desktopOnly">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="currentFontSize">Font: 12</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="sizeList">
+                    <li><a href="#" onclick="setFontSize(12);">12</a></li>
+                    <li><a href="#" onclick="setFontSize(14);">14</a></li>
+                    <li><a href="#" onclick="setFontSize(16);">16</a></li>
+                    <li><a href="#" onclick="setFontSize(18);">18</a></li>
+                    <li><a href="#" onclick="setFontSize(20);">20</a></li>
+                    <li><a href="#" onclick="setFontSize(22);">22</a></li>
+                </ul>
+            </div>
+            <div class="btn-group">
+                <label class="btn btn-sm active">
+                    <input type="checkbox" autocomplete="off" id='safemodeToggle' style="margin-top:-0.1em;margin-right:4px">Safe Mode
+                </label>
+                <button class="btn btn-sm" id="editorButton">-Editor</button>
+                <button class="btn btn-sm" id="debugButton">+Debug layer</button>
+            </div>
+            <div class="btn-group pull-right">
+                <button class="btn" id="fullscreenButton">Fullscreen</button>
+            </div>
+            <div class="btn-group pull-right">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span id="currentScript">Predefined scripts</span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" id="scriptsList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <x-splitbox>
+        <div id="jsEditor"></div>
+        <div splitter></div>
+        <div id="canvasZone">
+            <canvas id="renderCanvas"></canvas>
+        </div>
+    </x-splitbox>
+
+    <span class="label" id="fpsLabel">FPS</span>
+
+    <div id="errorZone">
+    </div>
+
+    <div class="navbar navbar-inverse navbar-fixed-bottom">
+        <div class="navbar-inner">
+            <ul class="nav pull-left">
+                <li id="statusBar"></li>
+            </ul>
+            <ul class="nav pull-right">
+                <li><a href="http://www.html5gamedevs.com/forum/16-babylonjs/">Forum</a></li>
+                <li><a href="https://babylonjs.azurewebsites.net/sandbox">Sandbox</a></li>
+                <li><a href="https://github.com/BabylonJS/Babylon.js/wiki">Wiki</a></li>
+                <li><a href="https://doc.babylonjs.com">Documentation</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="bootstrap/js/bootstrap.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

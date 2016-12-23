@@ -17,7 +17,9 @@
         public state = "";
 
         @serialize()
-        public metadata:any = null;
+        public metadata: any = null;
+
+        public doNotSerialize = false;
 
         public animations = new Array<Animation>();
         private _ranges: { [name: string]: AnimationRange; } = {};
@@ -62,6 +64,24 @@
 
         public get parent(): Node {
             return this._parentNode;
+        }
+
+        public getClassName(): string {
+            return "Node";
+        }
+
+        /**
+        * An event triggered when the mesh is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Node>();
+
+        private _onDisposeObserver: Observer<Node>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
         }
 
         /**
@@ -341,20 +361,12 @@
 
         public dispose(): void {
             this.parent = null;
+
+            // Callback
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
-
-        public getDirection(localAxis:BABYLON.Vector3): BABYLON.Vector3 {
-            var result = BABYLON.Vector3.Zero();
-
-            this.getDirectionToRef(localAxis, result);
-            
-            return result;
-        }
-
-        public getDirectionToRef(localAxis:BABYLON.Vector3, result:BABYLON.Vector3): void {
-            BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
-        }
-
+        
         public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
             if (parsedNode.ranges) {
                 for (var index = 0; index < parsedNode.ranges.length; index++) {

@@ -16,12 +16,12 @@
         public maxCameraSpeed: number = 20;
 
         @serializeAsMeshReference("lockedTargetId")
-        public target: AbstractMesh;
+        public lockedTarget: AbstractMesh;
 
-        constructor(name: string, position: Vector3, scene: Scene, target?: AbstractMesh) {
+        constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: AbstractMesh) {
             super(name, position, scene);
 
-            this.target = target;
+            this.lockedTarget = lockedTarget;
         }
 
         private getRadians(degrees): number {
@@ -69,10 +69,10 @@
 
         public _checkInputs(): void {
             super._checkInputs();
-            this.follow(this.target);
+            this.follow(this.lockedTarget);
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "FollowCamera";
         }
     }
@@ -100,7 +100,7 @@
             this.follow();
         }
 
-        public getTypeName(): string {
+        public getClassName(): string {
             return "ArcFollowCamera";
         }
     }
