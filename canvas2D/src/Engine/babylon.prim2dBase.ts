@@ -3134,6 +3134,7 @@
                 this._actionManager.dispose();
                 this._actionManager = null;
             }
+            this.owner.scene.stopAnimation(this);
 
             // If there's a parent, remove this object from its parent list
             if (this._parent) {
