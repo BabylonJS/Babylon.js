@@ -509,21 +509,10 @@ module BABYLON {
                 continue;
             }
 
-            // Check if node already exists
-            var foundBone = false;
-            for (var j = 0; j < newSkeleton.bones.length; j++) {
-                if (newSkeleton.bones[j].id === id) {
-                    foundBone = true;
-                    break;
-                }
-            }
-
-            if (foundBone) {
-                continue;
-            }
-
             // Search for parent bone
+            var foundBone = false;
             var parentBone: Bone = null;
+
             for (var j = 0; j < i; j++) {
                 var joint: IGLTFNode = getJointNode(gltfRuntime, skins.jointNames[j]).node;
 
@@ -564,6 +553,7 @@ module BABYLON {
             if (!parentBone && nodesToRoot.length === 0) {
                 var inverseBindMatrix = Matrix.FromArray(buffer, i * 16);
                 var invertMesh = Matrix.Invert(mesh.getWorldMatrix());
+
                 mat = mat.multiply(mesh.getWorldMatrix());
             }
 
@@ -574,7 +564,7 @@ module BABYLON {
         // Polish
         var bones = newSkeleton.bones;
         newSkeleton.bones = [];
-
+        
         for (var i = 0; i < skins.jointNames.length; i++) {
             var jointNode: IJointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
 
@@ -590,9 +580,9 @@ module BABYLON {
             }
         }
 
-        // Finish
         newSkeleton.prepare();
 
+        // Finish
         for (var i = 0; i < nodesToRootToAdd.length; i++) {
             newSkeleton.bones.push(nodesToRootToAdd[i]);
         }
@@ -834,7 +824,7 @@ module BABYLON {
                 }
 
                 if (newMesh.skeleton !== null) {
-                    newMesh.useBones = true;
+                    //newMesh.useBones = true;
                 }
 
                 lastNode = newMesh;
@@ -1059,7 +1049,7 @@ module BABYLON {
                 if (type === EParameterType.SAMPLER_2D) {
                     var texture: Texture = gltfRuntime.textures[value].babylonTexture;
 
-                    if (texture === null) {
+                    if (texture === null || texture === undefined) {
                         continue;
                     }
 
@@ -1089,27 +1079,29 @@ module BABYLON {
             var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
             var type = uniform.type;
             var value = materialValues[techniqueUniforms[unif]];
-            
+
             if (value === undefined) {
                 // In case the value is the same for all materials
-                value = <any> uniform.value;
+                value = <any>uniform.value;
             }
 
             if (!value) {
                 continue;
             }
 
-            var onLoadTexture = (texture: Texture) => {
-                if (uniform.value) {
-                    // Static uniform
-                    shaderMaterial.setTexture(unif, texture);
-                    delete unTreatedUniforms[unif];
+            var onLoadTexture = (uniformName: string) => {
+                return (texture: Texture) => {
+                    if (uniform.value) {
+                        // Static uniform
+                        shaderMaterial.setTexture(uniformName, texture);
+                        delete unTreatedUniforms[uniformName];
+                    }
                 }
             };
 
             // Texture (sampler2D)
             if (type === EParameterType.SAMPLER_2D) {
-                GLTFFileLoaderExtension.LoadTextureAsync(gltfRuntime, <string>value, onLoadTexture, () => onLoadTexture(null));
+                GLTFFileLoaderExtension.LoadTextureAsync(gltfRuntime, <string>value, onLoadTexture(unif), () => onLoadTexture(null));
             }
             // Others
             else {
@@ -1483,7 +1475,7 @@ module BABYLON {
                 attributes: attributes,
                 uniforms: uniforms,
                 samplers: samplers,
-                needAlphaBlending: states.functions && states.functions.blendEquationSeparate
+                needAlphaBlending: states.enable && states.enable.indexOf(3042) !== -1
             };
 
             Effect.ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
