@@ -326,8 +326,6 @@ var BABYLON;
                     targetNode.animations.push(babylonAnimation);
                 }
                 lastAnimation = babylonAnimation;
-                gltfRuntime.scene.stopAnimation(targetNode);
-                gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
             }
         }
     };
@@ -512,18 +510,8 @@ var BABYLON;
                 newSkeleton.bones.push(existingBone);
                 continue;
             }
-            // Check if node already exists
-            var foundBone = false;
-            for (var j = 0; j < newSkeleton.bones.length; j++) {
-                if (newSkeleton.bones[j].id === id) {
-                    foundBone = true;
-                    break;
-                }
-            }
-            if (foundBone) {
-                continue;
-            }
             // Search for parent bone
+            var foundBone = false;
             var parentBone = null;
             for (var j = 0; j < i; j++) {
                 var joint = getJointNode(gltfRuntime, skins.jointNames[j]).node;
@@ -577,8 +565,8 @@ var BABYLON;
                 }
             }
         }
-        // Finish
         newSkeleton.prepare();
+        // Finish
         for (var i = 0; i < nodesToRootToAdd.length; i++) {
             newSkeleton.bones.push(nodesToRootToAdd[i]);
         }
@@ -775,7 +763,6 @@ var BABYLON;
                     }
                 }
                 if (newMesh.skeleton !== null) {
-                    newMesh.useBones = true;
                 }
                 lastNode = newMesh;
             }
@@ -960,7 +947,7 @@ var BABYLON;
                 }
                 if (type === BABYLON.EParameterType.SAMPLER_2D) {
                     var texture = gltfRuntime.textures[value].babylonTexture;
-                    if (texture === null) {
+                    if (texture === null || texture === undefined) {
                         continue;
                     }
                     shaderMaterial.getEffect().setTexture(unif, texture);
@@ -993,16 +980,18 @@ var BABYLON;
             if (!value) {
                 continue;
             }
-            var onLoadTexture = function (texture) {
-                if (uniform.value) {
-                    // Static uniform
-                    shaderMaterial.setTexture(unif, texture);
-                    delete unTreatedUniforms[unif];
-                }
+            var onLoadTexture = function (uniformName) {
+                return function (texture) {
+                    if (uniform.value) {
+                        // Static uniform
+                        shaderMaterial.setTexture(uniformName, texture);
+                        delete unTreatedUniforms[uniformName];
+                    }
+                };
             };
             // Texture (sampler2D)
             if (type === BABYLON.EParameterType.SAMPLER_2D) {
-                BABYLON.GLTFFileLoaderExtension.LoadTextureAsync(gltfRuntime, value, onLoadTexture, function () { return onLoadTexture(null); });
+                BABYLON.GLTFFileLoaderExtension.LoadTextureAsync(gltfRuntime, value, onLoadTexture(unif), function () { return onLoadTexture(null); });
             }
             else {
                 if (uniform.value && BABYLON.GLTFUtils.SetUniform(shaderMaterial, unif, value, type)) {
