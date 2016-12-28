@@ -1286,6 +1286,10 @@
                 let worldMtx = node.getWorldMatrix();
 
                 let proj = Vector3.Project(Canvas2D._v, worldMtx, Canvas2D._m, v);
+
+                // Set the visibility state accordingly, if the position is outside the frustum (well on the Z planes only...) set the group to hidden
+                group.levelVisible = proj.z >= 0 && proj.z < 1.0;
+
                 let s = this.scale;
                 group.x = Math.round(proj.x/s);
                 group.y = Math.round((rh - proj.y)/s);
