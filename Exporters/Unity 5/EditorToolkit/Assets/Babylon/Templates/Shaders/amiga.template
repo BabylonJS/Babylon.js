@@ -3,16 +3,14 @@
 		_Color ("Color", Color) = (1,1,1,1)
 		_Brightness ("Intensity", Range(1.0, 10.0)) = 1.0
 		[NoScaleOffset] _MainTex ("Albedo (RGB)", 2D) = "white" {}
-		_ScaleX ("Scale Factor X", Range (0.0, 10.0)) = 1.0
-		_ScaleY ("Scale Factor Y", Range (0.0, 10.0)) = 1.0
-		_Metallic ("Metallic", Range(0,1)) = 0.0
-		_Glossiness ("Smoothness", Range(0,1)) = 0.5
+		[ToggleOff] _BackFaceCulling ("Back Face Culling", Int) = 1
 		[ToggleOff] _NeedsAlphaTesting ("Needs Alpha Testing", Int) = 0
 		[ToggleOff] _NeedsAlphaBlending ("Needs Alpha Blending", Int) = 0
 		[Enum(Disable,0,Additive,1,Combine,2,Subtract,3,Multiply,4,Maximized,5,OneOne,6)] _AlphaMode ("Alpha Blending Mode", int) = 2
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
+		LOD 100
 		Pass {
 			CGPROGRAM
 
@@ -21,10 +19,10 @@
 			//////////////////////////////////////////////////////////
 
 			#ifdef BABYLON
-			attributes: ["position", "normal", "uv"]
-			uniforms: ["worldViewProjection, _Color, _Brightness, _Glossiness, _Metallic, _ScaleX, _ScaleY"]
-			samplers: []
-			defines: []
+			attributes: "position, normal, uv"
+			uniforms: "worldViewProjection, _Color, _Brightness"
+			samplers: ""
+			defines: ""
 			#endif //BABYLON-END
 
 
@@ -51,15 +49,12 @@
 			varying vec2 vUV;
 			uniform vec4 _Color;
 			uniform float _Brightness;
-			uniform float _Glossiness;
-			uniform float _Metallic;
-			uniform float _ScaleX;
-			uniform float _ScaleY;
 			uniform sampler2D _MainTex;
 
 			void main(void)
 			{
-				gl_FragColor = texture2D(_MainTex, vec2(vUV.x * _ScaleX, vUV.y * _ScaleY)) * _Color * _Brightness;
+				// Texture Sample (Unlit)
+				gl_FragColor = texture2D(_MainTex, vUV) * _Color * _Brightness;
 			}
 			#endif //FRAGMENT-END 
 
@@ -68,32 +63,44 @@
 			// DEFAULT UNITY EDITOR SHADER PROGRAM SECTION (HLSL) //
 			////////////////////////////////////////////////////////
 
-			#pragma exclude_renderers d3d11 xbox360 gles
-			#pragma surface surf Standard fullforwardshadows
-			#pragma target 3.0
-			sampler2D _MainTex;
-			struct Input {
-				float2 uv_MainTex;
+			#pragma vertex vert
+			#pragma fragment frag
+			
+			#include "UnityCG.cginc"
+
+			struct appdata
+			{
+				float4 vertex : POSITION;
+				float2 uv : TEXCOORD0;
 			};
-			half _Brightness;
-			half _Glossiness;
-			half _Metallic;
-			half _ScaleX;
-			half _ScaleY;
-			fixed4 _Color;
-			void surf (Input IN, inout SurfaceOutputStandard o) {
-				// Albedo comes from a texture tinted by color
-				float2 vUV = IN.uv_MainTex;
-				fixed4 c = tex2D (_MainTex, float2(vUV.x * _ScaleX, vUV.y * _ScaleY)) * _Color * _Brightness;
-				o.Albedo = c.rgb;
-				// Metallic and smoothness come from slider variables
-				o.Metallic = _Metallic;
-				o.Smoothness = _Glossiness;
-				o.Alpha = c.a;
+
+			struct v2f
+			{
+				float2 uv : TEXCOORD0;
+				float4 vertex : SV_POSITION;
+			};
+
+			float4 _Color;
+			float _Brightness;
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
+
+			v2f vert (appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				return o;
+			}
+			
+			fixed4 frag (v2f i) : SV_Target
+			{
+				// Texture Sample (Unlit)
+				return tex2D(_MainTex, i.uv) * _Color * _Brightness;
 			}
 
 			ENDCG
 		}
 	}
-	FallBack "Diffuse"
+	FallBack "Unlit/Texture"
 }

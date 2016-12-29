@@ -22,8 +22,6 @@ namespace Unity3D2Babylon
         public bool ExportPhysics { get; set; }
         public bool ExportShadows { get; set; }
         public bool WorkerCollisions { get; set; }
-        public SerializableVector3 Gravity { get; set; }
-        public SerializableVector3 CameraEllipsoid { get; set; }
         public int ShadowMapSize { get; set; }
         public float ShadowMapBias { get; set; }
         public float ShadowBlurScale { get; set; }
@@ -66,8 +64,6 @@ namespace Unity3D2Babylon
             ExportPhysics = true;
             ExportShadows = false;
             WorkerCollisions = false;
-            Gravity = new Vector3(0, -0.9f, 0);
-            CameraEllipsoid = new Vector3(0.5f, 0.85f, 0.5f);
             ShadowMapSize = 1024;
             ShadowMapBias = 0.0001f;
             ShadowBlurScale = 0;
