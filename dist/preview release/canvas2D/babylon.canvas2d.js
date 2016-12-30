@@ -12830,6 +12830,8 @@ var BABYLON;
                 var node = group.trackedNode;
                 var worldMtx = node.getWorldMatrix();
                 var proj = BABYLON.Vector3.Project(Canvas2D_1._v, worldMtx, Canvas2D_1._m, v);
+                // Set the visibility state accordingly, if the position is outside the frustum (well on the Z planes only...) set the group to hidden
+                group.levelVisible = proj.z >= 0 && proj.z < 1.0;
                 var s = this.scale;
                 group.x = Math.round(proj.x / s);
                 group.y = Math.round((rh - proj.y) / s);
