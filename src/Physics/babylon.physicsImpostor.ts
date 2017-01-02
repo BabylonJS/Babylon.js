@@ -336,7 +336,7 @@ module BABYLON {
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {
                 this._onPhysicsCollideCallbacks.filter((obj) => {
-                    return obj.otherImpostors.indexOf(otherImpostor) !== -1
+                    return (obj.otherImpostors.length === 0 || obj.otherImpostors.indexOf(otherImpostor) !== -1)
                 }).forEach((obj) => {
                     obj.callback(this, otherImpostor);
                 })
