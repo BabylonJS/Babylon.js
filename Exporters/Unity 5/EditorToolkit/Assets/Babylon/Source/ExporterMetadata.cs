@@ -245,6 +245,8 @@ namespace UnityEditor
     {
         public bool autoClear = true;
         public Color ambientColor = Color.clear;
+        public Vector3 defaultGravity = new Vector3(0, -0.9f, 0);
+        public Vector3 cameraEllipsoid = new Vector3(0.5f, 0.85f, 0.5f);
         public BabylonNavigationMesh navigationMesh = BabylonNavigationMesh.EnableNavigation;
         public bool particleSystems = true;
         public bool lensFlareSystems = true;

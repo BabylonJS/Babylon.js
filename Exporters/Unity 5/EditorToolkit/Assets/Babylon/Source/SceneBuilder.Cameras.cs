@@ -67,8 +67,10 @@ namespace Unity3D2Babylon
             if (exportationOptions.ExportCollisions)
             {
                 babylonCamera.checkCollisions = true;
-                babylonCamera.applyGravity = (exportationOptions.Gravity.X == 0 && exportationOptions.Gravity.Y == 0 && exportationOptions.Gravity.Z == 0) ? false : true;
-                babylonCamera.ellipsoid = exportationOptions.CameraEllipsoid.ToFloat();
+                if (SceneController != null) {
+                    babylonCamera.applyGravity = (SceneController.sceneOptions.defaultGravity.y == 0 && SceneController.sceneOptions.defaultGravity.y == 0 && SceneController.sceneOptions.defaultGravity.z == 0) ? false : true;
+                    babylonCamera.ellipsoid = SceneController.sceneOptions.cameraEllipsoid.ToFloat();
+                }
             }
 
             // Lens Flares
