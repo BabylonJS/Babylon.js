@@ -960,7 +960,7 @@
                 t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
                 let las = this.actualScale;
                 t.decompose(RenderablePrim2D._s, RenderablePrim2D._r, RenderablePrim2D._t);
-                let scale = new Vector3(RenderablePrim2D._s.y / las.x, RenderablePrim2D._s.y / las.y, 1);
+                let scale = new Vector3(RenderablePrim2D._s.x / las.x, RenderablePrim2D._s.y / las.y, 1);
                 t = Matrix.Compose(scale, RenderablePrim2D._r, RenderablePrim2D._t);
                 tx = new Vector4(t.m[0], t.m[4], 0, t.m[12]);
                 ty = new Vector4(t.m[1], t.m[5], 0, t.m[13]);
