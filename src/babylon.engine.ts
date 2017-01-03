@@ -2795,7 +2795,7 @@
                 return;
             }
 
-            this.activateTexture(this._gl["TEXTURE" + channel]);
+            this.activateTexture(this._gl.TEXTURE0 + channel);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         }
 
