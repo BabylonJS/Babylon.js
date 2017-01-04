@@ -163,6 +163,7 @@
       "../../src/Materials/Textures/babylon.mapTexture.js",
       "../../src/Materials/babylon.shaderMaterial.js",
       "../../src/Tools/babylon.tools.dds.js",
+      "../../src/Tools/babylon.khronosTextureContainer.js",
       "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
       "../../src/Physics/Plugins/babylon.oimoJSPlugin.js",
       "../../src/PostProcess/babylon.displayPassPostProcess.js",
