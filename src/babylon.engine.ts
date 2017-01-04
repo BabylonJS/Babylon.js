@@ -181,6 +181,7 @@
         public etc1: any; //WEBGL_compressed_texture_etc1;
         public etc2: any; //WEBGL_compressed_texture_etc;
         public astc: any; //WEBGL_compressed_texture_astc;
+        public atc: any; //WEBGL_compressed_texture_atc;
         public textureFloat: boolean;
         public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
         public maxAnisotropy: number;
@@ -604,11 +605,13 @@
             // Extensions
             this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
             
-            this._caps.astc  = this._gl.getExtension('WEBGL_compressed_texture_astc');
-            this._caps.s3tc  = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
-            this._caps.pvrtc = this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc'); // 2nd is what iOS reports
-            this._caps.etc1  = this._gl.getExtension('WEBGL_compressed_texture_etc1');
-            this._caps.etc2  = this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // first is the final name, found hardware using 2nd
+            this._caps.astc  = this._gl.getExtension('WEBGL_compressed_texture_astc' ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc' );
+            this._caps.s3tc  = this._gl.getExtension('WEBGL_compressed_texture_s3tc' ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc' );
+            this._caps.pvrtc = this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc');
+            this._caps.etc1  = this._gl.getExtension('WEBGL_compressed_texture_etc1' ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc1' );
+            this._caps.etc2  = this._gl.getExtension('WEBGL_compressed_texture_etc'  ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc'  ) ||
+                               this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // also a requirement of OpenGL ES 3
+            this._caps.atc   = this._gl.getExtension('WEBGL_compressed_texture_atc'  ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_atc'  );
             
             this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
@@ -626,16 +629,18 @@
             this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
             
-            // Intelligently add supported commpressed formats in order to check for.
+            // Intelligently add supported compressed formats in order to check for.
             // Check for ASTC support first as it is most powerful and to be very cross platform.
-            // Next PVR & S3, which are probably superior to ETC1/2.  
-            // Likely no hardware which supports both PVR & S3, so order matters little.
-            // ETC2 is newer and handles ETC1, so check for first.
-            if (this._caps.astc ) this.texturesSupported.push('.astc');
-            if (this._caps.s3tc ) this.texturesSupported.push('.dds');
-            if (this._caps.pvrtc) this.texturesSupported.push('.pvr');
-            if (this._caps.etc2 ) this.texturesSupported.push('.etc2');
-            if (this._caps.etc1 ) this.texturesSupported.push('.etc1');
+            // Next PVRTC & DXT, which are probably superior to ETC1/2.  
+            // Likely no hardware which supports both PVR & DXT, so order matters little.
+            // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
+            // ATC before ETC1, since both old (widely supported), but ATC supports alpha, but ETC1 does not
+            if (this._caps.astc ) this.texturesSupported.push('-astc.ktx');
+            if (this._caps.s3tc ) this.texturesSupported.push('-dxt.ktx');
+            if (this._caps.pvrtc) this.texturesSupported.push('-pvrtc.ktx');
+            if (this._caps.etc2 ) this.texturesSupported.push('-etc2.ktx');
+            if (this._caps.atc  ) this.texturesSupported.push('-atc.ktx');
+            if (this._caps.etc1 ) this.texturesSupported.push('-etc1.ktx');
             
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -1950,25 +1955,28 @@
             texture.samplingMode = samplingMode;
         }
         /**
-         * Set the compressed texture format to use, based on the formats you have,
-         * the formats supported by the hardware / browser, and those currently implemented
-         * in BJS.
+         * Set the compressed texture format to use, based on the formats you have, and the formats
+         * supported by the hardware / browser.
          * 
-         * Note: The result of this call is not taken into account texture is base64 or when
+         * Khronos Texture Container (.ktx) files are used to support this.  This format has the
+         * advantage of being specifically designed for OpenGL.  Header elements directly correspond
+         * to API arguments needed to compressed textures.  This puts the burden on the container
+         * generator to house the arcane code for determining these for current & future formats.
+         * 
+         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
+         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+         * 
+         * Note: The result of this call is not taken into account when a texture is base64 or when
          * using a database / manifest.
          * 
-         * @param {Array<string>} formatsAvailable - Extension names including dot.  Case
-         * and order do not matter.
+         * @param {Array<string>} formatsAvailable- The list of those format families you have created
+         * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
+         * 
+         * Current families are astc, dxt, pvrtc, etc2, atc, & etc1.
          * @returns The extension selected.
          */
         public setTextureFormatToUse(formatsAvailable : Array<string>) : string {
             for (var i = 0, len1 = this.texturesSupported.length; i < len1; i++) {
-                // code to allow the formats to be added as they can be developed / hw tested
-                if (this._texturesSupported[i] === '.astc') continue;
-                if (this._texturesSupported[i] === '.pvr' ) continue;
-                if (this._texturesSupported[i] === '.etc1') continue;
-                if (this._texturesSupported[i] === '.etc2') continue;
-                
                 for (var j = 0, len2 = formatsAvailable.length; j < len2; j++) {
                     if (this._texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
                         return this._textureFormatInUse = this._texturesSupported[i];
@@ -1984,6 +1992,7 @@
             var texture = this._gl.createTexture();
 
             var extension: string;
+            var isKTX = false;
             var fromData: any = false;
             if (url.substr(0, 5) === "data:") {
                 fromData = true;
@@ -1995,6 +2004,7 @@
                 if (this._textureFormatInUse && !fromData && !scene.database) {
                     extension = this._textureFormatInUse;
                     url = url.substring(0, lastDot) + this._textureFormatInUse;
+                    isKTX = true;
                 }
             } else {
                 var oldUrl = url;
@@ -2022,40 +2032,44 @@
                 }
             };
             var callback: (arrayBuffer: any) => void;
-            if (isTGA) {
-                callback = (arrayBuffer) => {
-                    var data = new Uint8Array(arrayBuffer);
+            if (isKTX || isTGA || isDDS){
+                if (isKTX) {
+                    callback = (data) => {
+                        var ktx = new Internals.KhronosTextureContainer(data, 1);
+    
+                        prepareWebGLTexture(texture, this._gl, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, () => {
+                            ktx.uploadLevels(this._gl, !noMipmap);
+                        }, samplingMode);
+                    };
+                } else if (isTGA) {
+                    callback = (arrayBuffer) => {
+                        var data = new Uint8Array(arrayBuffer);
 
-                    var header = Internals.TGATools.GetTGAHeader(data);
+                        var header = Internals.TGATools.GetTGAHeader(data);
 
-                    prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
-                        Internals.TGATools.UploadContent(this._gl, data);
-                    }, samplingMode);
-                };
-                if (!(fromData instanceof Array))
-                    Tools.LoadFile(url, arrayBuffer => {
-                        callback(arrayBuffer);
-                    }, null, scene.database, true, onerror);
-                else
-                    callback(buffer);
+                        prepareWebGLTexture(texture, this._gl, scene, header.width, header.height, invertY, noMipmap, false, () => {
+                            Internals.TGATools.UploadContent(this._gl, data);
+                        }, samplingMode);
+                    };
 
-            } else if (isDDS) {
-                callback = (data) => {
-                    var info = Internals.DDSTools.GetDDSInfo(data);
+                } else if (isDDS) {
+                    callback = (data) => {
+                        var info = Internals.DDSTools.GetDDSInfo(data);
 
-                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                    prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
+                        var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
+                        prepareWebGLTexture(texture, this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
 
-                        Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
-                    }, samplingMode);
-                };
+                            Internals.DDSTools.UploadDDSLevels(this._gl, this.getCaps().s3tc, data, info, loadMipmap, 1);
+                        }, samplingMode);
+                    };
+            }
 
-                if (!(fromData instanceof Array))
-                    Tools.LoadFile(url, data => {
-                        callback(data);
-                    }, null, scene.database, true, onerror);
-                else
-                    callback(buffer);
+            if (!(fromData instanceof Array))
+                Tools.LoadFile(url, data => {
+                    callback(data);
+                }, null, scene.database, true, onerror);
+            else
+                callback(buffer);
 
             } else {
                 var onload = (img) => {
@@ -2495,10 +2509,41 @@
             texture.references = 1;
             texture.onLoadedCallbacks = [];
 
-            var extension = rootUrl.substr(rootUrl.length - 4, 4).toLowerCase();
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
+            var isKTX = false;
+            var lastDot = rootUrl.lastIndexOf('.');
+            var extension = rootUrl.substring(lastDot).toLowerCase();
+            if (this._textureFormatInUse && !scene.database) {
+                extension = this._textureFormatInUse;
+                rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
+                isKTX = true;
+            }
+            var isDDS = (extension === ".dds");
 
-            if (isDDS) {
+            if (isKTX) {
+                Tools.LoadFile(rootUrl, data => {
+                    var ktx = new Internals.KhronosTextureContainer(data, 6);
+
+                    var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
+
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+    
+                    ktx.uploadLevels(this._gl, !noMipmap);
+
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+                    this.resetTextureCache();
+
+                    texture._width = ktx.pixelWidth;
+                    texture._height = ktx.pixelHeight;
+                    texture.isReady = true;
+                }, null, null, true, onError);
+            } else if (isDDS) {
                 Tools.LoadFile(rootUrl, data => {
                     var info = Internals.DDSTools.GetDDSInfo(data);
 
