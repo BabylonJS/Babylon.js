@@ -26976,6 +26976,10 @@ var BABYLON;
                         if (this.invertNormalMapY) {
                             this._defines.INVERTNORMALMAPY = true;
                         }
+                        if (scene._mirroredCameraPosition) {
+                            this._defines.INVERTNORMALMAPX = !this._defines.INVERTNORMALMAPX;
+                            this._defines.INVERTNORMALMAPY = !this._defines.INVERTNORMALMAPY;
+                        }
                     }
                 }
                 if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -52388,7 +52392,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 
@@ -54460,6 +54464,10 @@ var BABYLON;
                         }
                         if (this.invertNormalMapY) {
                             this._defines.INVERTNORMALMAPY = true;
+                        }
+                        if (scene._mirroredCameraPosition) {
+                            this._defines.INVERTNORMALMAPX = !this._defines.INVERTNORMALMAPX;
+                            this._defines.INVERTNORMALMAPY = !this._defines.INVERTNORMALMAPY;
                         }
                     }
                 }
