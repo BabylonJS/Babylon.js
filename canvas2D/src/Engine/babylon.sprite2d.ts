@@ -85,51 +85,6 @@
         }
     }
 
-    export class Sprite2DInstanceData extends InstanceDataBase {
-        constructor(partId: number) {
-            super(partId, 1);
-        }
-
-        @instanceData()
-        get topLeftUV(): Vector2 {
-            return null;
-        }
-        set topLeftUV(value: Vector2) {
-        }
-
-        @instanceData()
-        get sizeUV(): Vector2 {
-            return null;
-        }
-        set sizeUV(value: Vector2) {
-        }
-
-        @instanceData()
-        get scaleFactor(): Vector2 {
-            return null;
-        }
-        set scaleFactor(value: Vector2) {
-        }
-
-        @instanceData()
-        get textureSize(): Vector2 {
-            return null;
-        }
-        set textureSize(value: Vector2) {
-        }
-
-        // 3 floats being:
-        // - x: frame number to display
-        // - y: invertY setting
-        // - z: alignToPixel setting
-        @instanceData()
-        get properties(): Vector3 {
-            return null;
-        }
-        set properties(value: Vector3) {
-        }
-    }
-
     @className("Sprite2D", "BABYLON")
     /**
      * Primitive that displays a Sprite/Picture
@@ -137,13 +92,16 @@
     export class Sprite2D extends RenderablePrim2D {
         static SPRITE2D_MAINPARTID = 1;
 
+        static SHAPE2D_CATEGORY_SCALE9 = "Scale9";
+
         public static textureProperty: Prim2DPropInfo;
         public static useAlphaFromTextureProperty: Prim2DPropInfo;
         public static actualSizeProperty: Prim2DPropInfo;
+        public static spriteSizeProperty: Prim2DPropInfo;
         public static spriteLocationProperty: Prim2DPropInfo;
         public static spriteFrameProperty: Prim2DPropInfo;
         public static invertYProperty: Prim2DPropInfo;
-        public static spriteScaleFactorProperty: Prim2DPropInfo;
+        public static spriteScale9Property: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Sprite2D.textureProperty = pi)
         /**
@@ -174,6 +132,19 @@
             this._updateRenderMode();
         }
 
+        public get size(): Size {
+            if (this._size == null) {
+                return this.spriteSize;
+            }
+            return this.internalGetSize();
+        }
+
+        public set size(value: Size) {
+            this._useSize = value != null;
+            this.internalSetSize(value);
+            this._updateSpriteScaleFactor();
+        }
+
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.actualSizeProperty = pi, false, true)
         /**
          * Get/set the actual size of the sprite to display
@@ -189,19 +160,32 @@
             this._actualSize = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteLocationProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteSizeProperty = pi)
+        /**
+         * Get/set the sprite location (in pixels) in the texture
+         */
+        public get spriteSize(): Size {
+            return this._spriteSize;
+        }
+
+        public set spriteSize(value: Size) {
+            this._spriteSize = value;
+            this._updateSpriteScaleFactor();
+        }
+
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Sprite2D.spriteLocationProperty = pi)
         /**
          * Get/set the sprite location (in pixels) in the texture
          */
         public get spriteLocation(): Vector2 {
-            return this._location;
+            return this._spriteLocation;
         }
 
         public set spriteLocation(value: Vector2) {
-            this._location = value;
+            this._spriteLocation = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Sprite2D.spriteFrameProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Sprite2D.spriteFrameProperty = pi)
         /**
          * Get/set the sprite frame to display.
          * The frame number is just an offset applied horizontally, based on the sprite's width. it does not wrap, all the frames must be on the same line.
@@ -214,7 +198,7 @@
             this._spriteFrame = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Sprite2D.invertYProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, pi => Sprite2D.invertYProperty = pi)
         /**
          * Get/set if the sprite texture coordinates should be inverted on the Y axis
          */
@@ -226,42 +210,25 @@
             this._invertY = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, pi => Sprite2D.spriteScaleFactorProperty = pi)
+        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 8, pi => Sprite2D.spriteScale9Property = pi)
         /**
-         * Get/set the sprite location (in pixels) in the texture
+         * Get/set the texture that contains the sprite to display
          */
-        public get spriteScaleFactor(): Vector2 {
-            return this._spriteScaleFactor;
+        public get isScale9(): boolean {
+            return this._scale9!==null;
         }
 
-        public set spriteScaleFactor(value: Vector2) {
-            this._spriteScaleFactor = value;
-        }
+        //@instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, pi => Sprite2D.spriteScaleFactorProperty = pi)
+        ///**
+        // * Get/set the sprite location (in pixels) in the texture
+        // */
+        //public get spriteScaleFactor(): Vector2 {
+        //    return this._spriteScaleFactor;
+        //}
 
-        /**
-         * Sets the scale of the sprite using a BABYLON.Size(w,h).
-         * Keeps proportion by taking the maximum of the two scale for x and y.
-         * @param {Size} size Size(width,height)
-         */
-        public scaleToSize(size: Size) {
-            var baseSize = this.size;
-            if (baseSize == null || !this.texture.isReady()) {
-                // we're probably at initiation of the scene, size is not set
-                if (this.texture.isReady()) {
-                    baseSize = <Size>this.texture.getBaseSize();
-                }
-                else {
-                    // the texture is not ready, wait for it to load before calling scaleToSize again
-                    var thisObject = <Sprite2D>this;
-                    this.texture.onLoadObservable.add(function () {
-                            thisObject.scaleToSize(size); 
-                        });
-                    return;
-                }
-            }
-            
-            this.scale = Math.max(size.height / baseSize.height, size.width / baseSize.width);
-        }
+        //public set spriteScaleFactor(value: Vector2) {
+        //    this._spriteScaleFactor = value;
+        //}
 
         /**
          * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
@@ -295,6 +262,10 @@
             return true;
         }
 
+        public get isSizeAuto(): boolean {
+            return this.size == null;
+        }
+
         /**
          * Create an 2D Sprite primitive
          * @param texture the texture that stores the sprite to render
@@ -305,13 +276,15 @@
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - size: the size of the sprite displayed in the canvas, if not specified the spriteSize will be used
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
-         * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
+         * - spriteSize: the size of the sprite (in pixels) as it is stored in the texture, if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
-         * - spriteScaleFactor: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
+         * - spriteScaleFactor: DEPRECATED. Old behavior: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
+         * - scale9: draw the sprite as a Scale9 sprite, see http://yannickloriot.com/2013/03/9-patch-technique-in-cocos2d/ for more info. x, y, w, z are left, bottom, right, top coordinate of the resizable box
          * - invertY: if true the texture Y will be inverted, default is false.
          * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
@@ -341,6 +314,7 @@
             x                     ?: number,
             y                     ?: number,
             rotation              ?: number,
+            size                  ?: Size,
             scale                 ?: number,
             scaleX                ?: number,
             scaleY                ?: number,
@@ -351,6 +325,7 @@
             spriteSize            ?: Size,
             spriteLocation        ?: Vector2,
             spriteScaleFactor     ?: Vector2,
+            scale9                ?: Vector4,
             invertY               ?: boolean,
             alignToPixel          ?: boolean,
             isVisible             ?: boolean,
@@ -381,31 +356,37 @@
             this.texture = texture;
             this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this.size = (settings.spriteSize!=null) ? settings.spriteSize.clone() : null;
+            this._useSize = false;
+            this.spriteSize = (settings.spriteSize!=null) ? settings.spriteSize.clone() : null;
             this.spriteLocation = (settings.spriteLocation!=null) ? settings.spriteLocation.clone() : new Vector2(0, 0);
-            this.spriteScaleFactor = (settings.spriteScaleFactor!=null) ? settings.spriteScaleFactor : new Vector2(1, 1);
+            if (settings.size != null) {
+                this.size = settings.size;
+            }
             this.spriteFrame = 0;
             this.invertY = (settings.invertY == null) ? false : settings.invertY;
             this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
             this.useAlphaFromTexture = true;
+            this._scale9 = (settings.scale9 != null) ? settings.scale9.clone() : null;
 
             // If the user doesn't set a size, we'll use the texture's one, but if the texture is not loading, we HAVE to set a temporary dummy size otherwise the positioning engine will switch the marginAlignement to stretch/stretch, and WE DON'T WANT THAT.
             // The fucking delayed texture sprite bug is fixed!
             if (settings.spriteSize == null) {
-                this.size = new Size(10, 10);
+                this.spriteSize = new Size(10, 10);
             }
 
             if (settings.spriteSize == null || !texture.isReady()) {
                 if (texture.isReady()) {
                     let s = texture.getBaseSize();
-                    this.size = new Size(s.width, s.height);
+                    this.spriteSize = new Size(s.width, s.height);
+                    this._updateSpriteScaleFactor();
                 } else {
 
                     texture.onLoadObservable.add(() => {
                         if (settings.spriteSize == null) {
                             let s = texture.getBaseSize();
-                        this.size = new Size(s.width, s.height);
+                            this.spriteSize = new Size(s.width, s.height);
                         }
+                        this._updateSpriteScaleFactor();
                         this._positioningDirty();
                         this._setLayoutDirty();
                         this._instanceDirtyFlags |= Prim2DBase.originProperty.flagId | Sprite2D.textureProperty.flagId;  // To make sure the sprite is issued again for render
@@ -453,6 +434,18 @@
             return renderCache;
         }
 
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[] {
+            var cat = super.getUsedShaderCategories(dataPart);
+
+            if (dataPart.id === Sprite2D.SPRITE2D_MAINPARTID) {
+                let useScale9 = this._scale9 != null;
+                if (useScale9) {
+                    cat.push(Sprite2D.SHAPE2D_CATEGORY_SCALE9);
+                }
+            }
+            return cat;
+        }
+
         protected createInstanceDataParts(): InstanceDataBase[] {
             return [new Sprite2DInstanceData(Sprite2D.SPRITE2D_MAINPARTID)];
         }
@@ -487,11 +480,14 @@
                     d.properties = Vector3.Zero();
                     d.textureSize = Vector2.Zero();
                     d.scaleFactor = Vector2.Zero();
+                    if (this.isScale9) {
+                        d.scale9 = Vector4.Zero();
+                    }
                 } else {
                     let ts = this.texture.getBaseSize();
+                    let ss = this.spriteSize;
                     let sl = this.spriteLocation;
-                    let ss = this.actualSize;
-                    let ssf = this.spriteScaleFactor;
+                    let ssf = this.actualScale;
                     d.topLeftUV = new Vector2(sl.x / ts.width, sl.y / ts.height);
                     let suv = new Vector2(ss.width / ts.width, ss.height / ts.height);
                     d.sizeUV = suv;
@@ -503,6 +499,12 @@
                     d.properties = Sprite2D._prop;
 
                     d.textureSize = new Vector2(ts.width, ts.height);
+
+                    let scale9 = this._scale9;
+                    if (scale9 != null) {
+                        let normalizedScale9 = new Vector4(scale9.x * suv.x / ss.width, scale9.y * suv.y / ss.height, scale9.z * suv.x / ss.width, scale9.w * suv.y / ss.height);
+                        d.scale9 = normalizedScale9;
+                    }
                 }
             }
             return true;
@@ -525,13 +527,81 @@
             return this.texture!=null && this.texture.hasAlpha && this.useAlphaFromTexture;
         }
 
+        private _updateSpriteScaleFactor() {
+            if (!this._useSize) {
+                return;
+            }
+
+            let sS = this.spriteSize;
+            let s = this.size;
+            if (s == null || sS == null) {
+                return;
+            }
+            this.scaleX = s.width / sS.width;
+            this.scaleY = s.height / sS.height;
+        }
+
         private _texture: Texture;
         private _oldTextureHasAlpha: boolean;
         private _useAlphaFromTexture: boolean;
-        private _location: Vector2;
-        private _spriteScaleFactor: Vector2;
+        private _useSize: boolean;
+        private _spriteLocation: Vector2;
+        private _spriteSize: Size;
         private _spriteFrame: number;
+        private _scale9: Vector4;
         private _invertY: boolean;
         private _alignToPixel: boolean;
+    }
+
+    export class Sprite2DInstanceData extends InstanceDataBase {
+        constructor(partId: number) {
+            super(partId, 1);
+        }
+
+        @instanceData()
+        get topLeftUV(): Vector2 {
+            return null;
+        }
+        set topLeftUV(value: Vector2) {
+        }
+
+        @instanceData()
+        get sizeUV(): Vector2 {
+            return null;
+        }
+        set sizeUV(value: Vector2) {
+        }
+
+        @instanceData(Sprite2D.SHAPE2D_CATEGORY_SCALE9)
+        get scaleFactor(): Vector2 {
+            return null;
+        }
+        set scaleFactor(value: Vector2) {
+        }
+
+        @instanceData()
+        get textureSize(): Vector2 {
+            return null;
+        }
+        set textureSize(value: Vector2) {
+        }
+
+        // 3 floats being:
+        // - x: frame number to display
+        // - y: invertY setting
+        // - z: alignToPixel setting
+        @instanceData()
+        get properties(): Vector3 {
+            return null;
+        }
+        set properties(value: Vector3) {
+        }
+
+        @instanceData(Sprite2D.SHAPE2D_CATEGORY_SCALE9)
+        get scale9(): Vector4 {
+            return null;
+        }
+        set scale9(value: Vector4) {
+        }
     }
 }
