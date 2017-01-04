@@ -479,6 +479,7 @@
         "../../canvas2D/src/Engine/babylon.rectangle2d.ts",
         "../../canvas2D/src/Engine/babylon.ellipse2d.ts",
         "../../canvas2D/src/Engine/babylon.sprite2d.ts",
+        "../../canvas2D/src/Engine/babylon.atlasPicture.ts",
         "../../canvas2D/src/Engine/babylon.text2d.ts",
         "../../canvas2D/src/Engine/babylon.lines2d.ts",
         "../../canvas2D/src/Engine/babylon.canvas2d.ts",
@@ -491,7 +492,7 @@
         "../../canvas2D/src/GUI/babylon.gui.label.ts",
         "../../canvas2D/src/GUI/babylon.gui.button.ts",
         "../../canvas2D/src/lib.d.ts"
-        ],
+      ],
       "shaderFiles": [
           "../../canvas2D/src/shaders/**.fx", "!../../canvas2D/src/shaders/**.js.fx"
       ],
