@@ -27,6 +27,9 @@
                     // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
                     if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
                         let index = effect.getAttributeLocationByName(attrib.attributeName);
+                        if (index === - 1) {
+                            throw new Error(`Attribute ${attrib.attributeName} was not found in Effect: ${effect.name}. It's certainly no longer used in the Effect's Shaders`);
+                        }
                         let iai = new InstancingAttributeInfo();
                         iai.index = index;
                         iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
