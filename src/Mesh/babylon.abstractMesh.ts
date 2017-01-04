@@ -1175,6 +1175,7 @@
 
             // Engine
             this.getScene().getEngine().unbindAllAttributes();
+            this.getScene().getEngine().wipeCaches();
 
             // Remove from scene
             this.getScene().removeMesh(this);
