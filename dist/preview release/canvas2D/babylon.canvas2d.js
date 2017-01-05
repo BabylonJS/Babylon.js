@@ -7365,8 +7365,8 @@ var BABYLON;
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * rgScale.x * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * rgScale.y * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
             if (!this.applyActualScaleOnTransform()) {
                 t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
                 t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
