@@ -326,6 +326,8 @@ var BABYLON;
                     targetNode.animations.push(babylonAnimation);
                 }
                 lastAnimation = babylonAnimation;
+                gltfRuntime.scene.stopAnimation(targetNode);
+                gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
             }
         }
     };
@@ -1293,7 +1295,7 @@ var BABYLON;
                 attributes: attributes,
                 uniforms: uniforms,
                 samplers: samplers,
-                needAlphaBlending: states.functions && states.functions.blendEquationSeparate
+                needAlphaBlending: states.enable && states.enable.indexOf(3042) !== -1
             };
             BABYLON.Effect.ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
             BABYLON.Effect.ShadersStore[program.fragmentShader + id + "PixelShader"] = newPixelShader;

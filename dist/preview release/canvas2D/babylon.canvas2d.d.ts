@@ -1674,6 +1674,8 @@ declare module BABYLON {
          * Use this property to set a new Size object, otherwise to change only the width/height use Prim2DBase.width or height properties.
          */
         size: Size;
+        protected internalGetSize(): Size;
+        protected internalSetSize(value: Size): void;
         /**
          * Direct access to the size.width value of the primitive
          * Use this property when you only want to change one component of the size property
@@ -2728,36 +2730,26 @@ declare module BABYLON {
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
         dispose(): boolean;
     }
-    class Sprite2DInstanceData extends InstanceDataBase {
-        constructor(partId: number);
-        topLeftUV: Vector2;
-        sizeUV: Vector2;
-        scaleFactor: Vector2;
-        textureSize: Vector2;
-        properties: Vector3;
-    }
     class Sprite2D extends RenderablePrim2D {
         static SPRITE2D_MAINPARTID: number;
+        static SHAPE2D_CATEGORY_SCALE9: string;
         static textureProperty: Prim2DPropInfo;
         static useAlphaFromTextureProperty: Prim2DPropInfo;
         static actualSizeProperty: Prim2DPropInfo;
+        static spriteSizeProperty: Prim2DPropInfo;
         static spriteLocationProperty: Prim2DPropInfo;
         static spriteFrameProperty: Prim2DPropInfo;
         static invertYProperty: Prim2DPropInfo;
-        static spriteScaleFactorProperty: Prim2DPropInfo;
+        static spriteScale9Property: Prim2DPropInfo;
         texture: Texture;
         useAlphaFromTexture: boolean;
+        size: Size;
         actualSize: Size;
+        spriteSize: Size;
         spriteLocation: Vector2;
         spriteFrame: number;
         invertY: boolean;
-        spriteScaleFactor: Vector2;
-        /**
-         * Sets the scale of the sprite using a BABYLON.Size(w,h).
-         * Keeps proportion by taking the maximum of the two scale for x and y.
-         * @param {Size} size Size(width,height)
-         */
-        scaleToSize(size: Size): void;
+        readonly isScale9: boolean;
         /**
          * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
          */
@@ -2768,6 +2760,7 @@ declare module BABYLON {
          */
         getAnimatables(): IAnimatable[];
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        readonly isSizeAuto: boolean;
         /**
          * Create an 2D Sprite primitive
          * @param texture the texture that stores the sprite to render
@@ -2778,13 +2771,15 @@ declare module BABYLON {
          * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
          * - rotation: the initial rotation (in radian) of the primitive. default is 0
          * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - size: the size of the sprite displayed in the canvas, if not specified the spriteSize will be used
          * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
          * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
          * - zOrder: override the zOrder with the specified value
          * - origin: define the normalized origin point location, default [0.5;0.5]
-         * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
+         * - spriteSize: the size of the sprite (in pixels) as it is stored in the texture, if null the size of the given texture will be used, default is null.
          * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
-         * - spriteScaleFactor: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
+         * - spriteScaleFactor: DEPRECATED. Old behavior: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
+         * - scale9: draw the sprite as a Scale9 sprite, see http://yannickloriot.com/2013/03/9-patch-technique-in-cocos2d/ for more info. x, y, w, z are left, bottom, right, top coordinate of the resizable box
          * - invertY: if true the texture Y will be inverted, default is false.
          * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
          * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
@@ -2813,6 +2808,7 @@ declare module BABYLON {
             x?: number;
             y?: number;
             rotation?: number;
+            size?: Size;
             scale?: number;
             scaleX?: number;
             scaleY?: number;
@@ -2823,6 +2819,7 @@ declare module BABYLON {
             spriteSize?: Size;
             spriteLocation?: Vector2;
             spriteScaleFactor?: Vector2;
+            scale9?: Vector4;
             invertY?: boolean;
             alignToPixel?: boolean;
             isVisible?: boolean;
@@ -2845,6 +2842,7 @@ declare module BABYLON {
         });
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Sprite2DRenderCache;
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
         protected createInstanceDataParts(): InstanceDataBase[];
         private static _prop;
         private static layoutConstructMode;
@@ -2854,14 +2852,181 @@ declare module BABYLON {
         protected _mustUpdateInstance(): boolean;
         protected _useTextureAlpha(): boolean;
         protected _shouldUseAlphaFromTexture(): boolean;
+        private _updateSpriteScaleFactor();
         private _texture;
         private _oldTextureHasAlpha;
         private _useAlphaFromTexture;
-        private _location;
-        private _spriteScaleFactor;
+        private _useSize;
+        private _spriteLocation;
+        private _spriteSize;
         private _spriteFrame;
+        private _scale9;
         private _invertY;
         private _alignToPixel;
+    }
+    class Sprite2DInstanceData extends InstanceDataBase {
+        constructor(partId: number);
+        topLeftUV: Vector2;
+        sizeUV: Vector2;
+        scaleFactor: Vector2;
+        textureSize: Vector2;
+        properties: Vector3;
+        scale9: Vector4;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface to create your own Loader of Atlas Data file.
+     * Call the AtlasPictureInfoFactory.addLoader to addd your loader instance
+     */
+    interface IAtlasLoader {
+        loadFile(content: any): {
+            api: AtlasPictureInfo;
+            errorMsg: string;
+            errorCode: number;
+        };
+    }
+    /**
+     * This class will contains information about a sub picture present in an Atlas Picture.
+     */
+    class AtlasSubPictureInfo {
+        /**
+         * Name of the SubPicture, generally the filename of the initial picture file.
+         */
+        name: string;
+        /**
+         * Location of the bottom/left corner of the sub picture from the bottom/left corner the Atlas Picture
+         */
+        location: Vector2;
+        /**
+         * Size in pixel of the sub picture
+         */
+        size: Size;
+    }
+    /**
+     * This class represent an Atlas Picture, it contains the information of all the sub pictures and the Texture that stores the bitmap.
+     * You get an instance of this class using methods of the AtlasPictureInfoFactory
+     */
+    class AtlasPictureInfo {
+        /**
+         * Creates many sprite from the Atlas Picture
+         * @param filterCallback a predicate if true is returned then the corresponding sub picture will be used to create a sprite.
+         * The Predicate has many parameters:
+         *  - index: just an index incremented at each sub picture submitted for Sprite creation
+         *  - name: the sub picture's name
+         *  - aspi: the AtlasSubPictureInfo corresponding to the submitted sub picture
+         *  - settings: the Sprite2D creation settings, you can alter this JSON object but BEWARE, the alterations will be kept for subsequent Sprite2D creations!
+         * @param spriteSettings The Sprite2D settings to use for Sprite creation, this JSON object will be passed to the filterCallback for you to alter it, if needed.
+         */
+        createSprites(filterCallback: (index: number, name: string, aspi: AtlasSubPictureInfo, settings: any) => boolean, spriteSettings: {
+            parent?: Prim2DBase;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            rotation?: number;
+            size?: Size;
+            scale?: number;
+            scaleX?: number;
+            scaleY?: number;
+            dontInheritParentScale?: boolean;
+            opacity?: number;
+            zOrder?: number;
+            origin?: Vector2;
+            scale9?: Vector4;
+            invertY?: boolean;
+            alignToPixel?: boolean;
+            isVisible?: boolean;
+            isPickable?: boolean;
+            isContainer?: boolean;
+            childrenFlatZOrder?: boolean;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        }): Array<Sprite2D>;
+        /**
+         * Create one Sprite from a sub picture
+         * @param subPictureName the name of the sub picture to use
+         * @param spriteSettings the Sprite2D settings to use for the Sprite instance creation
+         */
+        createSprite(subPictureName: string, spriteSettings: {
+            parent?: Prim2DBase;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            rotation?: number;
+            size?: Size;
+            scale?: number;
+            scaleX?: number;
+            scaleY?: number;
+            dontInheritParentScale?: boolean;
+            opacity?: number;
+            zOrder?: number;
+            origin?: Vector2;
+            scale9?: Vector4;
+            invertY?: boolean;
+            alignToPixel?: boolean;
+            isVisible?: boolean;
+            isPickable?: boolean;
+            isContainer?: boolean;
+            childrenFlatZOrder?: boolean;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        }): Sprite2D;
+        /**
+         * Size of the Atlas Picture
+         */
+        atlasSize: Size;
+        /**
+         * String Dictionary of all the sub pictures, the key is the sub picture's name, the value is the info object
+         */
+        subPictures: StringDictionary<AtlasSubPictureInfo>;
+        /**
+         * The Texture associated to the Atlas Picture info
+         */
+        texture: Texture;
+    }
+    /**
+     * This if the Factory class containing static method to create Atlas Pictures Info objects or add new loaders
+     */
+    class AtlasPictureInfoFactory {
+        /**
+         * Add a custom loader
+         * @param fileExtension must be the file extension (without the dot) of the file that is loaded by this loader (e.g.: json)
+         * @param plugin the instance of the loader
+         */
+        static addLoader(fileExtension: string, plugin: IAtlasLoader): void;
+        /**
+         * Load an Atlas Picture Info object from a data file at a given url and with a given texture
+         * @param texture the texture containing the atlas bitmap
+         * @param url the URL of the Atlas Info data file
+         * @param loaded a callback that will be called when the AtlasPictureInfo object will be loaded and ready
+         * @param error a callback that will be called in case of error
+         */
+        static loadFromUrl(texture: Texture, url: string, loaded: (api: AtlasPictureInfo) => void, error?: (msg: string, code: number) => void): any;
+        private static _initialize();
+        private static plugins;
     }
 }
 

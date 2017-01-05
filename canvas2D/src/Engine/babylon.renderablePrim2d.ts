@@ -27,6 +27,9 @@
                     // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
                     if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
                         let index = effect.getAttributeLocationByName(attrib.attributeName);
+                        if (index === - 1) {
+                            throw new Error(`Attribute ${attrib.attributeName} was not found in Effect: ${effect.name}. It's certainly no longer used in the Effect's Shaders`);
+                        }
                         let iai = new InstancingAttributeInfo();
                         iai.index = index;
                         iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
@@ -952,8 +955,8 @@
             let w = size.width;
             let h = size.height;
             let invZBias = 1 / zBias;
-            let tx = new Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            let tx = new Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * rgScale.x * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
+            let ty = new Vector4(t.m[1] * rgScale.y * 2 / h, t.m[5] * rgScale.y * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
 
             if (!this.applyActualScaleOnTransform()) {
                 t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
