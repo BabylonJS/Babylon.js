@@ -529,10 +529,6 @@
                 options.preserveDrawingBuffer = false;
             }
 
-            // Checks if some of the format renders first to allow the use of webgl inspector.
-            var renderToFullFloat = this._canRenderToFloatTexture();
-            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
-
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -560,6 +556,10 @@
                 throw new Error("WebGL not supported");
             }
 
+            // Checks if some of the format renders first to allow the use of webgl inspector.
+            var renderToFullFloat = this._canRenderToFloatTexture();
+            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
+            
             this._onBlur = () => {
                 this._windowIsBackground = true;
             };
