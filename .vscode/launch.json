@@ -8,7 +8,22 @@
             "url": "http://localhost:1338/Playground/index-local.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis" 
+            ]
+        },        
+        {
+            "name": "Launch playground (Chrome+WebGL 1.0 forced)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/Playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--disable-es3-apis" 
+            ]
         },
         {
             "name": "Launch Materials Library (Chrome)",
@@ -17,7 +32,10 @@
             "url": "http://localhost:1338/materialsLibrary/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis" 
+            ]
         },
         {
             "name": "Launch Post Processes Library (Chrome)",
@@ -26,7 +44,10 @@
             "url": "http://localhost:1338/postProcessLibrary/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis" 
+            ]
         },
         {
             "name": "Launch Procedural Textures Library (Chrome)",
@@ -35,7 +56,10 @@
             "url": "http://localhost:1338/proceduralTexturesLibrary/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis" 
+            ]
         },
         {
             "name": "Launch Inspector (Chrome)",
@@ -44,7 +68,10 @@
             "url": "http://localhost:1338/inspector/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis" 
+            ]
         },
         {
             "name": "Launch Local Dev (Chrome)",
@@ -53,7 +80,10 @@
             "url": "http://localhost:1338/localDev/index.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug"
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis" 
+            ]
         }
     ]
 }
