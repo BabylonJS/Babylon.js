@@ -27,6 +27,12 @@ interface Window {
     msURL: any;
 }
 
+interface WebGLRenderingContext {
+    drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
+    drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
+    vertexAttribDivisor(index: number, divisor: number): void;
+}
+
 interface AudioContext extends EventTarget {
     decodeAudioData(audioData: ArrayBuffer, successCallback: DecodeSuccessCallback, errorCallback?: any): void;
 }

@@ -1,8 +1,8 @@
 ﻿module BABYLON {
-    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string): WebGLShader => {
+    var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string, shaderVersion: string): WebGLShader => {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
-        gl.shaderSource(shader, (defines ? defines + "\n" : "") + source);
+        gl.shaderSource(shader, shaderVersion + (defines ? defines + "\n" : "") + source);
         gl.compileShader(shader);
 
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
@@ -185,7 +185,7 @@
         public textureFloat: boolean;
         public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
         public maxAnisotropy: number;
-        public instancedArrays: ANGLE_instanced_arrays;
+        public instancedArrays: boolean;
         public uintIndices: boolean;
         public highPrecisionShaderSupported: boolean;
         public fragmentDepthSupported: boolean;
@@ -201,6 +201,7 @@
     export interface EngineOptions extends WebGLContextAttributes {
         limitDeviceRatio?: number;
         autoEnableWebVR?: boolean;
+        disableWebGL2Support?: boolean;
     }
 
     /**
@@ -425,7 +426,7 @@
         public _gl: WebGLRenderingContext;
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
-        private _webGLVersion = "1.0";
+        private _webGLVersion = 1.0;
 
         private _badOS = false;
 
@@ -533,14 +534,16 @@
             var renderToHalfFloat = this._canRenderToHalfFloatTexture();
 
             // GL
-            // try {
-            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-            //    if (this._gl) {
-            //        this._webGLVersion = "2.0";
-            //    }
-            // } catch (e) {
-            //    // Do nothing
-            // }
+            if (!options.disableWebGL2Support) {
+                try {
+                this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                if (this._gl) {
+                    this._webGLVersion = 2.0;
+                }
+                } catch (e) {
+                // Do nothing
+                }  
+            }
 
             if (!this._gl) {
                 if (!canvas) {
@@ -603,7 +606,7 @@
             }
 
             // Extensions
-            this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
+            this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
             
             this._caps.astc  = this._gl.getExtension('WEBGL_compressed_texture_astc' ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc' );
             this._caps.s3tc  = this._gl.getExtension('WEBGL_compressed_texture_s3tc' ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc' );
@@ -613,21 +616,36 @@
                                this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // also a requirement of OpenGL ES 3
             this._caps.atc   = this._gl.getExtension('WEBGL_compressed_texture_atc'  ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_atc'  );
             
-            this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);
+            this._caps.textureFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
-            this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
-            this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
-            this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
+            this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
+            this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
-            this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+            this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
-            this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
+            this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
             this._caps.textureFloatRender = renderToFullFloat;
 
-            this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
-            this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
+            this._caps.textureHalfFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_half_float') !== null);
+            this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
+
+            // instancesCount            
+            if ( this._webGLVersion > 1) {
+                this._caps.instancedArrays = true;
+            } else{
+                var instanceExtension = this._gl.getExtension('ANGLE_instanced_arrays');
+
+                if (instanceExtension != null) {
+                    this._caps.instancedArrays =  true;
+                    this._gl.drawArraysInstanced = instanceExtension.drawArraysInstancedANGLE;
+                    this._gl.drawElementsInstanced = instanceExtension.drawElementsInstancedANGLE;
+                    this._gl.vertexAttribDivisor = instanceExtension.vertexAttribDivisorANGLE;
+                } else{
+                    this._caps.instancedArrays = false;
+                }
+            }
             
             // Intelligently add supported compressed formats in order to check for.
             // Check for ASTC support first as it is most powerful and to be very cross platform.
@@ -716,7 +734,7 @@
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
 
-        public get webGLVersion(): string {
+        public get webGLVersion(): number {
             return this._webGLVersion;
         }
 
@@ -1408,7 +1426,7 @@
                         this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
 
                         if (vertexBuffer.getIsInstanced()) {
-                            this._caps.instancedArrays.vertexAttribDivisorANGLE(order, 1);
+                            this._gl.vertexAttribDivisor(order, 1);
                             this._currentInstanceLocations.push(order);
                             this._currentInstanceBuffers.push(buffer);
                         }
@@ -1432,7 +1450,7 @@
                     this.bindArrayBuffer(instancesBuffer);
                 }
                 var offsetLocation = this._currentInstanceLocations[i];
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+                this._gl.vertexAttribDivisor(offsetLocation, 0);
             }
             this._currentInstanceBuffers.length = 0;
             this._currentInstanceLocations.length = 0;
@@ -1484,7 +1502,7 @@
                     }
 
                     this.vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
+                    this._gl.vertexAttribDivisor(ai.index, 1);
                     this._currentInstanceLocations.push(ai.index);
                     this._currentInstanceBuffers.push(instancesBuffer);
                 }
@@ -1498,7 +1516,7 @@
                     }
 
                     this.vertexAttribPointer(instancesBuffer, offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
+                    this._gl.vertexAttribDivisor(offsetLocation, 1);
                     this._currentInstanceLocations.push(offsetLocation);
                     this._currentInstanceBuffers.push(instancesBuffer);
                 }
@@ -1520,7 +1538,7 @@
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             if (instancesCount) {
-                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult, instancesCount);
+                this._gl.drawElementsInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult, instancesCount);
                 return;
             }
 
@@ -1530,10 +1548,10 @@
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
-            this._drawCalls.addCount(1, false);
+            this._drawCalls.addCount(1, false); 
 
             if (instancesCount) {
-                this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
+                this._gl.drawArraysInstanced(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
                 return;
             }
 
@@ -1546,7 +1564,7 @@
             this._drawCalls.addCount(1, false);
 
             if (instancesCount) {
-                this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
+                this._gl.drawArraysInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
                 return;
             }
 
@@ -1596,8 +1614,9 @@
         public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
             context = context || this._gl;
 
-            var vertexShader = compileShader(context, vertexCode, "vertex", defines);
-            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines);
+            var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n" : "";
+            var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
+            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
 
             var shaderProgram = context.createProgram();
             context.attachShader(shaderProgram, vertexShader);
@@ -3177,126 +3196,128 @@
         }
 
         private _canRenderToFloatTexture(): boolean {
-            try {
-                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            if (this._webGLVersion > 1) {
+                return true;
             }
-            catch (e) {
-                return false;
-            }
+            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
         }
 
-        private _canRenderToHalfFloatTexture(): boolean {            
-            try {
-                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
-            }
-            catch (e) {
-                return false;
-            }
+        private _canRenderToHalfFloatTexture(): boolean {       
+            if (this._webGLVersion > 1) {
+                return true;
+            }     
+            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
         }
 
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
         private _canRenderToTextureOfType(format: number, extension: string): boolean {
-            var tempcanvas = document.createElement("canvas");
-            tempcanvas.height = 16;
-            tempcanvas.width = 16;
-            var gl = <WebGLRenderingContext>(tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
+            try {
+                var tempcanvas = document.createElement("canvas");
+                tempcanvas.height = 16;
+                tempcanvas.width = 16;
+                var gl = <WebGLRenderingContext>(tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
 
-            // extension.
-            var ext = gl.getExtension(extension);
-            if (!ext) {
-                return false;
-            }
+                // extension.
+                var ext = gl.getExtension(extension);
+                if (!ext) {
+                    return false;
+                }
 
-            // setup GLSL program
-            var vertexCode = `attribute vec4 a_position;
-                void main() {
-                    gl_Position = a_position;
-                }`;
-            var fragmentCode = `precision mediump float;
-                uniform vec4 u_color;
-                uniform sampler2D u_texture;
+                // setup GLSL program
+                var vertexCode = `attribute vec4 a_position;
+                    void main() {
+                        gl_Position = a_position;
+                    }`;
+                var fragmentCode = `precision mediump float;
+                    uniform vec4 u_color;
+                    uniform sampler2D u_texture;
 
-                void main() {
-                    gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;
-                }`;
-            var program = this.createShaderProgram(vertexCode, fragmentCode, null, gl);
-            gl.useProgram(program);
+                    void main() {
+                        gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;
+                    }`;
+                var program = this.createShaderProgram(vertexCode, fragmentCode, null, gl);
+                gl.useProgram(program);
 
-            // look up where the vertex data needs to go.
-            var positionLocation = gl.getAttribLocation(program, "a_position");
-            var colorLoc = gl.getUniformLocation(program, "u_color");
+                // look up where the vertex data needs to go.
+                var positionLocation = gl.getAttribLocation(program, "a_position");
+                var colorLoc = gl.getUniformLocation(program, "u_color");
 
-            // provide texture coordinates for the rectangle.
-            var positionBuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                -1.0, -1.0,
-                1.0, -1.0,
-                -1.0, 1.0,
-                -1.0, 1.0,
-                1.0, -1.0,
-                1.0, 1.0]), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(positionLocation);
-            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+                // provide texture coordinates for the rectangle.
+                var positionBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                    -1.0, -1.0,
+                    1.0, -1.0,
+                    -1.0, 1.0,
+                    -1.0, 1.0,
+                    1.0, -1.0,
+                    1.0, 1.0]), gl.STATIC_DRAW);
+                gl.enableVertexAttribArray(positionLocation);
+                gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-            var whiteTex = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, whiteTex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
+                var whiteTex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, whiteTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
 
-            var tex = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                var tex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-            var fb = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+                var fb = gl.createFramebuffer();
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+                gl.viewport(0, 0, 1, 1);
 
-            var cleanup = () => {
-                gl.deleteProgram(program);
-                gl.disableVertexAttribArray(positionLocation);
-                gl.deleteBuffer(positionBuffer);
-                gl.deleteFramebuffer(fb);
-                gl.deleteTexture(whiteTex);
-                gl.deleteTexture(tex);
-            };
+                var cleanup = () => {
+                    gl.deleteProgram(program);
+                    gl.disableVertexAttribArray(positionLocation);
+                    gl.deleteBuffer(positionBuffer);
+                    gl.deleteFramebuffer(fb);
+                    gl.deleteTexture(whiteTex);
+                    gl.deleteTexture(tex);
+                };
 
-            var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-            if (status !== gl.FRAMEBUFFER_COMPLETE) {
-                Tools.Log("GL Support: can **NOT** render to " + format + " texture");
+                var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+                if (status !== gl.FRAMEBUFFER_COMPLETE) {
+                    Tools.Log("GL Support: can **NOT** render to " + format + " texture");
+                    cleanup();
+                    return false;
+                }
+
+                // Draw the rectangle.
+                gl.bindTexture(gl.TEXTURE_2D, whiteTex);
+                gl.uniform4fv(colorLoc, <any>[0, 10, 20, 1]);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+                gl.clearColor(1, 0, 0, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+
+                gl.uniform4fv(colorLoc, <any>[0, 1 / 10, 1 / 20, 1]);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+                var pixel = new Uint8Array(4);
+                gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+                if (pixel[0] !== 0 ||
+                    pixel[1] < 248 ||
+                    pixel[2] < 248 ||
+                    pixel[3] < 254) {
+                    BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
+                    cleanup();
+                    return false;
+                }
+
+                // Succesfully rendered to "format" texture.
                 cleanup();
+                return true;
+            }
+            catch (e) {
                 return false;
             }
-
-            // Draw the rectangle.
-            gl.bindTexture(gl.TEXTURE_2D, whiteTex);
-            gl.uniform4fv(colorLoc, <any>[0, 10, 20, 1]);
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-            gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-            gl.clearColor(1, 0, 0, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-
-            gl.uniform4fv(colorLoc, <any>[0, 1 / 10, 1 / 20, 1]);
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-            var pixel = new Uint8Array(4);
-            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-            if (pixel[0] !== 0 ||
-                pixel[1] < 248 ||
-                pixel[2] < 248 ||
-                pixel[3] < 254) {
-                BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
-                cleanup();
-                return false;
-            }
-
-            // Succesfully rendered to "format" texture.
-            cleanup();
-            return true;
         }
 
         // Statics
