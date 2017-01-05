@@ -6586,9 +6586,6 @@ var BABYLON;
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
-            // Checks if some of the format renders first to allow the use of webgl inspector.
-            var renderToFullFloat = this._canRenderToFloatTexture();
-            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -6614,6 +6611,9 @@ var BABYLON;
             if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
+            // Checks if some of the format renders first to allow the use of webgl inspector.
+            var renderToFullFloat = this._canRenderToFloatTexture();
+            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
             this._onBlur = function () {
                 _this._windowIsBackground = true;
             };
@@ -6672,7 +6672,20 @@ var BABYLON;
             this._caps.textureHalfFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
-            // instancesCount            
+            // Vertex array object
+            if (this._webGLVersion > 1) {
+                this._caps.vertexArrayObject = true;
+            }
+            else {
+                var vertexArrayObjectExtension = this._gl.getExtension('OES_vertex_array_object');
+                if (vertexArrayObjectExtension != null) {
+                    this._caps.vertexArrayObject = true;
+                }
+                else {
+                    this._caps.vertexArrayObject = false;
+                }
+            }
+            // Instances count            
             if (this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
             }
@@ -6680,9 +6693,9 @@ var BABYLON;
                 var instanceExtension = this._gl.getExtension('ANGLE_instanced_arrays');
                 if (instanceExtension != null) {
                     this._caps.instancedArrays = true;
-                    this._gl.drawArraysInstanced = instanceExtension.drawArraysInstancedANGLE;
-                    this._gl.drawElementsInstanced = instanceExtension.drawElementsInstancedANGLE;
-                    this._gl.vertexAttribDivisor = instanceExtension.vertexAttribDivisorANGLE;
+                    this._gl.drawArraysInstanced = instanceExtension.drawArraysInstancedANGLE.bind(instanceExtension);
+                    this._gl.drawElementsInstanced = instanceExtension.drawElementsInstancedANGLE.bind(instanceExtension);
+                    this._gl.vertexAttribDivisor = instanceExtension.vertexAttribDivisorANGLE.bind(instanceExtension);
                 }
                 else {
                     this._caps.instancedArrays = false;
@@ -25560,7 +25573,8 @@ var BABYLON;
             var result = preparedSourceCode.replace(regex, "");
             // Migrate to GLSL v300
             result = result.replace(/varying\s/g, isFragment ? "in " : "out ");
-            result = result.replace(/attribute\s/g, "in ");
+            result = result.replace(/attribute[ \t]/g, "in ");
+            result = result.replace(/[ \t]attribute/g, " in");
             if (isFragment) {
                 result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
                 result = result.replace(/texture2D\(/g, "texture(");

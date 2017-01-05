@@ -183,6 +183,7 @@
         public astc: any; //WEBGL_compressed_texture_astc;
         public atc: any; //WEBGL_compressed_texture_atc;
         public textureFloat: boolean;
+        public vertexArrayObject: boolean;
         public textureAnisotropicFilterExtension: EXT_texture_filter_anisotropic;
         public maxAnisotropy: number;
         public instancedArrays: boolean;
@@ -631,17 +632,29 @@
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
 
-            // instancesCount            
+            // Vertex array object
+            if ( this._webGLVersion > 1) {
+                this._caps.vertexArrayObject = true;
+            } else{
+                var vertexArrayObjectExtension = this._gl.getExtension('OES_vertex_array_object');
+
+                if (vertexArrayObjectExtension != null) {
+                    this._caps.vertexArrayObject =  true;
+                } else{
+                    this._caps.vertexArrayObject = false;
+                }
+            }
+            // Instances count            
             if ( this._webGLVersion > 1) {
                 this._caps.instancedArrays = true;
             } else{
-                var instanceExtension = this._gl.getExtension('ANGLE_instanced_arrays');
+                var instanceExtension = <ANGLE_instanced_arrays>this._gl.getExtension('ANGLE_instanced_arrays');
 
                 if (instanceExtension != null) {
                     this._caps.instancedArrays =  true;
-                    this._gl.drawArraysInstanced = instanceExtension.drawArraysInstancedANGLE;
-                    this._gl.drawElementsInstanced = instanceExtension.drawElementsInstancedANGLE;
-                    this._gl.vertexAttribDivisor = instanceExtension.vertexAttribDivisorANGLE;
+                    this._gl.drawArraysInstanced = instanceExtension.drawArraysInstancedANGLE.bind(instanceExtension);
+                    this._gl.drawElementsInstanced = instanceExtension.drawElementsInstancedANGLE.bind(instanceExtension);
+                    this._gl.vertexAttribDivisor = instanceExtension.vertexAttribDivisorANGLE.bind(instanceExtension);
                 } else{
                     this._caps.instancedArrays = false;
                 }
