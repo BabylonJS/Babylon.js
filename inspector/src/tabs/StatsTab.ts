@@ -265,7 +265,7 @@ module INSPECTOR {
                 let elemValue = Helpers.CreateDiv('stat-infos', this._panel);
                 this._updatableProperties.push({ 
                     elem:elemValue, 
-                    updateFct:() => { return this._engine.webGLVersion + " - " + this._glInfo.version + " - "+this._glInfo.renderer}
+                    updateFct:() => { return "WebGL v" + this._engine.webGLVersion + " - " + this._glInfo.version + " - "+this._glInfo.renderer}
                 });
             }
 

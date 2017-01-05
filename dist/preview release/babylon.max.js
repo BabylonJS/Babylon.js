@@ -6383,9 +6383,9 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var compileShader = function (gl, source, type, defines) {
+    var compileShader = function (gl, source, type, defines, shaderVersion) {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-        gl.shaderSource(shader, (defines ? defines + "\n" : "") + source);
+        gl.shaderSource(shader, shaderVersion + (defines ? defines + "\n" : "") + source);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
             throw new Error(gl.getShaderInfoLog(shader));
@@ -6527,7 +6527,7 @@ var BABYLON;
             this.enableOfflineSupport = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
-            this._webGLVersion = "1.0";
+            this._webGLVersion = 1.0;
             this._badOS = false;
             this._drawCalls = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
@@ -6590,14 +6590,16 @@ var BABYLON;
             var renderToFullFloat = this._canRenderToFloatTexture();
             var renderToHalfFloat = this._canRenderToHalfFloatTexture();
             // GL
-            // try {
-            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-            //    if (this._gl) {
-            //        this._webGLVersion = "2.0";
-            //    }
-            // } catch (e) {
-            //    // Do nothing
-            // }
+            if (!options.disableWebGL2Support) {
+                try {
+                    this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                    if (this._gl) {
+                        this._webGLVersion = 2.0;
+                    }
+                }
+                catch (e) {
+                }
+            }
             if (!this._gl) {
                 if (!canvas) {
                     throw new Error("The provided canvas is null or undefined.");
@@ -6649,41 +6651,61 @@ var BABYLON;
                 this._glRenderer = "Unknown renderer";
             }
             // Extensions
-            this._caps.standardDerivatives = (this._gl.getExtension('OES_standard_derivatives') !== null);
-            this._caps.astc = this._gl.getExtension('WEBGL_compressed_texture_astc');
-            this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc');
-            this._caps.pvrtc = this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc'); // 2nd is what iOS reports
-            this._caps.etc1 = this._gl.getExtension('WEBGL_compressed_texture_etc1');
-            this._caps.etc2 = this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // first is the final name, found hardware using 2nd
-            this._caps.textureFloat = (this._gl.getExtension('OES_texture_float') !== null);
+            this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
+            this._caps.astc = this._gl.getExtension('WEBGL_compressed_texture_astc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc');
+            this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc');
+            this._caps.pvrtc = this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc');
+            this._caps.etc1 = this._gl.getExtension('WEBGL_compressed_texture_etc1') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc1');
+            this._caps.etc2 = this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc') ||
+                this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // also a requirement of OpenGL ES 3
+            this._caps.atc = this._gl.getExtension('WEBGL_compressed_texture_atc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_atc');
+            this._caps.textureFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
-            this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
-            this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
-            this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
+            this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
+            this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
-            this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+            this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
-            this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
+            this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
             this._caps.textureFloatRender = renderToFullFloat;
-            this._caps.textureHalfFloat = (this._gl.getExtension('OES_texture_half_float') !== null);
-            this._caps.textureHalfFloatLinearFiltering = this._gl.getExtension('OES_texture_half_float_linear');
+            this._caps.textureHalfFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_half_float') !== null);
+            this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
-            // Intelligently add supported commpressed formats in order to check for.
+            // instancesCount            
+            if (this._webGLVersion > 1) {
+                this._caps.instancedArrays = true;
+            }
+            else {
+                var instanceExtension = this._gl.getExtension('ANGLE_instanced_arrays');
+                if (instanceExtension != null) {
+                    this._caps.instancedArrays = true;
+                    this._gl.drawArraysInstanced = instanceExtension.drawArraysInstancedANGLE;
+                    this._gl.drawElementsInstanced = instanceExtension.drawElementsInstancedANGLE;
+                    this._gl.vertexAttribDivisor = instanceExtension.vertexAttribDivisorANGLE;
+                }
+                else {
+                    this._caps.instancedArrays = false;
+                }
+            }
+            // Intelligently add supported compressed formats in order to check for.
             // Check for ASTC support first as it is most powerful and to be very cross platform.
-            // Next PVR & S3, which are probably superior to ETC1/2.  
-            // Likely no hardware which supports both PVR & S3, so order matters little.
-            // ETC2 is newer and handles ETC1, so check for first.
+            // Next PVRTC & DXT, which are probably superior to ETC1/2.  
+            // Likely no hardware which supports both PVR & DXT, so order matters little.
+            // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
+            // ATC before ETC1, since both old (widely supported), but ATC supports alpha, but ETC1 does not
             if (this._caps.astc)
-                this.texturesSupported.push('.astc');
+                this.texturesSupported.push('-astc.ktx');
             if (this._caps.s3tc)
-                this.texturesSupported.push('.dds');
+                this.texturesSupported.push('-dxt.ktx');
             if (this._caps.pvrtc)
-                this.texturesSupported.push('.pvr');
+                this.texturesSupported.push('-pvrtc.ktx');
             if (this._caps.etc2)
-                this.texturesSupported.push('.etc2');
+                this.texturesSupported.push('-etc2.ktx');
+            if (this._caps.atc)
+                this.texturesSupported.push('-atc.ktx');
             if (this._caps.etc1)
-                this.texturesSupported.push('.etc1');
+                this.texturesSupported.push('-etc1.ktx');
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
                 this._caps.highPrecisionShaderSupported = highp.precision !== 0;
@@ -7592,7 +7614,7 @@ var BABYLON;
                         var buffer = vertexBuffer.getBuffer();
                         this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
                         if (vertexBuffer.getIsInstanced()) {
-                            this._caps.instancedArrays.vertexAttribDivisorANGLE(order, 1);
+                            this._gl.vertexAttribDivisor(order, 1);
                             this._currentInstanceLocations.push(order);
                             this._currentInstanceBuffers.push(buffer);
                         }
@@ -7614,7 +7636,7 @@ var BABYLON;
                     this.bindArrayBuffer(instancesBuffer);
                 }
                 var offsetLocation = this._currentInstanceLocations[i];
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+                this._gl.vertexAttribDivisor(offsetLocation, 0);
             }
             this._currentInstanceBuffers.length = 0;
             this._currentInstanceLocations.length = 0;
@@ -7655,7 +7677,7 @@ var BABYLON;
                         this._vertexAttribArraysEnabled[ai.index] = true;
                     }
                     this.vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
+                    this._gl.vertexAttribDivisor(ai.index, 1);
                     this._currentInstanceLocations.push(ai.index);
                     this._currentInstanceBuffers.push(instancesBuffer);
                 }
@@ -7668,7 +7690,7 @@ var BABYLON;
                         this._vertexAttribArraysEnabled[offsetLocation] = true;
                     }
                     this.vertexAttribPointer(instancesBuffer, offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
+                    this._gl.vertexAttribDivisor(offsetLocation, 1);
                     this._currentInstanceLocations.push(offsetLocation);
                     this._currentInstanceBuffers.push(instancesBuffer);
                 }
@@ -7687,7 +7709,7 @@ var BABYLON;
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             if (instancesCount) {
-                this._caps.instancedArrays.drawElementsInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult, instancesCount);
+                this._gl.drawElementsInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult, instancesCount);
                 return;
             }
             this._gl.drawElements(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, indexCount, indexFormat, indexStart * mult);
@@ -7697,7 +7719,7 @@ var BABYLON;
             this.applyStates();
             this._drawCalls.addCount(1, false);
             if (instancesCount) {
-                this._caps.instancedArrays.drawArraysInstancedANGLE(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
+                this._gl.drawArraysInstanced(this._gl.POINTS, verticesStart, verticesCount, instancesCount);
                 return;
             }
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
@@ -7707,7 +7729,7 @@ var BABYLON;
             this.applyStates();
             this._drawCalls.addCount(1, false);
             if (instancesCount) {
-                this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
+                this._gl.drawArraysInstanced(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
                 return;
             }
             this._gl.drawArrays(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount);
@@ -7744,8 +7766,9 @@ var BABYLON;
         };
         Engine.prototype.createShaderProgram = function (vertexCode, fragmentCode, defines, context) {
             context = context || this._gl;
-            var vertexShader = compileShader(context, vertexCode, "vertex", defines);
-            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines);
+            var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n" : "";
+            var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
+            var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
             var shaderProgram = context.createProgram();
             context.attachShader(shaderProgram, vertexShader);
             context.attachShader(shaderProgram, fragmentShader);
@@ -8024,28 +8047,28 @@ var BABYLON;
             texture.samplingMode = samplingMode;
         };
         /**
-         * Set the compressed texture format to use, based on the formats you have,
-         * the formats supported by the hardware / browser, and those currently implemented
-         * in BJS.
+         * Set the compressed texture format to use, based on the formats you have, and the formats
+         * supported by the hardware / browser.
          *
-         * Note: The result of this call is not taken into account texture is base64 or when
+         * Khronos Texture Container (.ktx) files are used to support this.  This format has the
+         * advantage of being specifically designed for OpenGL.  Header elements directly correspond
+         * to API arguments needed to compressed textures.  This puts the burden on the container
+         * generator to house the arcane code for determining these for current & future formats.
+         *
+         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
+         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+         *
+         * Note: The result of this call is not taken into account when a texture is base64 or when
          * using a database / manifest.
          *
-         * @param {Array<string>} formatsAvailable - Extension names including dot.  Case
-         * and order do not matter.
+         * @param {Array<string>} formatsAvailable- The list of those format families you have created
+         * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
+         *
+         * Current families are astc, dxt, pvrtc, etc2, atc, & etc1.
          * @returns The extension selected.
          */
         Engine.prototype.setTextureFormatToUse = function (formatsAvailable) {
             for (var i = 0, len1 = this.texturesSupported.length; i < len1; i++) {
-                // code to allow the formats to be added as they can be developed / hw tested
-                if (this._texturesSupported[i] === '.astc')
-                    continue;
-                if (this._texturesSupported[i] === '.pvr')
-                    continue;
-                if (this._texturesSupported[i] === '.etc1')
-                    continue;
-                if (this._texturesSupported[i] === '.etc2')
-                    continue;
                 for (var j = 0, len2 = formatsAvailable.length; j < len2; j++) {
                     if (this._texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
                         return this._textureFormatInUse = this._texturesSupported[i];
@@ -8064,6 +8087,7 @@ var BABYLON;
             if (buffer === void 0) { buffer = null; }
             var texture = this._gl.createTexture();
             var extension;
+            var isKTX = false;
             var fromData = false;
             if (url.substr(0, 5) === "data:") {
                 fromData = true;
@@ -8074,6 +8098,7 @@ var BABYLON;
                 if (this._textureFormatInUse && !fromData && !scene.database) {
                     extension = this._textureFormatInUse;
                     url = url.substring(0, lastDot) + this._textureFormatInUse;
+                    isKTX = true;
                 }
             }
             else {
@@ -8098,29 +8123,33 @@ var BABYLON;
                 }
             };
             var callback;
-            if (isTGA) {
-                callback = function (arrayBuffer) {
-                    var data = new Uint8Array(arrayBuffer);
-                    var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
-                    prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
-                        BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
-                    }, samplingMode);
-                };
-                if (!(fromData instanceof Array))
-                    BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
-                        callback(arrayBuffer);
-                    }, null, scene.database, true, onerror);
-                else
-                    callback(buffer);
-            }
-            else if (isDDS) {
-                callback = function (data) {
-                    var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
-                    var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
-                    prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
-                        BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
-                    }, samplingMode);
-                };
+            if (isKTX || isTGA || isDDS) {
+                if (isKTX) {
+                    callback = function (data) {
+                        var ktx = new BABYLON.Internals.KhronosTextureContainer(data, 1);
+                        prepareWebGLTexture(texture, _this._gl, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, function () {
+                            ktx.uploadLevels(_this._gl, !noMipmap);
+                        }, samplingMode);
+                    };
+                }
+                else if (isTGA) {
+                    callback = function (arrayBuffer) {
+                        var data = new Uint8Array(arrayBuffer);
+                        var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
+                        prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
+                            BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
+                        }, samplingMode);
+                    };
+                }
+                else if (isDDS) {
+                    callback = function (data) {
+                        var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
+                        var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
+                        prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
+                            BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
+                        }, samplingMode);
+                    };
+                }
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (data) {
                         callback(data);
@@ -8492,9 +8521,34 @@ var BABYLON;
             texture.url = rootUrl;
             texture.references = 1;
             texture.onLoadedCallbacks = [];
-            var extension = rootUrl.substr(rootUrl.length - 4, 4).toLowerCase();
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            if (isDDS) {
+            var isKTX = false;
+            var lastDot = rootUrl.lastIndexOf('.');
+            var extension = rootUrl.substring(lastDot).toLowerCase();
+            if (this._textureFormatInUse && !scene.database) {
+                extension = this._textureFormatInUse;
+                rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
+                isKTX = true;
+            }
+            var isDDS = (extension === ".dds");
+            if (isKTX) {
+                BABYLON.Tools.LoadFile(rootUrl, function (data) {
+                    var ktx = new BABYLON.Internals.KhronosTextureContainer(data, 6);
+                    var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+                    ktx.uploadLevels(_this._gl, !noMipmap);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+                    _this.resetTextureCache();
+                    texture._width = ktx.pixelWidth;
+                    texture._height = ktx.pixelHeight;
+                    texture.isReady = true;
+                }, null, null, true, onError);
+            }
+            else if (isDDS) {
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
                     var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
@@ -9016,101 +9070,103 @@ var BABYLON;
             }
         };
         Engine.prototype._canRenderToFloatTexture = function () {
-            try {
-                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            if (this._webGLVersion > 1) {
+                return true;
             }
-            catch (e) {
-                return false;
-            }
+            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
         };
         Engine.prototype._canRenderToHalfFloatTexture = function () {
-            try {
-                return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+            if (this._webGLVersion > 1) {
+                return true;
             }
-            catch (e) {
-                return false;
-            }
+            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
         };
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
         Engine.prototype._canRenderToTextureOfType = function (format, extension) {
-            var tempcanvas = document.createElement("canvas");
-            tempcanvas.height = 16;
-            tempcanvas.width = 16;
-            var gl = (tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
-            // extension.
-            var ext = gl.getExtension(extension);
-            if (!ext) {
-                return false;
-            }
-            // setup GLSL program
-            var vertexCode = "attribute vec4 a_position;\n                void main() {\n                    gl_Position = a_position;\n                }";
-            var fragmentCode = "precision mediump float;\n                uniform vec4 u_color;\n                uniform sampler2D u_texture;\n\n                void main() {\n                    gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;\n                }";
-            var program = this.createShaderProgram(vertexCode, fragmentCode, null, gl);
-            gl.useProgram(program);
-            // look up where the vertex data needs to go.
-            var positionLocation = gl.getAttribLocation(program, "a_position");
-            var colorLoc = gl.getUniformLocation(program, "u_color");
-            // provide texture coordinates for the rectangle.
-            var positionBuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                -1.0, -1.0,
-                1.0, -1.0,
-                -1.0, 1.0,
-                -1.0, 1.0,
-                1.0, -1.0,
-                1.0, 1.0
-            ]), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(positionLocation);
-            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-            var whiteTex = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, whiteTex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
-            var tex = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            var fb = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-            var cleanup = function () {
-                gl.deleteProgram(program);
-                gl.disableVertexAttribArray(positionLocation);
-                gl.deleteBuffer(positionBuffer);
-                gl.deleteFramebuffer(fb);
-                gl.deleteTexture(whiteTex);
-                gl.deleteTexture(tex);
-            };
-            var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-            if (status !== gl.FRAMEBUFFER_COMPLETE) {
-                BABYLON.Tools.Log("GL Support: can **NOT** render to " + format + " texture");
+            try {
+                var tempcanvas = document.createElement("canvas");
+                tempcanvas.height = 16;
+                tempcanvas.width = 16;
+                var gl = (tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
+                // extension.
+                var ext = gl.getExtension(extension);
+                if (!ext) {
+                    return false;
+                }
+                // setup GLSL program
+                var vertexCode = "attribute vec4 a_position;\n                    void main() {\n                        gl_Position = a_position;\n                    }";
+                var fragmentCode = "precision mediump float;\n                    uniform vec4 u_color;\n                    uniform sampler2D u_texture;\n\n                    void main() {\n                        gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;\n                    }";
+                var program = this.createShaderProgram(vertexCode, fragmentCode, null, gl);
+                gl.useProgram(program);
+                // look up where the vertex data needs to go.
+                var positionLocation = gl.getAttribLocation(program, "a_position");
+                var colorLoc = gl.getUniformLocation(program, "u_color");
+                // provide texture coordinates for the rectangle.
+                var positionBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                    -1.0, -1.0,
+                    1.0, -1.0,
+                    -1.0, 1.0,
+                    -1.0, 1.0,
+                    1.0, -1.0,
+                    1.0, 1.0
+                ]), gl.STATIC_DRAW);
+                gl.enableVertexAttribArray(positionLocation);
+                gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+                var whiteTex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, whiteTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
+                var tex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                var fb = gl.createFramebuffer();
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+                gl.viewport(0, 0, 1, 1);
+                var cleanup = function () {
+                    gl.deleteProgram(program);
+                    gl.disableVertexAttribArray(positionLocation);
+                    gl.deleteBuffer(positionBuffer);
+                    gl.deleteFramebuffer(fb);
+                    gl.deleteTexture(whiteTex);
+                    gl.deleteTexture(tex);
+                };
+                var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+                if (status !== gl.FRAMEBUFFER_COMPLETE) {
+                    BABYLON.Tools.Log("GL Support: can **NOT** render to " + format + " texture");
+                    cleanup();
+                    return false;
+                }
+                // Draw the rectangle.
+                gl.bindTexture(gl.TEXTURE_2D, whiteTex);
+                gl.uniform4fv(colorLoc, [0, 10, 20, 1]);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                gl.clearColor(1, 0, 0, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.uniform4fv(colorLoc, [0, 1 / 10, 1 / 20, 1]);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                var pixel = new Uint8Array(4);
+                gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+                if (pixel[0] !== 0 ||
+                    pixel[1] < 248 ||
+                    pixel[2] < 248 ||
+                    pixel[3] < 254) {
+                    BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
+                    cleanup();
+                    return false;
+                }
+                // Succesfully rendered to "format" texture.
                 cleanup();
+                return true;
+            }
+            catch (e) {
                 return false;
             }
-            // Draw the rectangle.
-            gl.bindTexture(gl.TEXTURE_2D, whiteTex);
-            gl.uniform4fv(colorLoc, [0, 10, 20, 1]);
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
-            gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            gl.clearColor(1, 0, 0, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            gl.uniform4fv(colorLoc, [0, 1 / 10, 1 / 20, 1]);
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
-            var pixel = new Uint8Array(4);
-            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-            if (pixel[0] !== 0 ||
-                pixel[1] < 248 ||
-                pixel[2] < 248 ||
-                pixel[3] < 254) {
-                BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
-                cleanup();
-                return false;
-            }
-            // Succesfully rendered to "format" texture.
-            cleanup();
-            return true;
         };
         // Statics
         Engine.isSupported = function () {
@@ -25360,9 +25416,13 @@ var BABYLON;
             }
             this._loadVertexShader(vertexSource, function (vertexCode) {
                 _this._processIncludes(vertexCode, function (vertexCodeWithIncludes) {
-                    _this._loadFragmentShader(fragmentSource, function (fragmentCode) {
-                        _this._processIncludes(fragmentCode, function (fragmentCodeWithIncludes) {
-                            _this._prepareEffect(vertexCodeWithIncludes, fragmentCodeWithIncludes, attributesNames, defines, fallbacks);
+                    _this._processShaderConversion(vertexCodeWithIncludes, false, function (migratedVertexCode) {
+                        _this._loadFragmentShader(fragmentSource, function (fragmentCode) {
+                            _this._processIncludes(fragmentCode, function (fragmentCodeWithIncludes) {
+                                _this._processShaderConversion(fragmentCodeWithIncludes, true, function (migratedFragmentCode) {
+                                    _this._prepareEffect(migratedVertexCode, migratedFragmentCode, attributesNames, defines, fallbacks);
+                                });
+                            });
                         });
                     });
                 });
@@ -25481,6 +25541,36 @@ var BABYLON;
                 BABYLON.Tools.Error("Fragment shader:" + this.name);
             }
         };
+        Effect.prototype._processShaderConversion = function (sourceCode, isFragment, callback) {
+            var preparedSourceCode = this._processPrecision(sourceCode);
+            if (this._engine.webGLVersion == 1) {
+                callback(preparedSourceCode);
+                return;
+            }
+            // Already converted
+            if (preparedSourceCode.indexOf("#version 3") !== -1) {
+                callback(preparedSourceCode);
+                return;
+            }
+            // Remove extensions 
+            // #extension GL_OES_standard_derivatives : enable
+            // #extension GL_EXT_shader_texture_lod : enable
+            // #extension GL_EXT_frag_depth : enable
+            var regex = /#extension.+(GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth).+enable/g;
+            var result = preparedSourceCode.replace(regex, "");
+            // Migrate to GLSL v300
+            result = result.replace(/varying\s/g, isFragment ? "in " : "out ");
+            result = result.replace(/attribute\s/g, "in ");
+            if (isFragment) {
+                result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
+                result = result.replace(/texture2D\(/g, "texture(");
+                result = result.replace(/textureCube\(/g, "texture(");
+                result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
+                result = result.replace(/gl_FragColor/g, "glFragColor");
+                result = result.replace(/void\s+?main\(/g, "out vec4 glFragColor;\nvoid main(");
+            }
+            callback(result);
+        };
         Effect.prototype._processIncludes = function (sourceCode, callback) {
             var _this = this;
             var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
@@ -25552,9 +25642,6 @@ var BABYLON;
         Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try {
                 var engine = this._engine;
-                // Precision
-                vertexSourceCode = this._processPrecision(vertexSourceCode);
-                fragmentSourceCode = this._processPrecision(fragmentSourceCode);
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
@@ -41669,6 +41756,127 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.tools.dds.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var Internals;
+    (function (Internals) {
+        /**
+         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
+         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+         */
+        var KhronosTextureContainer = (function () {
+            /**
+             * @param {ArrayBuffer} arrayBuffer- contents of the KTX container file
+             * @param {number} facesExpected- should be either 1 or 6, based whether a cube texture or or
+             * @param {boolean} threeDExpected- provision for indicating that data should be a 3D texture, not implemented
+             * @param {boolean} textureArrayExpected- provision for indicating that data should be a texture array, not implemented
+             */
+            function KhronosTextureContainer(arrayBuffer, facesExpected, threeDExpected, textureArrayExpected) {
+                this.arrayBuffer = arrayBuffer;
+                // Test that it is a ktx formatted file, based on the first 12 bytes, character representation is:
+                // '�', 'K', 'T', 'X', ' ', '1', '1', '�', '\r', '\n', '\x1A', '\n'
+                // 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A
+                var identifier = new Uint8Array(this.arrayBuffer, 0, 12);
+                if (identifier[0] !== 0xAB || identifier[1] !== 0x4B || identifier[2] !== 0x54 || identifier[3] !== 0x58 || identifier[4] !== 0x20 || identifier[5] !== 0x31 ||
+                    identifier[6] !== 0x31 || identifier[7] !== 0xBB || identifier[8] !== 0x0D || identifier[9] !== 0x0A || identifier[10] !== 0x1A || identifier[11] !== 0x0A) {
+                    BABYLON.Tools.Error("texture missing KTX identifier");
+                    return;
+                }
+                // load the reset of the header in native 32 bit int
+                var header = new Int32Array(this.arrayBuffer, 12, 13);
+                // determine of the remaining header values are recorded in the opposite endianness & require conversion
+                var oppositeEndianess = header[0] === 0x01020304;
+                // read all the header elements in order they exist in the file, without modification (sans endainness)
+                this.glType = oppositeEndianess ? this.switchEndainness(header[1]) : header[1]; // must be 0 for compressed textures
+                this.glTypeSize = oppositeEndianess ? this.switchEndainness(header[2]) : header[2]; // must be 1 for compressed textures
+                this.glFormat = oppositeEndianess ? this.switchEndainness(header[3]) : header[3]; // must be 0 for compressed textures
+                this.glInternalFormat = oppositeEndianess ? this.switchEndainness(header[4]) : header[4]; // the value of arg passed to gl.compressedTexImage2D(,,x,,,,)
+                this.glBaseInternalFormat = oppositeEndianess ? this.switchEndainness(header[5]) : header[5]; // specify GL_RGB, GL_RGBA, GL_ALPHA, etc (un-compressed only)
+                this.pixelWidth = oppositeEndianess ? this.switchEndainness(header[6]) : header[6]; // level 0 value of arg passed to gl.compressedTexImage2D(,,,x,,,)
+                this.pixelHeight = oppositeEndianess ? this.switchEndainness(header[7]) : header[7]; // level 0 value of arg passed to gl.compressedTexImage2D(,,,,x,,)
+                this.pixelDepth = oppositeEndianess ? this.switchEndainness(header[8]) : header[8]; // level 0 value of arg passed to gl.compressedTexImage3D(,,,,,x,,)
+                this.numberOfArrayElements = oppositeEndianess ? this.switchEndainness(header[9]) : header[9]; // used for texture arrays
+                this.numberOfFaces = oppositeEndianess ? this.switchEndainness(header[10]) : header[10]; // used for cubemap textures, should either be 1 or 6
+                this.numberOfMipmapLevels = oppositeEndianess ? this.switchEndainness(header[11]) : header[11]; // number of levels; disregard possibility of 0 for compressed textures
+                this.bytesOfKeyValueData = oppositeEndianess ? this.switchEndainness(header[12]) : header[12]; // the amount of space after the header for meta-data
+                // Make sure we have a compressed type.  Not only reduces work, but probably better to let dev know they are not compressing.
+                if (this.glType !== 0) {
+                    BABYLON.Tools.Error("only compressed formats currently supported");
+                    return;
+                }
+                else {
+                    // value of zero is an indication to generate mipmaps @ runtime.  Not usually allowed for compressed, so disregard.
+                    this.numberOfMipmapLevels = Math.max(1, this.numberOfMipmapLevels);
+                }
+                if (this.pixelHeight === 0 || this.pixelDepth !== 0) {
+                    BABYLON.Tools.Error("only 2D textures currently supported");
+                    return;
+                }
+                if (this.numberOfArrayElements !== 0) {
+                    BABYLON.Tools.Error("texture arrays not currently supported");
+                    return;
+                }
+                if (this.numberOfFaces !== facesExpected) {
+                    BABYLON.Tools.Error("number of faces expected" + facesExpected + ", but found " + this.numberOfFaces);
+                    return;
+                }
+                // we now have a completely validated file, so could use existence of loadType as success
+                // would need to make this more elaborate & adjust checks above to support more than one load type
+                this.loadType = KhronosTextureContainer.COMPRESSED_2D;
+            }
+            // not as fast hardware based, but will probably never need to use
+            KhronosTextureContainer.prototype.switchEndainness = function (val) {
+                return ((val & 0xFF) << 24)
+                    | ((val & 0xFF00) << 8)
+                    | ((val >> 8) & 0xFF00)
+                    | ((val >> 24) & 0xFF);
+            };
+            /**
+             * It is assumed that the texture has already been created & is currently bound
+             */
+            KhronosTextureContainer.prototype.uploadLevels = function (gl, loadMipmaps) {
+                switch (this.loadType) {
+                    case KhronosTextureContainer.COMPRESSED_2D:
+                        this._upload2DCompressedLevels(gl, loadMipmaps);
+                        break;
+                    case KhronosTextureContainer.TEX_2D:
+                    case KhronosTextureContainer.COMPRESSED_3D:
+                    case KhronosTextureContainer.TEX_3D:
+                }
+            };
+            KhronosTextureContainer.prototype._upload2DCompressedLevels = function (gl, loadMipmaps) {
+                // initialize width & height for level 1
+                var dataOffset = KhronosTextureContainer.HEADER_LEN + this.bytesOfKeyValueData;
+                var width = this.pixelWidth;
+                var height = this.pixelHeight;
+                var mipmapCount = loadMipmaps ? this.numberOfMipmapLevels : 1;
+                for (var level = 0; level < mipmapCount; level++) {
+                    var imageSize = new Int32Array(this.arrayBuffer, dataOffset, 1)[0]; // size per face, since not supporting array cubemaps
+                    for (var face = 0; face < this.numberOfFaces; face++) {
+                        var sampler = this.numberOfFaces === 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
+                        var byteArray = new Uint8Array(this.arrayBuffer, dataOffset + 4, imageSize);
+                        gl.compressedTexImage2D(sampler, level, this.glInternalFormat, width, height, 0, byteArray);
+                        dataOffset += imageSize + 4; // size of the image + 4 for the imageSize field
+                        dataOffset += 3 - ((imageSize + 3) % 4); // add padding for odd sized image
+                    }
+                    width = Math.max(1.0, width * 0.5);
+                    height = Math.max(1.0, height * 0.5);
+                }
+            };
+            return KhronosTextureContainer;
+        }());
+        KhronosTextureContainer.HEADER_LEN = 12 + (13 * 4); // identifier + header elements (not including key value meta-data pairs)
+        // load types
+        KhronosTextureContainer.COMPRESSED_2D = 0; // uses a gl.compressedTexImage2D()
+        KhronosTextureContainer.COMPRESSED_3D = 1; // uses a gl.compressedTexImage3D()
+        KhronosTextureContainer.TEX_2D = 2; // uses a gl.texImage2D()
+        KhronosTextureContainer.TEX_3D = 3; // uses a gl.texImage3D()
+        Internals.KhronosTextureContainer = KhronosTextureContainer;
+    })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.khronosTextureContainer.js.map
 
 var BABYLON;
 (function (BABYLON) {
