@@ -479,6 +479,7 @@
         private _compiledEffects = {};
         private _vertexAttribArraysEnabled: boolean[] = [];
         private _cachedViewport: Viewport;
+        private _cachedVertexArrayObject: WebGLVertexArrayObject;
         private _cachedVertexBuffers: any;
         private _cachedIndexBuffer: WebGLBuffer;
         private _cachedEffectForVertexBuffers: Effect;
@@ -632,7 +633,7 @@
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
 
-            // Vertex array object
+            // Vertex array object 
             if ( this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
             } else{
@@ -640,6 +641,9 @@
 
                 if (vertexArrayObjectExtension != null) {
                     this._caps.vertexArrayObject =  true;
+                    this._gl.createVertexArray = vertexArrayObjectExtension.createVertexArrayOES.bind(vertexArrayObjectExtension);
+                    this._gl.bindVertexArray = vertexArrayObjectExtension.bindVertexArrayOES.bind(vertexArrayObjectExtension);
+                    this._gl.deleteVertexArray = vertexArrayObjectExtension.deleteVertexArrayOES.bind(vertexArrayObjectExtension);
                 } else{
                     this._caps.vertexArrayObject = false;
                 }
@@ -1249,6 +1253,7 @@
         private _resetVertexBufferBinding(): void {
             this.bindArrayBuffer(null);
             this._cachedVertexBuffers = null;
+            this._cachedVertexArrayObject = null;
         }
 
         public createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
@@ -1379,6 +1384,68 @@
             }
         }
 
+        private _bindIndexBufferWithCache(indexBuffer: WebGLBuffer): void {            
+            if (this._cachedIndexBuffer !== indexBuffer) {
+                this._cachedIndexBuffer = indexBuffer;
+                this.bindIndexBuffer(indexBuffer);
+                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
+            }
+        }
+
+        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: VertexBuffer; }, effect: Effect, storeInstanceLocationsAndBuffers = false) {
+            var attributes = effect.getAttributesNames();
+
+            this.unbindAllAttributes();
+
+            for (var index = 0; index < attributes.length; index++) {
+                var order = effect.getAttributeLocation(index);
+
+                if (order >= 0) {
+                    var vertexBuffer = vertexBuffers[attributes[index]];
+
+                    if (!vertexBuffer) {
+                        continue;
+                    }
+
+                    this._gl.enableVertexAttribArray(order);
+                    this._vertexAttribArraysEnabled[order] = true;
+
+                    var buffer = vertexBuffer.getBuffer();
+                    this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+
+                    if (vertexBuffer.getIsInstanced()) {
+                        this._gl.vertexAttribDivisor(order, 1);
+                        if (storeInstanceLocationsAndBuffers) {
+                            this._currentInstanceLocations.push(order);
+                            this._currentInstanceBuffers.push(buffer);
+                        }
+                    }
+                }
+            }
+        }
+
+        public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): WebGLVertexArrayObject {
+            var vao = this._gl.createVertexArray();
+
+            this._gl.bindVertexArray(vao);
+
+            this._bindVertexBuffersAttributes(vertexBuffers, effect, false);
+
+            this._gl.bindVertexArray(null);
+
+            return vao;
+        }
+
+        public bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: WebGLBuffer): void {
+            if (this._cachedVertexArrayObject !== vertexArrayObject) {
+                this._cachedVertexArrayObject = vertexArrayObject;
+
+                this._gl.bindVertexArray(vertexArrayObject);
+            }
+
+            this._bindIndexBufferWithCache(indexBuffer);
+        }
+
         public bindBuffersDirectly(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffer || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffer;
@@ -1406,11 +1473,7 @@
                 }
             }
 
-            if (this._cachedIndexBuffer !== indexBuffer) {
-                this._cachedIndexBuffer = indexBuffer;
-                this.bindIndexBuffer(indexBuffer);
-                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
-            }
+            this._bindIndexBufferWithCache(indexBuffer);
         }
 
         public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
@@ -1418,40 +1481,10 @@
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
 
-                var attributes = effect.getAttributesNames();
-
-                this.unbindAllAttributes();
-
-                for (var index = 0; index < attributes.length; index++) {
-                    var order = effect.getAttributeLocation(index);
-
-                    if (order >= 0) {
-                        var vertexBuffer = vertexBuffers[attributes[index]];
-
-                        if (!vertexBuffer) {
-                            continue;
-                        }
-
-                        this._gl.enableVertexAttribArray(order);
-                        this._vertexAttribArraysEnabled[order] = true;
-
-                        var buffer = vertexBuffer.getBuffer();
-                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
-
-                        if (vertexBuffer.getIsInstanced()) {
-                            this._gl.vertexAttribDivisor(order, 1);
-                            this._currentInstanceLocations.push(order);
-                            this._currentInstanceBuffers.push(buffer);
-                        }
-                    }
-                }
+                this._bindVertexBuffersAttributes(vertexBuffers, effect, true);
             }
 
-            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
-                this._cachedIndexBuffer = indexBuffer;
-                this.bindIndexBuffer(indexBuffer);
-                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
-            }
+            this._bindIndexBufferWithCache(indexBuffer);
         }
 
         public unbindInstanceAttributes() {

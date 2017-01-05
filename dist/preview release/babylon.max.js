@@ -6588,14 +6588,6 @@ var BABYLON;
             }
             // GL
             if (!options.disableWebGL2Support) {
-                try {
-                    this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-                    if (this._gl) {
-                        this._webGLVersion = 2.0;
-                    }
-                }
-                catch (e) {
-                }
             }
             if (!this._gl) {
                 if (!canvas) {
@@ -6680,6 +6672,9 @@ var BABYLON;
                 var vertexArrayObjectExtension = this._gl.getExtension('OES_vertex_array_object');
                 if (vertexArrayObjectExtension != null) {
                     this._caps.vertexArrayObject = true;
+                    this._gl.createVertexArray = vertexArrayObjectExtension.createVertexArrayOES.bind(vertexArrayObjectExtension);
+                    this._gl.bindVertexArray = vertexArrayObjectExtension.bindVertexArrayOES.bind(vertexArrayObjectExtension);
+                    this._gl.deleteVertexArray = vertexArrayObjectExtension.deleteVertexArrayOES.bind(vertexArrayObjectExtension);
                 }
                 else {
                     this._caps.vertexArrayObject = false;
@@ -52615,7 +52610,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 

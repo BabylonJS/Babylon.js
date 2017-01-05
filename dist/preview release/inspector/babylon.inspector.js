@@ -2866,6 +2866,12 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().drawBuffersExtension ? "Yes" : "No"); }
                 });
+                elemLabel = _this._createStatLabel("Vertex array object", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return (_this._engine.getCaps().vertexArrayObject ? "Yes" : "No"); }
+                });
             }
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Caps.";
@@ -2901,7 +2907,7 @@ var INSPECTOR;
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-infos', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
-                    updateFct: function () { return _this._engine.webGLVersion + " - " + _this._glInfo.version + " - " + _this._glInfo.renderer; }
+                    updateFct: function () { return "WebGL v" + _this._engine.webGLVersion + " - " + _this._glInfo.version + " - " + _this._glInfo.renderer; }
                 });
             }
             // Register the update loop
