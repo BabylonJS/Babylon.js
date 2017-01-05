@@ -228,6 +228,12 @@ module INSPECTOR {
                 this._updatableProperties.push({ 
                     elem:elemValue, 
                     updateFct:() => { return (this._engine.getCaps().drawBuffersExtension ? "Yes" : "No")}
+                });                 
+                elemLabel = this._createStatLabel("Vertex array object", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({ 
+                    elem:elemValue, 
+                    updateFct:() => { return (this._engine.getCaps().vertexArrayObject ? "Yes" : "No")}
                 }); 
             }
 

@@ -288,7 +288,8 @@
 
             // Migrate to GLSL v300
             result = result.replace(/varying\s/g, isFragment ? "in " : "out ");
-            result = result.replace(/attribute\s/g, "in ");
+            result = result.replace(/attribute[ \t]/g, "in ");
+            result = result.replace(/[ \t]attribute/g, " in");
             
             if (isFragment) {
                 result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
