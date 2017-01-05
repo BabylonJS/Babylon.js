@@ -330,13 +330,22 @@ module BABYLON {
             }
         }
 
+        /**
+         * Legacy collision detection event support
+         */
+        public onCollideEvent: (collider:BABYLON.PhysicsImpostor, collidedWith:BABYLON.PhysicsImpostor) => void = null;
+
         //event and body object due to cannon's event-based architecture.
         public onCollide = (e: { body: any }) => {
-            if (!this._onPhysicsCollideCallbacks.length) return;
+            if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) return;
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {
+                // Legacy collision detection event support
+                if (this.onCollideEvent) {
+                    this.onCollideEvent(this, otherImpostor);
+                }
                 this._onPhysicsCollideCallbacks.filter((obj) => {
-                    return (obj.otherImpostors.length === 0 || obj.otherImpostors.indexOf(otherImpostor) !== -1)
+                    return obj.otherImpostors.indexOf(otherImpostor) !== -1
                 }).forEach((obj) => {
                     obj.callback(this, otherImpostor);
                 })

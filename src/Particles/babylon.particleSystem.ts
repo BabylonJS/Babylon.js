@@ -41,6 +41,8 @@
 
         public layerMask: number = 0x0FFFFFFF;
 
+        public customShader: any = null;
+
         /**
         * An event triggered when the system is disposed.
         * @type {BABYLON.Observable}
@@ -447,9 +449,17 @@
 
         // Clone
         public clone(name: string, newEmitter: any): ParticleSystem {
-            var result = new ParticleSystem(name, this._capacity, this._scene);
+            var custom: Effect = null;
+            var program: any = null;
+            if (this.customShader != null) {
+                program = this.customShader;
+                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var result = new ParticleSystem(name, this._capacity, this._scene, custom);
+            result.customShader = program;
 
-            Tools.DeepCopy(this, result, ["particles"]);
+            Tools.DeepCopy(this, result, ["particles", "customShader"]);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;
@@ -509,13 +519,22 @@
             serializationObject.targetStopDuration = this.targetStopDuration;
             serializationObject.textureMask = this.textureMask.asArray();
             serializationObject.blendMode = this.blendMode;
+            serializationObject.customShader = this.customShader;
 
             return serializationObject;
         }
 
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var name = parsedParticleSystem.name;
-            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+            var custom: Effect = null;
+            var program: any = null;
+            if (parsedParticleSystem.customShader) {
+                program = parsedParticleSystem.customShader;
+                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom);
+            particleSystem.customShader = program;
 
             if (parsedParticleSystem.id) {
                 particleSystem.id = parsedParticleSystem.id;
