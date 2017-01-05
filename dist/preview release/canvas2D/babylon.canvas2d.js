@@ -7372,7 +7372,7 @@ var BABYLON;
                 t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
                 var las = this.actualScale;
                 t.decompose(RenderablePrim2D_1._s, RenderablePrim2D_1._r, RenderablePrim2D_1._t);
-                var scale = new BABYLON.Vector3(RenderablePrim2D_1._s.y / las.x, RenderablePrim2D_1._s.y / las.y, 1);
+                var scale = new BABYLON.Vector3(RenderablePrim2D_1._s.x / las.x, RenderablePrim2D_1._s.y / las.y, 1);
                 t = BABYLON.Matrix.Compose(scale, RenderablePrim2D_1._r, RenderablePrim2D_1._t);
                 tx = new BABYLON.Vector4(t.m[0], t.m[4], 0, t.m[12]);
                 ty = new BABYLON.Vector4(t.m[1], t.m[5], 0, t.m[13]);
