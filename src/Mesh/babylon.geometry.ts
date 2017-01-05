@@ -319,14 +319,6 @@
                 return;
             }
 
-            for (var kind in this._vertexBuffers) {
-                this._vertexBuffers[kind].dispose();
-            }
-
-            if (this._indexBuffer && this._engine._releaseBuffer(this._indexBuffer)) {
-                this._indexBuffer = null;
-            }
-
             meshes.splice(index, 1);
 
             mesh._geometry = null;

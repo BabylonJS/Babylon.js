@@ -27,6 +27,20 @@ interface Window {
     msURL: any;
 }
 
+interface WebGLVertexArrayObject {
+
+}
+
+interface WebGLRenderingContext {
+    drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
+    drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
+    vertexAttribDivisor(index: number, divisor: number): void;
+
+    createVertexArray(): any;
+    bindVertexArray(vao: WebGLVertexArrayObject): void;
+    deleteVertexArray(vao: WebGLVertexArrayObject): void;
+}
+
 interface AudioContext extends EventTarget {
     decodeAudioData(audioData: ArrayBuffer, successCallback: DecodeSuccessCallback, errorCallback?: any): void;
 }
