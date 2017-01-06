@@ -6590,6 +6590,14 @@ var BABYLON;
             }
             // GL
             if (!options.disableWebGL2Support) {
+                try {
+                    this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                    if (this._gl) {
+                        this._webGLVersion = 2.0;
+                    }
+                }
+                catch (e) {
+                }
             }
             if (!this._gl) {
                 if (!canvas) {
@@ -29105,6 +29113,7 @@ var BABYLON;
             this.minAngularSpeed = 0;
             this.maxAngularSpeed = 0;
             this.layerMask = 0x0FFFFFFF;
+            this.customShader = null;
             /**
             * An event triggered when the system is disposed.
             * @type {BABYLON.Observable}
@@ -29413,8 +29422,16 @@ var BABYLON;
         };
         // Clone
         ParticleSystem.prototype.clone = function (name, newEmitter) {
-            var result = new ParticleSystem(name, this._capacity, this._scene);
-            BABYLON.Tools.DeepCopy(this, result, ["particles"]);
+            var custom = null;
+            var program = null;
+            if (this.customShader != null) {
+                program = this.customShader;
+                var defines = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var result = new ParticleSystem(name, this._capacity, this._scene, custom);
+            result.customShader = program;
+            BABYLON.Tools.DeepCopy(this, result, ["particles", "customShader"]);
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;
             }
@@ -29464,11 +29481,20 @@ var BABYLON;
             serializationObject.targetStopDuration = this.targetStopDuration;
             serializationObject.textureMask = this.textureMask.asArray();
             serializationObject.blendMode = this.blendMode;
+            serializationObject.customShader = this.customShader;
             return serializationObject;
         };
         ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
             var name = parsedParticleSystem.name;
-            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+            var custom = null;
+            var program = null;
+            if (parsedParticleSystem.customShader) {
+                program = parsedParticleSystem.customShader;
+                var defines = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom);
+            particleSystem.customShader = program;
             if (parsedParticleSystem.id) {
                 particleSystem.id = parsedParticleSystem.id;
             }
@@ -32493,14 +32519,22 @@ var BABYLON;
                     _this.object.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
                 }
             };
+            /**
+             * Legacy collision detection event support
+             */
+            this.onCollideEvent = null;
             //event and body object due to cannon's event-based architecture.
             this.onCollide = function (e) {
-                if (!_this._onPhysicsCollideCallbacks.length)
+                if (!_this._onPhysicsCollideCallbacks.length && !_this.onCollideEvent)
                     return;
                 var otherImpostor = _this._physicsEngine.getImpostorWithPhysicsBody(e.body);
                 if (otherImpostor) {
+                    // Legacy collision detection event support
+                    if (_this.onCollideEvent) {
+                        _this.onCollideEvent(_this, otherImpostor);
+                    }
                     _this._onPhysicsCollideCallbacks.filter(function (obj) {
-                        return (obj.otherImpostors.length === 0 || obj.otherImpostors.indexOf(otherImpostor) !== -1);
+                        return obj.otherImpostors.indexOf(otherImpostor) !== -1;
                     }).forEach(function (obj) {
                         obj.callback(_this, otherImpostor);
                     });

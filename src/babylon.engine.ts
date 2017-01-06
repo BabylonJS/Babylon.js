@@ -536,14 +536,14 @@
 
             // GL
             if (!options.disableWebGL2Support) {
-                // try {
-                //     this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-                //     if (this._gl) {
-                //         this._webGLVersion = 2.0;
-                //     }
-                // } catch (e) {
-                // // Do nothing
-                // }  
+                try {
+                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                    if (this._gl) {
+                        this._webGLVersion = 2.0;
+                    }
+                } catch (e) {
+                // Do nothing
+                }  
             }
 
             if (!this._gl) {
