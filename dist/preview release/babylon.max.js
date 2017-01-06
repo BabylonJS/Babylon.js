@@ -6553,6 +6553,8 @@ var BABYLON;
             this._currentBufferPointers = [];
             this._currentInstanceLocations = new Array();
             this._currentInstanceBuffers = new Array();
+            this._vaoRecordInProgress = false;
+            this._mustWipeVertexAttributes = false;
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
             this._onVRFullScreenTriggered = function () {
@@ -6664,7 +6666,7 @@ var BABYLON;
             this._caps.textureHalfFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
             this._caps.textureHalfFloatRender = renderToHalfFloat;
-            // Vertex array object
+            // Vertex array object 
             if (this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
             }
@@ -7448,6 +7450,7 @@ var BABYLON;
         Engine.prototype._resetVertexBufferBinding = function () {
             this.bindArrayBuffer(null);
             this._cachedVertexBuffers = null;
+            this._unBindVertexArrayObject();
         };
         Engine.prototype.createVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
@@ -7533,7 +7536,7 @@ var BABYLON;
             this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
         };
         Engine.prototype.bindBuffer = function (buffer, target) {
-            if (this._currentBoundBuffer[target] !== buffer) {
+            if (this._vaoRecordInProgress || this._currentBoundBuffer[target] !== buffer) {
                 this._gl.bindBuffer(target, buffer);
                 this._currentBoundBuffer[target] = buffer;
             }
@@ -7574,9 +7577,67 @@ var BABYLON;
                     changed = true;
                 }
             }
-            if (changed) {
+            if (changed || this._vaoRecordInProgress) {
                 this.bindArrayBuffer(buffer);
                 this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
+            }
+        };
+        Engine.prototype._bindIndexBufferWithCache = function (indexBuffer) {
+            if (this._cachedIndexBuffer !== indexBuffer) {
+                this._cachedIndexBuffer = indexBuffer;
+                this.bindIndexBuffer(indexBuffer);
+                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
+                this._unBindVertexArrayObject();
+            }
+        };
+        Engine.prototype._bindVertexBuffersAttributes = function (vertexBuffers, effect) {
+            var attributes = effect.getAttributesNames();
+            if (!this._vaoRecordInProgress) {
+                this._unBindVertexArrayObject();
+            }
+            this.unbindAllAttributes();
+            for (var index = 0; index < attributes.length; index++) {
+                var order = effect.getAttributeLocation(index);
+                if (order >= 0) {
+                    var vertexBuffer = vertexBuffers[attributes[index]];
+                    if (!vertexBuffer) {
+                        continue;
+                    }
+                    this._gl.enableVertexAttribArray(order);
+                    if (!this._vaoRecordInProgress) {
+                        this._vertexAttribArraysEnabled[order] = true;
+                    }
+                    var buffer = vertexBuffer.getBuffer();
+                    this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+                    if (vertexBuffer.getIsInstanced()) {
+                        this._gl.vertexAttribDivisor(order, 1);
+                        if (!this._vaoRecordInProgress) {
+                            this._currentInstanceLocations.push(order);
+                            this._currentInstanceBuffers.push(buffer);
+                        }
+                    }
+                }
+            }
+        };
+        Engine.prototype.recordVertexArrayObject = function (vertexBuffers, indexBuffer, effect) {
+            var vao = this._gl.createVertexArray();
+            this._vaoRecordInProgress = true;
+            this._gl.bindVertexArray(vao);
+            this._mustWipeVertexAttributes = true;
+            this._bindVertexBuffersAttributes(vertexBuffers, effect);
+            this.bindIndexBuffer(indexBuffer);
+            this._vaoRecordInProgress = false;
+            this._gl.bindVertexArray(null);
+            return vao;
+        };
+        Engine.prototype.bindVertexArrayObject = function (vertexArrayObject, indexBuffer) {
+            if (this._cachedVertexArrayObject !== vertexArrayObject) {
+                this._cachedVertexArrayObject = vertexArrayObject;
+                this._gl.bindVertexArray(vertexArrayObject);
+                this._cachedVertexBuffers = null;
+                this._cachedIndexBuffer = null;
+                this._uintIndicesCurrentlySet = indexBuffer != null && indexBuffer.is32Bits;
+                this._mustWipeVertexAttributes = true;
             }
         };
         Engine.prototype.bindBuffersDirectly = function (vertexBuffer, indexBuffer, vertexDeclaration, vertexStrideSize, effect) {
@@ -7598,42 +7659,22 @@ var BABYLON;
                     }
                 }
             }
-            if (this._cachedIndexBuffer !== indexBuffer) {
-                this._cachedIndexBuffer = indexBuffer;
-                this.bindIndexBuffer(indexBuffer);
-                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
+            this._bindIndexBufferWithCache(indexBuffer);
+        };
+        Engine.prototype._unBindVertexArrayObject = function () {
+            if (!this._cachedVertexArrayObject) {
+                return;
             }
+            this._cachedVertexArrayObject = null;
+            this._gl.bindVertexArray(null);
         };
         Engine.prototype.bindBuffers = function (vertexBuffers, indexBuffer, effect) {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
-                var attributes = effect.getAttributesNames();
-                this.unbindAllAttributes();
-                for (var index = 0; index < attributes.length; index++) {
-                    var order = effect.getAttributeLocation(index);
-                    if (order >= 0) {
-                        var vertexBuffer = vertexBuffers[attributes[index]];
-                        if (!vertexBuffer) {
-                            continue;
-                        }
-                        this._gl.enableVertexAttribArray(order);
-                        this._vertexAttribArraysEnabled[order] = true;
-                        var buffer = vertexBuffer.getBuffer();
-                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
-                        if (vertexBuffer.getIsInstanced()) {
-                            this._gl.vertexAttribDivisor(order, 1);
-                            this._currentInstanceLocations.push(order);
-                            this._currentInstanceBuffers.push(buffer);
-                        }
-                    }
-                }
+                this._bindVertexBuffersAttributes(vertexBuffers, effect);
             }
-            if (indexBuffer != null && this._cachedIndexBuffer !== indexBuffer) {
-                this._cachedIndexBuffer = indexBuffer;
-                this.bindIndexBuffer(indexBuffer);
-                this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
-            }
+            this._bindIndexBufferWithCache(indexBuffer);
         };
         Engine.prototype.unbindInstanceAttributes = function () {
             var boundBuffer;
@@ -7648,6 +7689,9 @@ var BABYLON;
             }
             this._currentInstanceBuffers.length = 0;
             this._currentInstanceLocations.length = 0;
+        };
+        Engine.prototype.releaseVertexArrayObject = function (vao) {
+            this._gl.deleteVertexArray(vao);
         };
         Engine.prototype._releaseBuffer = function (buffer) {
             buffer.references--;
@@ -7812,12 +7856,6 @@ var BABYLON;
             return results;
         };
         Engine.prototype.enableEffect = function (effect) {
-            //if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
-            //    if (effect && effect.onBind) {
-            //        effect.onBind(effect);
-            //    }
-            //    return;
-            //}
             // Use program
             this.setProgram(effect.getProgram());
             this._currentEffect = effect;
@@ -8035,6 +8073,7 @@ var BABYLON;
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
+            this._unBindVertexArrayObject();
         };
         Engine.prototype.setSamplingMode = function (texture, samplingMode) {
             var gl = this._gl;
@@ -8966,14 +9005,20 @@ var BABYLON;
             }
         };
         Engine.prototype.unbindAllAttributes = function () {
+            if (this._mustWipeVertexAttributes) {
+                this._mustWipeVertexAttributes = false;
+                for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
+                    this._gl.disableVertexAttribArray(i);
+                    this._vertexAttribArraysEnabled[i] = false;
+                }
+                return;
+            }
             for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
                 if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
                     continue;
                 }
-                if (this._vertexAttribArraysEnabled[i]) {
-                    this._gl.disableVertexAttribArray(i);
-                    this._vertexAttribArraysEnabled[i] = false;
-                }
+                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArraysEnabled[i] = false;
             }
         };
         // Dispose
@@ -20685,7 +20730,7 @@ var BABYLON;
                 }
             }
             // VBOs
-            engine.bindBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
+            this._geometry._bind(effect, indexToBind);
         };
         Mesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
@@ -20813,7 +20858,7 @@ var BABYLON;
             else {
                 instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
             }
-            engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
+            this.geometry._bind(effect);
             this._draw(subMesh, fillMode, instancesCount);
             engine.unbindInstanceAttributes();
         };
@@ -25390,6 +25435,7 @@ var BABYLON;
     var Effect = (function () {
         function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, fallbacks, onCompiled, onError, indexParameters) {
             var _this = this;
+            this.uniqueId = 0;
             this._isReady = false;
             this._compilationError = "";
             this._valueCache = {};
@@ -25402,6 +25448,7 @@ var BABYLON;
             this.onError = onError;
             this.onCompiled = onCompiled;
             this._indexParameters = indexParameters;
+            this.uniqueId = Effect._uniqueIdSeed++;
             var vertexSource;
             var fragmentSource;
             if (baseName.vertexElement) {
@@ -25436,6 +25483,13 @@ var BABYLON;
                 });
             });
         }
+        Object.defineProperty(Effect.prototype, "key", {
+            get: function () {
+                return this._key;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Properties
         Effect.prototype.isReady = function () {
             return this._isReady;
@@ -26048,6 +26102,7 @@ var BABYLON;
         };
         return Effect;
     }());
+    Effect._uniqueIdSeed = 0;
     // Statics
     Effect.ShadersStore = {};
     Effect.IncludesShadersStore = {};
@@ -36709,6 +36764,9 @@ var BABYLON;
                 this._totalVertices = 0;
                 this._indices = [];
             }
+            if (this._engine.getCaps().vertexArrayObject) {
+                this._vertexArrayObjects = {};
+            }
             // applyToMesh
             if (mesh) {
                 if (mesh instanceof BABYLON.LinesMesh) {
@@ -36795,6 +36853,10 @@ var BABYLON;
                 }
             }
             this.notifyUpdate(kind);
+            if (this._vertexArrayObjects) {
+                this._disposeVertexArrayObjects();
+                this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+            }
         };
         Geometry.prototype.updateVerticesDataDirectly = function (kind, data, offset) {
             var vertexBuffer = this.getVertexBuffer(kind);
@@ -36834,6 +36896,21 @@ var BABYLON;
                     }
                 }
             }
+        };
+        Geometry.prototype._bind = function (effect, indexToBind) {
+            if (indexToBind === void 0) { indexToBind = undefined; }
+            if (indexToBind === undefined) {
+                indexToBind = this._indexBuffer;
+            }
+            if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
+                this._engine.bindBuffers(this.getVertexBuffers(), indexToBind, effect);
+                return;
+            }
+            // Using VAO
+            if (!this._vertexArrayObjects[effect.key]) {
+                this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(this.getVertexBuffers(), indexToBind, effect);
+            }
+            this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
         };
         Geometry.prototype.getTotalVertices = function () {
             if (!this.isReady()) {
@@ -36947,12 +37024,6 @@ var BABYLON;
             var index = meshes.indexOf(mesh);
             if (index === -1) {
                 return;
-            }
-            for (var kind in this._vertexBuffers) {
-                this._vertexBuffers[kind].dispose();
-            }
-            if (this._indexBuffer && this._engine._releaseBuffer(this._indexBuffer)) {
-                this._indexBuffer = null;
             }
             meshes.splice(index, 1);
             mesh._geometry = null;
@@ -37084,6 +37155,14 @@ var BABYLON;
         Geometry.prototype.isDisposed = function () {
             return this._isDisposed;
         };
+        Geometry.prototype._disposeVertexArrayObjects = function () {
+            if (this._vertexArrayObjects) {
+                for (var kind in this._vertexArrayObjects) {
+                    this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
+                }
+                this._vertexArrayObjects = {};
+            }
+        };
         Geometry.prototype.dispose = function () {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
@@ -37092,6 +37171,7 @@ var BABYLON;
                 this.releaseForMesh(meshes[index]);
             }
             this._meshes = [];
+            this._disposeVertexArrayObjects();
             for (var kind in this._vertexBuffers) {
                 this._vertexBuffers[kind].dispose();
             }
@@ -52610,7 +52690,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 
