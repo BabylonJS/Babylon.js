@@ -63,7 +63,9 @@
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onBind: (effect: Effect) => void;
+        public uniqueId = 0;
 
+        private static _uniqueIdSeed = 0;
         private _engine: Engine;
         private _uniformsNames: string[];
         private _samplers: string[];
@@ -90,6 +92,8 @@
             this.onCompiled = onCompiled;
 
             this._indexParameters = indexParameters;
+
+            this.uniqueId = Effect._uniqueIdSeed++;
 
             var vertexSource;
             var fragmentSource;
@@ -127,6 +131,10 @@
                     });
                 });
             });
+        }
+
+        public get key(): string {
+            return this._key;
         }
 
         // Properties
