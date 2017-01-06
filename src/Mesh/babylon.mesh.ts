@@ -825,7 +825,7 @@
             }
 
             // VBOs
-            engine.bindBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
+            this._geometry._bind(effect, indexToBind);
         }
 
         public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void {
@@ -976,7 +976,8 @@
             } else {
                 instancesBuffer.updateDirectly(this._instancesData, 0, instancesCount);
             }
-            engine.bindBuffers(this.geometry.getVertexBuffers(), this.geometry.getIndexBuffer(), effect);
+
+            this.geometry._bind(effect);
 
             this._draw(subMesh, fillMode, instancesCount);
 

@@ -497,6 +497,9 @@
 
         private _externalData: StringDictionary<Object>;
         private _bindedRenderFunction: any;
+
+        private _vaoRecordInProgress = false;
+        private _mustWipeVertexAttributes = false;
         
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
@@ -534,10 +537,10 @@
             // GL
             if (!options.disableWebGL2Support) {
                 try {
-                this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-                if (this._gl) {
-                    this._webGLVersion = 2.0;
-                }
+                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                    if (this._gl) {
+                        this._webGLVersion = 2.0;
+                    }
                 } catch (e) {
                 // Do nothing
                 }  
@@ -1253,7 +1256,7 @@
         private _resetVertexBufferBinding(): void {
             this.bindArrayBuffer(null);
             this._cachedVertexBuffers = null;
-            this._cachedVertexArrayObject = null;
+            this._unBindVertexArrayObject();
         }
 
         public createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
@@ -1352,10 +1355,10 @@
         }
 
         private bindBuffer(buffer: WebGLBuffer, target: number): void {
-            if (this._currentBoundBuffer[target] !== buffer) {
+            if (this._vaoRecordInProgress || this._currentBoundBuffer[target] !== buffer) {
                 this._gl.bindBuffer(target, buffer);
                 this._currentBoundBuffer[target] = buffer;
-            }
+           }
         }
 
         public updateArrayBuffer(data: Float32Array): void {
@@ -1378,7 +1381,7 @@
                 if (pointer.offset !== offset) { pointer.offset = offset; changed = true; }
             }
 
-            if (changed) {
+            if (changed || this._vaoRecordInProgress) {
                 this.bindArrayBuffer(buffer);
                 this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
             }
@@ -1389,11 +1392,17 @@
                 this._cachedIndexBuffer = indexBuffer;
                 this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
+
+                this._unBindVertexArrayObject();
             }
         }
 
-        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: VertexBuffer; }, effect: Effect, storeInstanceLocationsAndBuffers = false) {
+        private _bindVertexBuffersAttributes(vertexBuffers: { [key: string]: VertexBuffer; }, effect: Effect) {
             var attributes = effect.getAttributesNames();
+
+            if (!this._vaoRecordInProgress) {
+                this._unBindVertexArrayObject();
+            }
 
             this.unbindAllAttributes();
 
@@ -1408,14 +1417,16 @@
                     }
 
                     this._gl.enableVertexAttribArray(order);
-                    this._vertexAttribArraysEnabled[order] = true;
+                    if (!this._vaoRecordInProgress) {
+                        this._vertexAttribArraysEnabled[order] = true;
+                    }
 
                     var buffer = vertexBuffer.getBuffer();
                     this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
 
                     if (vertexBuffer.getIsInstanced()) {
                         this._gl.vertexAttribDivisor(order, 1);
-                        if (storeInstanceLocationsAndBuffers) {
+                        if (!this._vaoRecordInProgress) {
                             this._currentInstanceLocations.push(order);
                             this._currentInstanceBuffers.push(buffer);
                         }
@@ -1427,10 +1438,15 @@
         public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): WebGLVertexArrayObject {
             var vao = this._gl.createVertexArray();
 
+            this._vaoRecordInProgress = true;
             this._gl.bindVertexArray(vao);
+            
+            this._mustWipeVertexAttributes = true;
+            this._bindVertexBuffersAttributes(vertexBuffers, effect);
 
-            this._bindVertexBuffersAttributes(vertexBuffers, effect, false);
+            this.bindIndexBuffer(indexBuffer);
 
+            this._vaoRecordInProgress = false;
             this._gl.bindVertexArray(null);
 
             return vao;
@@ -1441,9 +1457,12 @@
                 this._cachedVertexArrayObject = vertexArrayObject;
 
                 this._gl.bindVertexArray(vertexArrayObject);
-            }
+                this._cachedVertexBuffers = null;
+                this._cachedIndexBuffer = null;
 
-            this._bindIndexBufferWithCache(indexBuffer);
+                this._uintIndicesCurrentlySet = indexBuffer != null && indexBuffer.is32Bits; 
+                this._mustWipeVertexAttributes = true;
+            }
         }
 
         public bindBuffersDirectly(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
@@ -1476,12 +1495,21 @@
             this._bindIndexBufferWithCache(indexBuffer);
         }
 
+        private _unBindVertexArrayObject(): void {
+            if (!this._cachedVertexArrayObject) {
+                return;
+            }
+
+            this._cachedVertexArrayObject = null;
+            this._gl.bindVertexArray(null);
+        }
+
         public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
                 this._cachedEffectForVertexBuffers = effect;
-
-                this._bindVertexBuffersAttributes(vertexBuffers, effect, true);
+                
+                this._bindVertexBuffersAttributes(vertexBuffers, effect);
             }
 
             this._bindIndexBufferWithCache(indexBuffer);
@@ -1500,6 +1528,10 @@
             }
             this._currentInstanceBuffers.length = 0;
             this._currentInstanceLocations.length = 0;
+        }
+
+        public releaseVertexArrayObject(vao: WebGLVertexArrayObject) {
+            this._gl.deleteVertexArray(vao);
         }
 
         public _releaseBuffer(buffer: WebGLBuffer): boolean {
@@ -1710,14 +1742,6 @@
         }
 
         public enableEffect(effect: Effect): void {
-            //if (!effect || !effect.getAttributesCount() || this._currentEffect === effect) {
-
-            //    if (effect && effect.onBind) {
-            //        effect.onBind(effect);
-            //    }
-            //    return;
-            //}
-
             // Use program
             this.setProgram(effect.getProgram());
 
@@ -1994,6 +2018,7 @@
             this._cachedVertexBuffers = null;
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
+            this._unBindVertexArrayObject();
         }
 
         public setSamplingMode(texture: WebGLTexture, samplingMode: number): void {
@@ -3111,15 +3136,23 @@
         }
 
         public unbindAllAttributes() {
+            if (this._mustWipeVertexAttributes) {
+                this._mustWipeVertexAttributes = false;
+
+                for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
+                    this._gl.disableVertexAttribArray(i);
+                    this._vertexAttribArraysEnabled[i] = false;
+                }
+                return;
+            }
+
             for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
                 if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
                     continue;
                 }
 
-                if (this._vertexAttribArraysEnabled[i]) {
-                    this._gl.disableVertexAttribArray(i);
-                    this._vertexAttribArraysEnabled[i] = false;
-                }
+                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArraysEnabled[i] = false;
             }
         }
 
