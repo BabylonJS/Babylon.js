@@ -11,20 +11,6 @@
         return shader;
     };
 
-    var HALF_FLOAT_OES = 0x8D61;
-
-    var getWebGLTextureType = (gl: WebGLRenderingContext, type: number): number => {
-        if (type === Engine.TEXTURETYPE_FLOAT) {
-            return gl.FLOAT;
-        }
-        else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-            // Add Half Float Constant.
-            return HALF_FLOAT_OES;
-        }
-
-        return gl.UNSIGNED_BYTE;
-    };
-
     var getSamplingParameters = (samplingMode: number, generateMipMaps: boolean, gl: WebGLRenderingContext): { min: number; mag: number } => {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
@@ -197,6 +183,7 @@
         public textureHalfFloatRender: boolean;
         public textureLOD: boolean;
         public drawBuffersExtension;
+        public colorBufferFloat: boolean;
     }
 
     export interface EngineOptions extends WebGLContextAttributes {
@@ -243,6 +230,10 @@
         private static _GREATER = 0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
         private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
         private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
+
+        private static HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
+        private static RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
+        private static RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
 
         public static get NEVER(): number {
             return Engine._NEVER;
@@ -560,10 +551,6 @@
             if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
-
-            // Checks if some of the format renders first to allow the use of webgl inspector.
-            var renderToFullFloat = this._canRenderToFloatTexture();
-            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
             
             this._onBlur = () => {
                 this._windowIsBackground = true;
@@ -621,20 +608,25 @@
                                this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // also a requirement of OpenGL ES 3
             this._caps.atc   = this._gl.getExtension('WEBGL_compressed_texture_atc'  ) || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_atc'  );
             
-            this._caps.textureFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
             this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
+
+            // Checks if some of the format renders first to allow the use of webgl inspector.
+            this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float')
+
+            this._caps.textureFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
-            this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
-            this._caps.textureFloatRender = renderToFullFloat;
+            this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer();            
 
             this._caps.textureHalfFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
-            this._caps.textureHalfFloatRender = renderToHalfFloat;
+            this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
+            
+            this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
 
             // Vertex array object 
             if ( this._webGLVersion > 1) {
@@ -2439,7 +2431,7 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
             var depthStencilBuffer: WebGLRenderbuffer;
 
@@ -2733,12 +2725,13 @@
             texture.references = 1;
             texture.url = url;
 
-            var internalFormat = this._getInternalFormat(format);
-
             var textureType = gl.UNSIGNED_BYTE;
             if (type === Engine.TEXTURETYPE_FLOAT) {
                 textureType = gl.FLOAT;
             }
+
+            var internalFormat = this._getInternalFormat(format);
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
 
             var width = size;
             var height = width;
@@ -2784,30 +2777,19 @@
                             var mipSize = width >> level;
 
                             // mipData is order in +X -X +Y -Y +Z -Z
-                            gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
-                            gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
-                            gl.texImage2D(facesIndex[2], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
-                            gl.texImage2D(facesIndex[3], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
-                            gl.texImage2D(facesIndex[4], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
-                            gl.texImage2D(facesIndex[5], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                            gl.texImage2D(facesIndex[0], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                            gl.texImage2D(facesIndex[1], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                            gl.texImage2D(facesIndex[2], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                            gl.texImage2D(facesIndex[3], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                            gl.texImage2D(facesIndex[4], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                            gl.texImage2D(facesIndex[5], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
                         }
                     }
                     else {
-                        // Data are known to be in +X +Y +Z -X -Y -Z
-                        for (let index = 0; index < facesIndex.length; index++) {
-                            let faceData = rgbeDataArrays[index];
-                            gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
-                        }
+                        if (internalFormat === gl.RGB) {
+                            internalFormat = gl.RGBA;
 
-                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-
-                        // Workaround firefox bug fix https://bugzilla.mozilla.org/show_bug.cgi?id=1221822
-                        // By following the webgl standard changes from Revision 7, 2014/11/24
-                        // Firefox Removed the support for RGB32F, since it is not natively supported on all platforms where WebGL is implemented.
-                        if (textureType === gl.FLOAT && internalFormat === gl.RGB && gl.getError() === 1282) {
-                            Tools.Log("RGB32F not renderable on Firefox, trying fallback to RGBA32F.");
-
-                            // Data are known to be in +X +Y +Z -X -Y -Z
+                             // Data are known to be in +X +Y +Z -X -Y -Z
                             for (let index = 0; index < facesIndex.length; index++) {
                                 let faceData = <Float32Array>rgbeDataArrays[index];
 
@@ -2829,12 +2811,18 @@
                                 }
 
                                 // Reupload the face.
-                                gl.texImage2D(facesIndex[index], 0, gl.RGBA, width, height, 0, gl.RGBA, textureType, newFaceData);
+                                gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, newFaceData);
                             }
-
-                            // Try to generate mipmap again.
-                            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                         }
+                        else {
+                            // Data are known to be in +X +Y +Z -X -Y -Z
+                            for (let index = 0; index < facesIndex.length; index++) {
+                                let faceData = rgbeDataArrays[index];
+                                gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
+                            }
+                        }
+
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
                 }
                 else {
@@ -2845,7 +2833,7 @@
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
-                else if (textureType === HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
+                else if (textureType === Engine.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
@@ -3274,130 +3262,97 @@
             }
         }
 
-        private _canRenderToFloatTexture(): boolean {
+        private _canRenderToFloatFramebuffer(): boolean {
             if (this._webGLVersion > 1) {
-                return true;
+                return this._caps.colorBufferFloat;
             }
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_FLOAT);
         }
 
-        private _canRenderToHalfFloatTexture(): boolean {       
+        private _canRenderToHalfFloatFramebuffer(): boolean {       
             if (this._webGLVersion > 1) {
-                return true;
+                return this._caps.colorBufferFloat;
             }     
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+            return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT);
         }
 
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
-        private _canRenderToTextureOfType(format: number, extension: string): boolean {
-            try {
-                var tempcanvas = document.createElement("canvas");
-                tempcanvas.height = 16;
-                tempcanvas.width = 16;
-                var gl = <WebGLRenderingContext>(tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
+        private _canRenderToFramebuffer(type: number): boolean {
+            let gl = this._gl;
 
-                // extension.
-                var ext = gl.getExtension(extension);
-                if (!ext) {
-                    return false;
-                }
+            //clear existing errors
+            while(gl.getError() !== gl.NO_ERROR){}
 
-                // setup GLSL program
-                var vertexCode = `attribute vec4 a_position;
-                    void main() {
-                        gl_Position = a_position;
-                    }`;
-                var fragmentCode = `precision mediump float;
-                    uniform vec4 u_color;
-                    uniform sampler2D u_texture;
+            let successful = true;
 
-                    void main() {
-                        gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;
-                    }`;
-                var program = this.createShaderProgram(vertexCode, fragmentCode, null, gl);
-                gl.useProgram(program);
+            let texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), 1, 1, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-                // look up where the vertex data needs to go.
-                var positionLocation = gl.getAttribLocation(program, "a_position");
-                var colorLoc = gl.getUniformLocation(program, "u_color");
+            let fb = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
 
-                // provide texture coordinates for the rectangle.
-                var positionBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                    -1.0, -1.0,
-                    1.0, -1.0,
-                    -1.0, 1.0,
-                    -1.0, 1.0,
-                    1.0, -1.0,
-                    1.0, 1.0]), gl.STATIC_DRAW);
-                gl.enableVertexAttribArray(positionLocation);
-                gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+            successful = successful && (status === gl.FRAMEBUFFER_COMPLETE);
+            successful = successful && (gl.getError() === gl.NO_ERROR);
 
-                var whiteTex = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, whiteTex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
-
-                var tex = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-                var fb = gl.createFramebuffer();
-                gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-                gl.viewport(0, 0, 1, 1);
-
-                var cleanup = () => {
-                    gl.deleteProgram(program);
-                    gl.disableVertexAttribArray(positionLocation);
-                    gl.deleteBuffer(positionBuffer);
-                    gl.deleteFramebuffer(fb);
-                    gl.deleteTexture(whiteTex);
-                    gl.deleteTexture(tex);
-                };
-
-                var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-                if (status !== gl.FRAMEBUFFER_COMPLETE) {
-                    Tools.Log("GL Support: can **NOT** render to " + format + " texture");
-                    cleanup();
-                    return false;
-                }
-
-                // Draw the rectangle.
-                gl.bindTexture(gl.TEXTURE_2D, whiteTex);
-                gl.uniform4fv(colorLoc, <any>[0, 10, 20, 1]);
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-                gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-                gl.clearColor(1, 0, 0, 1);
+            //try render by clearing frame buffer's color buffer
+            if(successful){
                 gl.clear(gl.COLOR_BUFFER_BIT);
-
-                gl.uniform4fv(colorLoc, <any>[0, 1 / 10, 1 / 20, 1]);
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-                var pixel = new Uint8Array(4);
-                gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-                if (pixel[0] !== 0 ||
-                    pixel[1] < 248 ||
-                    pixel[2] < 248 ||
-                    pixel[3] < 254) {
-                    BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
-                    cleanup();
-                    return false;
-                }
-
-                // Succesfully rendered to "format" texture.
-                cleanup();
-                return true;
+                successful = successful && (gl.getError() === gl.NO_ERROR);
             }
-            catch (e) {
-                return false;
+
+            //try reading from frame to ensure render occurs (just creating the FBO is not sufficient to determine if rendering is supported)
+            if(successful){
+                //in practice it's sufficient to just read from the backbuffer rather than handle potentially issues reading from the texture
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                let readFormat = gl.RGBA;
+                let readType = gl.UNSIGNED_BYTE;
+                let buffer = new Uint8Array(4);
+                gl.readPixels(0, 0, 1, 1, readFormat, readType, buffer);
+                successful = successful && (gl.getError() === gl.NO_ERROR);
             }
+
+            //clean up
+            gl.deleteTexture(texture);
+            gl.deleteFramebuffer(fb);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            //clear accumulated errors
+            while(!successful && (gl.getError() !== gl.NO_ERROR)) { }
+
+            return successful;
         }
+
+        private _getWebGLTextureType(type: number) : number {
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                return this._gl.FLOAT;
+            }
+            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+                // Add Half Float Constant.
+                return Engine.HALF_FLOAT_OES;
+            }
+
+            return this._gl.UNSIGNED_BYTE;
+        };
+
+        private _getRGBABufferInternalSizedFormat(type: number) : number {
+            if (this._webGLVersion === 1) {
+                return this._gl.RGBA;
+            }
+
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                return Engine.RGBA32F;
+            }
+            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+                return Engine.RGBA16F;
+            }
+
+            return this._gl.RGBA;
+        };
 
         // Statics
         public static isSupported(): boolean {
