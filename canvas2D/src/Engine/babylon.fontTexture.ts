@@ -21,10 +21,182 @@
         [char: string]: CharInfo;
     }
 
-    export class FontTexture extends Texture {
+    /**
+     * This is an abstract base class to hold a Texture that will contain a FontMap
+     */
+    export abstract class BaseFontTexture extends Texture {
+
+        BaseFontTexture() {
+            this._cachedFontId = null;           
+        }
+
+        /**
+         * Is the Font is using Super Sampling (each font texel is doubled).
+         */
+        public get isSuperSampled(): boolean {
+            return this._superSample;
+        }
+
+        /**
+         * Is the Font was rendered using the Signed Distance Field algorithm
+         * @returns {} 
+         */
+        public get isSignedDistanceField(): boolean {
+            return this._signedDistanceField;
+        }
+
+        /**
+         * Get the Width (in pixel) of the Space character
+         */
+        public get spaceWidth(): number {
+            return this._spaceWidth;
+        }
+
+        /**
+         * Get the Line height (in pixel)
+         */
+        public get lineHeight(): number {
+            return this._lineHeight;
+        }
+
+        /**
+         * When the FontTexture is retrieved through the FontCache, there's a reference counter that is incremented for each use.
+         * You also have the possibility to extend the lifetime of the FontTexture when passing it to another object by calling this method
+         * Don't forget to call the corresponding decCachedFontTextureCounter method when you no longer have use of the FontTexture.
+         * Each call to incCachedFontTextureCounter must have a corresponding call to decCachedFontTextureCounter.
+         */
+        abstract incCachedFontTextureCounter();
+
+        /**
+         * Decrement the reference counter, if it reaches 0 the FontTexture is disposed
+         */
+        abstract decCachedFontTextureCounter();
+
+        /**
+         * Is the font dynamically updated, if true is returned then you have to call the update() before using the font in rendering if new character were adding using getChar()
+         */
+        abstract get isDynamicFontTexture(): boolean;
+
+        /**
+         * Will fetch the new characters retrieved with getChar() to the texture.
+         * If there were no new char, this call is harmless and quit in no time.
+         * If there were new chars a texture lock/update is made, which is a costy operation.
+         */
+        abstract update(): void;
+
+        /**
+         * Measure the width/height that will take a given text
+         * @param text the text to measure
+         * @param tabulationSize the size (in space character) of the tabulation character, default value must be 4
+         */
+        abstract measureText(text: string, tabulationSize?: number): Size;
+
+        /**
+         * Retrieve the CharInfo object for a given character
+         * @param char the character to retrieve the CharInfo object from (e.g.: "A", "a", etc.)
+         */
+        abstract getChar(char: string): CharInfo;
+
+        protected _lineHeight: number;
+        protected _spaceWidth;
+        protected _superSample: boolean;
+        protected _signedDistanceField: boolean;
+        protected _usedCounter = 1;
+        protected _cachedFontId: string;
+    }
+
+    export class BitmapFontTexture extends BaseFontTexture {
+
+        public static GetCachedFontTexture(scene: Scene, fontTexture: Texture): BitmapFontTexture {
+            let dic = scene.getOrAddExternalDataWithFactory("BitmapFontTextureCache", () => new StringDictionary<BitmapFontTexture>());
+
+            let ft = dic.get(fontTexture.uid);
+            if (ft) {
+                ++ft._usedCounter;
+                return ft;
+            }
+
+            dic.add(fontTexture.uid, fontTexture);
+
+            return ft;
+        }
+
+        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
+            let dic = scene.getExternalData<StringDictionary<FontTexture>>("BitmapFontTextureCache");
+            if (!dic) {
+                return;
+            }
+
+            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            var font = dic.get(lfn);
+            if (--font._usedCounter === 0) {
+                dic.remove(lfn);
+                font.dispose();
+            }
+        }
+
+        /**
+         * When the FontTexture is retrieved through the FontCache, there's a reference counter that is incremented for each use.
+         * You also have the possibility to extend the lifetime of the FontTexture when passing it to another object by calling this method
+         * Don't forget to call the corresponding decCachedFontTextureCounter method when you no longer have use of the FontTexture.
+         * Each call to incCachedFontTextureCounter must have a corresponding call to decCachedFontTextureCounter.
+         */
+        incCachedFontTextureCounter() {
+            
+        }
+
+        /**
+         * Decrement the reference counter, if it reaches 0 the FontTexture is disposed
+         */
+        decCachedFontTextureCounter() {
+            
+        }
+
+        /**
+         * Is the font dynamically updated, if true is returned then you have to call the update() before using the font in rendering if new character were adding using getChar()
+         */
+        get isDynamicFontTexture(): boolean {
+            return false;
+        }
+
+        /**
+         * This method does nothing for a BitmapFontTexture object as it's a static texture
+         */
+        update(): void {
+        }
+
+        /**
+         * Measure the width/height that will take a given text
+         * @param text the text to measure
+         * @param tabulationSize the size (in space character) of the tabulation character, default value must be 4
+         */
+        measureText(text: string, tabulationSize?: number): Size {
+            return null;
+
+        }
+
+        /**
+         * Retrieve the CharInfo object for a given character
+         * @param char the character to retrieve the CharInfo object from (e.g.: "A", "a", etc.)
+         */
+        getChar(char: string): CharInfo {
+            return null;
+        }
+
+    }
+
+    /**
+     * This class is a special kind of texture which generates on the fly characters of a given css style "fontName".
+     * The generated texture will be updated when new characters will be retrieved using the getChar() method, but you have
+     *  to call the update() method for the texture to fetch these changes, you can harmlessly call update any time you want, if no
+     *  change were made, nothing will happen.
+     * The Font Texture can be rendered in three modes: normal size, super sampled size (x2) or using Signed Distance Field rendering.
+     * Signed Distance Field should be prefered because the texture can be rendered using AlphaTest instead of Transparency, which is way more faster. More about SDF here (http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
+     * The only flaw of SDF is that the rendering quality may not be the best or the edges too sharp is the font thickness is too thin.
+     */
+    export class FontTexture extends BaseFontTexture {
         private _canvas: HTMLCanvasElement;
         private _context: CanvasRenderingContext2D;
-        private _lineHeight: number;
         private _lineHeightSuper: number;
         private _xMargin: number;
         private _yMargin: number;
@@ -33,39 +205,17 @@
         private _charInfos: ICharInfoMap = {};
         private _curCharCount = 0;
         private _lastUpdateCharCount = -1;
-        private _spaceWidth;
         private _spaceWidthSuper;
-        private _usedCounter = 1;
-        private _superSample: boolean;
         private _sdfCanvas: HTMLCanvasElement;
         private _sdfContext: CanvasRenderingContext2D;
-        private _signedDistanceField: boolean;
-        private _cachedFontId: string;
         private _sdfScale: number;
 
-        public get isSuperSampled(): boolean {
-            return this._superSample;
+        get isDynamicFontTexture(): boolean {
+            return true;
         }
 
-        public get isSignedDistanceField(): boolean {
-            return this._signedDistanceField;
-        }
-
-        public get spaceWidth(): number {
-            return this._spaceWidth;
-        }
-
-        public get lineHeight(): number {
-            return this._lineHeight;
-        }
-
-        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
-            let s = <any>scene;
-            if (!s.__fontTextureCache__) {
-                s.__fontTextureCache__ = new StringDictionary<FontTexture>();
-            }
-
-            let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
+        public static GetCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false): FontTexture {
+            let dic = scene.getOrAddExternalDataWithFactory("FontTextureCache", () => new StringDictionary<FontTexture>());
 
             let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
             let ft = dic.get(lfn);
@@ -82,8 +232,7 @@
         }
 
         public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
-            let s = <any>scene;
-            let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
+            let dic = scene.getExternalData<StringDictionary<FontTexture>>("FontTextureCache");
             if (!dic) {
                 return;
             }
@@ -132,7 +281,6 @@
             this._context.font = font;
             this._context.fillStyle = "white";
             this._context.textBaseline = "top";
-            this._cachedFontId = null;
 
             var res = this.getFontHeight(font);
             this._lineHeightSuper = res.height+4;
@@ -541,15 +689,15 @@
          * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
          */
         public decCachedFontTextureCounter() {
-            let s = <any>this.getScene();
-            let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
+            let dic = this.getScene().getExternalData<StringDictionary<FontTexture>>("FontTextureCache");
             if (!dic) {
                 return;
             }
             if (--this._usedCounter === 0) {
                 dic.remove(this._cachedFontId);
                 this.dispose();
-            }         
+            }
         }
+
     }
 } 
