@@ -227,6 +227,10 @@ module BABYLON {
             }
         }
 
+        public isReady(): boolean {
+            return this._isReadyToPlay;
+        }
+
         private _soundLoaded(audioData: ArrayBuffer) {
             this._isLoaded = true;
             Engine.audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
