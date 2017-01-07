@@ -332,7 +332,7 @@ module BABYLON {
     var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Bone => {
         // Try to find
         for (var i = 0; i < newSkeleton.bones.length; i++) {
-            if (newSkeleton.bones[i].id === jointName) {
+            if (newSkeleton.bones[i].name === jointName) {
                 return newSkeleton.bones[i];
             }
         }
@@ -571,7 +571,7 @@ module BABYLON {
                 mat = mat.multiply(mesh.getWorldMatrix());
             }
 
-            var bone = new Bone(node.name, newSkeleton, parentBone, mat);
+            var bone = new Bone(node.jointName, newSkeleton, parentBone, mat);
             bone.id = id;
         }
 
