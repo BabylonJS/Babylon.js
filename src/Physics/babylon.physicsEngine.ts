@@ -195,7 +195,7 @@
         sleepBody(impostor: PhysicsImpostor);
         wakeUpBody(impostor: PhysicsImpostor);
         //Joint Update
-        updateDistanceJoint(joint: DistanceJoint, maxDistance:number, minDistance?: number);
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number);
         setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number);
         setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number);
         dispose();
