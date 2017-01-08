@@ -1,7 +1,7 @@
 module BABYLON {
     declare var OIMO;
 
-    export class OimoJSPlugin {
+    export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
         public world: any;
         public name: string = "OimoJSPlugin";
@@ -365,7 +365,7 @@ module BABYLON {
             impostor.physicsBody.awake();
         }
 
-        public updateDistanceJoint(joint: IMotorEnabledJoint, maxDistance: number, minDistance?: number) {
+        public updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number) {
             joint.physicsJoint.limitMotor.upperLimit = maxDistance;
             if (minDistance !== void 0) {
                 joint.physicsJoint.limitMotor.lowerLimit = minDistance;

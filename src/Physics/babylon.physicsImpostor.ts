@@ -212,9 +212,6 @@ module BABYLON {
             return this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this);
         }
 
-        /**
-         * Set the body's linear velocity.
-         */
         public setLinearVelocity(velocity: Vector3) {
             this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
         }
@@ -223,9 +220,6 @@ module BABYLON {
             return this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this);
         }
 
-        /**
-         * Set the body's linear velocity.
-         */
         public setAngularVelocity(velocity: Vector3) {
             this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
         }
