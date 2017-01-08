@@ -43,7 +43,7 @@
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
             var impulse = new CANNON.Vec3(force.x, force.y, force.z);
 
-            impostor.physicsBody.applyImpulse(impulse, worldPoint);
+            impostor.physicsBody.applyForce(impulse, worldPoint);
         }
 
         public generatePhysicsBody(impostor: PhysicsImpostor) {
