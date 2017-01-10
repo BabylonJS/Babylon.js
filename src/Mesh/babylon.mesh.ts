@@ -1348,10 +1348,13 @@
                 this._geometry.releaseForMesh(this, true);
             }
 
-            // Source mesh
-            if (this._source) {
-                this._source = null;
-            }
+            // Sources
+            var meshes = this.getScene().meshes;
+            meshes.forEach((mesh: Mesh) => {
+                if (mesh._source && mesh._source === this) {
+                    mesh._source = null;
+                }
+            });
 
             // Instances
             if (this._instancesBuffer) {
