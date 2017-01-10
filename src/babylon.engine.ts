@@ -2103,7 +2103,10 @@
             texture.noMipmap = noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
-            texture.onLoadedCallbacks = [onLoad];
+            texture.onLoadedCallbacks = [];
+            if (onLoad) {
+                texture.onLoadedCallbacks.push(onLoad);
+            }
             this._loadedTexturesCache.push(texture);
 
             var onerror = () => {

@@ -467,7 +467,7 @@
         "../../canvas2D/src/Tools/babylon.IPropertyChanged.ts",
         "../../canvas2D/src/Tools/babylon.observableArray.ts",
         "../../canvas2D/src/Tools/babylon.observableStringDictionary.ts",
-        "../../canvas2D/src/Engine/babylon.fontTexture.js",
+        "../../canvas2D/src/Engine/babylon.fontTexture.ts",
         "../../canvas2D/src/Engine/babylon.bounding2d.ts",
         "../../canvas2D/src/Engine/babylon.canvas2dLayoutEngine.ts",
         "../../canvas2D/src/Engine/babylon.brushes2d.ts",
