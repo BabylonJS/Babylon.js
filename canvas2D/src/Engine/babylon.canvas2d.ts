@@ -1278,7 +1278,7 @@
             let v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
 
             for (let group of this._trackedGroups) {
-                if (group.isDisposed || !group.isVisible) {
+                if (group.isDisposed) {
                     continue;
                 }
 
