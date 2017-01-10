@@ -11455,9 +11455,10 @@ var BABYLON;
                 this._edgesRenderer = null;
             }
             // SubMeshes
-            this.releaseSubMeshes();
+            if (this.getClassName() !== "InstancedMesh") {
+                this.releaseSubMeshes();
+            }
             // Engine
-            this.getScene().getEngine().unbindAllAttributes();
             this.getScene().getEngine().wipeCaches();
             // Remove from scene
             this.getScene().removeMesh(this);
@@ -19927,7 +19928,7 @@ var BABYLON;
             result.computeWorldMatrix(true);
             return result;
         };
-        // Dispoe
+        // Dispose
         InstancedMesh.prototype.dispose = function (doNotRecurse) {
             // Remove from mesh
             var index = this._sourceMesh.instances.indexOf(this);
@@ -52217,7 +52218,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 

@@ -153,7 +153,7 @@
             return result;
         }
 
-        // Dispoe
+        // Dispose
         public dispose(doNotRecurse?: boolean): void {
 
             // Remove from mesh
