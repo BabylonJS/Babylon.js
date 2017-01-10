@@ -1248,7 +1248,6 @@
         private _resetVertexBufferBinding(): void {
             this.bindArrayBuffer(null);
             this._cachedVertexBuffers = null;
-            this._unBindVertexArrayObject();
         }
 
         public createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
@@ -1339,10 +1338,16 @@
         }
 
         public bindArrayBuffer(buffer: WebGLBuffer): void {
+            if (!this._vaoRecordInProgress) {
+                this._unBindVertexArrayObject();
+            }   
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         }
 
         private bindIndexBuffer(buffer: WebGLBuffer): void {
+            if (!this._vaoRecordInProgress) {
+                this._unBindVertexArrayObject();
+            }            
             this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
         }
 
@@ -1384,8 +1389,6 @@
                 this._cachedIndexBuffer = indexBuffer;
                 this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
-
-                this._unBindVertexArrayObject();
             }
         }
 
@@ -1430,7 +1433,8 @@
         public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): WebGLVertexArrayObject {
             var vao = this._gl.createVertexArray();
 
-            this._vaoRecordInProgress = true;
+            this._vaoRecordInProgress = true;                
+            
             this._gl.bindVertexArray(vao);
             
             this._mustWipeVertexAttributes = true;
@@ -1464,6 +1468,7 @@
 
                 let attributesCount = effect.getAttributesCount();
 
+                this._unBindVertexArrayObject();
                 this.unbindAllAttributes();
 
                 var offset = 0;
@@ -2011,6 +2016,8 @@
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
             this._unBindVertexArrayObject();
+            this.bindIndexBuffer(null);
+            this.bindArrayBuffer(null);
         }
 
         public setSamplingMode(texture: WebGLTexture, samplingMode: number): void {
