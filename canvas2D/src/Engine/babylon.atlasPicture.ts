@@ -28,45 +28,6 @@
         smartupdate: string;
     }
 
-    // Loader class for the TexturePacker's JSON Array data format
-    class JSONArrayLoader implements IAtlasLoader {
-
-        loadFile(content): { api: AtlasPictureInfo, errorMsg: string, errorCode: number } {
-            let errorMsg: string = null;
-            let errorCode: number = 0;
-            let root = null;
-            let api: AtlasPictureInfo = null;
-            try {
-                try {
-                    root = JSON.parse(content);
-                    let frames = <Array<IFrame>>root.frames;
-                    let meta = <IMeta>root.meta;
-
-                    api = new AtlasPictureInfo();
-                    api.atlasSize = new Size(meta.size.w, meta.size.h);
-                    api.subPictures = new StringDictionary<AtlasSubPictureInfo>();
-
-                    for (let f of frames) {
-                        let aspi = new AtlasSubPictureInfo();
-                        aspi.name = f.filename;
-                        aspi.location = new Vector2(f.frame.x, api.atlasSize.height - (f.frame.y + f.frame.h));
-                        aspi.size = new Size(f.frame.w, f.frame.h);
-
-                        api.subPictures.add(aspi.name, aspi);
-                    }
-
-                } catch (ex1) {
-                    errorMsg = "Invalid JSON file";
-                    errorCode = -1;
-                }                 
-            } catch (ex2) {
-                errorMsg = "Unknown Exception: " + ex2;
-                errorCode = -2;
-            } 
-            return { api: api, errorMsg: errorMsg, errorCode: errorCode };
-        }
-    }
-
     /**
      * This class will contains information about a sub picture present in an Atlas Picture.
      */
@@ -235,8 +196,6 @@
          * @param plugin the instance of the loader
          */
         public static addLoader(fileExtension: string, plugin: IAtlasLoader) {
-            AtlasPictureInfoFactory._initialize();
-
             let a = AtlasPictureInfoFactory.plugins.getOrAddWithFactory(fileExtension.toLocaleLowerCase(), () => new Array<IAtlasLoader>());
             a.push(plugin);
         }
@@ -245,12 +204,10 @@
          * Load an Atlas Picture Info object from a data file at a given url and with a given texture
          * @param texture the texture containing the atlas bitmap
          * @param url the URL of the Atlas Info data file
-         * @param loaded a callback that will be called when the AtlasPictureInfo object will be loaded and ready
-         * @param error a callback that will be called in case of error
+         * @param onLoad a callback that will be called when the AtlasPictureInfo object will be loaded and ready
+         * @param onError a callback that will be called in case of error
          */
-        public static loadFromUrl(texture: Texture, url: string, loaded: (api: AtlasPictureInfo) => void, error: (msg: string, code: number) => void = null) {
-            AtlasPictureInfoFactory._initialize();
-
+        public static loadFromUrl(texture: Texture, url: string, onLoad: (api: AtlasPictureInfo) => void, onError: (msg: string, code: number) => void = null) {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -258,26 +215,33 @@
                         let ext = url.split('.').pop().split(/\#|\?/)[0];
                         let plugins = AtlasPictureInfoFactory.plugins.get(ext.toLocaleLowerCase());
                         if (!plugins) {
-                            if (error) {
-                                error("couldn't find a plugin for this file extension", -1);
+                            if (onError) {
+                                onError("couldn't find a plugin for this file extension", -1);
                             }
                             return;
                         }
                         for (let p of plugins) {
                             let ret = p.loadFile(xhr.response);
                             if (ret) {
-                                if (ret.api && loaded) {
+                                if (ret.api) {
                                     ret.api.texture = texture;
-                                    loaded(ret.api);
-                                } else if (error) {
-                                    error(ret.errorMsg, ret.errorCode);
+                                    if (onLoad) {
+                                        onLoad(ret.api);
+                                    }
+                                } else if (onError) {
+                                    onError(ret.errorMsg, ret.errorCode);
                                 }
-                                break;
+                                return;
                             }
                         }
+
+                        if (onError) {
+                            onError("No plugin to load this Atlas Data file format", -1);
+                        }
+
                     } else {
-                        if (error) {
-                            error("Couldn't load file through HTTP Request, HTTP Status " + xhr.status, xhr.status);
+                        if (onError) {
+                            onError("Couldn't load file through HTTP Request, HTTP Status " + xhr.status, xhr.status);
                         }
                     }
                 }
@@ -287,16 +251,61 @@
             return null;
         }
 
-        private static _initialize() {
-            if (AtlasPictureInfoFactory.plugins !== null) {
-                return;
-            }
+        private static plugins: StringDictionary<Array<IAtlasLoader>> = new StringDictionary<Array<IAtlasLoader>>();
+    }
 
-            AtlasPictureInfoFactory.plugins = new StringDictionary<Array<IAtlasLoader>>();
-            AtlasPictureInfoFactory.addLoader("json", new JSONArrayLoader());
+     // Loader class for the TexturePacker's JSON Array data format
+    @AtlasLoaderPlugin("json", new JSONArrayLoader())
+    class JSONArrayLoader implements IAtlasLoader {
 
+        loadFile(content): { api: AtlasPictureInfo, errorMsg: string, errorCode: number } {
+            let errorMsg: string = null;
+            let errorCode: number = 0;
+            let root = null;
+            let api: AtlasPictureInfo = null;
+            try {
+                let frames: Array<IFrame>;
+                let meta: IMeta;
+                try {
+                    root = JSON.parse(content);
+                    frames = <Array<IFrame>>root.frames;
+                    meta = <IMeta>root.meta;
+                    if (!frames || !meta) {
+                        throw Error("Not a JSON Array file format");
+                    }
+                } catch (ex1) {
+                    return null;
+                }                 
+
+                api = new AtlasPictureInfo();
+                api.atlasSize = new Size(meta.size.w, meta.size.h);
+                api.subPictures = new StringDictionary<AtlasSubPictureInfo>();
+
+                for (let f of frames) {
+                    let aspi = new AtlasSubPictureInfo();
+                    aspi.name = f.filename;
+                    aspi.location = new Vector2(f.frame.x, api.atlasSize.height - (f.frame.y + f.frame.h));
+                    aspi.size = new Size(f.frame.w, f.frame.h);
+
+                    api.subPictures.add(aspi.name, aspi);
+                }
+            } catch (ex2) {
+                errorMsg = "Unknown Exception: " + ex2;
+                errorCode = -2;
+            } 
+
+            return { api: api, errorMsg: errorMsg, errorCode: errorCode };
         }
+    }
 
-        private static plugins: StringDictionary<Array<IAtlasLoader>> = null;
+    /**
+     * Use this decorator when you declare an Atlas Loader Class for the loader to register itself automatically.
+     * @param fileExtension the extension of the file that the plugin is loading (there can be many plugin for the same extension)
+     * @param plugin an instance of the plugin class to add to the AtlasPictureInfoFactory
+     */
+    export function AtlasLoaderPlugin(fileExtension: string, plugin: IAtlasLoader): (target: Object) => void {
+        return () => {
+            AtlasPictureInfoFactory.addLoader(fileExtension, plugin);
+        }
     }
 }
