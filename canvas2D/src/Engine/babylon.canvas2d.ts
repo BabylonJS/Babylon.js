@@ -168,7 +168,9 @@
             this._renderingSize = new Size(0, 0);
             this._designSize = settings.designSize || null;
             this._designUseHorizAxis = settings.designUseHorizAxis === true;
-            this._trackedGroups = new Array<Group2D>();
+            if (!this._trackedGroups) {
+                this._trackedGroups = new Array<Group2D>();
+            }
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new StringDictionary<MapTexture[]>();
 
@@ -1576,6 +1578,9 @@
         public _registerTrackedNode(group: Group2D) {
             if (group._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
                 return;
+            }
+            if (!this._trackedGroups) {
+                this._trackedGroups = new Array<Group2D>();
             }
             this._trackedGroups.push(group);
 
