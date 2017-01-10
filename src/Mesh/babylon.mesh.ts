@@ -1355,6 +1355,7 @@
                     mesh._source = null;
                 }
             });
+            this._source = null;
 
             // Instances
             if (this._instancesBuffer) {
