@@ -6392,17 +6392,6 @@ var BABYLON;
         }
         return shader;
     };
-    var HALF_FLOAT_OES = 0x8D61;
-    var getWebGLTextureType = function (gl, type) {
-        if (type === Engine.TEXTURETYPE_FLOAT) {
-            return gl.FLOAT;
-        }
-        else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
-            // Add Half Float Constant.
-            return HALF_FLOAT_OES;
-        }
-        return gl.UNSIGNED_BYTE;
-    };
     var getSamplingParameters = function (samplingMode, generateMipMaps, gl) {
         var magFilter = gl.NEAREST;
         var minFilter = gl.NEAREST;
@@ -6613,9 +6602,6 @@ var BABYLON;
             if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
-            // Checks if some of the format renders first to allow the use of webgl inspector.
-            var renderToFullFloat = this._canRenderToFloatTexture();
-            var renderToHalfFloat = this._canRenderToHalfFloatTexture();
             this._onBlur = function () {
                 _this._windowIsBackground = true;
             };
@@ -6661,19 +6647,21 @@ var BABYLON;
             this._caps.etc2 = this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc') ||
                 this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // also a requirement of OpenGL ES 3
             this._caps.atc = this._gl.getExtension('WEBGL_compressed_texture_atc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_atc');
-            this._caps.textureFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
             this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
+            // Checks if some of the format renders first to allow the use of webgl inspector.
+            this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
+            this._caps.textureFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_float') !== null);
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
-            this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
-            this._caps.textureFloatRender = renderToFullFloat;
+            this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer();
             this._caps.textureHalfFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_half_float') !== null);
             this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
-            this._caps.textureHalfFloatRender = renderToHalfFloat;
+            this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
+            this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
             // Vertex array object 
             if (this._webGLVersion > 1) {
                 this._caps.vertexArrayObject = true;
@@ -8169,7 +8157,10 @@ var BABYLON;
             texture.noMipmap = noMipmap;
             texture.references = 1;
             texture.samplingMode = samplingMode;
-            texture.onLoadedCallbacks = [onLoad];
+            texture.onLoadedCallbacks = [];
+            if (onLoad) {
+                texture.onLoadedCallbacks.push(onLoad);
+            }
             this._loadedTexturesCache.push(texture);
             var onerror = function () {
                 scene._removePendingData(texture);
@@ -8446,7 +8437,7 @@ var BABYLON;
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
             var depthStencilBuffer;
             // Create the depth/stencil buffer
             if (generateStencilBuffer) {
@@ -8679,11 +8670,12 @@ var BABYLON;
             texture.isCube = true;
             texture.references = 1;
             texture.url = url;
-            var internalFormat = this._getInternalFormat(format);
             var textureType = gl.UNSIGNED_BYTE;
             if (type === Engine.TEXTURETYPE_FLOAT) {
                 textureType = gl.FLOAT;
             }
+            var internalFormat = this._getInternalFormat(format);
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
             var width = size;
             var height = width;
             var isPot = (BABYLON.Tools.IsExponentOfTwo(width) && BABYLON.Tools.IsExponentOfTwo(height));
@@ -8718,26 +8710,17 @@ var BABYLON;
                         for (var level = 0; level < mipData.length; level++) {
                             var mipSize = width >> level;
                             // mipData is order in +X -X +Y -Y +Z -Z
-                            gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
-                            gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
-                            gl.texImage2D(facesIndex[2], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
-                            gl.texImage2D(facesIndex[3], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
-                            gl.texImage2D(facesIndex[4], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
-                            gl.texImage2D(facesIndex[5], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                            gl.texImage2D(facesIndex[0], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                            gl.texImage2D(facesIndex[1], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                            gl.texImage2D(facesIndex[2], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                            gl.texImage2D(facesIndex[3], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                            gl.texImage2D(facesIndex[4], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                            gl.texImage2D(facesIndex[5], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
                         }
                     }
                     else {
-                        // Data are known to be in +X +Y +Z -X -Y -Z
-                        for (var index = 0; index < facesIndex.length; index++) {
-                            var faceData = rgbeDataArrays[index];
-                            gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
-                        }
-                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                        // Workaround firefox bug fix https://bugzilla.mozilla.org/show_bug.cgi?id=1221822
-                        // By following the webgl standard changes from Revision 7, 2014/11/24
-                        // Firefox Removed the support for RGB32F, since it is not natively supported on all platforms where WebGL is implemented.
-                        if (textureType === gl.FLOAT && internalFormat === gl.RGB && gl.getError() === 1282) {
-                            BABYLON.Tools.Log("RGB32F not renderable on Firefox, trying fallback to RGBA32F.");
+                        if (internalFormat === gl.RGB) {
+                            internalFormat = gl.RGBA;
                             // Data are known to be in +X +Y +Z -X -Y -Z
                             for (var index = 0; index < facesIndex.length; index++) {
                                 var faceData = rgbeDataArrays[index];
@@ -8756,11 +8739,17 @@ var BABYLON;
                                     }
                                 }
                                 // Reupload the face.
-                                gl.texImage2D(facesIndex[index], 0, gl.RGBA, width, height, 0, gl.RGBA, textureType, newFaceData);
+                                gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, newFaceData);
                             }
-                            // Try to generate mipmap again.
-                            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                         }
+                        else {
+                            // Data are known to be in +X +Y +Z -X -Y -Z
+                            for (var index = 0; index < facesIndex.length; index++) {
+                                var faceData = rgbeDataArrays[index];
+                                gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
+                            }
+                        }
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
                 }
                 else {
@@ -8770,7 +8759,7 @@ var BABYLON;
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
-                else if (textureType === HALF_FLOAT_OES && !_this._caps.textureHalfFloatLinearFiltering) {
+                else if (textureType === Engine.HALF_FLOAT_OES && !_this._caps.textureHalfFloatLinearFiltering) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
@@ -9130,105 +9119,82 @@ var BABYLON;
                 this.fps = 1000.0 / (sum / (length - 1));
             }
         };
-        Engine.prototype._canRenderToFloatTexture = function () {
+        Engine.prototype._canRenderToFloatFramebuffer = function () {
             if (this._webGLVersion > 1) {
-                return true;
+                return this._caps.colorBufferFloat;
             }
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_FLOAT, 'OES_texture_float');
+            return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_FLOAT);
         };
-        Engine.prototype._canRenderToHalfFloatTexture = function () {
+        Engine.prototype._canRenderToHalfFloatFramebuffer = function () {
             if (this._webGLVersion > 1) {
-                return true;
+                return this._caps.colorBufferFloat;
             }
-            return this._canRenderToTextureOfType(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT, 'OES_texture_half_float');
+            return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT);
         };
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
-        Engine.prototype._canRenderToTextureOfType = function (format, extension) {
-            try {
-                var tempcanvas = document.createElement("canvas");
-                tempcanvas.height = 16;
-                tempcanvas.width = 16;
-                var gl = (tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl"));
-                // extension.
-                var ext = gl.getExtension(extension);
-                if (!ext) {
-                    return false;
-                }
-                // setup GLSL program
-                var vertexCode = "attribute vec4 a_position;\n                    void main() {\n                        gl_Position = a_position;\n                    }";
-                var fragmentCode = "precision mediump float;\n                    uniform vec4 u_color;\n                    uniform sampler2D u_texture;\n\n                    void main() {\n                        gl_FragColor = texture2D(u_texture, vec2(0.5, 0.5)) * u_color;\n                    }";
-                var program = this.createShaderProgram(vertexCode, fragmentCode, null, gl);
-                gl.useProgram(program);
-                // look up where the vertex data needs to go.
-                var positionLocation = gl.getAttribLocation(program, "a_position");
-                var colorLoc = gl.getUniformLocation(program, "u_color");
-                // provide texture coordinates for the rectangle.
-                var positionBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                    -1.0, -1.0,
-                    1.0, -1.0,
-                    -1.0, 1.0,
-                    -1.0, 1.0,
-                    1.0, -1.0,
-                    1.0, 1.0
-                ]), gl.STATIC_DRAW);
-                gl.enableVertexAttribArray(positionLocation);
-                gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-                var whiteTex = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, whiteTex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
-                var tex = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, getWebGLTextureType(gl, format), null);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                var fb = gl.createFramebuffer();
-                gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-                gl.viewport(0, 0, 1, 1);
-                var cleanup = function () {
-                    gl.deleteProgram(program);
-                    gl.disableVertexAttribArray(positionLocation);
-                    gl.deleteBuffer(positionBuffer);
-                    gl.deleteFramebuffer(fb);
-                    gl.deleteTexture(whiteTex);
-                    gl.deleteTexture(tex);
-                };
-                var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-                if (status !== gl.FRAMEBUFFER_COMPLETE) {
-                    BABYLON.Tools.Log("GL Support: can **NOT** render to " + format + " texture");
-                    cleanup();
-                    return false;
-                }
-                // Draw the rectangle.
-                gl.bindTexture(gl.TEXTURE_2D, whiteTex);
-                gl.uniform4fv(colorLoc, [0, 10, 20, 1]);
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-                gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                gl.clearColor(1, 0, 0, 1);
+        Engine.prototype._canRenderToFramebuffer = function (type) {
+            var gl = this._gl;
+            //clear existing errors
+            while (gl.getError() !== gl.NO_ERROR) { }
+            var successful = true;
+            var texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), 1, 1, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            var fb = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+            successful = successful && (status === gl.FRAMEBUFFER_COMPLETE);
+            successful = successful && (gl.getError() === gl.NO_ERROR);
+            //try render by clearing frame buffer's color buffer
+            if (successful) {
                 gl.clear(gl.COLOR_BUFFER_BIT);
-                gl.uniform4fv(colorLoc, [0, 1 / 10, 1 / 20, 1]);
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-                var pixel = new Uint8Array(4);
-                gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-                if (pixel[0] !== 0 ||
-                    pixel[1] < 248 ||
-                    pixel[2] < 248 ||
-                    pixel[3] < 254) {
-                    BABYLON.Tools.Log("GL Support: Was not able to actually render to " + format + " texture");
-                    cleanup();
-                    return false;
-                }
-                // Succesfully rendered to "format" texture.
-                cleanup();
-                return true;
+                successful = successful && (gl.getError() === gl.NO_ERROR);
             }
-            catch (e) {
-                return false;
+            //try reading from frame to ensure render occurs (just creating the FBO is not sufficient to determine if rendering is supported)
+            if (successful) {
+                //in practice it's sufficient to just read from the backbuffer rather than handle potentially issues reading from the texture
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                var readFormat = gl.RGBA;
+                var readType = gl.UNSIGNED_BYTE;
+                var buffer = new Uint8Array(4);
+                gl.readPixels(0, 0, 1, 1, readFormat, readType, buffer);
+                successful = successful && (gl.getError() === gl.NO_ERROR);
             }
+            //clean up
+            gl.deleteTexture(texture);
+            gl.deleteFramebuffer(fb);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            //clear accumulated errors
+            while (!successful && (gl.getError() !== gl.NO_ERROR)) { }
+            return successful;
         };
+        Engine.prototype._getWebGLTextureType = function (type) {
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                return this._gl.FLOAT;
+            }
+            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+                // Add Half Float Constant.
+                return Engine.HALF_FLOAT_OES;
+            }
+            return this._gl.UNSIGNED_BYTE;
+        };
+        ;
+        Engine.prototype._getRGBABufferInternalSizedFormat = function (type) {
+            if (this._webGLVersion === 1) {
+                return this._gl.RGBA;
+            }
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                return Engine.RGBA32F;
+            }
+            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+                return Engine.RGBA16F;
+            }
+            return this._gl.RGBA;
+        };
+        ;
         // Statics
         Engine.isSupported = function () {
             try {
@@ -9276,6 +9242,9 @@ var BABYLON;
     Engine._GREATER = 0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
     Engine._GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
     Engine._NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
+    Engine.HALF_FLOAT_OES = 0x8D61; // Half floating-point type (16-bit).
+    Engine.RGBA16F = 0x881A; // RGBA 16-bit floating-point color-renderable internal sized format.
+    Engine.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
     // Stencil Actions Constants.
     Engine._KEEP = 0x1E00;
     Engine._REPLACE = 0x1E01;
@@ -13479,6 +13448,7 @@ var BABYLON;
                         result.push(i);
                         continue;
                     }
+                    index = atIndices[i];
                     this._postProcesses.splice(index, 1);
                 }
             }
@@ -32692,18 +32662,12 @@ var BABYLON;
         PhysicsImpostor.prototype.getLinearVelocity = function () {
             return this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this);
         };
-        /**
-         * Set the body's linear velocity.
-         */
         PhysicsImpostor.prototype.setLinearVelocity = function (velocity) {
             this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
         };
         PhysicsImpostor.prototype.getAngularVelocity = function () {
             return this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this);
         };
-        /**
-         * Set the body's linear velocity.
-         */
         PhysicsImpostor.prototype.setAngularVelocity = function (velocity) {
             this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
         };
@@ -38698,6 +38662,9 @@ var BABYLON;
                 }
             }
         };
+        Sound.prototype.isReady = function () {
+            return this._isReadyToPlay;
+        };
         Sound.prototype._soundLoaded = function (audioData) {
             var _this = this;
             this._isLoaded = true;
@@ -40677,493 +40644,6 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    /**
-     * This class given information about a given character.
-     */
-    var CharInfo = (function () {
-        function CharInfo() {
-        }
-        return CharInfo;
-    }());
-    BABYLON.CharInfo = CharInfo;
-    var FontTexture = (function (_super) {
-        __extends(FontTexture, _super);
-        /**
-         * Create a new instance of the FontTexture class
-         * @param name the name of the texture
-         * @param font the font to use, use the W3C CSS notation
-         * @param scene the scene that owns the texture
-         * @param maxCharCount the approximative maximum count of characters that could fit in the texture. This is an approximation because most of the fonts are proportional (each char has its own Width). The 'W' character's width is used to compute the size of the texture based on the given maxCharCount
-         * @param samplingMode the texture sampling mode
-         * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
-         */
-        function FontTexture(name, font, scene, maxCharCount, samplingMode, superSample, signedDistanceField) {
-            if (maxCharCount === void 0) { maxCharCount = 200; }
-            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
-            if (superSample === void 0) { superSample = false; }
-            if (signedDistanceField === void 0) { signedDistanceField = false; }
-            var _this = _super.call(this, null, scene, true, false, samplingMode) || this;
-            _this._charInfos = {};
-            _this._curCharCount = 0;
-            _this._lastUpdateCharCount = -1;
-            _this._usedCounter = 1;
-            _this.name = name;
-            _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            _this._sdfScale = 8;
-            _this._signedDistanceField = signedDistanceField;
-            _this._superSample = false;
-            // SDF will use supersample no matter what, the resolution is otherwise too poor to produce correct result
-            if (superSample || signedDistanceField) {
-                var sfont = _this.getSuperSampleFont(font);
-                if (sfont) {
-                    _this._superSample = true;
-                    font = sfont;
-                }
-            }
-            // First canvas creation to determine the size of the texture to create
-            _this._canvas = document.createElement("canvas");
-            _this._context = _this._canvas.getContext("2d");
-            _this._context.font = font;
-            _this._context.fillStyle = "white";
-            _this._context.textBaseline = "top";
-            _this._cachedFontId = null;
-            var res = _this.getFontHeight(font);
-            _this._lineHeightSuper = res.height + 4;
-            _this._lineHeight = _this._superSample ? (Math.ceil(_this._lineHeightSuper / 2)) : _this._lineHeightSuper;
-            _this._offset = res.offset - 1;
-            _this._xMargin = 1 + Math.ceil(_this._lineHeightSuper / 15); // Right now this empiric formula seems to work...
-            _this._yMargin = _this._xMargin;
-            var maxCharWidth = _this._context.measureText("W").width;
-            _this._spaceWidthSuper = _this._context.measureText(" ").width;
-            _this._spaceWidth = _this._superSample ? (_this._spaceWidthSuper / 2) : _this._spaceWidthSuper;
-            // This is an approximate size, but should always be able to fit at least the maxCharCount
-            var totalEstSurface = (_this._lineHeightSuper + _this._yMargin) * (maxCharWidth + _this._xMargin) * maxCharCount;
-            var edge = Math.sqrt(totalEstSurface);
-            var textSize = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
-            // Create the texture that will store the font characters
-            _this._texture = scene.getEngine().createDynamicTexture(textSize, textSize, false, samplingMode);
-            var textureSize = _this.getSize();
-            _this.hasAlpha = _this._signedDistanceField === false;
-            // Recreate a new canvas with the final size: the one matching the texture (resizing the previous one doesn't work as one would expect...)
-            _this._canvas = document.createElement("canvas");
-            _this._canvas.width = textureSize.width;
-            _this._canvas.height = textureSize.height;
-            _this._context = _this._canvas.getContext("2d");
-            _this._context.textBaseline = "top";
-            _this._context.font = font;
-            _this._context.fillStyle = "white";
-            _this._context.imageSmoothingEnabled = false;
-            _this._context.clearRect(0, 0, textureSize.width, textureSize.height);
-            // Create a canvas for the signed distance field mode, we only have to store one char, the purpose is to render a char scaled _sdfScale times
-            //  into this 2D context, then get the bitmap data, create the sdf char and push the result in the _context (which hold the whole Font Texture content)
-            // So you can see this context as an intermediate one, because it is.
-            if (_this._signedDistanceField) {
-                var sdfC = document.createElement("canvas");
-                var s = _this._sdfScale;
-                sdfC.width = maxCharWidth * s;
-                sdfC.height = _this._lineHeightSuper * s;
-                var sdfCtx = sdfC.getContext("2d");
-                sdfCtx.scale(s, s);
-                sdfCtx.textBaseline = "top";
-                sdfCtx.font = font;
-                sdfCtx.fillStyle = "white";
-                sdfCtx.imageSmoothingEnabled = false;
-                _this._sdfCanvas = sdfC;
-                _this._sdfContext = sdfCtx;
-            }
-            _this._currentFreePosition = BABYLON.Vector2.Zero();
-            // Add the basic ASCII based characters
-            for (var i = 0x20; i < 0x7F; i++) {
-                var c = String.fromCharCode(i);
-                _this.getChar(c);
-            }
-            _this.update();
-            return _this;
-        }
-        Object.defineProperty(FontTexture.prototype, "isSuperSampled", {
-            get: function () {
-                return this._superSample;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FontTexture.prototype, "isSignedDistanceField", {
-            get: function () {
-                return this._signedDistanceField;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FontTexture.prototype, "spaceWidth", {
-            get: function () {
-                return this._spaceWidth;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FontTexture.prototype, "lineHeight", {
-            get: function () {
-                return this._lineHeight;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        FontTexture.GetCachedFontTexture = function (scene, fontName, supersample, signedDistanceField) {
-            if (supersample === void 0) { supersample = false; }
-            if (signedDistanceField === void 0) { signedDistanceField = false; }
-            var s = scene;
-            if (!s.__fontTextureCache__) {
-                s.__fontTextureCache__ = new BABYLON.StringDictionary();
-            }
-            var dic = s.__fontTextureCache__;
-            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
-            var ft = dic.get(lfn);
-            if (ft) {
-                ++ft._usedCounter;
-                return ft;
-            }
-            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, BABYLON.Texture.BILINEAR_SAMPLINGMODE, supersample, signedDistanceField);
-            ft._cachedFontId = lfn;
-            dic.add(lfn, ft);
-            return ft;
-        };
-        FontTexture.ReleaseCachedFontTexture = function (scene, fontName, supersample, signedDistanceField) {
-            if (supersample === void 0) { supersample = false; }
-            if (signedDistanceField === void 0) { signedDistanceField = false; }
-            var s = scene;
-            var dic = s.__fontTextureCache__;
-            if (!dic) {
-                return;
-            }
-            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
-            var font = dic.get(lfn);
-            if (--font._usedCounter === 0) {
-                dic.remove(lfn);
-                font.dispose();
-            }
-        };
-        /**
-         * Make sure the given char is present in the font map.
-         * @param char the character to get or add
-         * @return the CharInfo instance corresponding to the given character
-         */
-        FontTexture.prototype.getChar = function (char) {
-            if (char.length !== 1) {
-                return null;
-            }
-            var info = this._charInfos[char];
-            if (info) {
-                return info;
-            }
-            info = new CharInfo();
-            var measure = this._context.measureText(char);
-            var textureSize = this.getSize();
-            // we reached the end of the current line?
-            var width = Math.round(measure.width);
-            if (this._currentFreePosition.x + width + this._xMargin > textureSize.width) {
-                this._currentFreePosition.x = 0;
-                this._currentFreePosition.y += this._lineHeightSuper + this._yMargin;
-                // No more room?
-                if (this._currentFreePosition.y > textureSize.height) {
-                    return this.getChar("!");
-                }
-            }
-            // In sdf mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the sdf map accurately)
-            if (this._signedDistanceField) {
-                this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
-                this._sdfContext.fillText(char, 0, -this._offset);
-                var data = this._sdfContext.getImageData(0, 0, width * this._sdfScale, this._sdfCanvas.height);
-                var res = this._computeSDFChar(data);
-                this._context.putImageData(res, this._currentFreePosition.x, this._currentFreePosition.y);
-            }
-            else {
-                // Draw the character in the HTML canvas
-                this._context.fillText(char, this._currentFreePosition.x, this._currentFreePosition.y - this._offset);
-            }
-            // Fill the CharInfo object
-            info.topLeftUV = new BABYLON.Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new BABYLON.Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + 2) / textureSize.height));
-            if (this._signedDistanceField) {
-                var off = 1 / textureSize.width;
-                info.topLeftUV.addInPlace(new BABYLON.Vector2(off, off));
-                info.bottomRightUV.addInPlace(new BABYLON.Vector2(off, off));
-            }
-            info.charWidth = this._superSample ? (width / 2) : width;
-            // Add the info structure
-            this._charInfos[char] = info;
-            this._curCharCount++;
-            // Set the next position
-            this._currentFreePosition.x += width + this._xMargin;
-            return info;
-        };
-        FontTexture.prototype._computeSDFChar = function (source) {
-            var scl = this._sdfScale;
-            var sw = source.width;
-            var sh = source.height;
-            var dw = sw / scl;
-            var dh = sh / scl;
-            var roffx = 0;
-            var roffy = 0;
-            // We shouldn't look beyond half of the biggest between width and height
-            var radius = scl;
-            var br = radius - 1;
-            var lookupSrc = function (dx, dy, offX, offY, lookVis) {
-                var sx = dx * scl;
-                var sy = dy * scl;
-                // Looking out of the area? return true to make the test going on
-                if (((sx + offX) < 0) || ((sx + offX) >= sw) || ((sy + offY) < 0) || ((sy + offY) >= sh)) {
-                    return true;
-                }
-                // Get the pixel we want
-                var val = source.data[(((sy + offY) * sw) + (sx + offX)) * 4];
-                var res = (val > 0) === lookVis;
-                if (!res) {
-                    roffx = offX;
-                    roffy = offY;
-                }
-                return res;
-            };
-            var lookupArea = function (dx, dy, lookVis) {
-                // Fast rejection test, if we have the same result in N, S, W, E at a distance which is the radius-1 then it means the data will be consistent in this area. That's because we've scale the rendering of the letter "radius" times, so a letter's pixel will be at least radius wide
-                if (lookupSrc(dx, dy, 0, br, lookVis) &&
-                    lookupSrc(dx, dy, 0, -br, lookVis) &&
-                    lookupSrc(dx, dy, -br, 0, lookVis) &&
-                    lookupSrc(dx, dy, br, 0, lookVis)) {
-                    return 0;
-                }
-                for (var i = 1; i <= radius; i++) {
-                    // Quick test N, S, W, E
-                    if (!lookupSrc(dx, dy, 0, i, lookVis) || !lookupSrc(dx, dy, 0, -i, lookVis) || !lookupSrc(dx, dy, -i, 0, lookVis) || !lookupSrc(dx, dy, i, 0, lookVis)) {
-                        return i * i; // Squared Distance is simple to compute in this case
-                    }
-                    // Test the frame area (except the N, S, W, E spots) from the nearest point from the center to the further one
-                    for (var j = 1; j <= i; j++) {
-                        if (!lookupSrc(dx, dy, -j, i, lookVis) || !lookupSrc(dx, dy, j, i, lookVis) ||
-                            !lookupSrc(dx, dy, i, -j, lookVis) || !lookupSrc(dx, dy, i, j, lookVis) ||
-                            !lookupSrc(dx, dy, -j, -i, lookVis) || !lookupSrc(dx, dy, j, -i, lookVis) ||
-                            !lookupSrc(dx, dy, -i, -j, lookVis) || !lookupSrc(dx, dy, -i, j, lookVis)) {
-                            // We found the nearest texel having and opposite state, store the squared length
-                            var res_1 = (i * i) + (j * j);
-                            var count = 1;
-                            // To improve quality we will  sample the texels around this one, so it's 8 samples, we consider only the one having an opposite state, add them to the current res and will will compute the average at the end
-                            if (!lookupSrc(dx, dy, roffx - 1, roffy, lookVis)) {
-                                res_1 += (roffx - 1) * (roffx - 1) + roffy * roffy;
-                                ++count;
-                            }
-                            if (!lookupSrc(dx, dy, roffx + 1, roffy, lookVis)) {
-                                res_1 += (roffx + 1) * (roffx + 1) + roffy * roffy;
-                                ++count;
-                            }
-                            if (!lookupSrc(dx, dy, roffx, roffy - 1, lookVis)) {
-                                res_1 += roffx * roffx + (roffy - 1) * (roffy - 1);
-                                ++count;
-                            }
-                            if (!lookupSrc(dx, dy, roffx, roffy + 1, lookVis)) {
-                                res_1 += roffx * roffx + (roffy + 1) * (roffy + 1);
-                                ++count;
-                            }
-                            if (!lookupSrc(dx, dy, roffx - 1, roffy - 1, lookVis)) {
-                                res_1 += (roffx - 1) * (roffx - 1) + (roffy - 1) * (roffy - 1);
-                                ++count;
-                            }
-                            if (!lookupSrc(dx, dy, roffx + 1, roffy + 1, lookVis)) {
-                                res_1 += (roffx + 1) * (roffx + 1) + (roffy + 1) * (roffy + 1);
-                                ++count;
-                            }
-                            if (!lookupSrc(dx, dy, roffx + 1, roffy - 1, lookVis)) {
-                                res_1 += (roffx + 1) * (roffx + 1) + (roffy - 1) * (roffy - 1);
-                                ++count;
-                            }
-                            if (!lookupSrc(dx, dy, roffx - 1, roffy + 1, lookVis)) {
-                                res_1 += (roffx - 1) * (roffx - 1) + (roffy + 1) * (roffy + 1);
-                                ++count;
-                            }
-                            // Compute the average based on the accumulated distance
-                            return res_1 / count;
-                        }
-                    }
-                }
-                return 0;
-            };
-            var tmp = new Array(dw * dh);
-            for (var y = 0; y < dh; y++) {
-                for (var x = 0; x < dw; x++) {
-                    var curState = lookupSrc(x, y, 0, 0, true);
-                    var d = lookupArea(x, y, curState);
-                    if (d === 0) {
-                        d = radius * radius * 2;
-                    }
-                    tmp[(y * dw) + x] = curState ? d : -d;
-                }
-            }
-            var res = this._context.createImageData(dw, dh);
-            var size = dw * dh;
-            for (var j = 0; j < size; j++) {
-                var d = tmp[j];
-                var sign = (d < 0) ? -1 : 1;
-                d = Math.sqrt(Math.abs(d)) * sign;
-                d *= 127.5 / radius;
-                d += 127.5;
-                if (d < 0) {
-                    d = 0;
-                }
-                else if (d > 255) {
-                    d = 255;
-                }
-                d += 0.5;
-                res.data[j * 4 + 0] = d;
-                res.data[j * 4 + 1] = d;
-                res.data[j * 4 + 2] = d;
-                res.data[j * 4 + 3] = 255;
-            }
-            return res;
-        };
-        FontTexture.prototype.measureText = function (text, tabulationSize) {
-            if (tabulationSize === void 0) { tabulationSize = 4; }
-            var maxWidth = 0;
-            var curWidth = 0;
-            var lineCount = 1;
-            var charxpos = 0;
-            // Parse each char of the string
-            for (var _i = 0, text_1 = text; _i < text_1.length; _i++) {
-                var char = text_1[_i];
-                // Next line feed?
-                if (char === "\n") {
-                    maxWidth = Math.max(maxWidth, curWidth);
-                    charxpos = 0;
-                    curWidth = 0;
-                    ++lineCount;
-                    continue;
-                }
-                // Tabulation ?
-                if (char === "\t") {
-                    var nextPos = charxpos + tabulationSize;
-                    nextPos = nextPos - (nextPos % tabulationSize);
-                    curWidth += (nextPos - charxpos) * this.spaceWidth;
-                    charxpos = nextPos;
-                    continue;
-                }
-                if (char < " ") {
-                    continue;
-                }
-                curWidth += this.getChar(char).charWidth;
-                ++charxpos;
-            }
-            maxWidth = Math.max(maxWidth, curWidth);
-            return new BABYLON.Size(maxWidth, lineCount * this.lineHeight);
-        };
-        FontTexture.prototype.getSuperSampleFont = function (font) {
-            // Eternal thank to http://stackoverflow.com/a/10136041/802124
-            var regex = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-,\"\sa-z]+?)\s*$/;
-            var res = font.toLocaleLowerCase().match(regex);
-            if (res == null) {
-                return null;
-            }
-            var size = parseInt(res[4]);
-            res[4] = (size * 2).toString() + (res[4].match(/\D+/) || []).pop();
-            var newFont = "";
-            for (var j = 1; j < res.length; j++) {
-                if (res[j] != null) {
-                    newFont += res[j] + " ";
-                }
-            }
-            return newFont;
-        };
-        // More info here: https://videlais.com/2014/03/16/the-many-and-varied-problems-with-measuring-font-height-for-html5-canvas/
-        FontTexture.prototype.getFontHeight = function (font) {
-            var fontDraw = document.createElement("canvas");
-            var ctx = fontDraw.getContext('2d');
-            ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);
-            ctx.textBaseline = 'top';
-            ctx.fillStyle = 'white';
-            ctx.font = font;
-            ctx.fillText('jH|', 0, 0);
-            var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
-            var start = -1;
-            var end = -1;
-            for (var row = 0; row < fontDraw.height; row++) {
-                for (var column = 0; column < fontDraw.width; column++) {
-                    var index = (row * fontDraw.width + column) * 4;
-                    if (pixels[index] === 0) {
-                        if (column === fontDraw.width - 1 && start !== -1) {
-                            end = row;
-                            row = fontDraw.height;
-                            break;
-                        }
-                        continue;
-                    }
-                    else {
-                        if (start === -1) {
-                            start = row;
-                        }
-                        break;
-                    }
-                }
-            }
-            return { height: (end - start) + 1, offset: start - 1 };
-        };
-        Object.defineProperty(FontTexture.prototype, "canRescale", {
-            get: function () {
-                return false;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        FontTexture.prototype.getContext = function () {
-            return this._context;
-        };
-        /**
-         * Call this method when you've call getChar() at least one time, this will update the texture if needed.
-         * Don't be afraid to call it, if no new character was added, this method simply does nothing.
-         */
-        FontTexture.prototype.update = function () {
-            // Update only if there's new char added since the previous update
-            if (this._lastUpdateCharCount < this._curCharCount) {
-                this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, false, true);
-                this._lastUpdateCharCount = this._curCharCount;
-            }
-        };
-        // cloning should be prohibited, there's no point to duplicate this texture at all
-        FontTexture.prototype.clone = function () {
-            return null;
-        };
-        /**
-         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
-         * When the other party is done with this object, decCachedFontTextureCounter must be called.
-         */
-        FontTexture.prototype.incCachedFontTextureCounter = function () {
-            ++this._usedCounter;
-        };
-        /**
-         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
-         */
-        FontTexture.prototype.decCachedFontTextureCounter = function () {
-            var s = this.getScene();
-            var dic = s.__fontTextureCache__;
-            if (!dic) {
-                return;
-            }
-            if (--this._usedCounter === 0) {
-                dic.remove(this._cachedFontId);
-                this.dispose();
-            }
-        };
-        return FontTexture;
-    }(BABYLON.Texture));
-    BABYLON.FontTexture = FontTexture;
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.fontTexture.js.map
-
-
-
-
-
-
-
-var BABYLON;
-(function (BABYLON) {
     var MapTexture = (function (_super) {
         __extends(MapTexture, _super);
         function MapTexture(name, scene, size, samplingMode, useMipMap) {
@@ -42045,7 +41525,7 @@ var BABYLON;
         CannonJSPlugin.prototype.applyForce = function (impostor, force, contactPoint) {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
             var impulse = new CANNON.Vec3(force.x, force.y, force.z);
-            impostor.physicsBody.applyImpulse(impulse, worldPoint);
+            impostor.physicsBody.applyForce(impulse, worldPoint);
         };
         CannonJSPlugin.prototype.generatePhysicsBody = function (impostor) {
             //parent-child relationship. Does this impostor has a parent impostor?
@@ -42145,21 +41625,6 @@ var BABYLON;
                 maxForce: jointData.nativeParams.maxForce,
                 collideConnected: !!jointData.collision
             };
-            //Not needed, Cannon has a collideConnected flag
-            /*if (!jointData.collision) {
-                //add 1st body to a collision group of its own, if it is not in 1
-                if (mainBody.collisionFilterGroup === 1) {
-                    mainBody.collisionFilterGroup = this._currentCollisionGroup;
-                    this._currentCollisionGroup <<= 1;
-                }
-                if (connectedBody.collisionFilterGroup === 1) {
-                    connectedBody.collisionFilterGroup = this._currentCollisionGroup;
-                    this._currentCollisionGroup <<= 1;
-                }
-                //add their mask to the collisionFilterMask of each other:
-                connectedBody.collisionFilterMask = connectedBody.collisionFilterMask | ~mainBody.collisionFilterGroup;
-                mainBody.collisionFilterMask = mainBody.collisionFilterMask | ~connectedBody.collisionFilterGroup;
-            }*/
             switch (impostorJoint.joint.type) {
                 case BABYLON.PhysicsJoint.HingeJoint:
                 case BABYLON.PhysicsJoint.Hinge2Joint:
@@ -52724,7 +52189,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 
