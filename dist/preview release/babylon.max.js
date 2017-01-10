@@ -7446,7 +7446,6 @@ var BABYLON;
         Engine.prototype._resetVertexBufferBinding = function () {
             this.bindArrayBuffer(null);
             this._cachedVertexBuffers = null;
-            this._unBindVertexArrayObject();
         };
         Engine.prototype.createVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
@@ -7526,9 +7525,15 @@ var BABYLON;
             return vbo;
         };
         Engine.prototype.bindArrayBuffer = function (buffer) {
+            if (!this._vaoRecordInProgress) {
+                this._unBindVertexArrayObject();
+            }
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         };
         Engine.prototype.bindIndexBuffer = function (buffer) {
+            if (!this._vaoRecordInProgress) {
+                this._unBindVertexArrayObject();
+            }
             this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
         };
         Engine.prototype.bindBuffer = function (buffer, target) {
@@ -7583,7 +7588,6 @@ var BABYLON;
                 this._cachedIndexBuffer = indexBuffer;
                 this.bindIndexBuffer(indexBuffer);
                 this._uintIndicesCurrentlySet = indexBuffer.is32Bits;
-                this._unBindVertexArrayObject();
             }
         };
         Engine.prototype._bindVertexBuffersAttributes = function (vertexBuffers, effect) {
@@ -7641,6 +7645,7 @@ var BABYLON;
                 this._cachedVertexBuffers = vertexBuffer;
                 this._cachedEffectForVertexBuffers = effect;
                 var attributesCount = effect.getAttributesCount();
+                this._unBindVertexArrayObject();
                 this.unbindAllAttributes();
                 var offset = 0;
                 for (var index = 0; index < attributesCount; index++) {
@@ -8070,6 +8075,8 @@ var BABYLON;
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
             this._unBindVertexArrayObject();
+            this.bindIndexBuffer(null);
+            this.bindArrayBuffer(null);
         };
         Engine.prototype.setSamplingMode = function (texture, samplingMode) {
             var gl = this._gl;
@@ -19962,6 +19969,7 @@ var BABYLON;
          * @param {boolean} doNotCloneChildren When cloning, skip cloning child meshes of source, default False.
          *                  When false, achieved by calling a clone(), also passing False.
          *                  This will make creation of children, recursive.
+         * @param {boolean} clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
         function Mesh(name, scene, parent, source, doNotCloneChildren, clonePhysicsImpostor) {
             if (parent === void 0) { parent = null; }
@@ -19993,7 +20001,11 @@ var BABYLON;
             _this._instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
             _this._sideOrientation = Mesh._DEFAULTSIDE;
             _this._areNormalsFrozen = false; // Will be used by ribbons mainly
+            // Will be used to save a source mesh reference, If any
+            _this._source = null;
             if (source) {
+                // Source mesh
+                _this._source = source;
                 // Geometry
                 if (source._geometry) {
                     source._geometry.applyToMesh(_this);
@@ -20127,6 +20139,13 @@ var BABYLON;
                     this.onBeforeDrawObservable.remove(this._onBeforeDrawObserver);
                 }
                 this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh.prototype, "source", {
+            get: function () {
+                return this._source;
             },
             enumerable: true,
             configurable: true
@@ -21128,9 +21147,18 @@ var BABYLON;
          * This also frees the memory allocated under the hood to all the buffers used by WebGL.
          */
         Mesh.prototype.dispose = function (doNotRecurse) {
+            var _this = this;
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
             }
+            // Sources
+            var meshes = this.getScene().meshes;
+            meshes.forEach(function (mesh) {
+                if (mesh._source && mesh._source === _this) {
+                    mesh._source = null;
+                }
+            });
+            this._source = null;
             // Instances
             if (this._instancesBuffer) {
                 this._instancesBuffer.dispose();
