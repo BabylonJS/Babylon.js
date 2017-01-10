@@ -17,17 +17,17 @@
         charWidth: number;
     }
 
-    interface ICharInfoMap {
-        [char: string]: CharInfo;
-    }
-
     /**
      * This is an abstract base class to hold a Texture that will contain a FontMap
      */
     export abstract class BaseFontTexture extends Texture {
 
-        BaseFontTexture() {
-            this._cachedFontId = null;           
+        constructor(url: string, scene: Scene, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+
+            super(url, scene, noMipmap, invertY, samplingMode);
+
+            this._cachedFontId = null;
+            this._charInfos = new StringDictionary<CharInfo>();
         }
 
         /**
@@ -89,7 +89,49 @@
          * @param text the text to measure
          * @param tabulationSize the size (in space character) of the tabulation character, default value must be 4
          */
-        abstract measureText(text: string, tabulationSize?: number): Size;
+        measureText(text: string, tabulationSize?: number): Size {
+            let maxWidth: number = 0;
+            let curWidth: number = 0;
+            let lineCount = 1;
+            let charxpos: number = 0;
+
+            // Parse each char of the string
+            for (var char of text) {
+
+                // Next line feed?
+                if (char === "\n") {
+                    maxWidth = Math.max(maxWidth, curWidth);
+                    charxpos = 0;
+                    curWidth = 0;
+                    ++lineCount;
+                    continue;
+                }
+
+                // Tabulation ?
+                if (char === "\t") {
+                    let nextPos = charxpos + tabulationSize;
+                    nextPos = nextPos - (nextPos % tabulationSize);
+
+                    curWidth += (nextPos - charxpos) * this.spaceWidth;
+                    charxpos = nextPos;
+                    continue;
+                }
+
+                if (char < " ") {
+                    continue;
+                }
+
+                let ci = this.getChar(char);
+                if (!ci) {
+                    throw new Error(`Character ${char} is not supported by FontTexture ${this.name}`);
+                }
+                curWidth += ci.charWidth;
+                ++charxpos;
+            }
+            maxWidth = Math.max(maxWidth, curWidth);
+
+            return new Size(maxWidth, lineCount * this.lineHeight);
+        }
 
         /**
          * Retrieve the CharInfo object for a given character
@@ -97,17 +139,104 @@
          */
         abstract getChar(char: string): CharInfo;
 
+        protected _charInfos: StringDictionary<CharInfo>;
         protected _lineHeight: number;
         protected _spaceWidth;
         protected _superSample: boolean;
         protected _signedDistanceField: boolean;
-        protected _usedCounter = 1;
         protected _cachedFontId: string;
     }
 
-    export class BitmapFontTexture extends BaseFontTexture {
+    export class BitmapFontInfo {
+        kerningDic = new StringDictionary<number>();
+        charDic = new StringDictionary<CharInfo>();
 
-        public static GetCachedFontTexture(scene: Scene, fontTexture: Texture): BitmapFontTexture {
+        textureSize : Size;
+        atlasName   : string;
+        padding     : Vector4;       // Left, Top, Right, Bottom
+        lineHeight: number;
+        textureUrl  : string;
+        textureFile : string;
+    }
+
+    export interface IBitmapFontLoader {
+        loadFont(fontDataContent: any, scene: Scene, invertY: boolean): { bfi: BitmapFontInfo, errorMsg: string, errorCode: number };
+    }
+
+    export class BitmapFontTexture extends BaseFontTexture {
+        public constructor( scene: Scene,
+                            bmFontUrl: string,
+                            textureUrl: string = null,
+                            noMipmap: boolean = false,
+                            invertY: boolean = true,
+                            samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, 
+                            onLoad: () => void = null,
+                            onError: (msg: string, code: number) => void = null)
+        {
+            super(null, scene, noMipmap, invertY, samplingMode);
+
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        let ext = bmFontUrl.split('.').pop().split(/\#|\?/)[0];
+                        let plugins = BitmapFontTexture.plugins.get(ext.toLocaleLowerCase());
+                        if (!plugins) {
+                            if (onError) {
+                                onError("couldn't find a plugin for this file extension", -1);
+                            }
+                            return;
+                        }
+
+                        for (let p of plugins) {
+                            let ret = p.loadFont(xhr.response, scene, invertY);
+                            if (ret) {
+                                let bfi = ret.bfi;
+
+                                if (textureUrl != null) {
+                                    bfi.textureUrl = textureUrl;
+                                } else {
+                                    let baseUrl = bmFontUrl.substr(0, bmFontUrl.lastIndexOf("/") + 1);
+                                    bfi.textureUrl = baseUrl + bfi.textureFile;
+                                }
+
+                                this._texture = scene.getEngine().createTexture(bfi.textureUrl, noMipmap, invertY, scene, samplingMode, () => {
+                                    if (ret.bfi && onLoad) {
+                                        onLoad();
+                                    }
+                                });
+
+                                this._lineHeight = bfi.lineHeight;
+                                this._charInfos.copyFrom(bfi.charDic);
+                                let ci = this.getChar(" ");
+                                if (ci) {
+                                    this._spaceWidth = ci.charWidth;
+                                } else {
+                                    this._charInfos.first((k, v) => this._spaceWidth = v.charWidth);
+                                }
+
+                                if (!ret.bfi && onError) {
+                                    onError(ret.errorMsg, ret.errorCode);
+                                }
+                                return;
+                            }
+                        }
+
+                        if (onError) {
+                            onError("No plugin to load this BMFont file format", -1);
+                        }
+                    } else {
+                        if (onError) {
+                            onError("Couldn't load file through HTTP Request, HTTP Status " + xhr.status, xhr.status);
+                        }
+                    }
+                }
+            }
+            xhr.open("GET", bmFontUrl, true);
+            xhr.send();
+        }
+
+        public static GetCachedFontTexture(scene: Scene, fontTexture: BitmapFontTexture): BitmapFontTexture {
             let dic = scene.getOrAddExternalDataWithFactory("BitmapFontTextureCache", () => new StringDictionary<BitmapFontTexture>());
 
             let ft = dic.get(fontTexture.uid);
@@ -121,35 +250,17 @@
             return ft;
         }
 
-        public static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample: boolean = false, signedDistanceField: boolean = false) {
-            let dic = scene.getExternalData<StringDictionary<FontTexture>>("BitmapFontTextureCache");
+        public static ReleaseCachedFontTexture(scene: Scene, fontTexture: BitmapFontTexture) {
+            let dic = scene.getExternalData<StringDictionary<BitmapFontTexture>>("BitmapFontTextureCache");
             if (!dic) {
                 return;
             }
 
-            let lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
-            var font = dic.get(lfn);
+            var font = dic.get(fontTexture.uid);
             if (--font._usedCounter === 0) {
-                dic.remove(lfn);
+                dic.remove(fontTexture.uid);
                 font.dispose();
             }
-        }
-
-        /**
-         * When the FontTexture is retrieved through the FontCache, there's a reference counter that is incremented for each use.
-         * You also have the possibility to extend the lifetime of the FontTexture when passing it to another object by calling this method
-         * Don't forget to call the corresponding decCachedFontTextureCounter method when you no longer have use of the FontTexture.
-         * Each call to incCachedFontTextureCounter must have a corresponding call to decCachedFontTextureCounter.
-         */
-        incCachedFontTextureCounter() {
-            
-        }
-
-        /**
-         * Decrement the reference counter, if it reaches 0 the FontTexture is disposed
-         */
-        decCachedFontTextureCounter() {
-            
         }
 
         /**
@@ -166,23 +277,42 @@
         }
 
         /**
-         * Measure the width/height that will take a given text
-         * @param text the text to measure
-         * @param tabulationSize the size (in space character) of the tabulation character, default value must be 4
-         */
-        measureText(text: string, tabulationSize?: number): Size {
-            return null;
-
-        }
-
-        /**
          * Retrieve the CharInfo object for a given character
          * @param char the character to retrieve the CharInfo object from (e.g.: "A", "a", etc.)
          */
         getChar(char: string): CharInfo {
-            return null;
+            return this._charInfos.get(char);
         }
 
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        public incCachedFontTextureCounter() {
+            ++this._usedCounter;
+        }
+
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        public decCachedFontTextureCounter() {
+            let dic = this.getScene().getExternalData<StringDictionary<BitmapFontTexture>>("BitmapFontTextureCache");
+            if (!dic) {
+                return;
+            }
+            if (--this._usedCounter === 0) {
+                dic.remove(this._cachedFontId);
+                this.dispose();
+            }
+        }
+        private _usedCounter = 1;
+
+        static addLoader(fileExtension: string, plugin: IBitmapFontLoader) {
+            let a = BitmapFontTexture.plugins.getOrAddWithFactory(fileExtension.toLocaleLowerCase(), () => new Array<IBitmapFontLoader>());
+            a.push(plugin);
+        }
+
+        static plugins: StringDictionary<IBitmapFontLoader[]> = new StringDictionary<Array<IBitmapFontLoader>>();
     }
 
     /**
@@ -202,13 +332,13 @@
         private _yMargin: number;
         private _offset: number;
         private _currentFreePosition: Vector2;
-        private _charInfos: ICharInfoMap = {};
         private _curCharCount = 0;
         private _lastUpdateCharCount = -1;
         private _spaceWidthSuper;
         private _sdfCanvas: HTMLCanvasElement;
         private _sdfContext: CanvasRenderingContext2D;
         private _sdfScale: number;
+        private _usedCounter = 1;
 
         get isDynamicFontTexture(): boolean {
             return true;
@@ -254,7 +384,8 @@
          * @param samplingMode the texture sampling mode
          * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
          */
-        constructor(name: string, font: string, scene: Scene, maxCharCount=200, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, superSample: boolean = false, signedDistanceField: boolean = false) {
+        constructor(name: string, font: string, scene: Scene, maxCharCount = 200, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, superSample: boolean = false, signedDistanceField: boolean = false) {
+
             super(null, scene, true, false, samplingMode);
 
             this.name = name;
@@ -355,7 +486,7 @@
                 return null;
             }
 
-            var info = this._charInfos[char];
+            var info = this._charInfos.get(char);
             if (info) {
                 return info;
             }
@@ -403,7 +534,7 @@
             info.charWidth = this._superSample ? (width/2) : width;
 
             // Add the info structure
-            this._charInfos[char] = info;
+            this._charInfos.add(char, info);
             this._curCharCount++;
 
             // Set the next position
@@ -559,46 +690,6 @@
             return res;
         }
 
-        public measureText(text: string, tabulationSize: number = 4): Size {
-            let maxWidth: number = 0;
-            let curWidth: number = 0;
-            let lineCount = 1;
-            let charxpos: number = 0;
-
-            // Parse each char of the string
-            for (var char of text) {
-
-                // Next line feed?
-                if (char === "\n") {
-                    maxWidth = Math.max(maxWidth, curWidth);
-                    charxpos = 0;
-                    curWidth = 0;
-                    ++lineCount;
-                    continue;
-                }
-
-                // Tabulation ?
-                if (char === "\t") {
-                    let nextPos = charxpos + tabulationSize;
-                    nextPos = nextPos - (nextPos % tabulationSize);
-
-                    curWidth += (nextPos - charxpos) * this.spaceWidth;
-                    charxpos = nextPos;
-                    continue;
-                }
-
-                if (char < " ") {
-                    continue;
-                }
-
-                curWidth += this.getChar(char).charWidth;
-                ++charxpos;
-            }
-            maxWidth = Math.max(maxWidth, curWidth);
-
-            return new Size(maxWidth, lineCount * this.lineHeight);
-        }
-
         private getSuperSampleFont(font: string): string {
             // Eternal thank to http://stackoverflow.com/a/10136041/802124
             let regex = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-,\"\sa-z]+?)\s*$/;
@@ -700,4 +791,154 @@
         }
 
     }
+
+    /**
+     * Orginial code from cocos2d-js, converted to TypeScript by Nockawa
+     * Load the Text version of the BMFont format, no XML or binary supported, just plain old text
+     */
+    @BitmapFontLoaderPlugin("fnt", new BMFontLoaderTxt())
+    class BMFontLoaderTxt implements IBitmapFontLoader {
+        private static INFO_EXP    = /info [^\r\n]*(\r\n|$)/gi;
+        private static COMMON_EXP  = /common [^\n]*(\n|$)/gi;
+        private static PAGE_EXP    = /page [^\n]*(\n|$)/gi;
+        private static CHAR_EXP    = /char [^\n]*(\n|$)/gi;
+        private static KERNING_EXP = /kerning [^\n]*(\n|$)/gi;
+        private static ITEM_EXP    = /\w+=[^ \r\n]+/gi;
+        private static INT_EXP     = /^[\-]?\d+$/;
+
+        private _parseStrToObj(str) {
+            var arr = str.match(BMFontLoaderTxt.ITEM_EXP);
+            if (!arr) {
+                return null;
+            }
+
+            var obj = {};
+            for (var i = 0, li = arr.length; i < li; i++) {
+                var tempStr = arr[i];
+                var index = tempStr.indexOf("=");
+                var key = tempStr.substring(0, index);
+                var value = tempStr.substring(index + 1);
+                if (value.match(BMFontLoaderTxt.INT_EXP)) value = parseInt(value);
+                else if (value[0] === '"') value = value.substring(1, value.length - 1);
+                obj[key] = value;
+            }
+            return obj;
+        }
+
+        private _buildCharInfo(initialLine: string, obj: any, textureSize: Size, invertY: boolean, chars: StringDictionary<CharInfo>) {
+            let char: string = null;
+            let x: number = null;
+            let y: number = null;
+            let xadv: number = null;
+            let width: number = null;
+            let height: number = null;
+            let ci = new CharInfo();
+            for (let key in obj) {
+                let value = obj[key];
+                switch (key) {
+                    case "id":
+                        char = String.fromCharCode(value);
+                        break;
+                    case "x":
+                        x = value;
+                        break;
+                    case "y":
+                        y = value;
+                        break;
+                    case "width":
+                        width = value;
+                        break;
+                    case "height":
+                        height = value;
+                        break;
+                    case "xadvance":
+                        xadv = value;
+                        break;
+                }
+            }
+
+            if (x != null && y != null && width != null && height != null && char != null) {
+                if (xadv) {
+                    width = xadv;
+                }
+                if (invertY) {
+                    ci.topLeftUV = new Vector2(1 - (x / textureSize.width), 1 - (y / textureSize.height));
+                    ci.bottomRightUV = new Vector2(1 - ((x + width) / textureSize.width), 1 - ((y + height) / textureSize.height));
+                } else {
+                    ci.topLeftUV = new Vector2(x / textureSize.width, y / textureSize.height);
+                    ci.bottomRightUV = new Vector2((x + width) / textureSize.width, (y + height) / textureSize.height);
+                }
+                ci.charWidth = width;
+                chars.add(char, ci);
+            } else {
+                console.log("Error while parsing line " + initialLine);
+            }
+        }
+
+        public loadFont(fontContent: any, scene: Scene, invertY: boolean): { bfi: BitmapFontInfo, errorMsg: string, errorCode: number } {
+            let fontStr = <string>fontContent;
+            let bfi = new BitmapFontInfo();
+            let errorCode = 0;
+            let errorMsg = "OK";
+
+            //padding
+            let info = fontStr.match(BMFontLoaderTxt.INFO_EXP);
+            let infoObj = this._parseStrToObj(info[0]);
+            if (!infoObj) {
+                return null;
+            }
+            let paddingArr = infoObj["padding"].split(",");
+            bfi.padding = new Vector4(parseInt(paddingArr[0]), parseInt(paddingArr[1]), parseInt(paddingArr[2]), parseInt(paddingArr[3]));
+
+            //common
+            var commonObj = this._parseStrToObj(fontStr.match(BMFontLoaderTxt.COMMON_EXP)[0]);
+            bfi.lineHeight = commonObj["lineHeight"];
+            bfi.textureSize = new Size(commonObj["scaleW"], commonObj["scaleH"]);
+
+            var maxTextureSize = scene.getEngine()._gl.getParameter(0xd33);
+            if (commonObj["scaleW"] > maxTextureSize.width || commonObj["scaleH"] > maxTextureSize.height) {
+                errorMsg = "FontMap texture's size is bigger than what WebGL supports";
+                errorCode = -1;
+            } else {
+                if (commonObj["pages"] !== 1) {
+                    errorMsg = "FontMap must contain one page only.";
+                    errorCode = -1;
+                } else {
+                    //page
+                    let pageObj = this._parseStrToObj(fontStr.match(BMFontLoaderTxt.PAGE_EXP)[0]);
+                    if (pageObj["id"] !== 0) {
+                        errorMsg = "Only one page of ID 0 is supported";
+                        errorCode = -1;
+                    } else {
+                        bfi.textureFile = pageObj["file"];
+
+                        //char
+                        let charLines = fontStr.match(BMFontLoaderTxt.CHAR_EXP);
+                        for (let i = 0, li = charLines.length; i < li; i++) {
+                            let charObj = this._parseStrToObj(charLines[i]);
+                            this._buildCharInfo(charLines[i], charObj, bfi.textureSize, invertY, bfi.charDic);
+                        }
+
+                        //kerning
+                        var kerningLines = fontStr.match(BMFontLoaderTxt.KERNING_EXP);
+                        if (kerningLines) {
+                            for (let i = 0, li = kerningLines.length; i < li; i++) {
+                                let kerningObj = this._parseStrToObj(kerningLines[i]);
+                                bfi.kerningDic.add(((kerningObj["first"] << 16) | (kerningObj["second"] & 0xffff)).toString(), kerningObj["amount"]);
+                            }
+                        }
+                    }
+                }
+
+            }
+            return { bfi: bfi, errorCode: errorCode, errorMsg: errorMsg };
+        }
+    };
+
+    export function BitmapFontLoaderPlugin(fileExtension: string, plugin: IBitmapFontLoader): (target: Object) => void {
+        return () => {
+            BitmapFontTexture.addLoader(fileExtension, plugin);
+        }
+    }
+
 } 
