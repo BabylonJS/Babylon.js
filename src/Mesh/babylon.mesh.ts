@@ -121,6 +121,12 @@
         private _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
         private _sourceNormals: Float32Array; // Will be used to save original normals when using software skinning
 
+        // Will be used to save a source mesh reference, If any
+        private _source: BABYLON.Mesh = null; 
+        public get source(): BABYLON.Mesh {
+            return this._source;
+        }
+
         /**
          * @constructor
          * @param {string} name The value used by scene.getMeshByName() to do a lookup.
@@ -130,11 +136,15 @@
          * @param {boolean} doNotCloneChildren When cloning, skip cloning child meshes of source, default False.
          *                  When false, achieved by calling a clone(), also passing False.
          *                  This will make creation of children, recursive.
+         * @param {boolean} clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
         constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true) {
             super(name, scene);
 
             if (source) {
+                // Source mesh
+                this._source = source;
+
                 // Geometry
                 if (source._geometry) {
                     source._geometry.applyToMesh(this);
@@ -1337,6 +1347,15 @@
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
             }
+
+            // Sources
+            var meshes = this.getScene().meshes;
+            meshes.forEach((mesh: Mesh) => {
+                if (mesh._source && mesh._source === this) {
+                    mesh._source = null;
+                }
+            });
+            this._source = null;
 
             // Instances
             if (this._instancesBuffer) {
