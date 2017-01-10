@@ -415,6 +415,196 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
+     * This class given information about a given character.
+     */
+    class CharInfo {
+        /**
+         * The normalized ([0;1]) top/left position of the character in the texture
+         */
+        topLeftUV: Vector2;
+        /**
+         * The normalized ([0;1]) right/bottom position of the character in the texture
+         */
+        bottomRightUV: Vector2;
+        charWidth: number;
+    }
+    /**
+     * This is an abstract base class to hold a Texture that will contain a FontMap
+     */
+    abstract class BaseFontTexture extends Texture {
+        constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number);
+        /**
+         * Is the Font is using Super Sampling (each font texel is doubled).
+         */
+        readonly isSuperSampled: boolean;
+        /**
+         * Is the Font was rendered using the Signed Distance Field algorithm
+         * @returns {}
+         */
+        readonly isSignedDistanceField: boolean;
+        /**
+         * Get the Width (in pixel) of the Space character
+         */
+        readonly spaceWidth: number;
+        /**
+         * Get the Line height (in pixel)
+         */
+        readonly lineHeight: number;
+        /**
+         * When the FontTexture is retrieved through the FontCache, there's a reference counter that is incremented for each use.
+         * You also have the possibility to extend the lifetime of the FontTexture when passing it to another object by calling this method
+         * Don't forget to call the corresponding decCachedFontTextureCounter method when you no longer have use of the FontTexture.
+         * Each call to incCachedFontTextureCounter must have a corresponding call to decCachedFontTextureCounter.
+         */
+        abstract incCachedFontTextureCounter(): any;
+        /**
+         * Decrement the reference counter, if it reaches 0 the FontTexture is disposed
+         */
+        abstract decCachedFontTextureCounter(): any;
+        /**
+         * Is the font dynamically updated, if true is returned then you have to call the update() before using the font in rendering if new character were adding using getChar()
+         */
+        readonly abstract isDynamicFontTexture: boolean;
+        /**
+         * Will fetch the new characters retrieved with getChar() to the texture.
+         * If there were no new char, this call is harmless and quit in no time.
+         * If there were new chars a texture lock/update is made, which is a costy operation.
+         */
+        abstract update(): void;
+        /**
+         * Measure the width/height that will take a given text
+         * @param text the text to measure
+         * @param tabulationSize the size (in space character) of the tabulation character, default value must be 4
+         */
+        measureText(text: string, tabulationSize?: number): Size;
+        /**
+         * Retrieve the CharInfo object for a given character
+         * @param char the character to retrieve the CharInfo object from (e.g.: "A", "a", etc.)
+         */
+        abstract getChar(char: string): CharInfo;
+        protected _charInfos: StringDictionary<CharInfo>;
+        protected _lineHeight: number;
+        protected _spaceWidth: any;
+        protected _superSample: boolean;
+        protected _signedDistanceField: boolean;
+        protected _cachedFontId: string;
+    }
+    class BitmapFontInfo {
+        kerningDic: StringDictionary<number>;
+        charDic: StringDictionary<CharInfo>;
+        textureSize: Size;
+        atlasName: string;
+        padding: Vector4;
+        lineHeight: number;
+        textureUrl: string;
+        textureFile: string;
+    }
+    interface IBitmapFontLoader {
+        loadFont(fontDataContent: any, scene: Scene, invertY: boolean): {
+            bfi: BitmapFontInfo;
+            errorMsg: string;
+            errorCode: number;
+        };
+    }
+    class BitmapFontTexture extends BaseFontTexture {
+        constructor(scene: Scene, bmFontUrl: string, textureUrl?: string, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: (msg: string, code: number) => void);
+        static GetCachedFontTexture(scene: Scene, fontTexture: BitmapFontTexture): BitmapFontTexture;
+        static ReleaseCachedFontTexture(scene: Scene, fontTexture: BitmapFontTexture): void;
+        /**
+         * Is the font dynamically updated, if true is returned then you have to call the update() before using the font in rendering if new character were adding using getChar()
+         */
+        readonly isDynamicFontTexture: boolean;
+        /**
+         * This method does nothing for a BitmapFontTexture object as it's a static texture
+         */
+        update(): void;
+        /**
+         * Retrieve the CharInfo object for a given character
+         * @param char the character to retrieve the CharInfo object from (e.g.: "A", "a", etc.)
+         */
+        getChar(char: string): CharInfo;
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        incCachedFontTextureCounter(): void;
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        decCachedFontTextureCounter(): void;
+        private _usedCounter;
+        static addLoader(fileExtension: string, plugin: IBitmapFontLoader): void;
+        static plugins: StringDictionary<IBitmapFontLoader[]>;
+    }
+    /**
+     * This class is a special kind of texture which generates on the fly characters of a given css style "fontName".
+     * The generated texture will be updated when new characters will be retrieved using the getChar() method, but you have
+     *  to call the update() method for the texture to fetch these changes, you can harmlessly call update any time you want, if no
+     *  change were made, nothing will happen.
+     * The Font Texture can be rendered in three modes: normal size, super sampled size (x2) or using Signed Distance Field rendering.
+     * Signed Distance Field should be prefered because the texture can be rendered using AlphaTest instead of Transparency, which is way more faster. More about SDF here (http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
+     * The only flaw of SDF is that the rendering quality may not be the best or the edges too sharp is the font thickness is too thin.
+     */
+    class FontTexture extends BaseFontTexture {
+        private _canvas;
+        private _context;
+        private _lineHeightSuper;
+        private _xMargin;
+        private _yMargin;
+        private _offset;
+        private _currentFreePosition;
+        private _curCharCount;
+        private _lastUpdateCharCount;
+        private _spaceWidthSuper;
+        private _sdfCanvas;
+        private _sdfContext;
+        private _sdfScale;
+        private _usedCounter;
+        readonly isDynamicFontTexture: boolean;
+        static GetCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean): FontTexture;
+        static ReleaseCachedFontTexture(scene: Scene, fontName: string, supersample?: boolean, signedDistanceField?: boolean): void;
+        /**
+         * Create a new instance of the FontTexture class
+         * @param name the name of the texture
+         * @param font the font to use, use the W3C CSS notation
+         * @param scene the scene that owns the texture
+         * @param maxCharCount the approximative maximum count of characters that could fit in the texture. This is an approximation because most of the fonts are proportional (each char has its own Width). The 'W' character's width is used to compute the size of the texture based on the given maxCharCount
+         * @param samplingMode the texture sampling mode
+         * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
+         */
+        constructor(name: string, font: string, scene: Scene, maxCharCount?: number, samplingMode?: number, superSample?: boolean, signedDistanceField?: boolean);
+        /**
+         * Make sure the given char is present in the font map.
+         * @param char the character to get or add
+         * @return the CharInfo instance corresponding to the given character
+         */
+        getChar(char: string): CharInfo;
+        private _computeSDFChar(source);
+        private getSuperSampleFont(font);
+        private getFontHeight(font);
+        readonly canRescale: boolean;
+        getContext(): CanvasRenderingContext2D;
+        /**
+         * Call this method when you've call getChar() at least one time, this will update the texture if needed.
+         * Don't be afraid to call it, if no new character was added, this method simply does nothing.
+         */
+        update(): void;
+        clone(): FontTexture;
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        incCachedFontTextureCounter(): void;
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        decCachedFontTextureCounter(): void;
+    }
+    function BitmapFontLoaderPlugin(fileExtension: string, plugin: IBitmapFontLoader): (target: Object) => void;
+}
+
+declare module BABYLON {
+    /**
      * Stores 2D Bounding Information.
      * This class handles a circle area and a bounding rectangle one.
      */
@@ -3021,13 +3211,18 @@ declare module BABYLON {
          * Load an Atlas Picture Info object from a data file at a given url and with a given texture
          * @param texture the texture containing the atlas bitmap
          * @param url the URL of the Atlas Info data file
-         * @param loaded a callback that will be called when the AtlasPictureInfo object will be loaded and ready
-         * @param error a callback that will be called in case of error
+         * @param onLoad a callback that will be called when the AtlasPictureInfo object will be loaded and ready
+         * @param onError a callback that will be called in case of error
          */
-        static loadFromUrl(texture: Texture, url: string, loaded: (api: AtlasPictureInfo) => void, error?: (msg: string, code: number) => void): any;
-        private static _initialize();
+        static loadFromUrl(texture: Texture, url: string, onLoad: (api: AtlasPictureInfo) => void, onError?: (msg: string, code: number) => void): any;
         private static plugins;
     }
+    /**
+     * Use this decorator when you declare an Atlas Loader Class for the loader to register itself automatically.
+     * @param fileExtension the extension of the file that the plugin is loading (there can be many plugin for the same extension)
+     * @param plugin an instance of the plugin class to add to the AtlasPictureInfoFactory
+     */
+    function AtlasLoaderPlugin(fileExtension: string, plugin: IAtlasLoader): (target: Object) => void;
 }
 
 declare module BABYLON {
@@ -3036,7 +3231,7 @@ declare module BABYLON {
         vb: WebGLBuffer;
         ib: WebGLBuffer;
         instancingAttributes: InstancingAttributeInfo[];
-        fontTexture: FontTexture;
+        fontTexture: BaseFontTexture;
         effect: Effect;
         effectInstanced: Effect;
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
@@ -3074,7 +3269,7 @@ declare module BABYLON {
          * Get the area that bounds the text associated to the primitive
          */
         readonly textSize: Size;
-        protected readonly fontTexture: FontTexture;
+        protected readonly fontTexture: BaseFontTexture;
         /**
          * Dispose the primitive, remove it from its parent
          */
@@ -3136,6 +3331,7 @@ declare module BABYLON {
             fontName?: string;
             fontSuperSample?: boolean;
             fontSignedDistanceField?: boolean;
+            bitmapFontTexture?: BitmapFontTexture;
             defaultFontColor?: Color4;
             size?: Size;
             tabulationSize?: number;
