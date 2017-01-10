@@ -13961,7 +13961,7 @@ var BABYLON;
             var v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
             for (var _i = 0, _a = this._trackedGroups; _i < _a.length; _i++) {
                 var group = _a[_i];
-                if (group.isDisposed || !group.isVisible) {
+                if (group.isDisposed) {
                     continue;
                 }
                 var node = group.trackedNode;
