@@ -688,7 +688,7 @@ var BABYLON;
                 tempVertexData = undefined;
                 // Sub material
                 var material = gltfRuntime.scene.getMaterialByID(primitive.material);
-                multiMat.subMaterials.push(material === null ? gltfRuntime.scene.defaultMaterial : material);
+                multiMat.subMaterials.push(material === null ? BABYLON.GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
                 // Update vertices start and index start
                 verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
                 indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
@@ -1748,8 +1748,54 @@ var BABYLON;
             }
             return result;
         };
+        /**
+         * Returns the default material of gltf. Related to
+         *
+         * @param scene: the Babylon.js scene
+         */
+        GLTFUtils.GetDefaultMaterial = function (scene) {
+            if (!GLTFUtils._DefaultMaterial) {
+                BABYLON.Effect.ShadersStore["GLTFDefaultVertexShader"] = [
+                    "precision highp float;",
+                    "",
+                    "uniform mat4 u_modelViewMatrix;",
+                    "uniform mat4 u_projectionMatrix;",
+                    "",
+                    "attribute vec3 a_position;",
+                    "",
+                    "void main(void)",
+                    "{",
+                    "    gl_Position = u_projectionMatrix * u_modelViewMatrix * vec4(a_position,1.0);",
+                    "}"
+                ].join("\n");
+                BABYLON.Effect.ShadersStore["GLTFDefaultVertexShader"] = [
+                    "precision highp float;",
+                    "",
+                    "uniform vec4 u_emission;",
+                    "",
+                    "void main(void)",
+                    "{",
+                    "    gl_FragColor = u_emission;",
+                    "}"
+                ].join("\n");
+                var shaderPath = {
+                    vertex: "GLTFDefaultMaterial",
+                    fragment: "GLTFDefaultMaterial"
+                };
+                var options = {
+                    attributes: ["position"],
+                    uniforms: ["modelView", "projection", "u_emission"],
+                    samplers: [],
+                    needAlphaBlending: false
+                };
+                GLTFUtils._DefaultMaterial = new BABYLON.ShaderMaterial("GLTFDefaultMaterial", scene, shaderPath, options);
+                GLTFUtils._DefaultMaterial.setColor4("u_emission", new BABYLON.Color4(0.5, 0.5, 0.5, 1.0));
+            }
+            return GLTFUtils._DefaultMaterial;
+        };
         return GLTFUtils;
     }());
+    GLTFUtils._DefaultMaterial = null;
     BABYLON.GLTFUtils = GLTFUtils;
 })(BABYLON || (BABYLON = {}));
 

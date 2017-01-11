@@ -425,6 +425,13 @@ declare module BABYLON {
          * @param view: the buffer view
          */
         static DecodeBufferToText(view: ArrayBufferView): string;
+        /**
+         * Returns the default material of gltf. Related to
+         *
+         * @param scene: the Babylon.js scene
+         */
+        static GetDefaultMaterial(scene: Scene): ShaderMaterial;
+        private static _DefaultMaterial;
     }
 }
 
