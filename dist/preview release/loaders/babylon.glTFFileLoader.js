@@ -347,12 +347,6 @@ var BABYLON;
             var scale = BABYLON.Vector3.FromArray(node.scale || [1, 1, 1]);
             var rotation = BABYLON.Quaternion.FromArray(node.rotation || [0, 0, 0, 1]);
             var position = BABYLON.Vector3.FromArray(node.translation || [0, 0, 0]);
-            // Y is Up
-            /*
-            if (GLTFFileLoader.MakeYUP) {
-                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-            }
-            */
             mat = BABYLON.Matrix.Compose(scale, rotation, position);
         }
         else {
@@ -553,11 +547,6 @@ var BABYLON;
                     }
                 }
             }
-            if (!parentBone && nodesToRoot.length === 0) {
-                var inverseBindMatrix = BABYLON.Matrix.FromArray(buffer, i * 16);
-                var invertMesh = BABYLON.Matrix.Invert(mesh.getWorldMatrix());
-                mat = mat.multiply(mesh.getWorldMatrix());
-            }
             var bone = new BABYLON.Bone(node.jointName, newSkeleton, parentBone, mat);
             bone.id = id;
         }
@@ -738,14 +727,8 @@ var BABYLON;
             var scaling = new BABYLON.Vector3(0, 0, 0);
             var mat = BABYLON.Matrix.FromArray(node.matrix);
             mat.decompose(scaling, rotation, position);
-            // Y is Up
-            if (GLTFFileLoader.MakeYUP && !parent) {
-                rotation = rotation.multiply(new BABYLON.Quaternion(-0.707107, 0, 0, 0.707107));
-            }
             configureNode(newNode, position, rotation, scaling);
-            if (newNode instanceof BABYLON.TargetCamera) {
-                newNode.setTarget(BABYLON.Vector3.Zero());
-            }
+            newNode.computeWorldMatrix(true);
         }
         else {
             configureNode(newNode, BABYLON.Vector3.FromArray(node.translation), BABYLON.Quaternion.FromArray(node.rotation), BABYLON.Vector3.FromArray(node.scale));
@@ -869,7 +852,7 @@ var BABYLON;
             }
         }
         if (lastNode !== null) {
-            if (node.matrix) {
+            if (node.matrix && lastNode instanceof BABYLON.Mesh) {
                 configureNodeFromMatrix(lastNode, node, parent);
             }
             else {
@@ -1546,7 +1529,6 @@ var BABYLON;
     /**
     * Static members
     */
-    GLTFFileLoader.MakeYUP = false;
     GLTFFileLoader.HomogeneousCoordinates = false;
     GLTFFileLoader.IncrementalLoading = true;
     GLTFFileLoader.Extensions = {};

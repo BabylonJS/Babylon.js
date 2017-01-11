@@ -345,7 +345,6 @@ declare module BABYLON {
         /**
         * Static members
         */
-        static MakeYUP: boolean;
         static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
         static Extensions: {
