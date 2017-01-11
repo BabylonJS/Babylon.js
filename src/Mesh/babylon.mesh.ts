@@ -1792,7 +1792,7 @@
             });
         }
 
-        // facet data
+        // Facet data
         /** 
          *  Initialize the facet data arrays : facetNormals, facetPositions and facetPartitioning
          */
@@ -1810,8 +1810,8 @@
             this._partitioningSubdivisions = (this._partitioningSubdivisions) ? this._partitioningSubdivisions : 10;   // default nb of partitioning subdivisions = 10
             this._partitioningBBoxRatio = (this._partitioningBBoxRatio) ? this._partitioningBBoxRatio : 1.01;          // default ratio 1.01 = the partitioning is 1% bigger than the bounding box
             for (var f = 0; f < this._facetNb; f++) {
-                this._facetNormals[f] = BABYLON.Vector3.Zero();
-                this._facetPositions[f] = BABYLON.Vector3.Zero();
+                this._facetNormals[f] = Vector3.Zero();
+                this._facetPositions[f] = Vector3.Zero();
             }
             this._facetDataEnabled = true;           
             return this;
@@ -1825,9 +1825,9 @@
             if (!this._facetDataEnabled) {
                 this._initFacetData();
             }
-            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var normals = this.getVerticesData(VertexBuffer.NormalKind);
             var options = {
                 facetNormals: this.getFacetLocalNormals(), 
                 facetPositions: this.getFacetLocalPositions(), 
@@ -1836,8 +1836,8 @@
                 ratio: this._partitioningBBoxRatio,
                 partitioningSubdivisions: this._partitioningSubdivisions
             };
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals, options);
-            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+            VertexData.ComputeNormals(positions, indices, normals, options);
+            this.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
             return this;
         }
         /**
@@ -1865,7 +1865,7 @@
          * This method allocates a new Vector3 per call.
          */
         public getFacetPosition(i: number): Vector3 {
-            var pos = BABYLON.Vector3.Zero();
+            var pos = Vector3.Zero();
             this.getFacetPositionToRef(i, pos);
             return pos;
         }
@@ -1876,7 +1876,7 @@
         public getFacetPositionToRef(i: number, ref: Vector3): Mesh {
             var localPos = (this.getFacetLocalPositions())[i];
             var world = this.getWorldMatrix();
-            BABYLON.Vector3.TransformCoordinatesToRef(localPos, world, ref);
+            Vector3.TransformCoordinatesToRef(localPos, world, ref);
             return this;
         }
         /**
@@ -1884,7 +1884,7 @@
          * This method allocates a new Vector3 per call.
          */
         public getFacetNormal(i: number): Vector3 {
-            var norm = BABYLON.Vector3.Zero();
+            var norm = Vector3.Zero();
             this.getFacetNormalToRef(i, norm);
             return norm;
         }
@@ -1899,8 +1899,8 @@
             var x = localPos.x + localNorm.x;
             var y = localPos.y + localNorm.y;
             var z = localPos.z + localNorm.z;
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, world, ref);
-            var worldPos = BABYLON.Tmp.Vector3[8];
+            Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, world, ref);
+            var worldPos = Tmp.Vector3[8];
             this.getFacetPositionToRef(i, worldPos);
             ref.subtractInPlace(worldPos);
             return this;
@@ -1926,15 +1926,15 @@
          */
         public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, onlyFacing?: boolean): number {
             var world = this.getWorldMatrix();
-            var invMat = BABYLON.Tmp.Matrix[5];
+            var invMat = Tmp.Matrix[5];
             world.invertToRef(invMat);
-            var invVect = BABYLON.Tmp.Vector3[8];
+            var invVect = Tmp.Vector3[8];
             var closest = null;
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, invMat, invVect);  // transform (x,y,z) to coordinates in the mesh local space
+            Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, invMat, invVect);  // transform (x,y,z) to coordinates in the mesh local space
             closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, onlyFacing);
             if (projected) {
                 // tranform the local computed projected vector to world coordinates
-                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(projected.x, projected.y, projected.z, world, projected);
+                Vector3.TransformCoordinatesFromFloatsToRef(projected.x, projected.y, projected.z, world, projected);
             }
             return closest;
         }
