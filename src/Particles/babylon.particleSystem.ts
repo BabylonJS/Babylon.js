@@ -42,7 +42,8 @@
         public layerMask: number = 0x0FFFFFFF;
 
         public customShader: any = null;
-
+        public preventAutoStart: boolean = false;
+        
         /**
         * An event triggered when the system is disposed.
         * @type {BABYLON.Observable}
@@ -470,7 +471,9 @@
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
             }
 
-            result.start();
+            if (!this.preventAutoStart) {
+                result.start();
+            }
 
             return result;
         }
@@ -520,6 +523,7 @@
             serializationObject.textureMask = this.textureMask.asArray();
             serializationObject.blendMode = this.blendMode;
             serializationObject.customShader = this.customShader;
+            serializationObject.preventAutoStart = this.preventAutoStart;
 
             return serializationObject;
         }
@@ -538,6 +542,11 @@
 
             if (parsedParticleSystem.id) {
                 particleSystem.id = parsedParticleSystem.id;
+            }
+
+            // Auto start
+            if (parsedParticleSystem.preventAutoStart) {
+                particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
             }
 
             // Texture
@@ -588,7 +597,7 @@
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
 
-            if (!parsedParticleSystem.preventAutoStart) {
+            if (!particleSystem.preventAutoStart) {
                 particleSystem.start();
             }
 
