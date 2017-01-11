@@ -10,6 +10,7 @@
  - babylon.fontTexture.ts was moved from babylon.js to canvas2D ([nockawa](https://github.com/nockawa))
 
 ### Updates
+ - Added addChild, removeChild, setParent to AbstractMesh.  ([abow](https://github.com/abow))
  - `Effect.getVertexShaderSource()` and `Effect.getFragmentShaderSource()` now returns the effective shader code (including evaluation of #define) ([deltakosh](https://github.com/deltakosh))
 
 ### Canvas2D
