@@ -264,12 +264,6 @@ module BABYLON {
                         }
                         else if (targetPath === "rotationQuaternion") {
                             rotationQuaternion = value;
-                            // Y is Up
-                            /*
-                            if (GLTFFileLoader.MakeYUP) {
-                                rotationQuaternion = rotationQuaternion.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-                            }
-                            */
                         }
                         else {
                             scaling = value;
@@ -313,13 +307,6 @@ module BABYLON {
             var scale = Vector3.FromArray(node.scale || [1, 1, 1]);
             var rotation = Quaternion.FromArray(node.rotation || [0, 0, 0, 1]);
             var position = Vector3.FromArray(node.translation || [0, 0, 0]);
-
-            // Y is Up
-            /*
-            if (GLTFFileLoader.MakeYUP) {
-                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-            }
-            */
 
             mat = Matrix.Compose(scale, rotation, position);
         }
@@ -568,13 +555,6 @@ module BABYLON {
                 }
             }
 
-            if (!parentBone && nodesToRoot.length === 0) {
-                var inverseBindMatrix = Matrix.FromArray(buffer, i * 16);
-                var invertMesh = Matrix.Invert(mesh.getWorldMatrix());
-
-                mat = mat.multiply(mesh.getWorldMatrix());
-            }
-
             var bone = new Bone(node.jointName, newSkeleton, parentBone, mat);
             bone.id = id;
         }
@@ -788,7 +768,7 @@ module BABYLON {
     /**
     * Configures node from transformation matrix
     */
-    var configureNodeFromMatrix = (newNode: any, node: IGLTFNode, parent: Node) => {
+    var configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Node) => {
         if (node.matrix) {
             var position = new Vector3(0, 0, 0);
             var rotation = new Quaternion();
@@ -796,16 +776,8 @@ module BABYLON {
             var mat = Matrix.FromArray(node.matrix);
             mat.decompose(scaling, rotation, position);
 
-            // Y is Up
-            if (GLTFFileLoader.MakeYUP && !parent) {
-                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-            }
-
             configureNode(newNode, position, rotation, scaling);
-
-            if (newNode instanceof TargetCamera) {
-                (<TargetCamera>newNode).setTarget(Vector3.Zero());
-            }
+            newNode.computeWorldMatrix(true);
         }
         else {
             configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
@@ -839,7 +811,7 @@ module BABYLON {
                         skin.babylonSkeleton = newMesh.skeleton;
                     }
                 }
-                
+
                 lastNode = newMesh;
             }
         }
@@ -958,7 +930,7 @@ module BABYLON {
         }
 
         if (lastNode !== null) {
-            if (node.matrix) {
+            if (node.matrix && lastNode instanceof Mesh) {
                 configureNodeFromMatrix(lastNode, node, parent);
             }
             else {
@@ -1569,7 +1541,6 @@ module BABYLON {
         /**
         * Static members
         */
-        public static MakeYUP: boolean = false;
         public static HomogeneousCoordinates: boolean = false;
         public static IncrementalLoading: boolean = true;
 
