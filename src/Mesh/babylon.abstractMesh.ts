@@ -1319,7 +1319,7 @@
 
                 var m = child.getWorldMatrix().multiply(invParentMatrix);
 
-                m.decompose(Vector3.Zero(), Quaternion.Identity(), position);
+                m.decompose(scale, rotation, position);
 
                 child.position.x = position.x;
                 child.position.y = position.y;
@@ -1344,9 +1344,9 @@
 
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
-                var m1 = Tmp.Matrix[0];
-
-                child.getWorldMatrix().decompose(Vector3.Zero(), rotation, position);
+                var scale = Tmp.Vector3[1];
+                
+                child.getWorldMatrix().decompose(scale, rotation, position);
 
                 if (child.rotationQuaternion) {
                     child.rotationQuaternion.copyFrom(rotation);
