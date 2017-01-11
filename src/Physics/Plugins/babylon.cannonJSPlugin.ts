@@ -43,7 +43,7 @@
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
             var impulse = new CANNON.Vec3(force.x, force.y, force.z);
 
-            impostor.physicsBody.applyImpulse(impulse, worldPoint);
+            impostor.physicsBody.applyForce(impulse, worldPoint);
         }
 
         public generatePhysicsBody(impostor: PhysicsImpostor) {
@@ -153,21 +153,6 @@
                 maxForce: jointData.nativeParams.maxForce,
                 collideConnected: !!jointData.collision
             };
-            //Not needed, Cannon has a collideConnected flag
-            /*if (!jointData.collision) {
-                //add 1st body to a collision group of its own, if it is not in 1
-                if (mainBody.collisionFilterGroup === 1) {
-                    mainBody.collisionFilterGroup = this._currentCollisionGroup;
-                    this._currentCollisionGroup <<= 1;
-                }
-                if (connectedBody.collisionFilterGroup === 1) {
-                    connectedBody.collisionFilterGroup = this._currentCollisionGroup;
-                    this._currentCollisionGroup <<= 1;
-                }
-                //add their mask to the collisionFilterMask of each other:
-                connectedBody.collisionFilterMask = connectedBody.collisionFilterMask | ~mainBody.collisionFilterGroup;
-                mainBody.collisionFilterMask = mainBody.collisionFilterMask | ~connectedBody.collisionFilterGroup;
-            }*/
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.HingeJoint:
                 case PhysicsJoint.Hinge2Joint:
@@ -477,15 +462,6 @@
                 if (maxForce) {
                     this.setLimit(joint, maxForce);
                 }
-                //a hack for force application
-                /*var torque = new CANNON.Vec3();
-                var axis = joint.physicsJoint.axisB;
-                var body = joint.physicsJoint.bodyB;
-                var bodyTorque = body.torque;
-
-                axis.scale(force, torque);
-                body.vectorToWorldFrame(torque, torque);
-                bodyTorque.vadd(torque, bodyTorque);*/
             }
         }
 

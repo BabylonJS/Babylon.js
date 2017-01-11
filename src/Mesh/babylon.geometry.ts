@@ -21,6 +21,7 @@
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
+        private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
 
         /**
          *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y 
@@ -56,6 +57,10 @@
             else {
                 this._totalVertices = 0;
                 this._indices = [];
+            }
+
+            if (this._engine.getCaps().vertexArrayObject) {
+                this._vertexArrayObjects = {};
             }
 
             // applyToMesh
@@ -136,6 +141,11 @@
             }
 
             this.notifyUpdate(kind);
+
+            if (this._vertexArrayObjects) {
+                this._disposeVertexArrayObjects();
+                this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+            }
         }
 
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
@@ -189,6 +199,24 @@
                     }
                 }
             }
+        }
+
+        public _bind(effect: Effect, indexToBind: WebGLBuffer = undefined): void {  
+            if (indexToBind === undefined) {
+                indexToBind = this._indexBuffer;
+            }
+
+            if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
+                this._engine.bindBuffers(this.getVertexBuffers(), indexToBind, effect);
+                return;
+            }
+
+            // Using VAO
+            if (!this._vertexArrayObjects[effect.key]) {
+                this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(this.getVertexBuffers(), indexToBind, effect);
+            }
+
+            this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
         }
 
         public getTotalVertices(): number {
@@ -317,14 +345,6 @@
 
             if (index === -1) {
                 return;
-            }
-
-            for (var kind in this._vertexBuffers) {
-                this._vertexBuffers[kind].dispose();
-            }
-
-            if (this._indexBuffer && this._engine._releaseBuffer(this._indexBuffer)) {
-                this._indexBuffer = null;
             }
 
             meshes.splice(index, 1);
@@ -489,6 +509,15 @@
             return this._isDisposed;
         }
 
+        private _disposeVertexArrayObjects(): void {
+            if (this._vertexArrayObjects) {
+                for (var kind in this._vertexArrayObjects) {
+                    this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
+                }
+                this._vertexArrayObjects = {};
+            }
+        }
+
         public dispose(): void {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
@@ -497,6 +526,8 @@
                 this.releaseForMesh(meshes[index]);
             }
             this._meshes = [];
+
+            this._disposeVertexArrayObjects();
 
             for (var kind in this._vertexBuffers) {
                 this._vertexBuffers[kind].dispose();

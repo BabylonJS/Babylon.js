@@ -4,7 +4,7 @@
         vb: WebGLBuffer                                 = null;
         ib: WebGLBuffer                                 = null;
         instancingAttributes: InstancingAttributeInfo[] = null;
-        fontTexture: FontTexture                        = null;
+        fontTexture: BaseFontTexture                    = null;
         effect: Effect                                  = null;
         effectInstanced: Effect                         = null;
 
@@ -266,7 +266,7 @@
             return this._textSize;
         }
 
-        protected get fontTexture(): FontTexture {
+        protected get fontTexture(): BaseFontTexture {
             if (this._fontTexture) {
                 return this._fontTexture;
             }
@@ -356,6 +356,7 @@
             fontName                ?: string,
             fontSuperSample         ?: boolean,
             fontSignedDistanceField ?: boolean,
+            bitmapFontTexture       ?: BitmapFontTexture,
             defaultFontColor        ?: Color4,
             size                    ?: Size,
             tabulationSize          ?: number,
@@ -384,9 +385,16 @@
 
             super(settings);
 
-            this.fontName            = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
-            this._fontSuperSample    = (settings.fontSuperSample!=null && settings.fontSuperSample);
-            this._fontSDF            = (settings.fontSignedDistanceField!=null && settings.fontSignedDistanceField);
+            if (settings.bitmapFontTexture != null) {
+                this._fontTexture     = settings.bitmapFontTexture;
+                this._fontName        = null;
+                this._fontSuperSample = false;
+                this._fontSDF         = false;
+            } else {
+                this._fontName       = (settings.fontName==null) ? "12pt Arial" : settings.fontName;
+                this._fontSuperSample= (settings.fontSuperSample!=null && settings.fontSuperSample);
+                this._fontSDF        = (settings.fontSignedDistanceField!=null && settings.fontSignedDistanceField);
+            }
             this.defaultFontColor    = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
             this._tabulationSize     = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             this._textSize           = null;
@@ -547,7 +555,7 @@
             return !this._fontSDF;
         }
 
-        private _fontTexture: FontTexture;
+        private _fontTexture: BaseFontTexture;
         private _tabulationSize: number;
         private _charCount: number;
         private _fontName: string;

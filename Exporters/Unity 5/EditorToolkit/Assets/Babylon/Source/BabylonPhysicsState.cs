@@ -7,8 +7,8 @@ namespace UnityEditor
     public sealed class BabylonPhysicsState : MonoBehaviour
     {
         public float mass = 0.0f;
-        public float friction = 0.2f;
-        public float restitution = 0.2f;
+        public float friction = 0.1f;
+        public float restitution = 0.25f;
         public BabylonPhysicsImposter imposter = BabylonPhysicsImposter.None;
     }
 }

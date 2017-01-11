@@ -345,8 +345,12 @@ module BABYLON {
         materials: Object;
         animations: Object;
         skins: Object;
-        currentScene: Object;
+
+        currentScene?: Object;
+        scenes: Object; // v1.1
+
         extensionsUsed: string[];
+        extensionsRequired?: string[]; // v1.1
 
         buffersCount: number;
         shaderscount: number;

@@ -239,6 +239,7 @@
         public static Magenta(): Color3 { return new Color3(1, 0, 1); }
         public static Yellow(): Color3 { return new Color3(1, 1, 0); }
         public static Gray(): Color3 { return new Color3(0.5, 0.5, 0.5); }
+        public static Random(): Color3 { return new Color3(Math.random(), Math.random(), Math.random()); }
     }
 
     export class Color4 {
@@ -1226,7 +1227,7 @@
             world.multiplyToRef(view, matrix)
             matrix.multiplyToRef(projection, matrix);
             matrix.invert();
-            var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), source.z);
+            var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), 2 * source.z - 1.0);
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
 

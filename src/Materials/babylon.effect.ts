@@ -63,7 +63,9 @@
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onBind: (effect: Effect) => void;
+        public uniqueId = 0;
 
+        private static _uniqueIdSeed = 0;
         private _engine: Engine;
         private _uniformsNames: string[];
         private _samplers: string[];
@@ -91,6 +93,8 @@
 
             this._indexParameters = indexParameters;
 
+            this.uniqueId = Effect._uniqueIdSeed++;
+
             var vertexSource;
             var fragmentSource;
 
@@ -116,13 +120,21 @@
 
             this._loadVertexShader(vertexSource, vertexCode => {
                 this._processIncludes(vertexCode, vertexCodeWithIncludes => {
-                    this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                        this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
-                            this._prepareEffect(vertexCodeWithIncludes, fragmentCodeWithIncludes, attributesNames, defines, fallbacks);
+                    this._processShaderConversion(vertexCodeWithIncludes, false, migratedVertexCode => {
+                        this._loadFragmentShader(fragmentSource, (fragmentCode) => {
+                            this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
+                                this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
+                                    this._prepareEffect(migratedVertexCode, migratedFragmentCode, attributesNames, defines, fallbacks);
+                                });
+                            });
                         });
                     });
                 });
             });
+        }
+
+        public get key(): string {
+            return this._key;
         }
 
         // Properties
@@ -260,6 +272,44 @@
                 Tools.Error("Fragment shader:" + this.name);
             }
         }
+        private _processShaderConversion(sourceCode: string, isFragment: boolean, callback: (data: any) => void): void {
+
+            var preparedSourceCode = this._processPrecision(sourceCode);
+
+            if (this._engine.webGLVersion == 1) {
+                callback(preparedSourceCode);
+                return;
+            }
+
+            // Already converted
+            if (preparedSourceCode.indexOf("#version 3") !== -1) {
+                callback(preparedSourceCode);
+                return;
+            }
+            
+            // Remove extensions 
+            // #extension GL_OES_standard_derivatives : enable
+            // #extension GL_EXT_shader_texture_lod : enable
+            // #extension GL_EXT_frag_depth : enable
+            var regex = /#extension.+(GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth).+enable/g;
+            var result = preparedSourceCode.replace(regex, "");
+
+            // Migrate to GLSL v300
+            result = result.replace(/varying\s/g, isFragment ? "in " : "out ");
+            result = result.replace(/attribute[ \t]/g, "in ");
+            result = result.replace(/[ \t]attribute/g, " in");
+            
+            if (isFragment) {
+                result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
+                result = result.replace(/texture2D\(/g, "texture(");
+                result = result.replace(/textureCube\(/g, "texture(");
+                result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
+                result = result.replace(/gl_FragColor/g, "glFragColor");
+                result = result.replace(/void\s+?main\(/g, "out vec4 glFragColor;\nvoid main(");
+            }
+            
+            callback(result);
+        }
 
         private _processIncludes(sourceCode: string, callback: (data: any) => void): void {
             var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
@@ -343,10 +393,6 @@
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
                 var engine = this._engine;
-
-                // Precision
-                vertexSourceCode = this._processPrecision(vertexSourceCode);
-                fragmentSourceCode = this._processPrecision(fragmentSourceCode);
 
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 

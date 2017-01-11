@@ -22,12 +22,11 @@ namespace Unity3D2Babylon
         public bool ExportPhysics { get; set; }
         public bool ExportShadows { get; set; }
         public bool WorkerCollisions { get; set; }
-        public SerializableVector3 Gravity { get; set; }
-        public SerializableVector3 CameraEllipsoid { get; set; }
         public int ShadowMapSize { get; set; }
         public float ShadowMapBias { get; set; }
         public float ShadowBlurScale { get; set; }
         public float ProductionVersion { get; set; }
+        public float DefaultAspectRatio { get; set; }
         public int DefaultUpdateOptions { get; set; }
         public int DefaultPreviewWindow { get; set; }
         public int DefaultLightFilter { get; set; }
@@ -65,15 +64,14 @@ namespace Unity3D2Babylon
             ExportPhysics = true;
             ExportShadows = false;
             WorkerCollisions = false;
-            Gravity = new Vector3(0, -0.9f, 0);
-            CameraEllipsoid = new Vector3(0.5f, 0.85f, 0.5f);
             ShadowMapSize = 1024;
             ShadowMapBias = 0.0001f;
             ShadowBlurScale = 0;
+            DefaultAspectRatio = 1f;
             DefaultUpdateOptions = 0;
             DefaultPreviewWindow = 0;
             DefaultLightFilter = 4;
-            DefaultImageFormat = 0;
+            DefaultImageFormat = 1;
             DefaultLightmapMode = 0;
             DefaultLightmapBaking = 0;
             DefaultCoordinatesIndex = 1;
