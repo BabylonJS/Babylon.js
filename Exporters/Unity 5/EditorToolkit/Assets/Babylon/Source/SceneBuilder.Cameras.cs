@@ -28,6 +28,7 @@ namespace Unity3D2Babylon
             metaData.properties.Add("clearFlags", camera.clearFlags.ToString());
             metaData.properties.Add("cullingMask", camera.cullingMask);
             metaData.properties.Add("stereoEnabled", camera.stereoEnabled);
+            metaData.properties.Add("isOrthographic", camera.orthographic);
             metaData.properties.Add("useOcclusionCulling", camera.useOcclusionCulling);
             babylonCamera.tags = componentTags;
 
@@ -37,11 +38,12 @@ namespace Unity3D2Babylon
             babylonCamera.isStereoscopicSideBySide = camera.stereoEnabled;
             if (camera.orthographic)
             {
-                float size = camera.orthographicSize;
-                babylonCamera.orthoTop = size;
-                babylonCamera.orthoBottom = -size;
-                babylonCamera.orthoLeft = -size;
-                babylonCamera.orthoRight = size;
+                float vert = camera.orthographicSize;
+                float horz = vert * exportationOptions.DefaultAspectRatio;
+                babylonCamera.orthoTop = vert;
+                babylonCamera.orthoBottom = -vert;
+                babylonCamera.orthoLeft = -horz;
+                babylonCamera.orthoRight = horz;
                 babylonCamera.mode = 1;
             }
             else
@@ -65,8 +67,10 @@ namespace Unity3D2Babylon
             if (exportationOptions.ExportCollisions)
             {
                 babylonCamera.checkCollisions = true;
-                babylonCamera.applyGravity = (exportationOptions.Gravity.X == 0 && exportationOptions.Gravity.Y == 0 && exportationOptions.Gravity.Z == 0) ? false : true;
-                babylonCamera.ellipsoid = exportationOptions.CameraEllipsoid.ToFloat();
+                if (SceneController != null) {
+                    babylonCamera.applyGravity = (SceneController.sceneOptions.defaultGravity.y == 0 && SceneController.sceneOptions.defaultGravity.y == 0 && SceneController.sceneOptions.defaultGravity.z == 0) ? false : true;
+                    babylonCamera.ellipsoid = SceneController.sceneOptions.cameraEllipsoid.ToFloat();
+                }
             }
 
             // Lens Flares

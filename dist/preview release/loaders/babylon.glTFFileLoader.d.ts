@@ -287,8 +287,10 @@ declare module BABYLON {
         materials: Object;
         animations: Object;
         skins: Object;
-        currentScene: Object;
+        currentScene?: Object;
+        scenes: Object;
         extensionsUsed: string[];
+        extensionsRequired?: string[];
         buffersCount: number;
         shaderscount: number;
         scene: Scene;

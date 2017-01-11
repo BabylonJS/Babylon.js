@@ -395,7 +395,6 @@ namespace Unity3D2Babylon
                                 collisionMesh = new BabylonMesh();
                                 collisionMesh.tags = "[MESHCOLLIDER]";
                                 // Generate Mesh Collider Geometry
-                               
                                 if(!meshCollider.sharedMesh)
                                 {
                                     UnityEngine.Debug.LogWarning(meshCollider.gameObject+" has a Mesh Collider component without a mesh");
@@ -404,8 +403,6 @@ namespace Unity3D2Babylon
                                 {
                                     Tools.GenerateBabylonMeshData(meshCollider.sharedMesh, collisionMesh);
                                 }
-
-                            
                                 collisionMesh.position = Vector3.zero.ToFloat();
                                 collisionMesh.rotation = Vector3.zero.ToFloat();
                                 float factorX = 1f, factorY = 1f, factorZ = 1f;
@@ -656,15 +653,19 @@ namespace Unity3D2Babylon
                 // Collisions
                 if (exportationOptions.ExportCollisions)
                 {
-                    babylonScene.gravity = exportationOptions.Gravity.ToFloat();
                     babylonScene.workerCollisions = exportationOptions.WorkerCollisions;
+                    if (SceneController != null) {
+                        babylonScene.gravity = SceneController.sceneOptions.defaultGravity.ToFloat();
+                    }
                 }
 
                 // Babylon Physics
                 if (exportationOptions.ExportPhysics)
                 {
                     babylonScene.physicsEnabled = true;
-                    babylonScene.physicsGravity = exportationOptions.Gravity.ToFloat();
+                    if (SceneController != null) {
+                        babylonScene.physicsGravity = SceneController.sceneOptions.defaultGravity.ToFloat();
+                    }
                 }
 
                 // Scene Controller
@@ -1332,7 +1333,7 @@ namespace Unity3D2Babylon
                     string[] attributes = babylonLine.Split(':');
                     if (attributes != null && attributes.Length > 1)
                     {
-                        string abuffer = attributes[1].Replace("[", "").Replace("]", "");
+                        string abuffer = attributes[1].Replace("[", "").Replace("]", "").Replace("\"", "");
                         if (!String.IsNullOrEmpty(abuffer))
                         {
                             abuffer = abuffer.Trim();
@@ -1341,7 +1342,7 @@ namespace Unity3D2Babylon
                             {
                                 foreach (string aoption in adata)
                                 {
-                                    string aoption_buffer = aoption.Trim().Replace("\"", "").Trim();
+                                    string aoption_buffer = aoption.Trim();
                                     if (!String.IsNullOrEmpty(aoption_buffer))
                                     {
                                         attributeList.Add(aoption_buffer);
@@ -1356,7 +1357,7 @@ namespace Unity3D2Babylon
                     string[] uniforms = babylonLine.Split(':');
                     if (uniforms != null && uniforms.Length > 1)
                     {
-                        string ubuffer = uniforms[1].Replace("[", "").Replace("]", "");
+                        string ubuffer = uniforms[1].Replace("[", "").Replace("]", "").Replace("\"", "");
                         if (!String.IsNullOrEmpty(ubuffer))
                         {
                             ubuffer = ubuffer.Trim();
@@ -1365,7 +1366,7 @@ namespace Unity3D2Babylon
                             {
                                 foreach (string uoption in udata)
                                 {
-                                    string uoption_buffer = uoption.Trim().Replace("\"", "").Trim();
+                                    string uoption_buffer = uoption.Trim();
                                     if (!String.IsNullOrEmpty(uoption_buffer))
                                     {
                                         uniformList.Add(uoption_buffer);
@@ -1380,7 +1381,7 @@ namespace Unity3D2Babylon
                     string[] samplers = babylonLine.Split(':');
                     if (samplers != null && samplers.Length > 1)
                     {
-                        string sbuffer = samplers[1].Replace("[", "").Replace("]", "");
+                        string sbuffer = samplers[1].Replace("[", "").Replace("]", "").Replace("\"", "");
                         if (!String.IsNullOrEmpty(sbuffer))
                         {
                             sbuffer = sbuffer.Trim();
@@ -1389,7 +1390,7 @@ namespace Unity3D2Babylon
                             {
                                 foreach (string soption in sdata)
                                 {
-                                    string soption_buffer = soption.Trim().Replace("\"", "").Trim();
+                                    string soption_buffer = soption.Trim();
                                     if (!String.IsNullOrEmpty(soption_buffer))
                                     {
                                         samplerList.Add(soption_buffer);
@@ -1404,7 +1405,7 @@ namespace Unity3D2Babylon
                     string[] defines = babylonLine.Split(':');
                     if (defines != null && defines.Length > 1)
                     {
-                        string dbuffer = defines[1].Replace("[", "").Replace("]", "");
+                        string dbuffer = defines[1].Replace("[", "").Replace("]", "").Replace("\"", "");
                         if (!String.IsNullOrEmpty(dbuffer))
                         {
                             dbuffer = dbuffer.Trim();
@@ -1413,7 +1414,7 @@ namespace Unity3D2Babylon
                             {
                                 foreach (string doption in ddata)
                                 {
-                                    string doption_buffer = doption.Trim().Replace("\"", "").Trim();
+                                    string doption_buffer = doption.Trim();
                                     if (!String.IsNullOrEmpty(doption_buffer))
                                     {
                                         defineList.Add(doption_buffer);

@@ -4,8 +4,8 @@ BABYLON.Effect.ShadersStore['lines2dPixelShader'] = "varying vec4 vColor;\nvoid 
 BABYLON.Effect.ShadersStore['lines2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute vec2 position;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec2 boundingMin;\natt vec2 boundingMax;\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4((position.xy-boundingMin)/(boundingMax-boundingMin),1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4((position.xy-boundingMin)/(boundingMax-boundingMin),1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=position.xy;\npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['rect2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
 BABYLON.Effect.ShadersStore['rect2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n#ifdef Border\natt float borderThickness;\n#endif\n#ifdef FillSolid\natt vec4 fillSolidColor;\n#endif\n#ifdef BorderSolid\natt vec4 borderSolidColor;\n#endif\n#ifdef FillGradient\natt vec4 fillGradientColor1;\natt vec4 fillGradientColor2;\natt vec4 fillGradientTY;\n#endif\n#ifdef BorderGradient\natt vec4 borderGradientColor1;\natt vec4 borderGradientColor2;\natt vec4 borderGradientTY;\n#endif\n\natt vec3 properties;\n\n#define rsub0 17.0\n#define rsub1 33.0\n#define rsub2 49.0\n#define rsub3 65.0\n#define rsub 64.0\n#define TWOPI 6.28318530\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (properties.z == 0.0) {\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<4.0) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=4.0;\n}\nif (segi == 0.0) {\npos2=vec2(1.0,1.0);\n} \nelse if (segi == 1.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (segi == 2.0) {\npos2=vec2(0.0,0.0);\n} \nelse {\npos2=vec2(0.0,1.0);\n}\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse if (index == 1.0) {\npos2=vec2(1.0,1.0);\n}\nelse if (index == 2.0) {\npos2=vec2(1.0,0.0);\n}\nelse if (index == 3.0) {\npos2=vec2(0.0,0.0);\n}\nelse {\npos2=vec2(0.0,1.0);\n}\n#endif\n}\nelse\n{\n#ifdef Border\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\nvec2 borderOffset=vec2(1.0,1.0);\nfloat segi=index;\nif (index<rsub) {\nborderOffset=vec2(1.0-(borderThickness*2.0/w),1.0-(borderThickness*2.0/h));\n}\nelse {\nsegi-=rsub;\n}\n\nif (segi<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (segi<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (segi<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\npos2.x=((pos2.x-0.5)*borderOffset.x)+0.5;\npos2.y=((pos2.y-0.5)*borderOffset.y)+0.5;\n#else\nif (index == 0.0) {\npos2=vec2(0.5,0.5);\n}\nelse {\nfloat w=properties.x;\nfloat h=properties.y;\nfloat r=properties.z;\nfloat nru=r/w;\nfloat nrv=r/h;\n\nif (index<rsub0) {\npos2=vec2(1.0-nru,nrv);\n}\n\nelse if (index<rsub1) {\npos2=vec2(nru,nrv);\n}\n\nelse if (index<rsub2) {\npos2=vec2(nru,1.0-nrv);\n}\n\nelse {\npos2=vec2(1.0-nru,1.0-nrv);\n}\nfloat angle=TWOPI-((index-1.0)*TWOPI/(rsub-0.5));\npos2.x+=cos(angle)*nru;\npos2.y+=sin(angle)*nrv;\n}\n#endif\n}\n#ifdef FillSolid\nvColor=fillSolidColor;\n#endif\n#ifdef BorderSolid\nvColor=borderSolidColor;\n#endif\n#ifdef FillGradient\nfloat v=dot(vec4(pos2.xy,1,1),fillGradientTY);\nvColor=mix(fillGradientColor2,fillGradientColor1,v); \n#endif\n#ifdef BorderGradient\nfloat v=dot(vec4(pos2.xy,1,1),borderGradientTY);\nvColor=mix(borderGradientColor2,borderGradientColor1,v); \n#endif\nvColor.a*=opacity;\nvec4 pos;\npos.xy=pos2.xy*properties.xy;\npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n}";
-BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec4 color=texture2D(diffuseSampler,vUV);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
-BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 scaleFactor;\natt vec2 textureSize;\n\natt vec3 properties;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\nvoid main(void) {\nvec2 pos2;\n\nvec2 off=vec2(0.0,0.0);\nvec2 sfSizeUV=sizeUV*scaleFactor;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sfSizeUV.x)+off.x,topLeftUV.y-off.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sfSizeUV.x)+off.x,(topLeftUV.y+sfSizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sfSizeUV.x+(frame*sfSizeUV.x),(topLeftUV.y+sfSizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sfSizeUV.x+(frame*sfSizeUV.x),topLeftUV.y-off.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\nvec4 pos;\nif (alignToPixel == 1.0)\n{\npos.xy=floor(pos2.xy*sizeUV*textureSize);\n} else {\npos.xy=pos2.xy*sizeUV*textureSize;\n}\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n} ";
+BABYLON.Effect.ShadersStore['sprite2dPixelShader'] = "varying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nuniform bool alphaTest;\nuniform sampler2D diffuseSampler;\nvoid main(void) {\nvec2 uv=vUV;\n#ifdef Scale9\nvec2 sizeUV=vBottomRightUV-vTopLeftUV;\n\nfloat leftPartUV=vTopLeftUV.x+(vScale9.x/vScaleFactor.x);\nfloat rightPartUV=vTopLeftUV.x+sizeUV.x-((sizeUV.x-vScale9.z)/vScaleFactor.x);\nif (vUV.x<leftPartUV) {\nuv.x=vTopLeftUV.x+((vUV.x- vTopLeftUV.x)*vScaleFactor.x);\n}\nelse if (vUV.x>rightPartUV) {\nuv.x=vTopLeftUV.x+vScale9.z+((vUV.x-rightPartUV)*vScaleFactor.x);\n}\nelse {\nfloat r=(vUV.x-leftPartUV)/(rightPartUV-leftPartUV);\nuv.x=vTopLeftUV.x+vScale9.x+((vScale9.z-vScale9.x)*r);\n}\n\nfloat topPartUV=(vTopLeftUV.y+(vScale9.y/vScaleFactor.y));\nfloat bottomPartUV=(vTopLeftUV.y+sizeUV.y-((sizeUV.y-vScale9.w)/vScaleFactor.y));\nif (vUV.y<topPartUV) {\nuv.y=vTopLeftUV.y+((vUV.y-vTopLeftUV.y)*vScaleFactor.y);\n}\nelse if (vUV.y>bottomPartUV) {\nuv.y=vTopLeftUV.y+vScale9.w+((vUV.y-bottomPartUV)*vScaleFactor.y);\n}\nelse {\nfloat r=(vUV.y-topPartUV)/(bottomPartUV-topPartUV);\nuv.y=vTopLeftUV.y+vScale9.y+((vScale9.w-vScale9.y)*r);\n}\n#endif\nvec4 color=texture2D(diffuseSampler,uv);\nif (alphaTest)\n{\nif (color.a<0.95) {\ndiscard;\n}\n}\ncolor.a*=vOpacity;\ngl_FragColor=color;\n}";
+BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 topLeftUV;\natt vec2 sizeUV;\n#ifdef Scale9\natt vec2 scaleFactor;\n#endif\natt vec2 textureSize;\n\natt vec3 properties;\n#ifdef Scale9\natt vec4 scale9;\n#endif\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n\n\nvarying vec2 vUV;\nvarying float vOpacity;\n#ifdef Scale9\nvarying vec2 vTopLeftUV;\nvarying vec2 vBottomRightUV;\nvarying vec4 vScale9;\nvarying vec2 vScaleFactor;\n#endif\nvoid main(void) {\nvec2 pos2;\nfloat frame=properties.x;\nfloat invertY=properties.y;\nfloat alignToPixel=properties.z;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 2.0) {\npos2=vec2( 1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),(topLeftUV.y+sizeUV.y));\n}\n\nelse if (index == 3.0) {\npos2=vec2( 1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x+(frame*sizeUV.x),topLeftUV.y);\n}\nif (invertY == 1.0) {\nvUV.y=1.0-vUV.y;\n}\nvec4 pos;\nif (alignToPixel == 1.0)\n{\npos.xy=floor(pos2.xy*sizeUV*textureSize);\n} else {\npos.xy=pos2.xy*sizeUV*textureSize;\n}\n#ifdef Scale9\nif (invertY == 1.0) {\nvTopLeftUV=vec2(topLeftUV.x,1.0-(topLeftUV.y+sizeUV.y));\nvBottomRightUV=vec2(topLeftUV.x+sizeUV.x,1.0-topLeftUV.y);\nvScale9=vec4(scale9.x,sizeUV.y-scale9.w,scale9.z,sizeUV.y-scale9.y);\n}\nelse {\nvTopLeftUV=topLeftUV;\nvBottomRightUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\nvScale9=scale9;\n}\nvScaleFactor=scaleFactor;\n#endif\nvOpacity=opacity;\npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n} ";
 BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,1.0);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\ngl_FragColor=color*vColor;\n#endif\n}";
 BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\nvUV=(floor(vUV*textureSize)+vec2(0.0,0.0))/textureSize;\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=floor(pos2.xy*superSampleFactor*sizeUV*textureSize); \npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n}";
 
@@ -933,6 +933,849 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.observableStringDictionary.js.map
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * This class given information about a given character.
+     */
+    var CharInfo = (function () {
+        function CharInfo() {
+        }
+        return CharInfo;
+    }());
+    BABYLON.CharInfo = CharInfo;
+    /**
+     * This is an abstract base class to hold a Texture that will contain a FontMap
+     */
+    var BaseFontTexture = (function (_super) {
+        __extends(BaseFontTexture, _super);
+        function BaseFontTexture(url, scene, noMipmap, invertY, samplingMode) {
+            if (noMipmap === void 0) { noMipmap = false; }
+            if (invertY === void 0) { invertY = true; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            var _this = _super.call(this, url, scene, noMipmap, invertY, samplingMode) || this;
+            _this._cachedFontId = null;
+            _this._charInfos = new BABYLON.StringDictionary();
+            return _this;
+        }
+        Object.defineProperty(BaseFontTexture.prototype, "isSuperSampled", {
+            /**
+             * Is the Font is using Super Sampling (each font texel is doubled).
+             */
+            get: function () {
+                return this._superSample;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseFontTexture.prototype, "isSignedDistanceField", {
+            /**
+             * Is the Font was rendered using the Signed Distance Field algorithm
+             * @returns {}
+             */
+            get: function () {
+                return this._signedDistanceField;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseFontTexture.prototype, "spaceWidth", {
+            /**
+             * Get the Width (in pixel) of the Space character
+             */
+            get: function () {
+                return this._spaceWidth;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseFontTexture.prototype, "lineHeight", {
+            /**
+             * Get the Line height (in pixel)
+             */
+            get: function () {
+                return this._lineHeight;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Measure the width/height that will take a given text
+         * @param text the text to measure
+         * @param tabulationSize the size (in space character) of the tabulation character, default value must be 4
+         */
+        BaseFontTexture.prototype.measureText = function (text, tabulationSize) {
+            var maxWidth = 0;
+            var curWidth = 0;
+            var lineCount = 1;
+            var charxpos = 0;
+            // Parse each char of the string
+            for (var _i = 0, text_1 = text; _i < text_1.length; _i++) {
+                var char = text_1[_i];
+                // Next line feed?
+                if (char === "\n") {
+                    maxWidth = Math.max(maxWidth, curWidth);
+                    charxpos = 0;
+                    curWidth = 0;
+                    ++lineCount;
+                    continue;
+                }
+                // Tabulation ?
+                if (char === "\t") {
+                    var nextPos = charxpos + tabulationSize;
+                    nextPos = nextPos - (nextPos % tabulationSize);
+                    curWidth += (nextPos - charxpos) * this.spaceWidth;
+                    charxpos = nextPos;
+                    continue;
+                }
+                if (char < " ") {
+                    continue;
+                }
+                var ci = this.getChar(char);
+                if (!ci) {
+                    throw new Error("Character " + char + " is not supported by FontTexture " + this.name);
+                }
+                curWidth += ci.charWidth;
+                ++charxpos;
+            }
+            maxWidth = Math.max(maxWidth, curWidth);
+            return new BABYLON.Size(maxWidth, lineCount * this.lineHeight);
+        };
+        return BaseFontTexture;
+    }(BABYLON.Texture));
+    BABYLON.BaseFontTexture = BaseFontTexture;
+    var BitmapFontInfo = (function () {
+        function BitmapFontInfo() {
+            this.kerningDic = new BABYLON.StringDictionary();
+            this.charDic = new BABYLON.StringDictionary();
+        }
+        return BitmapFontInfo;
+    }());
+    BABYLON.BitmapFontInfo = BitmapFontInfo;
+    var BitmapFontTexture = (function (_super) {
+        __extends(BitmapFontTexture, _super);
+        function BitmapFontTexture(scene, bmFontUrl, textureUrl, noMipmap, invertY, samplingMode, onLoad, onError) {
+            if (textureUrl === void 0) { textureUrl = null; }
+            if (noMipmap === void 0) { noMipmap = false; }
+            if (invertY === void 0) { invertY = true; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            if (onLoad === void 0) { onLoad = null; }
+            if (onError === void 0) { onError = null; }
+            var _this = _super.call(this, null, scene, noMipmap, invertY, samplingMode) || this;
+            _this._usedCounter = 1;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var ext = bmFontUrl.split('.').pop().split(/\#|\?/)[0];
+                        var plugins = BitmapFontTexture.plugins.get(ext.toLocaleLowerCase());
+                        if (!plugins) {
+                            if (onError) {
+                                onError("couldn't find a plugin for this file extension", -1);
+                            }
+                            return;
+                        }
+                        var _loop_1 = function (p) {
+                            var ret = p.loadFont(xhr.response, scene, invertY);
+                            if (ret) {
+                                var bfi = ret.bfi;
+                                if (textureUrl != null) {
+                                    bfi.textureUrl = textureUrl;
+                                }
+                                else {
+                                    var baseUrl = bmFontUrl.substr(0, bmFontUrl.lastIndexOf("/") + 1);
+                                    bfi.textureUrl = baseUrl + bfi.textureFile;
+                                }
+                                _this._texture = scene.getEngine().createTexture(bfi.textureUrl, noMipmap, invertY, scene, samplingMode, function () {
+                                    if (ret.bfi && onLoad) {
+                                        onLoad();
+                                    }
+                                });
+                                _this._lineHeight = bfi.lineHeight;
+                                _this._charInfos.copyFrom(bfi.charDic);
+                                var ci = _this.getChar(" ");
+                                if (ci) {
+                                    _this._spaceWidth = ci.charWidth;
+                                }
+                                else {
+                                    _this._charInfos.first(function (k, v) { return _this._spaceWidth = v.charWidth; });
+                                }
+                                if (!ret.bfi && onError) {
+                                    onError(ret.errorMsg, ret.errorCode);
+                                }
+                                return { value: void 0 };
+                            }
+                        };
+                        for (var _i = 0, plugins_1 = plugins; _i < plugins_1.length; _i++) {
+                            var p = plugins_1[_i];
+                            var state_1 = _loop_1(p);
+                            if (typeof state_1 === "object")
+                                return state_1.value;
+                        }
+                        if (onError) {
+                            onError("No plugin to load this BMFont file format", -1);
+                        }
+                    }
+                    else {
+                        if (onError) {
+                            onError("Couldn't load file through HTTP Request, HTTP Status " + xhr.status, xhr.status);
+                        }
+                    }
+                }
+            };
+            xhr.open("GET", bmFontUrl, true);
+            xhr.send();
+            return _this;
+        }
+        BitmapFontTexture.GetCachedFontTexture = function (scene, fontTexture) {
+            var dic = scene.getOrAddExternalDataWithFactory("BitmapFontTextureCache", function () { return new BABYLON.StringDictionary(); });
+            var ft = dic.get(fontTexture.uid);
+            if (ft) {
+                ++ft._usedCounter;
+                return ft;
+            }
+            dic.add(fontTexture.uid, fontTexture);
+            return ft;
+        };
+        BitmapFontTexture.ReleaseCachedFontTexture = function (scene, fontTexture) {
+            var dic = scene.getExternalData("BitmapFontTextureCache");
+            if (!dic) {
+                return;
+            }
+            var font = dic.get(fontTexture.uid);
+            if (--font._usedCounter === 0) {
+                dic.remove(fontTexture.uid);
+                font.dispose();
+            }
+        };
+        Object.defineProperty(BitmapFontTexture.prototype, "isDynamicFontTexture", {
+            /**
+             * Is the font dynamically updated, if true is returned then you have to call the update() before using the font in rendering if new character were adding using getChar()
+             */
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * This method does nothing for a BitmapFontTexture object as it's a static texture
+         */
+        BitmapFontTexture.prototype.update = function () {
+        };
+        /**
+         * Retrieve the CharInfo object for a given character
+         * @param char the character to retrieve the CharInfo object from (e.g.: "A", "a", etc.)
+         */
+        BitmapFontTexture.prototype.getChar = function (char) {
+            return this._charInfos.get(char);
+        };
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        BitmapFontTexture.prototype.incCachedFontTextureCounter = function () {
+            ++this._usedCounter;
+        };
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        BitmapFontTexture.prototype.decCachedFontTextureCounter = function () {
+            var dic = this.getScene().getExternalData("BitmapFontTextureCache");
+            if (!dic) {
+                return;
+            }
+            if (--this._usedCounter === 0) {
+                dic.remove(this._cachedFontId);
+                this.dispose();
+            }
+        };
+        BitmapFontTexture.addLoader = function (fileExtension, plugin) {
+            var a = BitmapFontTexture.plugins.getOrAddWithFactory(fileExtension.toLocaleLowerCase(), function () { return new Array(); });
+            a.push(plugin);
+        };
+        return BitmapFontTexture;
+    }(BaseFontTexture));
+    BitmapFontTexture.plugins = new BABYLON.StringDictionary();
+    BABYLON.BitmapFontTexture = BitmapFontTexture;
+    /**
+     * This class is a special kind of texture which generates on the fly characters of a given css style "fontName".
+     * The generated texture will be updated when new characters will be retrieved using the getChar() method, but you have
+     *  to call the update() method for the texture to fetch these changes, you can harmlessly call update any time you want, if no
+     *  change were made, nothing will happen.
+     * The Font Texture can be rendered in three modes: normal size, super sampled size (x2) or using Signed Distance Field rendering.
+     * Signed Distance Field should be prefered because the texture can be rendered using AlphaTest instead of Transparency, which is way more faster. More about SDF here (http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
+     * The only flaw of SDF is that the rendering quality may not be the best or the edges too sharp is the font thickness is too thin.
+     */
+    var FontTexture = (function (_super) {
+        __extends(FontTexture, _super);
+        /**
+         * Create a new instance of the FontTexture class
+         * @param name the name of the texture
+         * @param font the font to use, use the W3C CSS notation
+         * @param scene the scene that owns the texture
+         * @param maxCharCount the approximative maximum count of characters that could fit in the texture. This is an approximation because most of the fonts are proportional (each char has its own Width). The 'W' character's width is used to compute the size of the texture based on the given maxCharCount
+         * @param samplingMode the texture sampling mode
+         * @param superSample if true the FontTexture will be created with a font of a size twice bigger than the given one but all properties (lineHeight, charWidth, etc.) will be according to the original size. This is made to improve the text quality.
+         */
+        function FontTexture(name, font, scene, maxCharCount, samplingMode, superSample, signedDistanceField) {
+            if (maxCharCount === void 0) { maxCharCount = 200; }
+            if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            if (superSample === void 0) { superSample = false; }
+            if (signedDistanceField === void 0) { signedDistanceField = false; }
+            var _this = _super.call(this, null, scene, true, false, samplingMode) || this;
+            _this._curCharCount = 0;
+            _this._lastUpdateCharCount = -1;
+            _this._usedCounter = 1;
+            _this.name = name;
+            _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            _this._sdfScale = 8;
+            _this._signedDistanceField = signedDistanceField;
+            _this._superSample = false;
+            // SDF will use supersample no matter what, the resolution is otherwise too poor to produce correct result
+            if (superSample || signedDistanceField) {
+                var sfont = _this.getSuperSampleFont(font);
+                if (sfont) {
+                    _this._superSample = true;
+                    font = sfont;
+                }
+            }
+            // First canvas creation to determine the size of the texture to create
+            _this._canvas = document.createElement("canvas");
+            _this._context = _this._canvas.getContext("2d");
+            _this._context.font = font;
+            _this._context.fillStyle = "white";
+            _this._context.textBaseline = "top";
+            var res = _this.getFontHeight(font);
+            _this._lineHeightSuper = res.height + 4;
+            _this._lineHeight = _this._superSample ? (Math.ceil(_this._lineHeightSuper / 2)) : _this._lineHeightSuper;
+            _this._offset = res.offset - 1;
+            _this._xMargin = 1 + Math.ceil(_this._lineHeightSuper / 15); // Right now this empiric formula seems to work...
+            _this._yMargin = _this._xMargin;
+            var maxCharWidth = _this._context.measureText("W").width;
+            _this._spaceWidthSuper = _this._context.measureText(" ").width;
+            _this._spaceWidth = _this._superSample ? (_this._spaceWidthSuper / 2) : _this._spaceWidthSuper;
+            // This is an approximate size, but should always be able to fit at least the maxCharCount
+            var totalEstSurface = (_this._lineHeightSuper + _this._yMargin) * (maxCharWidth + _this._xMargin) * maxCharCount;
+            var edge = Math.sqrt(totalEstSurface);
+            var textSize = Math.pow(2, Math.ceil(Math.log(edge) / Math.log(2)));
+            // Create the texture that will store the font characters
+            _this._texture = scene.getEngine().createDynamicTexture(textSize, textSize, false, samplingMode);
+            var textureSize = _this.getSize();
+            _this.hasAlpha = _this._signedDistanceField === false;
+            // Recreate a new canvas with the final size: the one matching the texture (resizing the previous one doesn't work as one would expect...)
+            _this._canvas = document.createElement("canvas");
+            _this._canvas.width = textureSize.width;
+            _this._canvas.height = textureSize.height;
+            _this._context = _this._canvas.getContext("2d");
+            _this._context.textBaseline = "top";
+            _this._context.font = font;
+            _this._context.fillStyle = "white";
+            _this._context.imageSmoothingEnabled = false;
+            _this._context.clearRect(0, 0, textureSize.width, textureSize.height);
+            // Create a canvas for the signed distance field mode, we only have to store one char, the purpose is to render a char scaled _sdfScale times
+            //  into this 2D context, then get the bitmap data, create the sdf char and push the result in the _context (which hold the whole Font Texture content)
+            // So you can see this context as an intermediate one, because it is.
+            if (_this._signedDistanceField) {
+                var sdfC = document.createElement("canvas");
+                var s = _this._sdfScale;
+                sdfC.width = maxCharWidth * s;
+                sdfC.height = _this._lineHeightSuper * s;
+                var sdfCtx = sdfC.getContext("2d");
+                sdfCtx.scale(s, s);
+                sdfCtx.textBaseline = "top";
+                sdfCtx.font = font;
+                sdfCtx.fillStyle = "white";
+                sdfCtx.imageSmoothingEnabled = false;
+                _this._sdfCanvas = sdfC;
+                _this._sdfContext = sdfCtx;
+            }
+            _this._currentFreePosition = BABYLON.Vector2.Zero();
+            // Add the basic ASCII based characters
+            for (var i = 0x20; i < 0x7F; i++) {
+                var c = String.fromCharCode(i);
+                _this.getChar(c);
+            }
+            _this.update();
+            return _this;
+        }
+        Object.defineProperty(FontTexture.prototype, "isDynamicFontTexture", {
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        FontTexture.GetCachedFontTexture = function (scene, fontName, supersample, signedDistanceField) {
+            if (supersample === void 0) { supersample = false; }
+            if (signedDistanceField === void 0) { signedDistanceField = false; }
+            var dic = scene.getOrAddExternalDataWithFactory("FontTextureCache", function () { return new BABYLON.StringDictionary(); });
+            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            var ft = dic.get(lfn);
+            if (ft) {
+                ++ft._usedCounter;
+                return ft;
+            }
+            ft = new FontTexture(null, fontName, scene, supersample ? 100 : 200, BABYLON.Texture.BILINEAR_SAMPLINGMODE, supersample, signedDistanceField);
+            ft._cachedFontId = lfn;
+            dic.add(lfn, ft);
+            return ft;
+        };
+        FontTexture.ReleaseCachedFontTexture = function (scene, fontName, supersample, signedDistanceField) {
+            if (supersample === void 0) { supersample = false; }
+            if (signedDistanceField === void 0) { signedDistanceField = false; }
+            var dic = scene.getExternalData("FontTextureCache");
+            if (!dic) {
+                return;
+            }
+            var lfn = fontName.toLocaleLowerCase() + (supersample ? "_+SS" : "_-SS") + (signedDistanceField ? "_+SDF" : "_-SDF");
+            var font = dic.get(lfn);
+            if (--font._usedCounter === 0) {
+                dic.remove(lfn);
+                font.dispose();
+            }
+        };
+        /**
+         * Make sure the given char is present in the font map.
+         * @param char the character to get or add
+         * @return the CharInfo instance corresponding to the given character
+         */
+        FontTexture.prototype.getChar = function (char) {
+            if (char.length !== 1) {
+                return null;
+            }
+            var info = this._charInfos.get(char);
+            if (info) {
+                return info;
+            }
+            info = new CharInfo();
+            var measure = this._context.measureText(char);
+            var textureSize = this.getSize();
+            // we reached the end of the current line?
+            var width = Math.round(measure.width);
+            if (this._currentFreePosition.x + width + this._xMargin > textureSize.width) {
+                this._currentFreePosition.x = 0;
+                this._currentFreePosition.y += this._lineHeightSuper + this._yMargin;
+                // No more room?
+                if (this._currentFreePosition.y > textureSize.height) {
+                    return this.getChar("!");
+                }
+            }
+            // In sdf mode we render the character in an intermediate 2D context which scale the character this._sdfScale times (which is required to compute the sdf map accurately)
+            if (this._signedDistanceField) {
+                this._sdfContext.clearRect(0, 0, this._sdfCanvas.width, this._sdfCanvas.height);
+                this._sdfContext.fillText(char, 0, -this._offset);
+                var data = this._sdfContext.getImageData(0, 0, width * this._sdfScale, this._sdfCanvas.height);
+                var res = this._computeSDFChar(data);
+                this._context.putImageData(res, this._currentFreePosition.x, this._currentFreePosition.y);
+            }
+            else {
+                // Draw the character in the HTML canvas
+                this._context.fillText(char, this._currentFreePosition.x, this._currentFreePosition.y - this._offset);
+            }
+            // Fill the CharInfo object
+            info.topLeftUV = new BABYLON.Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
+            info.bottomRightUV = new BABYLON.Vector2((this._currentFreePosition.x + width) / textureSize.width, info.topLeftUV.y + ((this._lineHeightSuper + 2) / textureSize.height));
+            if (this._signedDistanceField) {
+                var off = 1 / textureSize.width;
+                info.topLeftUV.addInPlace(new BABYLON.Vector2(off, off));
+                info.bottomRightUV.addInPlace(new BABYLON.Vector2(off, off));
+            }
+            info.charWidth = this._superSample ? (width / 2) : width;
+            // Add the info structure
+            this._charInfos.add(char, info);
+            this._curCharCount++;
+            // Set the next position
+            this._currentFreePosition.x += width + this._xMargin;
+            return info;
+        };
+        FontTexture.prototype._computeSDFChar = function (source) {
+            var scl = this._sdfScale;
+            var sw = source.width;
+            var sh = source.height;
+            var dw = sw / scl;
+            var dh = sh / scl;
+            var roffx = 0;
+            var roffy = 0;
+            // We shouldn't look beyond half of the biggest between width and height
+            var radius = scl;
+            var br = radius - 1;
+            var lookupSrc = function (dx, dy, offX, offY, lookVis) {
+                var sx = dx * scl;
+                var sy = dy * scl;
+                // Looking out of the area? return true to make the test going on
+                if (((sx + offX) < 0) || ((sx + offX) >= sw) || ((sy + offY) < 0) || ((sy + offY) >= sh)) {
+                    return true;
+                }
+                // Get the pixel we want
+                var val = source.data[(((sy + offY) * sw) + (sx + offX)) * 4];
+                var res = (val > 0) === lookVis;
+                if (!res) {
+                    roffx = offX;
+                    roffy = offY;
+                }
+                return res;
+            };
+            var lookupArea = function (dx, dy, lookVis) {
+                // Fast rejection test, if we have the same result in N, S, W, E at a distance which is the radius-1 then it means the data will be consistent in this area. That's because we've scale the rendering of the letter "radius" times, so a letter's pixel will be at least radius wide
+                if (lookupSrc(dx, dy, 0, br, lookVis) &&
+                    lookupSrc(dx, dy, 0, -br, lookVis) &&
+                    lookupSrc(dx, dy, -br, 0, lookVis) &&
+                    lookupSrc(dx, dy, br, 0, lookVis)) {
+                    return 0;
+                }
+                for (var i = 1; i <= radius; i++) {
+                    // Quick test N, S, W, E
+                    if (!lookupSrc(dx, dy, 0, i, lookVis) || !lookupSrc(dx, dy, 0, -i, lookVis) || !lookupSrc(dx, dy, -i, 0, lookVis) || !lookupSrc(dx, dy, i, 0, lookVis)) {
+                        return i * i; // Squared Distance is simple to compute in this case
+                    }
+                    // Test the frame area (except the N, S, W, E spots) from the nearest point from the center to the further one
+                    for (var j = 1; j <= i; j++) {
+                        if (!lookupSrc(dx, dy, -j, i, lookVis) || !lookupSrc(dx, dy, j, i, lookVis) ||
+                            !lookupSrc(dx, dy, i, -j, lookVis) || !lookupSrc(dx, dy, i, j, lookVis) ||
+                            !lookupSrc(dx, dy, -j, -i, lookVis) || !lookupSrc(dx, dy, j, -i, lookVis) ||
+                            !lookupSrc(dx, dy, -i, -j, lookVis) || !lookupSrc(dx, dy, -i, j, lookVis)) {
+                            // We found the nearest texel having and opposite state, store the squared length
+                            var res_1 = (i * i) + (j * j);
+                            var count = 1;
+                            // To improve quality we will  sample the texels around this one, so it's 8 samples, we consider only the one having an opposite state, add them to the current res and will will compute the average at the end
+                            if (!lookupSrc(dx, dy, roffx - 1, roffy, lookVis)) {
+                                res_1 += (roffx - 1) * (roffx - 1) + roffy * roffy;
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx + 1, roffy, lookVis)) {
+                                res_1 += (roffx + 1) * (roffx + 1) + roffy * roffy;
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx, roffy - 1, lookVis)) {
+                                res_1 += roffx * roffx + (roffy - 1) * (roffy - 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx, roffy + 1, lookVis)) {
+                                res_1 += roffx * roffx + (roffy + 1) * (roffy + 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx - 1, roffy - 1, lookVis)) {
+                                res_1 += (roffx - 1) * (roffx - 1) + (roffy - 1) * (roffy - 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx + 1, roffy + 1, lookVis)) {
+                                res_1 += (roffx + 1) * (roffx + 1) + (roffy + 1) * (roffy + 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx + 1, roffy - 1, lookVis)) {
+                                res_1 += (roffx + 1) * (roffx + 1) + (roffy - 1) * (roffy - 1);
+                                ++count;
+                            }
+                            if (!lookupSrc(dx, dy, roffx - 1, roffy + 1, lookVis)) {
+                                res_1 += (roffx - 1) * (roffx - 1) + (roffy + 1) * (roffy + 1);
+                                ++count;
+                            }
+                            // Compute the average based on the accumulated distance
+                            return res_1 / count;
+                        }
+                    }
+                }
+                return 0;
+            };
+            var tmp = new Array(dw * dh);
+            for (var y = 0; y < dh; y++) {
+                for (var x = 0; x < dw; x++) {
+                    var curState = lookupSrc(x, y, 0, 0, true);
+                    var d = lookupArea(x, y, curState);
+                    if (d === 0) {
+                        d = radius * radius * 2;
+                    }
+                    tmp[(y * dw) + x] = curState ? d : -d;
+                }
+            }
+            var res = this._context.createImageData(dw, dh);
+            var size = dw * dh;
+            for (var j = 0; j < size; j++) {
+                var d = tmp[j];
+                var sign = (d < 0) ? -1 : 1;
+                d = Math.sqrt(Math.abs(d)) * sign;
+                d *= 127.5 / radius;
+                d += 127.5;
+                if (d < 0) {
+                    d = 0;
+                }
+                else if (d > 255) {
+                    d = 255;
+                }
+                d += 0.5;
+                res.data[j * 4 + 0] = d;
+                res.data[j * 4 + 1] = d;
+                res.data[j * 4 + 2] = d;
+                res.data[j * 4 + 3] = 255;
+            }
+            return res;
+        };
+        FontTexture.prototype.getSuperSampleFont = function (font) {
+            // Eternal thank to http://stackoverflow.com/a/10136041/802124
+            var regex = /^\s*(?=(?:(?:[-a-z]+\s*){0,2}(italic|oblique))?)(?=(?:(?:[-a-z]+\s*){0,2}(small-caps))?)(?=(?:(?:[-a-z]+\s*){0,2}(bold(?:er)?|lighter|[1-9]00))?)(?:(?:normal|\1|\2|\3)\s*){0,3}((?:xx?-)?(?:small|large)|medium|smaller|larger|[.\d]+(?:\%|in|[cem]m|ex|p[ctx]))(?:\s*\/\s*(normal|[.\d]+(?:\%|in|[cem]m|ex|p[ctx])))?\s*([-,\"\sa-z]+?)\s*$/;
+            var res = font.toLocaleLowerCase().match(regex);
+            if (res == null) {
+                return null;
+            }
+            var size = parseInt(res[4]);
+            res[4] = (size * 2).toString() + (res[4].match(/\D+/) || []).pop();
+            var newFont = "";
+            for (var j = 1; j < res.length; j++) {
+                if (res[j] != null) {
+                    newFont += res[j] + " ";
+                }
+            }
+            return newFont;
+        };
+        // More info here: https://videlais.com/2014/03/16/the-many-and-varied-problems-with-measuring-font-height-for-html5-canvas/
+        FontTexture.prototype.getFontHeight = function (font) {
+            var fontDraw = document.createElement("canvas");
+            var ctx = fontDraw.getContext('2d');
+            ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = 'white';
+            ctx.font = font;
+            ctx.fillText('jH|', 0, 0);
+            var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
+            var start = -1;
+            var end = -1;
+            for (var row = 0; row < fontDraw.height; row++) {
+                for (var column = 0; column < fontDraw.width; column++) {
+                    var index = (row * fontDraw.width + column) * 4;
+                    if (pixels[index] === 0) {
+                        if (column === fontDraw.width - 1 && start !== -1) {
+                            end = row;
+                            row = fontDraw.height;
+                            break;
+                        }
+                        continue;
+                    }
+                    else {
+                        if (start === -1) {
+                            start = row;
+                        }
+                        break;
+                    }
+                }
+            }
+            return { height: (end - start) + 1, offset: start - 1 };
+        };
+        Object.defineProperty(FontTexture.prototype, "canRescale", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        FontTexture.prototype.getContext = function () {
+            return this._context;
+        };
+        /**
+         * Call this method when you've call getChar() at least one time, this will update the texture if needed.
+         * Don't be afraid to call it, if no new character was added, this method simply does nothing.
+         */
+        FontTexture.prototype.update = function () {
+            // Update only if there's new char added since the previous update
+            if (this._lastUpdateCharCount < this._curCharCount) {
+                this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, false, true);
+                this._lastUpdateCharCount = this._curCharCount;
+            }
+        };
+        // cloning should be prohibited, there's no point to duplicate this texture at all
+        FontTexture.prototype.clone = function () {
+            return null;
+        };
+        /**
+         * For FontTexture retrieved using GetCachedFontTexture, use this method when you transfer this object's lifetime to another party in order to share this resource.
+         * When the other party is done with this object, decCachedFontTextureCounter must be called.
+         */
+        FontTexture.prototype.incCachedFontTextureCounter = function () {
+            ++this._usedCounter;
+        };
+        /**
+         * Use this method only in conjunction with incCachedFontTextureCounter, call it when you no longer need to use this shared resource.
+         */
+        FontTexture.prototype.decCachedFontTextureCounter = function () {
+            var dic = this.getScene().getExternalData("FontTextureCache");
+            if (!dic) {
+                return;
+            }
+            if (--this._usedCounter === 0) {
+                dic.remove(this._cachedFontId);
+                this.dispose();
+            }
+        };
+        return FontTexture;
+    }(BaseFontTexture));
+    BABYLON.FontTexture = FontTexture;
+    /**
+     * Orginial code from cocos2d-js, converted to TypeScript by Nockawa
+     * Load the Text version of the BMFont format, no XML or binary supported, just plain old text
+     */
+    var BMFontLoaderTxt = BMFontLoaderTxt_1 = (function () {
+        function BMFontLoaderTxt() {
+        }
+        BMFontLoaderTxt.prototype._parseStrToObj = function (str) {
+            var arr = str.match(BMFontLoaderTxt_1.ITEM_EXP);
+            if (!arr) {
+                return null;
+            }
+            var obj = {};
+            for (var i = 0, li = arr.length; i < li; i++) {
+                var tempStr = arr[i];
+                var index = tempStr.indexOf("=");
+                var key = tempStr.substring(0, index);
+                var value = tempStr.substring(index + 1);
+                if (value.match(BMFontLoaderTxt_1.INT_EXP))
+                    value = parseInt(value);
+                else if (value[0] === '"')
+                    value = value.substring(1, value.length - 1);
+                obj[key] = value;
+            }
+            return obj;
+        };
+        BMFontLoaderTxt.prototype._buildCharInfo = function (initialLine, obj, textureSize, invertY, chars) {
+            var char = null;
+            var x = null;
+            var y = null;
+            var xadv = null;
+            var width = null;
+            var height = null;
+            var ci = new CharInfo();
+            for (var key in obj) {
+                var value = obj[key];
+                switch (key) {
+                    case "id":
+                        char = String.fromCharCode(value);
+                        break;
+                    case "x":
+                        x = value;
+                        break;
+                    case "y":
+                        y = value;
+                        break;
+                    case "width":
+                        width = value;
+                        break;
+                    case "height":
+                        height = value;
+                        break;
+                    case "xadvance":
+                        xadv = value;
+                        break;
+                }
+            }
+            if (x != null && y != null && width != null && height != null && char != null) {
+                if (xadv) {
+                    width = xadv;
+                }
+                if (invertY) {
+                    ci.topLeftUV = new BABYLON.Vector2(1 - (x / textureSize.width), 1 - (y / textureSize.height));
+                    ci.bottomRightUV = new BABYLON.Vector2(1 - ((x + width) / textureSize.width), 1 - ((y + height) / textureSize.height));
+                }
+                else {
+                    ci.topLeftUV = new BABYLON.Vector2(x / textureSize.width, y / textureSize.height);
+                    ci.bottomRightUV = new BABYLON.Vector2((x + width) / textureSize.width, (y + height) / textureSize.height);
+                }
+                ci.charWidth = width;
+                chars.add(char, ci);
+            }
+            else {
+                console.log("Error while parsing line " + initialLine);
+            }
+        };
+        BMFontLoaderTxt.prototype.loadFont = function (fontContent, scene, invertY) {
+            var fontStr = fontContent;
+            var bfi = new BitmapFontInfo();
+            var errorCode = 0;
+            var errorMsg = "OK";
+            //padding
+            var info = fontStr.match(BMFontLoaderTxt_1.INFO_EXP);
+            var infoObj = this._parseStrToObj(info[0]);
+            if (!infoObj) {
+                return null;
+            }
+            var paddingArr = infoObj["padding"].split(",");
+            bfi.padding = new BABYLON.Vector4(parseInt(paddingArr[0]), parseInt(paddingArr[1]), parseInt(paddingArr[2]), parseInt(paddingArr[3]));
+            //common
+            var commonObj = this._parseStrToObj(fontStr.match(BMFontLoaderTxt_1.COMMON_EXP)[0]);
+            bfi.lineHeight = commonObj["lineHeight"];
+            bfi.textureSize = new BABYLON.Size(commonObj["scaleW"], commonObj["scaleH"]);
+            var maxTextureSize = scene.getEngine()._gl.getParameter(0xd33);
+            if (commonObj["scaleW"] > maxTextureSize.width || commonObj["scaleH"] > maxTextureSize.height) {
+                errorMsg = "FontMap texture's size is bigger than what WebGL supports";
+                errorCode = -1;
+            }
+            else {
+                if (commonObj["pages"] !== 1) {
+                    errorMsg = "FontMap must contain one page only.";
+                    errorCode = -1;
+                }
+                else {
+                    //page
+                    var pageObj = this._parseStrToObj(fontStr.match(BMFontLoaderTxt_1.PAGE_EXP)[0]);
+                    if (pageObj["id"] !== 0) {
+                        errorMsg = "Only one page of ID 0 is supported";
+                        errorCode = -1;
+                    }
+                    else {
+                        bfi.textureFile = pageObj["file"];
+                        //char
+                        var charLines = fontStr.match(BMFontLoaderTxt_1.CHAR_EXP);
+                        for (var i = 0, li = charLines.length; i < li; i++) {
+                            var charObj = this._parseStrToObj(charLines[i]);
+                            this._buildCharInfo(charLines[i], charObj, bfi.textureSize, invertY, bfi.charDic);
+                        }
+                        //kerning
+                        var kerningLines = fontStr.match(BMFontLoaderTxt_1.KERNING_EXP);
+                        if (kerningLines) {
+                            for (var i = 0, li = kerningLines.length; i < li; i++) {
+                                var kerningObj = this._parseStrToObj(kerningLines[i]);
+                                bfi.kerningDic.add(((kerningObj["first"] << 16) | (kerningObj["second"] & 0xffff)).toString(), kerningObj["amount"]);
+                            }
+                        }
+                    }
+                }
+            }
+            return { bfi: bfi, errorCode: errorCode, errorMsg: errorMsg };
+        };
+        return BMFontLoaderTxt;
+    }());
+    BMFontLoaderTxt.INFO_EXP = /info [^\r\n]*(\r\n|$)/gi;
+    BMFontLoaderTxt.COMMON_EXP = /common [^\n]*(\n|$)/gi;
+    BMFontLoaderTxt.PAGE_EXP = /page [^\n]*(\n|$)/gi;
+    BMFontLoaderTxt.CHAR_EXP = /char [^\n]*(\n|$)/gi;
+    BMFontLoaderTxt.KERNING_EXP = /kerning [^\n]*(\n|$)/gi;
+    BMFontLoaderTxt.ITEM_EXP = /\w+=[^ \r\n]+/gi;
+    BMFontLoaderTxt.INT_EXP = /^[\-]?\d+$/;
+    BMFontLoaderTxt = BMFontLoaderTxt_1 = __decorate([
+        BitmapFontLoaderPlugin("fnt", new BMFontLoaderTxt_1())
+    ], BMFontLoaderTxt);
+    ;
+    function BitmapFontLoaderPlugin(fileExtension, plugin) {
+        return function () {
+            BitmapFontTexture.addLoader(fileExtension, plugin);
+        };
+    }
+    BABYLON.BitmapFontLoaderPlugin = BitmapFontLoaderPlugin;
+    var BMFontLoaderTxt_1;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.fontTexture.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -4391,26 +5234,32 @@ var BABYLON;
              * Use this property to set a new Size object, otherwise to change only the width/height use Prim2DBase.width or height properties.
              */
             get: function () {
-                if (!this._size || this._size.width == null || this._size.height == null) {
-                    if (Prim2DBase_1.boundinbBoxReentrency) {
-                        return Prim2DBase_1.nullSize;
-                    }
-                    if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
-                        return this._boundingSize;
-                    }
-                    Prim2DBase_1.boundinbBoxReentrency = true;
-                    var b = this.boundingInfo;
-                    Prim2DBase_1.boundinbBoxReentrency = false;
-                    return this._boundingSize;
-                }
-                return this._size;
+                return this.internalGetSize();
             },
             set: function (value) {
-                this._size = value;
+                this.internalSetSize(value);
             },
             enumerable: true,
             configurable: true
         });
+        Prim2DBase.prototype.internalGetSize = function () {
+            if (!this._size || this._size.width == null || this._size.height == null) {
+                if (Prim2DBase_1.boundinbBoxReentrency) {
+                    return Prim2DBase_1.nullSize;
+                }
+                if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
+                    return this._boundingSize;
+                }
+                Prim2DBase_1.boundinbBoxReentrency = true;
+                var b = this.boundingInfo;
+                Prim2DBase_1.boundinbBoxReentrency = false;
+                return this._boundingSize;
+            }
+            return this._size;
+        };
+        Prim2DBase.prototype.internalSetSize = function (value) {
+            this._size = value;
+        };
         Object.defineProperty(Prim2DBase.prototype, "width", {
             /**
              * Direct access to the size.width value of the primitive
@@ -5544,6 +6393,7 @@ var BABYLON;
                 this._actionManager.dispose();
                 this._actionManager = null;
             }
+            this.owner.scene.stopAnimation(this);
             // If there's a parent, remove this object from its parent list
             if (this._parent) {
                 if (this instanceof BABYLON.Group2D) {
@@ -6538,6 +7388,9 @@ var BABYLON;
                     // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
                     if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
                         var index = effect.getAttributeLocationByName(attrib.attributeName);
+                        if (index === -1) {
+                            throw new Error("Attribute " + attrib.attributeName + " was not found in Effect: " + effect.name + ". It's certainly no longer used in the Effect's Shaders");
+                        }
                         var iai = new BABYLON.InstancingAttributeInfo();
                         iai.index = index;
                         iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
@@ -7337,11 +8190,6 @@ var BABYLON;
             if (positionOffset === void 0) { positionOffset = null; }
             var t = this._globalTransform.multiply(this.renderGroup.invGlobalTransform); // Compute the transformation into the renderGroup's space
             var rgScale = this._areSomeFlagsSet(BABYLON.SmartPropertyPrim.flagDontInheritParentScale) ? RenderablePrim2D_1._uV : this.renderGroup.actualScale; // We still need to apply the scale of the renderGroup to our rendering, so get it.
-            if (!this.applyActualScaleOnTransform() || rgScale.x !== 1 || rgScale.y !== 1) {
-                t.decompose(RenderablePrim2D_1._s, RenderablePrim2D_1._r, RenderablePrim2D_1._t);
-                t = BABYLON.Matrix.Compose((!this.applyActualScaleOnTransform() ? RenderablePrim2D_1._uV3.divide(new BABYLON.Vector3(rgScale.x, rgScale.y, 1)) : RenderablePrim2D_1._s), RenderablePrim2D_1._r, RenderablePrim2D_1._t);
-            }
-            //let rgScale = (this._areSomeFlagsSet(SmartPropertyPrim.flagDontInheritParentScale) || !this.applyActualScaleOnTransform()) ? RenderablePrim2D._uV : this.renderGroup.actualScale;         // We still need to apply the scale of the renderGroup to our rendering, so get it.
             var size = this.renderGroup.viewportSize;
             var zBias = this.actualZOffset;
             var offX = 0;
@@ -7360,8 +8208,18 @@ var BABYLON;
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - 1);
+            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * rgScale.x * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * rgScale.y * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            if (!this.applyActualScaleOnTransform()) {
+                t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
+                t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
+                var las = this.actualScale;
+                t.decompose(RenderablePrim2D_1._s, RenderablePrim2D_1._r, RenderablePrim2D_1._t);
+                var scale = new BABYLON.Vector3(RenderablePrim2D_1._s.x / las.x, RenderablePrim2D_1._s.y / las.y, 1);
+                t = BABYLON.Matrix.Compose(scale, RenderablePrim2D_1._r, RenderablePrim2D_1._t);
+                tx = new BABYLON.Vector4(t.m[0], t.m[4], 0, t.m[12]);
+                ty = new BABYLON.Vector4(t.m[1], t.m[5], 0, t.m[13]);
+            }
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
@@ -9605,6 +10463,393 @@ var BABYLON;
         return Sprite2DRenderCache;
     }(BABYLON.ModelRenderCache));
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
+    var Sprite2D = Sprite2D_1 = (function (_super) {
+        __extends(Sprite2D, _super);
+        /**
+         * Create an 2D Sprite primitive
+         * @param texture the texture that stores the sprite to render
+         * @param settings a combination of settings, possible ones are
+         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         * - children: an array of direct children
+         * - id a text identifier, for information purpose
+         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         * - rotation: the initial rotation (in radian) of the primitive. default is 0
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - size: the size of the sprite displayed in the canvas, if not specified the spriteSize will be used
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
+         * - zOrder: override the zOrder with the specified value
+         * - origin: define the normalized origin point location, default [0.5;0.5]
+         * - spriteSize: the size of the sprite (in pixels) as it is stored in the texture, if null the size of the given texture will be used, default is null.
+         * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
+         * - spriteScaleFactor: DEPRECATED. Old behavior: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
+         * - scale9: draw the sprite as a Scale9 sprite, see http://yannickloriot.com/2013/03/9-patch-technique-in-cocos2d/ for more info. x, y, w, z are left, bottom, right, top coordinate of the resizable box
+         * - invertY: if true the texture Y will be inverted, default is false.
+         * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
+         * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
+         */
+        function Sprite2D(texture, settings) {
+            var _this;
+            if (!settings) {
+                settings = {};
+            }
+            _this = _super.call(this, settings) || this;
+            _this.texture = texture;
+            _this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            _this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            _this._useSize = false;
+            _this.spriteSize = (settings.spriteSize != null) ? settings.spriteSize.clone() : null;
+            _this.spriteLocation = (settings.spriteLocation != null) ? settings.spriteLocation.clone() : new BABYLON.Vector2(0, 0);
+            if (settings.size != null) {
+                _this.size = settings.size;
+            }
+            _this.spriteFrame = 0;
+            _this.invertY = (settings.invertY == null) ? false : settings.invertY;
+            _this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
+            _this.useAlphaFromTexture = true;
+            _this._scale9 = (settings.scale9 != null) ? settings.scale9.clone() : null;
+            // If the user doesn't set a size, we'll use the texture's one, but if the texture is not loading, we HAVE to set a temporary dummy size otherwise the positioning engine will switch the marginAlignement to stretch/stretch, and WE DON'T WANT THAT.
+            // The fucking delayed texture sprite bug is fixed!
+            if (settings.spriteSize == null) {
+                _this.spriteSize = new BABYLON.Size(10, 10);
+            }
+            if (settings.spriteSize == null || !texture.isReady()) {
+                if (texture.isReady()) {
+                    var s = texture.getBaseSize();
+                    _this.spriteSize = new BABYLON.Size(s.width, s.height);
+                    _this._updateSpriteScaleFactor();
+                }
+                else {
+                    texture.onLoadObservable.add(function () {
+                        if (settings.spriteSize == null) {
+                            var s = texture.getBaseSize();
+                            _this.spriteSize = new BABYLON.Size(s.width, s.height);
+                        }
+                        _this._updateSpriteScaleFactor();
+                        _this._positioningDirty();
+                        _this._setLayoutDirty();
+                        _this._instanceDirtyFlags |= BABYLON.Prim2DBase.originProperty.flagId | Sprite2D_1.textureProperty.flagId; // To make sure the sprite is issued again for render
+                    });
+                }
+            }
+            return _this;
+        }
+        Object.defineProperty(Sprite2D.prototype, "texture", {
+            get: function () {
+                return this._texture;
+            },
+            set: function (value) {
+                this._texture = value;
+                this._oldTextureHasAlpha = this._texture && this.texture.hasAlpha;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "useAlphaFromTexture", {
+            get: function () {
+                return this._useAlphaFromTexture;
+            },
+            set: function (value) {
+                if (this._useAlphaFromTexture === value) {
+                    return;
+                }
+                this._useAlphaFromTexture = value;
+                this._updateRenderMode();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "size", {
+            get: function () {
+                if (this._size == null) {
+                    return this.spriteSize;
+                }
+                return this.internalGetSize();
+            },
+            set: function (value) {
+                this._useSize = value != null;
+                this.internalSetSize(value);
+                this._updateSpriteScaleFactor();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "actualSize", {
+            get: function () {
+                if (this._actualSize) {
+                    return this._actualSize;
+                }
+                return this.size;
+            },
+            set: function (value) {
+                this._actualSize = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "spriteSize", {
+            get: function () {
+                return this._spriteSize;
+            },
+            set: function (value) {
+                this._spriteSize = value;
+                this._updateSpriteScaleFactor();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "spriteLocation", {
+            get: function () {
+                return this._spriteLocation;
+            },
+            set: function (value) {
+                this._spriteLocation = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "spriteFrame", {
+            get: function () {
+                return this._spriteFrame;
+            },
+            set: function (value) {
+                this._spriteFrame = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "invertY", {
+            get: function () {
+                return this._invertY;
+            },
+            set: function (value) {
+                this._invertY = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "isScale9", {
+            get: function () {
+                return this._scale9 !== null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Sprite2D.prototype, "alignToPixel", {
+            //@instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, pi => Sprite2D.spriteScaleFactorProperty = pi)
+            ///**
+            // * Get/set the sprite location (in pixels) in the texture
+            // */
+            //public get spriteScaleFactor(): Vector2 {
+            //    return this._spriteScaleFactor;
+            //}
+            //public set spriteScaleFactor(value: Vector2) {
+            //    this._spriteScaleFactor = value;
+            //}
+            /**
+             * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
+             */
+            get: function () {
+                return this._alignToPixel;
+            },
+            set: function (value) {
+                this._alignToPixel = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Sprite2D.prototype.updateLevelBoundingInfo = function () {
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+        };
+        /**
+         * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
+         */
+        Sprite2D.prototype.getAnimatables = function () {
+            var res = new Array();
+            if (this.texture && this.texture.animations && this.texture.animations.length > 0) {
+                res.push(this.texture);
+            }
+            return res;
+        };
+        Sprite2D.prototype.levelIntersect = function (intersectInfo) {
+            // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
+            return true;
+        };
+        Object.defineProperty(Sprite2D.prototype, "isSizeAuto", {
+            get: function () {
+                return this.size == null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Sprite2D.prototype.createModelRenderCache = function (modelKey) {
+            var renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey);
+            return renderCache;
+        };
+        Sprite2D.prototype.setupModelRenderCache = function (modelRenderCache) {
+            var renderCache = modelRenderCache;
+            var engine = this.owner.engine;
+            var vb = new Float32Array(4);
+            for (var i = 0; i < 4; i++) {
+                vb[i] = i;
+            }
+            renderCache.vb = engine.createVertexBuffer(vb);
+            var ib = new Float32Array(6);
+            ib[0] = 0;
+            ib[1] = 2;
+            ib[2] = 1;
+            ib[3] = 0;
+            ib[4] = 3;
+            ib[5] = 2;
+            renderCache.ib = engine.createIndexBuffer(ib);
+            renderCache.texture = this.texture;
+            // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
+            var ei = this.getDataPartEffectInfo(Sprite2D_1.SPRITE2D_MAINPARTID, ["index"], ["alphaTest"], true);
+            if (ei) {
+                renderCache.effectInstanced = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
+            }
+            ei = this.getDataPartEffectInfo(Sprite2D_1.SPRITE2D_MAINPARTID, ["index"], ["alphaTest"], false);
+            renderCache.effect = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
+            return renderCache;
+        };
+        Sprite2D.prototype.getUsedShaderCategories = function (dataPart) {
+            var cat = _super.prototype.getUsedShaderCategories.call(this, dataPart);
+            if (dataPart.id === Sprite2D_1.SPRITE2D_MAINPARTID) {
+                var useScale9 = this._scale9 != null;
+                if (useScale9) {
+                    cat.push(Sprite2D_1.SHAPE2D_CATEGORY_SCALE9);
+                }
+            }
+            return cat;
+        };
+        Sprite2D.prototype.createInstanceDataParts = function () {
+            return [new Sprite2DInstanceData(Sprite2D_1.SPRITE2D_MAINPARTID)];
+        };
+        Sprite2D.prototype.beforeRefreshForLayoutConstruction = function (part) {
+            Sprite2D_1.layoutConstructMode = true;
+        };
+        // if obj contains something, we restore the _text property
+        Sprite2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
+            Sprite2D_1.layoutConstructMode = false;
+        };
+        Sprite2D.prototype.refreshInstanceDataPart = function (part) {
+            if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
+                return false;
+            }
+            if (!this.texture.isReady() && !Sprite2D_1.layoutConstructMode) {
+                return false;
+            }
+            if (part.id === Sprite2D_1.SPRITE2D_MAINPARTID) {
+                var d = this._instanceDataParts[0];
+                if (Sprite2D_1.layoutConstructMode) {
+                    d.topLeftUV = BABYLON.Vector2.Zero();
+                    d.sizeUV = BABYLON.Vector2.Zero();
+                    d.properties = BABYLON.Vector3.Zero();
+                    d.textureSize = BABYLON.Vector2.Zero();
+                    d.scaleFactor = BABYLON.Vector2.Zero();
+                    if (this.isScale9) {
+                        d.scale9 = BABYLON.Vector4.Zero();
+                    }
+                }
+                else {
+                    var ts = this.texture.getBaseSize();
+                    var ss = this.spriteSize;
+                    var sl = this.spriteLocation;
+                    var ssf = this.actualScale;
+                    d.topLeftUV = new BABYLON.Vector2(sl.x / ts.width, sl.y / ts.height);
+                    var suv = new BABYLON.Vector2(ss.width / ts.width, ss.height / ts.height);
+                    d.sizeUV = suv;
+                    d.scaleFactor = ssf;
+                    Sprite2D_1._prop.x = this.spriteFrame;
+                    Sprite2D_1._prop.y = this.invertY ? 1 : 0;
+                    Sprite2D_1._prop.z = this.alignToPixel ? 1 : 0;
+                    d.properties = Sprite2D_1._prop;
+                    d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
+                    var scale9 = this._scale9;
+                    if (scale9 != null) {
+                        var normalizedScale9 = new BABYLON.Vector4(scale9.x * suv.x / ss.width, scale9.y * suv.y / ss.height, scale9.z * suv.x / ss.width, scale9.w * suv.y / ss.height);
+                        d.scale9 = normalizedScale9;
+                    }
+                }
+            }
+            return true;
+        };
+        Sprite2D.prototype._mustUpdateInstance = function () {
+            var res = this._oldTextureHasAlpha !== (this.texture != null && this.texture.hasAlpha);
+            this._oldTextureHasAlpha = this.texture != null && this.texture.hasAlpha;
+            if (res) {
+                this._updateRenderMode();
+            }
+            return res;
+        };
+        Sprite2D.prototype._useTextureAlpha = function () {
+            return this.texture != null && this.texture.hasAlpha;
+        };
+        Sprite2D.prototype._shouldUseAlphaFromTexture = function () {
+            return this.texture != null && this.texture.hasAlpha && this.useAlphaFromTexture;
+        };
+        Sprite2D.prototype._updateSpriteScaleFactor = function () {
+            if (!this._useSize) {
+                return;
+            }
+            var sS = this.spriteSize;
+            var s = this.size;
+            if (s == null || sS == null) {
+                return;
+            }
+            this.scaleX = s.width / sS.width;
+            this.scaleY = s.height / sS.height;
+        };
+        return Sprite2D;
+    }(BABYLON.RenderablePrim2D));
+    Sprite2D.SPRITE2D_MAINPARTID = 1;
+    Sprite2D.SHAPE2D_CATEGORY_SCALE9 = "Scale9";
+    Sprite2D._prop = BABYLON.Vector3.Zero();
+    Sprite2D.layoutConstructMode = false;
+    __decorate([
+        BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Sprite2D_1.textureProperty = pi; })
+    ], Sprite2D.prototype, "texture", null);
+    __decorate([
+        BABYLON.dynamicLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Sprite2D_1.useAlphaFromTextureProperty = pi; })
+    ], Sprite2D.prototype, "useAlphaFromTexture", null);
+    __decorate([
+        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Sprite2D_1.actualSizeProperty = pi; }, false, true)
+    ], Sprite2D.prototype, "actualSize", null);
+    __decorate([
+        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Sprite2D_1.spriteSizeProperty = pi; })
+    ], Sprite2D.prototype, "spriteSize", null);
+    __decorate([
+        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Sprite2D_1.spriteLocationProperty = pi; })
+    ], Sprite2D.prototype, "spriteLocation", null);
+    __decorate([
+        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Sprite2D_1.spriteFrameProperty = pi; })
+    ], Sprite2D.prototype, "spriteFrame", null);
+    __decorate([
+        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Sprite2D_1.invertYProperty = pi; })
+    ], Sprite2D.prototype, "invertY", null);
+    __decorate([
+        BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 8, function (pi) { return Sprite2D_1.spriteScale9Property = pi; })
+    ], Sprite2D.prototype, "isScale9", null);
+    Sprite2D = Sprite2D_1 = __decorate([
+        BABYLON.className("Sprite2D", "BABYLON")
+    ], Sprite2D);
+    BABYLON.Sprite2D = Sprite2D;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
         function Sprite2DInstanceData(partId) {
@@ -9659,6 +10904,15 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Sprite2DInstanceData.prototype, "scale9", {
+            get: function () {
+                return null;
+            },
+            set: function (value) {
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Sprite2DInstanceData;
     }(BABYLON.InstanceDataBase));
     __decorate([
@@ -9668,7 +10922,7 @@ var BABYLON;
         BABYLON.instanceData()
     ], Sprite2DInstanceData.prototype, "sizeUV", null);
     __decorate([
-        BABYLON.instanceData()
+        BABYLON.instanceData(Sprite2D.SHAPE2D_CATEGORY_SCALE9)
     ], Sprite2DInstanceData.prototype, "scaleFactor", null);
     __decorate([
         BABYLON.instanceData()
@@ -9676,339 +10930,216 @@ var BABYLON;
     __decorate([
         BABYLON.instanceData()
     ], Sprite2DInstanceData.prototype, "properties", null);
+    __decorate([
+        BABYLON.instanceData(Sprite2D.SHAPE2D_CATEGORY_SCALE9)
+    ], Sprite2DInstanceData.prototype, "scale9", null);
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
-    var Sprite2D = Sprite2D_1 = (function (_super) {
-        __extends(Sprite2D, _super);
-        /**
-         * Create an 2D Sprite primitive
-         * @param texture the texture that stores the sprite to render
-         * @param settings a combination of settings, possible ones are
-         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
-         * - children: an array of direct children
-         * - id a text identifier, for information purpose
-         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
-         * - rotation: the initial rotation (in radian) of the primitive. default is 0
-         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
-         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
-         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
-         * - zOrder: override the zOrder with the specified value
-         * - origin: define the normalized origin point location, default [0.5;0.5]
-         * - spriteSize: the size of the sprite (in pixels), if null the size of the given texture will be used, default is null.
-         * - spriteLocation: the location (in pixels) in the texture of the top/left corner of the Sprite to display, default is null (0,0)
-         * - spriteScaleFactor: say you want to display a sprite twice as big as its bitmap which is 64,64, you set the spriteSize to 128,128 and have to set the spriteScaleFactory to 0.5,0.5 in order to address only the 64,64 pixels of the bitmaps. Default is 1,1.
-         * - invertY: if true the texture Y will be inverted, default is false.
-         * - alignToPixel: if true the sprite's texels will be aligned to the rendering viewport pixels, ensuring the best rendering quality but slow animations won't be done as smooth as if you set false. If false a texel could lies between two pixels, being blended by the texture sampling mode you choose, the rendering result won't be as good, but very slow animation will be overall better looking. Default is true: content will be aligned.
-         * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
-         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
-         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
-         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
-         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
-         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
-         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
-         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
-         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
-         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
-         */
-        function Sprite2D(texture, settings) {
-            var _this;
-            if (!settings) {
-                settings = {};
-            }
-            _this = _super.call(this, settings) || this;
-            _this.texture = texture;
-            _this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            _this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            _this.size = (settings.spriteSize != null) ? settings.spriteSize.clone() : null;
-            _this.spriteLocation = (settings.spriteLocation != null) ? settings.spriteLocation.clone() : new BABYLON.Vector2(0, 0);
-            _this.spriteScaleFactor = (settings.spriteScaleFactor != null) ? settings.spriteScaleFactor : new BABYLON.Vector2(1, 1);
-            _this.spriteFrame = 0;
-            _this.invertY = (settings.invertY == null) ? false : settings.invertY;
-            _this.alignToPixel = (settings.alignToPixel == null) ? true : settings.alignToPixel;
-            _this.useAlphaFromTexture = true;
-            // If the user doesn't set a size, we'll use the texture's one, but if the texture is not loading, we HAVE to set a temporary dummy size otherwise the positioning engine will switch the marginAlignement to stretch/stretch, and WE DON'T WANT THAT.
-            // The fucking delayed texture sprite bug is fixed!
-            if (settings.spriteSize == null) {
-                _this.size = new BABYLON.Size(10, 10);
-            }
-            if (settings.spriteSize == null || !texture.isReady()) {
-                if (texture.isReady()) {
-                    var s = texture.getBaseSize();
-                    _this.size = new BABYLON.Size(s.width, s.height);
-                }
-                else {
-                    texture.onLoadObservable.add(function () {
-                        if (settings.spriteSize == null) {
-                            var s = texture.getBaseSize();
-                            _this.size = new BABYLON.Size(s.width, s.height);
-                        }
-                        _this._positioningDirty();
-                        _this._setLayoutDirty();
-                        _this._instanceDirtyFlags |= BABYLON.Prim2DBase.originProperty.flagId | Sprite2D_1.textureProperty.flagId; // To make sure the sprite is issued again for render
-                    });
-                }
-            }
-            return _this;
-        }
-        Object.defineProperty(Sprite2D.prototype, "texture", {
-            get: function () {
-                return this._texture;
-            },
-            set: function (value) {
-                this._texture = value;
-                this._oldTextureHasAlpha = this._texture && this.texture.hasAlpha;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Sprite2D.prototype, "useAlphaFromTexture", {
-            get: function () {
-                return this._useAlphaFromTexture;
-            },
-            set: function (value) {
-                if (this._useAlphaFromTexture === value) {
-                    return;
-                }
-                this._useAlphaFromTexture = value;
-                this._updateRenderMode();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Sprite2D.prototype, "actualSize", {
-            get: function () {
-                if (this._actualSize) {
-                    return this._actualSize;
-                }
-                return this.size;
-            },
-            set: function (value) {
-                this._actualSize = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Sprite2D.prototype, "spriteLocation", {
-            get: function () {
-                return this._location;
-            },
-            set: function (value) {
-                this._location = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Sprite2D.prototype, "spriteFrame", {
-            get: function () {
-                return this._spriteFrame;
-            },
-            set: function (value) {
-                this._spriteFrame = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Sprite2D.prototype, "invertY", {
-            get: function () {
-                return this._invertY;
-            },
-            set: function (value) {
-                this._invertY = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Sprite2D.prototype, "spriteScaleFactor", {
-            get: function () {
-                return this._spriteScaleFactor;
-            },
-            set: function (value) {
-                this._spriteScaleFactor = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * Sets the scale of the sprite using a BABYLON.Size(w,h).
-         * Keeps proportion by taking the maximum of the two scale for x and y.
-         * @param {Size} size Size(width,height)
-         */
-        Sprite2D.prototype.scaleToSize = function (size) {
-            var baseSize = this.size;
-            if (baseSize == null || !this.texture.isReady()) {
-                // we're probably at initiation of the scene, size is not set
-                if (this.texture.isReady()) {
-                    baseSize = this.texture.getBaseSize();
-                }
-                else {
-                    // the texture is not ready, wait for it to load before calling scaleToSize again
-                    var thisObject = this;
-                    this.texture.onLoadObservable.add(function () {
-                        thisObject.scaleToSize(size);
-                    });
-                    return;
-                }
-            }
-            this.scale = Math.max(size.height / baseSize.height, size.width / baseSize.width);
-        };
-        Object.defineProperty(Sprite2D.prototype, "alignToPixel", {
-            /**
-             * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
-             */
-            get: function () {
-                return this._alignToPixel;
-            },
-            set: function (value) {
-                this._alignToPixel = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Sprite2D.prototype.updateLevelBoundingInfo = function () {
-            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
-        };
-        /**
-         * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
-         */
-        Sprite2D.prototype.getAnimatables = function () {
-            var res = new Array();
-            if (this.texture && this.texture.animations && this.texture.animations.length > 0) {
-                res.push(this.texture);
-            }
-            return res;
-        };
-        Sprite2D.prototype.levelIntersect = function (intersectInfo) {
-            // If we've made it so far it means the boundingInfo intersection test succeed, the Sprite2D is shaped the same, so we always return true
-            return true;
-        };
-        Sprite2D.prototype.createModelRenderCache = function (modelKey) {
-            var renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey);
-            return renderCache;
-        };
-        Sprite2D.prototype.setupModelRenderCache = function (modelRenderCache) {
-            var renderCache = modelRenderCache;
-            var engine = this.owner.engine;
-            var vb = new Float32Array(4);
-            for (var i = 0; i < 4; i++) {
-                vb[i] = i;
-            }
-            renderCache.vb = engine.createVertexBuffer(vb);
-            var ib = new Float32Array(6);
-            ib[0] = 0;
-            ib[1] = 2;
-            ib[2] = 1;
-            ib[3] = 0;
-            ib[4] = 3;
-            ib[5] = 2;
-            renderCache.ib = engine.createIndexBuffer(ib);
-            renderCache.texture = this.texture;
-            // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
-            var ei = this.getDataPartEffectInfo(Sprite2D_1.SPRITE2D_MAINPARTID, ["index"], ["alphaTest"], true);
-            if (ei) {
-                renderCache.effectInstanced = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
-            }
-            ei = this.getDataPartEffectInfo(Sprite2D_1.SPRITE2D_MAINPARTID, ["index"], ["alphaTest"], false);
-            renderCache.effect = engine.createEffect("sprite2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null);
-            return renderCache;
-        };
-        Sprite2D.prototype.createInstanceDataParts = function () {
-            return [new Sprite2DInstanceData(Sprite2D_1.SPRITE2D_MAINPARTID)];
-        };
-        Sprite2D.prototype.beforeRefreshForLayoutConstruction = function (part) {
-            Sprite2D_1.layoutConstructMode = true;
-        };
-        // if obj contains something, we restore the _text property
-        Sprite2D.prototype.afterRefreshForLayoutConstruction = function (part, obj) {
-            Sprite2D_1.layoutConstructMode = false;
-        };
-        Sprite2D.prototype.refreshInstanceDataPart = function (part) {
-            if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
-                return false;
-            }
-            if (!this.texture.isReady() && !Sprite2D_1.layoutConstructMode) {
-                return false;
-            }
-            if (part.id === Sprite2D_1.SPRITE2D_MAINPARTID) {
-                var d = this._instanceDataParts[0];
-                if (Sprite2D_1.layoutConstructMode) {
-                    d.topLeftUV = BABYLON.Vector2.Zero();
-                    d.sizeUV = BABYLON.Vector2.Zero();
-                    d.properties = BABYLON.Vector3.Zero();
-                    d.textureSize = BABYLON.Vector2.Zero();
-                    d.scaleFactor = BABYLON.Vector2.Zero();
-                }
-                else {
-                    var ts = this.texture.getBaseSize();
-                    var sl = this.spriteLocation;
-                    var ss = this.actualSize;
-                    var ssf = this.spriteScaleFactor;
-                    d.topLeftUV = new BABYLON.Vector2(sl.x / ts.width, sl.y / ts.height);
-                    var suv = new BABYLON.Vector2(ss.width / ts.width, ss.height / ts.height);
-                    d.sizeUV = suv;
-                    d.scaleFactor = ssf;
-                    Sprite2D_1._prop.x = this.spriteFrame;
-                    Sprite2D_1._prop.y = this.invertY ? 1 : 0;
-                    Sprite2D_1._prop.z = this.alignToPixel ? 1 : 0;
-                    d.properties = Sprite2D_1._prop;
-                    d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
-                }
-            }
-            return true;
-        };
-        Sprite2D.prototype._mustUpdateInstance = function () {
-            var res = this._oldTextureHasAlpha !== (this.texture != null && this.texture.hasAlpha);
-            this._oldTextureHasAlpha = this.texture != null && this.texture.hasAlpha;
-            if (res) {
-                this._updateRenderMode();
-            }
-            return res;
-        };
-        Sprite2D.prototype._useTextureAlpha = function () {
-            return this.texture != null && this.texture.hasAlpha;
-        };
-        Sprite2D.prototype._shouldUseAlphaFromTexture = function () {
-            return this.texture != null && this.texture.hasAlpha && this.useAlphaFromTexture;
-        };
-        return Sprite2D;
-    }(BABYLON.RenderablePrim2D));
-    Sprite2D.SPRITE2D_MAINPARTID = 1;
-    Sprite2D._prop = BABYLON.Vector3.Zero();
-    Sprite2D.layoutConstructMode = false;
-    __decorate([
-        BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Sprite2D_1.textureProperty = pi; })
-    ], Sprite2D.prototype, "texture", null);
-    __decorate([
-        BABYLON.dynamicLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Sprite2D_1.useAlphaFromTextureProperty = pi; })
-    ], Sprite2D.prototype, "useAlphaFromTexture", null);
-    __decorate([
-        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Sprite2D_1.actualSizeProperty = pi; }, false, true)
-    ], Sprite2D.prototype, "actualSize", null);
-    __decorate([
-        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Sprite2D_1.spriteLocationProperty = pi; })
-    ], Sprite2D.prototype, "spriteLocation", null);
-    __decorate([
-        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Sprite2D_1.spriteFrameProperty = pi; })
-    ], Sprite2D.prototype, "spriteFrame", null);
-    __decorate([
-        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Sprite2D_1.invertYProperty = pi; })
-    ], Sprite2D.prototype, "invertY", null);
-    __decorate([
-        BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 7, function (pi) { return Sprite2D_1.spriteScaleFactorProperty = pi; })
-    ], Sprite2D.prototype, "spriteScaleFactor", null);
-    Sprite2D = Sprite2D_1 = __decorate([
-        BABYLON.className("Sprite2D", "BABYLON")
-    ], Sprite2D);
-    BABYLON.Sprite2D = Sprite2D;
     var Sprite2D_1;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.sprite2d.js.map
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * This class will contains information about a sub picture present in an Atlas Picture.
+     */
+    var AtlasSubPictureInfo = (function () {
+        function AtlasSubPictureInfo() {
+        }
+        return AtlasSubPictureInfo;
+    }());
+    BABYLON.AtlasSubPictureInfo = AtlasSubPictureInfo;
+    /**
+     * This class represent an Atlas Picture, it contains the information of all the sub pictures and the Texture that stores the bitmap.
+     * You get an instance of this class using methods of the AtlasPictureInfoFactory
+     */
+    var AtlasPictureInfo = (function () {
+        function AtlasPictureInfo() {
+        }
+        /**
+         * Creates many sprite from the Atlas Picture
+         * @param filterCallback a predicate if true is returned then the corresponding sub picture will be used to create a sprite.
+         * The Predicate has many parameters:
+         *  - index: just an index incremented at each sub picture submitted for Sprite creation
+         *  - name: the sub picture's name
+         *  - aspi: the AtlasSubPictureInfo corresponding to the submitted sub picture
+         *  - settings: the Sprite2D creation settings, you can alter this JSON object but BEWARE, the alterations will be kept for subsequent Sprite2D creations!
+         * @param spriteSettings The Sprite2D settings to use for Sprite creation, this JSON object will be passed to the filterCallback for you to alter it, if needed.
+         */
+        AtlasPictureInfo.prototype.createSprites = function (filterCallback, spriteSettings) {
+            var _this = this;
+            var res = new Array();
+            var index = 0;
+            this.subPictures.forEach(function (k, v) {
+                if (!filterCallback || filterCallback(index++, k, v, spriteSettings)) {
+                    var s = _this.createSprite(k, spriteSettings);
+                    if (s) {
+                        res.push(s);
+                    }
+                }
+            });
+            return res;
+        };
+        /**
+         * Create one Sprite from a sub picture
+         * @param subPictureName the name of the sub picture to use
+         * @param spriteSettings the Sprite2D settings to use for the Sprite instance creation
+         */
+        AtlasPictureInfo.prototype.createSprite = function (subPictureName, spriteSettings) {
+            var spi = this.subPictures.get(subPictureName);
+            if (!spi) {
+                return null;
+            }
+            if (!spriteSettings) {
+                spriteSettings = {};
+            }
+            var s = spriteSettings;
+            s.id = subPictureName;
+            s.spriteLocation = spi.location;
+            s.spriteSize = spi.size;
+            var sprite = new BABYLON.Sprite2D(this.texture, spriteSettings);
+            return sprite;
+        };
+        return AtlasPictureInfo;
+    }());
+    BABYLON.AtlasPictureInfo = AtlasPictureInfo;
+    /**
+     * This if the Factory class containing static method to create Atlas Pictures Info objects or add new loaders
+     */
+    var AtlasPictureInfoFactory = (function () {
+        function AtlasPictureInfoFactory() {
+        }
+        /**
+         * Add a custom loader
+         * @param fileExtension must be the file extension (without the dot) of the file that is loaded by this loader (e.g.: json)
+         * @param plugin the instance of the loader
+         */
+        AtlasPictureInfoFactory.addLoader = function (fileExtension, plugin) {
+            var a = AtlasPictureInfoFactory.plugins.getOrAddWithFactory(fileExtension.toLocaleLowerCase(), function () { return new Array(); });
+            a.push(plugin);
+        };
+        /**
+         * Load an Atlas Picture Info object from a data file at a given url and with a given texture
+         * @param texture the texture containing the atlas bitmap
+         * @param url the URL of the Atlas Info data file
+         * @param onLoad a callback that will be called when the AtlasPictureInfo object will be loaded and ready
+         * @param onError a callback that will be called in case of error
+         */
+        AtlasPictureInfoFactory.loadFromUrl = function (texture, url, onLoad, onError) {
+            if (onError === void 0) { onError = null; }
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var ext = url.split('.').pop().split(/\#|\?/)[0];
+                        var plugins = AtlasPictureInfoFactory.plugins.get(ext.toLocaleLowerCase());
+                        if (!plugins) {
+                            if (onError) {
+                                onError("couldn't find a plugin for this file extension", -1);
+                            }
+                            return;
+                        }
+                        for (var _i = 0, plugins_1 = plugins; _i < plugins_1.length; _i++) {
+                            var p = plugins_1[_i];
+                            var ret = p.loadFile(xhr.response);
+                            if (ret) {
+                                if (ret.api) {
+                                    ret.api.texture = texture;
+                                    if (onLoad) {
+                                        onLoad(ret.api);
+                                    }
+                                }
+                                else if (onError) {
+                                    onError(ret.errorMsg, ret.errorCode);
+                                }
+                                return;
+                            }
+                        }
+                        if (onError) {
+                            onError("No plugin to load this Atlas Data file format", -1);
+                        }
+                    }
+                    else {
+                        if (onError) {
+                            onError("Couldn't load file through HTTP Request, HTTP Status " + xhr.status, xhr.status);
+                        }
+                    }
+                }
+            };
+            xhr.open("GET", url, true);
+            xhr.send();
+            return null;
+        };
+        return AtlasPictureInfoFactory;
+    }());
+    AtlasPictureInfoFactory.plugins = new BABYLON.StringDictionary();
+    BABYLON.AtlasPictureInfoFactory = AtlasPictureInfoFactory;
+    // Loader class for the TexturePacker's JSON Array data format
+    var JSONArrayLoader = JSONArrayLoader_1 = (function () {
+        function JSONArrayLoader() {
+        }
+        JSONArrayLoader.prototype.loadFile = function (content) {
+            var errorMsg = null;
+            var errorCode = 0;
+            var root = null;
+            var api = null;
+            try {
+                var frames_1;
+                var meta = void 0;
+                try {
+                    root = JSON.parse(content);
+                    frames_1 = root.frames;
+                    meta = root.meta;
+                    if (!frames_1 || !meta) {
+                        throw Error("Not a JSON Array file format");
+                    }
+                }
+                catch (ex1) {
+                    return null;
+                }
+                api = new AtlasPictureInfo();
+                api.atlasSize = new BABYLON.Size(meta.size.w, meta.size.h);
+                api.subPictures = new BABYLON.StringDictionary();
+                for (var _i = 0, frames_2 = frames_1; _i < frames_2.length; _i++) {
+                    var f = frames_2[_i];
+                    var aspi = new AtlasSubPictureInfo();
+                    aspi.name = f.filename;
+                    aspi.location = new BABYLON.Vector2(f.frame.x, api.atlasSize.height - (f.frame.y + f.frame.h));
+                    aspi.size = new BABYLON.Size(f.frame.w, f.frame.h);
+                    api.subPictures.add(aspi.name, aspi);
+                }
+            }
+            catch (ex2) {
+                errorMsg = "Unknown Exception: " + ex2;
+                errorCode = -2;
+            }
+            return { api: api, errorMsg: errorMsg, errorCode: errorCode };
+        };
+        return JSONArrayLoader;
+    }());
+    JSONArrayLoader = JSONArrayLoader_1 = __decorate([
+        AtlasLoaderPlugin("json", new JSONArrayLoader_1())
+    ], JSONArrayLoader);
+    /**
+     * Use this decorator when you declare an Atlas Loader Class for the loader to register itself automatically.
+     * @param fileExtension the extension of the file that the plugin is loading (there can be many plugin for the same extension)
+     * @param plugin an instance of the plugin class to add to the AtlasPictureInfoFactory
+     */
+    function AtlasLoaderPlugin(fileExtension, plugin) {
+        return function () {
+            AtlasPictureInfoFactory.addLoader(fileExtension, plugin);
+        };
+    }
+    BABYLON.AtlasLoaderPlugin = AtlasLoaderPlugin;
+    var JSONArrayLoader_1;
+})(BABYLON || (BABYLON = {}));
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -10219,9 +11350,17 @@ var BABYLON;
                 settings = {};
             }
             _this = _super.call(this, settings) || this;
-            _this.fontName = (settings.fontName == null) ? "12pt Arial" : settings.fontName;
-            _this._fontSuperSample = (settings.fontSuperSample != null && settings.fontSuperSample);
-            _this._fontSDF = (settings.fontSignedDistanceField != null && settings.fontSignedDistanceField);
+            if (settings.bitmapFontTexture != null) {
+                _this._fontTexture = settings.bitmapFontTexture;
+                _this._fontName = null;
+                _this._fontSuperSample = false;
+                _this._fontSDF = false;
+            }
+            else {
+                _this._fontName = (settings.fontName == null) ? "12pt Arial" : settings.fontName;
+                _this._fontSuperSample = (settings.fontSuperSample != null && settings.fontSuperSample);
+                _this._fontSDF = (settings.fontSignedDistanceField != null && settings.fontSignedDistanceField);
+            }
             _this.defaultFontColor = (settings.defaultFontColor == null) ? new BABYLON.Color4(1, 1, 1, 1) : settings.defaultFontColor;
             _this._tabulationSize = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             _this._textSize = null;
@@ -10524,8 +11663,6 @@ var BABYLON;
     BABYLON.Text2D = Text2D;
     var Text2D_1;
 })(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.text2d.js.map
 
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -12824,12 +13961,14 @@ var BABYLON;
             var v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
             for (var _i = 0, _a = this._trackedGroups; _i < _a.length; _i++) {
                 var group = _a[_i];
-                if (group.isDisposed || !group.isVisible) {
+                if (group.isDisposed) {
                     continue;
                 }
                 var node = group.trackedNode;
                 var worldMtx = node.getWorldMatrix();
                 var proj = BABYLON.Vector3.Project(Canvas2D_1._v, worldMtx, Canvas2D_1._m, v);
+                // Set the visibility state accordingly, if the position is outside the frustum (well on the Z planes only...) set the group to hidden
+                group.levelVisible = proj.z >= 0 && proj.z < 1.0;
                 var s = this.scale;
                 group.x = Math.round(proj.x / s);
                 group.y = Math.round((rh - proj.y) / s);

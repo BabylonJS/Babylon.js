@@ -129,7 +129,6 @@
       "../../src/Math/babylon.math.SIMD.js",
       "../../src/Tools/babylon.rectPackingMap.js",
       "../../src/Tools/babylon.dynamicFloatArray.js",
-      "../../src/Materials/Textures/babylon.fontTexture.js",
       "../../src/Materials/Textures/babylon.mapTexture.js",
       "../../src/Materials/babylon.shaderMaterial.js",
       "../../src/Tools/babylon.tools.dds.js",

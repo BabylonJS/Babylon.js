@@ -1943,7 +1943,10 @@
          */
         @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 6, pi => Prim2DBase.sizeProperty = pi, false, true)
         public get size(): Size {
+            return this.internalGetSize();
+        }
 
+        protected internalGetSize(): Size {
             if (!this._size || this._size.width == null || this._size.height == null) {
 
                 if (Prim2DBase.boundinbBoxReentrency) {
@@ -1961,11 +1964,14 @@
                 return this._boundingSize;
 
             }
-
             return this._size;
         }
 
         public set size(value: Size) {
+            this.internalSetSize(value);
+        }
+
+        protected internalSetSize(value: Size) {
             this._size = value;
         }
 
@@ -3134,6 +3140,7 @@
                 this._actionManager.dispose();
                 this._actionManager = null;
             }
+            this.owner.scene.stopAnimation(this);
 
             // If there's a parent, remove this object from its parent list
             if (this._parent) {

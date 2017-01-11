@@ -159,10 +159,10 @@
       "../../src/Math/babylon.math.SIMD.js",
       "../../src/Tools/babylon.rectPackingMap.js",
       "../../src/Tools/babylon.dynamicFloatArray.js",
-      "../../src/Materials/Textures/babylon.fontTexture.js",
       "../../src/Materials/Textures/babylon.mapTexture.js",
       "../../src/Materials/babylon.shaderMaterial.js",
       "../../src/Tools/babylon.tools.dds.js",
+      "../../src/Tools/babylon.khronosTextureContainer.js",
       "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
       "../../src/Physics/Plugins/babylon.oimoJSPlugin.js",
       "../../src/PostProcess/babylon.displayPassPostProcess.js",
@@ -467,6 +467,7 @@
         "../../canvas2D/src/Tools/babylon.IPropertyChanged.ts",
         "../../canvas2D/src/Tools/babylon.observableArray.ts",
         "../../canvas2D/src/Tools/babylon.observableStringDictionary.ts",
+        "../../canvas2D/src/Engine/babylon.fontTexture.ts",
         "../../canvas2D/src/Engine/babylon.bounding2d.ts",
         "../../canvas2D/src/Engine/babylon.canvas2dLayoutEngine.ts",
         "../../canvas2D/src/Engine/babylon.brushes2d.ts",
@@ -479,6 +480,7 @@
         "../../canvas2D/src/Engine/babylon.rectangle2d.ts",
         "../../canvas2D/src/Engine/babylon.ellipse2d.ts",
         "../../canvas2D/src/Engine/babylon.sprite2d.ts",
+        "../../canvas2D/src/Engine/babylon.atlasPicture.ts",
         "../../canvas2D/src/Engine/babylon.text2d.ts",
         "../../canvas2D/src/Engine/babylon.lines2d.ts",
         "../../canvas2D/src/Engine/babylon.canvas2d.ts",
@@ -491,7 +493,7 @@
         "../../canvas2D/src/GUI/babylon.gui.label.ts",
         "../../canvas2D/src/GUI/babylon.gui.button.ts",
         "../../canvas2D/src/lib.d.ts"
-        ],
+      ],
       "shaderFiles": [
           "../../canvas2D/src/shaders/**.fx", "!../../canvas2D/src/shaders/**.js.fx"
       ],

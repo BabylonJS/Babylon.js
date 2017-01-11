@@ -168,7 +168,9 @@
             this._renderingSize = new Size(0, 0);
             this._designSize = settings.designSize || null;
             this._designUseHorizAxis = settings.designUseHorizAxis === true;
-            this._trackedGroups = new Array<Group2D>();
+            if (!this._trackedGroups) {
+                this._trackedGroups = new Array<Group2D>();
+            }
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new StringDictionary<MapTexture[]>();
 
@@ -1278,7 +1280,7 @@
             let v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
 
             for (let group of this._trackedGroups) {
-                if (group.isDisposed || !group.isVisible) {
+                if (group.isDisposed) {
                     continue;
                 }
 
@@ -1286,6 +1288,10 @@
                 let worldMtx = node.getWorldMatrix();
 
                 let proj = Vector3.Project(Canvas2D._v, worldMtx, Canvas2D._m, v);
+
+                // Set the visibility state accordingly, if the position is outside the frustum (well on the Z planes only...) set the group to hidden
+                group.levelVisible = proj.z >= 0 && proj.z < 1.0;
+
                 let s = this.scale;
                 group.x = Math.round(proj.x/s);
                 group.y = Math.round((rh - proj.y)/s);
@@ -1572,6 +1578,9 @@
         public _registerTrackedNode(group: Group2D) {
             if (group._isFlagSet(SmartPropertyPrim.flagTrackedGroup)) {
                 return;
+            }
+            if (!this._trackedGroups) {
+                this._trackedGroups = new Array<Group2D>();
             }
             this._trackedGroups.push(group);
 

@@ -20,6 +20,7 @@ namespace Unity3D2Babylon
     public static class Tools
     {
         public static BindingFlags FullBinding = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.GetField | BindingFlags.SetField | BindingFlags.GetProperty | BindingFlags.SetProperty;
+        
         public static float[] ToFloat(this Color color)
         {
             var result = new float[4];
@@ -231,6 +232,11 @@ namespace Unity3D2Babylon
             BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.GetField | BindingFlags.GetProperty;
             FieldInfo field = type.GetField(fieldName, bindFlags);
             return field.GetValue(instance);
+        }
+
+        public static void EnableRemoteCertificates()
+        {
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(delegate { return true; });
         }
 
         public static bool DownloadFile(string url, string dest)

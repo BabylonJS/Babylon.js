@@ -99,9 +99,9 @@
         }
 
         public stop(animationName?: string): void {
-            var index = this._scene._activeAnimatables.indexOf(this);
+            var idx = this._scene._activeAnimatables.indexOf(this);
 
-            if (index > -1) {
+            if (idx > -1) {
                 var animations = this._animations;
                 var numberOfAnimationsStopped = 0;
                 for (var index = animations.length - 1; index >= 0; index--) {
@@ -114,7 +114,7 @@
                 }
 
                 if (animations.length == numberOfAnimationsStopped) {
-                    this._scene._activeAnimatables.splice(index, 1);
+                    this._scene._activeAnimatables.splice(idx, 1);
 
                     if (this.onAnimationEnd) {
                         this.onAnimationEnd();
