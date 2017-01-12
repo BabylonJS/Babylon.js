@@ -308,6 +308,9 @@
         public clone(): Animation {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
 
+            clone.enableBlending = this.enableBlending;
+            clone.blendingSpeed = this.blendingSpeed;
+
             if (this._keys) {
                 clone.setKeys(this._keys);
             }
@@ -658,6 +661,8 @@
             serializationObject.framePerSecond = this.framePerSecond;
             serializationObject.dataType = this.dataType;
             serializationObject.loopBehavior = this.loopMode;
+            serializationObject.enableBlending = this.enableBlending;
+            serializationObject.blendingSpeed = this.blendingSpeed;
 
             var dataType = this.dataType;
             serializationObject.keys = [];
@@ -754,6 +759,14 @@
             var keys: Array<{ frame: number, value: any }> = [];
             var data;
             var index: number;
+
+            if (parsedAnimation.enableBlending) {
+                animation.enableBlending = parsedAnimation.enableBlending;
+            }
+
+            if (parsedAnimation.blendingSpeed) {
+                animation.blendingSpeed = parsedAnimation.blendingSpeed;
+            }
 
             for (index = 0; index < parsedAnimation.keys.length; index++) {
                 var key = parsedAnimation.keys[index];
