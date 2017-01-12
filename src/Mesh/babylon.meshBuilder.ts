@@ -187,7 +187,7 @@
                 instance._boundingInfo = new BoundingInfo(Tmp.Vector3[0], Tmp.Vector3[1]);
                 instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
-                if (!(instance.areNormalsFrozen) || instance.isFacetDataEnabled) {
+                if (!instance.areNormalsFrozen || instance.isFacetDataEnabled) {
                     var indices = instance.getIndices();
                     var normals = instance.getVerticesData(VertexBuffer.NormalKind);
                     var params = instance.isFacetDataEnabled ? instance.getFacetDataParameters() : null;
