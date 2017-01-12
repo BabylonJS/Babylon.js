@@ -187,10 +187,11 @@
                 instance._boundingInfo = new BoundingInfo(Tmp.Vector3[0], Tmp.Vector3[1]);
                 instance._boundingInfo.update(instance._worldMatrix);
                 instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
-                if (!(instance.areNormalsFrozen)) {
+                if (!(instance.areNormalsFrozen) || instance.isFacetDataEnabled) {
                     var indices = instance.getIndices();
                     var normals = instance.getVerticesData(VertexBuffer.NormalKind);
-                    VertexData.ComputeNormals(positions, indices, normals);
+                    var params = instance.isFacetDataEnabled ? instance.getFacetDataParameters() : null;
+                    VertexData.ComputeNormals(positions, indices, normals, params);
 
                     if ((<any>instance)._closePath) {
                         var indexFirst: number = 0;
@@ -211,8 +212,9 @@
                             normals[indexLast + 2] = normals[indexFirst + 2];
                         }
                     }
-
-                    instance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
+                    if (!(instance.areNormalsFrozen)) {
+                        instance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
+                    }
                 }
 
                 return instance;

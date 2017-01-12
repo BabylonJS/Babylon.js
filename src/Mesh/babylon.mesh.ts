@@ -135,18 +135,15 @@
         public get facetNb(): number {
             return this._facetNb;
         }
-
         /**
          * The number of subdivisions per axis in the partioning space
          */
         public get partitioningSubdivisions(): number {
             return this._partitioningSubdivisions;
         }
-
         public set partitioningSubdivisions(nb: number) {
             this._partitioningSubdivisions = nb;
         } 
-
         /**
          * The ratio to apply to the bouding box size to set to the partioning space.  
          * Ex : 1.01 (default) the partioning space is 1% bigger than the bounding box.
@@ -154,9 +151,14 @@
         public get partitioningBBoxRatio(): number {
             return this._partitioningBBoxRatio;
         }
-
         public set partitioningBBoxRatio(ratio: number) {
             this._partitioningBBoxRatio = ratio;
+        }
+        /**
+         * Read-only : is the feature facetData enabled ?
+         */
+        public get isFacetDataEnabled(): boolean {
+            return this._facetDataEnabled;
         }
 
         // Will be used to save a source mesh reference, If any
@@ -1828,16 +1830,8 @@
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
-            var options = {
-                facetNormals: this.getFacetLocalNormals(), 
-                facetPositions: this.getFacetLocalPositions(), 
-                facetPartitioning: this._facetPartitioning, 
-                bInfo: this.getBoundingInfo(),
-                ratio: this._partitioningBBoxRatio,
-                partitioningSubdivisions: this._partitioningSubdivisions
-            };
+            var options = this.getFacetDataParameters();
             VertexData.ComputeNormals(positions, indices, normals, options);
-            this.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
             return this;
         }
         /**
@@ -1859,6 +1853,15 @@
                 this.updateFacetData();
             }
             return this._facetPositions;           
+        }
+        /**
+         * Returns the facetLocalPartioning array
+         */
+        public getFacetLocalPartitioning(): number[][] {
+            if (!this._facetPartitioning) {
+                this.updateFacetData();
+            }
+            return this._facetPartitioning;
         }
         /**
          * Returns the i-th facet position in the world system.
@@ -1998,6 +2001,21 @@
             }
             return closest;
         }
+        /**
+         * Returns object "parameter" set with all the required parameters for facetData computation with ComputeNormals()
+         */
+        public getFacetDataParameters(): any {
+            var params = {
+                facetNormals: this.getFacetLocalNormals(), 
+                facetPositions: this.getFacetLocalPositions(),
+                facetPartitioning: this.getFacetLocalPartitioning(),
+                bInfo: this.getBoundingInfo(),
+                partitioningSubdivisions: this.partitioningSubdivisions,
+                ratio: this.partitioningBBoxRatio
+            };
+            return params;
+        }
+
         // Statics
         /**
          * Returns a new Mesh object what is a deep copy of the passed mesh. 
