@@ -720,7 +720,7 @@ bpy.types.Mesh.receiveShadows = bpy.props.BoolProperty(
 )
 bpy.types.Mesh.tags = bpy.props.StringProperty(
     name='Tags',
-    description='',
+    description='Add meta-data to mesh (space delimited for multiples)',
     default = ''
 )
 # not currently in use

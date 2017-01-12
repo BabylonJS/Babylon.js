@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="zipper">
-	<property name="version" value="5.1"/>
+	<property name="version" value="5.2"/>
 	
 	<!-- this target assumes it is run from Babylon.js/Exporters/Blender directory.  -->
     <target name="make-zip">
