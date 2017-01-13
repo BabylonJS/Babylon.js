@@ -569,45 +569,9 @@
             var uvidx = 0;          // current uv index in the global array uvs32
             var uvIndex = 0;        // uv start index in the global array uvs32 of the current particle
             var pt = 0;             // current index in the particle model shape
-            var vf = 0;             // current vertex index in the current facet
-            var facetData = this.mesh.isFacetDataEnabled;
-            if (facetData) {
-                var facetPos = this.mesh.getFacetLocalPositions();
-                var facetNor = this.mesh.getFacetLocalNormals();
-                var facetPart = this.mesh.getFacetLocalPartitioning();
-                var facetSub = this.mesh.partitioningSubdivisions;
-                var facetRatio = this.mesh.partitioningBBoxRatio;
-                var bInfo = this.mesh.getBoundingInfo(); 
-                facetPart.length = 0;               // reset the partitioning array
-                var facetSubSq = facetSub * facetSub;
-                var v1x = 0;                        // vector1 x index in the positions array
-                var v1y = 0;                        // vector1 y index in the positions array
-                var v1z = 0;                        // vector1 z index in the positions array
-                var v2x = 0;                        // vector2 x index in the positions array
-                var v2y = 0;                        // vector2 y index in the positions array
-                var v2z = 0;                        // vector2 z index in the positions array
-                var v3x = 0;                        // vector3 x index in the positions array
-                var v3y = 0;                        // vector3 y index in the positions array
-                var v3z = 0;                        // vector3 z index in the positions array
-                var ox = 0;                 // X partitioning index for facet position
-                var oy = 0;                 // Y partinioning index for facet position
-                var oz = 0;                 // Z partinioning index for facet position
-                var b1x = 0;                // X partitioning index for facet v1 vertex
-                var b1y = 0;                // Y partitioning index for facet v1 vertex
-                var b1z = 0;                // z partitioning index for facet v1 vertex
-                var b2x = 0;                // X partitioning index for facet v2 vertex
-                var b2y = 0;                // Y partitioning index for facet v2 vertex
-                var b2z = 0;                // Z partitioning index for facet v2 vertex
-                var b3x = 0;                // X partitioning index for facet v3 vertex
-                var b3y = 0;                // Y partitioning index for facet v3 vertex
-                var b3z = 0;                // Z partitioning index for facet v3 vertex
-                var block_idx_o = 0;        // facet barycenter block index
-                var block_idx_v1 = 0;       // v1 vertex block index
-                var block_idx_v2 = 0;       // v2 vertex block index
-                var block_idx_v3 = 0;       // v3 vertex block index  
-                var xSubRatio = 0.0;        // tmp x divider
-                var ySubRatio = 0.0;        // tmp x divider
-                var zSubRatio = 0.0;        // tmp x divider 
+
+            if (this.mesh.isFacetDataEnabled) {
+                this._computeBoundingBox = true;
             }
 
             if (this._computeBoundingBox) {
@@ -693,7 +657,7 @@
                             }
                         }
 
-                        // normals : if the particles can't be morphed then just rotate the normals, what if much more faster than ComputeNormals()
+                        // normals : if the particles can't be morphed then just rotate the normals, what is much more faster than ComputeNormals()
                         // the same for the facet data
                         if (!this._computeParticleVertex) {
                             this._normal.x = this._fixedNormal32[idx];
@@ -707,74 +671,7 @@
 
                             this._normals32[idx] = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                             this._normals32[idx + 1] = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                            this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
-
-                            if (facetData) {
-                                if (idx % 9 == 8) {      // 3 vertices (9 positions) = 1 facet
-                                    // facet positions
-                                    this._w = (facetPos[vf].x * this._rotMatrix.m[3]) + (facetPos[vf].y * this._rotMatrix.m[7]) + (facetPos[vf].z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
-                                    this._rotated.x = ((facetPos[vf].x * this._rotMatrix.m[0]) + (facetPos[vf].y * this._rotMatrix.m[4]) + (facetPos[vf].z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
-                                    this._rotated.y = ((facetPos[vf].x * this._rotMatrix.m[1]) + (facetPos[vf].y * this._rotMatrix.m[5]) + (facetPos[vf].z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
-                                    this._rotated.z = ((facetPos[vf].x * this._rotMatrix.m[2]) + (facetPos[vf].y * this._rotMatrix.m[6]) + (facetPos[vf].z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
-                                    facetPos[vf].x = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                                    facetPos[vf].y = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                                    facetPos[vf].z = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;                                
-                                    // facet normals
-                                    this._w = (facetNor[vf].x * this._rotMatrix.m[3]) + (facetNor[vf].y * this._rotMatrix.m[7]) + (facetNor[vf].z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
-                                    this._rotated.x = ((facetNor[vf].x * this._rotMatrix.m[0]) + (facetNor[vf].y * this._rotMatrix.m[4]) + (facetNor[vf].z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
-                                    this._rotated.y = ((facetNor[vf].x * this._rotMatrix.m[1]) + (facetNor[vf].y * this._rotMatrix.m[5]) + (facetNor[vf].z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
-                                    this._rotated.z = ((facetNor[vf].x * this._rotMatrix.m[2]) + (facetNor[vf].y * this._rotMatrix.m[6]) + (facetNor[vf].z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
-                                    facetNor[vf].x = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                                    facetNor[vf].y = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                                    facetNor[vf].z = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;                            
-                                    // partitioning
-                                    v1x = idx - 2;
-                                    v1y = idx - 1;
-                                    v1z = idx;
-                                    v2x = v1x - 3;
-                                    v2y = v2x + 1;
-                                    v2z = v2x + 2;
-                                    v3x = v1x - 6;
-                                    v3y = v3x + 1;
-                                    v3z = v3x + 2;
-                                    // store the facet indexes in arrays in the main facetPartitioning array :
-                                    // compute each facet vertex (+ facet barycenter) index in the partiniong array
-                                    xSubRatio = facetSub * facetRatio / (bInfo.maximum.x - bInfo.minimum.x);
-                                    ySubRatio = facetSub * facetRatio / (bInfo.maximum.y - bInfo.minimum.y);
-                                    zSubRatio = facetSub * facetRatio / (bInfo.maximum.z - bInfo.minimum.z);
-                                    ox = Math.floor((facetPos[vf].x - bInfo.minimum.x * facetRatio) * xSubRatio);
-                                    oy = Math.floor((facetPos[vf].y - bInfo.minimum.y * facetRatio) * ySubRatio);
-                                    oz = Math.floor((facetPos[vf].z - bInfo.minimum.z * facetRatio) * zSubRatio);
-                                    b1x = Math.floor((this._positions32[v1x] - bInfo.minimum.x * facetRatio) * xSubRatio);
-                                    b1y = Math.floor((this._positions32[v1y] - bInfo.minimum.y * facetRatio) * ySubRatio);
-                                    b1z = Math.floor((this._positions32[v1z] - bInfo.minimum.z * facetRatio) * zSubRatio);
-                                    b2x = Math.floor((this._positions32[v2x] - bInfo.minimum.x * facetRatio) * xSubRatio);
-                                    b2y = Math.floor((this._positions32[v2y] - bInfo.minimum.y * facetRatio) * ySubRatio);
-                                    b2z = Math.floor((this._positions32[v2z] - bInfo.minimum.z * facetRatio) * zSubRatio);
-                                    b3x = Math.floor((this._positions32[v3x] - bInfo.minimum.x * facetRatio) * xSubRatio);
-                                    b3y = Math.floor((this._positions32[v3y] - bInfo.minimum.y * facetRatio) * ySubRatio);
-                                    b3z = Math.floor((this._positions32[v3z] - bInfo.minimum.z * facetRatio) * zSubRatio);  
-                                    block_idx_v1 = b1x + facetSub * b1y + facetSubSq * b1z;
-                                    block_idx_v2 = b2x + facetSub * b2y + facetSubSq * b2z;
-                                    block_idx_v3 = b3x + facetSub * b3y + facetSubSq * b3z;
-                                    block_idx_o = ox + facetSub * oy + facetSubSq * oz;
-                                    facetPart[block_idx_o] = facetPart[block_idx_o] ? facetPart[block_idx_o] :new Array();
-                                    facetPart[block_idx_v1] = facetPart[block_idx_v1] ? facetPart[block_idx_v1] :new Array();
-                                    facetPart[block_idx_v2] = facetPart[block_idx_v2] ? facetPart[block_idx_v2] :new Array();
-                                    facetPart[block_idx_v3] = facetPart[block_idx_v3] ? facetPart[block_idx_v3] :new Array();
-                                    facetPart[block_idx_v1].push(index);
-                                    if (block_idx_v2 != block_idx_v1) {
-                                        facetPart[block_idx_v2].push(index);
-                                    }
-                                    if (!(block_idx_v3 == block_idx_v2 || block_idx_v3 == block_idx_v1)) {
-                                        facetPart[block_idx_v3].push(index);
-                                    }
-                                    if (!(block_idx_o == block_idx_v1 || block_idx_o == block_idx_v2 || block_idx_o == block_idx_v3)) {
-                                        facetPart[block_idx_o].push(index); 
-                                    }                                  
-                                }
-                                vf = vf + 1;
-                            }
+                            this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;                          
                         }
 
                         if (this._computeParticleColor) {
@@ -865,10 +762,10 @@
                     this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs32, false, false);
                 }
                 this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
-                if (!this.mesh.areNormalsFrozen || facetData) {
-                    if (this._computeParticleVertex) {
+                if (!this.mesh.areNormalsFrozen || this.mesh.isFacetDataEnabled) {
+                    if (this._computeParticleVertex || this.mesh.isFacetDataEnabled) {
                         // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
-                        var params = facetData ? this.mesh.getFacetDataParameters() : null;
+                        var params = this.mesh.isFacetDataEnabled ? this.mesh.getFacetDataParameters() : null;
                         VertexData.ComputeNormals(this._positions32, this._indices, this._normals32, params);
                         for (var i = 0; i < this._normals32.length; i++) {
                             this._fixedNormal32[i] = this._normals32[i];
