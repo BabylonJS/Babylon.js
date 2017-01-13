@@ -2055,8 +2055,7 @@
          * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
          * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
          * 
-         * Note: The result of this call is not taken into account when a texture is base64 or when
-         * using a database / manifest.
+         * Note: The result of this call is not taken into account when a texture is base64.
          * 
          * @param {Array<string>} formatsAvailable- The list of those format families you have created
          * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
@@ -2077,12 +2076,13 @@
             return this._textureFormatInUse = null;
         }
 
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
-            var texture = this._gl.createTexture();
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, fallBack?: WebGLTexture): WebGLTexture {
+            var texture = fallBack ? fallBack : this._gl.createTexture();
 
             var extension: string;
             var isKTX = false;
             var fromData: any = false;
+            var url = String(urlArg);
             if (url.substr(0, 5) === "data:") {
                 fromData = true;
             }
@@ -2090,10 +2090,11 @@
             if (!fromData) {
                 var lastDot = url.lastIndexOf('.')
                 extension = url.substring(lastDot).toLowerCase();
-                if (this._textureFormatInUse && !fromData && !scene.database) {
+                if (this._textureFormatInUse && !fromData && !fallBack) {
                     extension = this._textureFormatInUse;
                     url = url.substring(0, lastDot) + this._textureFormatInUse;
                     isKTX = true;
+                    
                 }
             } else {
                 var oldUrl = url;
@@ -2102,7 +2103,7 @@
                 extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
             }
 
-            var isDDS = (extension === ".dds");
+            var isDDS = this.getCaps().s3tc && (extension === ".dds");
             var isTGA = (extension === ".tga");
 
             scene._addPendingData(texture);
@@ -2114,12 +2115,15 @@
             if (onLoad) {
                 texture.onLoadedCallbacks.push(onLoad);
             }
-            this._loadedTexturesCache.push(texture);
+            if (!fallBack) this._loadedTexturesCache.push(texture);
 
             var onerror = () => {
                 scene._removePendingData(texture);
 
-                if (onError) {
+                // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
+                if (isKTX) {
+                    this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer, texture);
+                } else if (onError) {
                     onError();
                 }
             };
@@ -2604,12 +2608,12 @@
             var isKTX = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = rootUrl.substring(lastDot).toLowerCase();
-            if (this._textureFormatInUse && !scene.database) {
+            if (this._textureFormatInUse) {
                 extension = this._textureFormatInUse;
                 rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
                 isKTX = true;
             }
-            var isDDS = (extension === ".dds");
+            var isDDS = this.getCaps().s3tc && (extension === ".dds");
 
             if (isKTX) {
                 Tools.LoadFile(rootUrl, data => {
