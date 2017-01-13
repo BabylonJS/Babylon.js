@@ -1199,7 +1199,7 @@
 
                     positions.push(position.x, position.y, position.z);
                     normals.push(normal.x, normal.y, normal.z);
-                    uvs.push(col / subdivisionsX, 1.0 - row / subdivisionsX);
+                    uvs.push(col / subdivisionsX, 1.0 - row / subdivisionsY);
                 }
             }
 
