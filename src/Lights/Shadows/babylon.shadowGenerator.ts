@@ -436,6 +436,8 @@
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
             }
+
+            this._light._shadowGenerator = null;
         }
 
         public serialize(): any {
