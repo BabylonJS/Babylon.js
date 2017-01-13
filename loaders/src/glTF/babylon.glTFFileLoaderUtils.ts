@@ -197,5 +197,59 @@ module BABYLON {
 
             return result;
         }
+
+        /**
+         * Returns the default material of gltf. Related to
+         * https://github.com/KhronosGroup/glTF/tree/master/specification/1.0#appendix-a-default-material
+         * @param scene: the Babylon.js scene
+         */
+        public static GetDefaultMaterial(scene: Scene): ShaderMaterial {
+            if (!GLTFUtils._DefaultMaterial) {
+                Effect.ShadersStore["GLTFDefaultMaterialVertexShader"] = [
+                    "precision highp float;",
+                    "",
+                    "uniform mat4 worldView;",
+                    "uniform mat4 projection;",
+                    "",
+                    "attribute vec3 position;",
+                    "",
+                    "void main(void)",
+                    "{",
+                    "    gl_Position = projection * worldView * vec4(position, 1.0);",
+                    "}"
+                ].join("\n");
+
+                Effect.ShadersStore["GLTFDefaultMaterialPixelShader"] = [
+                    "precision highp float;",
+                    "",
+                    "uniform vec4 u_emission;",
+                    "",
+                    "void main(void)",
+                    "{",
+                    "    gl_FragColor = u_emission;",
+                    "}"
+                ].join("\n");
+
+                var shaderPath = {
+                    vertex: "GLTFDefaultMaterial",
+                    fragment: "GLTFDefaultMaterial"
+                };
+
+                var options = {
+                    attributes: ["position"],
+                    uniforms: ["worldView", "projection", "u_emission"],
+                    samplers: [],
+                    needAlphaBlending: false
+                };
+
+                GLTFUtils._DefaultMaterial = new ShaderMaterial("GLTFDefaultMaterial", scene, shaderPath, options);
+                GLTFUtils._DefaultMaterial.setColor4("u_emission", new Color4(0.5, 0.5, 0.5, 1.0));
+            }
+
+            return GLTFUtils._DefaultMaterial;
+        }
+
+        // The GLTF default material
+        private static _DefaultMaterial: ShaderMaterial = null;
     }
 }
