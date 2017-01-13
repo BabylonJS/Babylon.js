@@ -2023,6 +2023,7 @@
                 var xSubRatio = 0.0;        // tmp x divider
                 var ySubRatio = 0.0;        // tmp x divider
                 var zSubRatio = 0.0;        // tmp x divider  
+                var subSq = options.partitioningSubdivisions * options.partitioningSubdivisions;
                 options.facetPartitioning.length = 0;
             }
         
@@ -2097,15 +2098,15 @@
                     b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
                     b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
                     
-                    block_idx_v1 = b1x + options.partitioningSubdivisions * b1y + options.partitioningSubdivisions * options.partitioningSubdivisions * b1z;
-                    block_idx_v2 = b2x + options.partitioningSubdivisions * b2y + options.partitioningSubdivisions * options.partitioningSubdivisions * b2z;
-                    block_idx_v3 = b3x + options.partitioningSubdivisions * b3y + options.partitioningSubdivisions * options.partitioningSubdivisions * b3z;
-                    block_idx_o = ox + options.partitioningSubdivisions * oy + options.partitioningSubdivisions * options.partitioningSubdivisions * oz;
+                    block_idx_v1 = b1x + options.partitioningSubdivisions * b1y + subSq * b1z;
+                    block_idx_v2 = b2x + options.partitioningSubdivisions * b2y + subSq * b2z;
+                    block_idx_v3 = b3x + options.partitioningSubdivisions * b3y + subSq * b3z;
+                    block_idx_o = ox + options.partitioningSubdivisions * oy + subSq * oz;
 
-                    options.facetPartitioning[block_idx_o] = (options.facetPartitioning[block_idx_o]) ? options.facetPartitioning[block_idx_o] :new Array();
-                    options.facetPartitioning[block_idx_v1] = (options.facetPartitioning[block_idx_v1]) ? options.facetPartitioning[block_idx_v1] :new Array();
-                    options.facetPartitioning[block_idx_v2] = (options.facetPartitioning[block_idx_v2]) ? options.facetPartitioning[block_idx_v2] :new Array();
-                    options.facetPartitioning[block_idx_v3] = (options.facetPartitioning[block_idx_v3]) ? options.facetPartitioning[block_idx_v3] :new Array();
+                    options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] :new Array();
+                    options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] :new Array();
+                    options.facetPartitioning[block_idx_v2] = options.facetPartitioning[block_idx_v2] ? options.facetPartitioning[block_idx_v2] :new Array();
+                    options.facetPartitioning[block_idx_v3] = options.facetPartitioning[block_idx_v3] ? options.facetPartitioning[block_idx_v3] :new Array();
 
                     // push each facet index in each block containing the vertex
                     options.facetPartitioning[block_idx_v1].push(index);

@@ -562,13 +562,17 @@
             }
 
             Matrix.IdentityToRef(this._rotMatrix);
-            var idx = 0;
-            var index = 0;
-            var colidx = 0;
-            var colorIndex = 0;
-            var uvidx = 0;
-            var uvIndex = 0;
-            var pt = 0;
+            var idx = 0;            // current position index in the global array positions32
+            var index = 0;          // position start index in the global array positions32 of the current particle
+            var colidx = 0;         // current color index in the global array colors32
+            var colorIndex = 0;     // color start index in the global array colors32 of the current particle
+            var uvidx = 0;          // current uv index in the global array uvs32
+            var uvIndex = 0;        // uv start index in the global array uvs32 of the current particle
+            var pt = 0;             // current index in the particle model shape
+
+            if (this.mesh.isFacetDataEnabled) {
+                this._computeBoundingBox = true;
+            }
 
             if (this._computeBoundingBox) {
                 Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
@@ -653,7 +657,8 @@
                             }
                         }
 
-                        // normals : if the particles can't be morphed then just rotate the normals, what if much more faster than ComputeNormals()
+                        // normals : if the particles can't be morphed then just rotate the normals, what is much more faster than ComputeNormals()
+                        // the same for the facet data
                         if (!this._computeParticleVertex) {
                             this._normal.x = this._fixedNormal32[idx];
                             this._normal.y = this._fixedNormal32[idx + 1];
@@ -666,7 +671,7 @@
 
                             this._normals32[idx] = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                             this._normals32[idx + 1] = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                            this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                            this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;                          
                         }
 
                         if (this._computeParticleColor) {
@@ -757,15 +762,18 @@
                     this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs32, false, false);
                 }
                 this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
-                if (!this.mesh.areNormalsFrozen) {
-                    if (this._computeParticleVertex) {
+                if (!this.mesh.areNormalsFrozen || this.mesh.isFacetDataEnabled) {
+                    if (this._computeParticleVertex || this.mesh.isFacetDataEnabled) {
                         // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
-                        VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
+                        var params = this.mesh.isFacetDataEnabled ? this.mesh.getFacetDataParameters() : null;
+                        VertexData.ComputeNormals(this._positions32, this._indices, this._normals32, params);
                         for (var i = 0; i < this._normals32.length; i++) {
                             this._fixedNormal32[i] = this._normals32[i];
                         }
                     }
-                    this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
+                    if (!this.mesh.areNormalsFrozen) {
+                        this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
+                    }
                 }
             }
             if (this._computeBoundingBox) {

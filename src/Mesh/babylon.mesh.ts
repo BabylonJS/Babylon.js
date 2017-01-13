@@ -128,6 +128,7 @@
         private _partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space  
         private _partitioningBBoxRatio: number = 1.01;  // the partioning array space is by default 1% bigger than the bounding box
         private _facetDataEnabled: boolean = false;     // is the facet data feature enabled on this mesh ?
+        private _facetParameters: any;                  // keep a reference to the object parameters to avoid memory re-allocation
 
         /**
          * Read-only : the number of facets in the mesh
@@ -135,18 +136,15 @@
         public get facetNb(): number {
             return this._facetNb;
         }
-
         /**
          * The number of subdivisions per axis in the partioning space
          */
         public get partitioningSubdivisions(): number {
             return this._partitioningSubdivisions;
         }
-
         public set partitioningSubdivisions(nb: number) {
             this._partitioningSubdivisions = nb;
         } 
-
         /**
          * The ratio to apply to the bouding box size to set to the partioning space.  
          * Ex : 1.01 (default) the partioning space is 1% bigger than the bounding box.
@@ -154,9 +152,14 @@
         public get partitioningBBoxRatio(): number {
             return this._partitioningBBoxRatio;
         }
-
         public set partitioningBBoxRatio(ratio: number) {
             this._partitioningBBoxRatio = ratio;
+        }
+        /**
+         * Read-only : is the feature facetData enabled ?
+         */
+        public get isFacetDataEnabled(): boolean {
+            return this._facetDataEnabled;
         }
 
         // Will be used to save a source mesh reference, If any
@@ -1753,10 +1756,10 @@
         }
 
         /**
-         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
-         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
-         * This should be used together with the simplification to avoid disappearing triangles.
-         * @param successCallback an optional success callback to be called after the optimization finished.
+         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.   
+         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.   
+         * This should be used together with the simplification to avoid disappearing triangles.   
+         * @param successCallback an optional success callback to be called after the optimization finished.   
          */
         public optimizeIndices(successCallback?: (mesh?: Mesh) => void) {
             var indices = this.getIndices();
@@ -1818,8 +1821,9 @@
         }
 
         /**
-         * Updates the mesh facetData arrays and the internal partitioning when the mesh is morphed or updated.
-         * This method can be called within the render loop.
+         * Updates the mesh facetData arrays and the internal partitioning when the mesh is morphed or updated.  
+         * This method can be called within the render loop.  
+         * You don't need to call this method by yourself in the render loop when you update/morph a mesh with the methods CreateXXX() as they automatically manage this computation.  
          */
         public updateFacetData(): Mesh {
             if (!this._facetDataEnabled) {
@@ -1828,21 +1832,13 @@
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
-            var options = {
-                facetNormals: this.getFacetLocalNormals(), 
-                facetPositions: this.getFacetLocalPositions(), 
-                facetPartitioning: this._facetPartitioning, 
-                bInfo: this.getBoundingInfo(),
-                ratio: this._partitioningBBoxRatio,
-                partitioningSubdivisions: this._partitioningSubdivisions
-            };
+            var options = this.getFacetDataParameters();
             VertexData.ComputeNormals(positions, indices, normals, options);
-            this.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
             return this;
         }
         /**
-         * Returns the facetLocalNormals array.
-         * The normals are expressed in the mesh local space.
+         * Returns the facetLocalNormals array.  
+         * The normals are expressed in the mesh local space.  
          */
         public getFacetLocalNormals(): Vector3[] {
             if (!this._facetNormals) {
@@ -1851,8 +1847,8 @@
             return this._facetNormals;
         }
         /**
-         * Returns the facetLocalPositions array.
-         * The facet positions are expressed in the mesh local space.
+         * Returns the facetLocalPositions array.  
+         * The facet positions are expressed in the mesh local space.  
          */
         public getFacetLocalPositions(): Vector3[] {
             if (!this._facetPositions) {
@@ -1861,8 +1857,17 @@
             return this._facetPositions;           
         }
         /**
-         * Returns the i-th facet position in the world system.
-         * This method allocates a new Vector3 per call.
+         * Returns the facetLocalPartioning array
+         */
+        public getFacetLocalPartitioning(): number[][] {
+            if (!this._facetPartitioning) {
+                this.updateFacetData();
+            }
+            return this._facetPartitioning;
+        }
+        /**
+         * Returns the i-th facet position in the world system.  
+         * This method allocates a new Vector3 per call.  
          */
         public getFacetPosition(i: number): Vector3 {
             var pos = Vector3.Zero();
@@ -1870,8 +1875,8 @@
             return pos;
         }
         /**
-         * Sets the reference Vector3 with the i-th facet position in the world system.
-         * Returns the mesh.
+         * Sets the reference Vector3 with the i-th facet position in the world system.  
+         * Returns the mesh.  
          */
         public getFacetPositionToRef(i: number, ref: Vector3): Mesh {
             var localPos = (this.getFacetLocalPositions())[i];
@@ -1880,8 +1885,8 @@
             return this;
         }
         /**
-         * Returns the i-th facet normal in the world system.
-         * This method allocates a new Vector3 per call.
+         * Returns the i-th facet normal in the world system.  
+         * This method allocates a new Vector3 per call.  
          */
         public getFacetNormal(i: number): Vector3 {
             var norm = Vector3.Zero();
@@ -1889,8 +1894,8 @@
             return norm;
         }
         /**
-         * Sets the reference Vector3 with the i-th facet normal in the world system.
-         * Returns the mesh.
+         * Sets the reference Vector3 with the i-th facet normal in the world system.  
+         * Returns the mesh.  
          */
         public getFacetNormalToRef(i: number, ref: Vector3) {
             var localNorm = (this.getFacetLocalNormals())[i];
@@ -1920,9 +1925,9 @@
             return this._facetPartitioning[ox + this._partitioningSubdivisions * oy + this._partitioningSubdivisions * this._partitioningSubdivisions * oz];
         }
         /** 
-         * Returns the closest mesh facet index at (x,y,z) World coordinates, null if not found
-         * If the parameter projected (vector3) is passed, it is set as the (x,y,z) World projection on the facet
-         * If onlyFacing is true, only the facet "facing" (x,y,z) are returned : positive dot normal * (x,y,z)
+         * Returns the closest mesh facet index at (x,y,z) World coordinates, null if not found.  
+         * If the parameter projected (vector3) is passed, it is set as the (x,y,z) World projection on the facet.  
+         * If onlyFacing is true, only the facet "facing" (x,y,z) are returned : positive dot normal * (x,y,z).  
          */
         public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, onlyFacing?: boolean): number {
             var world = this.getWorldMatrix();
@@ -1939,9 +1944,9 @@
             return closest;
         }
         /** 
-         * Returns the closest mesh facet index at (x,y,z) local coordinates, null if not found
-         * If the parameter projected (vector3) is passed, it is set as the (x,y,z) local projection on the facet
-         * If onlyFacing is true, only the facet "facing" (x,y,z) are returned : positive dot normal * (x,y,z)
+         * Returns the closest mesh facet index at (x,y,z) local coordinates, null if not found.   
+         * If the parameter projected (vector3) is passed, it is set as the (x,y,z) local projection on the facet.  
+         * If onlyFacing is true, only the facet "facing" (x,y,z) are returned : positive dot normal * (x,y,z).  
          */
         public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, onlyFacing?: boolean) {
             var closest = null;
@@ -1998,10 +2003,39 @@
             }
             return closest;
         }
+        /**
+         * Returns the object "parameter" set with all the expected parameters for facetData computation by ComputeNormals()  
+         */
+        public getFacetDataParameters(): any {
+            if (!this._facetParameters) {
+                this._facetParameters = {
+                    facetNormals: this.getFacetLocalNormals(), 
+                    facetPositions: this.getFacetLocalPositions(),
+                    facetPartitioning: this.getFacetLocalPartitioning(),
+                    bInfo: this.getBoundingInfo(),
+                    partitioningSubdivisions: this.partitioningSubdivisions,
+                    ratio: this.partitioningBBoxRatio
+                };
+            }
+            return this._facetParameters;
+        }
+        /** 
+         * Disables the feature FacetData and frees the related memory.  
+         * Returns the mesh.  
+         */
+        public disableFacetData(): Mesh {
+            this._facetDataEnabled = false;
+            this._facetPositions = null;
+            this._facetNormals = null;
+            this._facetPartitioning = null;
+            this._facetParameters = null;
+            return this;
+        }
+
         // Statics
         /**
-         * Returns a new Mesh object what is a deep copy of the passed mesh. 
-         * The parameter `parsedMesh` is the mesh to be copied.
+         * Returns a new Mesh object what is a deep copy of the passed mesh.   
+         * The parameter `parsedMesh` is the mesh to be copied.   
          * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
          */
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
