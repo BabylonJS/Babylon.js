@@ -2103,7 +2103,7 @@
                 extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
             }
 
-            var isDDS = (extension === ".dds");
+            var isDDS = this.getCaps().s3tc && (extension === ".dds");
             var isTGA = (extension === ".tga");
 
             scene._addPendingData(texture);
@@ -2608,12 +2608,12 @@
             var isKTX = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = rootUrl.substring(lastDot).toLowerCase();
-            if (this._textureFormatInUse && !scene.database) {
+            if (this._textureFormatInUse) {
                 extension = this._textureFormatInUse;
                 rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
                 isKTX = true;
             }
-            var isDDS = (extension === ".dds");
+            var isDDS = this.getCaps().s3tc && (extension === ".dds");
 
             if (isKTX) {
                 Tools.LoadFile(rootUrl, data => {
