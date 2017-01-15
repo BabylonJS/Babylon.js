@@ -69,6 +69,24 @@ namespace BabylonExport.Entities
         public BabylonAnimation[] animations { get; set; }
 
         [DataMember]
+        public int mode { get; set; }
+
+        [DataMember]
+        public float? orthoLeft { get; set; }
+
+        [DataMember]
+        public float? orthoRight { get; set; }
+
+        [DataMember]
+        public float? orthoBottom { get; set; }
+
+        [DataMember]
+        public float? orthoTop { get; set; }
+
+        [DataMember]
+        public bool isStereoscopicSideBySide;
+
+        [DataMember]
         public object metadata { get; set; }
 
         [DataMember]
@@ -85,6 +103,14 @@ namespace BabylonExport.Entities
             maxZ = 5000.0f;
             speed = 1.0f;
             inertia = 0.9f;
+
+            mode = 0;
+            orthoLeft = null;
+            orthoRight = null;
+            orthoBottom = null;
+            orthoTop = null;
+
+            type = "FreeCamera";
         }
     }
 }
