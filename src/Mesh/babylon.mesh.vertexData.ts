@@ -538,8 +538,8 @@
             var v: number;
             for (p = 0; p < pathArray.length; p++) {
                 for (i = 0; i < minlg + closePathCorr; i++) {
-                    u = us[p][i] / uTotalDistance[p];
-                    v = vs[i][p] / vTotalDistance[i];
+                    u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
+                    v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
                     if (invertUV) {
                         uvs.push(v, u);
                     } else {
