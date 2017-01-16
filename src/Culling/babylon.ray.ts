@@ -398,8 +398,9 @@
         public detachFromMesh(): void{
 
             if(this._attachedToMesh){
-                this._attachedToMesh.getScene().unregisterBeforeRender(this._renderFunction);
+                this._attachedToMesh.getScene().unregisterBeforeRender(this._updateToMeshFunction);
                 this._attachedToMesh = null;
+                this._updateToMeshFunction = null;
             }
 
         }
