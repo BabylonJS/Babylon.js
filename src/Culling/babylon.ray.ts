@@ -13,6 +13,11 @@
         private _show = false;
         private _tmpRay: Ray;
 
+        private _updateToMeshFunction: () => void;
+        private _attachedToMesh: AbstractMesh;
+        private _meshSpaceDirection: Vector3;
+        private _meshSpaceOrigin: Vector3;
+
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
 
@@ -241,6 +246,7 @@
             if(this._show){
                 this._show = false;
                 this._scene.unregisterBeforeRender(this._renderFunction);
+                this._scene = null;
             }
 
             if(this._renderLine){
@@ -254,9 +260,10 @@
         private _render(): void {
 
             var point = this._renderPoints[1];
-
+            var len = Math.min(this.length, 1000000);
+            
             point.copyFrom(this.direction);
-            point.scaleInPlace(this.length);
+            point.scaleInPlace(len);
             point.addInPlace(this.origin);
 
             Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
@@ -346,6 +353,65 @@
                 return qtc.length();
             }
             return -1;
+        }
+
+        public attachToMesh(mesh:AbstractMesh, meshSpaceDirection:Vector3, meshSpaceOrigin:Vector3, length?:number): void{
+
+            this._attachedToMesh = mesh;
+
+            if(!this.direction){
+                this.direction = Vector3.Zero();
+            }
+
+            if(!this.origin){
+                this.origin = Vector3.Zero();
+            }
+
+            if(length){
+                this.length = length;
+            }
+
+            if(!this._meshSpaceDirection){
+                this._meshSpaceDirection = meshSpaceDirection.clone();
+                this._meshSpaceOrigin = meshSpaceOrigin.clone();
+            }else{
+                this._meshSpaceDirection.copyFrom(meshSpaceDirection);
+                this._meshSpaceOrigin.copyFrom(meshSpaceOrigin);
+            }
+
+            if(!this._updateToMeshFunction){
+                this._updateToMeshFunction = this._updateToMesh.bind(this);
+                this._attachedToMesh.getScene().registerBeforeRender(this._updateToMeshFunction);
+            }
+
+        }
+
+        public detachFromMesh(): void{
+
+            if(this._attachedToMesh){
+                this._attachedToMesh.getScene().unregisterBeforeRender(this._renderFunction);
+                this._attachedToMesh = null;
+            }
+
+        }
+
+        private _updateToMesh(): void{
+
+            if(this._attachedToMesh._isDisposed){
+                this.detachFromMesh();
+                return;
+            }
+
+            this._attachedToMesh.getDirectionToRef(this._meshSpaceDirection, this.direction);
+            Vector3.TransformCoordinatesToRef(this._meshSpaceOrigin, this._attachedToMesh.getWorldMatrix(), this.origin);
+
+        }
+
+        public dispose(): void{
+
+            this.hide();
+            this.detachFromMesh();
+
         }
 
         // Statics
