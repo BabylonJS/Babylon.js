@@ -355,7 +355,7 @@
             return -1;
         }
 
-        public attachToMesh(mesh:AbstractMesh, meshSpaceDirection:Vector3, meshSpaceOrigin:Vector3, length?:number): void{
+        public attachToMesh(mesh:AbstractMesh, meshSpaceDirection?:Vector3, meshSpaceOrigin?:Vector3, length?:number): void{
 
             this._attachedToMesh = mesh;
 
@@ -369,6 +369,15 @@
 
             if(length){
                 this.length = length;
+            }
+
+            if(!meshSpaceOrigin){
+                meshSpaceOrigin = Vector3.Zero();
+            }
+
+            if(!meshSpaceDirection){
+                // -1 so that this will work with Mesh.lookAt
+                meshSpaceDirection = new Vector3(0, 0, -1);
             }
 
             if(!this._meshSpaceDirection){
