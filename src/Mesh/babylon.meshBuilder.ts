@@ -1154,7 +1154,7 @@
                     for (i = 0; i < shapePath.length; i++) {
                         barycenter.addInPlace(shapePath[i]);
                     }
-                    barycenter.scaleInPlace(1 / shapePath.length);
+                    barycenter.scaleInPlace(1.0 / shapePath.length);
                     for (i = 0; i < shapePath.length; i++) {
                         pointCap.push(barycenter);
                     }
@@ -1165,7 +1165,7 @@
                         break;
                     case Mesh.CAP_START:
                         shapePaths[0] = capPath(shapePaths[2]);
-                        shapePaths[1] = shapePaths[2].slice(0);
+                        shapePaths[1] = shapePaths[2];
                         break;
                     case Mesh.CAP_END:
                         shapePaths[index] = shapePaths[index - 1];
@@ -1173,7 +1173,7 @@
                         break;
                     case Mesh.CAP_ALL:
                         shapePaths[0] = capPath(shapePaths[2]);
-                        shapePaths[1] = shapePaths[2].slice(0);
+                        shapePaths[1] = shapePaths[2];
                         shapePaths[index] = shapePaths[index - 1];
                         shapePaths[index + 1] = capPath(shapePaths[index - 1]);
                         break;
