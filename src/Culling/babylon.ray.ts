@@ -393,6 +393,8 @@
                 this._attachedToMesh.getScene().registerBeforeRender(this._updateToMeshFunction);
             }
 
+            this._updateToMesh();
+
         }
 
         public detachFromMesh(): void{
