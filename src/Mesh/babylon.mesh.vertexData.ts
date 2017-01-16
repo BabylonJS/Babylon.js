@@ -2020,9 +2020,21 @@
                 var block_idx_v1 = 0;       // v1 vertex block index
                 var block_idx_v2 = 0;       // v2 vertex block index
                 var block_idx_v3 = 0;       // v3 vertex block index  
-                var xSubRatio = 0.0;        // tmp x divider
-                var ySubRatio = 0.0;        // tmp x divider
-                var zSubRatio = 0.0;        // tmp x divider  
+                var bbSizeX = (options.bInfo.maximum.x - options.bInfo.minimum.x > Epsilon) ? options.bInfo.maximum.x - options.bInfo.minimum.x : Epsilon;
+                var bbSizeY = (options.bInfo.maximum.y - options.bInfo.minimum.y > Epsilon) ? options.bInfo.maximum.y - options.bInfo.minimum.y : Epsilon;
+                var bbSizeZ = (options.bInfo.maximum.z - options.bInfo.minimum.z > Epsilon) ? options.bInfo.maximum.z - options.bInfo.minimum.z : Epsilon;
+                var bbSizeMax =  bbSizeX;
+                bbSizeMax = (bbSizeX > bbSizeY) ? bbSizeX : bbSizeY;
+                bbSizeMax = (bbSizeMax > bbSizeZ) ? bbSizeMax : bbSizeZ;
+                var subDivX = Math.floor(options.partitioningSubdivisions * bbSizeX / bbSizeMax);   // adjust the number of subdivisions per axis
+                var subDivY = Math.floor(options.partitioningSubdivisions * bbSizeY / bbSizeMax);   // according to each bbox size per axis
+                var subDivZ = Math.floor(options.partitioningSubdivisions * bbSizeZ / bbSizeMax);
+                subDivX = subDivX < 1 ? 1 : subDivX;                                                // at least one subdivision
+                subDivY = subDivY < 1 ? 1 : subDivY;
+                subDivZ = subDivZ < 1 ? 1 : subDivZ;
+                var xSubRatio = subDivX * options.ratio / bbSizeX;
+                var ySubRatio = subDivY * options.ratio / bbSizeY;
+                var zSubRatio = subDivZ * options.ratio / bbSizeZ;
                 var subSq = options.partitioningSubdivisions * options.partitioningSubdivisions;
                 options.facetPartitioning.length = 0;
             }
@@ -2082,9 +2094,6 @@
                 if (computeFacetPartitioning) {
                     // store the facet indexes in arrays in the main facetPartitioning array :
                     // compute each facet vertex (+ facet barycenter) index in the partiniong array
-                    xSubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.x - options.bInfo.minimum.x);
-                    ySubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.y - options.bInfo.minimum.y);
-                    zSubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.z - options.bInfo.minimum.z);
                     ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * options.ratio) * xSubRatio);
                     oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * options.ratio) * ySubRatio);
                     oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * options.ratio) * zSubRatio);

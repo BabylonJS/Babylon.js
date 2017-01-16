@@ -1915,10 +1915,24 @@
          */
         public getFacetsAtLocalCoordinates(x: number, y: number, z: number): number[] {
             var bInfo = this.getBoundingInfo();
-            var subRatio = this._partitioningSubdivisions * this._partitioningBBoxRatio;
-            var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) / (bInfo.maximum.x - bInfo.minimum.x) * subRatio);
-            var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) / (bInfo.maximum.y - bInfo.minimum.y) * subRatio);
-            var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) / (bInfo.maximum.z - bInfo.minimum.z) * subRatio);
+            var bbSizeX = (bInfo.maximum.x - bInfo.minimum.x > Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : Epsilon;
+            var bbSizeY = (bInfo.maximum.y - bInfo.minimum.y > Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : Epsilon;
+            var bbSizeZ = (bInfo.maximum.z - bInfo.minimum.z > Epsilon) ? bInfo.maximum.z - bInfo.minimum.z : Epsilon;
+            var bbSizeMax =  bbSizeX;
+            bbSizeMax = (bbSizeX > bbSizeY) ? bbSizeX : bbSizeY;
+            bbSizeMax = (bbSizeMax > bbSizeZ) ? bbSizeMax : bbSizeZ;
+            var subDivX = Math.floor(this._partitioningSubdivisions * bbSizeX / bbSizeMax);   // adjust the number of subdivisions per axis
+            var subDivY = Math.floor(this._partitioningSubdivisions * bbSizeY / bbSizeMax);   // according to each bbox size per axis
+            var subDivZ = Math.floor(this._partitioningSubdivisions * bbSizeZ / bbSizeMax);
+            subDivX = subDivX < 1 ? 1 : subDivX;                                               // at least one subdivision
+            subDivY = subDivY < 1 ? 1 : subDivY;
+            subDivZ = subDivZ < 1 ? 1 : subDivZ;
+            var xSubRatio = subDivX * this._partitioningBBoxRatio / bbSizeX;
+            var ySubRatio = subDivY * this._partitioningBBoxRatio / bbSizeY;
+            var zSubRatio = subDivZ * this._partitioningBBoxRatio / bbSizeZ;
+            var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * xSubRatio);
+            var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * ySubRatio);
+            var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * zSubRatio);
             if (ox < 0 || ox > this._partitioningSubdivisions || oy < 0 || oy > this._partitioningSubdivisions || oz < 0 || oz > this._partitioningSubdivisions) {
                 return null;
             }
