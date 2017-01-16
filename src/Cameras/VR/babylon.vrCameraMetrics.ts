@@ -51,8 +51,8 @@
             result.vResolution = 800;
             result.hScreenSize = 0.149759993;
             result.vScreenSize = 0.0935999975;
-            result.vScreenCenter = 0.0467999987,
-                result.eyeToScreenDistance = 0.0410000011;
+            result.vScreenCenter = 0.0467999987;
+            result.eyeToScreenDistance = 0.0410000011;
             result.lensSeparationDistance = 0.0635000020;
             result.interpupillaryDistance = 0.0640000030;
             result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
