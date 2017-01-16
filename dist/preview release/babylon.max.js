@@ -9670,37 +9670,21 @@ var BABYLON;
             }
             if (this._filesToLoad && this._filesToLoad.length > 0) {
                 for (var i = 0; i < this._filesToLoad.length; i++) {
-                    switch (this._filesToLoad[i].type) {
-                        case "image/jpeg":
-                        case "image/png":
-                        case "image/bmp":
-                            FilesInput.FilesTextures[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
-                            break;
-                        case "image/targa":
-                        case "image/vnd.ms-dds":
-                        case "audio/wav":
-                        case "audio/x-wav":
-                        case "audio/mp3":
-                        case "audio/mpeg":
-                        case "audio/mpeg3":
-                        case "audio/x-mpeg-3":
-                        case "audio/ogg":
-                            FilesInput.FilesToLoad[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
-                            break;
-                        default:
-                            if (this._filesToLoad[i].name.indexOf(".mtl") !== -1) {
-                                FilesInput.FilesToLoad[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
-                            }
-                            else if ((this._filesToLoad[i].name.indexOf(".babylon") !== -1 ||
-                                this._filesToLoad[i].name.indexOf(".stl") !== -1 ||
-                                this._filesToLoad[i].name.indexOf(".obj") !== -1)
-                                && this._filesToLoad[i].name.indexOf(".manifest") === -1
-                                && this._filesToLoad[i].name.indexOf(".incremental") === -1 && this._filesToLoad[i].name.indexOf(".babylonmeshdata") === -1
-                                && this._filesToLoad[i].name.indexOf(".babylongeometrydata") === -1 && this._filesToLoad[i].name.indexOf(".babylonbinarymeshdata") === -1 &&
-                                this._filesToLoad[i].name.indexOf(".binary.babylon") === -1) {
-                                this._sceneFileToLoad = this._filesToLoad[i];
-                            }
-                            break;
+                    var name_1 = this._filesToLoad[i].name.toLowerCase();
+                    var extension = name_1.split('.').pop();
+                    var type = this._filesToLoad[i].type;
+                    if (extension === "jpg" || extension === "png" || extension === "bmp" || extension === "jpeg" ||
+                        type === "image/jpeg" || type === "image/png" || type === "image/bmp") {
+                        FilesInput.FilesTextures[name_1] = this._filesToLoad[i];
+                    }
+                    else {
+                        if ((extension === "babylon" || extension === "stl" || extension === "obj")
+                            && name_1.indexOf(".binary.babylon") === -1 && name_1.indexOf(".incremental.babylon") === -1) {
+                            this._sceneFileToLoad = this._filesToLoad[i];
+                        }
+                        else {
+                            FilesInput.FilesToLoad[name_1] = this._filesToLoad[i];
+                        }
                     }
                 }
                 this.reload();
@@ -23962,7 +23946,7 @@ var BABYLON;
                     for (i = 0; i < shapePath.length; i++) {
                         barycenter.addInPlace(shapePath[i]);
                     }
-                    barycenter.scaleInPlace(1 / shapePath.length);
+                    barycenter.scaleInPlace(1.0 / shapePath.length);
                     for (i = 0; i < shapePath.length; i++) {
                         pointCap.push(barycenter);
                     }
@@ -23973,7 +23957,7 @@ var BABYLON;
                         break;
                     case BABYLON.Mesh.CAP_START:
                         shapePaths[0] = capPath(shapePaths[2]);
-                        shapePaths[1] = shapePaths[2].slice(0);
+                        shapePaths[1] = shapePaths[2];
                         break;
                     case BABYLON.Mesh.CAP_END:
                         shapePaths[index] = shapePaths[index - 1];
@@ -23981,7 +23965,7 @@ var BABYLON;
                         break;
                     case BABYLON.Mesh.CAP_ALL:
                         shapePaths[0] = capPath(shapePaths[2]);
-                        shapePaths[1] = shapePaths[2].slice(0);
+                        shapePaths[1] = shapePaths[2];
                         shapePaths[index] = shapePaths[index - 1];
                         shapePaths[index + 1] = capPath(shapePaths[index - 1]);
                         break;
@@ -33812,8 +33796,8 @@ var BABYLON;
             var v;
             for (p = 0; p < pathArray.length; p++) {
                 for (i = 0; i < minlg + closePathCorr; i++) {
-                    u = us[p][i] / uTotalDistance[p];
-                    v = vs[i][p] / vTotalDistance[i];
+                    u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
+                    v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
                     if (invertUV) {
                         uvs.push(v, u);
                     }
@@ -45738,8 +45722,8 @@ var BABYLON;
             result.vResolution = 800;
             result.hScreenSize = 0.149759993;
             result.vScreenSize = 0.0935999975;
-            result.vScreenCenter = 0.0467999987,
-                result.eyeToScreenDistance = 0.0410000011;
+            result.vScreenCenter = 0.0467999987;
+            result.eyeToScreenDistance = 0.0410000011;
             result.lensSeparationDistance = 0.0635000020;
             result.interpupillaryDistance = 0.0640000030;
             result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
@@ -52715,7 +52699,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 
