@@ -1961,14 +1961,14 @@
          * If facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position.
          * If facing si false and checkFace is true, only the facet "turning their backs" (x, y, z) are returned : negative dot (x, y, z) * facet position. 
          */
-        public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace?: boolean, facing?: boolean): number {
+        public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): number {
             var world = this.getWorldMatrix();
             var invMat = Tmp.Matrix[5];
             world.invertToRef(invMat);
             var invVect = Tmp.Vector3[8];
             var closest = null;
             Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, invMat, invVect);  // transform (x,y,z) to coordinates in the mesh local space
-            closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, onlyFacing);
+            closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, checkFace, facing);
             if (projected) {
                 // tranform the local computed projected vector to world coordinates
                 Vector3.TransformCoordinatesFromFloatsToRef(projected.x, projected.y, projected.z, world, projected);
@@ -1982,7 +1982,7 @@
          * If facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position.
          * If facing si false and checkFace is true, only the facet "turning their backs" (x, y, z) are returned : negative dot (x, y, z) * facet position.
          */
-        public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace?: boolean, facing?: boolean) {
+        public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true) {
             var closest = null;
             var tmpx = 0.0;         
             var tmpy = 0.0;
