@@ -45,6 +45,9 @@ namespace BabylonExport.Entities
         public float inertia { get; set; }
 
         [DataMember]
+        public float interaxialDistance { get; set; }
+
+        [DataMember]
         public bool checkCollisions { get; set; }
 
         [DataMember]
@@ -103,6 +106,7 @@ namespace BabylonExport.Entities
             maxZ = 5000.0f;
             speed = 1.0f;
             inertia = 0.9f;
+            interaxialDistance = 0.0637f;
 
             mode = 0;
             orthoLeft = null;
