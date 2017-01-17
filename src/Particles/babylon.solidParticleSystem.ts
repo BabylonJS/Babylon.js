@@ -658,7 +658,6 @@
                         }
 
                         // normals : if the particles can't be morphed then just rotate the normals, what is much more faster than ComputeNormals()
-                        // the same for the facet data
                         if (!this._computeParticleVertex) {
                             this._normal.x = this._fixedNormal32[idx];
                             this._normal.y = this._fixedNormal32[idx + 1];
