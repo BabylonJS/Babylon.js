@@ -164,6 +164,8 @@
                 this._scene.disableDepthRenderer();
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+
+            super.dispose();
         }
 
         // Private Methods
