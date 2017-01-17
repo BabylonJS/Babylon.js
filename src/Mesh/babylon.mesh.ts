@@ -1957,9 +1957,11 @@
         /** 
          * Returns the closest mesh facet index at (x,y,z) World coordinates, null if not found.  
          * If the parameter projected (vector3) is passed, it is set as the (x,y,z) World projection on the facet.  
-         * If onlyFacing is true, only the facet "facing" (x,y,z) are returned : positive dot normal * (x,y,z).  
+         * If checkFace is true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned.
+         * If facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position.
+         * If facing si false and checkFace is true, only the facet "turning their backs" (x, y, z) are returned : negative dot (x, y, z) * facet position. 
          */
-        public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, onlyFacing?: boolean): number {
+        public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace?: boolean, facing?: boolean): number {
             var world = this.getWorldMatrix();
             var invMat = Tmp.Matrix[5];
             world.invertToRef(invMat);
@@ -1976,9 +1978,11 @@
         /** 
          * Returns the closest mesh facet index at (x,y,z) local coordinates, null if not found.   
          * If the parameter projected (vector3) is passed, it is set as the (x,y,z) local projection on the facet.  
-         * If onlyFacing is true, only the facet "facing" (x,y,z) are returned : positive dot normal * (x,y,z).  
+         * If checkFace is true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned.
+         * If facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position.
+         * If facing si false and checkFace is true, only the facet "turning their backs" (x, y, z) are returned : negative dot (x, y, z) * facet position.
          */
-        public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, onlyFacing?: boolean) {
+        public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace?: boolean, facing?: boolean) {
             var closest = null;
             var tmpx = 0.0;         
             var tmpy = 0.0;
@@ -2008,7 +2012,7 @@
                 p0 = facetPositions[fib];
 
                 d = (x - p0.x) * norm.x + (y - p0.y) * norm.y + (z - p0.z) * norm.z;
-                if ( !onlyFacing || (onlyFacing && d >= 0) ) {
+                if ( !checkFace || (checkFace && facing && d >= 0.0) || (checkFace && !facing && d <= 0.0) ) {
                     // compute (x,y,z) projection on the facet = (projx, projy, projz)
                     d = norm.x * p0.x + norm.y * p0.y + norm.z * p0.z; 
                     t0 = -(norm.x * x + norm.y * y + norm.z * z - d) / (norm.x * norm.x + norm.y * norm.y + norm.z * norm.z);
