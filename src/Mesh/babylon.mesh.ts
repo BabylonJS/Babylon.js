@@ -128,8 +128,14 @@
         private _partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space  
         private _partitioningBBoxRatio: number = 1.01;  // the partioning array space is by default 1% bigger than the bounding box
         private _facetDataEnabled: boolean = false;     // is the facet data feature enabled on this mesh ?
-        private _facetParameters: any;                  // keep a reference to the object parameters to avoid memory re-allocation
-
+        private _facetParameters: any = {};                  // keep a reference to the object parameters to avoid memory re-allocation
+        private _bbSize: Vector3 = Vector3.Zero();      // bbox size approximated for facet data
+        private _subDiv = {                         // actual number of subdivisions per axis for ComputeNormals()
+            max: 1,
+            X: 1,
+            Y: 1,
+            Z: 1
+        };
         /**
          * Read-only : the number of facets in the mesh
          */
@@ -1418,6 +1424,11 @@
                 }
             }
 
+            // facet data
+            if (this._facetDataEnabled) {
+                this.disableFacetData();
+            }
+
             super.dispose(doNotRecurse);
         }
 
@@ -1832,8 +1843,28 @@
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
-            var options = this.getFacetDataParameters();
-            VertexData.ComputeNormals(positions, indices, normals, options);
+            var bInfo = this.getBoundingInfo();
+            this._bbSize.x = (bInfo.maximum.x - bInfo.minimum.x > Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : Epsilon;
+            this._bbSize.y = (bInfo.maximum.y - bInfo.minimum.y > Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : Epsilon;
+            this._bbSize.z = (bInfo.maximum.z - bInfo.minimum.z > Epsilon) ? bInfo.maximum.z - bInfo.minimum.z : Epsilon;
+            var bbSizeMax = (this._bbSize.x > this._bbSize.y) ? this._bbSize.x : this._bbSize.y;
+            bbSizeMax = (bbSizeMax > this._bbSize.z) ? bbSizeMax : this._bbSize.z;
+            this._subDiv.max = this._partitioningSubdivisions;
+            this._subDiv.X = Math.floor(this._subDiv.max * this._bbSize.x / bbSizeMax);   // adjust the number of subdivisions per axis
+            this._subDiv.Y = Math.floor(this._subDiv.max * this._bbSize.y / bbSizeMax);   // according to each bbox size per axis
+            this._subDiv.Z = Math.floor(this._subDiv.max * this._bbSize.z / bbSizeMax);
+            this._subDiv.X = this._subDiv.X < 1 ? 1 : this._subDiv.X;                     // at least one subdivision
+            this._subDiv.Y = this._subDiv.Y < 1 ? 1 : this._subDiv.Y;
+            this._subDiv.Z = this._subDiv.Z < 1 ? 1 : this._subDiv.Z;
+            // set the parameters for ComputeNormals()
+            this._facetParameters.facetNormals = this.getFacetLocalNormals(); 
+            this._facetParameters.facetPositions = this.getFacetLocalPositions();
+            this._facetParameters.facetPartitioning = this.getFacetLocalPartitioning();
+            this._facetParameters.bInfo = bInfo;
+            this._facetParameters.bbSize = this._bbSize;
+            this._facetParameters.subDiv = this._subDiv;
+            this._facetParameters.ratio = this.partitioningBBoxRatio;
+            VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
             return this;
         }
         /**
@@ -1915,28 +1946,13 @@
          */
         public getFacetsAtLocalCoordinates(x: number, y: number, z: number): number[] {
             var bInfo = this.getBoundingInfo();
-            var bbSizeX = (bInfo.maximum.x - bInfo.minimum.x > Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : Epsilon;
-            var bbSizeY = (bInfo.maximum.y - bInfo.minimum.y > Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : Epsilon;
-            var bbSizeZ = (bInfo.maximum.z - bInfo.minimum.z > Epsilon) ? bInfo.maximum.z - bInfo.minimum.z : Epsilon;
-            var bbSizeMax =  bbSizeX;
-            bbSizeMax = (bbSizeX > bbSizeY) ? bbSizeX : bbSizeY;
-            bbSizeMax = (bbSizeMax > bbSizeZ) ? bbSizeMax : bbSizeZ;
-            var subDivX = Math.floor(this._partitioningSubdivisions * bbSizeX / bbSizeMax);   // adjust the number of subdivisions per axis
-            var subDivY = Math.floor(this._partitioningSubdivisions * bbSizeY / bbSizeMax);   // according to each bbox size per axis
-            var subDivZ = Math.floor(this._partitioningSubdivisions * bbSizeZ / bbSizeMax);
-            subDivX = subDivX < 1 ? 1 : subDivX;                                               // at least one subdivision
-            subDivY = subDivY < 1 ? 1 : subDivY;
-            subDivZ = subDivZ < 1 ? 1 : subDivZ;
-            var xSubRatio = subDivX * this._partitioningBBoxRatio / bbSizeX;
-            var ySubRatio = subDivY * this._partitioningBBoxRatio / bbSizeY;
-            var zSubRatio = subDivZ * this._partitioningBBoxRatio / bbSizeZ;
-            var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * xSubRatio);
-            var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * ySubRatio);
-            var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * zSubRatio);
-            if (ox < 0 || ox > this._partitioningSubdivisions || oy < 0 || oy > this._partitioningSubdivisions || oz < 0 || oz > this._partitioningSubdivisions) {
+            var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
+            var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);
+            var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * this._subDiv.Z * this._partitioningBBoxRatio / this._bbSize.z);
+            if (ox < 0 || ox > this._subDiv.max || oy < 0 || oy > this._subDiv.max || oz < 0 || oz > this._subDiv.max) {
                 return null;
             }
-            return this._facetPartitioning[ox + this._partitioningSubdivisions * oy + this._partitioningSubdivisions * this._partitioningSubdivisions * oz];
+            return this._facetPartitioning[ox + this._subDiv.max * oy + this._subDiv.max * this._subDiv.max * oz];
         }
         /** 
          * Returns the closest mesh facet index at (x,y,z) World coordinates, null if not found.  
@@ -2021,16 +2037,6 @@
          * Returns the object "parameter" set with all the expected parameters for facetData computation by ComputeNormals()  
          */
         public getFacetDataParameters(): any {
-            if (!this._facetParameters) {
-                this._facetParameters = {
-                    facetNormals: this.getFacetLocalNormals(), 
-                    facetPositions: this.getFacetLocalPositions(),
-                    facetPartitioning: this.getFacetLocalPartitioning(),
-                    bInfo: this.getBoundingInfo(),
-                    partitioningSubdivisions: this.partitioningSubdivisions,
-                    ratio: this.partitioningBBoxRatio
-                };
-            }
             return this._facetParameters;
         }
         /** 
@@ -2038,11 +2044,13 @@
          * Returns the mesh.  
          */
         public disableFacetData(): Mesh {
-            this._facetDataEnabled = false;
-            this._facetPositions = null;
-            this._facetNormals = null;
-            this._facetPartitioning = null;
-            this._facetParameters = null;
+            if (this._facetDataEnabled) {
+                this._facetDataEnabled = false;
+                this._facetPositions = null;
+                this._facetNormals = null;
+                this._facetPartitioning = null;
+                this._facetParameters = null;
+            }
             return this;
         }
 
