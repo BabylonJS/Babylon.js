@@ -1965,12 +1965,13 @@
          * facetPositions : optional array of facet positions (vector3)
          * facetNormals : optional array of facet normals (vector3)
          * facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
-         * partitioningSubdivisions : optional partitioning number of subdivsions on  each axis (int), required for facetPartitioning computation
+         * subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
          * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
-         * bInfo : optional bounding box info, required for facetPartitioning computation
+         * bbSize : optional bounding box size data, required for facetPartitioning computation
+         * bInfo : optional bounding info, required for facetPartitioning computation
          */
         public static ComputeNormals(positions: any, indices: any, normals: any, 
-            options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, partitioningSubdivisions?: number}): void {
+            options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any}): void {
 
             // temporary scalar variables
             var index = 0;                      // facet index     
@@ -2020,10 +2021,13 @@
                 var block_idx_v1 = 0;       // v1 vertex block index
                 var block_idx_v2 = 0;       // v2 vertex block index
                 var block_idx_v3 = 0;       // v3 vertex block index  
-                var xSubRatio = 0.0;        // tmp x divider
-                var ySubRatio = 0.0;        // tmp x divider
-                var zSubRatio = 0.0;        // tmp x divider  
-                var subSq = options.partitioningSubdivisions * options.partitioningSubdivisions;
+
+                var bbSizeMax = (options.bbSize.x > options.bbSize.y) ? options.bbSize.x : options.bbSize.y;
+                bbSizeMax = (bbSizeMax > options.bbSize.z) ? bbSizeMax : options.bbSize.z;
+                var xSubRatio = options.subDiv.X * options.ratio / options.bbSize.x;
+                var ySubRatio = options.subDiv.Y * options.ratio / options.bbSize.y;
+                var zSubRatio = options.subDiv.Z * options.ratio / options.bbSize.z;
+                var subSq = options.subDiv.max * options.subDiv.max;
                 options.facetPartitioning.length = 0;
             }
         
@@ -2082,9 +2086,6 @@
                 if (computeFacetPartitioning) {
                     // store the facet indexes in arrays in the main facetPartitioning array :
                     // compute each facet vertex (+ facet barycenter) index in the partiniong array
-                    xSubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.x - options.bInfo.minimum.x);
-                    ySubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.y - options.bInfo.minimum.y);
-                    zSubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.z - options.bInfo.minimum.z);
                     ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * options.ratio) * xSubRatio);
                     oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * options.ratio) * ySubRatio);
                     oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * options.ratio) * zSubRatio);
@@ -2098,10 +2099,10 @@
                     b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
                     b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
                     
-                    block_idx_v1 = b1x + options.partitioningSubdivisions * b1y + subSq * b1z;
-                    block_idx_v2 = b2x + options.partitioningSubdivisions * b2y + subSq * b2z;
-                    block_idx_v3 = b3x + options.partitioningSubdivisions * b3y + subSq * b3z;
-                    block_idx_o = ox + options.partitioningSubdivisions * oy + subSq * oz;
+                    block_idx_v1 = b1x + options.subDiv.max * b1y + subSq * b1z;
+                    block_idx_v2 = b2x + options.subDiv.max * b2y + subSq * b2z;
+                    block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
+                    block_idx_o = ox + options.subDiv.max * oy + subSq * oz;
 
                     options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] :new Array();
                     options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] :new Array();
