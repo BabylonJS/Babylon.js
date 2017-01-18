@@ -14064,7 +14064,7 @@ var BABYLON;
                 if (this._trackNodeBillboard) {
                     var viewMtx = cam.getViewMatrix().clone().invert();
                     viewMtx.decompose(Canvas2D_1.tS, Canvas2D_1.tR, Canvas2D_1.tT);
-                    rot = Canvas2D_1.tR;
+                    rot = Canvas2D_1.tR.clone();
                 }
                 worldmtx.decompose(Canvas2D_1.tS, Canvas2D_1.tR, Canvas2D_1.tT);
                 var mtx = BABYLON.Matrix.Compose(Canvas2D_1.tS, Canvas2D_1.tR, BABYLON.Vector3.Zero());
@@ -14073,11 +14073,11 @@ var BABYLON;
                     scale = Canvas2D_1.tS.clone();
                 }
                 if (!this._trackNodeBillboard) {
-                    rot = Canvas2D_1.tR;
+                    rot = Canvas2D_1.tR.clone();
                 }
                 if (wsn instanceof BABYLON.AbstractMesh) {
                     wsn.position = pos;
-                    wsn.rotationQuaternion = rot.clone();
+                    wsn.rotationQuaternion = rot;
                     if (scale) {
                         wsn.scaling = scale;
                     }
