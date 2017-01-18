@@ -1301,7 +1301,7 @@
                 if (this._trackNodeBillboard) {
                     let viewMtx = cam.getViewMatrix().clone().invert();
                     viewMtx.decompose(Canvas2D.tS, Canvas2D.tR, Canvas2D.tT);
-                    rot = Canvas2D.tR;
+                    rot = Canvas2D.tR.clone();
                 }
 
                 worldmtx.decompose(Canvas2D.tS, Canvas2D.tR, Canvas2D.tT);
@@ -1313,12 +1313,12 @@
                 }
 
                 if (!this._trackNodeBillboard) {
-                    rot = Canvas2D.tR;
+                    rot = Canvas2D.tR.clone();
                 }
 
                 if (wsn instanceof AbstractMesh) {
                     wsn.position = pos;
-                    wsn.rotationQuaternion = rot.clone();
+                    wsn.rotationQuaternion = rot;
                     if (scale) {
                         wsn.scaling = scale;
                     }
