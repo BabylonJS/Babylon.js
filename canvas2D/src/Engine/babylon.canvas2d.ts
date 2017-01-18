@@ -1246,6 +1246,9 @@
         private _afterRenderObserver: Observer<Scene>;
         private _supprtInstancedArray: boolean;
         private _trackedGroups: Array<Group2D>;
+        protected _trackNode: Node;
+        protected _trackNodeOffset :Vector3;
+        protected _trackNodeBillboard : boolean;
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
         private _designSize: Size;
         private _designUseHorizAxis: boolean;
@@ -1271,14 +1274,20 @@
         private static _v = Vector3.Zero(); // Must stay zero
         private static _m = Matrix.Identity();
         private static _mI = Matrix.Identity(); // Must stay identity
+        private static tS = Vector3.Zero();
+        private static tT = Vector3.Zero();
+        private static tR = Quaternion.Identity();
 
         private _updateTrackedNodes() {
+            // Get the used camera
             let cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
 
+            // Compute some matrix stuff
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
             let rh = this.engine.getRenderHeight();
             let v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
 
+            // Compute the screen position of each group that track a given scene node
             for (let group of this._trackedGroups) {
                 if (group.isDisposed) {
                     continue;
@@ -1295,6 +1304,43 @@
                 let s = this.scale;
                 group.x = Math.round(proj.x/s);
                 group.y = Math.round((rh - proj.y)/s);
+            }
+
+            // If it's a WorldSpaceCanvas and it's tracking a node, let's update the WSC transformation data
+            if (this._trackNode) {
+                let rot: Quaternion = null;
+                let scale: Vector3 = null;
+
+                let worldmtx = this._trackNode.getWorldMatrix();
+                let pos = worldmtx.getTranslation().add(this._trackNodeOffset);
+                let wsc = <WorldSpaceCanvas2D><any>this;
+                let wsn = wsc.worldSpaceCanvasNode;
+
+                if (this._trackNodeBillboard) {
+                    let viewMtx = cam.getViewMatrix().clone().invert();
+                    viewMtx.decompose(Canvas2D.tS, Canvas2D.tR, Canvas2D.tT);
+                    rot = Canvas2D.tR;
+                }
+
+                worldmtx.decompose(Canvas2D.tS, Canvas2D.tR, Canvas2D.tT);
+                let mtx = Matrix.Compose(Canvas2D.tS, Canvas2D.tR, Vector3.Zero());
+                pos = worldmtx.getTranslation().add(Vector3.TransformCoordinates(this._trackNodeOffset, mtx));
+
+                if (Canvas2D.tS.lengthSquared() !== 1) {
+                    scale = Canvas2D.tS.clone();
+                }
+
+                if (!this._trackNodeBillboard) {
+                    rot = Canvas2D.tR;
+                }
+
+                if (wsn instanceof AbstractMesh) {
+                    wsn.position = pos;
+                    wsn.rotationQuaternion = rot.clone();
+                    if (scale) {
+                        wsn.scaling = scale;
+                    }
+                }
             }
         }
 
@@ -1715,10 +1761,14 @@
          * @param scene the Scene that owns the Canvas
          * @param size the dimension of the Canvas in World Space
          * @param settings a combination of settings, possible ones are
-         *  - children: an array of direct children primitives
-         *  - id: a text identifier, for information purpose only, default is null.
-         *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
-         *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - children: an array of direct children primitives
+         * - id: a text identifier, for information purpose only, default is null.
+         * - unitScaleFactor: if specified the created canvas will be with a width of size.width*unitScaleFactor and a height of size.height.unitScaleFactor. If not specified, the unit of 1 is used. You can use this setting when you're dealing with a 3D world with small coordinates and you need a Canvas having bigger coordinates (typically to display text with better quality).
+         * - worldPosition the position of the Canvas in World Space, default is [0,0,0]
+         * - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - trackNode: if you want the WorldSpaceCanvas to track the position/rotation/scale of a given Scene Node, use this setting to specify the Node to track
+         * - trackNodeOffset: if you use trackNode you may want to specify a 3D Offset to apply to shift the Canvas
+         * - trackNodeBillboard: if true the WorldSpaceCanvas will always face the screen
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
          * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
@@ -1739,8 +1789,12 @@
 
             children                 ?: Array<Prim2DBase>,
             id                       ?: string,
+            unitScaleFactor          ?: number,
             worldPosition            ?: Vector3,
             worldRotation            ?: Quaternion,
+            trackNode                ?: Node,
+            trackNodeOffset          ?: Vector3,
+            trackNodeBillboard       ?: boolean,
             sideOrientation          ?: number,
             cachingStrategy          ?: number,
             enableInteraction        ?: boolean,
@@ -1761,7 +1815,11 @@
             Prim2DBase._isCanvasInit = true;
             let s = <any>settings;
             s.isScreenSpace = false;
-            s.size = size.clone();
+            if (settings.unitScaleFactor != null) {
+                s.size = size.multiplyByFloats(settings.unitScaleFactor, settings.unitScaleFactor);
+            } else {
+                s.size = size.clone();
+            }
             settings.cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_CANVAS : settings.cachingStrategy;
 
             if (settings.cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
@@ -1778,13 +1836,23 @@
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
 
+            if (settings.trackNode != null) {
+                this._trackNode = settings.trackNode;
+                this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : Vector3.Zero();
+                this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
+            } else {
+                this._trackNode = null;
+                this._trackNodeOffset = null;
+                this._trackNodeBillboard = false;
+            }
+
             let createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             this._customWorldSpaceNode = !createWorldSpaceNode;
             let id = settings ? settings.id || null : null;
 
             // Set the max size of texture allowed for the adaptive render of the world space canvas cached bitmap
             let capMaxTextSize = this.engine.getCaps().maxRenderTextureSize;
-            let defaultTextSize = (Math.min(capMaxTextSize, 1024));     // Default is 4K if allowed otherwise the max allowed
+            let defaultTextSize = (Math.min(capMaxTextSize, 1024));     // Default is 1K if allowed otherwise the max allowed
             if (settings.maxAdaptiveCanvasSize == null) {
                 this._maxAdaptiveWorldSpaceCanvasSize = defaultTextSize;
             } else {
