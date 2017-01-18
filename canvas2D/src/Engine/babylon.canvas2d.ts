@@ -575,6 +575,9 @@
             } else {
                 // The pointer is inside the Canvas, do an intersection test
                 this.intersect(ii);
+
+                // Sort primitives to get them from top to bottom
+                ii.intersectedPrimitives = ii.intersectedPrimitives.sort((a, b) => a.prim.actualZOffset - b.prim.actualZOffset);
             }
 
             {
@@ -608,16 +611,31 @@
                 // Detect if the current pointer is captured, only fire event if they belong to the capture primitive
                 let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
-                // Notify the previous "over" prim that the pointer is no longer over it
-                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim && !prevPrim.isDisposed)) {
-                    this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut, null);
-                }
+                // See the NOTE section of: https://www.w3.org/TR/pointerevents/#setting-pointer-capture
+                if (capturedPrim) {
+                    if (capturedPrim === prevPrim) {
+                        this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
+                        this._bubbleNotifyPrimPointerObserver(prevPrim, PrimitivePointerInfo.PointerOut, null);
+                    } else if (capturedPrim === actualPrim) {
+                        this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
+                        this._bubbleNotifyPrimPointerObserver(actualPrim, PrimitivePointerInfo.PointerOver, null);
+                    }
+                } else {
+                    // Check for Out & Leave
+                    for (let prev of this._previousIntersectionList) {
+                        if (!Tools.first(this._actualIntersectionList, (pii) => pii.prim === prev.prim)) {
+                            this._primPointerInfo.updateRelatedTarget(prev.prim, prev.intersectionLocation);
+                            this._bubbleNotifyPrimPointerObserver(prev.prim, PrimitivePointerInfo.PointerOut, null);
+                        }
+                    }
 
-                // Notify the new "over" prim that the pointer is over it
-                if ((capturedPrim && capturedPrim === actualPrim) || (!capturedPrim && actualPrim)) {
-                    this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(actualPrim, PrimitivePointerInfo.PointerOver, null);
+                    // Check for Over & Enter
+                    for (let actual of this._actualIntersectionList) {
+                        if (!Tools.first(this._previousIntersectionList, (pii) => pii.prim === actual.prim)) {
+                            this._primPointerInfo.updateRelatedTarget(actual.prim, actual.intersectionLocation);
+                            this._bubbleNotifyPrimPointerObserver(actual.prim, PrimitivePointerInfo.PointerOver, null);
+                        }
+                    }
                 }
             }
 
@@ -649,7 +667,7 @@
             }
 
             let pii = this._primPointerInfo;
-            debug += `[RID:${this.scene.getRenderId()}] [${prim.hierarchyDepth}] event:${PrimitivePointerInfo.getEventTypeName(mask)}, id: ${prim.id} (${Tools.getClassName(prim)}), primPos: ${pii.primitivePointerPos.toString()}, canvasPos: ${pii.canvasPointerPos.toString()}`;
+            debug += `[RID:${this.scene.getRenderId()}] [${prim.hierarchyDepth}] event:${PrimitivePointerInfo.getEventTypeName(mask)}, id: ${prim.id} (${Tools.getClassName(prim)}), primPos: ${pii.primitivePointerPos.toString()}, canvasPos: ${pii.canvasPointerPos.toString()}, relatedTarget: ${pii.relatedTarget.id}`;
             console.log(debug);
         }
 
@@ -657,56 +675,40 @@
             let ppi = this._primPointerInfo;
             let event = eventData ? eventData.event : null;
 
-            // In case of PointerOver/Out we will first notify the parent with PointerEnter/Leave
-            if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) !== 0) {
-                this._notifParents(prim, mask);
-            }
-
-            let bubbleCancelled = false;
             let cur = prim;
             while (cur && !cur.isDisposed) {
-                // Only trigger the observers if the primitive is intersected (except for out)
-                if (!bubbleCancelled) {
-                    this._updatePrimPointerPos(cur);
+                this._updatePrimPointerPos(cur);
 
-                    // Exec the observers
-                    this._debugExecObserver(cur, mask);
-                    if (!cur._pointerEventObservable.notifyObservers(ppi, mask) && eventData instanceof PointerInfoPre) {
-                        eventData.skipOnPointerObservable = true;
-                        return false;
+                // For the first level we have to fire Enter or Leave for corresponding Over or Out
+                if (cur === prim) {
+                    // Fire the proper notification
+                    if (mask === PrimitivePointerInfo.PointerOver) {
+                        this._debugExecObserver(prim, PrimitivePointerInfo.PointerEnter);
+                        prim._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
                     }
 
-                    this._triggerActionManager(cur, ppi, mask, event);
-
-                    // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
-                    // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
-                    if (ppi.cancelBubble) {
-                        if ((mask & (PrimitivePointerInfo.PointerOver | PrimitivePointerInfo.PointerOut)) === 0) {
-                            return false;
-                        }
-
-                        // We're dealing with PointerOver/Out, let's keep looping to fire PointerEnter/Leave, but not Over/Out anymore
-                        bubbleCancelled = true;
+                    // Trigger a PointerLeave corresponding to the PointerOut
+                    else if (mask === PrimitivePointerInfo.PointerOut) {
+                        this._debugExecObserver(prim, PrimitivePointerInfo.PointerLeave);
+                        prim._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
                     }
                 }
 
-                // If bubble is cancel we didn't update the Primitive Pointer Pos yet, let's do it
-                if (bubbleCancelled) {
-                    this._updatePrimPointerPos(cur);
+                // Exec the observers
+                this._debugExecObserver(cur, mask);
+                if (!cur._pointerEventObservable.notifyObservers(ppi, mask) && eventData instanceof PointerInfoPre) {
+                    eventData.skipOnPointerObservable = true;
+                    return false;
                 }
 
-                // NOTE TO MYSELF, this is commented right now because it doesn't seemed needed but I can't figure out why I put this code in the first place
-                //// Trigger a PointerEnter corresponding to the PointerOver
-                //if (mask === PrimitivePointerInfo.PointerOver) {
-                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
-                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
-                //}
+                this._triggerActionManager(cur, ppi, mask, event);
 
-                //// Trigger a PointerLeave corresponding to the PointerOut
-                //else if (mask === PrimitivePointerInfo.PointerOut) {
-                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
-                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
-                //}
+                // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
+                // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
+                if (ppi.cancelBubble) {
+                    return false;
+
+                }
 
                 // Loop to the parent
                 cur = cur.parent;
@@ -805,29 +807,6 @@
                     let actionEvent = ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
                     prim.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, actionEvent);
                 }
-            }
-        }
-
-        _notifParents(prim: Prim2DBase, mask: number) {
-            let pii = this._primPointerInfo;
-
-            let curPrim: Prim2DBase = this;
-
-            while (curPrim) {
-                this._updatePrimPointerPos(curPrim);
-
-                // Fire the proper notification
-                if (mask === PrimitivePointerInfo.PointerOver) {
-                    this._debugExecObserver(curPrim, PrimitivePointerInfo.PointerEnter);
-                    curPrim._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerEnter);
-                }
-
-                // Trigger a PointerLeave corresponding to the PointerOut
-                else if (mask === PrimitivePointerInfo.PointerOut) {
-                    this._debugExecObserver(curPrim, PrimitivePointerInfo.PointerLeave);
-                    curPrim._pointerEventObservable.notifyObservers(pii, PrimitivePointerInfo.PointerLeave);
-                }
-                curPrim = curPrim.parent;
             }
         }
 
@@ -1068,7 +1047,10 @@
          * Return 
          */
         public get overPrim(): Prim2DBase {
-            return this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
+            if (this._actualIntersectionList && this._actualIntersectionList.length>0) {
+                return this._actualIntersectionList[0].prim;
+            }
+            return null;
         }
 
         /**

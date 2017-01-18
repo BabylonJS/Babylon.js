@@ -955,8 +955,8 @@
             let w = size.width;
             let h = size.height;
             let invZBias = 1 / zBias;
-            let tx = new Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * rgScale.x * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            let ty = new Vector4(t.m[1] * rgScale.y * 2 / h, t.m[5] * rgScale.y * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            let tx = new Vector4(t.m[0] * rgScale.x * 2/* / w*/, t.m[4] * rgScale.x * 2/* / w*/, 0/*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
+            let ty = new Vector4(t.m[1] * rgScale.y * 2/* / h*/, t.m[5] * rgScale.y * 2/* / h*/, 0/*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
 
             if (!this.applyActualScaleOnTransform()) {
                 t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
@@ -968,6 +968,12 @@
                 tx = new Vector4(t.m[0], t.m[4], 0, t.m[12]);
                 ty = new Vector4(t.m[1], t.m[5], 0, t.m[13]);
             }
+
+            tx.x /= w;
+            tx.y /= w;
+
+            ty.x /= h;
+            ty.y /= h;
 
             part.transformX = tx;
             part.transformY = ty;
