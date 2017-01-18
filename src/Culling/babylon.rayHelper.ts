@@ -17,18 +17,6 @@ module BABYLON {
             this.ray = ray;
         }
 
-        private _comparePickingInfo(pickingInfoA:PickingInfo, pickingInfoB:PickingInfo): number{
-
-            if(pickingInfoA.distance < pickingInfoB.distance){
-                return -1;
-            }else if(pickingInfoA.distance > pickingInfoB.distance){
-                return 1;
-            }else{
-                return 0;
-            }
-
-        }
-
         public show(scene:Scene, color:Color3): void{
 
             if(!this._renderFunction){
