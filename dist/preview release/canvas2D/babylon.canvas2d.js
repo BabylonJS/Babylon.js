@@ -14032,10 +14032,13 @@ var BABYLON;
             this._updateGlobalTransformCounter.addCount(count, false);
         };
         Canvas2D.prototype._updateTrackedNodes = function () {
+            // Get the used camera
             var cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
+            // Compute some matrix stuff
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D_1._m);
             var rh = this.engine.getRenderHeight();
             var v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
+            // Compute the screen position of each group that track a given scene node
             for (var _i = 0, _a = this._trackedGroups; _i < _a.length; _i++) {
                 var group = _a[_i];
                 if (group.isDisposed) {
@@ -14049,6 +14052,36 @@ var BABYLON;
                 var s = this.scale;
                 group.x = Math.round(proj.x / s);
                 group.y = Math.round((rh - proj.y) / s);
+            }
+            // If it's a WorldSpaceCanvas and it's tracking a node, let's update the WSC transformation data
+            if (this._trackNode) {
+                var rot = null;
+                var scale = null;
+                var worldmtx = this._trackNode.getWorldMatrix();
+                var pos = worldmtx.getTranslation().add(this._trackNodeOffset);
+                var wsc = this;
+                var wsn = wsc.worldSpaceCanvasNode;
+                if (this._trackNodeBillboard) {
+                    var viewMtx = cam.getViewMatrix().clone().invert();
+                    viewMtx.decompose(Canvas2D_1.tS, Canvas2D_1.tR, Canvas2D_1.tT);
+                    rot = Canvas2D_1.tR;
+                }
+                worldmtx.decompose(Canvas2D_1.tS, Canvas2D_1.tR, Canvas2D_1.tT);
+                var mtx = BABYLON.Matrix.Compose(Canvas2D_1.tS, Canvas2D_1.tR, BABYLON.Vector3.Zero());
+                pos = worldmtx.getTranslation().add(BABYLON.Vector3.TransformCoordinates(this._trackNodeOffset, mtx));
+                if (Canvas2D_1.tS.lengthSquared() !== 1) {
+                    scale = Canvas2D_1.tS.clone();
+                }
+                if (!this._trackNodeBillboard) {
+                    rot = Canvas2D_1.tR;
+                }
+                if (wsn instanceof BABYLON.AbstractMesh) {
+                    wsn.position = pos;
+                    wsn.rotationQuaternion = rot.clone();
+                    if (scale) {
+                        wsn.scaling = scale;
+                    }
+                }
             }
         };
         /**
@@ -14428,6 +14461,9 @@ var BABYLON;
     Canvas2D._v = BABYLON.Vector3.Zero(); // Must stay zero
     Canvas2D._m = BABYLON.Matrix.Identity();
     Canvas2D._mI = BABYLON.Matrix.Identity(); // Must stay identity
+    Canvas2D.tS = BABYLON.Vector3.Zero();
+    Canvas2D.tT = BABYLON.Vector3.Zero();
+    Canvas2D.tR = BABYLON.Quaternion.Identity();
     /**
      * Define the default size used for both the width and height of a MapTexture to allocate.
      * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
@@ -14447,10 +14483,14 @@ var BABYLON;
          * @param scene the Scene that owns the Canvas
          * @param size the dimension of the Canvas in World Space
          * @param settings a combination of settings, possible ones are
-         *  - children: an array of direct children primitives
-         *  - id: a text identifier, for information purpose only, default is null.
-         *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
-         *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - children: an array of direct children primitives
+         * - id: a text identifier, for information purpose only, default is null.
+         * - unitScaleFactor: if specified the created canvas will be with a width of size.width*unitScaleFactor and a height of size.height.unitScaleFactor. If not specified, the unit of 1 is used. You can use this setting when you're dealing with a 3D world with small coordinates and you need a Canvas having bigger coordinates (typically to display text with better quality).
+         * - worldPosition the position of the Canvas in World Space, default is [0,0,0]
+         * - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - trackNode: if you want the WorldSpaceCanvas to track the position/rotation/scale of a given Scene Node, use this setting to specify the Node to track
+         * - trackNodeOffset: if you use trackNode you may want to specify a 3D Offset to apply to shift the Canvas
+         * - trackNodeBillboard: if true the WorldSpaceCanvas will always face the screen
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
          * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
@@ -14472,7 +14512,12 @@ var BABYLON;
             BABYLON.Prim2DBase._isCanvasInit = true;
             var s = settings;
             s.isScreenSpace = false;
-            s.size = size.clone();
+            if (settings.unitScaleFactor != null) {
+                s.size = size.multiplyByFloats(settings.unitScaleFactor, settings.unitScaleFactor);
+            }
+            else {
+                s.size = size.clone();
+            }
             settings.cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_CANVAS : settings.cachingStrategy;
             if (settings.cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
                 throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
@@ -14484,12 +14529,22 @@ var BABYLON;
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
+            if (settings.trackNode != null) {
+                _this._trackNode = settings.trackNode;
+                _this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : BABYLON.Vector3.Zero();
+                _this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
+            }
+            else {
+                _this._trackNode = null;
+                _this._trackNodeOffset = null;
+                _this._trackNodeBillboard = false;
+            }
             var createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             _this._customWorldSpaceNode = !createWorldSpaceNode;
             var id = settings ? settings.id || null : null;
             // Set the max size of texture allowed for the adaptive render of the world space canvas cached bitmap
             var capMaxTextSize = _this.engine.getCaps().maxRenderTextureSize;
-            var defaultTextSize = (Math.min(capMaxTextSize, 1024)); // Default is 4K if allowed otherwise the max allowed
+            var defaultTextSize = (Math.min(capMaxTextSize, 1024)); // Default is 1K if allowed otherwise the max allowed
             if (settings.maxAdaptiveCanvasSize == null) {
                 _this._maxAdaptiveWorldSpaceCanvasSize = defaultTextSize;
             }
