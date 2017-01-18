@@ -1930,15 +1930,8 @@
          */
         public getFacetNormalToRef(i: number, ref: Vector3) {
             var localNorm = (this.getFacetLocalNormals())[i];
-            var localPos = (this.getFacetLocalPositions())[i];
-            var world = this.getWorldMatrix();
-            var x = localPos.x + localNorm.x;
-            var y = localPos.y + localNorm.y;
-            var z = localPos.z + localNorm.z;
-            Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, world, ref);
-            var worldPos = Tmp.Vector3[8];
-            this.getFacetPositionToRef(i, worldPos);
-            ref.subtractInPlace(worldPos);
+            (this.getWorldMatrix()).getRotationMatrixToRef(Tmp.Matrix[0]);
+            Vector3.TransformCoordinatesToRef(localNorm, Tmp.Matrix[0], ref);
             return this;
         }
         /** 
