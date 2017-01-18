@@ -3847,6 +3847,9 @@ declare module BABYLON {
         private _afterRenderObserver;
         private _supprtInstancedArray;
         private _trackedGroups;
+        protected _trackNode: Node;
+        protected _trackNodeOffset: Vector3;
+        protected _trackNodeBillboard: boolean;
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
         private _designSize;
         private _designUseHorizAxis;
@@ -3868,6 +3871,9 @@ declare module BABYLON {
         private static _v;
         private static _m;
         private static _mI;
+        private static tS;
+        private static tT;
+        private static tR;
         private _updateTrackedNodes();
         /**
          * Call this method change you want to have layout related data computed and up to date (layout area, primitive area, local/global transformation matrices)
@@ -3945,10 +3951,14 @@ declare module BABYLON {
          * @param scene the Scene that owns the Canvas
          * @param size the dimension of the Canvas in World Space
          * @param settings a combination of settings, possible ones are
-         *  - children: an array of direct children primitives
-         *  - id: a text identifier, for information purpose only, default is null.
-         *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
-         *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - children: an array of direct children primitives
+         * - id: a text identifier, for information purpose only, default is null.
+         * - unitScaleFactor: if specified the created canvas will be with a width of size.width*unitScaleFactor and a height of size.height.unitScaleFactor. If not specified, the unit of 1 is used. You can use this setting when you're dealing with a 3D world with small coordinates and you need a Canvas having bigger coordinates (typically to display text with better quality).
+         * - worldPosition the position of the Canvas in World Space, default is [0,0,0]
+         * - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - trackNode: if you want the WorldSpaceCanvas to track the position/rotation/scale of a given Scene Node, use this setting to specify the Node to track
+         * - trackNodeOffset: if you use trackNode you may want to specify a 3D Offset to apply to shift the Canvas
+         * - trackNodeBillboard: if true the WorldSpaceCanvas will always face the screen
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
          * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
@@ -3968,8 +3978,12 @@ declare module BABYLON {
         constructor(scene: Scene, size: Size, settings?: {
             children?: Array<Prim2DBase>;
             id?: string;
+            unitScaleFactor?: number;
             worldPosition?: Vector3;
             worldRotation?: Quaternion;
+            trackNode?: Node;
+            trackNodeOffset?: Vector3;
+            trackNodeBillboard?: boolean;
             sideOrientation?: number;
             cachingStrategy?: number;
             enableInteraction?: boolean;
