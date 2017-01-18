@@ -8721,65 +8721,65 @@ var BABYLON;
                 isPot = (BABYLON.Tools.IsExponentOfTwo(width) && BABYLON.Tools.IsExponentOfTwo(height));
                 _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-                if (!noMipmap && isPot) {
-                    if (mipmmapGenerator) {
-                        var arrayTemp = [];
-                        // Data are known to be in +X +Y +Z -X -Y -Z
-                        // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
-                        arrayTemp.push(rgbeDataArrays[0]); // +X
-                        arrayTemp.push(rgbeDataArrays[3]); // -X
-                        arrayTemp.push(rgbeDataArrays[1]); // +Y
-                        arrayTemp.push(rgbeDataArrays[4]); // -Y
-                        arrayTemp.push(rgbeDataArrays[2]); // +Z
-                        arrayTemp.push(rgbeDataArrays[5]); // -Z
-                        var mipData = mipmmapGenerator(arrayTemp);
-                        for (var level = 0; level < mipData.length; level++) {
-                            var mipSize = width >> level;
-                            // mipData is order in +X -X +Y -Y +Z -Z
-                            gl.texImage2D(facesIndex[0], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
-                            gl.texImage2D(facesIndex[1], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
-                            gl.texImage2D(facesIndex[2], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
-                            gl.texImage2D(facesIndex[3], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
-                            gl.texImage2D(facesIndex[4], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
-                            gl.texImage2D(facesIndex[5], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
-                        }
-                    }
-                    else {
-                        if (internalFormat === gl.RGB) {
-                            internalFormat = gl.RGBA;
-                            // Data are known to be in +X +Y +Z -X -Y -Z
-                            for (var index = 0; index < facesIndex.length; index++) {
-                                var faceData = rgbeDataArrays[index];
-                                // Create a new RGBA Face.
-                                var newFaceData = new Float32Array(width * height * 4);
-                                for (var x = 0; x < width; x++) {
-                                    for (var y = 0; y < height; y++) {
-                                        var index_1 = (y * width + x) * 3;
-                                        var newIndex = (y * width + x) * 4;
-                                        // Map Old Value to new value.
-                                        newFaceData[newIndex + 0] = faceData[index_1 + 0];
-                                        newFaceData[newIndex + 1] = faceData[index_1 + 1];
-                                        newFaceData[newIndex + 2] = faceData[index_1 + 2];
-                                        // Add fully opaque alpha channel.
-                                        newFaceData[newIndex + 3] = 1;
-                                    }
-                                }
-                                // Reupload the face.
-                                gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, newFaceData);
-                            }
-                        }
-                        else {
-                            // Data are known to be in +X +Y +Z -X -Y -Z
-                            for (var index = 0; index < facesIndex.length; index++) {
-                                var faceData = rgbeDataArrays[index];
-                                gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
-                            }
-                        }
-                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                if (mipmmapGenerator) {
+                    var arrayTemp = [];
+                    // Data are known to be in +X +Y +Z -X -Y -Z
+                    // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
+                    arrayTemp.push(rgbeDataArrays[0]); // +X
+                    arrayTemp.push(rgbeDataArrays[3]); // -X
+                    arrayTemp.push(rgbeDataArrays[1]); // +Y
+                    arrayTemp.push(rgbeDataArrays[4]); // -Y
+                    arrayTemp.push(rgbeDataArrays[2]); // +Z
+                    arrayTemp.push(rgbeDataArrays[5]); // -Z
+                    var mipData = mipmmapGenerator(arrayTemp);
+                    for (var level = 0; level < mipData.length; level++) {
+                        var mipSize = width >> level;
+                        // mipData is order in +X -X +Y -Y +Z -Z
+                        gl.texImage2D(facesIndex[0], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                        gl.texImage2D(facesIndex[1], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                        gl.texImage2D(facesIndex[2], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                        gl.texImage2D(facesIndex[3], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                        gl.texImage2D(facesIndex[4], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                        gl.texImage2D(facesIndex[5], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
                     }
                 }
                 else {
-                    noMipmap = true;
+                    if (internalFormat === gl.RGB) {
+                        internalFormat = gl.RGBA;
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (var index = 0; index < facesIndex.length; index++) {
+                            var faceData = rgbeDataArrays[index];
+                            // Create a new RGBA Face.
+                            var newFaceData = new Float32Array(width * height * 4);
+                            for (var x = 0; x < width; x++) {
+                                for (var y = 0; y < height; y++) {
+                                    var index_1 = (y * width + x) * 3;
+                                    var newIndex = (y * width + x) * 4;
+                                    // Map Old Value to new value.
+                                    newFaceData[newIndex + 0] = faceData[index_1 + 0];
+                                    newFaceData[newIndex + 1] = faceData[index_1 + 1];
+                                    newFaceData[newIndex + 2] = faceData[index_1 + 2];
+                                    // Add fully opaque alpha channel.
+                                    newFaceData[newIndex + 3] = 1;
+                                }
+                            }
+                            // Reupload the face.
+                            gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, newFaceData);
+                        }
+                    }
+                    else {
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (var index = 0; index < facesIndex.length; index++) {
+                            var faceData = rgbeDataArrays[index];
+                            gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
+                        }
+                    }
+                    if (!noMipmap && isPot) {
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
+                    else {
+                        noMipmap = true;
+                    }
                 }
                 if (textureType === gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -10324,6 +10324,7 @@ var BABYLON;
             if (this._show) {
                 this._show = false;
                 this._scene.unregisterBeforeRender(this._renderFunction);
+                this._scene = null;
             }
             if (this._renderLine) {
                 this._renderLine.dispose();
@@ -10333,8 +10334,9 @@ var BABYLON;
         };
         Ray.prototype._render = function () {
             var point = this._renderPoints[1];
+            var len = Math.min(this.length, 1000000);
             point.copyFrom(this.direction);
-            point.scaleInPlace(this.length);
+            point.scaleInPlace(len);
             point.addInPlace(this.origin);
             BABYLON.Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
         };
@@ -10459,6 +10461,105 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.ray.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var RayHelper = (function () {
+        function RayHelper(ray) {
+            this.ray = ray;
+        }
+        RayHelper.prototype.show = function (scene, color) {
+            if (!this._renderFunction) {
+                var ray = this.ray;
+                this._renderFunction = this._render.bind(this);
+                this._scene = scene;
+                this._renderPoints = [ray.origin, ray.origin.add(ray.direction.scale(ray.length))];
+                this._renderLine = BABYLON.Mesh.CreateLines("ray", this._renderPoints, scene, true);
+                this._scene.registerBeforeRender(this._renderFunction);
+            }
+            if (color) {
+                this._renderLine.color.copyFrom(color);
+            }
+        };
+        RayHelper.prototype.hide = function () {
+            if (this._renderFunction) {
+                this._scene.unregisterBeforeRender(this._renderFunction);
+                this._scene = null;
+                this._renderFunction = null;
+                this._renderLine.dispose();
+                this._renderLine = null;
+                this._renderPoints = null;
+            }
+        };
+        RayHelper.prototype._render = function () {
+            var ray = this.ray;
+            var point = this._renderPoints[1];
+            var len = Math.min(ray.length, 1000000);
+            point.copyFrom(ray.direction);
+            point.scaleInPlace(len);
+            point.addInPlace(ray.origin);
+            BABYLON.Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
+        };
+        RayHelper.prototype.attachToMesh = function (mesh, meshSpaceDirection, meshSpaceOrigin, length) {
+            this._attachedToMesh = mesh;
+            var ray = this.ray;
+            if (!ray.direction) {
+                ray.direction = BABYLON.Vector3.Zero();
+            }
+            if (!ray.origin) {
+                ray.origin = BABYLON.Vector3.Zero();
+            }
+            if (length) {
+                ray.length = length;
+            }
+            if (!meshSpaceOrigin) {
+                meshSpaceOrigin = BABYLON.Vector3.Zero();
+            }
+            if (!meshSpaceDirection) {
+                // -1 so that this will work with Mesh.lookAt
+                meshSpaceDirection = new BABYLON.Vector3(0, 0, -1);
+            }
+            if (!this._meshSpaceDirection) {
+                this._meshSpaceDirection = meshSpaceDirection.clone();
+                this._meshSpaceOrigin = meshSpaceOrigin.clone();
+            }
+            else {
+                this._meshSpaceDirection.copyFrom(meshSpaceDirection);
+                this._meshSpaceOrigin.copyFrom(meshSpaceOrigin);
+            }
+            if (!this._updateToMeshFunction) {
+                this._updateToMeshFunction = this._updateToMesh.bind(this);
+                this._attachedToMesh.getScene().registerBeforeRender(this._updateToMeshFunction);
+            }
+            this._updateToMesh();
+        };
+        RayHelper.prototype.detachFromMesh = function () {
+            if (this._attachedToMesh) {
+                this._attachedToMesh.getScene().unregisterBeforeRender(this._updateToMeshFunction);
+                this._attachedToMesh = null;
+                this._updateToMeshFunction = null;
+            }
+        };
+        RayHelper.prototype._updateToMesh = function () {
+            var ray = this.ray;
+            if (this._attachedToMesh._isDisposed) {
+                this.detachFromMesh();
+                return;
+            }
+            this._attachedToMesh.getDirectionToRef(this._meshSpaceDirection, ray.direction);
+            BABYLON.Vector3.TransformCoordinatesToRef(this._meshSpaceOrigin, this._attachedToMesh.getWorldMatrix(), ray.origin);
+        };
+        RayHelper.prototype.dispose = function () {
+            this.hide();
+            this.detachFromMesh();
+            this.ray = null;
+        };
+        return RayHelper;
+    }());
+    BABYLON.RayHelper = RayHelper;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.rayHelper.js.map
 
 
 var BABYLON;
@@ -20069,6 +20170,14 @@ var BABYLON;
             _this._partitioningSubdivisions = 10; // number of subdivisions per axis in the partioning space  
             _this._partitioningBBoxRatio = 1.01; // the partioning array space is by default 1% bigger than the bounding box
             _this._facetDataEnabled = false; // is the facet data feature enabled on this mesh ?
+            _this._facetParameters = {}; // keep a reference to the object parameters to avoid memory re-allocation
+            _this._bbSize = BABYLON.Vector3.Zero(); // bbox size approximated for facet data
+            _this._subDiv = {
+                max: 1,
+                X: 1,
+                Y: 1,
+                Z: 1
+            };
             // Will be used to save a source mesh reference, If any
             _this._source = null;
             if (source) {
@@ -21291,6 +21400,10 @@ var BABYLON;
                     highlightLayer.removeExcludedMesh(this);
                 }
             }
+            // facet data
+            if (this._facetDataEnabled) {
+                this.disableFacetData();
+            }
             _super.prototype.dispose.call(this, doNotRecurse);
         };
         /**
@@ -21652,8 +21765,28 @@ var BABYLON;
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var indices = this.getIndices();
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-            var options = this.getFacetDataParameters();
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals, options);
+            var bInfo = this.getBoundingInfo();
+            this._bbSize.x = (bInfo.maximum.x - bInfo.minimum.x > BABYLON.Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : BABYLON.Epsilon;
+            this._bbSize.y = (bInfo.maximum.y - bInfo.minimum.y > BABYLON.Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : BABYLON.Epsilon;
+            this._bbSize.z = (bInfo.maximum.z - bInfo.minimum.z > BABYLON.Epsilon) ? bInfo.maximum.z - bInfo.minimum.z : BABYLON.Epsilon;
+            var bbSizeMax = (this._bbSize.x > this._bbSize.y) ? this._bbSize.x : this._bbSize.y;
+            bbSizeMax = (bbSizeMax > this._bbSize.z) ? bbSizeMax : this._bbSize.z;
+            this._subDiv.max = this._partitioningSubdivisions;
+            this._subDiv.X = Math.floor(this._subDiv.max * this._bbSize.x / bbSizeMax); // adjust the number of subdivisions per axis
+            this._subDiv.Y = Math.floor(this._subDiv.max * this._bbSize.y / bbSizeMax); // according to each bbox size per axis
+            this._subDiv.Z = Math.floor(this._subDiv.max * this._bbSize.z / bbSizeMax);
+            this._subDiv.X = this._subDiv.X < 1 ? 1 : this._subDiv.X; // at least one subdivision
+            this._subDiv.Y = this._subDiv.Y < 1 ? 1 : this._subDiv.Y;
+            this._subDiv.Z = this._subDiv.Z < 1 ? 1 : this._subDiv.Z;
+            // set the parameters for ComputeNormals()
+            this._facetParameters.facetNormals = this.getFacetLocalNormals();
+            this._facetParameters.facetPositions = this.getFacetLocalPositions();
+            this._facetParameters.facetPartitioning = this.getFacetLocalPartitioning();
+            this._facetParameters.bInfo = bInfo;
+            this._facetParameters.bbSize = this._bbSize;
+            this._facetParameters.subDiv = this._subDiv;
+            this._facetParameters.ratio = this.partitioningBBoxRatio;
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
             return this;
         };
         /**
@@ -21719,15 +21852,8 @@ var BABYLON;
          */
         Mesh.prototype.getFacetNormalToRef = function (i, ref) {
             var localNorm = (this.getFacetLocalNormals())[i];
-            var localPos = (this.getFacetLocalPositions())[i];
-            var world = this.getWorldMatrix();
-            var x = localPos.x + localNorm.x;
-            var y = localPos.y + localNorm.y;
-            var z = localPos.z + localNorm.z;
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, world, ref);
-            var worldPos = BABYLON.Tmp.Vector3[8];
-            this.getFacetPositionToRef(i, worldPos);
-            ref.subtractInPlace(worldPos);
+            (this.getWorldMatrix()).getRotationMatrixToRef(BABYLON.Tmp.Matrix[0]);
+            BABYLON.Vector3.TransformCoordinatesToRef(localNorm, BABYLON.Tmp.Matrix[0], ref);
             return this;
         };
         /**
@@ -21735,28 +21861,31 @@ var BABYLON;
          */
         Mesh.prototype.getFacetsAtLocalCoordinates = function (x, y, z) {
             var bInfo = this.getBoundingInfo();
-            var subRatio = this._partitioningSubdivisions * this._partitioningBBoxRatio;
-            var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) / (bInfo.maximum.x - bInfo.minimum.x) * subRatio);
-            var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) / (bInfo.maximum.y - bInfo.minimum.y) * subRatio);
-            var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) / (bInfo.maximum.z - bInfo.minimum.z) * subRatio);
-            if (ox < 0 || ox > this._partitioningSubdivisions || oy < 0 || oy > this._partitioningSubdivisions || oz < 0 || oz > this._partitioningSubdivisions) {
+            var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
+            var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);
+            var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * this._subDiv.Z * this._partitioningBBoxRatio / this._bbSize.z);
+            if (ox < 0 || ox > this._subDiv.max || oy < 0 || oy > this._subDiv.max || oz < 0 || oz > this._subDiv.max) {
                 return null;
             }
-            return this._facetPartitioning[ox + this._partitioningSubdivisions * oy + this._partitioningSubdivisions * this._partitioningSubdivisions * oz];
+            return this._facetPartitioning[ox + this._subDiv.max * oy + this._subDiv.max * this._subDiv.max * oz];
         };
         /**
          * Returns the closest mesh facet index at (x,y,z) World coordinates, null if not found.
          * If the parameter projected (vector3) is passed, it is set as the (x,y,z) World projection on the facet.
-         * If onlyFacing is true, only the facet "facing" (x,y,z) are returned : positive dot normal * (x,y,z).
+         * If checkFace is true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned.
+         * If facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position.
+         * If facing si false and checkFace is true, only the facet "turning their backs" to (x, y, z) are returned : negative dot (x, y, z) * facet position.
          */
-        Mesh.prototype.getClosestFacetAtCoordinates = function (x, y, z, projected, onlyFacing) {
+        Mesh.prototype.getClosestFacetAtCoordinates = function (x, y, z, projected, checkFace, facing) {
+            if (checkFace === void 0) { checkFace = false; }
+            if (facing === void 0) { facing = true; }
             var world = this.getWorldMatrix();
             var invMat = BABYLON.Tmp.Matrix[5];
             world.invertToRef(invMat);
             var invVect = BABYLON.Tmp.Vector3[8];
             var closest = null;
             BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, invMat, invVect); // transform (x,y,z) to coordinates in the mesh local space
-            closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, onlyFacing);
+            closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, checkFace, facing);
             if (projected) {
                 // tranform the local computed projected vector to world coordinates
                 BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(projected.x, projected.y, projected.z, world, projected);
@@ -21766,9 +21895,13 @@ var BABYLON;
         /**
          * Returns the closest mesh facet index at (x,y,z) local coordinates, null if not found.
          * If the parameter projected (vector3) is passed, it is set as the (x,y,z) local projection on the facet.
-         * If onlyFacing is true, only the facet "facing" (x,y,z) are returned : positive dot normal * (x,y,z).
+         * If checkFace is true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned.
+         * If facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position.
+         * If facing si false and checkFace is true, only the facet "turning their backs"  to (x, y, z) are returned : negative dot (x, y, z) * facet position.
          */
-        Mesh.prototype.getClosestFacetAtLocalCoordinates = function (x, y, z, projected, onlyFacing) {
+        Mesh.prototype.getClosestFacetAtLocalCoordinates = function (x, y, z, projected, checkFace, facing) {
+            if (checkFace === void 0) { checkFace = false; }
+            if (facing === void 0) { facing = true; }
             var closest = null;
             var tmpx = 0.0;
             var tmpy = 0.0;
@@ -21797,7 +21930,7 @@ var BABYLON;
                 norm = facetNormals[fib];
                 p0 = facetPositions[fib];
                 d = (x - p0.x) * norm.x + (y - p0.y) * norm.y + (z - p0.z) * norm.z;
-                if (!onlyFacing || (onlyFacing && d >= 0)) {
+                if (!checkFace || (checkFace && facing && d >= 0.0) || (checkFace && !facing && d <= 0.0)) {
                     // compute (x,y,z) projection on the facet = (projx, projy, projz)
                     d = norm.x * p0.x + norm.y * p0.y + norm.z * p0.z;
                     t0 = -(norm.x * x + norm.y * y + norm.z * z - d) / (norm.x * norm.x + norm.y * norm.y + norm.z * norm.z);
@@ -21825,16 +21958,6 @@ var BABYLON;
          * Returns the object "parameter" set with all the expected parameters for facetData computation by ComputeNormals()
          */
         Mesh.prototype.getFacetDataParameters = function () {
-            if (!this._facetParameters) {
-                this._facetParameters = {
-                    facetNormals: this.getFacetLocalNormals(),
-                    facetPositions: this.getFacetLocalPositions(),
-                    facetPartitioning: this.getFacetLocalPartitioning(),
-                    bInfo: this.getBoundingInfo(),
-                    partitioningSubdivisions: this.partitioningSubdivisions,
-                    ratio: this.partitioningBBoxRatio
-                };
-            }
             return this._facetParameters;
         };
         /**
@@ -21842,11 +21965,13 @@ var BABYLON;
          * Returns the mesh.
          */
         Mesh.prototype.disableFacetData = function () {
-            this._facetDataEnabled = false;
-            this._facetPositions = null;
-            this._facetNormals = null;
-            this._facetPartitioning = null;
-            this._facetParameters = null;
+            if (this._facetDataEnabled) {
+                this._facetDataEnabled = false;
+                this._facetPositions = null;
+                this._facetNormals = null;
+                this._facetPartitioning = null;
+                this._facetParameters = null;
+            }
             return this;
         };
         // Statics
@@ -35019,9 +35144,10 @@ var BABYLON;
          * facetPositions : optional array of facet positions (vector3)
          * facetNormals : optional array of facet normals (vector3)
          * facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
-         * partitioningSubdivisions : optional partitioning number of subdivsions on  each axis (int), required for facetPartitioning computation
+         * subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
          * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
-         * bInfo : optional bounding box info, required for facetPartitioning computation
+         * bbSize : optional bounding box size data, required for facetPartitioning computation
+         * bInfo : optional bounding info, required for facetPartitioning computation
          */
         VertexData.ComputeNormals = function (positions, indices, normals, options) {
             // temporary scalar variables
@@ -35071,10 +35197,12 @@ var BABYLON;
                 var block_idx_v1 = 0; // v1 vertex block index
                 var block_idx_v2 = 0; // v2 vertex block index
                 var block_idx_v3 = 0; // v3 vertex block index  
-                var xSubRatio = 0.0; // tmp x divider
-                var ySubRatio = 0.0; // tmp x divider
-                var zSubRatio = 0.0; // tmp x divider  
-                var subSq = options.partitioningSubdivisions * options.partitioningSubdivisions;
+                var bbSizeMax = (options.bbSize.x > options.bbSize.y) ? options.bbSize.x : options.bbSize.y;
+                bbSizeMax = (bbSizeMax > options.bbSize.z) ? bbSizeMax : options.bbSize.z;
+                var xSubRatio = options.subDiv.X * options.ratio / options.bbSize.x;
+                var ySubRatio = options.subDiv.Y * options.ratio / options.bbSize.y;
+                var zSubRatio = options.subDiv.Z * options.ratio / options.bbSize.z;
+                var subSq = options.subDiv.max * options.subDiv.max;
                 options.facetPartitioning.length = 0;
             }
             // reset the normals
@@ -35124,9 +35252,6 @@ var BABYLON;
                 if (computeFacetPartitioning) {
                     // store the facet indexes in arrays in the main facetPartitioning array :
                     // compute each facet vertex (+ facet barycenter) index in the partiniong array
-                    xSubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.x - options.bInfo.minimum.x);
-                    ySubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.y - options.bInfo.minimum.y);
-                    zSubRatio = options.partitioningSubdivisions * options.ratio / (options.bInfo.maximum.z - options.bInfo.minimum.z);
                     ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * options.ratio) * xSubRatio);
                     oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * options.ratio) * ySubRatio);
                     oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * options.ratio) * zSubRatio);
@@ -35139,10 +35264,10 @@ var BABYLON;
                     b3x = Math.floor((positions[v3x] - options.bInfo.minimum.x * options.ratio) * xSubRatio);
                     b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * options.ratio) * ySubRatio);
                     b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * options.ratio) * zSubRatio);
-                    block_idx_v1 = b1x + options.partitioningSubdivisions * b1y + subSq * b1z;
-                    block_idx_v2 = b2x + options.partitioningSubdivisions * b2y + subSq * b2z;
-                    block_idx_v3 = b3x + options.partitioningSubdivisions * b3y + subSq * b3z;
-                    block_idx_o = ox + options.partitioningSubdivisions * oy + subSq * oz;
+                    block_idx_v1 = b1x + options.subDiv.max * b1y + subSq * b1z;
+                    block_idx_v2 = b2x + options.subDiv.max * b2y + subSq * b2z;
+                    block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
+                    block_idx_o = ox + options.subDiv.max * oy + subSq * oz;
                     options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] : new Array();
                     options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] : new Array();
                     options.facetPartitioning[block_idx_v2] = options.facetPartitioning[block_idx_v2] ? options.facetPartitioning[block_idx_v2] : new Array();
@@ -48359,6 +48484,7 @@ var BABYLON;
             if (disableDepthRender)
                 this._scene.disableDepthRenderer();
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+            _super.prototype.dispose.call(this);
         };
         // Private Methods
         SSAORenderingPipeline.prototype._createBlurPostProcess = function (ratio) {
@@ -49501,17 +49627,21 @@ var BABYLON;
         * Releases the rendering pipeline and its internal effects. Detaches pipeline from cameras
         */
         HDRRenderingPipeline.prototype.dispose = function () {
-            this._originalPostProcess = undefined;
-            this._brightPassPostProcess = undefined;
-            this._downSampleX4PostProcess = undefined;
-            this._guassianBlurHPostProcess = undefined;
-            this._guassianBlurVPostProcess = undefined;
-            this._textureAdderPostProcess = undefined;
-            for (var i = HDRRenderingPipeline.LUM_STEPS - 1; i >= 0; i--) {
-                this._downSamplePostProcesses[i] = undefined;
+            for (var i = 0; i < this._scene.cameras.length; i++) {
+                var camera = this._scene.cameras[i];
+                this._originalPostProcess.dispose(camera);
+                this._brightPassPostProcess.dispose(camera);
+                this._downSampleX4PostProcess.dispose(camera);
+                this._guassianBlurHPostProcess.dispose(camera);
+                this._guassianBlurVPostProcess.dispose(camera);
+                this._textureAdderPostProcess.dispose(camera);
+                for (var j = HDRRenderingPipeline.LUM_STEPS - 1; j >= 0; j--) {
+                    this._downSamplePostProcesses[j].dispose(camera);
+                }
+                this._hdrPostProcess.dispose(camera);
             }
-            this._hdrPostProcess = undefined;
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+            _super.prototype.dispose.call(this);
         };
         /**
         * Creates the HDR post-process and computes the luminance adaptation
@@ -50813,7 +50943,6 @@ var BABYLON;
                             }
                         }
                         // normals : if the particles can't be morphed then just rotate the normals, what is much more faster than ComputeNormals()
-                        // the same for the facet data
                         if (!this._computeParticleVertex) {
                             this._normal.x = this._fixedNormal32[idx];
                             this._normal.y = this._fixedNormal32[idx + 1];
@@ -53005,7 +53134,7 @@ var BABYLON;
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 var size = parsedTexture.isBABYLONPreprocessed ? null : parsedTexture.size;
-                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.generateHarmonics, parsedTexture.useInGammaSpace, parsedTexture.usePMREMGenerator);
+                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.noMipmap, parsedTexture.generateHarmonics, parsedTexture.useInGammaSpace, parsedTexture.usePMREMGenerator);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;
                 texture.level = parsedTexture.level;
@@ -53029,6 +53158,7 @@ var BABYLON;
             serializationObject.usePMREMGenerator = this._usePMREMGenerator;
             serializationObject.isBABYLONPreprocessed = this._isBABYLONPreprocessed;
             serializationObject.customType = "BABYLON.HDRCubeTexture";
+            serializationObject.noMipmap = this._noMipmap;
             return serializationObject;
         };
         /**
