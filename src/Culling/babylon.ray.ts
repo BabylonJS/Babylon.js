@@ -241,6 +241,7 @@
             if(this._show){
                 this._show = false;
                 this._scene.unregisterBeforeRender(this._renderFunction);
+                this._scene = null;
             }
 
             if(this._renderLine){
@@ -254,9 +255,10 @@
         private _render(): void {
 
             var point = this._renderPoints[1];
-
+            var len = Math.min(this.length, 1000000);
+            
             point.copyFrom(this.direction);
-            point.scaleInPlace(this.length);
+            point.scaleInPlace(len);
             point.addInPlace(this.origin);
 
             Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
