@@ -264,10 +264,6 @@ module BABYLON {
                         }
                         else if (targetPath === "rotationQuaternion") {
                             rotationQuaternion = value;
-                            // Y is Up
-                            if (GLTFFileLoader.MakeYUP) {
-                                rotationQuaternion = rotationQuaternion.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-                            }
                         }
                         else {
                             scaling = value;
@@ -311,11 +307,6 @@ module BABYLON {
             var scale = Vector3.FromArray(node.scale || [1, 1, 1]);
             var rotation = Quaternion.FromArray(node.rotation || [0, 0, 0, 1]);
             var position = Vector3.FromArray(node.translation || [0, 0, 0]);
-
-            // Y is Up
-            if (GLTFFileLoader.MakeYUP) {
-                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-            }
 
             mat = Matrix.Compose(scale, rotation, position);
         }
@@ -564,13 +555,6 @@ module BABYLON {
                 }
             }
 
-            if (!parentBone && nodesToRoot.length === 0) {
-                var inverseBindMatrix = Matrix.FromArray(buffer, i * 16);
-                var invertMesh = Matrix.Invert(mesh.getWorldMatrix());
-
-                mat = mat.multiply(mesh.getWorldMatrix());
-            }
-
             var bone = new Bone(node.jointName, newSkeleton, parentBone, mat);
             bone.id = id;
         }
@@ -727,7 +711,7 @@ module BABYLON {
 
                 // Sub material
                 var material = gltfRuntime.scene.getMaterialByID(primitive.material);
-                multiMat.subMaterials.push(material === null ? gltfRuntime.scene.defaultMaterial : material);
+                multiMat.subMaterials.push(material === null ? GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
 
                 // Update vertices start and index start
                 verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
@@ -737,7 +721,6 @@ module BABYLON {
 
         // Apply geometry
         geometry.setAllVerticesData(vertexData, false);
-
         newMesh.computeWorldMatrix(true);
 
         // Apply submeshes
@@ -785,7 +768,7 @@ module BABYLON {
     /**
     * Configures node from transformation matrix
     */
-    var configureNodeFromMatrix = (newNode: any, node: IGLTFNode) => {
+    var configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Node) => {
         if (node.matrix) {
             var position = new Vector3(0, 0, 0);
             var rotation = new Quaternion();
@@ -793,16 +776,8 @@ module BABYLON {
             var mat = Matrix.FromArray(node.matrix);
             mat.decompose(scaling, rotation, position);
 
-            // Y is Up
-            if (GLTFFileLoader.MakeYUP) {
-                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-            }
-
             configureNode(newNode, position, rotation, scaling);
-
-            if (newNode instanceof TargetCamera) {
-                (<TargetCamera>newNode).setTarget(Vector3.Zero());
-            }
+            newNode.computeWorldMatrix(true);
         }
         else {
             configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
@@ -812,7 +787,7 @@ module BABYLON {
     /**
     * Imports a node
     */
-    var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Node => {
+    var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent: Node): Node => {
         var lastNode: Node = null;
 
         if (gltfRuntime.importOnlyMeshes && (node.skin || node.meshes)) {
@@ -835,10 +810,6 @@ module BABYLON {
                     if (!skin.babylonSkeleton) {
                         skin.babylonSkeleton = newMesh.skeleton;
                     }
-                }
-
-                if (newMesh.skeleton !== null) {
-                    //newMesh.useBones = true;
                 }
 
                 lastNode = newMesh;
@@ -959,8 +930,8 @@ module BABYLON {
         }
 
         if (lastNode !== null) {
-            if (node.matrix) {
-                configureNodeFromMatrix(lastNode, node);
+            if (node.matrix && lastNode instanceof Mesh) {
+                configureNodeFromMatrix(lastNode, node, parent);
             }
             else {
                 var translation = node.translation || [0, 0, 0];
@@ -970,7 +941,6 @@ module BABYLON {
             }
 
             lastNode.updateCache(true);
-
             node.babylonNode = lastNode;
         }
 
@@ -997,7 +967,7 @@ module BABYLON {
         }
 
         if (!node.jointName && meshIncluded) {
-            newNode = importNode(gltfRuntime, node, id);
+            newNode = importNode(gltfRuntime, node, id, parent);
 
             if (newNode !== null) {
                 newNode.id = id;
@@ -1571,8 +1541,8 @@ module BABYLON {
         /**
         * Static members
         */
-        public static MakeYUP: boolean = false;
         public static HomogeneousCoordinates: boolean = false;
+        public static IncrementalLoading: boolean = true;
 
         public static Extensions: { [name: string]: GLTFFileLoaderExtension } = {};
 
@@ -1636,10 +1606,14 @@ module BABYLON {
                     this._loadShadersAsync(gltfRuntime, () => {
                         importMaterials(gltfRuntime);
                         postLoad(gltfRuntime);
+
+                        if (!GLTFFileLoader.IncrementalLoading && onSuccess) {
+                            onSuccess(meshes, null, skeletons);
+                        }
                     });
                 });
 
-                if (onSuccess) {
+                if (GLTFFileLoader.IncrementalLoading && onSuccess) {
                     onSuccess(meshes, null, skeletons);
                 }
             }, onError);
@@ -1662,10 +1636,16 @@ module BABYLON {
                     this._loadShadersAsync(gltfRuntime, () => {
                         importMaterials(gltfRuntime);
                         postLoad(gltfRuntime);
+
+                        if (!GLTFFileLoader.IncrementalLoading) {
+                            onSuccess();
+                        }
                     });
                 });
 
-                onSuccess();
+                if (GLTFFileLoader.IncrementalLoading) {
+                    onSuccess();
+                }
             }, onError);
 
             return true;

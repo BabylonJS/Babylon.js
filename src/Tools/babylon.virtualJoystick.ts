@@ -298,8 +298,8 @@ module BABYLON {
 
         private _drawVirtualJoystick() {
             if (this.pressed) {
-                this._touches.forEach((touch: any) => {
-                    if (touch.pointerId === this._joystickPointerID) {
+                this._touches.forEach((key, touch) => {
+                    if ((<PointerEvent>touch).pointerId === this._joystickPointerID) {
                         VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 63, this._joystickPointerStartPos.y - 63, 126, 126);                       
                         VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 41, this._joystickPreviousPointerPos.y - 41, 82, 82);
                         VirtualJoystick.vjCanvasContext.beginPath();
@@ -322,7 +322,7 @@ module BABYLON {
                         this._joystickPreviousPointerPos = this._joystickPointerPos.clone();
                     }
                     else {
-                        VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
+                        VirtualJoystick.vjCanvasContext.clearRect((<any>touch).prevX - 43, (<any>touch).prevY - 43, 86, 86);
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.fillStyle = "white";
                         VirtualJoystick.vjCanvasContext.beginPath();
@@ -331,8 +331,8 @@ module BABYLON {
                         VirtualJoystick.vjCanvasContext.arc(touch.x, touch.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
                         VirtualJoystick.vjCanvasContext.closePath();
-                        touch.prevX = touch.x;
-                        touch.prevY = touch.y;
+                        (<any>touch).prevX = touch.x;
+                        (<any>touch).prevY = touch.y;
                     };
                 });
             }
