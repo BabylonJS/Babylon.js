@@ -1260,7 +1260,7 @@ var BABYLON;
             _this._context.fillStyle = "white";
             _this._context.textBaseline = "top";
             var res = _this.getFontHeight(font);
-            _this._lineHeightSuper = res.height + 4;
+            _this._lineHeightSuper = res.height; //+4;
             _this._lineHeight = _this._superSample ? (Math.ceil(_this._lineHeightSuper / 2)) : _this._lineHeightSuper;
             _this._offset = res.offset - 1;
             _this._xMargin = 1 + Math.ceil(_this._lineHeightSuper / 15); // Right now this empiric formula seems to work...
