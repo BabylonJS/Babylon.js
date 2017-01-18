@@ -2055,8 +2055,7 @@
          * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
          * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
          * 
-         * Note: The result of this call is not taken into account when a texture is base64 or when
-         * using a database / manifest.
+         * Note: The result of this call is not taken into account when a texture is base64.
          * 
          * @param {Array<string>} formatsAvailable- The list of those format families you have created
          * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
@@ -2077,12 +2076,13 @@
             return this._textureFormatInUse = null;
         }
 
-        public createTexture(url: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null): WebGLTexture {
-            var texture = this._gl.createTexture();
+        public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, fallBack?: WebGLTexture): WebGLTexture {
+            var texture = fallBack ? fallBack : this._gl.createTexture();
 
             var extension: string;
             var isKTX = false;
             var fromData: any = false;
+            var url = String(urlArg);
             if (url.substr(0, 5) === "data:") {
                 fromData = true;
             }
@@ -2090,10 +2090,11 @@
             if (!fromData) {
                 var lastDot = url.lastIndexOf('.')
                 extension = url.substring(lastDot).toLowerCase();
-                if (this._textureFormatInUse && !fromData && !scene.database) {
+                if (this._textureFormatInUse && !fromData && !fallBack) {
                     extension = this._textureFormatInUse;
                     url = url.substring(0, lastDot) + this._textureFormatInUse;
                     isKTX = true;
+                    
                 }
             } else {
                 var oldUrl = url;
@@ -2102,7 +2103,7 @@
                 extension = fromData[1].substr(fromData[1].length - 4, 4).toLowerCase();
             }
 
-            var isDDS = (extension === ".dds");
+            var isDDS = this.getCaps().s3tc && (extension === ".dds");
             var isTGA = (extension === ".tga");
 
             scene._addPendingData(texture);
@@ -2114,12 +2115,15 @@
             if (onLoad) {
                 texture.onLoadedCallbacks.push(onLoad);
             }
-            this._loadedTexturesCache.push(texture);
+            if (!fallBack) this._loadedTexturesCache.push(texture);
 
             var onerror = () => {
                 scene._removePendingData(texture);
 
-                if (onError) {
+                // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
+                if (isKTX) {
+                    this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, onLoad, onError, buffer, texture);
+                } else if (onError) {
                     onError();
                 }
             };
@@ -2604,12 +2608,12 @@
             var isKTX = false;
             var lastDot = rootUrl.lastIndexOf('.');
             var extension = rootUrl.substring(lastDot).toLowerCase();
-            if (this._textureFormatInUse && !scene.database) {
+            if (this._textureFormatInUse) {
                 extension = this._textureFormatInUse;
                 rootUrl = rootUrl.substring(0, lastDot) + this._textureFormatInUse;
                 isKTX = true;
             }
-            var isDDS = (extension === ".dds");
+            var isDDS = this.getCaps().s3tc && (extension === ".dds");
 
             if (isKTX) {
                 Tools.LoadFile(rootUrl, data => {
@@ -2769,74 +2773,74 @@
                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
-                if (!noMipmap && isPot) {
-                    if (mipmmapGenerator) {
+                if (mipmmapGenerator) {
 
-                        var arrayTemp: ArrayBufferView[] = [];
-                        // Data are known to be in +X +Y +Z -X -Y -Z
-                        // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
-                        arrayTemp.push(rgbeDataArrays[0]); // +X
-                        arrayTemp.push(rgbeDataArrays[3]); // -X
-                        arrayTemp.push(rgbeDataArrays[1]); // +Y
-                        arrayTemp.push(rgbeDataArrays[4]); // -Y
-                        arrayTemp.push(rgbeDataArrays[2]); // +Z
-                        arrayTemp.push(rgbeDataArrays[5]); // -Z
+                    var arrayTemp: ArrayBufferView[] = [];
+                    // Data are known to be in +X +Y +Z -X -Y -Z
+                    // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
+                    arrayTemp.push(rgbeDataArrays[0]); // +X
+                    arrayTemp.push(rgbeDataArrays[3]); // -X
+                    arrayTemp.push(rgbeDataArrays[1]); // +Y
+                    arrayTemp.push(rgbeDataArrays[4]); // -Y
+                    arrayTemp.push(rgbeDataArrays[2]); // +Z
+                    arrayTemp.push(rgbeDataArrays[5]); // -Z
 
-                        var mipData = mipmmapGenerator(arrayTemp);
-                        for (var level = 0; level < mipData.length; level++) {
-                            var mipSize = width >> level;
+                    var mipData = mipmmapGenerator(arrayTemp);
+                    for (var level = 0; level < mipData.length; level++) {
+                        var mipSize = width >> level;
 
-                            // mipData is order in +X -X +Y -Y +Z -Z
-                            gl.texImage2D(facesIndex[0], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
-                            gl.texImage2D(facesIndex[1], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
-                            gl.texImage2D(facesIndex[2], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
-                            gl.texImage2D(facesIndex[3], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
-                            gl.texImage2D(facesIndex[4], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
-                            gl.texImage2D(facesIndex[5], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
-                        }
-                    }
-                    else {
-                        if (internalFormat === gl.RGB) {
-                            internalFormat = gl.RGBA;
-
-                             // Data are known to be in +X +Y +Z -X -Y -Z
-                            for (let index = 0; index < facesIndex.length; index++) {
-                                let faceData = <Float32Array>rgbeDataArrays[index];
-
-                                // Create a new RGBA Face.
-                                let newFaceData = new Float32Array(width * height * 4);
-                                for (let x = 0; x < width; x++) {
-                                    for (let y = 0; y < height; y++) {
-                                        let index = (y * width + x) * 3;
-                                        let newIndex = (y * width + x) * 4;
-
-                                        // Map Old Value to new value.
-                                        newFaceData[newIndex + 0] = faceData[index + 0];
-                                        newFaceData[newIndex + 1] = faceData[index + 1];
-                                        newFaceData[newIndex + 2] = faceData[index + 2];
-
-                                        // Add fully opaque alpha channel.
-                                        newFaceData[newIndex + 3] = 1;
-                                    }
-                                }
-
-                                // Reupload the face.
-                                gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, newFaceData);
-                            }
-                        }
-                        else {
-                            // Data are known to be in +X +Y +Z -X -Y -Z
-                            for (let index = 0; index < facesIndex.length; index++) {
-                                let faceData = rgbeDataArrays[index];
-                                gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
-                            }
-                        }
-
-                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        // mipData is order in +X -X +Y -Y +Z -Z
+                        gl.texImage2D(facesIndex[0], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                        gl.texImage2D(facesIndex[1], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                        gl.texImage2D(facesIndex[2], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                        gl.texImage2D(facesIndex[3], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                        gl.texImage2D(facesIndex[4], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                        gl.texImage2D(facesIndex[5], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
                     }
                 }
                 else {
-                    noMipmap = true;
+                    if (internalFormat === gl.RGB) {
+                        internalFormat = gl.RGBA;
+
+                            // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (let index = 0; index < facesIndex.length; index++) {
+                            let faceData = <Float32Array>rgbeDataArrays[index];
+
+                            // Create a new RGBA Face.
+                            let newFaceData = new Float32Array(width * height * 4);
+                            for (let x = 0; x < width; x++) {
+                                for (let y = 0; y < height; y++) {
+                                    let index = (y * width + x) * 3;
+                                    let newIndex = (y * width + x) * 4;
+
+                                    // Map Old Value to new value.
+                                    newFaceData[newIndex + 0] = faceData[index + 0];
+                                    newFaceData[newIndex + 1] = faceData[index + 1];
+                                    newFaceData[newIndex + 2] = faceData[index + 2];
+
+                                    // Add fully opaque alpha channel.
+                                    newFaceData[newIndex + 3] = 1;
+                                }
+                            }
+
+                            // Reupload the face.
+                            gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, newFaceData);
+                        }
+                    }
+                    else {
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (let index = 0; index < facesIndex.length; index++) {
+                            let faceData = rgbeDataArrays[index];
+                            gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
+                        }
+                    }
+
+                    if (!noMipmap && isPot) {
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
+                    else {
+                        noMipmap = true;
+                    }
                 }
 
                 if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {

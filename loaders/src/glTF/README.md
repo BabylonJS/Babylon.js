@@ -29,6 +29,13 @@ In order the fix the UP vector (Y with Babylon.js) if you want to play with phys
 BABYLON.GLTFFileLoader.MakeYUP = true; // false by default
 ```
 
+If you want to disable incremental loading (which is the default behavior), you can set the property IncrementalLoading to false.
+Then, you'll be able to be called back with all geometries and shaders loaded.
+For example, you can retrieve the real bounding infos of a mesh loaded using the loader.
+```
+BABYLON.GLTFFileLoader.IncrementalLoading = false; // true by default
+```
+
 In order to work with homogeneous coordinates (that can be available with some converters and exporters):
 ```
 BABYLON.GLTFFileLoader.HomogeneousCoordinates = true; // false by default

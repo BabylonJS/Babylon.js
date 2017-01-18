@@ -1277,6 +1277,92 @@
 
         }
 
+        public setParent(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
+
+            var child = this;
+            var parent = mesh;
+
+            if(mesh == null){
+
+                if(child.parent && keepWorldPositionRotation){
+                  
+                    var rotation = Tmp.Quaternion[0];
+                    var position = Tmp.Vector3[0];
+                    var scale = Tmp.Vector3[1];
+
+                    child.getWorldMatrix().decompose(scale, rotation, position);
+
+                    if (child.rotationQuaternion) {
+                        child.rotationQuaternion.copyFrom(rotation);
+                    } else {
+                        rotation.toEulerAnglesToRef(child.rotation);
+                    }
+
+                    child.position.x = position.x;
+                    child.position.y = position.y;
+                    child.position.z = position.z;
+
+               }
+
+            } else {
+
+                if(keepWorldPositionRotation){
+                    
+                    var rotation = Tmp.Quaternion[0];
+                    var position = Tmp.Vector3[0];
+                    var scale = Tmp.Vector3[1];
+                    var m1 = Tmp.Matrix[0];
+                    var m2 = Tmp.Matrix[1];
+
+                    parent.getWorldMatrix().decompose(scale, rotation, position);
+
+                    rotation.toRotationMatrix(m1);
+                    m2.setTranslation(position);
+
+                    m2.multiplyToRef(m1, m1);
+
+                    var invParentMatrix = Matrix.Invert(m1);
+
+                    var m = child.getWorldMatrix().multiply(invParentMatrix);
+
+                    m.decompose(scale, rotation, position);
+
+                    if (child.rotationQuaternion) {
+                        child.rotationQuaternion.copyFrom(rotation);
+                    } else {
+                        rotation.toEulerAnglesToRef(child.rotation);
+                    }
+
+                    invParentMatrix = Matrix.Invert(parent.getWorldMatrix());
+
+                    var m = child.getWorldMatrix().multiply(invParentMatrix);
+
+                    m.decompose(scale, rotation, position);
+
+                    child.position.x = position.x;
+                    child.position.y = position.y;
+                    child.position.z = position.z;
+
+                }
+
+            }
+
+            child.parent = parent;
+
+        }
+
+        public addChild(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
+
+            mesh.setParent(this, keepWorldPositionRotation);
+
+        }
+
+        public removeChild(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
+
+            mesh.setParent(null, keepWorldPositionRotation);
+
+        }
+
         public getAbsolutePivotPointToRef(result:Vector3): void{
 
             result.x = this._pivotMatrix.m[12];

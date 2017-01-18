@@ -46,6 +46,7 @@ class Mesh(FCurveAnimatable):
         self.castShadows = object.data.castShadows
         self.freezeWorldMatrix = object.data.freezeWorldMatrix
         self.layer = getLayer(object) # used only for lights with 'This Layer Only' checked, not exported
+        self.tags = object.data.tags
 
         # hasSkeleton detection & skeletonID determination
         hasSkeleton = False
@@ -537,6 +538,7 @@ class Mesh(FCurveAnimatable):
         write_bool(file_handler, 'isEnabled', self.isEnabled)
         write_bool(file_handler, 'checkCollisions', self.checkCollisions)
         write_bool(file_handler, 'receiveShadows', self.receiveShadows)
+        write_string(file_handler, 'tags', self.tags)
 
         if hasattr(self, 'physicsImpostor'):
             write_int(file_handler, 'physicsImpostor', self.physicsImpostor)
@@ -649,6 +651,7 @@ class Node(FCurveAnimatable):
         self.billboardMode = BILLBOARDMODE_NONE
         self.castShadows = False
         self.receiveShadows = False
+        self.tags = ''
         self.layer = -1 # nodes do not have layers attribute
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
@@ -668,6 +671,7 @@ class Node(FCurveAnimatable):
         write_bool(file_handler, 'checkCollisions', self.checkCollisions)
         write_int(file_handler, 'billboardMode', self.billboardMode)
         write_bool(file_handler, 'receiveShadows', self.receiveShadows)
+        write_string(file_handler, 'tags', self.tags)
 
         super().to_scene_file(file_handler) # Animations
         file_handler.write('}')
@@ -713,6 +717,11 @@ bpy.types.Mesh.receiveShadows = bpy.props.BoolProperty(
     name='Receive Shadows',
     description='',
     default = False
+)
+bpy.types.Mesh.tags = bpy.props.StringProperty(
+    name='Tags',
+    description='Add meta-data to mesh (space delimited for multiples)',
+    default = ''
 )
 # not currently in use
 bpy.types.Mesh.forceBaking = bpy.props.BoolProperty(
@@ -820,6 +829,8 @@ class MeshPanel(bpy.types.Panel):
         row.prop(ob.data, 'loadDisabled')
         
         layout.prop(ob.data, 'autoAnimate')
+        
+        layout.prop(ob.data, 'tags')
         
         box = layout.box()
         box.label(text='Skeleton:')
