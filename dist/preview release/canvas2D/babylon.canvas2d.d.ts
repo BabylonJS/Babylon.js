@@ -678,10 +678,35 @@ declare module BABYLON {
          */
         max(): Vector2;
         /**
+         * return the min/max extend of the bounding info.
+         * x, y, z, w are left, bottom, right and top
+         */
+        minMax(): Vector4;
+        /**
          * Update a vector2 with the max extend of the bounding info
          * @param result must be a valid/allocated vector2 that will contain the result of the operation
          */
         maxToRef(result: Vector2): void;
+        /**
+         * Update a vector4 with the min/max extend of the bounding info
+         * x, y, z, w are left, bottom, right and top
+         * @param result must be a valid/allocated vector4 that will contain the result of the operation
+         */
+        minMaxToRef(result: Vector4): void;
+        /**
+         * Return the size of the boundingInfo rect surface
+         */
+        size(): Size;
+        /**
+         * Stores in the result object the size of the boundingInfo rect surface
+         * @param result
+         */
+        sizeToRef(result: Size): void;
+        /**
+         * Inflate the boundingInfo with the given vector
+         * @param offset the extent will be incremented with offset and the radius will be computed again
+         */
+        inflate(offset: Vector2): void;
         /**
          * Apply a transformation matrix to this BoundingInfo2D and return a new instance containing the result
          * @param matrix the transformation matrix to apply
@@ -2008,7 +2033,9 @@ declare module BABYLON {
          * Get the local transformation of the primitive
          */
         readonly localTransform: Matrix;
+        private static _bMinMax;
         private static _bMax;
+        private static _bSize;
         private static _tpsBB;
         /**
          * Get the boundingInfo associated to the primitive and its children.
@@ -3685,7 +3712,6 @@ declare module BABYLON {
         private _debugExecObserver(prim, mask);
         private _bubbleNotifyPrimPointerObserver(prim, mask, eventData);
         private _triggerActionManager(prim, ppi, mask, eventData);
-        _notifParents(prim: Prim2DBase, mask: number): void;
         /**
          * Don't forget to call the dispose method when you're done with the Canvas instance.
          * But don't worry, if you dispose its scene, the canvas will be automatically disposed too.
