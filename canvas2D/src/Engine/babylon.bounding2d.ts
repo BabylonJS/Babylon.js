@@ -155,12 +155,61 @@
         }
 
         /**
+         * return the min/max extend of the bounding info.
+         * x, y, z, w are left, bottom, right and top
+         */
+        public minMax(): Vector4 {
+            let r = Vector4.Zero();
+            this.minMaxToRef(r);
+            return r;
+        }
+
+        /**
          * Update a vector2 with the max extend of the bounding info
          * @param result must be a valid/allocated vector2 that will contain the result of the operation
          */
         public maxToRef(result: Vector2) {
             result.x = this.center.x + this.extent.x;
             result.y = this.center.y + this.extent.y;
+        }
+
+        /**
+         * Update a vector4 with the min/max extend of the bounding info
+         * x, y, z, w are left, bottom, right and top
+         * @param result must be a valid/allocated vector4 that will contain the result of the operation
+         */
+        public minMaxToRef(result: Vector4) {
+            result.x = this.center.x - this.extent.x;
+            result.y = this.center.y - this.extent.y;
+            result.z = this.center.x + this.extent.x;
+            result.w = this.center.y + this.extent.y;
+        }
+
+        /**
+         * Return the size of the boundingInfo rect surface
+         */
+        public size(): Size {
+            let r = Size.Zero();
+            this.sizeToRef(r);
+            return r;
+        }
+
+        /**
+         * Stores in the result object the size of the boundingInfo rect surface
+         * @param result
+         */
+        public sizeToRef(result: Size) {
+            result.width  = this.extent.x * 2;
+            result.height = this.extent.y * 2;
+        }
+
+        /**
+         * Inflate the boundingInfo with the given vector
+         * @param offset the extent will be incremented with offset and the radius will be computed again
+         */
+        public inflate(offset: Vector2) {
+            this.extent.addInPlace(offset);
+            this.radius = this.extent.length();
         }
 
         /**
