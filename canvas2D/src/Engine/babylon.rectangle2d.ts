@@ -288,8 +288,9 @@
             return true;
         }
 
-        protected updateLevelBoundingInfo() {
+        protected updateLevelBoundingInfo(): boolean {
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         }
 
         /**
