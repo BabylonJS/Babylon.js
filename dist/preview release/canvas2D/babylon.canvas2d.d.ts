@@ -1152,7 +1152,7 @@ declare module BABYLON {
         /**
          * This method must be overridden by a given Primitive implementation to compute its boundingInfo
          */
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Property method called when the Primitive becomes dirty
          */
@@ -2642,7 +2642,7 @@ declare module BABYLON {
          */
         trackedNode: Node;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         protected _prepareGroupRender(context: PrepareRender2DContext): void;
         protected _groupRender(): void;
         _setCacheGroupDirty(): void;
@@ -2732,7 +2732,7 @@ declare module BABYLON {
         private static _i1;
         private static _i2;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Create an Rectangle 2D Shape primitive. May be a sharp rectangle (with sharp corners), or a rounded one.
          * @param settings a combination of settings, possible ones are
@@ -2850,7 +2850,7 @@ declare module BABYLON {
         actualSize: Size;
         subdivisions: number;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Create an Ellipse 2D Shape primitive
          * @param settings a combination of settings, possible ones are
@@ -2971,7 +2971,7 @@ declare module BABYLON {
          * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
          */
         alignToPixel: boolean;
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
          */
@@ -3301,7 +3301,7 @@ declare module BABYLON {
          * Dispose the primitive, remove it from its parent
          */
         dispose(): boolean;
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Create a Text primitive
          * @param text the text to display
@@ -3474,7 +3474,7 @@ declare module BABYLON {
         protected readonly boundingMin: Vector2;
         protected readonly boundingMax: Vector2;
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
-        protected updateLevelBoundingInfo(): void;
+        protected updateLevelBoundingInfo(): boolean;
         /**
          * Create an 2D Lines Shape primitive. The defined lines may be opened or closed (see below)
          * @param points an array that describe the points to use to draw the line, must contain at least two entries.
