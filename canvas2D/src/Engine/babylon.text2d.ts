@@ -296,7 +296,11 @@
         }
 
         protected updateLevelBoundingInfo() {
+            if (!this.owner || !this._text) {
+                return false;
+            }
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         }
 
         /**
