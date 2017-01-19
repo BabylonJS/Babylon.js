@@ -2565,6 +2565,9 @@
                     this._boundingInfo.clear();
                 } else {
                     this._boundingInfo.copyFrom(this.levelBoundingInfo);
+                    if (this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
+                        return this._boundingInfo;
+                    }
                 }
                 let bi = this._boundingInfo;
 
