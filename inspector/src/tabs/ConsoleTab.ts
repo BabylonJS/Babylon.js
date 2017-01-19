@@ -62,15 +62,16 @@ module INSPECTOR {
                 this._bjsPanelContent.innerHTML += entry;
             };
 
-            console.log("This is a console.log message");
-            console.log("That's right, console.log calls are hooked to be written in this window");
-            console.log("Object are also stringify-ed", {width:10, height:30, shape:'rectangular'});
-            console.warn("This is a console.warn message");
-            console.error("This is a console.error message");
+            // Testing
+            // console.log("This is a console.log message");
+            // console.log("That's right, console.log calls are hooked to be written in this window");
+            // console.log("Object are also stringify-ed", {width:10, height:30, shape:'rectangular'});
+            // console.warn("This is a console.warn message");
+            // console.error("This is a console.error message");
 
-            BABYLON.Tools.Log("This is a message");
-            BABYLON.Tools.Warn("This is a warning");
-            BABYLON.Tools.Error("This is a error");
+            // BABYLON.Tools.Log("This is a message");
+            // BABYLON.Tools.Warn("This is a warning");
+            // BABYLON.Tools.Error("This is a error");
 
         }
 
