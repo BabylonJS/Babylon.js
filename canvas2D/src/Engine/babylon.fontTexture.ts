@@ -414,7 +414,7 @@
             this._context.textBaseline = "top";
 
             var res = this.getFontHeight(font);
-            this._lineHeightSuper = res.height+4;
+            this._lineHeightSuper = res.height; //+4;
             this._lineHeight = this._superSample ? (Math.ceil(this._lineHeightSuper / 2)) : this._lineHeightSuper;
             this._offset = res.offset - 1;
             this._xMargin = 1 + Math.ceil(this._lineHeightSuper / 15);    // Right now this empiric formula seems to work...
