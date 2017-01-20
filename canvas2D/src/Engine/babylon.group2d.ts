@@ -340,7 +340,7 @@
             return true;
         }
 
-        protected updateLevelBoundingInfo() {
+        protected updateLevelBoundingInfo(): boolean {
             let size: Size;
 
             // If the size is set by the user, the boundingInfo is computed from this value
@@ -353,6 +353,7 @@
             }
 
             BoundingInfo2D.CreateFromSizeToRef(size, this._levelBoundingInfo);
+            return true;
         }
 
         // Method called only on renderable groups to prepare the rendering

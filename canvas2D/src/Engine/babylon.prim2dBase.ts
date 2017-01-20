@@ -1511,7 +1511,7 @@
                     this.addChild(child);
 
                     // Good time to patch the hierarchy, it won't go very far if there's no need to
-                    if (this.owner != null) {
+                    if (this.owner != null && this._hierarchyDepth != null) {
                         child._patchHierarchy(this.owner);
                     }
                 }
@@ -1962,7 +1962,6 @@
                 Prim2DBase.boundinbBoxReentrency = false;
 
                 return this._boundingSize;
-
             }
             return this._size;
         }
@@ -2547,7 +2546,9 @@
             return this._localTransform;
         }
 
+        private static _bMinMax = Vector4.Zero();
         private static _bMax = Vector2.Zero();
+        private static _bSize = Size.Zero();
         private static _tpsBB = new BoundingInfo2D();
         /**
          * Get the boundingInfo associated to the primitive and its children.
@@ -2558,10 +2559,15 @@
                 if (this.owner) {
                     this.owner.boundingInfoRecomputeCounter.addCount(1, false);
                 }
-                if (this.isSizedByContent) {
+                let sizedByContent = this.isSizedByContent;
+
+                if (sizedByContent) {
                     this._boundingInfo.clear();
                 } else {
                     this._boundingInfo.copyFrom(this.levelBoundingInfo);
+                    if (this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
+                        return this._boundingInfo;
+                    }
                 }
                 let bi = this._boundingInfo;
 
@@ -2572,10 +2578,28 @@
                     bi.unionToRef(tps, bi);
                 }
 
-                this._boundingInfo.maxToRef(Prim2DBase._bMax);
+                // If the size is determined by the content we have to update the contentArea
+                //  and compute the size considering the padding (if any)
+                if (sizedByContent) {
+                    bi.maxToRef(Prim2DBase._bMax);
+                    this._contentArea.width = Prim2DBase._bMax.x;
+                    this._contentArea.height = Prim2DBase._bMax.y;
+
+                    if (this._hasPadding) {
+                        let padding = this.padding;
+                        let mm = Prim2DBase._bMinMax;
+                        bi.minMaxToRef(mm);
+                        mm.z += padding.leftPixels + padding.rightPixels;
+                        mm.w += padding.bottomPixels + padding.topPixels;
+                        this._paddingOffset.copyFromFloats(padding.leftPixels, padding.bottomPixels, padding.rightPixels, padding.topPixels);
+                        BoundingInfo2D.CreateFromMinMaxToRef(mm.x, mm.z, mm.y, mm.w, bi);
+                    }
+                }
+
+                this._boundingInfo.sizeToRef(Prim2DBase._bSize);
                 this._boundingSize.copyFromFloats(
-                    (!this._size || this._size.width == null) ? Math.ceil(Prim2DBase._bMax.x) : this._size.width,
-                    (!this._size || this._size.height == null) ? Math.ceil(Prim2DBase._bMax.y) : this._size.height);
+                    (!this._size || this._size.width == null) ? Math.ceil(Prim2DBase._bSize.width) : this._size.width,
+                    (!this._size || this._size.height == null) ? Math.ceil(Prim2DBase._bSize.height) : this._size.height);
 
                 this._clearFlags(SmartPropertyPrim.flagBoundingInfoDirty);
             }
@@ -3482,12 +3506,6 @@
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so we resize the primitive itself
                 if (isSizeAuto) {
-                    let content = this.size.clone();
-                    this._getActualSizeFromContentToRef(content, Prim2DBase._icArea);
-                    this.padding.enlarge(Prim2DBase._icArea, this._paddingOffset, Prim2DBase._size);
-                    this._contentArea.copyFrom(content);
-                    this.actualSize = Prim2DBase._size.clone();
-
                     // Changing the padding has resize the prim, which forces us to recompute margin again
                     if (this._hasMargin) {
                         this.margin.computeWithAlignment(this.layoutArea, Prim2DBase._size, this.marginAlignment, this._marginOffset, Prim2DBase._size);
@@ -3533,6 +3551,23 @@
          * Children of this primitive will be positioned relative to the bottom/left corner of this area.
          */
         public get contentArea(): Size {
+            if (!this._size || this._size.width == null || this._size.height == null) {
+
+                if (Prim2DBase.boundinbBoxReentrency) {
+                    return Prim2DBase.nullSize;
+                }
+
+                if (!this._isFlagSet(SmartPropertyPrim.flagBoundingInfoDirty)) {
+                    return this._boundingSize;
+                }
+
+                Prim2DBase.boundinbBoxReentrency = true;
+                let b = this.boundingInfo;
+                Prim2DBase.boundinbBoxReentrency = false;
+
+                return this._contentArea;
+            } else
+
             // Check for positioning update
             if (this._isFlagSet(SmartPropertyPrim.flagPositioningDirty)) {
                 this._updatePositioning();
