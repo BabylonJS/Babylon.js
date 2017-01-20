@@ -1260,7 +1260,7 @@ var BABYLON;
             _this._context.fillStyle = "white";
             _this._context.textBaseline = "top";
             var res = _this.getFontHeight(font);
-            _this._lineHeightSuper = res.height + 4;
+            _this._lineHeightSuper = res.height; //+4;
             _this._lineHeight = _this._superSample ? (Math.ceil(_this._lineHeightSuper / 2)) : _this._lineHeightSuper;
             _this._offset = res.offset - 1;
             _this._xMargin = 1 + Math.ceil(_this._lineHeightSuper / 15); // Right now this empiric formula seems to work...
@@ -1905,12 +1905,56 @@ var BABYLON;
             return r;
         };
         /**
+         * return the min/max extend of the bounding info.
+         * x, y, z, w are left, bottom, right and top
+         */
+        BoundingInfo2D.prototype.minMax = function () {
+            var r = BABYLON.Vector4.Zero();
+            this.minMaxToRef(r);
+            return r;
+        };
+        /**
          * Update a vector2 with the max extend of the bounding info
          * @param result must be a valid/allocated vector2 that will contain the result of the operation
          */
         BoundingInfo2D.prototype.maxToRef = function (result) {
             result.x = this.center.x + this.extent.x;
             result.y = this.center.y + this.extent.y;
+        };
+        /**
+         * Update a vector4 with the min/max extend of the bounding info
+         * x, y, z, w are left, bottom, right and top
+         * @param result must be a valid/allocated vector4 that will contain the result of the operation
+         */
+        BoundingInfo2D.prototype.minMaxToRef = function (result) {
+            result.x = this.center.x - this.extent.x;
+            result.y = this.center.y - this.extent.y;
+            result.z = this.center.x + this.extent.x;
+            result.w = this.center.y + this.extent.y;
+        };
+        /**
+         * Return the size of the boundingInfo rect surface
+         */
+        BoundingInfo2D.prototype.size = function () {
+            var r = BABYLON.Size.Zero();
+            this.sizeToRef(r);
+            return r;
+        };
+        /**
+         * Stores in the result object the size of the boundingInfo rect surface
+         * @param result
+         */
+        BoundingInfo2D.prototype.sizeToRef = function (result) {
+            result.width = this.extent.x * 2;
+            result.height = this.extent.y * 2;
+        };
+        /**
+         * Inflate the boundingInfo with the given vector
+         * @param offset the extent will be incremented with offset and the radius will be computed again
+         */
+        BoundingInfo2D.prototype.inflate = function (offset) {
+            this.extent.addInPlace(offset);
+            this.radius = this.extent.length();
         };
         /**
          * Apply a transformation matrix to this BoundingInfo2D and return a new instance containing the result
@@ -3440,8 +3484,12 @@ var BABYLON;
              */
             get: function () {
                 if (this._isFlagSet(SmartPropertyPrim_1.flagLevelBoundingInfoDirty)) {
-                    this.updateLevelBoundingInfo();
-                    this._clearFlags(SmartPropertyPrim_1.flagLevelBoundingInfoDirty);
+                    if (this.updateLevelBoundingInfo()) {
+                        this._clearFlags(SmartPropertyPrim_1.flagLevelBoundingInfoDirty);
+                    }
+                    else {
+                        this._levelBoundingInfo.clear();
+                    }
                 }
                 return this._levelBoundingInfo;
             },
@@ -3452,6 +3500,7 @@ var BABYLON;
          * This method must be overridden by a given Primitive implementation to compute its boundingInfo
          */
         SmartPropertyPrim.prototype.updateLevelBoundingInfo = function () {
+            return false;
         };
         /**
          * Property method called when the Primitive becomes dirty
@@ -4928,7 +4977,7 @@ var BABYLON;
                     var child = _a[_i];
                     _this.addChild(child);
                     // Good time to patch the hierarchy, it won't go very far if there's no need to
-                    if (_this.owner != null) {
+                    if (_this.owner != null && _this._hierarchyDepth != null) {
                         child._patchHierarchy(_this.owner);
                     }
                 }
@@ -5868,11 +5917,15 @@ var BABYLON;
                     if (this.owner) {
                         this.owner.boundingInfoRecomputeCounter.addCount(1, false);
                     }
-                    if (this.isSizedByContent) {
+                    var sizedByContent = this.isSizedByContent;
+                    if (sizedByContent) {
                         this._boundingInfo.clear();
                     }
                     else {
                         this._boundingInfo.copyFrom(this.levelBoundingInfo);
+                        if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
+                            return this._boundingInfo;
+                        }
                     }
                     var bi = this._boundingInfo;
                     var tps = new BABYLON.BoundingInfo2D();
@@ -5882,8 +5935,24 @@ var BABYLON;
                         bb.transformToRef(curChild.localTransform, tps);
                         bi.unionToRef(tps, bi);
                     }
-                    this._boundingInfo.maxToRef(Prim2DBase_1._bMax);
-                    this._boundingSize.copyFromFloats((!this._size || this._size.width == null) ? Math.ceil(Prim2DBase_1._bMax.x) : this._size.width, (!this._size || this._size.height == null) ? Math.ceil(Prim2DBase_1._bMax.y) : this._size.height);
+                    // If the size is determined by the content we have to update the contentArea
+                    //  and compute the size considering the padding (if any)
+                    if (sizedByContent) {
+                        bi.maxToRef(Prim2DBase_1._bMax);
+                        this._contentArea.width = Prim2DBase_1._bMax.x;
+                        this._contentArea.height = Prim2DBase_1._bMax.y;
+                        if (this._hasPadding) {
+                            var padding = this.padding;
+                            var mm = Prim2DBase_1._bMinMax;
+                            bi.minMaxToRef(mm);
+                            mm.z += padding.leftPixels + padding.rightPixels;
+                            mm.w += padding.bottomPixels + padding.topPixels;
+                            this._paddingOffset.copyFromFloats(padding.leftPixels, padding.bottomPixels, padding.rightPixels, padding.topPixels);
+                            BABYLON.BoundingInfo2D.CreateFromMinMaxToRef(mm.x, mm.z, mm.y, mm.w, bi);
+                        }
+                    }
+                    this._boundingInfo.sizeToRef(Prim2DBase_1._bSize);
+                    this._boundingSize.copyFromFloats((!this._size || this._size.width == null) ? Math.ceil(Prim2DBase_1._bSize.width) : this._size.width, (!this._size || this._size.height == null) ? Math.ceil(Prim2DBase_1._bSize.height) : this._size.height);
                     this._clearFlags(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty);
                 }
                 return this._boundingInfo;
@@ -6666,11 +6735,6 @@ var BABYLON;
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so we resize the primitive itself
                 if (isSizeAuto) {
-                    var content = this.size.clone();
-                    this._getActualSizeFromContentToRef(content, Prim2DBase_1._icArea);
-                    this.padding.enlarge(Prim2DBase_1._icArea, this._paddingOffset, Prim2DBase_1._size);
-                    this._contentArea.copyFrom(content);
-                    this.actualSize = Prim2DBase_1._size.clone();
                     // Changing the padding has resize the prim, which forces us to recompute margin again
                     if (this._hasMargin) {
                         this.margin.computeWithAlignment(this.layoutArea, Prim2DBase_1._size, this.marginAlignment, this._marginOffset, Prim2DBase_1._size);
@@ -6715,6 +6779,19 @@ var BABYLON;
              * Children of this primitive will be positioned relative to the bottom/left corner of this area.
              */
             get: function () {
+                if (!this._size || this._size.width == null || this._size.height == null) {
+                    if (Prim2DBase_1.boundinbBoxReentrency) {
+                        return Prim2DBase_1.nullSize;
+                    }
+                    if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
+                        return this._boundingSize;
+                    }
+                    Prim2DBase_1.boundinbBoxReentrency = true;
+                    var b = this.boundingInfo;
+                    Prim2DBase_1.boundinbBoxReentrency = false;
+                    return this._contentArea;
+                }
+                else 
                 // Check for positioning update
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty)) {
                     this._updatePositioning();
@@ -6921,7 +6998,9 @@ var BABYLON;
     Prim2DBase._nullPosition = BABYLON.Vector2.Zero();
     Prim2DBase.boundinbBoxReentrency = false;
     Prim2DBase.nullSize = BABYLON.Size.Zero();
+    Prim2DBase._bMinMax = BABYLON.Vector4.Zero();
     Prim2DBase._bMax = BABYLON.Vector2.Zero();
+    Prim2DBase._bSize = BABYLON.Size.Zero();
     Prim2DBase._tpsBB = new BABYLON.BoundingInfo2D();
     /**
      * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
@@ -8208,8 +8287,8 @@ var BABYLON;
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * rgScale.x * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * rgScale.y * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 /* / w*/, t.m[4] * rgScale.x * 2 /* / w*/, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * rgScale.y * 2 /* / h*/, t.m[5] * rgScale.y * 2 /* / h*/, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
             if (!this.applyActualScaleOnTransform()) {
                 t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
                 t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
@@ -8220,6 +8299,10 @@ var BABYLON;
                 tx = new BABYLON.Vector4(t.m[0], t.m[4], 0, t.m[12]);
                 ty = new BABYLON.Vector4(t.m[1], t.m[5], 0, t.m[13]);
             }
+            tx.x /= w;
+            tx.y /= w;
+            ty.x /= h;
+            ty.y /= h;
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
@@ -8869,6 +8952,7 @@ var BABYLON;
                 size = new BABYLON.Size(0, 0);
             }
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(size, this._levelBoundingInfo);
+            return true;
         };
         // Method called only on renderable groups to prepare the rendering
         Group2D.prototype._prepareGroupRender = function (context) {
@@ -9862,6 +9946,7 @@ var BABYLON;
         };
         Rectangle2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
         Rectangle2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey);
@@ -10258,6 +10343,7 @@ var BABYLON;
         };
         Ellipse2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
         Ellipse2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Ellipse2DRenderCache(this.owner.engine, modelKey);
@@ -10676,6 +10762,7 @@ var BABYLON;
         });
         Sprite2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            return true;
         };
         /**
          * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
@@ -11508,7 +11595,11 @@ var BABYLON;
             return true;
         };
         Text2D.prototype.updateLevelBoundingInfo = function () {
+            if (!this.owner || !this._text) {
+                return false;
+            }
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
         Text2D.prototype.levelIntersect = function (intersectInfo) {
             // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
@@ -12095,6 +12186,7 @@ var BABYLON;
                 this._computeLines2D();
             }
             BABYLON.BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo);
+            return true;
         };
         Lines2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Lines2DRenderCache(this.owner.engine, modelKey);
@@ -13000,7 +13092,9 @@ var BABYLON;
             _this._renderingSize = new BABYLON.Size(0, 0);
             _this._designSize = settings.designSize || null;
             _this._designUseHorizAxis = settings.designUseHorizAxis === true;
-            _this._trackedGroups = new Array();
+            if (!_this._trackedGroups) {
+                _this._trackedGroups = new Array();
+            }
             _this._maxAdaptiveWorldSpaceCanvasSize = null;
             _this._groupCacheMaps = new BABYLON.StringDictionary();
             _this._patchHierarchy(_this);
@@ -13356,6 +13450,8 @@ var BABYLON;
             else {
                 // The pointer is inside the Canvas, do an intersection test
                 this.intersect(ii);
+                // Sort primitives to get them from top to bottom
+                ii.intersectedPrimitives = ii.intersectedPrimitives.sort(function (a, b) { return a.prim.actualZOffset - b.prim.actualZOffset; });
             }
             {
                 // Update prev/actual intersection info, fire "overPrim" property change if needed
@@ -13382,15 +13478,42 @@ var BABYLON;
             if (prevPrim !== actualPrim) {
                 // Detect if the current pointer is captured, only fire event if they belong to the capture primitive
                 var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
-                // Notify the previous "over" prim that the pointer is no longer over it
-                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim && !prevPrim.isDisposed)) {
-                    this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(prevPrim, BABYLON.PrimitivePointerInfo.PointerOut, null);
+                // See the NOTE section of: https://www.w3.org/TR/pointerevents/#setting-pointer-capture
+                if (capturedPrim) {
+                    if (capturedPrim === prevPrim) {
+                        this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
+                        this._bubbleNotifyPrimPointerObserver(prevPrim, BABYLON.PrimitivePointerInfo.PointerOut, null);
+                    }
+                    else if (capturedPrim === actualPrim) {
+                        this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
+                        this._bubbleNotifyPrimPointerObserver(actualPrim, BABYLON.PrimitivePointerInfo.PointerOver, null);
+                    }
                 }
-                // Notify the new "over" prim that the pointer is over it
-                if ((capturedPrim && capturedPrim === actualPrim) || (!capturedPrim && actualPrim)) {
-                    this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(actualPrim, BABYLON.PrimitivePointerInfo.PointerOver, null);
+                else {
+                    var _loop_1 = function (prev) {
+                        if (!BABYLON.Tools.first(this_1._actualIntersectionList, function (pii) { return pii.prim === prev.prim; })) {
+                            this_1._primPointerInfo.updateRelatedTarget(prev.prim, prev.intersectionLocation);
+                            this_1._bubbleNotifyPrimPointerObserver(prev.prim, BABYLON.PrimitivePointerInfo.PointerOut, null);
+                        }
+                    };
+                    var this_1 = this;
+                    // Check for Out & Leave
+                    for (var _i = 0, _a = this._previousIntersectionList; _i < _a.length; _i++) {
+                        var prev = _a[_i];
+                        _loop_1(prev);
+                    }
+                    var _loop_2 = function (actual) {
+                        if (!BABYLON.Tools.first(this_2._previousIntersectionList, function (pii) { return pii.prim === actual.prim; })) {
+                            this_2._primPointerInfo.updateRelatedTarget(actual.prim, actual.intersectionLocation);
+                            this_2._bubbleNotifyPrimPointerObserver(actual.prim, BABYLON.PrimitivePointerInfo.PointerOver, null);
+                        }
+                    };
+                    var this_2 = this;
+                    // Check for Over & Enter
+                    for (var _b = 0, _c = this._actualIntersectionList; _b < _c.length; _b++) {
+                        var actual = _c[_b];
+                        _loop_2(actual);
+                    }
                 }
             }
             this._hoverStatusRenderId = this.scene.getRenderId();
@@ -13418,54 +13541,39 @@ var BABYLON;
                 debug += "  ";
             }
             var pii = this._primPointerInfo;
-            debug += "[RID:" + this.scene.getRenderId() + "] [" + prim.hierarchyDepth + "] event:" + BABYLON.PrimitivePointerInfo.getEventTypeName(mask) + ", id: " + prim.id + " (" + BABYLON.Tools.getClassName(prim) + "), primPos: " + pii.primitivePointerPos.toString() + ", canvasPos: " + pii.canvasPointerPos.toString();
+            debug += "[RID:" + this.scene.getRenderId() + "] [" + prim.hierarchyDepth + "] event:" + BABYLON.PrimitivePointerInfo.getEventTypeName(mask) + ", id: " + prim.id + " (" + BABYLON.Tools.getClassName(prim) + "), primPos: " + pii.primitivePointerPos.toString() + ", canvasPos: " + pii.canvasPointerPos.toString() + ", relatedTarget: " + pii.relatedTarget.id;
             console.log(debug);
         };
         Canvas2D.prototype._bubbleNotifyPrimPointerObserver = function (prim, mask, eventData) {
             var ppi = this._primPointerInfo;
             var event = eventData ? eventData.event : null;
-            // In case of PointerOver/Out we will first notify the parent with PointerEnter/Leave
-            if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) !== 0) {
-                this._notifParents(prim, mask);
-            }
-            var bubbleCancelled = false;
             var cur = prim;
             while (cur && !cur.isDisposed) {
-                // Only trigger the observers if the primitive is intersected (except for out)
-                if (!bubbleCancelled) {
-                    this._updatePrimPointerPos(cur);
-                    // Exec the observers
-                    this._debugExecObserver(cur, mask);
-                    if (!cur._pointerEventObservable.notifyObservers(ppi, mask) && eventData instanceof BABYLON.PointerInfoPre) {
-                        eventData.skipOnPointerObservable = true;
-                        return false;
+                this._updatePrimPointerPos(cur);
+                // For the first level we have to fire Enter or Leave for corresponding Over or Out
+                if (cur === prim) {
+                    // Fire the proper notification
+                    if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
+                        this._debugExecObserver(prim, BABYLON.PrimitivePointerInfo.PointerEnter);
+                        prim._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerEnter);
                     }
-                    this._triggerActionManager(cur, ppi, mask, event);
-                    // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
-                    // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
-                    if (ppi.cancelBubble) {
-                        if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) === 0) {
-                            return false;
-                        }
-                        // We're dealing with PointerOver/Out, let's keep looping to fire PointerEnter/Leave, but not Over/Out anymore
-                        bubbleCancelled = true;
+                    else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
+                        this._debugExecObserver(prim, BABYLON.PrimitivePointerInfo.PointerLeave);
+                        prim._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerLeave);
                     }
                 }
-                // If bubble is cancel we didn't update the Primitive Pointer Pos yet, let's do it
-                if (bubbleCancelled) {
-                    this._updatePrimPointerPos(cur);
+                // Exec the observers
+                this._debugExecObserver(cur, mask);
+                if (!cur._pointerEventObservable.notifyObservers(ppi, mask) && eventData instanceof BABYLON.PointerInfoPre) {
+                    eventData.skipOnPointerObservable = true;
+                    return false;
                 }
-                // NOTE TO MYSELF, this is commented right now because it doesn't seemed needed but I can't figure out why I put this code in the first place
-                //// Trigger a PointerEnter corresponding to the PointerOver
-                //if (mask === PrimitivePointerInfo.PointerOver) {
-                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
-                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
-                //}
-                //// Trigger a PointerLeave corresponding to the PointerOut
-                //else if (mask === PrimitivePointerInfo.PointerOut) {
-                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
-                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
-                //}
+                this._triggerActionManager(cur, ppi, mask, event);
+                // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
+                // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
+                if (ppi.cancelBubble) {
+                    return false;
+                }
                 // Loop to the parent
                 cur = cur.parent;
             }
@@ -13549,23 +13657,6 @@ var BABYLON;
                     var actionEvent = BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
                     prim.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, actionEvent);
                 }
-            }
-        };
-        Canvas2D.prototype._notifParents = function (prim, mask) {
-            var pii = this._primPointerInfo;
-            var curPrim = this;
-            while (curPrim) {
-                this._updatePrimPointerPos(curPrim);
-                // Fire the proper notification
-                if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
-                    this._debugExecObserver(curPrim, BABYLON.PrimitivePointerInfo.PointerEnter);
-                    curPrim._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerEnter);
-                }
-                else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
-                    this._debugExecObserver(curPrim, BABYLON.PrimitivePointerInfo.PointerLeave);
-                    curPrim._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerLeave);
-                }
-                curPrim = curPrim.parent;
             }
         };
         /**
@@ -13831,7 +13922,10 @@ var BABYLON;
              * Return
              */
             get: function () {
-                return this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
+                if (this._actualIntersectionList && this._actualIntersectionList.length > 0) {
+                    return this._actualIntersectionList[0].prim;
+                }
+                return null;
             },
             enumerable: true,
             configurable: true
@@ -13955,10 +14049,13 @@ var BABYLON;
             this._updateGlobalTransformCounter.addCount(count, false);
         };
         Canvas2D.prototype._updateTrackedNodes = function () {
+            // Get the used camera
             var cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
+            // Compute some matrix stuff
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D_1._m);
             var rh = this.engine.getRenderHeight();
             var v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
+            // Compute the screen position of each group that track a given scene node
             for (var _i = 0, _a = this._trackedGroups; _i < _a.length; _i++) {
                 var group = _a[_i];
                 if (group.isDisposed) {
@@ -13972,6 +14069,36 @@ var BABYLON;
                 var s = this.scale;
                 group.x = Math.round(proj.x / s);
                 group.y = Math.round((rh - proj.y) / s);
+            }
+            // If it's a WorldSpaceCanvas and it's tracking a node, let's update the WSC transformation data
+            if (this._trackNode) {
+                var rot = null;
+                var scale = null;
+                var worldmtx = this._trackNode.getWorldMatrix();
+                var pos = worldmtx.getTranslation().add(this._trackNodeOffset);
+                var wsc = this;
+                var wsn = wsc.worldSpaceCanvasNode;
+                if (this._trackNodeBillboard) {
+                    var viewMtx = cam.getViewMatrix().clone().invert();
+                    viewMtx.decompose(Canvas2D_1.tS, Canvas2D_1.tR, Canvas2D_1.tT);
+                    rot = Canvas2D_1.tR.clone();
+                }
+                worldmtx.decompose(Canvas2D_1.tS, Canvas2D_1.tR, Canvas2D_1.tT);
+                var mtx = BABYLON.Matrix.Compose(Canvas2D_1.tS, Canvas2D_1.tR, BABYLON.Vector3.Zero());
+                pos = worldmtx.getTranslation().add(BABYLON.Vector3.TransformCoordinates(this._trackNodeOffset, mtx));
+                if (Canvas2D_1.tS.lengthSquared() !== 1) {
+                    scale = Canvas2D_1.tS.clone();
+                }
+                if (!this._trackNodeBillboard) {
+                    rot = Canvas2D_1.tR.clone();
+                }
+                if (wsn instanceof BABYLON.AbstractMesh) {
+                    wsn.position = pos;
+                    wsn.rotationQuaternion = rot;
+                    if (scale) {
+                        wsn.scaling = scale;
+                    }
+                }
             }
         };
         /**
@@ -14204,6 +14331,9 @@ var BABYLON;
             if (group._isFlagSet(BABYLON.SmartPropertyPrim.flagTrackedGroup)) {
                 return;
             }
+            if (!this._trackedGroups) {
+                this._trackedGroups = new Array();
+            }
             this._trackedGroups.push(group);
             group._setFlags(BABYLON.SmartPropertyPrim.flagTrackedGroup);
         };
@@ -14348,6 +14478,9 @@ var BABYLON;
     Canvas2D._v = BABYLON.Vector3.Zero(); // Must stay zero
     Canvas2D._m = BABYLON.Matrix.Identity();
     Canvas2D._mI = BABYLON.Matrix.Identity(); // Must stay identity
+    Canvas2D.tS = BABYLON.Vector3.Zero();
+    Canvas2D.tT = BABYLON.Vector3.Zero();
+    Canvas2D.tR = BABYLON.Quaternion.Identity();
     /**
      * Define the default size used for both the width and height of a MapTexture to allocate.
      * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
@@ -14367,10 +14500,14 @@ var BABYLON;
          * @param scene the Scene that owns the Canvas
          * @param size the dimension of the Canvas in World Space
          * @param settings a combination of settings, possible ones are
-         *  - children: an array of direct children primitives
-         *  - id: a text identifier, for information purpose only, default is null.
-         *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
-         *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - children: an array of direct children primitives
+         * - id: a text identifier, for information purpose only, default is null.
+         * - unitScaleFactor: if specified the created canvas will be with a width of size.width*unitScaleFactor and a height of size.height.unitScaleFactor. If not specified, the unit of 1 is used. You can use this setting when you're dealing with a 3D world with small coordinates and you need a Canvas having bigger coordinates (typically to display text with better quality).
+         * - worldPosition the position of the Canvas in World Space, default is [0,0,0]
+         * - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - trackNode: if you want the WorldSpaceCanvas to track the position/rotation/scale of a given Scene Node, use this setting to specify the Node to track
+         * - trackNodeOffset: if you use trackNode you may want to specify a 3D Offset to apply to shift the Canvas
+         * - trackNodeBillboard: if true the WorldSpaceCanvas will always face the screen
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
          * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
@@ -14392,7 +14529,12 @@ var BABYLON;
             BABYLON.Prim2DBase._isCanvasInit = true;
             var s = settings;
             s.isScreenSpace = false;
-            s.size = size.clone();
+            if (settings.unitScaleFactor != null) {
+                s.size = size.multiplyByFloats(settings.unitScaleFactor, settings.unitScaleFactor);
+            }
+            else {
+                s.size = size.clone();
+            }
             settings.cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_CANVAS : settings.cachingStrategy;
             if (settings.cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
                 throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
@@ -14404,12 +14546,22 @@ var BABYLON;
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
+            if (settings.trackNode != null) {
+                _this._trackNode = settings.trackNode;
+                _this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : BABYLON.Vector3.Zero();
+                _this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
+            }
+            else {
+                _this._trackNode = null;
+                _this._trackNodeOffset = null;
+                _this._trackNodeBillboard = false;
+            }
             var createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             _this._customWorldSpaceNode = !createWorldSpaceNode;
             var id = settings ? settings.id || null : null;
             // Set the max size of texture allowed for the adaptive render of the world space canvas cached bitmap
             var capMaxTextSize = _this.engine.getCaps().maxRenderTextureSize;
-            var defaultTextSize = (Math.min(capMaxTextSize, 1024)); // Default is 4K if allowed otherwise the max allowed
+            var defaultTextSize = (Math.min(capMaxTextSize, 1024)); // Default is 1K if allowed otherwise the max allowed
             if (settings.maxAdaptiveCanvasSize == null) {
                 _this._maxAdaptiveWorldSpaceCanvasSize = defaultTextSize;
             }
