@@ -63,7 +63,7 @@ module INSPECTOR {
             };
 
             // Testing
-            // console.log("This is a console.log message");
+            //console.log("This is a console.log message");
             // console.log("That's right, console.log calls are hooked to be written in this window");
             // console.log("Object are also stringify-ed", {width:10, height:30, shape:'rectangular'});
             // console.warn("This is a console.warn message");
@@ -83,7 +83,10 @@ module INSPECTOR {
 
         }
 
-        private _message(type:string, message:any) {
+        private _message(type:string, message:any, caller:string) {
+            let callerLine = Helpers.CreateDiv('caller', this._consolePanelContent);
+            callerLine.textContent = caller;
+
             let line = Helpers.CreateDiv(type, this._consolePanelContent);
             if (typeof message === "string") {
                 line.textContent += message ; 
@@ -94,23 +97,50 @@ module INSPECTOR {
         }
 
         private _addConsoleLog(...params : any[]) {
+            
+            // Get caller name if not null
+            let callerFunc = this._addConsoleLog.caller as Function;
+            let caller = callerFunc==null? "Window" : "Function "+callerFunc['name'] + ": ";
+
             for (var i = 0; i < params.length; i++) {
-                this._message('log', params[i]);
-                this._oldConsoleLog(params[i]);
+                this._message('log', params[i], caller);
+                // Write again in console does not work on edge, as the console object                 
+                // is not instantiate if debugger tools is not open
+                if (!Helpers.IsBrowserEdge()) {    
+                    this._oldConsoleLog(params[i]);
+                }
             }
         }
 
         private _addConsoleWarn(...params : any[]) {
+            
+            // Get caller name if not null
+            let callerFunc = this._addConsoleLog.caller as Function;
+            let caller = callerFunc==null? "Window" : callerFunc['name'];
+
             for (var i = 0; i < params.length; i++) {
-                this._message('warn', params[i]);
-                this._oldConsoleWarn(params[i]);
+                this._message('warn', params[i], caller);
+                // Write again in console does not work on edge, as the console object 
+                // is not instantiate if debugger tools is not open
+                if (!Helpers.IsBrowserEdge()) {    
+                    this._oldConsoleWarn(params[i]);
+                }
             }
         }
 
         private _addConsoleError(...params : any[]) {
+            
+            // Get caller name if not null
+            let callerFunc = this._addConsoleLog.caller as Function;
+            let caller = callerFunc==null? "Window" : callerFunc['name'];
+
             for (var i = 0; i < params.length; i++) {
-                this._message('error', params[i]);
-                this._oldConsoleError(params[i]);
+                this._message('error', params[i], caller);
+                // Write again in console does not work on edge, as the console object 
+                // is not instantiate if debugger tools is not open
+                if (!Helpers.IsBrowserEdge()) {    
+                    this._oldConsoleError(params[i]);
+                }
             }
         }
 
