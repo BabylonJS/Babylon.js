@@ -216,7 +216,46 @@
 
         }
 
+        public intersectsMeshes(meshes:Array<AbstractMesh>, fastCheck?: boolean, results?:Array<PickingInfo>): Array<PickingInfo> {
+
+            if(results){
+                results.length = 0;
+            }else{
+                results = [];
+            }
+
+            for(var i = 0; i < meshes.length; i++){
+                var pickInfo = this.intersectsMesh(meshes[i], fastCheck);
+
+                if(pickInfo.hit){
+                    results.push(pickInfo);
+                }
+            }
+
+            results.sort(this._comparePickingInfo);
+
+            return results;
+
+        }
+
+        private _comparePickingInfo(pickingInfoA:PickingInfo, pickingInfoB:PickingInfo): number{
+
+            if(pickingInfoA.distance < pickingInfoB.distance){
+                return -1;
+            }else if(pickingInfoA.distance > pickingInfoB.distance){
+                return 1;
+            }else{
+                return 0;
+            }
+
+        }
+
+        /**
+         *  @Deprecated. Use new RayHelper.show() instead.
+         * */
         public show(scene:Scene, color:Color3): void{
+
+            console.warn('Ray.show() has been deprecated.  Use new RayHelper.show() instead.');
 
             if(!this._show){
 
@@ -236,7 +275,12 @@
 
         }
 
+        /**
+         *  @Deprecated. Use new RayHelper.hide() instead.
+         * */
         public hide(): void{
+
+            console.warn('Ray.hide() has been deprecated.  Use new RayHelper.hide() instead.');
 
             if(this._show){
                 this._show = false;
