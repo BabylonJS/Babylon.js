@@ -6,12 +6,8 @@
         private _tvec: Vector3;
         private _qvec: Vector3;
 
-        private _renderPoints: Vector3[];
-        private _renderLine: LinesMesh;
-        private _renderFunction: () => void;
-        private _scene: Scene;
-        private _show = false;
         private _tmpRay: Ray;
+        private _rayHelper: RayHelper;
 
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
@@ -257,21 +253,11 @@
 
             console.warn('Ray.show() has been deprecated.  Use new RayHelper.show() instead.');
 
-            if(!this._show){
-
-                this._renderFunction = this._render.bind(this);
-                this._show = true;
-                this._scene = scene;
-                this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
-                this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
-
-                this._scene.registerBeforeRender(this._renderFunction);
-
+            if(!this._rayHelper){
+                this._rayHelper = new RayHelper(this);
             }
-
-            if (color) {
-                this._renderLine.color.copyFrom(color);
-            }
+            
+            this._rayHelper.show(scene, color);
 
         }
 
@@ -282,30 +268,10 @@
 
             console.warn('Ray.hide() has been deprecated.  Use new RayHelper.hide() instead.');
 
-            if(this._show){
-                this._show = false;
-                this._scene.unregisterBeforeRender(this._renderFunction);
-                this._scene = null;
+            if(this._rayHelper){
+                this._rayHelper.hide();
+                this._rayHelper = null;
             }
-
-            if(this._renderLine){
-                this._renderLine.dispose();
-                this._renderLine = null;
-                this._renderPoints = null;
-            }
-
-        }
-
-        private _render(): void {
-
-            var point = this._renderPoints[1];
-            var len = Math.min(this.length, 1000000);
-            
-            point.copyFrom(this.direction);
-            point.scaleInPlace(len);
-            point.addInPlace(this.origin);
-
-            Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
 
         }
 
