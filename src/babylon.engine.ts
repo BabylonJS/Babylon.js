@@ -618,12 +618,12 @@
             // Checks if some of the format renders first to allow the use of webgl inspector.
             this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float')
 
-            this._caps.textureFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_float') !== null);
-            this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
+            this._caps.textureFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float');
+            this._caps.textureFloatLinearFiltering = this._caps.textureFloat && this._gl.getExtension('OES_texture_float_linear');
             this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer();            
 
-            this._caps.textureHalfFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_half_float') !== null);
-            this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
+            this._caps.textureHalfFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float');
+            this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'));
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
             
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
