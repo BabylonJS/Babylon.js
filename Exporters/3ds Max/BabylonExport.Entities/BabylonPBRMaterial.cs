@@ -119,10 +119,10 @@ namespace BabylonExport.Entities
         public float[] emissive { get; set; }
 
         [DataMember]
-        public float roughness { get; set; }
+        public float? roughness { get; set; }
 
         [DataMember]
-        public float metallic { get; set; }
+        public float? metallic { get; set; }
 
         [DataMember]
         public bool useRoughnessFromMetallicTextureAlpha { get; set; }
@@ -172,8 +172,9 @@ namespace BabylonExport.Entities
             cameraContrast = 1.0f;
             useEmissiveAsIllumination = false;
 
-            metallic = 0.0f;
-            roughness = 0.0f;
+            // Default Null Metallic Workflow
+            metallic = null;
+            roughness = null;
             useRoughnessFromMetallicTextureAlpha = false;
             useRoughnessFromMetallicTextureGreen = false;
 
