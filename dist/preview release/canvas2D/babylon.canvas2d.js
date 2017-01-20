@@ -3484,8 +3484,12 @@ var BABYLON;
              */
             get: function () {
                 if (this._isFlagSet(SmartPropertyPrim_1.flagLevelBoundingInfoDirty)) {
-                    this.updateLevelBoundingInfo();
-                    this._clearFlags(SmartPropertyPrim_1.flagLevelBoundingInfoDirty);
+                    if (this.updateLevelBoundingInfo()) {
+                        this._clearFlags(SmartPropertyPrim_1.flagLevelBoundingInfoDirty);
+                    }
+                    else {
+                        this._levelBoundingInfo.clear();
+                    }
                 }
                 return this._levelBoundingInfo;
             },
@@ -3496,6 +3500,7 @@ var BABYLON;
          * This method must be overridden by a given Primitive implementation to compute its boundingInfo
          */
         SmartPropertyPrim.prototype.updateLevelBoundingInfo = function () {
+            return false;
         };
         /**
          * Property method called when the Primitive becomes dirty
@@ -5918,6 +5923,9 @@ var BABYLON;
                     }
                     else {
                         this._boundingInfo.copyFrom(this.levelBoundingInfo);
+                        if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
+                            return this._boundingInfo;
+                        }
                     }
                     var bi = this._boundingInfo;
                     var tps = new BABYLON.BoundingInfo2D();
@@ -8944,6 +8952,7 @@ var BABYLON;
                 size = new BABYLON.Size(0, 0);
             }
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(size, this._levelBoundingInfo);
+            return true;
         };
         // Method called only on renderable groups to prepare the rendering
         Group2D.prototype._prepareGroupRender = function (context) {
@@ -9937,6 +9946,7 @@ var BABYLON;
         };
         Rectangle2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
         Rectangle2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey);
@@ -10333,6 +10343,7 @@ var BABYLON;
         };
         Ellipse2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
         Ellipse2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Ellipse2DRenderCache(this.owner.engine, modelKey);
@@ -10751,6 +10762,7 @@ var BABYLON;
         });
         Sprite2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            return true;
         };
         /**
          * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
@@ -11583,7 +11595,11 @@ var BABYLON;
             return true;
         };
         Text2D.prototype.updateLevelBoundingInfo = function () {
+            if (!this.owner || !this._text) {
+                return false;
+            }
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
         Text2D.prototype.levelIntersect = function (intersectInfo) {
             // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
@@ -12170,6 +12186,7 @@ var BABYLON;
                 this._computeLines2D();
             }
             BABYLON.BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo);
+            return true;
         };
         Lines2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Lines2DRenderCache(this.owner.engine, modelKey);
