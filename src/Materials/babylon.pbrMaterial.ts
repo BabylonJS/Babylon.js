@@ -938,7 +938,7 @@
                 this._defines.RADIANCEOVERALPHA = true;
             }
 
-            if (this.metallic !== undefined || this.roughness !== undefined) {
+            if ((this.metallic !== undefined && this.metallic !== null) || (this.roughness !== undefined && this.roughness !== null)) {
                 this._defines.METALLICWORKFLOW = true;
             }
 
