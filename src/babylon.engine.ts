@@ -1385,6 +1385,9 @@
         }
 
         private _bindIndexBufferWithCache(indexBuffer: WebGLBuffer): void {            
+            if (indexBuffer == null) {
+                return;
+            }
             if (this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this.bindIndexBuffer(indexBuffer);
