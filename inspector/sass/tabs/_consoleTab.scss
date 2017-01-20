@@ -22,7 +22,12 @@
 
         .defaut-line {
             word-wrap: break-word;
+            padding: 3px 0 3px 5px;
+        }
+
+        .caller {
             padding: 3px 0 3px 0;
+            color:darken($color-bot, 10%);
         }
 
         .log {  
