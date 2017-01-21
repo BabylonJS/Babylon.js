@@ -148,6 +148,7 @@ module INSPECTOR {
                 this._buildInspector(inspector);   
                 // Send resize event to the window
                 Helpers.SEND_EVENT('resize');
+                this._tabbar.updateWidth();
             }
 
             // Refresh the inspector if the browser is not edge
@@ -297,10 +298,17 @@ module INSPECTOR {
                 this._c2diwrapper  = Helpers.CreateDiv('insp-wrapper', popup.document.body);
                 // add inspector     
                 let inspector      = Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                inspector.classList.add('popupmode');
                 // and build it in the popup  
                 this._buildInspector(inspector); 
                 // Rebuild it
                 this.refresh(); 
+
+                popup.addEventListener('resize', () => {                    
+                    if (this._tabbar) {
+                        this._tabbar.updateWidth()
+                    }
+                });
             }             
         }
     }
