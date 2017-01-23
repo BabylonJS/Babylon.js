@@ -31,7 +31,8 @@
     "css-loader": "^0.25.0",
     "style-loader": "^0.13.1",
     "exports-loader": "^0.6.3",
-    "imports-loader": "^0.7.0"
+    "imports-loader": "^0.7.0",
+    "gulp-zip": "~3.2.0"
   },
   "scripts": {
     "install": "npm --prefix ../../Playground/ install ../../Playground/ && gulp typescript-compile && gulp typescript-libraries && gulp deployLocalDev"
