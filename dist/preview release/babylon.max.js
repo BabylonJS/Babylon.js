@@ -8095,24 +8095,6 @@ var BABYLON;
             this.bindIndexBuffer(null);
             this.bindArrayBuffer(null);
         };
-        Engine.prototype.setSamplingMode = function (texture, samplingMode) {
-            var gl = this._gl;
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
-            var magFilter = gl.NEAREST;
-            var minFilter = gl.NEAREST;
-            if (samplingMode === BABYLON.Texture.BILINEAR_SAMPLINGMODE) {
-                magFilter = gl.LINEAR;
-                minFilter = gl.LINEAR;
-            }
-            else if (samplingMode === BABYLON.Texture.TRILINEAR_SAMPLINGMODE) {
-                magFilter = gl.LINEAR;
-                minFilter = gl.LINEAR_MIPMAP_LINEAR;
-            }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
-            this._bindTextureDirectly(gl.TEXTURE_2D, null);
-            texture.samplingMode = samplingMode;
-        };
         /**
          * Set the compressed texture format to use, based on the formats you have, and the formats
          * supported by the hardware / browser.
@@ -8363,6 +8345,7 @@ var BABYLON;
                 this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             }
+            texture.samplingMode = samplingMode;
         };
         Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY, premulAlpha) {
             if (premulAlpha === void 0) { premulAlpha = false; }

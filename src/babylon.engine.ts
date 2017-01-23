@@ -2023,29 +2023,6 @@
             this.bindArrayBuffer(null);
         }
 
-        public setSamplingMode(texture: WebGLTexture, samplingMode: number): void {
-            var gl = this._gl;
-
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
-
-            var magFilter = gl.NEAREST;
-            var minFilter = gl.NEAREST;
-
-            if (samplingMode === Texture.BILINEAR_SAMPLINGMODE) {
-                magFilter = gl.LINEAR;
-                minFilter = gl.LINEAR;
-            } else if (samplingMode === Texture.TRILINEAR_SAMPLINGMODE) {
-                magFilter = gl.LINEAR;
-                minFilter = gl.LINEAR_MIPMAP_LINEAR;
-            }
-
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
-
-            this._bindTextureDirectly(gl.TEXTURE_2D, null);
-
-            texture.samplingMode = samplingMode;
-        }
         /**
          * Set the compressed texture format to use, based on the formats you have, and the formats
          * supported by the hardware / browser.
@@ -2315,7 +2292,7 @@
 
         public updateTextureSamplingMode(samplingMode: number, texture: WebGLTexture): void {
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
-
+ 
             if (texture.isCube) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture);
 
@@ -2329,6 +2306,8 @@
                 this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
             }
+
+             texture.samplingMode = samplingMode;
         }
 
         public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false): void {
