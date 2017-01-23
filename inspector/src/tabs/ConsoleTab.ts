@@ -60,6 +60,7 @@ module INSPECTOR {
             this._bjsPanelContent.innerHTML = BABYLON.Tools.LogCache;
             BABYLON.Tools.OnNewCacheEntry = (entry: string) => {
                 this._bjsPanelContent.innerHTML += entry;
+                this._bjsPanelContent.scrollTop = this._bjsPanelContent.scrollHeight; 
             };
 
             // Testing
@@ -94,6 +95,7 @@ module INSPECTOR {
                 line.textContent += JSON.stringify(message) ;
                 line.classList.add('object')
             }
+            this._consolePanelContent.scrollTop = this._consolePanelContent.scrollHeight; 
         }
 
         private _addConsoleLog(...params : any[]) {
