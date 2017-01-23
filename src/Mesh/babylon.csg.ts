@@ -159,7 +159,7 @@
         }
 
         public clone(): Polygon {
-            var vertices = this.vertices.map(v => v.clone()).filter(v => v.plane);
+            var vertices = this.vertices.map(v => v.clone());
             return new Polygon(vertices, this.shared);
         }
 
