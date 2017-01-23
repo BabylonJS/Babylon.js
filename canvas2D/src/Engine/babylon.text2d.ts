@@ -531,7 +531,8 @@
                 let charWidths = [];
                 let charsPerLine = [];
                 let charCount = 0;
-                let maxWidth = this.contentArea.width;
+                let contentAreaWidth = this.contentArea.width;
+                let contentAreaHeight = this.contentArea.height;
                 let numCharsCurrentWord = 0;
                 let widthCurrentWord = 0;
                 let numWordsPerLine = 0;
@@ -583,7 +584,7 @@
                         widthCurrentWord += ci.charWidth;
                     }
 
-                    if (this._wordWrap && numWordsPerLine > 0 && offset.x > maxWidth) {
+                    if (this._wordWrap && numWordsPerLine > 0 && offset.x > contentAreaWidth) {
 
                         lineLengths.push(offset.x - widthCurrentWord);
                         charCount -= numCharsCurrentWord;
@@ -593,12 +594,6 @@
                         while (this._isWhiteSpaceCharHoriz(text[j])) {
                             lineLengths[lineLengths.length - 1] -= charWidths[j];
                             j--;
-                        }
-
-                        //skip white space at the beginning of next line
-                        while (this._isWhiteSpaceCharHoriz(text[i+1])) {
-                            i++;
-                            charCount++;
                         }
 
                         charsPerLine.push(charCount);
@@ -628,21 +623,23 @@
                 }
 
                 let textHeight = lineLengths.length * lh;
-                let offsetX = 0;
-                offset.y += this.size.height + textHeight - lh;
-
+                let offsetX = this.padding.leftPixels;
+                
                 if (alignH == TextAlign.Right) {
-                    offsetX = this.size.width - maxLineLen;
+                    offsetX += contentAreaWidth - maxLineLen;
                 } else if (alignH == TextAlign.Center) {
-                    offsetX = (this.size.width - maxLineLen) * .5;
+                    offsetX += (contentAreaWidth - maxLineLen) * .5;
                 }
 
                 offset.x += offsetX;
 
+                offset.y += contentAreaHeight + textHeight - lh;
+                offset.y += this.padding.bottomPixels;
+
                 if (alignV == TextAlign.Bottom) {
-                    offset.y -= this.height;
+                    offset.y -= contentAreaHeight;
                 }else if (alignV == TextAlign.Center) {
-                    offset.y -= (this.height - textHeight) * .5 + lineLengths.length * lh;
+                    offset.y -= (contentAreaHeight - textHeight) * .5 + lineLengths.length * lh;
                 }else {
                     offset.y -= lineLengths.length * lh;
                 }
