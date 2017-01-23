@@ -108,6 +108,7 @@ var INSPECTOR;
                 this._buildInspector(inspector);
                 // Send resize event to the window
                 INSPECTOR.Helpers.SEND_EVENT('resize');
+                this._tabbar.updateWidth();
             }
             // Refresh the inspector if the browser is not edge
             if (!INSPECTOR.Helpers.IsBrowserEdge()) {
@@ -219,6 +220,7 @@ var INSPECTOR;
          * Set 'firstTime' to true if there is no inspector created beforehands
          */
         Inspector.prototype.openPopup = function (firstTime) {
+            var _this = this;
             if (INSPECTOR.Helpers.IsBrowserEdge()) {
                 console.warn('Inspector - Popup mode is disabled in Edge, as the popup DOM cannot be updated from the main window for security reasons');
             }
@@ -251,10 +253,16 @@ var INSPECTOR;
                 this._c2diwrapper = INSPECTOR.Helpers.CreateDiv('insp-wrapper', popup.document.body);
                 // add inspector     
                 var inspector = INSPECTOR.Helpers.CreateDiv('insp-right-panel', this._c2diwrapper);
+                inspector.classList.add('popupmode');
                 // and build it in the popup  
                 this._buildInspector(inspector);
                 // Rebuild it
                 this.refresh();
+                popup.addEventListener('resize', function () {
+                    if (_this._tabbar) {
+                        _this._tabbar.updateWidth();
+                    }
+                });
             }
         };
         return Inspector;
@@ -2665,6 +2673,139 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var INSPECTOR;
 (function (INSPECTOR) {
+    /**
+     * The console tab will have two features :
+     * - hook all console.log call and display them in this panel (and in the browser console as well)
+     * - display all Babylon logs (called with Tools.Log...)
+     */
+    var ConsoleTab = (function (_super) {
+        __extends(ConsoleTab, _super);
+        function ConsoleTab(tabbar, insp) {
+            var _this = _super.call(this, tabbar, 'Console') || this;
+            _this._inspector = insp;
+            // Build the shaders panel : a div that will contains the shaders tree and both shaders panels
+            _this._panel = INSPECTOR.Helpers.CreateDiv('tab-panel');
+            var consolePanel = INSPECTOR.Helpers.CreateDiv('console-panel');
+            var bjsPanel = INSPECTOR.Helpers.CreateDiv('console-panel');
+            _this._panel.appendChild(consolePanel);
+            _this._panel.appendChild(bjsPanel);
+            Split([consolePanel, bjsPanel], {
+                blockDrag: _this._inspector.popupMode,
+                sizes: [50, 50],
+                direction: 'vertical'
+            });
+            // Titles
+            var title = INSPECTOR.Helpers.CreateDiv('console-panel-title', consolePanel);
+            title.textContent = 'Console logs';
+            title = INSPECTOR.Helpers.CreateDiv('console-panel-title', bjsPanel);
+            title.textContent = 'Babylon.js logs';
+            // Contents
+            _this._consolePanelContent = INSPECTOR.Helpers.CreateDiv('console-panel-content', consolePanel);
+            _this._bjsPanelContent = INSPECTOR.Helpers.CreateDiv('console-panel-content', bjsPanel);
+            // save old console.log
+            _this._oldConsoleLog = console.log;
+            _this._oldConsoleWarn = console.warn;
+            _this._oldConsoleError = console.error;
+            console.log = _this._addConsoleLog.bind(_this);
+            console.warn = _this._addConsoleWarn.bind(_this);
+            console.error = _this._addConsoleError.bind(_this);
+            // Bjs logs
+            _this._bjsPanelContent.innerHTML = BABYLON.Tools.LogCache;
+            BABYLON.Tools.OnNewCacheEntry = function (entry) {
+                _this._bjsPanelContent.innerHTML += entry;
+            };
+            return _this;
+            // Testing
+            //console.log("This is a console.log message");
+            // console.log("That's right, console.log calls are hooked to be written in this window");
+            // console.log("Object are also stringify-ed", {width:10, height:30, shape:'rectangular'});
+            // console.warn("This is a console.warn message");
+            // console.error("This is a console.error message");
+            // BABYLON.Tools.Log("This is a message");
+            // BABYLON.Tools.Warn("This is a warning");
+            // BABYLON.Tools.Error("This is a error");
+        }
+        /** Overrides super.dispose */
+        ConsoleTab.prototype.dispose = function () {
+            console.log = this._oldConsoleLog;
+            console.warn = this._oldConsoleWarn;
+            console.error = this._oldConsoleError;
+        };
+        ConsoleTab.prototype._message = function (type, message, caller) {
+            var callerLine = INSPECTOR.Helpers.CreateDiv('caller', this._consolePanelContent);
+            callerLine.textContent = caller;
+            var line = INSPECTOR.Helpers.CreateDiv(type, this._consolePanelContent);
+            if (typeof message === "string") {
+                line.textContent += message;
+            }
+            else {
+                line.textContent += JSON.stringify(message);
+                line.classList.add('object');
+            }
+        };
+        ConsoleTab.prototype._addConsoleLog = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            // Get caller name if not null
+            var callerFunc = this._addConsoleLog.caller;
+            var caller = callerFunc == null ? "Window" : "Function " + callerFunc['name'] + ": ";
+            for (var i = 0; i < params.length; i++) {
+                this._message('log', params[i], caller);
+                // Write again in console does not work on edge, as the console object                 
+                // is not instantiate if debugger tools is not open
+                if (!INSPECTOR.Helpers.IsBrowserEdge()) {
+                    this._oldConsoleLog(params[i]);
+                }
+            }
+        };
+        ConsoleTab.prototype._addConsoleWarn = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            // Get caller name if not null
+            var callerFunc = this._addConsoleLog.caller;
+            var caller = callerFunc == null ? "Window" : callerFunc['name'];
+            for (var i = 0; i < params.length; i++) {
+                this._message('warn', params[i], caller);
+                // Write again in console does not work on edge, as the console object 
+                // is not instantiate if debugger tools is not open
+                if (!INSPECTOR.Helpers.IsBrowserEdge()) {
+                    this._oldConsoleWarn(params[i]);
+                }
+            }
+        };
+        ConsoleTab.prototype._addConsoleError = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            // Get caller name if not null
+            var callerFunc = this._addConsoleLog.caller;
+            var caller = callerFunc == null ? "Window" : callerFunc['name'];
+            for (var i = 0; i < params.length; i++) {
+                this._message('error', params[i], caller);
+                // Write again in console does not work on edge, as the console object 
+                // is not instantiate if debugger tools is not open
+                if (!INSPECTOR.Helpers.IsBrowserEdge()) {
+                    this._oldConsoleError(params[i]);
+                }
+            }
+        };
+        return ConsoleTab;
+    }(INSPECTOR.Tab));
+    INSPECTOR.ConsoleTab = ConsoleTab;
+})(INSPECTOR || (INSPECTOR = {}));
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var INSPECTOR;
+(function (INSPECTOR) {
     var StatsTab = (function (_super) {
         __extends(StatsTab, _super);
         function StatsTab(tabbar, insp) {
@@ -2957,6 +3098,7 @@ var INSPECTOR;
             _this._visibleTabs = [];
             _this._inspector = inspector;
             _this._tabs.push(new INSPECTOR.SceneTab(_this, _this._inspector));
+            _this._tabs.push(new INSPECTOR.ConsoleTab(_this, _this._inspector));
             _this._tabs.push(new INSPECTOR.StatsTab(_this, _this._inspector));
             _this._meshTab = new INSPECTOR.MeshTab(_this, _this._inspector);
             _this._tabs.push(_this._meshTab);

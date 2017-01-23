@@ -6669,11 +6669,11 @@ var BABYLON;
             this._caps.drawBuffersExtension = this._webGLVersion > 1 || this._gl.getExtension('WEBGL_draw_buffers');
             // Checks if some of the format renders first to allow the use of webgl inspector.
             this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
-            this._caps.textureFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_float') !== null);
-            this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
+            this._caps.textureFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float');
+            this._caps.textureFloatLinearFiltering = this._caps.textureFloat && this._gl.getExtension('OES_texture_float_linear');
             this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer();
-            this._caps.textureHalfFloat = this._webGLVersion > 1 || (this._gl.getExtension('OES_texture_half_float') !== null);
-            this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float_linear');
+            this._caps.textureHalfFloat = this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float');
+            this._caps.textureHalfFloatLinearFiltering = this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'));
             this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
             this._caps.textureLOD = this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod');
             // Vertex array object 
@@ -7598,6 +7598,9 @@ var BABYLON;
             }
         };
         Engine.prototype._bindIndexBufferWithCache = function (indexBuffer) {
+            if (indexBuffer == null) {
+                return;
+            }
             if (this._cachedIndexBuffer !== indexBuffer) {
                 this._cachedIndexBuffer = indexBuffer;
                 this.bindIndexBuffer(indexBuffer);
@@ -8701,6 +8704,11 @@ var BABYLON;
                 textureType = gl.FLOAT;
             }
             var internalFormat = this._getInternalFormat(format);
+            var needConversion = false;
+            if (internalFormat === gl.RGB) {
+                internalFormat = gl.RGBA;
+                needConversion = true;
+            }
             var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
             var width = size;
             var height = width;
@@ -8732,47 +8740,27 @@ var BABYLON;
                     arrayTemp.push(rgbeDataArrays[2]); // +Z
                     arrayTemp.push(rgbeDataArrays[5]); // -Z
                     var mipData = mipmmapGenerator(arrayTemp);
+                    // mipData is order in +X -X +Y -Y +Z -Z
+                    var mipFaces = [0, 2, 4, 1, 3, 5];
                     for (var level = 0; level < mipData.length; level++) {
                         var mipSize = width >> level;
-                        // mipData is order in +X -X +Y -Y +Z -Z
-                        gl.texImage2D(facesIndex[0], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
-                        gl.texImage2D(facesIndex[1], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
-                        gl.texImage2D(facesIndex[2], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
-                        gl.texImage2D(facesIndex[3], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
-                        gl.texImage2D(facesIndex[4], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
-                        gl.texImage2D(facesIndex[5], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                        for (var mipIndex in mipFaces) {
+                            var mipFaceData = mipData[level][mipFaces[mipIndex]];
+                            if (needConversion) {
+                                mipFaceData = _this._convertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
+                            }
+                            gl.texImage2D(facesIndex[mipIndex], level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipFaceData);
+                        }
                     }
                 }
                 else {
-                    if (internalFormat === gl.RGB) {
-                        internalFormat = gl.RGBA;
-                        // Data are known to be in +X +Y +Z -X -Y -Z
-                        for (var index = 0; index < facesIndex.length; index++) {
-                            var faceData = rgbeDataArrays[index];
-                            // Create a new RGBA Face.
-                            var newFaceData = new Float32Array(width * height * 4);
-                            for (var x = 0; x < width; x++) {
-                                for (var y = 0; y < height; y++) {
-                                    var index_1 = (y * width + x) * 3;
-                                    var newIndex = (y * width + x) * 4;
-                                    // Map Old Value to new value.
-                                    newFaceData[newIndex + 0] = faceData[index_1 + 0];
-                                    newFaceData[newIndex + 1] = faceData[index_1 + 1];
-                                    newFaceData[newIndex + 2] = faceData[index_1 + 2];
-                                    // Add fully opaque alpha channel.
-                                    newFaceData[newIndex + 3] = 1;
-                                }
-                            }
-                            // Reupload the face.
-                            gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, newFaceData);
+                    // Data are known to be in +X +Y +Z -X -Y -Z
+                    for (var index = 0; index < facesIndex.length; index++) {
+                        var faceData = rgbeDataArrays[index];
+                        if (needConversion) {
+                            faceData = _this._convertRGBtoRGBATextureData(faceData, width, height, type);
                         }
-                    }
-                    else {
-                        // Data are known to be in +X +Y +Z -X -Y -Z
-                        for (var index = 0; index < facesIndex.length; index++) {
-                            var faceData = rgbeDataArrays[index];
-                            gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
-                        }
+                        gl.texImage2D(facesIndex[index], 0, internalSizedFomat, width, height, 0, internalFormat, textureType, faceData);
                     }
                     if (!noMipmap && isPot) {
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -8806,6 +8794,30 @@ var BABYLON;
             return texture;
         };
         ;
+        Engine.prototype._convertRGBtoRGBATextureData = function (rgbData, width, height, textureType) {
+            // Create new RGBA data container.
+            var rgbaData;
+            if (textureType === Engine.TEXTURETYPE_FLOAT) {
+                rgbaData = new Float32Array(width * height * 4);
+            }
+            else {
+                rgbaData = new Uint32Array(width * height * 4);
+            }
+            // Convert each pixel.
+            for (var x = 0; x < width; x++) {
+                for (var y = 0; y < height; y++) {
+                    var index = (y * width + x) * 3;
+                    var newIndex = (y * width + x) * 4;
+                    // Map Old Value to new value.
+                    rgbaData[newIndex + 0] = rgbData[index + 0];
+                    rgbaData[newIndex + 1] = rgbData[index + 1];
+                    rgbaData[newIndex + 2] = rgbData[index + 2];
+                    // Add fully opaque alpha channel.
+                    rgbaData[newIndex + 3] = 1;
+                }
+            }
+            return rgbaData;
+        };
         Engine.prototype._releaseTexture = function (texture) {
             var gl = this._gl;
             if (texture._framebuffer) {
@@ -10143,7 +10155,6 @@ var BABYLON;
             this.origin = origin;
             this.direction = direction;
             this.length = length;
-            this._show = false;
         }
         // Methods
         Ray.prototype.intersectsBoxMinMax = function (minimum, maximum) {
@@ -10307,38 +10318,52 @@ var BABYLON;
             }
             return mesh.intersects(this._tmpRay, fastCheck);
         };
+        Ray.prototype.intersectsMeshes = function (meshes, fastCheck, results) {
+            if (results) {
+                results.length = 0;
+            }
+            else {
+                results = [];
+            }
+            for (var i = 0; i < meshes.length; i++) {
+                var pickInfo = this.intersectsMesh(meshes[i], fastCheck);
+                if (pickInfo.hit) {
+                    results.push(pickInfo);
+                }
+            }
+            results.sort(this._comparePickingInfo);
+            return results;
+        };
+        Ray.prototype._comparePickingInfo = function (pickingInfoA, pickingInfoB) {
+            if (pickingInfoA.distance < pickingInfoB.distance) {
+                return -1;
+            }
+            else if (pickingInfoA.distance > pickingInfoB.distance) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        };
+        /**
+         *  @Deprecated. Use new RayHelper.show() instead.
+         * */
         Ray.prototype.show = function (scene, color) {
-            if (!this._show) {
-                this._renderFunction = this._render.bind(this);
-                this._show = true;
-                this._scene = scene;
-                this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
-                this._renderLine = BABYLON.Mesh.CreateLines("ray", this._renderPoints, scene, true);
-                this._scene.registerBeforeRender(this._renderFunction);
+            console.warn('Ray.show() has been deprecated.  Use new RayHelper.show() instead.');
+            if (!this._rayHelper) {
+                this._rayHelper = new BABYLON.RayHelper(this);
             }
-            if (color) {
-                this._renderLine.color.copyFrom(color);
-            }
+            this._rayHelper.show(scene, color);
         };
+        /**
+         *  @Deprecated. Use new RayHelper.hide() instead.
+         * */
         Ray.prototype.hide = function () {
-            if (this._show) {
-                this._show = false;
-                this._scene.unregisterBeforeRender(this._renderFunction);
-                this._scene = null;
+            console.warn('Ray.hide() has been deprecated.  Use new RayHelper.hide() instead.');
+            if (this._rayHelper) {
+                this._rayHelper.hide();
+                this._rayHelper = null;
             }
-            if (this._renderLine) {
-                this._renderLine.dispose();
-                this._renderLine = null;
-                this._renderPoints = null;
-            }
-        };
-        Ray.prototype._render = function () {
-            var point = this._renderPoints[1];
-            var len = Math.min(this.length, 1000000);
-            point.copyFrom(this.direction);
-            point.scaleInPlace(len);
-            point.addInPlace(this.origin);
-            BABYLON.Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
         };
         /**
          * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
@@ -23074,7 +23099,7 @@ var BABYLON;
          */
         MeshBuilder.CreateBox = function (name, options, scene) {
             var box = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             box.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, options.updatable);
@@ -23094,7 +23119,7 @@ var BABYLON;
          */
         MeshBuilder.CreateSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             sphere.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
@@ -23112,7 +23137,7 @@ var BABYLON;
          */
         MeshBuilder.CreateDisc = function (name, options, scene) {
             var disc = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             disc.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateDisc(options);
             vertexData.applyToMesh(disc, options.updatable);
@@ -23131,7 +23156,7 @@ var BABYLON;
          */
         MeshBuilder.CreateIcoSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             sphere.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateIcoSphere(options);
             vertexData.applyToMesh(sphere, options.updatable);
@@ -23159,7 +23184,7 @@ var BABYLON;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
             var offset = options.offset;
-            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var updatable = options.updatable;
             if (instance) {
@@ -23284,7 +23309,7 @@ var BABYLON;
          */
         MeshBuilder.CreateCylinder = function (name, options, scene) {
             var cylinder = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             cylinder.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateCylinder(options);
             vertexData.applyToMesh(cylinder, options.updatable);
@@ -23302,7 +23327,7 @@ var BABYLON;
          */
         MeshBuilder.CreateTorus = function (name, options, scene) {
             var torus = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             torus.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateTorus(options);
             vertexData.applyToMesh(torus, options.updatable);
@@ -23321,7 +23346,7 @@ var BABYLON;
          */
         MeshBuilder.CreateTorusKnot = function (name, options, scene) {
             var torusKnot = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             torusKnot.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
             vertexData.applyToMesh(torusKnot, options.updatable);
@@ -23476,7 +23501,7 @@ var BABYLON;
             var rotation = options.rotation || 0;
             var cap = (options.cap === 0) ? 0 : options.cap || BABYLON.Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance, invertUV);
@@ -23525,7 +23550,7 @@ var BABYLON;
             var ribbonClosePath = options.ribbonClosePath || false;
             var cap = (options.cap === 0) ? 0 : options.cap || BABYLON.Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance, invertUV);
@@ -23554,7 +23579,7 @@ var BABYLON;
             var radius = options.radius || 1;
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
-            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
             var paths = new Array();
@@ -23597,7 +23622,7 @@ var BABYLON;
          */
         MeshBuilder.CreatePlane = function (name, options, scene) {
             var plane = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             plane.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, options.updatable);
@@ -23744,7 +23769,7 @@ var BABYLON;
             var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var invertUV = options.invertUV || false;
             var updatable = options.updatable;
-            var sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             var instance = options.instance;
             options.arc = (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
             // tube geometry
@@ -23850,7 +23875,7 @@ var BABYLON;
          */
         MeshBuilder.CreatePolyhedron = function (name, options, scene) {
             var polyhedron = new BABYLON.Mesh(name, scene);
-            options.sideOrientation = this.updateSideOrientation(options.sideOrientation, scene);
+            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation, scene);
             polyhedron.sideOrientation = options.sideOrientation;
             var vertexData = BABYLON.VertexData.CreatePolyhedron(options);
             vertexData.applyToMesh(polyhedron, options.updatable);
@@ -30882,20 +30907,35 @@ var BABYLON;
             this._paused = false;
         };
         Animatable.prototype.stop = function (animationName) {
-            var idx = this._scene._activeAnimatables.indexOf(this);
-            if (idx > -1) {
-                var animations = this._animations;
-                var numberOfAnimationsStopped = 0;
-                for (var index = animations.length - 1; index >= 0; index--) {
-                    if (typeof animationName === "string" && animations[index].name != animationName) {
-                        continue;
+            if (animationName) {
+                var idx = this._scene._activeAnimatables.indexOf(this);
+                if (idx > -1) {
+                    var animations = this._animations;
+                    var numberOfAnimationsStopped = 0;
+                    for (var index = animations.length - 1; index >= 0; index--) {
+                        if (typeof animationName === "string" && animations[index].name != animationName) {
+                            continue;
+                        }
+                        animations[index].reset();
+                        animations.splice(index, 1);
+                        numberOfAnimationsStopped++;
                     }
-                    animations[index].reset();
-                    animations.splice(index, 1);
-                    numberOfAnimationsStopped++;
+                    if (animations.length == numberOfAnimationsStopped) {
+                        this._scene._activeAnimatables.splice(idx, 1);
+                        if (this.onAnimationEnd) {
+                            this.onAnimationEnd();
+                        }
+                    }
                 }
-                if (animations.length == numberOfAnimationsStopped) {
-                    this._scene._activeAnimatables.splice(idx, 1);
+            }
+            else {
+                var index = this._scene._activeAnimatables.indexOf(this);
+                if (index > -1) {
+                    this._scene._activeAnimatables.splice(index, 1);
+                    var animations = this._animations;
+                    for (var index = 0; index < animations.length; index++) {
+                        animations[index].reset();
+                    }
                     if (this.onAnimationEnd) {
                         this.onAnimationEnd();
                     }
@@ -52828,7 +52868,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 
@@ -55007,7 +55047,7 @@ var BABYLON;
             if (this.useRadianceOverAlpha) {
                 this._defines.RADIANCEOVERALPHA = true;
             }
-            if (this.metallic !== undefined || this.roughness !== undefined) {
+            if ((this.metallic !== undefined && this.metallic !== null) || (this.roughness !== undefined && this.roughness !== null)) {
                 this._defines.METALLICWORKFLOW = true;
             }
             // Attribs

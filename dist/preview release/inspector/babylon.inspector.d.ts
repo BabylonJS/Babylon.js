@@ -707,6 +707,29 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    /**
+     * The console tab will have two features :
+     * - hook all console.log call and display them in this panel (and in the browser console as well)
+     * - display all Babylon logs (called with Tools.Log...)
+     */
+    class ConsoleTab extends Tab {
+        private _inspector;
+        private _consolePanelContent;
+        private _bjsPanelContent;
+        private _oldConsoleLog;
+        private _oldConsoleWarn;
+        private _oldConsoleError;
+        constructor(tabbar: TabBar, insp: Inspector);
+        /** Overrides super.dispose */
+        dispose(): void;
+        private _message(type, message, caller);
+        private _addConsoleLog(...params);
+        private _addConsoleWarn(...params);
+        private _addConsoleError(...params);
+    }
+}
+
+declare module INSPECTOR {
     class StatsTab extends Tab {
         private _inspector;
         /**
