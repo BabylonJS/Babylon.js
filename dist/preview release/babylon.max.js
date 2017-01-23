@@ -21439,8 +21439,10 @@ var BABYLON;
          * The parameter `url` is a string, the URL from the image file is to be downloaded.
          * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
          * The parameter `onSuccess` is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
+         * The parameter `uvOffset` is an optional vector2 used to offset UV.
+         * The parameter `uvScale` is an optional vector2 used to scale UV.
          */
-        Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight, onSuccess) {
+        Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight, onSuccess, uvOffset, uvScale) {
             var _this = this;
             var scene = this.getScene();
             var onload = function (img) {
@@ -21455,7 +21457,7 @@ var BABYLON;
                 // Create VertexData from map data
                 //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
-                _this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
+                _this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight, uvOffset, uvScale);
                 //execute success callback, if set
                 if (onSuccess) {
                     onSuccess(_this);
@@ -21471,8 +21473,10 @@ var BABYLON;
          * The parameter `buffer` is a `Uint8Array` buffer containing series of `Uint8` lower than 255, the red, green, blue and alpha values of each successive pixel.
          * The parameters `heightMapWidth` and `heightMapHeight` are positive integers to set the width and height of the buffer image.
          * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
+         * The parameter `uvOffset` is an optional vector2 used to offset UV.
+         * The parameter `uvScale` is an optional vector2 used to scale UV.
          */
-        Mesh.prototype.applyDisplacementMapFromBuffer = function (buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight) {
+        Mesh.prototype.applyDisplacementMapFromBuffer = function (buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight, uvOffset, uvScale) {
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)
                 || !this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)
                 || !this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
@@ -21485,13 +21489,15 @@ var BABYLON;
             var position = BABYLON.Vector3.Zero();
             var normal = BABYLON.Vector3.Zero();
             var uv = BABYLON.Vector2.Zero();
+            uvOffset = uvOffset || BABYLON.Vector2.Zero();
+            uvScale = uvScale || new BABYLON.Vector2(1, 1);
             for (var index = 0; index < positions.length; index += 3) {
                 BABYLON.Vector3.FromArrayToRef(positions, index, position);
                 BABYLON.Vector3.FromArrayToRef(normals, index, normal);
                 BABYLON.Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
                 // Compute height
-                var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
-                var v = ((Math.abs(uv.y) * heightMapHeight) % heightMapHeight) | 0;
+                var u = ((Math.abs(uv.x * uvScale.x + uvOffset.x) * heightMapWidth) % heightMapWidth) | 0;
+                var v = ((Math.abs(uv.y * uvScale.y + uvOffset.y) * heightMapHeight) % heightMapHeight) | 0;
                 var pos = (u + v * heightMapWidth) * 4;
                 var r = buffer[pos] / 255.0;
                 var g = buffer[pos + 1] / 255.0;

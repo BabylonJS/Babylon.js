@@ -12,7 +12,8 @@
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's ([jcpalmer](https://github.com/Palmer-JC))
 
 ### Updates
- - Added addChild, removeChild, setParent to AbstractMesh.  ([abow](https://github.com/abow))
+ - `Mesh.applyDisplacementMap` now accepts uvScale and uvOffset parameter ([deltakosh](https://github.com/deltakosh))
+ - Added addChild, removeChild, setParent to AbstractMesh ([abow](https://github.com/abow))
  - `Effect.getVertexShaderSource()` and `Effect.getFragmentShaderSource()` now returns the effective shader code (including evaluation of #define) ([deltakosh](https://github.com/deltakosh))
 
 ### Canvas2D
