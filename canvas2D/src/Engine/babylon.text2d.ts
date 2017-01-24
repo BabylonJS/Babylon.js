@@ -132,14 +132,6 @@
         }
     }
 
-    export enum TextAlign {
-        Left = 1,
-        Top,
-        Right,
-        Bottom,
-        Center
-    }
-
     @className("Text2D", "BABYLON")
     /**
      * Primitive that render text using a specific font
@@ -155,6 +147,37 @@
         public static sizeProperty: Prim2DPropInfo;
         public static fontSuperSampleProperty: Prim2DPropInfo;
         public static fontSignedDistanceFieldProperty: Prim2DPropInfo;
+
+        /**
+         * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
+         */
+        public static get AlignLeft(): number { return Text2D._AlignLeft; }
+
+        /**
+         * Alignment is made relative to the top edge of the Content Area. Valid for vertical alignment only.
+         */
+        public static get AlignTop(): number { return Text2D._AlignTop; }
+
+        /**
+         * Alignment is made relative to the right edge of the Content Area. Valid for horizontal alignment only.
+         */
+        public static get AlignRight(): number { return Text2D._AlignRight; }
+
+        /**
+         * Alignment is made relative to the bottom edge of the Content Area. Valid for vertical alignment only.
+         */
+        public static get AlignBottom(): number { return Text2D._AlignBottom; }
+
+        /**
+         * Alignment is made to center the text from equal distance to the opposite edges of the Content Area
+         */
+        public static get AlignCenter(): number { return Text2D._AlignCenter; }
+
+        private static _AlignLeft = 1;
+        private static _AlignTop = 1;   // Same as left
+        private static _AlignRight = 2;
+        private static _AlignBottom = 2;   // Same as right
+        private static _AlignCenter = 3;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Text2D.fontProperty = pi, false, true)
         /**
@@ -348,8 +371,8 @@
          * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
-         * - textAlignH: TextAlign horizontal enum (left, center, right)
-         * - textAlignV: TextAlign vertical enum (top, center, bottom)
+         * - textAlignH: align text horizontally (Text2D.AlignLeft, Text2D.AlignCenter, Text2D.AlignRight)
+         * - textAlignV: align text vertically (Text2D.AlignTop, Text2D.AlignCenter, Text2D.AlignBottom)
          * - wordWrap: if true the text will wrap inside content area
          */
         constructor(text: string, settings?: {
@@ -392,8 +415,8 @@
             paddingRight            ?: number | string,
             paddingBottom           ?: number | string,
             padding                 ?: string,
-            textAlignH              ?: TextAlign,
-            textAlignV              ?: TextAlign,
+            textAlignH              ?: number,
+            textAlignV              ?: number,
             wordWrap                ?: boolean
         }) {
 
@@ -418,19 +441,10 @@
             this._textSize           = null;
             this.text                = text;
             this.size                = (settings.size==null) ? null : settings.size;
+            this.textAlignH          = (settings.textAlignH==null) ? Text2D.AlignLeft : settings.textAlignH;
+            this.textAlignV          = (settings.textAlignV==null) ? Text2D.AlignTop : settings.textAlignV;
+            this._wordWrap           = (settings.wordWrap==null) ? false : true;
             
-            if(settings.textAlignH != null){
-                this.textAlignH = settings.textAlignH;
-            }
-
-            if(settings.textAlignV != null){
-                this.textAlignV = settings.textAlignV;
-            }
-
-            if(settings.wordWrap){
-                this._wordWrap = true;
-            }
-
             this._updateRenderMode();
         }
 
@@ -636,7 +650,7 @@
 
                 offset.x = 0;
 
-                if (alignH == TextAlign.Right || alignH == TextAlign.Center) {
+                if (alignH == Text2D.AlignRight || alignH == Text2D.AlignCenter) {
                     for (let i = 0; i < lineLengths.length; i++) {
                         if (lineLengths[i] > maxLineLen) {
                             maxLineLen = lineLengths[i];
@@ -647,9 +661,9 @@
                 let textHeight = lineLengths.length * lh;
                 let offsetX = this.padding.leftPixels;
                 
-                if (alignH == TextAlign.Right) {
+                if (alignH == Text2D.AlignRight) {
                     offsetX += contentAreaWidth - maxLineLen;
-                } else if (alignH == TextAlign.Center) {
+                } else if (alignH == Text2D.AlignCenter) {
                     offsetX += (contentAreaWidth - maxLineLen) * .5;
                 }
 
@@ -658,9 +672,9 @@
                 offset.y += contentAreaHeight + textHeight - lh;
                 offset.y += this.padding.bottomPixels;
 
-                if (alignV == TextAlign.Bottom) {
+                if (alignV == Text2D.AlignBottom) {
                     offset.y -= contentAreaHeight;
-                }else if (alignV == TextAlign.Center) {
+                }else if (alignV == Text2D.AlignCenter) {
                     offset.y -= (contentAreaHeight - textHeight) * .5 + lineLengths.length * lh;
                 }else {
                     offset.y -= lineLengths.length * lh;
@@ -670,9 +684,9 @@
                     let numChars = charsPerLine[i];
                     let lineLength = lineLengths[i];
 
-                    if (alignH == TextAlign.Right) {
+                    if (alignH == Text2D.AlignRight) {
                         offset.x += maxLineLen - lineLength;
-                    }else if (alignH == TextAlign.Center) {
+                    }else if (alignH == Text2D.AlignCenter) {
                         offset.x += (maxLineLen - lineLength) * .5;
                     }
 
@@ -746,8 +760,8 @@
         private _textSize: Size;
         private _wordWrap: boolean;
 
-        public textAlignH: TextAlign;
-        public textAlignV: TextAlign;
+        public textAlignH: number;
+        public textAlignV: number;
         
     }
 }
