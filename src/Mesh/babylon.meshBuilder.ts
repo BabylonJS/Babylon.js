@@ -1092,7 +1092,7 @@
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                     var vertex = faceVertices[vIndex];
 
-                    //TODO check for Int32Array
+                    //TODO check for Int32Array | Uint32Array | Uint16Array
                     (<number[]>vertexData.indices).push(currentVertexDataIndex);
                     vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
