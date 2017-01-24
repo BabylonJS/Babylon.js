@@ -530,7 +530,7 @@
                 let lineLengths = [];
                 let charWidths = [];
                 let charsPerLine = [];
-                let charCount = 0;
+                let numCharsCurrenLine = 0;
                 let contentAreaWidth = this.contentArea.width;
                 let contentAreaHeight = this.contentArea.height;
                 let numCharsCurrentWord = 0;
@@ -541,71 +541,93 @@
 
                 for (let i = 0; i < text.length; i++) {
                     let char = text[i];
-                    charCount++;
-                    numCharsCurrentWord++;
+                    numCharsCurrenLine++;
+                   
                     charWidths[i] = 0;
 
                     // Line feed
-                    if (char === "\n") {
+                    if (this._isWhiteSpaceCharVert(char)) {
                         lineLengths.push(offset.x);
-                        charsPerLine.push(charCount - 1);
-                        charCount = 1;
+                        charsPerLine.push(numCharsCurrenLine - 1);
+                        numCharsCurrenLine = 1;
                         offset.x = 0;
-                        numWordsPerLine = 0;
-                    }
 
-                    // Tabulation
-                    if (char === "\t") {
-                        offset.x += tabWidth;
-                        charWidths[i] = tabWidth;
-
-                        if(widthCurrentWord > 0){
+                        if (widthCurrentWord > 0) {
                             numWordsPerLine++;
                         }
-                    }
 
-                    if (char < " ") {
+                        numWordsPerLine = 0;
                         numCharsCurrentWord = 0;
                         widthCurrentWord = 0;
+                        
                         continue;
                     }
 
                     let ci = texture.getChar(char);
-                    offset.x += ci.charWidth;
-                    charWidths[i] = ci.charWidth;
+                    let charWidth = 0;
 
-                    if (char === " ") {
-                        if(widthCurrentWord > 0){
+                    if (char === "\t") {
+                        charWidth = tabWidth;
+                    }else{
+                        charWidth = ci.charWidth;
+                    }
+
+                    offset.x += charWidth;
+                    charWidths[i] = charWidth;
+
+                    if (this._isWhiteSpaceCharHoriz(char)) {
+                        if (widthCurrentWord > 0) {
                             numWordsPerLine++;
                         }
                         numCharsCurrentWord = 0;
                         widthCurrentWord = 0;
-                    } else {
+                    }else {
                         widthCurrentWord += ci.charWidth;
+                        numCharsCurrentWord++;
                     }
 
                     if (this._wordWrap && numWordsPerLine > 0 && offset.x > contentAreaWidth) {
-
                         lineLengths.push(offset.x - widthCurrentWord);
-                        charCount -= numCharsCurrentWord;
+                        numCharsCurrenLine -= numCharsCurrentWord;
                         let j = i - numCharsCurrentWord;
-
                         //skip white space at the end of this line
                         while (this._isWhiteSpaceCharHoriz(text[j])) {
                             lineLengths[lineLengths.length - 1] -= charWidths[j];
                             j--;
                         }
 
-                        charsPerLine.push(charCount);
-                        charCount = numCharsCurrentWord;
-                        offset.x = widthCurrentWord;
-                        numWordsPerLine = 0;
+                        charsPerLine.push(numCharsCurrenLine);
 
+                        if(this._isWhiteSpaceCharHoriz(text[i])){
+                            
+                            //skip white space at the beginning of next line
+                            let numSpaces = 0;
+                            while (this._isWhiteSpaceCharHoriz(text[i+numSpaces])) {
+                                numSpaces++;
+                                charWidths[i+numSpaces] = 0;
+                            }
+                           
+                            i += numSpaces-1;
+                            
+                            offset.x = 0;
+                            numCharsCurrenLine = numSpaces-1;
+                        }else{
+                            numCharsCurrenLine = numCharsCurrentWord;
+                            offset.x = widthCurrentWord;
+                        }
+                        
+                        numWordsPerLine = 0;
                     }
                 }
-
                 lineLengths.push(offset.x);
-                charsPerLine.push(charCount);
+                charsPerLine.push(numCharsCurrenLine);
+
+                //skip white space at the end
+                let i = text.length - 1;
+                while (this._isWhiteSpaceCharHoriz(text[i])) {
+                    lineLengths[lineLengths.length - 1] -= charWidths[i];
+                    i--;
+                }
 
                 let charNum = 0;
                 let maxLineLen = 0;
@@ -683,7 +705,13 @@
         }
 
         private _isWhiteSpaceCharHoriz(char): boolean {
-            if(char == " " || char == "\t"){
+            if(char === " " || char === "\t"){
+                return true;
+            }
+        }
+
+        private _isWhiteSpaceCharVert(char): boolean {
+            if(char === "\n" || char === "\r"){
                 return true;
             }
         }
