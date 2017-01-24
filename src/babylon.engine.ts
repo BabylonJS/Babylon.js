@@ -1308,7 +1308,7 @@
             this._cachedIndexBuffer = null;
         }
 
-        public createIndexBuffer(indices: number[] | Int32Array): WebGLBuffer {
+        public createIndexBuffer(indices: IndicesArray): WebGLBuffer {
             var vbo = this._gl.createBuffer();
             this.bindIndexBuffer(vbo);
 
@@ -1316,18 +1316,29 @@
             var arrayBuffer;
             var need32Bits = false;
 
-            if (this._caps.uintIndices) {
-
-                for (var index = 0; index < indices.length; index++) {
-                    if (indices[index] > 65535) {
-                        need32Bits = true;
-                        break;
-                    }
-                }
-
-                arrayBuffer = need32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+            if (indices instanceof Uint16Array) {
+                arrayBuffer = indices;
             } else {
-                arrayBuffer = new Uint16Array(indices);
+                //check 32 bit support
+                if (this._caps.uintIndices) {
+                    if (indices instanceof Uint32Array) {
+                        arrayBuffer = indices;
+                        need32Bits = true;
+                    } else {
+                        //number[] or Int32Array, check if 32 bit is necessary
+                        for (var index = 0; index < indices.length; index++) {
+                            if (indices[index] > 65535) {
+                                need32Bits = true;
+                                break;
+                            }
+                        }
+
+                        arrayBuffer = need32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+                    }
+                } else {
+                    //no 32 bit support, force conversion to 16 bit (values greater 16 bit are lost)
+                    arrayBuffer = new Uint16Array(indices);
+                }
             }
 
             this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.STATIC_DRAW);

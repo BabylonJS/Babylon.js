@@ -47,7 +47,7 @@ module BABYLON {
     export interface SerializedGeometry {
         id: string;
         positions: Float32Array;
-        indices: Int32Array;
+        indices: Uint32Array;
         normals: Float32Array;
         //uvs?: Float32Array;
     }
@@ -181,7 +181,7 @@ module BABYLON {
                 id: geometry.id,
                 positions: new Float32Array(geometry.getVerticesData(VertexBuffer.PositionKind) || []),
                 normals: new Float32Array(geometry.getVerticesData(VertexBuffer.NormalKind) || []),
-                indices: new Int32Array(geometry.getIndices() || []),
+                indices: new Uint32Array(geometry.getIndices() || []),
                 //uvs: new Float32Array(geometry.getVerticesData(VertexBuffer.UVKind) || [])
             }
         }

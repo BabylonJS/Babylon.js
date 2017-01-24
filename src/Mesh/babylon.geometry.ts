@@ -11,7 +11,7 @@
         private _engine: Engine;
         private _meshes: Mesh[];
         private _totalVertices = 0;
-        private _indices: number[] | Int32Array;
+        private _indices: IndicesArray;
         private _vertexBuffers: { [key: string]: VertexBuffer; };
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
@@ -285,7 +285,7 @@
             return result;
         }
 
-        public setIndices(indices: number[] | Int32Array, totalVertices?: number): void {
+        public setIndices(indices: IndicesArray, totalVertices?: number): void {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
@@ -315,7 +315,7 @@
             return this._indices.length;
         }
 
-        public getIndices(copyWhenShared?: boolean): number[] | Int32Array {
+        public getIndices(copyWhenShared?: boolean): IndicesArray {
             if (!this.isReady()) {
                 return null;
             }
@@ -981,7 +981,7 @@
                 super.setAllVerticesData(vertexData, false);
             }
 
-            public setVerticesData(kind: string, data: number[] | Int32Array | Float32Array, updatable?: boolean): void {
+            public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void {
                 if (!this._beingRegenerated) {
                     return;
                 }

@@ -17,7 +17,7 @@ module BABYLON {
         computeWorldMatrix?(force: boolean): void;
         getChildMeshes?(): Array<AbstractMesh>;
         getVerticesData?(kind: string): Array<number> | Float32Array;
-        getIndices?(): Array<number> | Int32Array;
+        getIndices?(): IndicesArray;
         getScene?(): Scene;
     }
 
