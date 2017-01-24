@@ -148,6 +148,37 @@
         public static fontSuperSampleProperty: Prim2DPropInfo;
         public static fontSignedDistanceFieldProperty: Prim2DPropInfo;
 
+        /**
+         * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
+         */
+        public static get AlignLeft(): number { return Text2D._AlignLeft; }
+
+        /**
+         * Alignment is made relative to the top edge of the Content Area. Valid for vertical alignment only.
+         */
+        public static get AlignTop(): number { return Text2D._AlignTop; }
+
+        /**
+         * Alignment is made relative to the right edge of the Content Area. Valid for horizontal alignment only.
+         */
+        public static get AlignRight(): number { return Text2D._AlignRight; }
+
+        /**
+         * Alignment is made relative to the bottom edge of the Content Area. Valid for vertical alignment only.
+         */
+        public static get AlignBottom(): number { return Text2D._AlignBottom; }
+
+        /**
+         * Alignment is made to center the text from equal distance to the opposite edges of the Content Area
+         */
+        public static get AlignCenter(): number { return Text2D._AlignCenter; }
+
+        private static _AlignLeft = 1;
+        private static _AlignTop = 1;   // Same as left
+        private static _AlignRight = 2;
+        private static _AlignBottom = 2;   // Same as right
+        private static _AlignCenter = 3;
+
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Text2D.fontProperty = pi, false, true)
         /**
          * Get/set the font name to use, using HTML CSS notation.
@@ -304,6 +335,18 @@
         }
 
         /**
+         * You can get/set the text alignment through this property
+         */
+        public get textAlignment(): string {
+            return this._textAlignment;
+        }
+
+        public set textAlignment(value: string) {
+            this._textAlignment = value;
+            this._setTextAlignmentfromString(value);
+        }
+
+        /**
          * Create a Text primitive
          * @param text the text to display
          * @param settings a combination of settings, possible ones are
@@ -340,6 +383,10 @@
          * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
+         * - textAlignmentH: align text horizontally (Text2D.AlignLeft, Text2D.AlignCenter, Text2D.AlignRight)
+         * - textAlignmentV: align text vertically (Text2D.AlignTop, Text2D.AlignCenter, Text2D.AlignBottom)
+         * - textAlignment: a string defining the text alignment, text can be: [<h:|horizontal:><left|right|center>], [<v:|vertical:><top|bottom|center>]
+         * - wordWrap: if true the text will wrap inside content area
          */
         constructor(text: string, settings?: {
 
@@ -381,6 +428,10 @@
             paddingRight            ?: number | string,
             paddingBottom           ?: number | string,
             padding                 ?: string,
+            textAlignmentH          ?: number,
+            textAlignmentV          ?: number,
+            textAlignment           ?: string,
+            wordWrap                ?: boolean
         }) {
 
             if (!settings) {
@@ -404,7 +455,11 @@
             this._textSize           = null;
             this.text                = text;
             this.size                = (settings.size==null) ? null : settings.size;
-
+            this.textAlignmentH      = (settings.textAlignmentH==null) ? Text2D.AlignLeft : settings.textAlignmentH;
+            this.textAlignmentV      = (settings.textAlignmentV==null) ? Text2D.AlignTop : settings.textAlignmentV;
+            this.textAlignment       = (settings.textAlignment==null) ? "" : settings.textAlignment;
+            this._wordWrap           = (settings.wordWrap==null) ? false : settings.wordWrap;
+            
             this._updateRenderMode();
         }
 
@@ -490,54 +545,204 @@
             }
 
             if (part.id === Text2D.TEXT2D_MAINPARTID) {
+
                 let d = <Text2DInstanceData>part;
                 let texture = this.fontTexture;
                 let superSampleFactor = texture.isSuperSampled ? 0.5 : 1;
                 let ts = texture.getSize();
                 let offset = Vector2.Zero();
                 let lh = this.fontTexture.lineHeight;
-                offset.y = ((this.textSize.height/lh)-1) * lh;  // Origin is bottom, not top, so the offset is starting with a y that is the top location of the text
-                let charxpos = 0;
+
                 d.dataElementCount = this._charCount;
                 d.curElement = 0;
-                for (let char of this.text) {
+
+                let lineLengths = [];
+                let charWidths = [];
+                let charsPerLine = [];
+                let numCharsCurrenLine = 0;
+                let contentAreaWidth = this.contentArea.width;
+                let contentAreaHeight = this.contentArea.height;
+                let numCharsCurrentWord = 0;
+                let widthCurrentWord = 0;
+                let numWordsPerLine = 0;
+                let text = this.text;
+                let tabWidth = this._tabulationSize * texture.spaceWidth;
+
+                for (let i = 0; i < text.length; i++) {
+                    let char = text[i];
+                    numCharsCurrenLine++;
+                   
+                    charWidths[i] = 0;
 
                     // Line feed
-                    if (char === "\n") {
+                    if (this._isWhiteSpaceCharVert(char)) {
+                        lineLengths.push(offset.x);
+                        charsPerLine.push(numCharsCurrenLine - 1);
+                        numCharsCurrenLine = 1;
                         offset.x = 0;
-                        offset.y -= texture.lineHeight;
-                    }
 
-                    // Tabulation ?
-                    if (char === "\t") {
-                        let nextPos = charxpos + this._tabulationSize;
-                        nextPos = nextPos - (nextPos % this._tabulationSize);
+                        if (widthCurrentWord > 0) {
+                            numWordsPerLine++;
+                        }
 
-                        offset.x += (nextPos - charxpos) * texture.spaceWidth;
-                        charxpos = nextPos;
+                        numWordsPerLine = 0;
+                        numCharsCurrentWord = 0;
+                        widthCurrentWord = 0;
+                        
                         continue;
                     }
-
-                    if (char < " ") {
-                        continue;
-                    }
-
-                    this.updateInstanceDataPart(d, offset);
 
                     let ci = texture.getChar(char);
-                    offset.x += ci.charWidth;
+                    let charWidth = 0;
 
-                    d.topLeftUV = ci.topLeftUV;
-                    let suv = ci.bottomRightUV.subtract(ci.topLeftUV);
-                    d.sizeUV = suv;
-                    d.textureSize = new Vector2(ts.width, ts.height);
-                    d.color = this.defaultFontColor;
-                    d.superSampleFactor = superSampleFactor;
+                    if (char === "\t") {
+                        charWidth = tabWidth;
+                    }else{
+                        charWidth = ci.charWidth;
+                    }
 
-                    ++d.curElement;
+                    offset.x += charWidth;
+                    charWidths[i] = charWidth;
+
+                    if (this._isWhiteSpaceCharHoriz(char)) {
+                        if (widthCurrentWord > 0) {
+                            numWordsPerLine++;
+                        }
+                        numCharsCurrentWord = 0;
+                        widthCurrentWord = 0;
+                    }else {
+                        widthCurrentWord += ci.charWidth;
+                        numCharsCurrentWord++;
+                    }
+
+                    if (this._wordWrap && numWordsPerLine > 0 && offset.x > contentAreaWidth) {
+                        lineLengths.push(offset.x - widthCurrentWord);
+                        numCharsCurrenLine -= numCharsCurrentWord;
+                        let j = i - numCharsCurrentWord;
+                        //skip white space at the end of this line
+                        while (this._isWhiteSpaceCharHoriz(text[j])) {
+                            lineLengths[lineLengths.length - 1] -= charWidths[j];
+                            j--;
+                        }
+
+                        charsPerLine.push(numCharsCurrenLine);
+
+                        if(this._isWhiteSpaceCharHoriz(text[i])){
+                            
+                            //skip white space at the beginning of next line
+                            let numSpaces = 0;
+                            while (this._isWhiteSpaceCharHoriz(text[i+numSpaces])) {
+                                numSpaces++;
+                                charWidths[i+numSpaces] = 0;
+                            }
+                           
+                            i += numSpaces-1;
+                            
+                            offset.x = 0;
+                            numCharsCurrenLine = numSpaces-1;
+                        }else{
+                            numCharsCurrenLine = numCharsCurrentWord;
+                            offset.x = widthCurrentWord;
+                        }
+                        
+                        numWordsPerLine = 0;
+                    }
                 }
+                lineLengths.push(offset.x);
+                charsPerLine.push(numCharsCurrenLine);
+
+                //skip white space at the end
+                let i = text.length - 1;
+                while (this._isWhiteSpaceCharHoriz(text[i])) {
+                    lineLengths[lineLengths.length - 1] -= charWidths[i];
+                    i--;
+                }
+
+                let charNum = 0;
+                let maxLineLen = 0;
+                let alignH = this.textAlignmentH;
+                let alignV = this.textAlignmentV;
+
+                offset.x = 0;
+
+                if (alignH == Text2D.AlignRight || alignH == Text2D.AlignCenter) {
+                    for (let i = 0; i < lineLengths.length; i++) {
+                        if (lineLengths[i] > maxLineLen) {
+                            maxLineLen = lineLengths[i];
+                        }
+                    }
+                }
+
+                let textHeight = lineLengths.length * lh;
+                let offsetX = this.padding.leftPixels;
+                
+                if (alignH == Text2D.AlignRight) {
+                    offsetX += contentAreaWidth - maxLineLen;
+                } else if (alignH == Text2D.AlignCenter) {
+                    offsetX += (contentAreaWidth - maxLineLen) * .5;
+                }
+
+                offset.x += offsetX;
+
+                offset.y += contentAreaHeight + textHeight - lh;
+                offset.y += this.padding.bottomPixels;
+
+                if (alignV == Text2D.AlignBottom) {
+                    offset.y -= contentAreaHeight;
+                }else if (alignV == Text2D.AlignCenter) {
+                    offset.y -= (contentAreaHeight - textHeight) * .5 + lineLengths.length * lh;
+                }else {
+                    offset.y -= lineLengths.length * lh;
+                }
+
+                for (let i = 0; i < lineLengths.length; i++) {
+                    let numChars = charsPerLine[i];
+                    let lineLength = lineLengths[i];
+
+                    if (alignH == Text2D.AlignRight) {
+                        offset.x += maxLineLen - lineLength;
+                    }else if (alignH == Text2D.AlignCenter) {
+                        offset.x += (maxLineLen - lineLength) * .5;
+                    }
+
+                    for (let j = 0; j < numChars; j++) {
+                        let char = text[charNum];
+                        let charWidth = charWidths[charNum];
+
+                        this.updateInstanceDataPart(d, offset);
+                        offset.x += charWidth;
+
+                        if (!this._isWhiteSpaceCharHoriz(char)) {
+                            let ci = texture.getChar(char);
+                            d.topLeftUV = ci.topLeftUV;
+                            let suv = ci.bottomRightUV.subtract(ci.topLeftUV);
+                            d.sizeUV = suv;
+                            d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
+                            d.color = this.defaultFontColor;
+                            d.superSampleFactor = superSampleFactor;
+                            ++d.curElement;
+                        }
+                        charNum++;
+                    }
+
+                    offset.x = offsetX;
+                    offset.y -= texture.lineHeight;
+                }
+
             }
             return true;
+        }
+
+        private _isWhiteSpaceCharHoriz(char): boolean {
+            if(char === " " || char === "\t"){
+                return true;
+            }
+        }
+
+        private _isWhiteSpaceCharVert(char): boolean {
+            if(char === "\n" || char === "\r"){
+                return true;
+            }
         }
 
         private _updateCharCount() {
@@ -549,6 +754,68 @@
                 ++count;
             }
             this._charCount = count;
+        }
+
+        private _setTextAlignmentfromString(value: string) {
+            let m = value.trim().split(",");
+
+            for (let v of m) {
+                v = v.toLocaleLowerCase().trim();
+
+                // Horizontal
+                let i = v.indexOf("h:");
+                if (i === -1) {
+                    i = v.indexOf("horizontal:");
+                }
+
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this._setTextAlignmentHorizontal(v);
+                    continue;
+                }
+
+                // Vertical
+                i = v.indexOf("v:");
+                if (i === -1) {
+                    i = v.indexOf("vertical:");
+                }
+
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this._setTextAlignmentVertical(v);
+                    continue;
+                }
+            }
+        }
+
+        private _setTextAlignmentHorizontal(text: string) {
+            let v = text.trim().toLocaleLowerCase();
+            switch (v) {
+                case "left":
+                    this.textAlignmentH = Text2D.AlignLeft;
+                    return;
+                case "right":
+                    this.textAlignmentH = Text2D.AlignRight;
+                    return;
+                case "center":
+                    this.textAlignmentH = Text2D.AlignCenter;
+                    return;
+            }
+        }
+
+        private _setTextAlignmentVertical(text: string) {
+            let v = text.trim().toLocaleLowerCase();
+            switch (v) {
+                case "top":
+                    this.textAlignmentV = Text2D.AlignTop;
+                    return;
+                case "bottom":
+                    this.textAlignmentV = Text2D.AlignBottom;
+                    return;
+                case "center":
+                    this.textAlignmentV = Text2D.AlignCenter;
+                    return;
+            }
         }
 
         protected _useTextureAlpha(): boolean {
@@ -568,5 +835,11 @@
         private _defaultFontColor: Color4;
         private _text: string;
         private _textSize: Size;
+        private _wordWrap: boolean;
+        private _textAlignment: string;
+
+        public textAlignmentH: number;
+        public textAlignmentV: number;
+        
     }
 }
