@@ -335,6 +335,18 @@
         }
 
         /**
+         * You can get/set the text alignment through this property
+         */
+        public get textAlignment(): string {
+            return this._textAlignment;
+        }
+
+        public set textAlignment(value: string) {
+            this._textAlignment = value;
+            this._setTextAlignmentfromString(value);
+        }
+
+        /**
          * Create a Text primitive
          * @param text the text to display
          * @param settings a combination of settings, possible ones are
@@ -371,8 +383,9 @@
          * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
-         * - textAlignH: align text horizontally (Text2D.AlignLeft, Text2D.AlignCenter, Text2D.AlignRight)
-         * - textAlignV: align text vertically (Text2D.AlignTop, Text2D.AlignCenter, Text2D.AlignBottom)
+         * - textAlignmentH: align text horizontally (Text2D.AlignLeft, Text2D.AlignCenter, Text2D.AlignRight)
+         * - textAlignmentV: align text vertically (Text2D.AlignTop, Text2D.AlignCenter, Text2D.AlignBottom)
+         * - textAlignment: a string defining the text alignment, text can be: [<h:|horizontal:><left|right|center>], [<v:|vertical:><top|bottom|center>]
          * - wordWrap: if true the text will wrap inside content area
          */
         constructor(text: string, settings?: {
@@ -415,8 +428,9 @@
             paddingRight            ?: number | string,
             paddingBottom           ?: number | string,
             padding                 ?: string,
-            textAlignH              ?: number,
-            textAlignV              ?: number,
+            textAlignmentH          ?: number,
+            textAlignmentV          ?: number,
+            textAlignment           ?: string,
             wordWrap                ?: boolean
         }) {
 
@@ -441,8 +455,9 @@
             this._textSize           = null;
             this.text                = text;
             this.size                = (settings.size==null) ? null : settings.size;
-            this.textAlignH          = (settings.textAlignH==null) ? Text2D.AlignLeft : settings.textAlignH;
-            this.textAlignV          = (settings.textAlignV==null) ? Text2D.AlignTop : settings.textAlignV;
+            this.textAlignmentH      = (settings.textAlignmentH==null) ? Text2D.AlignLeft : settings.textAlignmentH;
+            this.textAlignmentV      = (settings.textAlignmentV==null) ? Text2D.AlignTop : settings.textAlignmentV;
+            this.textAlignment       = (settings.textAlignment==null) ? "" : settings.textAlignment;
             this._wordWrap           = (settings.wordWrap==null) ? false : settings.wordWrap;
             
             this._updateRenderMode();
@@ -645,8 +660,8 @@
 
                 let charNum = 0;
                 let maxLineLen = 0;
-                let alignH = this.textAlignH;
-                let alignV = this.textAlignV;
+                let alignH = this.textAlignmentH;
+                let alignV = this.textAlignmentV;
 
                 offset.x = 0;
 
@@ -741,6 +756,68 @@
             this._charCount = count;
         }
 
+        private _setTextAlignmentfromString(value: string) {
+            let m = value.trim().split(",");
+
+            for (let v of m) {
+                v = v.toLocaleLowerCase().trim();
+
+                // Horizontal
+                let i = v.indexOf("h:");
+                if (i === -1) {
+                    i = v.indexOf("horizontal:");
+                }
+
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this._setTextAlignmentHorizontal(v);
+                    continue;
+                }
+
+                // Vertical
+                i = v.indexOf("v:");
+                if (i === -1) {
+                    i = v.indexOf("vertical:");
+                }
+
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this._setTextAlignmentVertical(v);
+                    continue;
+                }
+            }
+        }
+
+        private _setTextAlignmentHorizontal(text: string) {
+            let v = text.trim().toLocaleLowerCase();
+            switch (v) {
+                case "left":
+                    this.textAlignmentH = Text2D.AlignLeft;
+                    return;
+                case "right":
+                    this.textAlignmentH = Text2D.AlignRight;
+                    return;
+                case "center":
+                    this.textAlignmentH = Text2D.AlignCenter;
+                    return;
+            }
+        }
+
+        private _setTextAlignmentVertical(text: string) {
+            let v = text.trim().toLocaleLowerCase();
+            switch (v) {
+                case "top":
+                    this.textAlignmentV = Text2D.AlignTop;
+                    return;
+                case "bottom":
+                    this.textAlignmentV = Text2D.AlignBottom;
+                    return;
+                case "center":
+                    this.textAlignmentV = Text2D.AlignCenter;
+                    return;
+            }
+        }
+
         protected _useTextureAlpha(): boolean {
             return this._fontSDF;
         }
@@ -759,9 +836,10 @@
         private _text: string;
         private _textSize: Size;
         private _wordWrap: boolean;
+        private _textAlignment: string;
 
-        public textAlignH: number;
-        public textAlignV: number;
+        public textAlignmentH: number;
+        public textAlignmentV: number;
         
     }
 }
