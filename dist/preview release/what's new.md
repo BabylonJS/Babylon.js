@@ -12,6 +12,8 @@
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's ([jcpalmer](https://github.com/Palmer-JC))
 
 ### Updates
+ - Added intersectsMeshes to Ray ([abow](https://github.com/abow))
+ - New RayHelper class for easily viewing and attaching a ray to a mesh.  [Demo](http://www.babylonjs-playground.com/#ZHDBJ#34) - ([abow](https://github.com/abow))
  - `Mesh.applyDisplacementMap` now accepts uvScale and uvOffset parameter ([deltakosh](https://github.com/deltakosh))
  - Added addChild, removeChild, setParent to AbstractMesh ([abow](https://github.com/abow))
  - `Effect.getVertexShaderSource()` and `Effect.getFragmentShaderSource()` now returns the effective shader code (including evaluation of #define) ([deltakosh](https://github.com/deltakosh))
@@ -19,6 +21,7 @@
 ### Canvas2D
 
 #### Major Updates
+ - Added text alignment and word wrap to Text2D ([abow](https://github.com/abow))
  - Support of [Scale9Sprite](http://doc.babylonjs.com/overviews/Canvas2D_Sprite2D#scale9sprite-feature) feature in Sprite2D ([nockawa](https://github.com/nockawa))
  - Support of [AtlasPicture](http://doc.babylonjs.com/overviews/Canvas2D_AtlasPicture) to store many pictures into a bit one, with the possibility to create one/many Sprite2D out of it. ([nockawa](https://github.com/nockawa))
  - Support of BMFont with the BitmaptFontTexture class, Text2D has now a bitmapFontTexture setting in the constructor to display text using a BitmapFontTexture ([nockawa](https://github.com/nockawa))
@@ -33,6 +36,7 @@
 ### API doc
 
 ### Bug fixes
+ - Fixed an issue with Mesh.attachToBone when a mesh is moving and an animation is changed ([abow](https://github.com/abow))
  - Fixed an issue withaspect ratio when using CreateScreenshot ([deltakosh](https://github.com/deltakosh))
 
 ### Breaking changes
