@@ -443,7 +443,7 @@
             this.size                = (settings.size==null) ? null : settings.size;
             this.textAlignH          = (settings.textAlignH==null) ? Text2D.AlignLeft : settings.textAlignH;
             this.textAlignV          = (settings.textAlignV==null) ? Text2D.AlignTop : settings.textAlignV;
-            this._wordWrap           = (settings.wordWrap==null) ? false : true;
+            this._wordWrap           = (settings.wordWrap==null) ? false : settings.wordWrap;
             
             this._updateRenderMode();
         }
