@@ -1790,7 +1790,7 @@
             return r;
         }
 
-        public substract(otherSize: Size): Size {
+        public subtract(otherSize: Size): Size {
             let r = new Size(this.width - otherSize.width, this.height - otherSize.height);
             return r;
         }
