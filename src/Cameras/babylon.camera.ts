@@ -398,6 +398,10 @@
                 this._markSyncedWithParent();
             }
 
+            if (this._cameraRigParams.vrPreViewMatrix) {
+                this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
+            }
+
             this._currentRenderId = this.getScene().getRenderId();
 
             return this._computedViewMatrix;
@@ -420,11 +424,11 @@
                 this._projectionMatrix = projection;
             }
         };
-        
+
         public unfreezeProjectionMatrix(): void {
             this._doNotComputeProjectionMatrix = false;
         };
-        
+
         public getProjectionMatrix(force?: boolean): Matrix {
             if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
@@ -705,15 +709,15 @@
             return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getTypeName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
         }
 
-        public getDirection(localAxis:Vector3): Vector3 {
+        public getDirection(localAxis: Vector3): Vector3 {
             var result = Vector3.Zero();
 
             this.getDirectionToRef(localAxis, result);
-            
+
             return result;
         }
 
-        public getDirectionToRef(localAxis:Vector3, result:Vector3): void {
+        public getDirectionToRef(localAxis: Vector3, result: Vector3): void {
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         }
 
