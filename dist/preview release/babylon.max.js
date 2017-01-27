@@ -9028,6 +9028,7 @@ var BABYLON;
                 for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
                     this._gl.disableVertexAttribArray(i);
                     this._vertexAttribArraysEnabled[i] = false;
+                    this._currentBufferPointers[i] = null;
                 }
                 return;
             }
@@ -9037,6 +9038,7 @@ var BABYLON;
                 }
                 this._gl.disableVertexAttribArray(i);
                 this._vertexAttribArraysEnabled[i] = false;
+                this._currentBufferPointers[i] = null;
             }
         };
         // Dispose
@@ -37634,6 +37636,7 @@ var BABYLON;
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
+            this._disposeVertexArrayObjects();
             this._indices = indices;
             if (this._meshes.length !== 0 && this._indices) {
                 this._indexBuffer = this._engine.createIndexBuffer(this._indices);

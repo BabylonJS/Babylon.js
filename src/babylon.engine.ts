@@ -3136,6 +3136,7 @@
                 for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
                     this._gl.disableVertexAttribArray(i);
                     this._vertexAttribArraysEnabled[i] = false;
+                    this._currentBufferPointers[i] = null;
                 }
                 return;
             }
@@ -3147,6 +3148,7 @@
 
                 this._gl.disableVertexAttribArray(i);
                 this._vertexAttribArraysEnabled[i] = false;
+                this._currentBufferPointers[i] = null;
             }
         }
 
