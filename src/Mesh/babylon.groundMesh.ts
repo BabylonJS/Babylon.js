@@ -101,8 +101,7 @@
                 this._computeHeightQuads();
             }
             var facet = this._getFacetAt(x, z);
-            world.getRotationMatrixToRef(tmpMat);       // just rotates the normals
-            Vector3.TransformCoordinatesFromFloatsToRef(facet.x, facet.y, facet.z, tmpMat, ref);
+            Vector3.TransformNormalFromFloatsToRef(facet.x, facet.y, facet.z, world, ref);
             return this;
         }
 

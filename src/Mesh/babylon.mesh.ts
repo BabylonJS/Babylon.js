@@ -1937,8 +1937,7 @@
          */
         public getFacetNormalToRef(i: number, ref: Vector3) {
             var localNorm = (this.getFacetLocalNormals())[i];
-            (this.getWorldMatrix()).getRotationMatrixToRef(Tmp.Matrix[0]);
-            Vector3.TransformCoordinatesToRef(localNorm, Tmp.Matrix[0], ref);
+            Vector3.TransformNormalToRef(localNorm, this.getWorldMatrix(), ref);
             return this;
         }
         /** 
