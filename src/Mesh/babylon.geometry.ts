@@ -290,6 +290,8 @@
                 this._engine._releaseBuffer(this._indexBuffer);
             }
 
+            this._disposeVertexArrayObjects();
+
             this._indices = indices;
             if (this._meshes.length !== 0 && this._indices) {
                 this._indexBuffer = this._engine.createIndexBuffer(this._indices);
