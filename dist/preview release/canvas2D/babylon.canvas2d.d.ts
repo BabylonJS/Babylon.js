@@ -3281,6 +3281,31 @@ declare module BABYLON {
         static sizeProperty: Prim2DPropInfo;
         static fontSuperSampleProperty: Prim2DPropInfo;
         static fontSignedDistanceFieldProperty: Prim2DPropInfo;
+        /**
+         * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
+         */
+        static readonly AlignLeft: number;
+        /**
+         * Alignment is made relative to the top edge of the Content Area. Valid for vertical alignment only.
+         */
+        static readonly AlignTop: number;
+        /**
+         * Alignment is made relative to the right edge of the Content Area. Valid for horizontal alignment only.
+         */
+        static readonly AlignRight: number;
+        /**
+         * Alignment is made relative to the bottom edge of the Content Area. Valid for vertical alignment only.
+         */
+        static readonly AlignBottom: number;
+        /**
+         * Alignment is made to center the text from equal distance to the opposite edges of the Content Area
+         */
+        static readonly AlignCenter: number;
+        private static _AlignLeft;
+        private static _AlignTop;
+        private static _AlignRight;
+        private static _AlignBottom;
+        private static _AlignCenter;
         fontName: string;
         defaultFontColor: Color4;
         text: string;
@@ -3302,6 +3327,10 @@ declare module BABYLON {
          */
         dispose(): boolean;
         protected updateLevelBoundingInfo(): boolean;
+        /**
+         * You can get/set the text alignment through this property
+         */
+        textAlignment: string;
         /**
          * Create a Text primitive
          * @param text the text to display
@@ -3339,6 +3368,10 @@ declare module BABYLON {
          * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
+         * - textAlignmentH: align text horizontally (Text2D.AlignLeft, Text2D.AlignCenter, Text2D.AlignRight)
+         * - textAlignmentV: align text vertically (Text2D.AlignTop, Text2D.AlignCenter, Text2D.AlignBottom)
+         * - textAlignment: a string defining the text alignment, text can be: [<h:|horizontal:><left|right|center>], [<v:|vertical:><top|bottom|center>]
+         * - wordWrap: if true the text will wrap inside content area
          */
         constructor(text: string, settings?: {
             parent?: Prim2DBase;
@@ -3379,6 +3412,10 @@ declare module BABYLON {
             paddingRight?: number | string;
             paddingBottom?: number | string;
             padding?: string;
+            textAlignmentH?: number;
+            textAlignmentV?: number;
+            textAlignment?: string;
+            wordWrap?: boolean;
         });
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
@@ -3388,7 +3425,12 @@ declare module BABYLON {
         protected afterRefreshForLayoutConstruction(part: InstanceDataBase, obj: any): void;
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[];
         protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _isWhiteSpaceCharHoriz(char);
+        private _isWhiteSpaceCharVert(char);
         private _updateCharCount();
+        private _setTextAlignmentfromString(value);
+        private _setTextAlignmentHorizontal(text);
+        private _setTextAlignmentVertical(text);
         protected _useTextureAlpha(): boolean;
         protected _shouldUseAlphaFromTexture(): boolean;
         private _fontTexture;
@@ -3400,6 +3442,10 @@ declare module BABYLON {
         private _defaultFontColor;
         private _text;
         private _textSize;
+        private _wordWrap;
+        private _textAlignment;
+        textAlignmentH: number;
+        textAlignmentV: number;
     }
 }
 
@@ -3680,7 +3726,7 @@ declare module BABYLON {
         private _setupInteraction(enable);
         /**
          * If you set your own WorldSpaceNode to display the Canvas2D you have to provide your own implementation of this method which computes the local position in the Canvas based on the given 3D World one.
-         * Beware that you have to take under consideration the origin in your calculations! Good luck!
+         * Beware that you have to take under consideration the origin and unitScaleFactor in your calculations! Good luck!
          */
         worldSpaceToNodeLocal: (worldPos: Vector3) => Vector2;
         /**
@@ -3795,6 +3841,7 @@ declare module BABYLON {
          * @returns {}
          */
         readonly _engineData: Canvas2DEngineBoundData;
+        readonly unitScaleFactor: number;
         createCanvasProfileInfoCanvas(): Canvas2D;
         /**
          * Instanced Array will be create if there's at least this number of parts/prim that can fit into it
@@ -3846,6 +3893,7 @@ declare module BABYLON {
         private _beforeRenderObserver;
         private _afterRenderObserver;
         private _supprtInstancedArray;
+        protected _unitScaleFactor: number;
         private _trackedGroups;
         protected _trackNode: Node;
         protected _trackNodeOffset: Vector3;
