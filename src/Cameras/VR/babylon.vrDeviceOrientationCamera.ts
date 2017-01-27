@@ -14,6 +14,19 @@ module BABYLON {
         }
     }
 
+    export class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
+
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
+            super(name, position, scene, compensateDistortion, vrCameraMetrics);
+            
+            this.inputs.addGamepad();
+        }
+
+        public getClassName(): string {
+            return "VRDeviceOrientationGamepadCamera";
+        }
+    }
+
     export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
 
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {

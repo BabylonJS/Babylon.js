@@ -741,6 +741,8 @@
                     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
                 case "VRDeviceOrientationFreeCamera":
                     return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
+                case "VRDeviceOrientationGamepadCamera":
+                    return () => new VRDeviceOrientationGamepadCamera(name, Vector3.Zero(), scene);
                 case "AnaglyphArcRotateCamera":
                     return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, scene);
                 case "AnaglyphFreeCamera":
