@@ -22,6 +22,11 @@
   // The panel containing the two subpanel : tree and details
   .insp-right-panel {
     width: 750px;
+
+    &.popupmode {
+      width:100% !important;
+    }
+    
     display:flex; 
     flex-direction: column;
     flex-shrink: 0;
@@ -83,6 +88,7 @@
   @import 'treeTool';
   @import "tabPanel";
   @import "tabs/shaderTab";
+  @import "tabs/consoleTab";
   @import "tabs/statsTab";
 
   @import "tree";

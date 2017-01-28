@@ -45,14 +45,15 @@
          * Returns a height (y) value in the Worl system :
          * the ground altitude at the coordinates (x, z) expressed in the World system.
          * Returns the ground y position if (x, z) are outside the ground surface.
-         * Not pertinent if the ground is rotated.
          */
         public getHeightAtCoordinates(x: number, z: number): number {
-            // express x and y in the ground local system
-            x -= this.position.x;
-            z -= this.position.z;
-            x /= this.scaling.x;
-            z /= this.scaling.z;
+            var world = this.getWorldMatrix();
+            var invMat = Tmp.Matrix[5];
+            world.invertToRef(invMat);
+            var tmpVect = Tmp.Vector3[8];
+            Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, invMat, tmpVect); // transform x,z in the mesh local space
+            x = tmpVect.x;
+            z = tmpVect.z;
             if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
                 return this.position.y;
             }
@@ -63,17 +64,17 @@
             var facet = this._getFacetAt(x, z);
             var y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
             // return y in the World system
-            return y * this.scaling.y + this.position.y;
+            Vector3.TransformCoordinatesFromFloatsToRef(0.0, y, 0.0, world, tmpVect);
+            return tmpVect.y;
         }
 
         /**
          * Returns a normalized vector (Vector3) orthogonal to the ground
          * at the ground coordinates (x, z) expressed in the World system.
-         * Returns Vector3(0, 1, 0) if (x, z) are outside the ground surface.
-         * Not pertinent if the ground is rotated.
+         * Returns Vector3(0.0, 1.0, 0.0) if (x, z) are outside the ground surface.
          */
         public getNormalAtCoordinates(x: number, z: number): Vector3 {
-            var normal = new Vector3(0, 1, 0);
+            var normal = new Vector3(0.0, 1.0, 0.0);
             this.getNormalAtCoordinatesToRef(x, z, normal);
             return normal;
         }
@@ -81,26 +82,27 @@
         /**
          * Updates the Vector3 passed a reference with a normalized vector orthogonal to the ground
          * at the ground coordinates (x, z) expressed in the World system.
-         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.
-         * Not pertinent if the ground is rotated.
+         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.  
+         * Returns the GroundMesh.  
          */
-        public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): void {
-            // express x and y in the ground local system
-            x -= this.position.x;
-            z -= this.position.z;
-            x /= this.scaling.x;
-            z /= this.scaling.z;
+        public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): GroundMesh {
+            var world = this.getWorldMatrix();
+            var tmpMat = Tmp.Matrix[5];
+            world.invertToRef(tmpMat);
+            var tmpVect = Tmp.Vector3[8];
+            Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, tmpMat, tmpVect); // transform x,z in the mesh local space
+            x = tmpVect.x;
+            z = tmpVect.z;
             if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
-                return;
+                return this;
             }
             if (!this._heightQuads || this._heightQuads.length == 0) {
                 this._initHeightQuads();
                 this._computeHeightQuads();
             }
             var facet = this._getFacetAt(x, z);
-            ref.x = facet.x;
-            ref.y = facet.y;
-            ref.z = facet.z;
+            Vector3.TransformNormalFromFloatsToRef(facet.x, facet.y, facet.z, world, ref);
+            return this;
         }
 
         /**
@@ -143,7 +145,7 @@
             this._heightQuads = new Array();
             for (var row = 0; row < subdivisionsY; row++) {
                 for (var col = 0; col < subdivisionsX; col++) {
-                    var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0, 0, 0, 0), facet2: new BABYLON.Vector4(0, 0, 0, 0) };
+                    var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0.0, 0.0, 0.0, 0.0), facet2: new BABYLON.Vector4(0.0, 0.0, 0.0, 0.0) };
                     this._heightQuads[row * subdivisionsX + col] = quad;
                 }
             }

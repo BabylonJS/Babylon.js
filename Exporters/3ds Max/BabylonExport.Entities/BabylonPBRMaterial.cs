@@ -95,6 +95,9 @@ namespace BabylonExport.Entities
         public BabylonTexture lightmapTexture { get; set; }
 
         [DataMember]
+        public BabylonTexture metallicTexture { get; set; }
+
+        [DataMember]
         public bool useLightmapAsShadowmap { get; set; }
 
         [DataMember]
@@ -116,7 +119,10 @@ namespace BabylonExport.Entities
         public float[] emissive { get; set; }
 
         [DataMember]
-        public float roughness { get; set; }
+        public float? roughness { get; set; }
+
+        [DataMember]
+        public float? metallic { get; set; }
 
         [DataMember]
         public bool useRoughnessFromMetallicTextureAlpha { get; set; }
@@ -166,7 +172,9 @@ namespace BabylonExport.Entities
             cameraContrast = 1.0f;
             useEmissiveAsIllumination = false;
 
-            roughness = 1.0f;
+            // Default Null Metallic Workflow
+            metallic = null;
+            roughness = null;
             useRoughnessFromMetallicTextureAlpha = false;
             useRoughnessFromMetallicTextureGreen = false;
 

@@ -1260,7 +1260,7 @@ var BABYLON;
             _this._context.fillStyle = "white";
             _this._context.textBaseline = "top";
             var res = _this.getFontHeight(font);
-            _this._lineHeightSuper = res.height + 4;
+            _this._lineHeightSuper = res.height; //+4;
             _this._lineHeight = _this._superSample ? (Math.ceil(_this._lineHeightSuper / 2)) : _this._lineHeightSuper;
             _this._offset = res.offset - 1;
             _this._xMargin = 1 + Math.ceil(_this._lineHeightSuper / 15); // Right now this empiric formula seems to work...
@@ -1905,12 +1905,56 @@ var BABYLON;
             return r;
         };
         /**
+         * return the min/max extend of the bounding info.
+         * x, y, z, w are left, bottom, right and top
+         */
+        BoundingInfo2D.prototype.minMax = function () {
+            var r = BABYLON.Vector4.Zero();
+            this.minMaxToRef(r);
+            return r;
+        };
+        /**
          * Update a vector2 with the max extend of the bounding info
          * @param result must be a valid/allocated vector2 that will contain the result of the operation
          */
         BoundingInfo2D.prototype.maxToRef = function (result) {
             result.x = this.center.x + this.extent.x;
             result.y = this.center.y + this.extent.y;
+        };
+        /**
+         * Update a vector4 with the min/max extend of the bounding info
+         * x, y, z, w are left, bottom, right and top
+         * @param result must be a valid/allocated vector4 that will contain the result of the operation
+         */
+        BoundingInfo2D.prototype.minMaxToRef = function (result) {
+            result.x = this.center.x - this.extent.x;
+            result.y = this.center.y - this.extent.y;
+            result.z = this.center.x + this.extent.x;
+            result.w = this.center.y + this.extent.y;
+        };
+        /**
+         * Return the size of the boundingInfo rect surface
+         */
+        BoundingInfo2D.prototype.size = function () {
+            var r = BABYLON.Size.Zero();
+            this.sizeToRef(r);
+            return r;
+        };
+        /**
+         * Stores in the result object the size of the boundingInfo rect surface
+         * @param result
+         */
+        BoundingInfo2D.prototype.sizeToRef = function (result) {
+            result.width = this.extent.x * 2;
+            result.height = this.extent.y * 2;
+        };
+        /**
+         * Inflate the boundingInfo with the given vector
+         * @param offset the extent will be incremented with offset and the radius will be computed again
+         */
+        BoundingInfo2D.prototype.inflate = function (offset) {
+            this.extent.addInPlace(offset);
+            this.radius = this.extent.length();
         };
         /**
          * Apply a transformation matrix to this BoundingInfo2D and return a new instance containing the result
@@ -2040,7 +2084,7 @@ var BABYLON;
          * This layout must be used as a Singleton through the CanvasLayoutEngine.Singleton property.
          */
         function CanvasLayoutEngine() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         // A very simple (no) layout computing...
         // The Canvas and its direct children gets the Canvas' size as Layout Area
@@ -3440,8 +3484,12 @@ var BABYLON;
              */
             get: function () {
                 if (this._isFlagSet(SmartPropertyPrim_1.flagLevelBoundingInfoDirty)) {
-                    this.updateLevelBoundingInfo();
-                    this._clearFlags(SmartPropertyPrim_1.flagLevelBoundingInfoDirty);
+                    if (this.updateLevelBoundingInfo()) {
+                        this._clearFlags(SmartPropertyPrim_1.flagLevelBoundingInfoDirty);
+                    }
+                    else {
+                        this._levelBoundingInfo.clear();
+                    }
                 }
                 return this._levelBoundingInfo;
             },
@@ -3452,6 +3500,7 @@ var BABYLON;
          * This method must be overridden by a given Primitive implementation to compute its boundingInfo
          */
         SmartPropertyPrim.prototype.updateLevelBoundingInfo = function () {
+            return false;
         };
         /**
          * Property method called when the Primitive becomes dirty
@@ -4823,7 +4872,7 @@ var BABYLON;
     var Prim2DBase = Prim2DBase_1 = (function (_super) {
         __extends(Prim2DBase, _super);
         function Prim2DBase(settings) {
-            var _this;
+            var _this = this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -4928,7 +4977,7 @@ var BABYLON;
                     var child = _a[_i];
                     _this.addChild(child);
                     // Good time to patch the hierarchy, it won't go very far if there's no need to
-                    if (_this.owner != null) {
+                    if (_this.owner != null && _this._hierarchyDepth != null) {
                         child._patchHierarchy(_this.owner);
                     }
                 }
@@ -5868,11 +5917,15 @@ var BABYLON;
                     if (this.owner) {
                         this.owner.boundingInfoRecomputeCounter.addCount(1, false);
                     }
-                    if (this.isSizedByContent) {
+                    var sizedByContent = this.isSizedByContent;
+                    if (sizedByContent) {
                         this._boundingInfo.clear();
                     }
                     else {
                         this._boundingInfo.copyFrom(this.levelBoundingInfo);
+                        if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
+                            return this._boundingInfo;
+                        }
                     }
                     var bi = this._boundingInfo;
                     var tps = new BABYLON.BoundingInfo2D();
@@ -5882,8 +5935,24 @@ var BABYLON;
                         bb.transformToRef(curChild.localTransform, tps);
                         bi.unionToRef(tps, bi);
                     }
-                    this._boundingInfo.maxToRef(Prim2DBase_1._bMax);
-                    this._boundingSize.copyFromFloats((!this._size || this._size.width == null) ? Math.ceil(Prim2DBase_1._bMax.x) : this._size.width, (!this._size || this._size.height == null) ? Math.ceil(Prim2DBase_1._bMax.y) : this._size.height);
+                    // If the size is determined by the content we have to update the contentArea
+                    //  and compute the size considering the padding (if any)
+                    if (sizedByContent) {
+                        bi.maxToRef(Prim2DBase_1._bMax);
+                        this._contentArea.width = Prim2DBase_1._bMax.x;
+                        this._contentArea.height = Prim2DBase_1._bMax.y;
+                        if (this._hasPadding) {
+                            var padding = this.padding;
+                            var mm = Prim2DBase_1._bMinMax;
+                            bi.minMaxToRef(mm);
+                            mm.z += padding.leftPixels + padding.rightPixels;
+                            mm.w += padding.bottomPixels + padding.topPixels;
+                            this._paddingOffset.copyFromFloats(padding.leftPixels, padding.bottomPixels, padding.rightPixels, padding.topPixels);
+                            BABYLON.BoundingInfo2D.CreateFromMinMaxToRef(mm.x, mm.z, mm.y, mm.w, bi);
+                        }
+                    }
+                    this._boundingInfo.sizeToRef(Prim2DBase_1._bSize);
+                    this._boundingSize.copyFromFloats((!this._size || this._size.width == null) ? Math.ceil(Prim2DBase_1._bSize.width) : this._size.width, (!this._size || this._size.height == null) ? Math.ceil(Prim2DBase_1._bSize.height) : this._size.height);
                     this._clearFlags(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty);
                 }
                 return this._boundingInfo;
@@ -6666,11 +6735,6 @@ var BABYLON;
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so we resize the primitive itself
                 if (isSizeAuto) {
-                    var content = this.size.clone();
-                    this._getActualSizeFromContentToRef(content, Prim2DBase_1._icArea);
-                    this.padding.enlarge(Prim2DBase_1._icArea, this._paddingOffset, Prim2DBase_1._size);
-                    this._contentArea.copyFrom(content);
-                    this.actualSize = Prim2DBase_1._size.clone();
                     // Changing the padding has resize the prim, which forces us to recompute margin again
                     if (this._hasMargin) {
                         this.margin.computeWithAlignment(this.layoutArea, Prim2DBase_1._size, this.marginAlignment, this._marginOffset, Prim2DBase_1._size);
@@ -6715,6 +6779,19 @@ var BABYLON;
              * Children of this primitive will be positioned relative to the bottom/left corner of this area.
              */
             get: function () {
+                if (!this._size || this._size.width == null || this._size.height == null) {
+                    if (Prim2DBase_1.boundinbBoxReentrency) {
+                        return Prim2DBase_1.nullSize;
+                    }
+                    if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
+                        return this._boundingSize;
+                    }
+                    Prim2DBase_1.boundinbBoxReentrency = true;
+                    var b = this.boundingInfo;
+                    Prim2DBase_1.boundinbBoxReentrency = false;
+                    return this._contentArea;
+                }
+                else 
                 // Check for positioning update
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagPositioningDirty)) {
                     this._updatePositioning();
@@ -6921,7 +6998,9 @@ var BABYLON;
     Prim2DBase._nullPosition = BABYLON.Vector2.Zero();
     Prim2DBase.boundinbBoxReentrency = false;
     Prim2DBase.nullSize = BABYLON.Size.Zero();
+    Prim2DBase._bMinMax = BABYLON.Vector4.Zero();
     Prim2DBase._bMax = BABYLON.Vector2.Zero();
+    Prim2DBase._bSize = BABYLON.Size.Zero();
     Prim2DBase._tpsBB = new BABYLON.BoundingInfo2D();
     /**
      * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
@@ -8208,8 +8287,8 @@ var BABYLON;
             var w = size.width;
             var h = size.height;
             var invZBias = 1 / zBias;
-            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 / w, t.m[4] * rgScale.x * 2 / w, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
-            var ty = new BABYLON.Vector4(t.m[1] * rgScale.y * 2 / h, t.m[5] * rgScale.y * 2 / h, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
+            var tx = new BABYLON.Vector4(t.m[0] * rgScale.x * 2 /* / w*/, t.m[4] * rgScale.x * 2 /* / w*/, 0 /*t.m[8]*/, ((t.m[12] + offX) * rgScale.x * 2 / w) - 1);
+            var ty = new BABYLON.Vector4(t.m[1] * rgScale.y * 2 /* / h*/, t.m[5] * rgScale.y * 2 /* / h*/, 0 /*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
             if (!this.applyActualScaleOnTransform()) {
                 t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
                 t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
@@ -8220,6 +8299,10 @@ var BABYLON;
                 tx = new BABYLON.Vector4(t.m[0], t.m[4], 0, t.m[12]);
                 ty = new BABYLON.Vector4(t.m[1], t.m[5], 0, t.m[13]);
             }
+            tx.x /= w;
+            tx.y /= w;
+            ty.x /= h;
+            ty.y /= h;
             part.transformX = tx;
             part.transformY = ty;
             part.opacity = this.actualOpacity;
@@ -8453,7 +8536,7 @@ var BABYLON;
     var Shape2DInstanceData = (function (_super) {
         __extends(Shape2DInstanceData, _super);
         function Shape2DInstanceData() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(Shape2DInstanceData.prototype, "fillSolidColor", {
             // FILL ATTRIBUTES
@@ -8623,7 +8706,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Group2D(settings) {
-            var _this;
+            var _this = this;
             if (settings == null) {
                 settings = {};
             }
@@ -8869,6 +8952,7 @@ var BABYLON;
                 size = new BABYLON.Size(0, 0);
             }
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(size, this._levelBoundingInfo);
+            return true;
         };
         // Method called only on renderable groups to prepare the rendering
         Group2D.prototype._prepareGroupRender = function (context) {
@@ -9747,7 +9831,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Rectangle2D(settings) {
-            var _this;
+            var _this = this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -9862,6 +9946,7 @@ var BABYLON;
         };
         Rectangle2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
         Rectangle2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey);
@@ -10209,7 +10294,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Ellipse2D(settings) {
-            var _this;
+            var _this = this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -10258,6 +10343,7 @@ var BABYLON;
         };
         Ellipse2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
         Ellipse2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Ellipse2DRenderCache(this.owner.engine, modelKey);
@@ -10388,7 +10474,7 @@ var BABYLON;
     var Sprite2DRenderCache = (function (_super) {
         __extends(Sprite2DRenderCache, _super);
         function Sprite2DRenderCache() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.ib = null;
@@ -10505,7 +10591,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Sprite2D(texture, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -10676,6 +10762,7 @@ var BABYLON;
         });
         Sprite2D.prototype.updateLevelBoundingInfo = function () {
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            return true;
         };
         /**
          * Get the animatable array (see http://doc.babylonjs.com/tutorials/Animations)
@@ -11157,7 +11244,7 @@ var BABYLON;
     var Text2DRenderCache = (function (_super) {
         __extends(Text2DRenderCache, _super);
         function Text2DRenderCache() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.ib = null;
@@ -11343,9 +11430,13 @@ var BABYLON;
          * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
+         * - textAlignmentH: align text horizontally (Text2D.AlignLeft, Text2D.AlignCenter, Text2D.AlignRight)
+         * - textAlignmentV: align text vertically (Text2D.AlignTop, Text2D.AlignCenter, Text2D.AlignBottom)
+         * - textAlignment: a string defining the text alignment, text can be: [<h:|horizontal:><left|right|center>], [<v:|vertical:><top|bottom|center>]
+         * - wordWrap: if true the text will wrap inside content area
          */
         function Text2D(text, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -11366,9 +11457,53 @@ var BABYLON;
             _this._textSize = null;
             _this.text = text;
             _this.size = (settings.size == null) ? null : settings.size;
+            _this.textAlignmentH = (settings.textAlignmentH == null) ? Text2D_1.AlignLeft : settings.textAlignmentH;
+            _this.textAlignmentV = (settings.textAlignmentV == null) ? Text2D_1.AlignTop : settings.textAlignmentV;
+            _this.textAlignment = (settings.textAlignment == null) ? "" : settings.textAlignment;
+            _this._wordWrap = (settings.wordWrap == null) ? false : settings.wordWrap;
             _this._updateRenderMode();
             return _this;
         }
+        Object.defineProperty(Text2D, "AlignLeft", {
+            /**
+             * Alignment is made relative to the left edge of the Content Area. Valid for horizontal alignment only.
+             */
+            get: function () { return Text2D_1._AlignLeft; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D, "AlignTop", {
+            /**
+             * Alignment is made relative to the top edge of the Content Area. Valid for vertical alignment only.
+             */
+            get: function () { return Text2D_1._AlignTop; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D, "AlignRight", {
+            /**
+             * Alignment is made relative to the right edge of the Content Area. Valid for horizontal alignment only.
+             */
+            get: function () { return Text2D_1._AlignRight; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D, "AlignBottom", {
+            /**
+             * Alignment is made relative to the bottom edge of the Content Area. Valid for vertical alignment only.
+             */
+            get: function () { return Text2D_1._AlignBottom; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D, "AlignCenter", {
+            /**
+             * Alignment is made to center the text from equal distance to the opposite edges of the Content Area
+             */
+            get: function () { return Text2D_1._AlignCenter; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Text2D.prototype, "fontName", {
             get: function () {
                 return this._fontName;
@@ -11508,8 +11643,26 @@ var BABYLON;
             return true;
         };
         Text2D.prototype.updateLevelBoundingInfo = function () {
+            if (!this.owner || !this._text) {
+                return false;
+            }
             BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         };
+        Object.defineProperty(Text2D.prototype, "textAlignment", {
+            /**
+             * You can get/set the text alignment through this property
+             */
+            get: function () {
+                return this._textAlignment;
+            },
+            set: function (value) {
+                this._textAlignment = value;
+                this._setTextAlignmentfromString(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Text2D.prototype.levelIntersect = function (intersectInfo) {
             // For now I can't do something better that boundingInfo is a hit, detecting an intersection on a particular letter would be possible, but do we really need it? Not for now...
             return true;
@@ -11582,41 +11735,167 @@ var BABYLON;
                 var ts = texture.getSize();
                 var offset = BABYLON.Vector2.Zero();
                 var lh = this.fontTexture.lineHeight;
-                offset.y = ((this.textSize.height / lh) - 1) * lh; // Origin is bottom, not top, so the offset is starting with a y that is the top location of the text
-                var charxpos = 0;
                 d.dataElementCount = this._charCount;
                 d.curElement = 0;
-                for (var _i = 0, _a = this.text; _i < _a.length; _i++) {
-                    var char = _a[_i];
+                var lineLengths = [];
+                var charWidths = [];
+                var charsPerLine = [];
+                var numCharsCurrenLine = 0;
+                var contentAreaWidth = this.contentArea.width;
+                var contentAreaHeight = this.contentArea.height;
+                var numCharsCurrentWord = 0;
+                var widthCurrentWord = 0;
+                var numWordsPerLine = 0;
+                var text = this.text;
+                var tabWidth = this._tabulationSize * texture.spaceWidth;
+                for (var i_1 = 0; i_1 < text.length; i_1++) {
+                    var char = text[i_1];
+                    numCharsCurrenLine++;
+                    charWidths[i_1] = 0;
                     // Line feed
-                    if (char === "\n") {
+                    if (this._isWhiteSpaceCharVert(char)) {
+                        lineLengths.push(offset.x);
+                        charsPerLine.push(numCharsCurrenLine - 1);
+                        numCharsCurrenLine = 1;
                         offset.x = 0;
-                        offset.y -= texture.lineHeight;
-                    }
-                    // Tabulation ?
-                    if (char === "\t") {
-                        var nextPos = charxpos + this._tabulationSize;
-                        nextPos = nextPos - (nextPos % this._tabulationSize);
-                        offset.x += (nextPos - charxpos) * texture.spaceWidth;
-                        charxpos = nextPos;
+                        if (widthCurrentWord > 0) {
+                            numWordsPerLine++;
+                        }
+                        numWordsPerLine = 0;
+                        numCharsCurrentWord = 0;
+                        widthCurrentWord = 0;
                         continue;
                     }
-                    if (char < " ") {
-                        continue;
-                    }
-                    this.updateInstanceDataPart(d, offset);
                     var ci = texture.getChar(char);
-                    offset.x += ci.charWidth;
-                    d.topLeftUV = ci.topLeftUV;
-                    var suv = ci.bottomRightUV.subtract(ci.topLeftUV);
-                    d.sizeUV = suv;
-                    d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
-                    d.color = this.defaultFontColor;
-                    d.superSampleFactor = superSampleFactor;
-                    ++d.curElement;
+                    var charWidth = 0;
+                    if (char === "\t") {
+                        charWidth = tabWidth;
+                    }
+                    else {
+                        charWidth = ci.charWidth;
+                    }
+                    offset.x += charWidth;
+                    charWidths[i_1] = charWidth;
+                    if (this._isWhiteSpaceCharHoriz(char)) {
+                        if (widthCurrentWord > 0) {
+                            numWordsPerLine++;
+                        }
+                        numCharsCurrentWord = 0;
+                        widthCurrentWord = 0;
+                    }
+                    else {
+                        widthCurrentWord += ci.charWidth;
+                        numCharsCurrentWord++;
+                    }
+                    if (this._wordWrap && numWordsPerLine > 0 && offset.x > contentAreaWidth) {
+                        lineLengths.push(offset.x - widthCurrentWord);
+                        numCharsCurrenLine -= numCharsCurrentWord;
+                        var j = i_1 - numCharsCurrentWord;
+                        //skip white space at the end of this line
+                        while (this._isWhiteSpaceCharHoriz(text[j])) {
+                            lineLengths[lineLengths.length - 1] -= charWidths[j];
+                            j--;
+                        }
+                        charsPerLine.push(numCharsCurrenLine);
+                        if (this._isWhiteSpaceCharHoriz(text[i_1])) {
+                            //skip white space at the beginning of next line
+                            var numSpaces = 0;
+                            while (this._isWhiteSpaceCharHoriz(text[i_1 + numSpaces])) {
+                                numSpaces++;
+                                charWidths[i_1 + numSpaces] = 0;
+                            }
+                            i_1 += numSpaces - 1;
+                            offset.x = 0;
+                            numCharsCurrenLine = numSpaces - 1;
+                        }
+                        else {
+                            numCharsCurrenLine = numCharsCurrentWord;
+                            offset.x = widthCurrentWord;
+                        }
+                        numWordsPerLine = 0;
+                    }
+                }
+                lineLengths.push(offset.x);
+                charsPerLine.push(numCharsCurrenLine);
+                //skip white space at the end
+                var i = text.length - 1;
+                while (this._isWhiteSpaceCharHoriz(text[i])) {
+                    lineLengths[lineLengths.length - 1] -= charWidths[i];
+                    i--;
+                }
+                var charNum = 0;
+                var maxLineLen = 0;
+                var alignH = this.textAlignmentH;
+                var alignV = this.textAlignmentV;
+                offset.x = 0;
+                if (alignH == Text2D_1.AlignRight || alignH == Text2D_1.AlignCenter) {
+                    for (var i_2 = 0; i_2 < lineLengths.length; i_2++) {
+                        if (lineLengths[i_2] > maxLineLen) {
+                            maxLineLen = lineLengths[i_2];
+                        }
+                    }
+                }
+                var textHeight = lineLengths.length * lh;
+                var offsetX = this.padding.leftPixels;
+                if (alignH == Text2D_1.AlignRight) {
+                    offsetX += contentAreaWidth - maxLineLen;
+                }
+                else if (alignH == Text2D_1.AlignCenter) {
+                    offsetX += (contentAreaWidth - maxLineLen) * .5;
+                }
+                offset.x += offsetX;
+                offset.y += contentAreaHeight + textHeight - lh;
+                offset.y += this.padding.bottomPixels;
+                if (alignV == Text2D_1.AlignBottom) {
+                    offset.y -= contentAreaHeight;
+                }
+                else if (alignV == Text2D_1.AlignCenter) {
+                    offset.y -= (contentAreaHeight - textHeight) * .5 + lineLengths.length * lh;
+                }
+                else {
+                    offset.y -= lineLengths.length * lh;
+                }
+                for (var i_3 = 0; i_3 < lineLengths.length; i_3++) {
+                    var numChars = charsPerLine[i_3];
+                    var lineLength = lineLengths[i_3];
+                    if (alignH == Text2D_1.AlignRight) {
+                        offset.x += maxLineLen - lineLength;
+                    }
+                    else if (alignH == Text2D_1.AlignCenter) {
+                        offset.x += (maxLineLen - lineLength) * .5;
+                    }
+                    for (var j = 0; j < numChars; j++) {
+                        var char = text[charNum];
+                        var charWidth = charWidths[charNum];
+                        this.updateInstanceDataPart(d, offset);
+                        offset.x += charWidth;
+                        if (!this._isWhiteSpaceCharHoriz(char)) {
+                            var ci = texture.getChar(char);
+                            d.topLeftUV = ci.topLeftUV;
+                            var suv = ci.bottomRightUV.subtract(ci.topLeftUV);
+                            d.sizeUV = suv;
+                            d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
+                            d.color = this.defaultFontColor;
+                            d.superSampleFactor = superSampleFactor;
+                            ++d.curElement;
+                        }
+                        charNum++;
+                    }
+                    offset.x = offsetX;
+                    offset.y -= texture.lineHeight;
                 }
             }
             return true;
+        };
+        Text2D.prototype._isWhiteSpaceCharHoriz = function (char) {
+            if (char === " " || char === "\t") {
+                return true;
+            }
+        };
+        Text2D.prototype._isWhiteSpaceCharVert = function (char) {
+            if (char === "\n" || char === "\r") {
+                return true;
+            }
         };
         Text2D.prototype._updateCharCount = function () {
             var count = 0;
@@ -11629,6 +11908,61 @@ var BABYLON;
             }
             this._charCount = count;
         };
+        Text2D.prototype._setTextAlignmentfromString = function (value) {
+            var m = value.trim().split(",");
+            for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
+                var v = m_1[_i];
+                v = v.toLocaleLowerCase().trim();
+                // Horizontal
+                var i = v.indexOf("h:");
+                if (i === -1) {
+                    i = v.indexOf("horizontal:");
+                }
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this._setTextAlignmentHorizontal(v);
+                    continue;
+                }
+                // Vertical
+                i = v.indexOf("v:");
+                if (i === -1) {
+                    i = v.indexOf("vertical:");
+                }
+                if (i !== -1) {
+                    v = v.substr(v.indexOf(":") + 1);
+                    this._setTextAlignmentVertical(v);
+                    continue;
+                }
+            }
+        };
+        Text2D.prototype._setTextAlignmentHorizontal = function (text) {
+            var v = text.trim().toLocaleLowerCase();
+            switch (v) {
+                case "left":
+                    this.textAlignmentH = Text2D_1.AlignLeft;
+                    return;
+                case "right":
+                    this.textAlignmentH = Text2D_1.AlignRight;
+                    return;
+                case "center":
+                    this.textAlignmentH = Text2D_1.AlignCenter;
+                    return;
+            }
+        };
+        Text2D.prototype._setTextAlignmentVertical = function (text) {
+            var v = text.trim().toLocaleLowerCase();
+            switch (v) {
+                case "top":
+                    this.textAlignmentV = Text2D_1.AlignTop;
+                    return;
+                case "bottom":
+                    this.textAlignmentV = Text2D_1.AlignBottom;
+                    return;
+                case "center":
+                    this.textAlignmentV = Text2D_1.AlignCenter;
+                    return;
+            }
+        };
         Text2D.prototype._useTextureAlpha = function () {
             return this._fontSDF;
         };
@@ -11639,6 +11973,11 @@ var BABYLON;
     }(BABYLON.RenderablePrim2D));
     Text2D.TEXT2D_MAINPARTID = 1;
     Text2D.TEXT2D_CATEGORY_SDF = "SignedDistanceField";
+    Text2D._AlignLeft = 1;
+    Text2D._AlignTop = 1; // Same as left
+    Text2D._AlignRight = 2;
+    Text2D._AlignBottom = 2; // Same as right
+    Text2D._AlignCenter = 3;
     __decorate([
         BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Text2D_1.fontProperty = pi; }, false, true)
     ], Text2D.prototype, "fontName", null);
@@ -11878,7 +12217,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Lines2D(points, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -12095,6 +12434,7 @@ var BABYLON;
                 this._computeLines2D();
             }
             BABYLON.BoundingInfo2D.CreateFromMinMaxToRef(this._boundingMin.x, this._boundingMax.x, this._boundingMin.y, this._boundingMax.y, this._levelBoundingInfo);
+            return true;
         };
         Lines2D.prototype.createModelRenderCache = function (modelKey) {
             var renderCache = new Lines2DRenderCache(this.owner.engine, modelKey);
@@ -12886,7 +13226,7 @@ var BABYLON;
             var _this = _super.call(this, settings) || this;
             /**
              * If you set your own WorldSpaceNode to display the Canvas2D you have to provide your own implementation of this method which computes the local position in the Canvas based on the given 3D World one.
-             * Beware that you have to take under consideration the origin in your calculations! Good luck!
+             * Beware that you have to take under consideration the origin and unitScaleFactor in your calculations! Good luck!
              */
             _this.worldSpaceToNodeLocal = function (worldPos) {
                 var node = _this._worldSpaceNode;
@@ -12895,11 +13235,14 @@ var BABYLON;
                 }
                 var mtx = node.getWorldMatrix().clone();
                 mtx.invert();
+                var usf = _this.unitScaleFactor;
                 var v = BABYLON.Vector3.TransformCoordinates(worldPos, mtx);
                 var res = new BABYLON.Vector2(v.x, v.y);
                 var size = _this.actualSize;
-                res.x += size.width * 0.5; // res is centered, make it relative to bottom/left
-                res.y += size.height * 0.5;
+                res.x += (size.width / usf) * 0.5; // res is centered, make it relative to bottom/left
+                res.y += (size.height / usf) * 0.5;
+                res.x *= usf; // multiply by the unitScaleFactor, which defines if the canvas is nth time bigger than the original world plane
+                res.y *= usf;
                 return res;
             };
             /**
@@ -13000,7 +13343,9 @@ var BABYLON;
             _this._renderingSize = new BABYLON.Size(0, 0);
             _this._designSize = settings.designSize || null;
             _this._designUseHorizAxis = settings.designUseHorizAxis === true;
-            _this._trackedGroups = new Array();
+            if (!_this._trackedGroups) {
+                _this._trackedGroups = new Array();
+            }
             _this._maxAdaptiveWorldSpaceCanvasSize = null;
             _this._groupCacheMaps = new BABYLON.StringDictionary();
             _this._patchHierarchy(_this);
@@ -13356,6 +13701,8 @@ var BABYLON;
             else {
                 // The pointer is inside the Canvas, do an intersection test
                 this.intersect(ii);
+                // Sort primitives to get them from top to bottom
+                ii.intersectedPrimitives = ii.intersectedPrimitives.sort(function (a, b) { return a.prim.actualZOffset - b.prim.actualZOffset; });
             }
             {
                 // Update prev/actual intersection info, fire "overPrim" property change if needed
@@ -13373,8 +13720,11 @@ var BABYLON;
         };
         // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
         Canvas2D.prototype._updateOverStatus = function (force) {
-            if ((!force && (this.scene.getRenderId() === this._hoverStatusRenderId)) || !this._previousIntersectionList || !this._actualIntersectionList) {
+            if ((!force && (this.scene.getRenderId() === this._hoverStatusRenderId)) || !this._actualIntersectionList) {
                 return;
+            }
+            if (this._previousIntersectionList == null) {
+                this._previousIntersectionList = [];
             }
             // Detect a change of over
             var prevPrim = this._previousOverPrimitive ? this._previousOverPrimitive.prim : null;
@@ -13382,15 +13732,42 @@ var BABYLON;
             if (prevPrim !== actualPrim) {
                 // Detect if the current pointer is captured, only fire event if they belong to the capture primitive
                 var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
-                // Notify the previous "over" prim that the pointer is no longer over it
-                if ((capturedPrim && capturedPrim === prevPrim) || (!capturedPrim && prevPrim && !prevPrim.isDisposed)) {
-                    this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(prevPrim, BABYLON.PrimitivePointerInfo.PointerOut, null);
+                // See the NOTE section of: https://www.w3.org/TR/pointerevents/#setting-pointer-capture
+                if (capturedPrim) {
+                    if (capturedPrim === prevPrim) {
+                        this._primPointerInfo.updateRelatedTarget(prevPrim, this._previousOverPrimitive.intersectionLocation);
+                        this._bubbleNotifyPrimPointerObserver(prevPrim, BABYLON.PrimitivePointerInfo.PointerOut, null);
+                    }
+                    else if (capturedPrim === actualPrim) {
+                        this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
+                        this._bubbleNotifyPrimPointerObserver(actualPrim, BABYLON.PrimitivePointerInfo.PointerOver, null);
+                    }
                 }
-                // Notify the new "over" prim that the pointer is over it
-                if ((capturedPrim && capturedPrim === actualPrim) || (!capturedPrim && actualPrim)) {
-                    this._primPointerInfo.updateRelatedTarget(actualPrim, this._actualOverPrimitive.intersectionLocation);
-                    this._bubbleNotifyPrimPointerObserver(actualPrim, BABYLON.PrimitivePointerInfo.PointerOver, null);
+                else {
+                    var _loop_1 = function (prev) {
+                        if (!BABYLON.Tools.first(this_1._actualIntersectionList, function (pii) { return pii.prim === prev.prim; })) {
+                            this_1._primPointerInfo.updateRelatedTarget(prev.prim, prev.intersectionLocation);
+                            this_1._bubbleNotifyPrimPointerObserver(prev.prim, BABYLON.PrimitivePointerInfo.PointerOut, null);
+                        }
+                    };
+                    var this_1 = this;
+                    // Check for Out & Leave
+                    for (var _i = 0, _a = this._previousIntersectionList; _i < _a.length; _i++) {
+                        var prev = _a[_i];
+                        _loop_1(prev);
+                    }
+                    var _loop_2 = function (actual) {
+                        if (!BABYLON.Tools.first(this_2._previousIntersectionList, function (pii) { return pii.prim === actual.prim; })) {
+                            this_2._primPointerInfo.updateRelatedTarget(actual.prim, actual.intersectionLocation);
+                            this_2._bubbleNotifyPrimPointerObserver(actual.prim, BABYLON.PrimitivePointerInfo.PointerOver, null);
+                        }
+                    };
+                    var this_2 = this;
+                    // Check for Over & Enter
+                    for (var _b = 0, _c = this._actualIntersectionList; _b < _c.length; _b++) {
+                        var actual = _c[_b];
+                        _loop_2(actual);
+                    }
                 }
             }
             this._hoverStatusRenderId = this.scene.getRenderId();
@@ -13418,54 +13795,39 @@ var BABYLON;
                 debug += "  ";
             }
             var pii = this._primPointerInfo;
-            debug += "[RID:" + this.scene.getRenderId() + "] [" + prim.hierarchyDepth + "] event:" + BABYLON.PrimitivePointerInfo.getEventTypeName(mask) + ", id: " + prim.id + " (" + BABYLON.Tools.getClassName(prim) + "), primPos: " + pii.primitivePointerPos.toString() + ", canvasPos: " + pii.canvasPointerPos.toString();
+            debug += "[RID:" + this.scene.getRenderId() + "] [" + prim.hierarchyDepth + "] event:" + BABYLON.PrimitivePointerInfo.getEventTypeName(mask) + ", id: " + prim.id + " (" + BABYLON.Tools.getClassName(prim) + "), primPos: " + pii.primitivePointerPos.toString() + ", canvasPos: " + pii.canvasPointerPos.toString() + ", relatedTarget: " + pii.relatedTarget.id;
             console.log(debug);
         };
         Canvas2D.prototype._bubbleNotifyPrimPointerObserver = function (prim, mask, eventData) {
             var ppi = this._primPointerInfo;
             var event = eventData ? eventData.event : null;
-            // In case of PointerOver/Out we will first notify the parent with PointerEnter/Leave
-            if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) !== 0) {
-                this._notifParents(prim, mask);
-            }
-            var bubbleCancelled = false;
             var cur = prim;
             while (cur && !cur.isDisposed) {
-                // Only trigger the observers if the primitive is intersected (except for out)
-                if (!bubbleCancelled) {
-                    this._updatePrimPointerPos(cur);
-                    // Exec the observers
-                    this._debugExecObserver(cur, mask);
-                    if (!cur._pointerEventObservable.notifyObservers(ppi, mask) && eventData instanceof BABYLON.PointerInfoPre) {
-                        eventData.skipOnPointerObservable = true;
-                        return false;
+                this._updatePrimPointerPos(cur);
+                // For the first level we have to fire Enter or Leave for corresponding Over or Out
+                if (cur === prim) {
+                    // Fire the proper notification
+                    if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
+                        this._debugExecObserver(prim, BABYLON.PrimitivePointerInfo.PointerEnter);
+                        prim._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerEnter);
                     }
-                    this._triggerActionManager(cur, ppi, mask, event);
-                    // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
-                    // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
-                    if (ppi.cancelBubble) {
-                        if ((mask & (BABYLON.PrimitivePointerInfo.PointerOver | BABYLON.PrimitivePointerInfo.PointerOut)) === 0) {
-                            return false;
-                        }
-                        // We're dealing with PointerOver/Out, let's keep looping to fire PointerEnter/Leave, but not Over/Out anymore
-                        bubbleCancelled = true;
+                    else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
+                        this._debugExecObserver(prim, BABYLON.PrimitivePointerInfo.PointerLeave);
+                        prim._pointerEventObservable.notifyObservers(ppi, BABYLON.PrimitivePointerInfo.PointerLeave);
                     }
                 }
-                // If bubble is cancel we didn't update the Primitive Pointer Pos yet, let's do it
-                if (bubbleCancelled) {
-                    this._updatePrimPointerPos(cur);
+                // Exec the observers
+                this._debugExecObserver(cur, mask);
+                if (!cur._pointerEventObservable.notifyObservers(ppi, mask) && eventData instanceof BABYLON.PointerInfoPre) {
+                    eventData.skipOnPointerObservable = true;
+                    return false;
                 }
-                // NOTE TO MYSELF, this is commented right now because it doesn't seemed needed but I can't figure out why I put this code in the first place
-                //// Trigger a PointerEnter corresponding to the PointerOver
-                //if (mask === PrimitivePointerInfo.PointerOver) {
-                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerEnter);
-                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerEnter);
-                //}
-                //// Trigger a PointerLeave corresponding to the PointerOut
-                //else if (mask === PrimitivePointerInfo.PointerOut) {
-                //    this._debugExecObserver(cur, PrimitivePointerInfo.PointerLeave);
-                //    cur._pointerEventObservable.notifyObservers(ppi, PrimitivePointerInfo.PointerLeave);
-                //}
+                this._triggerActionManager(cur, ppi, mask, event);
+                // Bubble canceled? If we're not executing PointerOver or PointerOut, quit immediately
+                // If it's PointerOver/Out we have to trigger PointerEnter/Leave no matter what
+                if (ppi.cancelBubble) {
+                    return false;
+                }
                 // Loop to the parent
                 cur = cur.parent;
             }
@@ -13549,23 +13911,6 @@ var BABYLON;
                     var actionEvent = BABYLON.ActionEvent.CreateNewFromPrimitive(prim, ppi.primitivePointerPos, eventData);
                     prim.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, actionEvent);
                 }
-            }
-        };
-        Canvas2D.prototype._notifParents = function (prim, mask) {
-            var pii = this._primPointerInfo;
-            var curPrim = this;
-            while (curPrim) {
-                this._updatePrimPointerPos(curPrim);
-                // Fire the proper notification
-                if (mask === BABYLON.PrimitivePointerInfo.PointerOver) {
-                    this._debugExecObserver(curPrim, BABYLON.PrimitivePointerInfo.PointerEnter);
-                    curPrim._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerEnter);
-                }
-                else if (mask === BABYLON.PrimitivePointerInfo.PointerOut) {
-                    this._debugExecObserver(curPrim, BABYLON.PrimitivePointerInfo.PointerLeave);
-                    curPrim._pointerEventObservable.notifyObservers(pii, BABYLON.PrimitivePointerInfo.PointerLeave);
-                }
-                curPrim = curPrim.parent;
             }
         };
         /**
@@ -13831,7 +14176,10 @@ var BABYLON;
              * Return
              */
             get: function () {
-                return this._actualOverPrimitive ? this._actualOverPrimitive.prim : null;
+                if (this._actualIntersectionList && this._actualIntersectionList.length > 0) {
+                    return this._actualIntersectionList[0].prim;
+                }
+                return null;
             },
             enumerable: true,
             configurable: true
@@ -13843,6 +14191,13 @@ var BABYLON;
              */
             get: function () {
                 return this.__engineData;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "unitScaleFactor", {
+            get: function () {
+                return this._unitScaleFactor;
             },
             enumerable: true,
             configurable: true
@@ -13955,10 +14310,13 @@ var BABYLON;
             this._updateGlobalTransformCounter.addCount(count, false);
         };
         Canvas2D.prototype._updateTrackedNodes = function () {
+            // Get the used camera
             var cam = this.scene.cameraToUseForPointers || this.scene.activeCamera;
+            // Compute some matrix stuff
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D_1._m);
             var rh = this.engine.getRenderHeight();
             var v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
+            // Compute the screen position of each group that track a given scene node
             for (var _i = 0, _a = this._trackedGroups; _i < _a.length; _i++) {
                 var group = _a[_i];
                 if (group.isDisposed) {
@@ -13972,6 +14330,36 @@ var BABYLON;
                 var s = this.scale;
                 group.x = Math.round(proj.x / s);
                 group.y = Math.round((rh - proj.y) / s);
+            }
+            // If it's a WorldSpaceCanvas and it's tracking a node, let's update the WSC transformation data
+            if (this._trackNode) {
+                var rot = null;
+                var scale = null;
+                var worldmtx = this._trackNode.getWorldMatrix();
+                var pos = worldmtx.getTranslation().add(this._trackNodeOffset);
+                var wsc = this;
+                var wsn = wsc.worldSpaceCanvasNode;
+                if (this._trackNodeBillboard) {
+                    var viewMtx = cam.getViewMatrix().clone().invert();
+                    viewMtx.decompose(Canvas2D_1.tS, Canvas2D_1.tR, Canvas2D_1.tT);
+                    rot = Canvas2D_1.tR.clone();
+                }
+                worldmtx.decompose(Canvas2D_1.tS, Canvas2D_1.tR, Canvas2D_1.tT);
+                var mtx = BABYLON.Matrix.Compose(Canvas2D_1.tS, Canvas2D_1.tR, BABYLON.Vector3.Zero());
+                pos = worldmtx.getTranslation().add(BABYLON.Vector3.TransformCoordinates(this._trackNodeOffset, mtx));
+                if (Canvas2D_1.tS.lengthSquared() !== 1) {
+                    scale = Canvas2D_1.tS.clone();
+                }
+                if (!this._trackNodeBillboard) {
+                    rot = Canvas2D_1.tR.clone();
+                }
+                if (wsn instanceof BABYLON.AbstractMesh) {
+                    wsn.position = pos;
+                    wsn.rotationQuaternion = rot;
+                    if (scale) {
+                        wsn.scaling = scale;
+                    }
+                }
             }
         };
         /**
@@ -14204,6 +14592,9 @@ var BABYLON;
             if (group._isFlagSet(BABYLON.SmartPropertyPrim.flagTrackedGroup)) {
                 return;
             }
+            if (!this._trackedGroups) {
+                this._trackedGroups = new Array();
+            }
             this._trackedGroups.push(group);
             group._setFlags(BABYLON.SmartPropertyPrim.flagTrackedGroup);
         };
@@ -14348,6 +14739,9 @@ var BABYLON;
     Canvas2D._v = BABYLON.Vector3.Zero(); // Must stay zero
     Canvas2D._m = BABYLON.Matrix.Identity();
     Canvas2D._mI = BABYLON.Matrix.Identity(); // Must stay identity
+    Canvas2D.tS = BABYLON.Vector3.Zero();
+    Canvas2D.tT = BABYLON.Vector3.Zero();
+    Canvas2D.tR = BABYLON.Quaternion.Identity();
     /**
      * Define the default size used for both the width and height of a MapTexture to allocate.
      * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
@@ -14367,10 +14761,14 @@ var BABYLON;
          * @param scene the Scene that owns the Canvas
          * @param size the dimension of the Canvas in World Space
          * @param settings a combination of settings, possible ones are
-         *  - children: an array of direct children primitives
-         *  - id: a text identifier, for information purpose only, default is null.
-         *  - worldPosition the position of the Canvas in World Space, default is [0,0,0]
-         *  - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - children: an array of direct children primitives
+         * - id: a text identifier, for information purpose only, default is null.
+         * - unitScaleFactor: if specified the created canvas will be with a width of size.width*unitScaleFactor and a height of size.height.unitScaleFactor. If not specified, the unit of 1 is used. You can use this setting when you're dealing with a 3D world with small coordinates and you need a Canvas having bigger coordinates (typically to display text with better quality).
+         * - worldPosition the position of the Canvas in World Space, default is [0,0,0]
+         * - worldRotation the rotation of the Canvas in World Space, default is Quaternion.Identity()
+         * - trackNode: if you want the WorldSpaceCanvas to track the position/rotation/scale of a given Scene Node, use this setting to specify the Node to track
+         * - trackNodeOffset: if you use trackNode you may want to specify a 3D Offset to apply to shift the Canvas
+         * - trackNodeBillboard: if true the WorldSpaceCanvas will always face the screen
          * - sideOrientation: Unexpected behavior occur if the value is different from Mesh.DEFAULTSIDE right now, so please use this one, which is the default.
          * - cachingStrategy Must be CACHESTRATEGY_CANVAS for now, which is the default.
          * - enableInteraction: if true the pointer events will be listened and rerouted to the appropriate primitives of the Canvas2D through the Prim2DBase.onPointerEventObservable observable property. Default is false (the opposite of ScreenSpace).
@@ -14388,28 +14786,44 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WorldSpaceCanvas2D(scene, size, settings) {
-            var _this;
+            var _this = this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             var s = settings;
             s.isScreenSpace = false;
-            s.size = size.clone();
+            if (settings.unitScaleFactor != null) {
+                s.size = size.multiplyByFloats(settings.unitScaleFactor, settings.unitScaleFactor);
+            }
+            else {
+                s.size = size.clone();
+            }
             settings.cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_CANVAS : settings.cachingStrategy;
             if (settings.cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
                 throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
             }
             _this = _super.call(this, scene, settings) || this;
             BABYLON.Prim2DBase._isCanvasInit = false;
+            _this._unitScaleFactor = (settings.unitScaleFactor != null) ? settings.unitScaleFactor : 1;
             _this._renderableData._useMipMap = true;
             _this._renderableData._anisotropicLevel = 8;
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
+            if (settings.trackNode != null) {
+                _this._trackNode = settings.trackNode;
+                _this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : BABYLON.Vector3.Zero();
+                _this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
+            }
+            else {
+                _this._trackNode = null;
+                _this._trackNodeOffset = null;
+                _this._trackNodeBillboard = false;
+            }
             var createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             _this._customWorldSpaceNode = !createWorldSpaceNode;
             var id = settings ? settings.id || null : null;
             // Set the max size of texture allowed for the adaptive render of the world space canvas cached bitmap
             var capMaxTextSize = _this.engine.getCaps().maxRenderTextureSize;
-            var defaultTextSize = (Math.min(capMaxTextSize, 1024)); // Default is 4K if allowed otherwise the max allowed
+            var defaultTextSize = (Math.min(capMaxTextSize, 1024)); // Default is 1K if allowed otherwise the max allowed
             if (settings.maxAdaptiveCanvasSize == null) {
                 _this._maxAdaptiveWorldSpaceCanvasSize = defaultTextSize;
             }
@@ -14430,6 +14844,9 @@ var BABYLON;
                 mtl.specularColor = new BABYLON.Color3(0, 0, 0);
                 mtl.disableLighting = true;
                 mtl.useAlphaFromDiffuseTexture = true;
+                if (settings && settings.sideOrientation) {
+                    mtl.backFaceCulling = (settings.sideOrientation === BABYLON.Mesh.DEFAULTSIDE || settings.sideOrientation === BABYLON.Mesh.FRONTSIDE);
+                }
                 plane.position = settings && settings.worldPosition || BABYLON.Vector3.Zero();
                 plane.rotationQuaternion = settings && settings.worldRotation || BABYLON.Quaternion.Identity();
                 plane.material = mtl;
@@ -14497,7 +14914,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see BABYLON.PrimitiveThickness.fromString)
          */
         function ScreenSpaceCanvas2D(scene, settings) {
-            var _this;
+            var _this = this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             _this = _super.call(this, scene, settings) || this;
             return _this;
@@ -15481,7 +15898,7 @@ var BABYLON;
     var StackPanel = StackPanel_1 = (function (_super) {
         __extends(StackPanel, _super);
         function StackPanel(settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -15544,7 +15961,7 @@ var BABYLON;
     var DefaultStackPanelRenderingTemplate = DefaultStackPanelRenderingTemplate_1 = (function (_super) {
         __extends(DefaultStackPanelRenderingTemplate, _super);
         function DefaultStackPanelRenderingTemplate() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DefaultStackPanelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             return { root: visualPlaceholder, contentPlaceholder: visualPlaceholder };
@@ -15673,7 +16090,7 @@ var BABYLON;
     var ContentControl = ContentControl_1 = (function (_super) {
         __extends(ContentControl, _super);
         function ContentControl(settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -15828,7 +16245,7 @@ var BABYLON;
     var Window = Window_1 = (function (_super) {
         __extends(Window, _super);
         function Window(scene, settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -16013,7 +16430,7 @@ var BABYLON;
     var DefaultWindowRenderingTemplate = DefaultWindowRenderingTemplate_1 = (function (_super) {
         __extends(DefaultWindowRenderingTemplate, _super);
         function DefaultWindowRenderingTemplate() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DefaultWindowRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             var r = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#808080FF" });
@@ -16044,7 +16461,7 @@ var BABYLON;
     var Label = Label_1 = (function (_super) {
         __extends(Label, _super);
         function Label(settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -16091,7 +16508,7 @@ var BABYLON;
     var DefaultLabelRenderingTemplate = DefaultLabelRenderingTemplate_1 = (function (_super) {
         __extends(DefaultLabelRenderingTemplate, _super);
         function DefaultLabelRenderingTemplate() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DefaultLabelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             var r = new BABYLON.Text2D("", { parent: visualPlaceholder });
@@ -16124,7 +16541,7 @@ var BABYLON;
     var Button = Button_1 = (function (_super) {
         __extends(Button, _super);
         function Button(settings) {
-            var _this;
+            var _this = this;
             if (!settings) {
                 settings = {};
             }
@@ -16278,7 +16695,7 @@ var BABYLON;
     var DefaultButtonRenderingTemplate = DefaultButtonRenderingTemplate_1 = (function (_super) {
         __extends(DefaultButtonRenderingTemplate, _super);
         function DefaultButtonRenderingTemplate() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         DefaultButtonRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             this._rect = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#FF8080FF", border: "#FF8080FF", roundRadius: 10, borderThickness: 2 });

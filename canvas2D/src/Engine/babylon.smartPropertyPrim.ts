@@ -1192,9 +1192,12 @@
          */
         public get levelBoundingInfo(): BoundingInfo2D {
             if (this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
-                this.updateLevelBoundingInfo();
-                this._boundingInfo.dirtyWorldAABB();
-                this._clearFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
+                if (this.updateLevelBoundingInfo()) {
+                    this._boundingInfo.dirtyWorldAABB();
+                    this._clearFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
+                } else {
+                    this._levelBoundingInfo.clear();
+                }
             }
             return this._levelBoundingInfo;
         }
@@ -1202,8 +1205,8 @@
         /**
          * This method must be overridden by a given Primitive implementation to compute its boundingInfo
          */
-        protected updateLevelBoundingInfo() {
-
+        protected updateLevelBoundingInfo(): boolean {
+            return false;
         }
 
         /**

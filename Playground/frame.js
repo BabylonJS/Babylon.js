@@ -1,5 +1,5 @@
 ﻿(function () {
-    var snippetUrl = "http://babylonjs-api.azurewebsites.net/api/snippet";
+    var snippetUrl = "//babylonjs-api.azurewebsites.net/api/snippet";
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
@@ -149,7 +149,7 @@
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();
 
-                document.getElementById("link").href = "http://www.babylonjs-playground.com/#" + hash;
+                document.getElementById("link").href = "//www.babylonjs-playground.com/#" + hash;
             } catch (e) {
 
             }

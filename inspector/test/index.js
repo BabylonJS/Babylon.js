@@ -89,7 +89,6 @@ var Test = (function () {
     };
     Test.prototype._initGame = function () {
         this._createCanvas();
-        BABYLON.SceneLoader.ImportMesh('', 'test/', 'Rabbit.babylon', this.scene);
     };
     /**
      * Create the canvas2D

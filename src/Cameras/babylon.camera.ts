@@ -403,6 +403,10 @@
                 this._markSyncedWithParent();
             }
 
+            if (this._cameraRigParams.vrPreViewMatrix) {
+                this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
+            }
+
             this._currentRenderId = this.getScene().getRenderId();
 
             return this._computedViewMatrix;
@@ -425,11 +429,11 @@
                 this._projectionMatrix = projection;
             }
         };
-        
+
         public unfreezeProjectionMatrix(): void {
             this._doNotComputeProjectionMatrix = false;
         };
-        
+
         public getProjectionMatrix(force?: boolean): Matrix {
             if (this._doNotComputeProjectionMatrix || (!force && this._isSynchronizedProjectionMatrix())) {
                 return this._projectionMatrix;
@@ -707,15 +711,15 @@
             return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
         }
 
-        public getDirection(localAxis:Vector3): Vector3 {
+        public getDirection(localAxis: Vector3): Vector3 {
             var result = Vector3.Zero();
 
             this.getDirectionToRef(localAxis, result);
-            
+
             return result;
         }
 
-        public getDirectionToRef(localAxis:Vector3, result:Vector3): void {
+        public getDirectionToRef(localAxis: Vector3, result: Vector3): void {
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         }
 
@@ -735,10 +739,14 @@
                     return () => new TouchCamera(name, Vector3.Zero(), scene);
                 case "VirtualJoysticksCamera":
                     return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
+                case "HolographicCamera":
+                    return () => new HolographicCamera(name, scene);
                 case "WebVRFreeCamera":
                     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
                 case "VRDeviceOrientationFreeCamera":
                     return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
+                case "VRDeviceOrientationGamepadCamera":
+                    return () => new VRDeviceOrientationGamepadCamera(name, Vector3.Zero(), scene);
                 case "AnaglyphArcRotateCamera":
                     return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, scene);
                 case "AnaglyphFreeCamera":

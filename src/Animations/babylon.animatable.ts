@@ -99,27 +99,52 @@
         }
 
         public stop(animationName?: string): void {
-            var idx = this._scene._activeAnimatables.indexOf(this);
+            
+            if (animationName) {
 
-            if (idx > -1) {
-                var animations = this._animations;
-                var numberOfAnimationsStopped = 0;
-                for (var index = animations.length - 1; index >= 0; index--) {
-                    if (typeof animationName === "string" && animations[index].name != animationName) {
-                        continue;
+                var idx = this._scene._activeAnimatables.indexOf(this);
+
+                if (idx > -1) {
+
+                    var animations = this._animations;
+                    var numberOfAnimationsStopped = 0;
+                    
+                    for (var index = animations.length - 1; index >= 0; index--) {
+                        if (typeof animationName === "string" && animations[index].name != animationName) {
+                            continue;
+                        }
+
+                        animations[index].reset();
+                        animations.splice(index, 1);
+                        numberOfAnimationsStopped++;
                     }
-                    animations[index].reset();
-                    animations.splice(index, 1);
-                    numberOfAnimationsStopped ++;
+
+                    if (animations.length == numberOfAnimationsStopped) {
+                        this._scene._activeAnimatables.splice(idx, 1);
+
+                        if (this.onAnimationEnd) {
+                            this.onAnimationEnd();
+                        }
+                    }
                 }
 
-                if (animations.length == numberOfAnimationsStopped) {
-                    this._scene._activeAnimatables.splice(idx, 1);
+            } else {
 
+                var index = this._scene._activeAnimatables.indexOf(this);
+
+                if (index > -1) {
+                    this._scene._activeAnimatables.splice(index, 1);
+                    var animations = this._animations;
+                    
+                    for (var index = 0; index < animations.length; index++) {
+                        animations[index].reset();
+                    }
+                    
                     if (this.onAnimationEnd) {
                         this.onAnimationEnd();
                     }
                 }
+
             }
         }
 
