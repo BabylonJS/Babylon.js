@@ -954,6 +954,7 @@
 
                 // Get normal
                 result.normal = new Vector3(normals[vertexId * 3], normals[vertexId * 3 + 1], normals[vertexId * 3 + 2]);
+                result.normal = Vector3.TransformNormal(result.normal, transformMatrix);
 
                 return result;
             }; // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js

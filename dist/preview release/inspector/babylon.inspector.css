@@ -28,6 +28,8 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 0; }
+    .insp-wrapper .insp-right-panel.popupmode {
+      width: 100% !important; }
     .insp-wrapper .insp-right-panel .top-panel {
       width: 100%;
       height: 100%;
@@ -167,6 +169,35 @@
       text-transform: uppercase;
       line-height: 25px;
       margin-bottom: 10px; }
+  .insp-wrapper .tab-panel .console-panel {
+    min-height: 100px;
+    user-select: text;
+    box-sizing: border-box;
+    padding: 0 15px; }
+    .insp-wrapper .tab-panel .console-panel .console-panel-title {
+      height: 25px;
+      border-bottom: 1px solid #383838;
+      text-transform: uppercase;
+      line-height: 25px;
+      margin-bottom: 10px; }
+    .insp-wrapper .tab-panel .console-panel .console-panel-content {
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: calc(100% - 30px); }
+    .insp-wrapper .tab-panel .console-panel .defaut-line, .insp-wrapper .tab-panel .console-panel .log, .insp-wrapper .tab-panel .console-panel .warn, .insp-wrapper .tab-panel .console-panel .error, .insp-wrapper .tab-panel .console-panel .object {
+      word-wrap: break-word;
+      padding: 3px 0 3px 5px; }
+    .insp-wrapper .tab-panel .console-panel .caller {
+      padding: 3px 0 3px 0;
+      color: #349ccd; }
+    .insp-wrapper .tab-panel .console-panel .log {
+      color: white; }
+    .insp-wrapper .tab-panel .console-panel .warn {
+      color: orange; }
+    .insp-wrapper .tab-panel .console-panel .error {
+      color: orangered; }
+    .insp-wrapper .tab-panel .console-panel .object {
+      color: #5db0d7; }
   .insp-wrapper .tab-panel.stats-panel {
     overflow-y: auto; }
   .insp-wrapper .tab-panel .stats-fps {
