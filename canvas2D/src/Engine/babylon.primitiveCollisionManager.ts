@@ -4,7 +4,7 @@
             this._owner = owner;
         }
 
-        abstract addActor(actor: Prim2DBase, deep: boolean);
+        abstract addActor(actor: Prim2DBase, deep: boolean): ActorInfo;
         abstract removeActor(actor: Prim2DBase);
 
         abstract update();
@@ -19,13 +19,13 @@
 
     }
 
-    class ActorInfo {
+    export class ActorInfo {
         constructor(owner: BasicPrimitiviceCollisionManager, actor: Prim2DBase, deep: boolean) {
             this.owner = owner;
             this.prim = actor;
             this.flags = 0;
             this.presentInClusters = new StringDictionary<ClusterInfo>();
-            this.intersectWith = new StringDictionary<ActorInfo>();
+            this.intersectWith = new ObservableStringDictionary<ActorInfo>(false);
             this.setFlags((deep ? ActorInfo.flagDeep : 0) | ActorInfo.flagDirty);
 
             let bi = (deep ? actor.boundingInfo : actor.levelBoundingInfo);
@@ -93,7 +93,7 @@
         flags: number;
         owner: BasicPrimitiviceCollisionManager;
         presentInClusters: StringDictionary<ClusterInfo>;
-        intersectWith: StringDictionary<ActorInfo>;
+        intersectWith: ObservableStringDictionary<ActorInfo>;
 
         public static flagDeep       = 0x0001;      // set if the actor boundingInfo must be used instead of the levelBoundingInfo
         public static flagEnabled    = 0x0002;      // set if the actor is enabled and should be considered for intersection tests
@@ -164,8 +164,8 @@
             this.debugStats = true;
         }
 
-        addActor(actor: Prim2DBase, deep: boolean) {
-            this._actors.getOrAddWithFactory(actor.uid, () => {
+        addActor(actor: Prim2DBase, deep: boolean): ActorInfo {
+            return this._actors.getOrAddWithFactory(actor.uid, () => {
                 let ai = new ActorInfo(this, actor, deep);
                 this.actorDirty(ai);
                 return ai;
