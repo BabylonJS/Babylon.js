@@ -1383,6 +1383,8 @@
             isPickable              ?: boolean,
             isContainer             ?: boolean,
             childrenFlatZOrder      ?: boolean,
+            levelCollision          ?: boolean,
+            deepCollision           ?: boolean,
             marginTop               ?: number | string,
             marginLeft              ?: number | string,
             marginRight             ?: number | string,
@@ -1443,7 +1445,6 @@
             this._lastAutoSizeArea = Size.Zero();
             this._contentArea = new Size(null, null);
             this._pointerEventObservable = new Observable<PrimitivePointerInfo>();
-            this._boundingInfo = new BoundingInfo2D();
             this._owner = owner;
             this._parent = null;
             this._margin = null;
@@ -1466,6 +1467,11 @@
             this._actualScale = Vector2.Zero();
             this._displayDebugAreas = false;
             this._debugAreaGroup = null;
+            this._primTriArray = null;
+            this._primTriArrayDirty = true;
+
+            this._levelBoundingInfo.worldMatrixAccess = () => this.globalTransform;
+            this._boundingInfo.worldMatrixAccess = () => this.globalTransform;
 
             let isPickable = true;
             let isContainer = true;
@@ -1615,6 +1621,13 @@
             // Dirty layout and positioning
             this._parentLayoutDirty();
             this._positioningDirty();
+
+            // Add in the PCM
+            if (settings.levelCollision || settings.deepCollision) {
+                this.owner._primitiveCollisionManager.addActor(this, settings.deepCollision===true);
+                this._setFlags(SmartPropertyPrim.flagCollisionActor);
+            }
+
         }
 
         public get actionManager(): ActionManager {
@@ -2509,7 +2522,9 @@
          * Get the global transformation matrix of the primitive
          */
         public get globalTransform(): Matrix {
-            this._updateLocalTransform();
+            if (this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
+                this.updateCachedStates(false);
+            }
             return this._globalTransform;
         }
 
@@ -2944,12 +2959,12 @@
             return this.owner._releasePointerCapture(pointerId, this);
         }
 
+        private static _bypassGroup2DExclusion = false;
+
         /**
          * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
          * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
          */
-        private static _bypassGroup2DExclusion = false;
-
         public intersect(intersectInfo: IntersectInfo2D): boolean {
             if (!intersectInfo) {
                 return false;
@@ -3049,6 +3064,38 @@
             return intersectInfo.isIntersected;
         }
 
+        public intersectOtherPrim(other: Prim2DBase): boolean {
+            let setA = this.triList;
+            let setB = other.triList;
+
+            return Tri2DArray.doesIntersect(setA, setB, other.globalTransform.multiply(this.globalTransform.clone().invert()));
+        }
+
+        public get triList(): Tri2DArray {
+            if (this._primTriArrayDirty) {
+                this.updateTriArray();
+                this._primTriArrayDirty = false;
+            }
+            return this._primTriArray;
+        }
+
+        // This is the worst implementation, if the top level primitive doesn't override this method we will just store a quad that defines the bounding rect of the prim
+        protected updateTriArray() {
+            if (this._primTriArray == null) {
+                this._primTriArray = new Tri2DArray(2);
+            } else {
+                this._primTriArray.clear(2);
+            }
+
+            let size = this.actualSize;
+            let lb = new Vector2(0, 0);
+            let rt = new Vector2(size.width, size.height);
+            let lt = new Vector2(0, size.height);
+            let rb = new Vector2(size.width, 0);
+            this._primTriArray.storeTriangle(0, lb, lt, rt);
+            this._primTriArray.storeTriangle(1, lb, rt, rb);
+        }
+
         /**
          * Move a child object into a new position regarding its siblings to change its rendering order.
          * You can also use the shortcut methods to move top/bottom: moveChildToTop, moveChildToBottom, moveToTop, moveToBottom.
@@ -3131,6 +3178,10 @@
                 return false;
             }
 
+            if (this._isFlagSet(SmartPropertyPrim.flagCollisionActor)) {
+                this.owner._primitiveCollisionManager.removeActor(this);
+            }
+
             if (this._pointerEventObservable) {
                 this._pointerEventObservable.clear();
                 this._pointerEventObservable = null;
@@ -3183,7 +3234,7 @@
         }
 
         public _needPrepare(): boolean {
-            return this._areSomeFlagsSet(SmartPropertyPrim.flagVisibilityChanged | SmartPropertyPrim.flagModelDirty | SmartPropertyPrim.flagNeedRefresh) || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
+            return this._areSomeFlagsSet(SmartPropertyPrim.flagVisibilityChanged | SmartPropertyPrim.flagModelDirty | SmartPropertyPrim.flagModelUpdate | SmartPropertyPrim.flagNeedRefresh) || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         }
 
         public _prepareRender(context: PrepareRender2DContext) {
@@ -3430,6 +3481,9 @@
                     this._globalTransform = this._parent ? localTransform.multiply(globalTransform) : localTransform.clone();
 
                     this._invGlobalTransform = Matrix.Invert(this._globalTransform);
+
+                    this._levelBoundingInfo.dirtyWorldAABB();
+                    this._boundingInfo.dirtyWorldAABB();
 
                     this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
                     this._parentTransformStep = this._parent ? this._parent._globalTransformStep : 0;
@@ -3819,6 +3873,10 @@
         protected _localTransform: Matrix;
         protected _globalTransform: Matrix;
         protected _invGlobalTransform: Matrix;
+
+        // Intersection related data
+        protected _primTriArrayDirty: boolean;
+        protected _primTriArray: Tri2DArray;
     }
 
 }

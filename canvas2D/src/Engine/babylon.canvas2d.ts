@@ -66,21 +66,24 @@
         private static _INSTANCES : Array<Canvas2D> = [];
 
         constructor(scene: Scene, settings?: {
-            id?: string,
-            children?: Array<Prim2DBase>,
-            size?: Size,
-            renderingPhase?: { camera: Camera, renderingGroupID: number },
-            designSize?: Size,
-            designUseHorizAxis?: boolean,
-            isScreenSpace?: boolean,
-            cachingStrategy?: number,
-            enableInteraction?: boolean,
-            origin?: Vector2,
-            isVisible?: boolean,
-            backgroundRoundRadius?: number,
-            backgroundFill?: IBrush2D | string,
-            backgroundBorder?: IBrush2D | string,
-            backgroundBorderThickNess?: number,
+            id                            ?: string,
+            children                      ?: Array<Prim2DBase>,
+            size                          ?: Size,
+            renderingPhase                ?: { camera: Camera, renderingGroupID: number },
+            designSize                    ?: Size,
+            designUseHorizAxis            ?: boolean,
+            isScreenSpace                 ?: boolean,
+            cachingStrategy               ?: number,
+            enableInteraction             ?: boolean,
+            enableCollisionManager        ?: boolean,
+            customCollisionManager        ?: (owner: Canvas2D, enableBorders: boolean) => PirimitiveCollisionManagerBase,
+            collisionManagerUseBorders    ?: boolean,
+            origin                        ?: Vector2,
+            isVisible                     ?: boolean,
+            backgroundRoundRadius         ?: number,
+            backgroundFill                ?: IBrush2D | string,
+            backgroundBorder              ?: IBrush2D | string,
+            backgroundBorderThickNess     ?: number,
         }) {
             super(settings);
 
@@ -97,7 +100,6 @@
             this._updateGlobalTransformCounter = new PerfCounter();
             this._boundingInfoRecomputeCounter = new PerfCounter();
 
-            this._uid = null;
             this._cachedCanvasGroup = null;
 
             this._renderingGroupObserver = null;
@@ -173,7 +175,6 @@
             }
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new StringDictionary<MapTexture[]>();
-
             this._patchHierarchy(this);
 
             let enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
@@ -214,7 +215,14 @@
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
                         //this._supprtInstancedArray = false; // TODO REMOVE!!!
 
+            // Setup the canvas for interaction (or not)
             this._setupInteraction(enableInteraction);
+
+            // Initialize the Primitive Collision Manager
+            if (settings.enableCollisionManager) {
+                let enableBorders = settings.collisionManagerUseBorders;
+                this._primitiveCollisionManager = (settings.customCollisionManager==null) ? new BasicPrimitiviceCollisionManager(this, enableBorders) : settings.customCollisionManager(this, enableBorders);
+            }
 
             // Register this instance
             Canvas2D._INSTANCES.push(this);
@@ -895,16 +903,6 @@
         }
 
         /**
-         * return a unique identifier for the Canvas2D
-         */
-        public get uid(): string {
-            if (!this._uid) {
-                this._uid = Tools.RandomId();
-            }
-            return this._uid;
-        }
-
-        /**
          * And observable called during the Canvas rendering process.
          * This observable is called twice per render, each time with a different mask:
          *  - 1: before render is executed
@@ -1212,7 +1210,6 @@
             this._updateGlobalTransformCounter.addCount(count, false);
         }
 
-        private _uid: string;
         private _renderObservable: Observable<Canvas2D>;
         private __engineData: Canvas2DEngineBoundData;
         private _interactionEnabled: boolean;
@@ -1249,6 +1246,7 @@
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
         private _designSize: Size;
         private _designUseHorizAxis: boolean;
+        public  _primitiveCollisionManager: PirimitiveCollisionManagerBase;
 
         public _renderingSize: Size;
 
@@ -1375,8 +1373,8 @@
 
             // If the canvas fit the rendering size and it changed, update
             if (renderingSizeChanged && this._fitRenderingDevice) {
-                this._actualSize = this._renderingSize.clone();
-                this._size = this._renderingSize.clone();
+                this.actualSize = this._renderingSize.clone();
+                this.size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;
                 }
@@ -1433,6 +1431,10 @@
             }
 
             this._updateCanvasState(false);
+
+            if (this._primitiveCollisionManager) {
+                this._primitiveCollisionManager.update();
+            }
 
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
@@ -1877,31 +1879,34 @@
          */
         constructor(scene: Scene, settings?: {
 
-            children?: Array<Prim2DBase>,
-            id?: string,
-            x?: number,
-            y?: number,
-            position?: Vector2,
-            origin?: Vector2,
-            width?: number,
-            height?: number,
-            size?: Size,
-            renderingPhase?: {camera: Camera, renderingGroupID: number },
-            designSize?: Size,
-            designUseHorizAxis?: boolean,
-            cachingStrategy?: number,
-            cacheBehavior?: number,
-            enableInteraction?: boolean,
-            isVisible?: boolean,
-            backgroundRoundRadius?: number,
-            backgroundFill?: IBrush2D | string,
-            backgroundBorder?: IBrush2D | string,
-            backgroundBorderThickNess?: number,
-            paddingTop?: number | string,
-            paddingLeft?: number | string,
-            paddingRight?: number | string,
-            paddingBottom?: number | string,
-            padding?: string,
+            children                   ?: Array<Prim2DBase>,
+            id                         ?: string,
+            x                          ?: number,
+            y                          ?: number,
+            position                   ?: Vector2,
+            origin                     ?: Vector2,
+            width                      ?: number,
+            height                     ?: number,
+            size                       ?: Size,
+            renderingPhase             ?: {camera: Camera, renderingGroupID: number },
+            designSize                 ?: Size,
+            designUseHorizAxis         ?: boolean,
+            cachingStrategy            ?: number,
+            cacheBehavior              ?: number,
+            enableInteraction          ?: boolean,
+            enableCollisionManager     ?: boolean,
+            customCollisionManager     ?: (owner: Canvas2D, enableBorders: boolean) => PirimitiveCollisionManagerBase,
+            collisionManagerUseBorders ?: boolean,
+            isVisible                  ?: boolean,
+            backgroundRoundRadius      ?: number,
+            backgroundFill             ?: IBrush2D | string,
+            backgroundBorder           ?: IBrush2D | string,
+            backgroundBorderThickNess  ?: number,
+            paddingTop                 ?: number | string,
+            paddingLeft                ?: number | string,
+            paddingRight               ?: number | string,
+            paddingBottom              ?: number | string,
+            padding                    ?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;

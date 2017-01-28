@@ -26,6 +26,9 @@
             this.radius = 0;
             this.center = Vector2.Zero();
             this.extent = Vector2.Zero();
+            this._worldAABBDirty = false;
+            this._worldAABBDirtyObservable = null;
+            this._worldAABB = Vector4.Zero();
         }
 
         /**
@@ -74,6 +77,7 @@
             b.extent.x = b.center.x;
             b.extent.y = b.center.y;
             b.radius = b.extent.length();
+            b._worldAABBDirty = true;
         }
 
         /**
@@ -87,6 +91,7 @@
             b.extent.x = r;
             b.extent.y = r;
             b.radius = r;
+            b._worldAABBDirty = true;
         }
 
         /**
@@ -119,6 +124,7 @@
             b.center = new Vector2(xmin + w / 2, ymin + h / 2);
             b.extent = new Vector2(xmax - b.center.x, ymax - b.center.y);
             b.radius = b.extent.length();
+            b._worldAABBDirty = true;
         }
 
         /**
@@ -137,12 +143,14 @@
             this.center.copyFromFloats(0, 0);
             this.radius = 0;
             this.extent.copyFromFloats(0, 0);
+            this._worldAABBDirty = true;
         }
 
         public copyFrom(src: BoundingInfo2D) {
             this.center.copyFrom(src.center);
             this.radius = src.radius;
             this.extent.copyFrom(src.extent);
+            this._worldAABBDirty = true;
         }
 
         /**
@@ -185,6 +193,13 @@
             return r;
         }
 
+        public worldAABBIntersectionTest(other: BoundingInfo2D): boolean {
+            let a = this.worldAABB;
+            let b = other.worldAABB;
+
+            return b.z >= a.x && b.x <= a.z && b.w >= a.y && b.y <= a.w;
+        }
+
         private static _transform: Array<Vector2> = new Array<Vector2>(Vector2.Zero(), Vector2.Zero(), Vector2.Zero(), Vector2.Zero());
 
         /**
@@ -210,6 +225,67 @@
                 Vector2.TransformToRef(p[i], matrix, p[i]);
             }
             BoundingInfo2D.CreateFromPointsToRef(p, result);
+        }
+
+        private _updateWorldAABB(worldMatrix: Matrix) {
+            // Construct a bounding box based on the extent values
+            let p = BoundingInfo2D._transform;
+            p[0].x = this.center.x + this.extent.x;
+            p[0].y = this.center.y + this.extent.y;
+            p[1].x = this.center.x + this.extent.x;
+            p[1].y = this.center.y - this.extent.y;
+            p[2].x = this.center.x - this.extent.x;
+            p[2].y = this.center.y - this.extent.y;
+            p[3].x = this.center.x - this.extent.x;
+            p[3].y = this.center.y + this.extent.y;
+
+            // Transform the four points of the bounding box with the matrix
+            for (let i = 0; i < 4; i++) {
+                Vector2.TransformToRef(p[i], worldMatrix, p[i]);
+            }
+
+            this._worldAABB.x = Math.min(Math.min(p[0].x, p[1].x), Math.min(p[2].x, p[3].x));
+            this._worldAABB.y = Math.min(Math.min(p[0].y, p[1].y), Math.min(p[2].y, p[3].y));
+            this._worldAABB.z = Math.max(Math.max(p[0].x, p[1].x), Math.max(p[2].x, p[3].x));
+            this._worldAABB.w = Math.max(Math.max(p[0].y, p[1].y), Math.max(p[2].y, p[3].y));
+        }
+
+        public worldMatrixAccess: () => Matrix;
+
+        public get worldAABBDirtyObservable(): Observable<BoundingInfo2D> {
+            if (!this._worldAABBDirtyObservable) {
+                this._worldAABBDirtyObservable = new Observable<BoundingInfo2D>();
+            }
+            return this._worldAABBDirtyObservable;
+        }
+
+        public get isWorldAABBDirty() {
+            return this._worldAABBDirty;
+        }
+
+        public dirtyWorldAABB() {
+            if (this._worldAABBDirty) {
+                return;
+            }
+
+            this._worldAABBDirty = true;
+            if (this._worldAABBDirtyObservable && this._worldAABBDirtyObservable.hasObservers()) {
+                this._worldAABBDirtyObservable.notifyObservers(this);
+            }
+        }
+
+        /**
+         * Retrieve the world AABB, the Vector4's data is x=xmin, y=ymin, z=xmax, w=ymax
+         */
+        public get worldAABB(): Vector4 {
+            if (this._worldAABBDirty) {
+                if (!this.worldMatrixAccess) {
+                    throw new Error("you must set the worldMatrixAccess function first");
+                }
+                this._updateWorldAABB(this.worldMatrixAccess());
+                this._worldAABBDirty = false;
+            }
+            return this._worldAABB;
         }
 
         /**
@@ -241,5 +317,9 @@
             }
             return false;
         }
+
+        private _worldAABBDirtyObservable: Observable<BoundingInfo2D>;
+        private _worldAABBDirty: boolean;
+        private _worldAABB: Vector4;
     }
 }
