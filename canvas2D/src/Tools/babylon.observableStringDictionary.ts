@@ -218,11 +218,13 @@
          * Clear the whole content of the dictionary
          */
         public clear() {
-            this._watchedObjectList.forEach((k, v) => {
-                let el = this.get(k);
-                this._removeWatchedElement(k, el);
-            });
-            this._watchedObjectList.clear();
+            if (this._watchedObjectList) {
+                this._watchedObjectList.forEach((k, v) => {
+                    let el = this.get(k);
+                    this._removeWatchedElement(k, el);
+                });
+                this._watchedObjectList.clear();
+            }
 
             let oldCount = this.count;
             super.clear();

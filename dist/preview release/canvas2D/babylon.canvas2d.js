@@ -1085,11 +1085,13 @@ var BABYLON;
          */
         ObservableStringDictionary.prototype.clear = function () {
             var _this = this;
-            this._watchedObjectList.forEach(function (k, v) {
-                var el = _this.get(k);
-                _this._removeWatchedElement(k, el);
-            });
-            this._watchedObjectList.clear();
+            if (this._watchedObjectList) {
+                this._watchedObjectList.forEach(function (k, v) {
+                    var el = _this.get(k);
+                    _this._removeWatchedElement(k, el);
+                });
+                this._watchedObjectList.clear();
+            }
             var oldCount = this.count;
             _super.prototype.clear.call(this);
             this.onDictionaryChanged(DictionaryChanged.clearAction, null, null, null);
