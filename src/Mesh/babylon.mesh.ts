@@ -1440,8 +1440,10 @@
          * The parameter `url` is a string, the URL from the image file is to be downloaded.  
          * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
          * The parameter `onSuccess` is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
+         * The parameter `uvOffset` is an optional vector2 used to offset UV.
+         * The parameter `uvScale` is an optional vector2 used to scale UV.
          */
-        public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void): void {
+        public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2): void {
             var scene = this.getScene();
 
             var onload = img => {
@@ -1459,7 +1461,7 @@
                 //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
                 var buffer = <Uint8Array>(<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
 
-                this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
+                this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight, uvOffset, uvScale);
                 //execute success callback, if set
                 if (onSuccess) {
                     onSuccess(this);
@@ -1477,8 +1479,10 @@
          * The parameter `buffer` is a `Uint8Array` buffer containing series of `Uint8` lower than 255, the red, green, blue and alpha values of each successive pixel.
          * The parameters `heightMapWidth` and `heightMapHeight` are positive integers to set the width and height of the buffer image.     
          * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
+         * The parameter `uvOffset` is an optional vector2 used to offset UV.
+         * The parameter `uvScale` is an optional vector2 used to scale UV.
          */
-        public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
+        public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number, uvOffset?: Vector2, uvScale?: Vector2): void {
             if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)
                 || !this.isVerticesDataPresent(VertexBuffer.NormalKind)
                 || !this.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -1493,14 +1497,17 @@
             var normal = Vector3.Zero();
             var uv = Vector2.Zero();
 
+            uvOffset = uvOffset || Vector2.Zero();
+            uvScale = uvScale || new Vector2(1, 1);
+
             for (var index = 0; index < positions.length; index += 3) {
                 Vector3.FromArrayToRef(positions, index, position);
                 Vector3.FromArrayToRef(normals, index, normal);
                 Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
                 // Compute height
-                var u = ((Math.abs(uv.x) * heightMapWidth) % heightMapWidth) | 0;
-                var v = ((Math.abs(uv.y) * heightMapHeight) % heightMapHeight) | 0;
+                var u = ((Math.abs(uv.x * uvScale.x + uvOffset.x) * heightMapWidth) % heightMapWidth) | 0;
+                var v = ((Math.abs(uv.y * uvScale.y + uvOffset.y) * heightMapHeight) % heightMapHeight) | 0;
 
                 var pos = (u + v * heightMapWidth) * 4;
                 var r = buffer[pos] / 255.0;
@@ -1930,8 +1937,7 @@
          */
         public getFacetNormalToRef(i: number, ref: Vector3) {
             var localNorm = (this.getFacetLocalNormals())[i];
-            (this.getWorldMatrix()).getRotationMatrixToRef(Tmp.Matrix[0]);
-            Vector3.TransformCoordinatesToRef(localNorm, Tmp.Matrix[0], ref);
+            Vector3.TransformNormalToRef(localNorm, this.getWorldMatrix(), ref);
             return this;
         }
         /** 

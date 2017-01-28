@@ -344,7 +344,7 @@
 
         /**
          * If you set your own WorldSpaceNode to display the Canvas2D you have to provide your own implementation of this method which computes the local position in the Canvas based on the given 3D World one.
-         * Beware that you have to take under consideration the origin in your calculations! Good luck!
+         * Beware that you have to take under consideration the origin and unitScaleFactor in your calculations! Good luck!
          */
         public worldSpaceToNodeLocal = (worldPos: Vector3): Vector2 => {
             let node = this._worldSpaceNode;
@@ -354,11 +354,14 @@
 
             let mtx = node.getWorldMatrix().clone();
             mtx.invert();
+            let usf = this.unitScaleFactor;
             let v = Vector3.TransformCoordinates(worldPos, mtx);
             let res = new Vector2(v.x, v.y);
             let size = this.actualSize;
-            res.x += size.width * 0.5;  // res is centered, make it relative to bottom/left
-            res.y += size.height * 0.5;
+            res.x += (size.width/usf) * 0.5;  // res is centered, make it relative to bottom/left
+            res.y += (size.height/usf) * 0.5;
+            res.x *= usf; // multiply by the unitScaleFactor, which defines if the canvas is nth time bigger than the original world plane
+            res.y *= usf;
             return res;
         }
 
@@ -599,8 +602,12 @@
 
         // Based on the previousIntersectionList and the actualInstersectionList we can determined which primitives are being hover state or loosing it
         private _updateOverStatus(force: boolean) {
-            if ((!force && (this.scene.getRenderId() === this._hoverStatusRenderId)) || !this._previousIntersectionList || !this._actualIntersectionList) {
+            if ((!force && (this.scene.getRenderId() === this._hoverStatusRenderId)) || !this._actualIntersectionList) {
                 return;
+            }
+
+            if (this._previousIntersectionList == null) {
+                this._previousIntersectionList = [];
             }
 
             // Detect a change of over
@@ -1061,6 +1068,10 @@
             return this.__engineData;
         }
 
+        public get unitScaleFactor(): number {
+            return this._unitScaleFactor;
+        }
+
         public createCanvasProfileInfoCanvas(): Canvas2D {
             if (this._profilingCanvas) {
                 return this._profilingCanvas;
@@ -1227,6 +1238,7 @@
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
         private _supprtInstancedArray: boolean;
+        protected _unitScaleFactor: number;
         private _trackedGroups: Array<Group2D>;
         protected _trackNode: Node;
         protected _trackNodeOffset :Vector3;
@@ -1811,6 +1823,8 @@
             super(scene, settings);
             Prim2DBase._isCanvasInit = false;
 
+            this._unitScaleFactor = (settings.unitScaleFactor != null) ? settings.unitScaleFactor : 1;
+
             this._renderableData._useMipMap = true;
             this._renderableData._anisotropicLevel = 8;
 
@@ -1857,6 +1871,9 @@
                 mtl.specularColor = new Color3(0, 0, 0);
                 mtl.disableLighting = true;
                 mtl.useAlphaFromDiffuseTexture = true;
+                if (settings && settings.sideOrientation) {
+                    mtl.backFaceCulling = (settings.sideOrientation === Mesh.DEFAULTSIDE || settings.sideOrientation === Mesh.FRONTSIDE);
+                }
                 plane.position = settings && settings.worldPosition || Vector3.Zero();
                 plane.rotationQuaternion = settings && settings.worldRotation || Quaternion.Identity();
                 plane.material = mtl;
