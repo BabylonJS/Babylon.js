@@ -1,5 +1,9 @@
 ﻿module BABYLON {
 
+    export interface ILayoutData {
+        
+    }
+
     @className("LayoutEngineBase", "BABYLON")
     /**
      * This is the base class you have to extend in order to implement your own Layout Engine.
@@ -9,6 +13,10 @@
     export class LayoutEngineBase implements ILockable {
         constructor() {
             this.layoutDirtyOnPropertyChangedMask = 0;
+        }
+
+        public newChild(child: Prim2DBase, data: ILayoutData) {
+            
         }
 
         public updateLayout(prim: Prim2DBase) {

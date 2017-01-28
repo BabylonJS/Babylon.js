@@ -1385,6 +1385,7 @@
             childrenFlatZOrder      ?: boolean,
             levelCollision          ?: boolean,
             deepCollision           ?: boolean,
+            layoutData              ?: ILayoutData,
             marginTop               ?: number | string,
             marginLeft              ?: number | string,
             marginRight             ?: number | string,
@@ -1618,16 +1619,32 @@
                 this.padding.fromString(settings.padding);
             }
 
+            if (settings.layoutData) {
+                let p = this.parent;
+                if (p && p.layoutEngine) {
+                    p.layoutEngine.newChild(this, settings.layoutData);
+                }
+            }
+
             // Dirty layout and positioning
             this._parentLayoutDirty();
             this._positioningDirty();
 
             // Add in the PCM
             if (settings.levelCollision || settings.deepCollision) {
-                this.owner._primitiveCollisionManager.addActor(this, settings.deepCollision===true);
+                this._actorInfo = this.owner._primitiveCollisionManager.addActor(this, settings.deepCollision === true);
                 this._setFlags(SmartPropertyPrim.flagCollisionActor);
+            } else {
+                this._actorInfo = null;
             }
 
+        }
+
+        public get intersectWithObservable(): Observable<DictionaryChanged<ActorInfo>> {
+            if (!this._actorInfo) {
+                return null;
+            }
+            return this._actorInfo.intersectWith.dictionaryChanged;
         }
 
         public get actionManager(): ActionManager {
@@ -3204,6 +3221,7 @@
 
             if (this._isFlagSet(SmartPropertyPrim.flagCollisionActor)) {
                 this.owner._primitiveCollisionManager.removeActor(this);
+                this._actorInfo = null;
             }
 
             if (this._pointerEventObservable) {
@@ -3894,6 +3912,7 @@
         private _actualScale : Vector2;
         private _displayDebugAreas: boolean;
         private _debugAreaGroup: Group2D;
+        private _actorInfo: ActorInfo;
 
         // Stores the step of the parent for which the current global transform was computed
         // If the parent has a new step, it means this prim's global transform must be updated

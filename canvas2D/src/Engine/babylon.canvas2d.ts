@@ -280,6 +280,10 @@
             return Canvas2D._INSTANCES;
         }
 
+        public get primitiveCollisionManager(): PirimitiveCollisionManagerBase {
+            return this._primitiveCollisionManager;
+        }
+
         protected _canvasPreInit(settings: any) {
             let cachingStrategy = (settings.cachingStrategy == null) ? Canvas2D.CACHESTRATEGY_DONTCACHE : settings.cachingStrategy;
             this._cachingStrategy = cachingStrategy;
