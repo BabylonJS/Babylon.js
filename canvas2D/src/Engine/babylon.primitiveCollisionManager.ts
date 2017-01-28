@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export abstract class PirimitiveCollisionManagerBase {
+    export abstract class PrimitiveCollisionManagerBase {
         constructor(owner: Canvas2D) {
             this._owner = owner;
         }
@@ -101,7 +101,7 @@
         public static flagRemoved    = 0x0008;      // set if the actor was removed from the PCM
     }
 
-    class ClusterInfo {
+    export class ClusterInfo {
         constructor() {
             this.actors = new StringDictionary<ActorInfo>();
         }
@@ -113,7 +113,7 @@
         actors: StringDictionary<ActorInfo>;
     }
 
-    export class BasicPrimitiviceCollisionManager extends PirimitiveCollisionManagerBase {
+    export class BasicPrimitiviceCollisionManager extends PrimitiveCollisionManagerBase {
 
         constructor(owner: Canvas2D, enableBorders: boolean) {
             super(owner);
@@ -159,9 +159,9 @@
                 console.log("canvas size changed");
             }, flagId);
 
-            this.debugRenderAABB = true;
-            this.debugRenderClusters = true;
-            this.debugStats = true;
+            this.debugRenderAABB = false;
+            this.debugRenderClusters = false;
+            this.debugStats = false;
         }
 
         addActor(actor: Prim2DBase, deep: boolean): ActorInfo {
@@ -243,8 +243,19 @@
             this._dirtyActors.clear();
         }
 
+        /**
+         * Renders the World AABB of all Actors
+         */
         public debugRenderAABB;
+
+        /**
+         * Renders the area of the Clusters
+         */
         public debugRenderClusters;
+
+        /**
+         * Display stats about the PCM on screen
+         */
         public debugStats;
 
         get intersectedActors(): ObservableStringDictionary<{ a: Prim2DBase; b: Prim2DBase }> {

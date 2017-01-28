@@ -845,8 +845,17 @@ declare module BABYLON {
         removeActor(actor: Prim2DBase): void;
         actorDirty(actor: ActorInfo): void;
         update(): void;
+        /**
+         * Renders the World AABB of all Actors
+         */
         debugRenderAABB: any;
+        /**
+         * Renders the area of the Clusters
+         */
         debugRenderClusters: any;
+        /**
+         * Display stats about the PCM on screen
+         */
         debugStats: any;
         readonly intersectedActors: ObservableStringDictionary<{
             a: Prim2DBase;
