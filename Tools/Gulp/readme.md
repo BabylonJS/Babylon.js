@@ -89,3 +89,8 @@ Be aware that all js files content will be overwritten.
 ### Compile all the typscript and the library
 ```
 gulp typescript-all
+```
+### Zip individual Blender python files for distribute-able
+```
+gulp zip-blender
+```

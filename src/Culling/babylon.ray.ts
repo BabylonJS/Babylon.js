@@ -6,12 +6,8 @@
         private _tvec: Vector3;
         private _qvec: Vector3;
 
-        private _renderPoints: Vector3[];
-        private _renderLine: LinesMesh;
-        private _renderFunction: () => void;
-        private _scene: Scene;
-        private _show = false;
         private _tmpRay: Ray;
+        private _rayHelper: RayHelper;
 
         constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
         }
@@ -216,50 +212,66 @@
 
         }
 
+        public intersectsMeshes(meshes:Array<AbstractMesh>, fastCheck?: boolean, results?:Array<PickingInfo>): Array<PickingInfo> {
+
+            if(results){
+                results.length = 0;
+            }else{
+                results = [];
+            }
+
+            for(var i = 0; i < meshes.length; i++){
+                var pickInfo = this.intersectsMesh(meshes[i], fastCheck);
+
+                if(pickInfo.hit){
+                    results.push(pickInfo);
+                }
+            }
+
+            results.sort(this._comparePickingInfo);
+
+            return results;
+
+        }
+
+        private _comparePickingInfo(pickingInfoA:PickingInfo, pickingInfoB:PickingInfo): number{
+
+            if(pickingInfoA.distance < pickingInfoB.distance){
+                return -1;
+            }else if(pickingInfoA.distance > pickingInfoB.distance){
+                return 1;
+            }else{
+                return 0;
+            }
+
+        }
+
+        /**
+         *  @Deprecated. Use new RayHelper.show() instead.
+         * */
         public show(scene:Scene, color:Color3): void{
 
-            if(!this._show){
+            console.warn('Ray.show() has been deprecated.  Use new RayHelper.show() instead.');
 
-                this._renderFunction = this._render.bind(this);
-                this._show = true;
-                this._scene = scene;
-                this._renderPoints = [this.origin, this.origin.add(this.direction.scale(this.length))];
-                this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
-
-                this._scene.registerBeforeRender(this._renderFunction);
-
+            if(!this._rayHelper){
+                this._rayHelper = new RayHelper(this);
             }
-
-            if (color) {
-                this._renderLine.color.copyFrom(color);
-            }
+            
+            this._rayHelper.show(scene, color);
 
         }
 
+        /**
+         *  @Deprecated. Use new RayHelper.hide() instead.
+         * */
         public hide(): void{
 
-            if(this._show){
-                this._show = false;
-                this._scene.unregisterBeforeRender(this._renderFunction);
+            console.warn('Ray.hide() has been deprecated.  Use new RayHelper.hide() instead.');
+
+            if(this._rayHelper){
+                this._rayHelper.hide();
+                this._rayHelper = null;
             }
-
-            if(this._renderLine){
-                this._renderLine.dispose();
-                this._renderLine = null;
-                this._renderPoints = null;
-            }
-
-        }
-
-        private _render(): void {
-
-            var point = this._renderPoints[1];
-
-            point.copyFrom(this.direction);
-            point.scaleInPlace(this.length);
-            point.addInPlace(this.origin);
-
-            Mesh.CreateLines("ray", this._renderPoints, this._scene, true, this._renderLine);
 
         }
 

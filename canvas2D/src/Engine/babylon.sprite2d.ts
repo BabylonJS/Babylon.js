@@ -241,8 +241,9 @@
             this._alignToPixel = value;
         }
 
-        protected updateLevelBoundingInfo() {
+        protected updateLevelBoundingInfo(): boolean {
             BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
+            return true;
         }
 
         /**

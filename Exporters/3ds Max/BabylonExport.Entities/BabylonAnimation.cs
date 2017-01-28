@@ -15,6 +15,12 @@ namespace BabylonExport.Entities
         public int dataType { get; set; }
 
         [DataMember]
+        public bool enableBlending { get; set; }
+
+        [DataMember]
+        public float blendingSpeed { get; set; }
+
+        [DataMember]
         public int loopBehavior { get; set; }
 
         [DataMember]
@@ -37,6 +43,12 @@ namespace BabylonExport.Entities
             Relative = 0,
             Cycle = 1,
             Constant = 2
+        }
+
+        public BabylonAnimation()
+        {
+            this.enableBlending = false;
+            this.blendingSpeed = 0.01f;
         }
     }
 }

@@ -203,8 +203,9 @@
             return ((x * x) / (w * w) + (y * y) / (h * h)) <= 1;
         }
 
-        protected updateLevelBoundingInfo() {
+        protected updateLevelBoundingInfo(): boolean {
             BoundingInfo2D.CreateFromSizeToRef(this.actualSize, this._levelBoundingInfo);
+            return true;
         }
 
         /**
