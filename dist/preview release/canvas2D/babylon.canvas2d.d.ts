@@ -1,4 +1,43 @@
 declare module BABYLON {
+    class Tri2DInfo {
+        /**
+         * Construct an instance of Tri2DInfo, you can either pass null to a, b and c and the instance will be allocated "clear", or give actual triangle info and the center/radius will be computed
+         */
+        constructor(a: Vector2, b: Vector2, c: Vector2);
+        a: Vector2;
+        b: Vector2;
+        c: Vector2;
+        center: Vector2;
+        radius: number;
+        static Zero(): Tri2DInfo;
+        set(a: Vector2, b: Vector2, c: Vector2): void;
+        transformInPlace(transform: Matrix): void;
+        doesContain(p: Vector2): boolean;
+        private _updateCenterRadius();
+    }
+    class Tri2DArray {
+        constructor(count: number);
+        clear(count: number): void;
+        storeTriangle(index: number, a: Vector2, b: Vector2, c: Vector2): void;
+        /**
+         * Store a triangle in a Tri2DInfo object
+         * @param index the index of the triangle to store
+         * @param tri2dInfo the instance that will contain the data, it must be already allocated with its inner object also allocated
+         */
+        storeToTri2DInfo(index: number, tri2dInfo: Tri2DInfo): void;
+        transformAndStoreToTri2DInfo(index: number, tri2dInfo: Tri2DInfo, transform: Matrix): void;
+        readonly count: number;
+        doesContain(p: Vector2): boolean;
+        static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix): boolean;
+        private static _checkInitStatics();
+        private _count;
+        private _array;
+        private static tempV;
+        private static tempT;
+    }
+}
+
+declare module BABYLON {
     class PropertyChangedInfo {
         /**
          * Previous value of the property
@@ -719,6 +758,7 @@ declare module BABYLON {
          * @return a new instance containing the result of the union
          */
         union(other: BoundingInfo2D): BoundingInfo2D;
+        worldAABBIntersectionTest(other: BoundingInfo2D): boolean;
         private static _transform;
         /**
          * Transform this BoundingInfo2D with a given matrix and store the result in an existing BoundingInfo2D instance.
@@ -727,6 +767,15 @@ declare module BABYLON {
          * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
          */
         transformToRef(matrix: Matrix, result: BoundingInfo2D): void;
+        private _updateWorldAABB(worldMatrix);
+        worldMatrixAccess: () => Matrix;
+        readonly worldAABBDirtyObservable: Observable<BoundingInfo2D>;
+        readonly isWorldAABBDirty: boolean;
+        dirtyWorldAABB(): void;
+        /**
+         * Retrieve the world AABB, the Vector4's data is x=xmin, y=ymin, z=xmax, w=ymax
+         */
+        readonly worldAABB: Vector4;
         /**
          * Compute the union of this BoundingInfo2D with another one and store the result in a third valid BoundingInfo2D object
          * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it every time.
@@ -741,12 +790,114 @@ declare module BABYLON {
          * @return true if the point is inside, false otherwise
          */
         doesIntersect(pickPosition: Vector2): boolean;
+        private _worldAABBDirtyObservable;
+        private _worldAABBDirty;
+        private _worldAABB;
     }
 }
 
 declare module BABYLON {
+    abstract class PrimitiveCollisionManagerBase {
+        constructor(owner: Canvas2D);
+        abstract addActor(actor: Prim2DBase, deep: boolean): ActorInfo;
+        abstract removeActor(actor: Prim2DBase): any;
+        abstract update(): any;
+        readonly abstract leftBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        readonly abstract bottomBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        readonly abstract rightBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        readonly abstract topBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        readonly abstract intersectedActors: ObservableStringDictionary<{
+            a: Prim2DBase;
+            b: Prim2DBase;
+        }>;
+        protected _owner: Canvas2D;
+    }
+    class ActorInfo {
+        constructor(owner: BasicPrimitiviceCollisionManager, actor: Prim2DBase, deep: boolean);
+        setFlags(flags: number): void;
+        clearFlags(flags: number): void;
+        isAllFlagsSet(flags: number): boolean;
+        isSomeFlagsSet(flags: number): boolean;
+        setFlagsValue(flags: number, value: boolean): void;
+        readonly worldAABB: Vector4;
+        readonly isEnabled: boolean;
+        readonly isDeep: boolean;
+        readonly isDirty: boolean;
+        readonly isRemoved: boolean;
+        prim: Prim2DBase;
+        flags: number;
+        owner: BasicPrimitiviceCollisionManager;
+        presentInClusters: StringDictionary<ClusterInfo>;
+        intersectWith: ObservableStringDictionary<ActorInfo>;
+        static flagDeep: number;
+        static flagEnabled: number;
+        static flagDirty: number;
+        static flagRemoved: number;
+    }
+    class ClusterInfo {
+        constructor();
+        clear(): void;
+        actors: StringDictionary<ActorInfo>;
+    }
+    class BasicPrimitiviceCollisionManager extends PrimitiveCollisionManagerBase {
+        constructor(owner: Canvas2D, enableBorders: boolean);
+        addActor(actor: Prim2DBase, deep: boolean): ActorInfo;
+        removeActor(actor: Prim2DBase): void;
+        actorDirty(actor: ActorInfo): void;
+        update(): void;
+        debugRenderAABB: any;
+        debugRenderClusters: any;
+        debugStats: any;
+        readonly intersectedActors: ObservableStringDictionary<{
+            a: Prim2DBase;
+            b: Prim2DBase;
+        }>;
+        readonly leftBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        readonly bottomBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        readonly rightBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        readonly topBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        private _initializeCluster(countW, countH);
+        private _rebuildAllActors();
+        private _rebuildDirtyActors();
+        static WAABBCorners: Array<Vector2>;
+        static WAABBCornersCluster: Array<Vector2>;
+        private _processActor(actor);
+        private static CandidatesActors;
+        private static PreviousIntersections;
+        private _collisionDetection();
+        private _getCluster(x, y);
+        private _updateDebugStats();
+        private _updateAABBDisplay();
+        private _updateClusterDisplay(cw, ch);
+        private _allocClusterInfo();
+        private _freeClusterInfo(ci);
+        private _canvasSize;
+        private _clusterDirty;
+        private _clusterSize;
+        private _clusterStep;
+        private _clusters;
+        private _maxActorByCluster;
+        private _lastClusterResizeCounter;
+        private _actors;
+        private _dirtyActors;
+        private _freeClusters;
+        private _enableBorder;
+        private _intersectedActors;
+        private _borderIntersecteddActors;
+        private _debugUpdateOpCount;
+        private _debugUpdateTime;
+        private _AABBRenderPrim;
+        private _ClusterRenderPrim;
+        private _debugTextBackground;
+    }
+}
+
+declare module BABYLON {
+    interface ILayoutData {
+    }
     class LayoutEngineBase implements ILockable {
         constructor();
+        newChild(child: Prim2DBase, data: ILayoutData): void;
         updateLayout(prim: Prim2DBase): void;
         readonly isChildPositionAllowed: boolean;
         isLocked(): boolean;
@@ -1125,6 +1276,10 @@ declare module BABYLON {
          */
         animations: Animation[];
         /**
+         * return a unique identifier for the Canvas2D
+         */
+        readonly uid: string;
+        /**
          * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
          * Look at Sprite2D for more information
          */
@@ -1214,6 +1369,9 @@ declare module BABYLON {
         static flagDontInheritParentScale: number;
         static flagGlobalTransformDirty: number;
         static flagLayoutBoundingInfoDirty: number;
+        static flagCollisionActor: number;
+        static flagModelUpdate: number;
+        private _uid;
         private _flags;
         private _modelKey;
         protected _levelBoundingInfo: BoundingInfo2D;
@@ -1714,6 +1872,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -1728,6 +1889,7 @@ declare module BABYLON {
             paddingBottom?: number | string;
             padding?: string;
         });
+        readonly intersectWithObservable: Observable<DictionaryChanged<ActorInfo>>;
         readonly actionManager: ActionManager;
         /**
          * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
@@ -2084,12 +2246,15 @@ declare module BABYLON {
          * @param pointerId the Id of the pointer to release the capture from.
          */
         releasePointerEventsCapture(pointerId: number): boolean;
+        private static _bypassGroup2DExclusion;
         /**
          * Make an intersection test with the primitive, all inputs/outputs are stored in the IntersectInfo2D class, see its documentation for more information.
          * @param intersectInfo contains the settings of the intersection to perform, to setup before calling this method as well as the result, available after a call to this method.
          */
-        private static _bypassGroup2DExclusion;
         intersect(intersectInfo: IntersectInfo2D): boolean;
+        intersectOtherPrim(other: Prim2DBase): boolean;
+        readonly triList: Tri2DArray;
+        protected updateTriArray(): void;
         /**
          * Move a child object into a new position regarding its siblings to change its rendering order.
          * You can also use the shortcut methods to move top/bottom: moveChildToTop, moveChildToBottom, moveToTop, moveToBottom.
@@ -2219,12 +2384,15 @@ declare module BABYLON {
         private _actualScale;
         private _displayDebugAreas;
         private _debugAreaGroup;
+        private _actorInfo;
         protected _parentTransformStep: number;
         protected _globalTransformStep: number;
         protected _globalTransformProcessStep: number;
         protected _localTransform: Matrix;
         protected _globalTransform: Matrix;
         protected _invGlobalTransform: Matrix;
+        protected _primTriArrayDirty: boolean;
+        protected _primTriArray: Tri2DArray;
     }
 }
 
@@ -2293,6 +2461,7 @@ declare module BABYLON {
         readonly isDisposed: boolean;
         addRef(): number;
         readonly modelKey: string;
+        updateModelRenderCache(prim: Prim2DBase): boolean;
         /**
          * Render the model instances
          * @param instanceInfo
@@ -2541,6 +2710,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -2579,6 +2751,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -2699,6 +2874,178 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class WireFrame2DRenderCache extends ModelRenderCache {
+        effectsReady: boolean;
+        vb: WebGLBuffer;
+        vtxCount: number;
+        instancingAttributes: InstancingAttributeInfo[];
+        effect: Effect;
+        effectInstanced: Effect;
+        render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean;
+        updateModelRenderCache(prim: Prim2DBase): boolean;
+        dispose(): boolean;
+    }
+    class WireFrameVertex2D {
+        x: number;
+        y: number;
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+        constructor(p: Vector2, c?: Color4);
+        fromVector2(p: Vector2): void;
+        fromColor3(c: Color3): void;
+        fromColor4(c: Color4): void;
+    }
+    class WireFrameGroup2D {
+        /**
+         * Construct a WireFrameGroup2D object
+         * @param id a unique ID among the Groups added to a given WireFrame2D primitive, if you don't specify an id, a random one will be generated. The id is immutable.
+         * @param defaultColor specify the default color that will be used when a vertex is pushed, white will be used if not specified.
+         */
+        constructor(id?: string, defaultColor?: Color4);
+        readonly uid: string;
+        /**
+         * Retrieve the ID of the group
+         */
+        readonly id: string;
+        /**
+         * Push a vertex in the array of vertices.
+         * If you're previously called startLineStrip, the vertex will be pushed twice in order to describe the end of a line and the start of a new one.
+         * @param p Position of the vertex
+         * @param c Color of the vertex, if null the default color of the group will be used
+         */
+        pushVertex(p: Vector2, c?: Color4): void;
+        /**
+         * Start to store a Line Strip. The given vertex will be pushed in the array. The you have to call pushVertex to add subsequent vertices describing the strip and don't forget to call endLineStrip to close the strip!!!
+         * @param p Position of the vertex
+         * @param c Color of the vertex, if null the default color of the group will be used
+         */
+        startLineStrip(p: Vector2, c?: Color4): void;
+        /**
+         * Close the Strip by storing a last vertex
+         * @param p Position of the vertex
+         * @param c Color of the vertex, if null the default color of the group will be used
+         */
+        endLineStrip(p: Vector2, c?: Color4): void;
+        /**
+         * Access to the array of Vertices, you can manipulate its content but BEWARE of what you're doing!
+         */
+        readonly vertices: Array<WireFrameVertex2D>;
+        private _uid;
+        private _id;
+        private _defaultColor;
+        private _vertices;
+        private _buildingStrip;
+    }
+    class WireFrame2D extends RenderablePrim2D {
+        static WIREFRAME2D_MAINPARTID: number;
+        static wireFrameGroupsProperty: Prim2DPropInfo;
+        readonly wireFrameGroups: StringDictionary<WireFrameGroup2D>;
+        /**
+         * If you change the content of the wireFrameGroups you MUST call this method for the changes to be reflected during rendering
+         */
+        wireFrameGroupsDirty(): void;
+        size: Size;
+        actualSize: Size;
+        protected updateLevelBoundingInfo(): boolean;
+        protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
+        /**
+         * Create an WireFrame 2D primitive
+         * @param wireFrameGroups an array of WireFrameGroup.
+         * @param settings a combination of settings, possible ones are
+         * - parent: the parent primitive/canvas, must be specified if the primitive is not constructed as a child of another one (i.e. as part of the children array setting)
+         * - children: an array of direct children
+         * - id a text identifier, for information purpose
+         * - position: the X & Y positions relative to its parent. Alternatively the x and y properties can be set. Default is [0;0]
+         * - rotation: the initial rotation (in radian) of the primitive. default is 0
+         * - scale: the initial scale of the primitive. default is 1. You can alternatively use scaleX &| scaleY to apply non uniform scale
+         * - size: the size of the sprite displayed in the canvas, if not specified the spriteSize will be used
+         * - dontInheritParentScale: if set the parent's scale won't be taken into consideration to compute the actualScale property
+         * - opacity: set the overall opacity of the primitive, 1 to be opaque (default), less than 1 to be transparent.
+         * - zOrder: override the zOrder with the specified value
+         * - origin: define the normalized origin point location, default [0.5;0.5]
+         * - alignToPixel: the rendered lines will be aligned to the rendering device' pixels
+         * - isVisible: true if the sprite must be visible, false for hidden. Default is true.
+         * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
+         * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
+         * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
+         * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - marginBottom: bottom margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - margin: top, left, right and bottom margin formatted as a single string (see PrimitiveThickness.fromString)
+         * - marginHAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginVAlignment: one value of the PrimitiveAlignment type's static properties
+         * - marginAlignment: a string defining the alignment, see PrimitiveAlignment.fromString
+         * - paddingTop: top padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingLeft: left padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingRight: right padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - paddingBottom: bottom padding, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
+         * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
+         */
+        constructor(wireFrameGroups: Array<WireFrameGroup2D>, settings?: {
+            parent?: Prim2DBase;
+            children?: Array<Prim2DBase>;
+            id?: string;
+            position?: Vector2;
+            x?: number;
+            y?: number;
+            rotation?: number;
+            size?: Size;
+            scale?: number;
+            scaleX?: number;
+            scaleY?: number;
+            dontInheritParentScale?: boolean;
+            opacity?: number;
+            zOrder?: number;
+            origin?: Vector2;
+            alignToPixel?: boolean;
+            isVisible?: boolean;
+            isPickable?: boolean;
+            isContainer?: boolean;
+            childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
+            marginTop?: number | string;
+            marginLeft?: number | string;
+            marginRight?: number | string;
+            marginBottom?: number | string;
+            margin?: number | string;
+            marginHAlignment?: number;
+            marginVAlignment?: number;
+            marginAlignment?: string;
+            paddingTop?: number | string;
+            paddingLeft?: number | string;
+            paddingRight?: number | string;
+            paddingBottom?: number | string;
+            padding?: string;
+        });
+        /**
+         * Get/set if the sprite rendering should be aligned to the target rendering device pixel or not
+         */
+        alignToPixel: boolean;
+        protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache): WireFrame2DRenderCache;
+        _updateVertexBuffer(mrc: WireFrame2DRenderCache): void;
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean;
+        private _computeMinMaxTrans();
+        protected createInstanceDataParts(): InstanceDataBase[];
+        private _vtxTransparent;
+        private _wireFrameGroups;
+        private _alignToPixel;
+    }
+    class WireFrame2DInstanceData extends InstanceDataBase {
+        constructor(partId: number);
+        properties: Vector3;
+    }
+}
+
+declare module BABYLON {
     class Rectangle2DRenderCache extends ModelRenderCache {
         effectsReady: boolean;
         fillVB: WebGLBuffer;
@@ -2755,6 +3102,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -2795,6 +3145,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -2811,6 +3164,7 @@ declare module BABYLON {
         });
         static roundSubdivisions: number;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
+        protected updateTriArray(): void;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Rectangle2DRenderCache;
         protected _getInitialContentAreaToRef(primSize: Size, initialContentPosition: Vector4, initialContentArea: Size): void;
         protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size): void;
@@ -2873,6 +3227,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -2913,6 +3270,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -2927,6 +3287,7 @@ declare module BABYLON {
             paddingBottom?: number | string;
             padding?: string;
         });
+        protected updateTriArray(): void;
         protected createModelRenderCache(modelKey: string): ModelRenderCache;
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Ellipse2DRenderCache;
         protected createInstanceDataParts(): InstanceDataBase[];
@@ -3003,6 +3364,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -3043,6 +3407,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -3355,6 +3722,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -3399,6 +3769,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -3546,6 +3919,9 @@ declare module BABYLON {
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -3586,6 +3962,9 @@ declare module BABYLON {
             isPickable?: boolean;
             isContainer?: boolean;
             childrenFlatZOrder?: boolean;
+            levelCollision?: boolean;
+            deepCollision?: boolean;
+            layoutData?: ILayoutData;
             marginTop?: number | string;
             marginLeft?: number | string;
             marginRight?: number | string;
@@ -3617,6 +3996,7 @@ declare module BABYLON {
         private _buildCap(vb, vbi, ib, ibi, pos, thickness, borderThickness, type, capDir, contour);
         private _buildLine(vb, contour, ht, bt?);
         protected setupModelRenderCache(modelRenderCache: ModelRenderCache): Lines2DRenderCache;
+        protected updateTriArray(): void;
         private _computeLines2D();
         readonly size: Size;
         protected createInstanceDataParts(): InstanceDataBase[];
@@ -3636,11 +4016,6 @@ declare module BABYLON {
         private _borderIB;
         private _boundingMin;
         private _boundingMax;
-        private _contour;
-        private _startCapContour;
-        private _startCapTriIndices;
-        private _endCapContour;
-        private _endCapTriIndices;
         private _closed;
         private _startCap;
         private _endCap;
@@ -3701,6 +4076,9 @@ declare module BABYLON {
             isScreenSpace?: boolean;
             cachingStrategy?: number;
             enableInteraction?: boolean;
+            enableCollisionManager?: boolean;
+            customCollisionManager?: (owner: Canvas2D, enableBorders: boolean) => PrimitiveCollisionManagerBase;
+            collisionManagerUseBorders?: boolean;
             origin?: Vector2;
             isVisible?: boolean;
             backgroundRoundRadius?: number;
@@ -3721,6 +4099,7 @@ declare module BABYLON {
         readonly updateGlobalTransformCounter: PerfCounter;
         readonly boundingInfoRecomputeCounter: PerfCounter;
         static readonly instances: Array<Canvas2D>;
+        readonly primitiveCollisionManager: PrimitiveCollisionManagerBase;
         protected _canvasPreInit(settings: any): void;
         static _zMinDelta: number;
         private _setupInteraction(enable);
@@ -3773,10 +4152,6 @@ declare module BABYLON {
          * @returns The instance of the Engine object
          */
         readonly engine: Engine;
-        /**
-         * return a unique identifier for the Canvas2D
-         */
-        readonly uid: string;
         /**
          * And observable called during the Canvas rendering process.
          * This observable is called twice per render, each time with a different mask:
@@ -3860,7 +4235,6 @@ declare module BABYLON {
         addUpdatePositioningCounter(count: number): void;
         addupdateLocalTransformCounter(count: number): void;
         addUpdateGlobalTransformCounter(count: number): void;
-        private _uid;
         private _renderObservable;
         private __engineData;
         private _interactionEnabled;
@@ -3901,6 +4275,7 @@ declare module BABYLON {
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
         private _designSize;
         private _designUseHorizAxis;
+        _primitiveCollisionManager: PrimitiveCollisionManagerBase;
         _renderingSize: Size;
         private _drawCallsOpaqueCounter;
         private _drawCallsAlphaTestCounter;
@@ -4103,6 +4478,9 @@ declare module BABYLON {
             cachingStrategy?: number;
             cacheBehavior?: number;
             enableInteraction?: boolean;
+            enableCollisionManager?: boolean;
+            customCollisionManager?: (owner: Canvas2D, enableBorders: boolean) => PrimitiveCollisionManagerBase;
+            collisionManagerUseBorders?: boolean;
             isVisible?: boolean;
             backgroundRoundRadius?: number;
             backgroundFill?: IBrush2D | string;

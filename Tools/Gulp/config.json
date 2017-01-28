@@ -465,11 +465,13 @@
     "libraries": [  
     {
       "files": [
+        "../../canvas2D/src/Tools/babylon.math2D.ts",
         "../../canvas2D/src/Tools/babylon.IPropertyChanged.ts",
         "../../canvas2D/src/Tools/babylon.observableArray.ts",
         "../../canvas2D/src/Tools/babylon.observableStringDictionary.ts",
         "../../canvas2D/src/Engine/babylon.fontTexture.ts",
         "../../canvas2D/src/Engine/babylon.bounding2d.ts",
+        "../../canvas2D/src/Engine/babylon.primitiveCollisionManager.ts",
         "../../canvas2D/src/Engine/babylon.canvas2dLayoutEngine.ts",
         "../../canvas2D/src/Engine/babylon.brushes2d.ts",
         "../../canvas2D/src/Engine/babylon.smartPropertyPrim.ts",
@@ -478,6 +480,7 @@
         "../../canvas2D/src/Engine/babylon.renderablePrim2d.ts",
         "../../canvas2D/src/Engine/babylon.shape2d.ts",
         "../../canvas2D/src/Engine/babylon.group2d.ts",
+        "../../canvas2D/src/Engine/babylon.wireFrame2d.ts",
         "../../canvas2D/src/Engine/babylon.rectangle2d.ts",
         "../../canvas2D/src/Engine/babylon.ellipse2d.ts",
         "../../canvas2D/src/Engine/babylon.sprite2d.ts",
