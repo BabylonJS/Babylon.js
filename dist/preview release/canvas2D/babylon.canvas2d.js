@@ -2509,9 +2509,9 @@ var BABYLON;
                 _this._clusterDirty = true;
                 console.log("canvas size changed");
             }, flagId);
-            _this.debugRenderAABB = true;
-            _this.debugRenderClusters = true;
-            _this.debugStats = true;
+            _this.debugRenderAABB = false;
+            _this.debugRenderClusters = false;
+            _this.debugStats = false;
             return _this;
         }
         BasicPrimitiviceCollisionManager.prototype.addActor = function (actor, deep) {
