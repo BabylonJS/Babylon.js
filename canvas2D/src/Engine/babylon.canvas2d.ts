@@ -76,7 +76,7 @@
             cachingStrategy               ?: number,
             enableInteraction             ?: boolean,
             enableCollisionManager        ?: boolean,
-            customCollisionManager        ?: (owner: Canvas2D, enableBorders: boolean) => PirimitiveCollisionManagerBase,
+            customCollisionManager        ?: (owner: Canvas2D, enableBorders: boolean) => PrimitiveCollisionManagerBase,
             collisionManagerUseBorders    ?: boolean,
             origin                        ?: Vector2,
             isVisible                     ?: boolean,
@@ -280,7 +280,7 @@
             return Canvas2D._INSTANCES;
         }
 
-        public get primitiveCollisionManager(): PirimitiveCollisionManagerBase {
+        public get primitiveCollisionManager(): PrimitiveCollisionManagerBase {
             return this._primitiveCollisionManager;
         }
 
@@ -1247,7 +1247,7 @@
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
         private _designSize: Size;
         private _designUseHorizAxis: boolean;
-        public  _primitiveCollisionManager: PirimitiveCollisionManagerBase;
+        public  _primitiveCollisionManager: PrimitiveCollisionManagerBase;
 
         public _renderingSize: Size;
 
@@ -1966,7 +1966,7 @@
             cacheBehavior              ?: number,
             enableInteraction          ?: boolean,
             enableCollisionManager     ?: boolean,
-            customCollisionManager     ?: (owner: Canvas2D, enableBorders: boolean) => PirimitiveCollisionManagerBase,
+            customCollisionManager     ?: (owner: Canvas2D, enableBorders: boolean) => PrimitiveCollisionManagerBase,
             collisionManagerUseBorders ?: boolean,
             isVisible                  ?: boolean,
             backgroundRoundRadius      ?: number,
