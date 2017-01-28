@@ -47,6 +47,10 @@
             this._updateCenterRadius();
         }
 
+        public doesContain(p: Vector2): boolean {
+            return Vector2.PointInTriangle(p, this.a, this.b, this.c);
+        }
+
         private _updateCenterRadius() {
             this.center.x = (this.a.x + this.b.x + this.c.x) / 3;
             this.center.y = (this.a.y + this.b.y + this.c.y) / 3;
@@ -137,6 +141,19 @@
 
         public get count(): number {
             return this._count;
+        }
+
+        public doesContain(p: Vector2): boolean {
+            Tri2DArray._checkInitStatics();
+            let a = Tri2DArray.tempT[0];
+
+            for (let i = 0; i < this.count; i++) {
+                this.storeToTri2DInfo(i, a);
+                if (a.doesContain(p)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public static doesIntersect(setA: Tri2DArray, setB: Tri2DArray, bToATransform: Matrix): boolean {

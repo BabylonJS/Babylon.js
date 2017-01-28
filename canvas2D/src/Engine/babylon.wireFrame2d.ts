@@ -248,9 +248,10 @@
             this._actualSize = value;
         }
 
-        protected updateLevelBoundingInfo() {
+        protected updateLevelBoundingInfo(): boolean {
             let v = this._computeMinMaxTrans();
             BoundingInfo2D.CreateFromMinMaxToRef(v.x, v.z, v.y, v.w, this._levelBoundingInfo);
+            return true;
         }
 
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean {
