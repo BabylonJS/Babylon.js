@@ -3,9 +3,9 @@ Canvas2D, a 100% WebGL based 2D Engine
 
 ## Table of Content
 
-- [Releases](#Releases)
+- [Releases](#releases)
 - [Features list](features.md)
-- [How to build it](#How-to-build-Babylon.canvas2d.js-with-Gulp)
+- [How to build it](#how-to-build-babyloncanvas2djs-with-gulp)
 
 ## Releases
 
