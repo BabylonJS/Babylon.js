@@ -1,13 +1,37 @@
 Canvas2D, a 100% WebGL based 2D Engine
 ====================
 
-Canvas2D is a separated distributed set of .js/.d.ts files laying on the top of the [babylon.js library](../readme.md)
-
 ## Table of Content
 
+- [Introduction](#introduction)
+- [Documentation](#documentation)
 - [Releases](#releases)
-- [Features list](features.md)
+- [Features list](features.md) (separated page)
 - [How to build it](#how-to-build-babyloncanvas2djs-with-gulp)
+
+## Introduction
+
+Canvas2D is a separated distributed set of .js/.d.ts files laying on the top of the [babylon.js library](../readme.md).
+
+Its purpose is to provide a general featured 2D Engine that will serve as the foundations for:
+
+ - Any 2D Graphics related work
+ - A WebGL based GUI Library also present in the library (but under development right now.)
+
+ **Canvas2D provides two types of Canvas**
+
+  - [ScreenSpace](http://babylonjs-playground.com/#272WI1#6) Canvas, lying on the top (or [below](http://babylonjs-playground.com/#RXVJD#2)/between) the 3D content. Typically used for 3D Game/App on screen UI
+  - [WorldSpace](http://babylonjs-playground.com/#1BKDEO#22) Canvas, to display the content of a Canvas right in the 3D Scene. You can even make it [track a scene node and using billboard](http://babylonjs-playground.com/#1KYG17#1) mode to make it always face the screen.
+
+## Documentation
+
+#### Overview
+There's a full overview [documentation](http://doc.babylonjs.com/overviews/Canvas2D_Home) that we **greatly encourage you to read at least a bit before you start !**
+
+This overview page has many links to other documentation pages (organized like a wiki) you can learn a lot about the basic usage, the different features, how rendering works and the overall architecture of the 2D Engine.
+
+#### Reference
+The reference documentation is available [here](http://doc.babylonjs.com/classes/), most of the Canvas2D classes are suffixed by `2D` so you can use it in the filter box like this:![2D classes](http://i.imgur.com/hx4Llmi.png)
 
 ## Releases
 
@@ -17,10 +41,11 @@ You want to use an existing build, that's simple, you can grab either the latest
 - The latest preview release (which is the current developing version, stable most of the time) can be found [there](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release/canvas2D)
 
 
-## How to build Babylon.canvas2d.js with Gulp
+## How to build babylon.canvas2d.js with Gulp
 
-More info about [Canvas2D](http://doc.babylonjs.com/overviews/Canvas2D_Home)
+If you want to locally build the canvas2D library, you can follow the steps below. But sure you've read [this page](http://doc.babylonjs.com/generals/how_to_start) before to learn how to setup your local repository and the general build concepts.
 
+### Gulp
 Build Babylon.canvas2d.js with [gulp](http://gulpjs.com/ "gulp") and npm ([nodejs](http://nodejs.org/ "nodejs")), easy and cross-platform
 
 (Paths in this file are relative to this file location.)
