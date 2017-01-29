@@ -10999,10 +10999,10 @@ var BABYLON;
             // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
             var ei = this.getDataPartEffectInfo(WireFrame2D_1.WIREFRAME2D_MAINPARTID, ["pos", "col"], [], true);
             if (ei) {
-                renderCache.effectInstanced = engine.createEffect("wireframe2D", ei.attributes, ei.uniforms, [], ei.defines, null);
+                renderCache.effectInstanced = engine.createEffect("wireframe2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             }
             ei = this.getDataPartEffectInfo(WireFrame2D_1.WIREFRAME2D_MAINPARTID, ["pos", "col"], [], false);
-            renderCache.effect = engine.createEffect("wireframe2D", ei.attributes, ei.uniforms, [], ei.defines, null);
+            renderCache.effect = engine.createEffect("wireframe2d", ei.attributes, ei.uniforms, [], ei.defines, null);
             return renderCache;
         };
         WireFrame2D.prototype._updateVertexBuffer = function (mrc) {
