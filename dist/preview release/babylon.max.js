@@ -13667,6 +13667,9 @@ var BABYLON;
                 this._computedViewMatrix.invert();
                 this._markSyncedWithParent();
             }
+            if (this._cameraRigParams && this._cameraRigParams.vrPreViewMatrix) {
+                this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
+            }
             this._currentRenderId = this.getScene().getRenderId();
             return this._computedViewMatrix;
         };
@@ -13935,6 +13938,8 @@ var BABYLON;
                     return function () { return new BABYLON.WebVRFreeCamera(name, BABYLON.Vector3.Zero(), scene); };
                 case "VRDeviceOrientationFreeCamera":
                     return function () { return new BABYLON.VRDeviceOrientationFreeCamera(name, BABYLON.Vector3.Zero(), scene); };
+                case "VRDeviceOrientationGamepadCamera":
+                    return function () { return new BABYLON.VRDeviceOrientationGamepadCamera(name, BABYLON.Vector3.Zero(), scene); };
                 case "AnaglyphArcRotateCamera":
                     return function () { return new BABYLON.AnaglyphArcRotateCamera(name, 0, 0, 1.0, BABYLON.Vector3.Zero(), interaxial_distance, scene); };
                 case "AnaglyphFreeCamera":
@@ -21870,8 +21875,7 @@ var BABYLON;
          */
         Mesh.prototype.getFacetNormalToRef = function (i, ref) {
             var localNorm = (this.getFacetLocalNormals())[i];
-            (this.getWorldMatrix()).getRotationMatrixToRef(BABYLON.Tmp.Matrix[0]);
-            BABYLON.Vector3.TransformCoordinatesToRef(localNorm, BABYLON.Tmp.Matrix[0], ref);
+            BABYLON.Vector3.TransformNormalToRef(localNorm, this.getWorldMatrix(), ref);
             return this;
         };
         /**
@@ -38676,8 +38680,7 @@ var BABYLON;
                 this._computeHeightQuads();
             }
             var facet = this._getFacetAt(x, z);
-            world.getRotationMatrixToRef(tmpMat); // just rotates the normals
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(facet.x, facet.y, facet.z, tmpMat, ref);
+            BABYLON.Vector3.TransformNormalFromFloatsToRef(facet.x, facet.y, facet.z, world, ref);
             return this;
         };
         /**
@@ -47502,6 +47505,21 @@ var BABYLON;
         return VRDeviceOrientationFreeCamera;
     }(BABYLON.DeviceOrientationCamera));
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;
+    var VRDeviceOrientationGamepadCamera = (function (_super) {
+        __extends(VRDeviceOrientationGamepadCamera, _super);
+        function VRDeviceOrientationGamepadCamera(name, position, scene, compensateDistortion, vrCameraMetrics) {
+            if (compensateDistortion === void 0) { compensateDistortion = true; }
+            if (vrCameraMetrics === void 0) { vrCameraMetrics = BABYLON.VRCameraMetrics.GetDefault(); }
+            var _this = _super.call(this, name, position, scene, compensateDistortion, vrCameraMetrics) || this;
+            _this.inputs.addGamepad();
+            return _this;
+        }
+        VRDeviceOrientationGamepadCamera.prototype.getClassName = function () {
+            return "VRDeviceOrientationGamepadCamera";
+        };
+        return VRDeviceOrientationGamepadCamera;
+    }(VRDeviceOrientationFreeCamera));
+    BABYLON.VRDeviceOrientationGamepadCamera = VRDeviceOrientationGamepadCamera;
     var VRDeviceOrientationArcRotateCamera = (function (_super) {
         __extends(VRDeviceOrientationArcRotateCamera, _super);
         function VRDeviceOrientationArcRotateCamera(name, alpha, beta, radius, target, scene, compensateDistortion, vrCameraMetrics) {
@@ -51018,10 +51036,9 @@ var BABYLON;
                             this._normal.x = this._fixedNormal32[idx];
                             this._normal.y = this._fixedNormal32[idx + 1];
                             this._normal.z = this._fixedNormal32[idx + 2];
-                            this._w = (this._normal.x * this._rotMatrix.m[3]) + (this._normal.y * this._rotMatrix.m[7]) + (this._normal.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
-                            this._rotated.x = ((this._normal.x * this._rotMatrix.m[0]) + (this._normal.y * this._rotMatrix.m[4]) + (this._normal.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
-                            this._rotated.y = ((this._normal.x * this._rotMatrix.m[1]) + (this._normal.y * this._rotMatrix.m[5]) + (this._normal.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
-                            this._rotated.z = ((this._normal.x * this._rotMatrix.m[2]) + (this._normal.y * this._rotMatrix.m[6]) + (this._normal.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
+                            this._rotated.x = ((this._normal.x * this._rotMatrix.m[0]) + (this._normal.y * this._rotMatrix.m[4]) + (this._normal.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]);
+                            this._rotated.y = ((this._normal.x * this._rotMatrix.m[1]) + (this._normal.y * this._rotMatrix.m[5]) + (this._normal.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]);
+                            this._rotated.z = ((this._normal.x * this._rotMatrix.m[2]) + (this._normal.y * this._rotMatrix.m[6]) + (this._normal.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]);
                             this._normals32[idx] = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                             this._normals32[idx + 1] = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
                             this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
@@ -52899,7 +52916,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
 
 
 
