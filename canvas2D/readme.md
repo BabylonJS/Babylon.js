@@ -1,6 +1,8 @@
 Canvas2D, a 100% WebGL based 2D Engine
 ====================
 
+Canvas2D is a separated distributed set of .js/.d.ts files laying on the top of the [babylon.js library](../readme.md)
+
 ## Table of Content
 
 - [Releases](#releases)
