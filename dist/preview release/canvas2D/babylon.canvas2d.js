@@ -9,7 +9,7 @@ BABYLON.Effect.ShadersStore['sprite2dVertexShader'] = "\n#ifdef Instanced\n#defi
 BABYLON.Effect.ShadersStore['text2dPixelShader'] = "\nvarying vec4 vColor;\nvarying vec2 vUV;\n\nuniform sampler2D diffuseSampler;\nvoid main(void) {\n#ifdef SignedDistanceField\nfloat dist=texture2D(diffuseSampler,vUV).r;\nif (dist<0.5) {\ndiscard;\n}\n\n\n\n\n\ngl_FragColor=vec4(vColor.xyz*dist,1.0);\n#else\nvec4 color=texture2D(diffuseSampler,vUV);\ngl_FragColor=color*vColor;\n#endif\n}";
 BABYLON.Effect.ShadersStore['text2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute float index;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\natt vec2 topLeftUV;\natt vec2 sizeUV;\natt vec2 textureSize;\natt vec4 color;\natt float superSampleFactor;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\nvoid main(void) {\nvec2 pos2;\n\nif (index == 0.0) {\npos2=vec2(0.0,0.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y+sizeUV.y);\n}\n\nelse if (index == 1.0) {\npos2=vec2(0.0,1.0);\nvUV=vec2(topLeftUV.x,topLeftUV.y);\n}\n\nelse if (index == 2.0) {\npos2=vec2(1.0,1.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y);\n}\n\nelse if (index == 3.0) {\npos2=vec2(1.0,0.0);\nvUV=vec2(topLeftUV.x+sizeUV.x,topLeftUV.y+sizeUV.y);\n}\n\nvUV=(floor(vUV*textureSize)+vec2(0.0,0.0))/textureSize;\nvColor=color;\nvColor.a*=opacity;\nvec4 pos;\npos.xy=floor(pos2.xy*superSampleFactor*sizeUV*textureSize); \npos.z=1.0;\npos.w=1.0;\ngl_Position=vec4(dot(pos,transformX),dot(pos,transformY),zBias.x,1);\n}";
 BABYLON.Effect.ShadersStore['wireframe2dPixelShader'] = "varying vec4 vColor;\nvoid main(void) {\ngl_FragColor=vColor;\n}";
-BABYLON.Effect.ShadersStore['wireframe2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute vec2 pos;\nattribute vec4 col;\n\n\n\n\natt vec3 properties;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n\n\nvarying vec4 vColor;\nvoid main(void) {\nvec4 p=vec4(pos.xy,1.0,1.0);\nvColor=vec4(col.xyz,col.w*opacity);\nvec4 pp=vec4(dot(p,transformX),dot(p,transformY),zBias.x,1);\nif (properties.x == 1.0) {\npp.xy=pp.xy-mod(pp.xy,properties.yz);\n}\ngl_Position=pp;\n} ";
+BABYLON.Effect.ShadersStore['wireframe2dVertexShader'] = "\n#ifdef Instanced\n#define att attribute\n#else\n#define att uniform\n#endif\n\nattribute vec2 pos;\nattribute vec4 col;\n\n\n\n\natt vec3 properties;\natt vec2 zBias;\natt vec4 transformX;\natt vec4 transformY;\natt float opacity;\n\n\nvarying vec4 vColor;\nvoid main(void) {\nvec4 p=vec4(pos.xy,1.0,1.0);\nvColor=vec4(col.xyz,col.w*opacity);\nvec4 pp=vec4(dot(p,transformX),dot(p,transformY),zBias.x,1);\nif (properties.x == 1.0) {\npp.xy=pp.xy-mod(pp.xy,properties.yz)+(properties.yz*0.5);\n}\ngl_Position=pp;\n} ";
 
 var BABYLON;
 (function (BABYLON) {
@@ -2366,22 +2366,38 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * The base class for all implementation of a Primitive Collision Manager
+     */
     var PrimitiveCollisionManagerBase = (function () {
         function PrimitiveCollisionManagerBase(owner) {
             this._owner = owner;
         }
+        PrimitiveCollisionManagerBase.allocBasicPCM = function (owner, enableBorders) {
+            return new BasicPrimitiveCollisionManager(owner, enableBorders);
+        };
         return PrimitiveCollisionManagerBase;
     }());
     BABYLON.PrimitiveCollisionManagerBase = PrimitiveCollisionManagerBase;
-    var ActorInfo = (function () {
+    /**
+     * Base class of an Actor
+     */
+    var ActorInfoBase = (function () {
+        function ActorInfoBase() {
+        }
+        return ActorInfoBase;
+    }());
+    BABYLON.ActorInfoBase = ActorInfoBase;
+    var ActorInfo = (function (_super) {
+        __extends(ActorInfo, _super);
         function ActorInfo(owner, actor, deep) {
-            var _this = this;
-            this.owner = owner;
-            this.prim = actor;
-            this.flags = 0;
-            this.presentInClusters = new BABYLON.StringDictionary();
-            this.intersectWith = new BABYLON.ObservableStringDictionary(false);
-            this.setFlags((deep ? ActorInfo.flagDeep : 0) | ActorInfo.flagDirty);
+            var _this = _super.call(this) || this;
+            _this.owner = owner;
+            _this.prim = actor;
+            _this.flags = 0;
+            _this.presentInClusters = new BABYLON.StringDictionary();
+            _this.intersectWith = new BABYLON.ObservableStringDictionary(false);
+            _this.setFlags((deep ? ActorInfo.flagDeep : 0) | ActorInfo.flagDirty);
             var bi = (deep ? actor.boundingInfo : actor.levelBoundingInfo);
             // Dirty Actor if its WorldAABB changed
             bi.worldAABBDirtyObservable.add(function (e, d) {
@@ -2395,6 +2411,7 @@ var BABYLON;
                 _this.setFlagsValue(ActorInfo.flagEnabled, e.newValue === true);
                 _this.owner.actorDirty(_this);
             }, BABYLON.Prim2DBase.isVisibleProperty.flagId);
+            return _this;
         }
         ActorInfo.prototype.setFlags = function (flags) {
             this.flags |= flags;
@@ -2452,12 +2469,11 @@ var BABYLON;
             configurable: true
         });
         return ActorInfo;
-    }());
+    }(ActorInfoBase));
     ActorInfo.flagDeep = 0x0001; // set if the actor boundingInfo must be used instead of the levelBoundingInfo
     ActorInfo.flagEnabled = 0x0002; // set if the actor is enabled and should be considered for intersection tests
     ActorInfo.flagDirty = 0x0004; // set if the actor's AABB is dirty
     ActorInfo.flagRemoved = 0x0008; // set if the actor was removed from the PCM
-    BABYLON.ActorInfo = ActorInfo;
     var ClusterInfo = (function () {
         function ClusterInfo() {
             this.actors = new BABYLON.StringDictionary();
@@ -2467,10 +2483,9 @@ var BABYLON;
         };
         return ClusterInfo;
     }());
-    BABYLON.ClusterInfo = ClusterInfo;
-    var BasicPrimitiviceCollisionManager = (function (_super) {
-        __extends(BasicPrimitiviceCollisionManager, _super);
-        function BasicPrimitiviceCollisionManager(owner, enableBorders) {
+    var BasicPrimitiveCollisionManager = (function (_super) {
+        __extends(BasicPrimitiveCollisionManager, _super);
+        function BasicPrimitiveCollisionManager(owner, enableBorders) {
             var _this = _super.call(this, owner) || this;
             _this._actors = new BABYLON.StringDictionary();
             _this._dirtyActors = new BABYLON.StringDictionary();
@@ -2494,14 +2509,14 @@ var BABYLON;
                 _this._borderIntersecteddActors[j] = new BABYLON.ObservableStringDictionary(false);
             }
             var flagId = BABYLON.Canvas2D.actualSizeProperty.flagId;
-            if (!BasicPrimitiviceCollisionManager.WAABBCorners) {
-                BasicPrimitiviceCollisionManager.WAABBCorners = new Array(4);
+            if (!BasicPrimitiveCollisionManager.WAABBCorners) {
+                BasicPrimitiveCollisionManager.WAABBCorners = new Array(4);
                 for (var i = 0; i < 4; i++) {
-                    BasicPrimitiviceCollisionManager.WAABBCorners[i] = BABYLON.Vector2.Zero();
+                    BasicPrimitiveCollisionManager.WAABBCorners[i] = BABYLON.Vector2.Zero();
                 }
-                BasicPrimitiviceCollisionManager.WAABBCornersCluster = new Array(4);
+                BasicPrimitiveCollisionManager.WAABBCornersCluster = new Array(4);
                 for (var i = 0; i < 4; i++) {
-                    BasicPrimitiviceCollisionManager.WAABBCornersCluster[i] = BABYLON.Vector2.Zero();
+                    BasicPrimitiveCollisionManager.WAABBCornersCluster[i] = BABYLON.Vector2.Zero();
                 }
             }
             owner.propertyChanged.add(function (e, d) {
@@ -2516,7 +2531,7 @@ var BABYLON;
             _this.debugStats = false;
             return _this;
         }
-        BasicPrimitiviceCollisionManager.prototype.addActor = function (actor, deep) {
+        BasicPrimitiveCollisionManager.prototype._addActor = function (actor, deep) {
             var _this = this;
             return this._actors.getOrAddWithFactory(actor.uid, function () {
                 var ai = new ActorInfo(_this, actor, deep);
@@ -2524,22 +2539,25 @@ var BABYLON;
                 return ai;
             });
         };
-        BasicPrimitiviceCollisionManager.prototype.removeActor = function (actor) {
+        BasicPrimitiveCollisionManager.prototype._removeActor = function (actor) {
             var ai = this._actors.getAndRemove(actor.uid);
             ai.setFlags(ActorInfo.flagRemoved);
             this.actorDirty(ai);
         };
-        BasicPrimitiviceCollisionManager.prototype.actorDirty = function (actor) {
+        BasicPrimitiveCollisionManager.prototype.actorDirty = function (actor) {
             actor.setFlags(ActorInfo.flagDirty);
             this._dirtyActors.add(actor.prim.uid, actor);
         };
-        BasicPrimitiviceCollisionManager.prototype.update = function () {
+        BasicPrimitiveCollisionManager.prototype._update = function () {
             this._canvasSize.copyFrom(this._owner.actualSize);
             // Should we update the WireFrame2D Primitive that displays the WorldAABB ?
             if (this.debugRenderAABB) {
-                if (this._dirtyActors.count > 0) {
+                if (this._dirtyActors.count > 0 || this._debugRenderAABBDirty) {
                     this._updateAABBDisplay();
                 }
+            }
+            if (this._AABBRenderPrim) {
+                this._AABBRenderPrim.levelVisible = this.debugRenderAABB;
             }
             var cw = this._clusterSize.width;
             var ch = this._clusterSize.height;
@@ -2562,6 +2580,9 @@ var BABYLON;
             if (this.debugRenderClusters && this._clusterDirty) {
                 this._updateClusterDisplay(cw, ch);
             }
+            if (this._ClusterRenderPrim) {
+                this._ClusterRenderPrim.levelVisible = this.debugRenderClusters;
+            }
             var updateStats = this.debugStats && (this._dirtyActors.count > 0 || this._clusterDirty);
             this._debugUpdateTime.beginMonitoring();
             // If the Cluster Size changed: rebuild it and add all actors. Otherwise add only new (dirty) actors
@@ -2579,45 +2600,65 @@ var BABYLON;
             if (updateStats) {
                 this._updateDebugStats();
             }
+            if (this._debugTextBackground) {
+                this._debugTextBackground.levelVisible = updateStats;
+            }
             // Reset the dirty actor list: everything is processed
             this._dirtyActors.clear();
         };
-        Object.defineProperty(BasicPrimitiviceCollisionManager.prototype, "intersectedActors", {
+        Object.defineProperty(BasicPrimitiveCollisionManager.prototype, "debugRenderAABB", {
+            /**
+             * Renders the World AABB of all Actors
+             */
+            get: function () {
+                return this._debugRenderAABB;
+            },
+            set: function (val) {
+                if (this._debugRenderAABB === val) {
+                    return;
+                }
+                this._debugRenderAABB = val;
+                this._debugRenderAABBDirty = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BasicPrimitiveCollisionManager.prototype, "intersectedActors", {
             get: function () {
                 return this._intersectedActors;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BasicPrimitiviceCollisionManager.prototype, "leftBorderIntersectedActors", {
+        Object.defineProperty(BasicPrimitiveCollisionManager.prototype, "leftBorderIntersectedActors", {
             get: function () {
                 return this._borderIntersecteddActors[0];
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BasicPrimitiviceCollisionManager.prototype, "bottomBorderIntersectedActors", {
+        Object.defineProperty(BasicPrimitiveCollisionManager.prototype, "bottomBorderIntersectedActors", {
             get: function () {
                 return this._borderIntersecteddActors[1];
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BasicPrimitiviceCollisionManager.prototype, "rightBorderIntersectedActors", {
+        Object.defineProperty(BasicPrimitiveCollisionManager.prototype, "rightBorderIntersectedActors", {
             get: function () {
                 return this._borderIntersecteddActors[2];
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(BasicPrimitiviceCollisionManager.prototype, "topBorderIntersectedActors", {
+        Object.defineProperty(BasicPrimitiveCollisionManager.prototype, "topBorderIntersectedActors", {
             get: function () {
                 return this._borderIntersecteddActors[3];
             },
             enumerable: true,
             configurable: true
         });
-        BasicPrimitiviceCollisionManager.prototype._initializeCluster = function (countW, countH) {
+        BasicPrimitiveCollisionManager.prototype._initializeCluster = function (countW, countH) {
             // Check for free
             if (this._clusters) {
                 for (var w = 0; w < this._clusterSize.height; w++) {
@@ -2641,19 +2682,19 @@ var BABYLON;
             this._lastClusterResizeCounter = 0;
             this._clusterDirty = false;
         };
-        BasicPrimitiviceCollisionManager.prototype._rebuildAllActors = function () {
+        BasicPrimitiveCollisionManager.prototype._rebuildAllActors = function () {
             var _this = this;
             this._actors.forEach(function (k, ai) {
                 _this._processActor(ai);
             });
         };
-        BasicPrimitiviceCollisionManager.prototype._rebuildDirtyActors = function () {
+        BasicPrimitiveCollisionManager.prototype._rebuildDirtyActors = function () {
             var _this = this;
             this._dirtyActors.forEach(function (k, ai) {
                 _this._processActor(ai);
             });
         };
-        BasicPrimitiviceCollisionManager.prototype._processActor = function (actor) {
+        BasicPrimitiveCollisionManager.prototype._processActor = function (actor) {
             var _this = this;
             // Check if the actor is being disabled or removed
             if (!actor.isEnabled || actor.isRemoved) {
@@ -2665,13 +2706,13 @@ var BABYLON;
             }
             var wab = actor.worldAABB;
             // Build the worldAABB corners
-            var wac = BasicPrimitiviceCollisionManager.WAABBCorners;
+            var wac = BasicPrimitiveCollisionManager.WAABBCorners;
             wac[0].copyFromFloats(wab.x, wab.y); // Bottom/Left
             wac[1].copyFromFloats(wab.z, wab.y); // Bottom/Right
             wac[2].copyFromFloats(wab.z, wab.w); // Top/Right
             wac[3].copyFromFloats(wab.x, wab.w); // Top/Left
             var cs = this._clusterStep;
-            var wacc = BasicPrimitiviceCollisionManager.WAABBCornersCluster;
+            var wacc = BasicPrimitiveCollisionManager.WAABBCornersCluster;
             for (var i = 0; i < 4; i++) {
                 var p = wac[i];
                 var cx = (p.x - (p.x % cs.x)) / cs.x;
@@ -2751,10 +2792,10 @@ var BABYLON;
         // The algorithm is simple, we have previously partitioned the Actors in the Clusters: each actor has a list of the Cluster(s) it's inside.
         // Then for a given Actor that is dirty we evaluate the intersection with all the other actors present in the same Cluster(s)
         // So it's basically O(n²), BUT only inside a Cluster and only for dirty Actors.
-        BasicPrimitiviceCollisionManager.prototype._collisionDetection = function () {
+        BasicPrimitiveCollisionManager.prototype._collisionDetection = function () {
             var _this = this;
-            var hash = BasicPrimitiviceCollisionManager.CandidatesActors;
-            var prev = BasicPrimitiviceCollisionManager.PreviousIntersections;
+            var hash = BasicPrimitiveCollisionManager.CandidatesActors;
+            var prev = BasicPrimitiveCollisionManager.PreviousIntersections;
             var opCount = 0;
             this._dirtyActors.forEach(function (k1, ai1) {
                 ++opCount;
@@ -2801,10 +2842,10 @@ var BABYLON;
             this._debugUpdateOpCount.fetchNewFrame();
             this._debugUpdateOpCount.addCount(opCount, true);
         };
-        BasicPrimitiviceCollisionManager.prototype._getCluster = function (x, y) {
+        BasicPrimitiveCollisionManager.prototype._getCluster = function (x, y) {
             return this._clusters[x][y];
         };
-        BasicPrimitiviceCollisionManager.prototype._updateDebugStats = function () {
+        BasicPrimitiveCollisionManager.prototype._updateDebugStats = function () {
             var format = function (v) { return (Math.round(v * 100) / 100).toString(); };
             var txt = "Primitive Collision Stats\n" +
                 (" - PCM Execution Time: " + format(this._debugUpdateTime.lastSecAverage) + "ms\n") +
@@ -2819,11 +2860,12 @@ var BABYLON;
                 });
             }
             else {
+                this._debugTextBackground.levelVisible = true;
                 var text2d = this._debugTextBackground.children[0];
                 text2d.text = txt;
             }
         };
-        BasicPrimitiviceCollisionManager.prototype._updateAABBDisplay = function () {
+        BasicPrimitiveCollisionManager.prototype._updateAABBDisplay = function () {
             var g = new BABYLON.WireFrameGroup2D("main", new BABYLON.Color4(0.5, 0.8, 1.0, 1.0));
             var v = BABYLON.Vector2.Zero();
             this._actors.forEach(function (k, ai) {
@@ -2843,14 +2885,15 @@ var BABYLON;
                 }
             });
             if (!this._AABBRenderPrim) {
-                this._AABBRenderPrim = new BABYLON.WireFrame2D([g], { parent: this._owner, alignToPixel: true, id: "###DEBUG PCM AABB###" });
+                this._AABBRenderPrim = new BABYLON.WireFrame2D([g], { parent: this._owner, alignToPixel: false, id: "###DEBUG PCM AABB###" });
             }
             else {
                 this._AABBRenderPrim.wireFrameGroups.set("main", g);
                 this._AABBRenderPrim.wireFrameGroupsDirty();
             }
+            this._debugRenderAABBDirty = false;
         };
-        BasicPrimitiviceCollisionManager.prototype._updateClusterDisplay = function (cw, ch) {
+        BasicPrimitiveCollisionManager.prototype._updateClusterDisplay = function (cw, ch) {
             var g = new BABYLON.WireFrameGroup2D("main", new BABYLON.Color4(0.8, 0.1, 0.5, 1.0));
             var v1 = BABYLON.Vector2.Zero();
             var v2 = BABYLON.Vector2.Zero();
@@ -2885,7 +2928,7 @@ var BABYLON;
         // Basically: we don't want to spend our time playing with the GC each time the Cluster Array is rebuilt, so we keep a list of available
         //  ClusterInfo object and we have two method to allocate/free them. This way we always deal with the same objects.
         // The free array never shrink, always grows...For the better...and the worst!
-        BasicPrimitiviceCollisionManager.prototype._allocClusterInfo = function () {
+        BasicPrimitiveCollisionManager.prototype._allocClusterInfo = function () {
             if (this._freeClusters.length === 0) {
                 for (var i = 0; i < 8; i++) {
                     this._freeClusters.push(new ClusterInfo());
@@ -2893,17 +2936,16 @@ var BABYLON;
             }
             return this._freeClusters.pop();
         };
-        BasicPrimitiviceCollisionManager.prototype._freeClusterInfo = function (ci) {
+        BasicPrimitiveCollisionManager.prototype._freeClusterInfo = function (ci) {
             ci.clear();
             this._freeClusters.push(ci);
         };
-        return BasicPrimitiviceCollisionManager;
+        return BasicPrimitiveCollisionManager;
     }(PrimitiveCollisionManagerBase));
-    BasicPrimitiviceCollisionManager.WAABBCorners = null;
-    BasicPrimitiviceCollisionManager.WAABBCornersCluster = null;
-    BasicPrimitiviceCollisionManager.CandidatesActors = new BABYLON.StringDictionary();
-    BasicPrimitiviceCollisionManager.PreviousIntersections = new BABYLON.StringDictionary();
-    BABYLON.BasicPrimitiviceCollisionManager = BasicPrimitiviceCollisionManager;
+    BasicPrimitiveCollisionManager.WAABBCorners = null;
+    BasicPrimitiveCollisionManager.WAABBCornersCluster = null;
+    BasicPrimitiveCollisionManager.CandidatesActors = new BABYLON.StringDictionary();
+    BasicPrimitiveCollisionManager.PreviousIntersections = new BABYLON.StringDictionary();
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.primitiveCollisionManager.js.map
@@ -5982,7 +6024,7 @@ var BABYLON;
             _this._positioningDirty();
             // Add in the PCM
             if (settings.levelCollision || settings.deepCollision) {
-                _this._actorInfo = _this.owner._primitiveCollisionManager.addActor(_this, settings.deepCollision === true);
+                _this._actorInfo = _this.owner._primitiveCollisionManager._addActor(_this, settings.deepCollision === true);
                 _this._setFlags(BABYLON.SmartPropertyPrim.flagCollisionActor);
             }
             else {
@@ -5991,11 +6033,29 @@ var BABYLON;
             return _this;
         }
         Object.defineProperty(Prim2DBase.prototype, "intersectWithObservable", {
+            /**
+             * Return the ChangedDictionary observable of the StringDictionary containing the primitives intersecting with this one
+             */
             get: function () {
                 if (!this._actorInfo) {
                     return null;
                 }
                 return this._actorInfo.intersectWith.dictionaryChanged;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Prim2DBase.prototype, "intersectWith", {
+            /**
+             * Return the ObservableStringDictionary containing all the primitives intersecting with this one.
+             * The key is the primitive uid, the value is the ActorInfo object
+             * @returns {}
+             */
+            get: function () {
+                if (!this._actorInfo) {
+                    return null;
+                }
+                return this._actorInfo.intersectWith;
             },
             enumerable: true,
             configurable: true
@@ -7416,7 +7476,7 @@ var BABYLON;
                 return false;
             }
             if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagCollisionActor)) {
-                this.owner._primitiveCollisionManager.removeActor(this);
+                this.owner._primitiveCollisionManager._removeActor(this);
                 this._actorInfo = null;
             }
             if (this._pointerEventObservable) {
@@ -14896,7 +14956,7 @@ var BABYLON;
             // Initialize the Primitive Collision Manager
             if (settings.enableCollisionManager) {
                 var enableBorders = settings.collisionManagerUseBorders;
-                _this._primitiveCollisionManager = (settings.customCollisionManager == null) ? new BABYLON.BasicPrimitiviceCollisionManager(_this, enableBorders) : settings.customCollisionManager(_this, enableBorders);
+                _this._primitiveCollisionManager = (settings.customCollisionManager == null) ? BABYLON.PrimitiveCollisionManagerBase.allocBasicPCM(_this, enableBorders) : settings.customCollisionManager(_this, enableBorders);
             }
             // Register this instance
             Canvas2D_1._INSTANCES.push(_this);
@@ -15978,7 +16038,7 @@ var BABYLON;
             }
             this._updateCanvasState(false);
             if (this._primitiveCollisionManager) {
-                this._primitiveCollisionManager.update();
+                this._primitiveCollisionManager._update();
             }
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
