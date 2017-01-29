@@ -2854,7 +2854,7 @@ var BABYLON;
                 (" - Intersections count: " + this.intersectedActors.count);
             if (!this._debugTextBackground) {
                 this._debugTextBackground = new BABYLON.Rectangle2D({
-                    id: "###DEBUG PMC STATS###", parent: this._owner, marginAlignment: "h: left, v: top", fill: "#C0404080", padding: "top: 10, left: 10, right: 10, bottom: 10", roundRadius: 10, children: [
+                    id: "###DEBUG PMC STATS###", parent: this._owner, marginAlignment: "h: left, v: top", fill: "#C0404080", padding: "10", margin: "10", roundRadius: 10, children: [
                         new BABYLON.Text2D(txt, { id: "###DEBUG PMC TEXT###", fontName: "12pt Lucida Console" })
                     ]
                 });
@@ -7811,7 +7811,7 @@ var BABYLON;
                         return Prim2DBase_1.nullSize;
                     }
                     if (!this._isFlagSet(BABYLON.SmartPropertyPrim.flagBoundingInfoDirty)) {
-                        return this._boundingSize;
+                        return this._contentArea;
                     }
                     Prim2DBase_1.boundinbBoxReentrency = true;
                     var b = this.boundingInfo;
