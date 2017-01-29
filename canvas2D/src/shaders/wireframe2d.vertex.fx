@@ -33,7 +33,7 @@ void main(void) {
 	vec4 pp = vec4(dot(p, transformX), dot(p, transformY), zBias.x, 1);
 	
 	if (properties.x == 1.0) {
-		pp.xy = pp.xy - mod(pp.xy, properties.yz);
+		pp.xy = pp.xy - mod(pp.xy, properties.yz) + (properties.yz*0.5);
 	}
 
 	gl_Position = pp;
