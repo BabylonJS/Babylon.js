@@ -797,107 +797,76 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * The base class for all implementation of a Primitive Collision Manager
+     */
     abstract class PrimitiveCollisionManagerBase {
         constructor(owner: Canvas2D);
-        abstract addActor(actor: Prim2DBase, deep: boolean): ActorInfo;
-        abstract removeActor(actor: Prim2DBase): any;
-        abstract update(): any;
+        abstract _addActor(actor: Prim2DBase, deep: boolean): ActorInfoBase;
+        abstract _removeActor(actor: Prim2DBase): any;
+        abstract _update(): any;
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the left border
+         */
         readonly abstract leftBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the bottom border
+         */
         readonly abstract bottomBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the right border
+         */
         readonly abstract rightBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the top border
+         */
         readonly abstract topBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
+        /**
+         * This dictionary contains all the couple of intersecting primitives
+         */
         readonly abstract intersectedActors: ObservableStringDictionary<{
             a: Prim2DBase;
             b: Prim2DBase;
         }>;
-        protected _owner: Canvas2D;
-    }
-    class ActorInfo {
-        constructor(owner: BasicPrimitiviceCollisionManager, actor: Prim2DBase, deep: boolean);
-        setFlags(flags: number): void;
-        clearFlags(flags: number): void;
-        isAllFlagsSet(flags: number): boolean;
-        isSomeFlagsSet(flags: number): boolean;
-        setFlagsValue(flags: number, value: boolean): void;
-        readonly worldAABB: Vector4;
-        readonly isEnabled: boolean;
-        readonly isDeep: boolean;
-        readonly isDirty: boolean;
-        readonly isRemoved: boolean;
-        prim: Prim2DBase;
-        flags: number;
-        owner: BasicPrimitiviceCollisionManager;
-        presentInClusters: StringDictionary<ClusterInfo>;
-        intersectWith: ObservableStringDictionary<ActorInfo>;
-        static flagDeep: number;
-        static flagEnabled: number;
-        static flagDirty: number;
-        static flagRemoved: number;
-    }
-    class ClusterInfo {
-        constructor();
-        clear(): void;
-        actors: StringDictionary<ActorInfo>;
-    }
-    class BasicPrimitiviceCollisionManager extends PrimitiveCollisionManagerBase {
-        constructor(owner: Canvas2D, enableBorders: boolean);
-        addActor(actor: Prim2DBase, deep: boolean): ActorInfo;
-        removeActor(actor: Prim2DBase): void;
-        actorDirty(actor: ActorInfo): void;
-        update(): void;
         /**
          * Renders the World AABB of all Actors
          */
-        debugRenderAABB: any;
+        abstract debugRenderAABB: boolean;
         /**
          * Renders the area of the Clusters
          */
-        debugRenderClusters: any;
+        abstract debugRenderClusters: boolean;
         /**
          * Display stats about the PCM on screen
          */
-        debugStats: any;
-        readonly intersectedActors: ObservableStringDictionary<{
-            a: Prim2DBase;
-            b: Prim2DBase;
-        }>;
-        readonly leftBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
-        readonly bottomBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
-        readonly rightBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
-        readonly topBorderIntersectedActors: ObservableStringDictionary<Prim2DBase>;
-        private _initializeCluster(countW, countH);
-        private _rebuildAllActors();
-        private _rebuildDirtyActors();
-        static WAABBCorners: Array<Vector2>;
-        static WAABBCornersCluster: Array<Vector2>;
-        private _processActor(actor);
-        private static CandidatesActors;
-        private static PreviousIntersections;
-        private _collisionDetection();
-        private _getCluster(x, y);
-        private _updateDebugStats();
-        private _updateAABBDisplay();
-        private _updateClusterDisplay(cw, ch);
-        private _allocClusterInfo();
-        private _freeClusterInfo(ci);
-        private _canvasSize;
-        private _clusterDirty;
-        private _clusterSize;
-        private _clusterStep;
-        private _clusters;
-        private _maxActorByCluster;
-        private _lastClusterResizeCounter;
-        private _actors;
-        private _dirtyActors;
-        private _freeClusters;
-        private _enableBorder;
-        private _intersectedActors;
-        private _borderIntersecteddActors;
-        private _debugUpdateOpCount;
-        private _debugUpdateTime;
-        private _AABBRenderPrim;
-        private _ClusterRenderPrim;
-        private _debugTextBackground;
+        abstract debugStats: boolean;
+        static allocBasicPCM(owner: Canvas2D, enableBorders: boolean): PrimitiveCollisionManagerBase;
+        protected _owner: Canvas2D;
+    }
+    /**
+     * Base class of an Actor
+     */
+    abstract class ActorInfoBase {
+        /**
+         * Access the World AABB of the Actor, the vector4 is x:left, y: bottom, z: right, w: top
+         */
+        readonly abstract worldAABB: Vector4;
+        /**
+         * Return true if the actor is enable, false otherwise
+         */
+        readonly abstract isEnabled: boolean;
+        /**
+         * Return true is the actor boundingInfo is use, false if its levelBoundingInfo is used.
+         */
+        readonly abstract isDeep: boolean;
+        /**
+         * Return the primitive of the actor
+         */
+        readonly abstract prim: Prim2DBase;
+        /**
+         * Return a dictionary containing all the actors intersecting with this one
+         */
+        readonly abstract intersectWith: ObservableStringDictionary<ActorInfoBase>;
     }
 }
 
@@ -1898,7 +1867,16 @@ declare module BABYLON {
             paddingBottom?: number | string;
             padding?: string;
         });
-        readonly intersectWithObservable: Observable<DictionaryChanged<ActorInfo>>;
+        /**
+         * Return the ChangedDictionary observable of the StringDictionary containing the primitives intersecting with this one
+         */
+        readonly intersectWithObservable: Observable<DictionaryChanged<ActorInfoBase>>;
+        /**
+         * Return the ObservableStringDictionary containing all the primitives intersecting with this one.
+         * The key is the primitive uid, the value is the ActorInfo object
+         * @returns {}
+         */
+        readonly intersectWith: ObservableStringDictionary<ActorInfoBase>;
         readonly actionManager: ActionManager;
         /**
          * From 'this' primitive, traverse up (from parent to parent) until the given predicate is true
