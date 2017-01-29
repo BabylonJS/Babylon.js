@@ -4,7 +4,7 @@ Canvas2D, a 100% WebGL based 2D Engine
 ## Table of Content
 
 - [Introduction](#introduction)
-- [Documentation](#documentation)
+- [Documentation, want to give feedback, report a bug or need help?](#documentation)
 - [Releases](#releases)
 - [Features list](features.md) (separated page)
 - [How to build it](#how-to-build-babyloncanvas2djs-with-gulp)
@@ -32,6 +32,17 @@ This overview page has many links to other documentation pages (organized like a
 
 #### Reference
 The reference documentation is available [here](http://doc.babylonjs.com/classes/), most of the Canvas2D classes are suffixed by `2D` so you can use it in the filter box like this:![2D classes](http://i.imgur.com/hx4Llmi.png)
+
+#### Using the Forum
+
+If you need help, want to give feedback, report a bug or be aware of the latest development: you have to use the **[Babylon.js forum](http://www.html5gamedevs.com/forum/16-babylonjs/)**.
+
+ - Questions are to be posted [here](http://www.html5gamedevs.com/forum/28-questions-answers/)
+ - Bugs reports must be made [there](http://www.html5gamedevs.com/forum/30-bugs/)
+ - Check [this post](http://www.html5gamedevs.com/topic/22552-canvas2d-main-post/) to be aware of all the improvements/fixes made during the alpha/beta development of the library. You can check the first post as I update it each time there's new stuff or I simply encourage you to follow the thread to get notified. **Please** don't ask question or report bugs in this thread, create a dedicated one, thanks!
+ - [Another post](http://www.html5gamedevs.com/topic/25275-the-gui-lib-of-babylonjs/) was created to track the progress on the GUI Library, same rules and observations as above.
+
+**Important** when you post something you better mentioned me using `@nockawa`, I'm **not** checking the forum everyday but some other users does and ping me if needed, but still: mentioning me is the best way to get my attention.
 
 ## Releases
 
