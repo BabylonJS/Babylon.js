@@ -600,7 +600,7 @@
             if (!this._debugTextBackground) {
 
                 this._debugTextBackground = new Rectangle2D({
-                    id: "###DEBUG PMC STATS###", parent: this._owner, marginAlignment: "h: left, v: top", fill: "#C0404080", padding: "top: 10, left: 10, right: 10, bottom: 10", roundRadius: 10, children: [
+                    id: "###DEBUG PMC STATS###", parent: this._owner, marginAlignment: "h: left, v: top", fill: "#C0404080", padding: "10", margin: "10", roundRadius: 10, children: [
                         new Text2D(txt, { id: "###DEBUG PMC TEXT###", fontName: "12pt Lucida Console" })
                     ]
                 });
