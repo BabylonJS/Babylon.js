@@ -3645,7 +3645,7 @@
                 }
 
                 if (!this._isFlagSet(SmartPropertyPrim.flagBoundingInfoDirty)) {
-                    return this._boundingSize;
+                    return this._contentArea;
                 }
 
                 Prim2DBase.boundinbBoxReentrency = true;
