@@ -1632,7 +1632,7 @@
 
             // Add in the PCM
             if (settings.levelCollision || settings.deepCollision) {
-                this._actorInfo = this.owner._primitiveCollisionManager.addActor(this, settings.deepCollision === true);
+                this._actorInfo = this.owner._primitiveCollisionManager._addActor(this, settings.deepCollision === true);
                 this._setFlags(SmartPropertyPrim.flagCollisionActor);
             } else {
                 this._actorInfo = null;
@@ -1640,11 +1640,26 @@
 
         }
 
-        public get intersectWithObservable(): Observable<DictionaryChanged<ActorInfo>> {
+        /**
+         * Return the ChangedDictionary observable of the StringDictionary containing the primitives intersecting with this one
+         */
+        public get intersectWithObservable(): Observable<DictionaryChanged<ActorInfoBase>> {
             if (!this._actorInfo) {
                 return null;
             }
             return this._actorInfo.intersectWith.dictionaryChanged;
+        }
+
+        /**
+         * Return the ObservableStringDictionary containing all the primitives intersecting with this one.
+         * The key is the primitive uid, the value is the ActorInfo object
+         * @returns {} 
+         */
+        public get intersectWith(): ObservableStringDictionary<ActorInfoBase> {
+            if (!this._actorInfo) {
+                return null;
+            }
+            return this._actorInfo.intersectWith;
         }
 
         public get actionManager(): ActionManager {
@@ -3220,7 +3235,7 @@
             }
 
             if (this._isFlagSet(SmartPropertyPrim.flagCollisionActor)) {
-                this.owner._primitiveCollisionManager.removeActor(this);
+                this.owner._primitiveCollisionManager._removeActor(this);
                 this._actorInfo = null;
             }
 
@@ -3912,7 +3927,7 @@
         private _actualScale : Vector2;
         private _displayDebugAreas: boolean;
         private _debugAreaGroup: Group2D;
-        private _actorInfo: ActorInfo;
+        private _actorInfo: ActorInfoBase;
 
         // Stores the step of the parent for which the current global transform was computed
         // If the parent has a new step, it means this prim's global transform must be updated

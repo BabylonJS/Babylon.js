@@ -221,7 +221,7 @@
             // Initialize the Primitive Collision Manager
             if (settings.enableCollisionManager) {
                 let enableBorders = settings.collisionManagerUseBorders;
-                this._primitiveCollisionManager = (settings.customCollisionManager==null) ? new BasicPrimitiviceCollisionManager(this, enableBorders) : settings.customCollisionManager(this, enableBorders);
+                this._primitiveCollisionManager = (settings.customCollisionManager==null) ? PrimitiveCollisionManagerBase.allocBasicPCM(this, enableBorders) : settings.customCollisionManager(this, enableBorders);
             }
 
             // Register this instance
@@ -1477,7 +1477,7 @@
             this._updateCanvasState(false);
 
             if (this._primitiveCollisionManager) {
-                this._primitiveCollisionManager.update();
+                this._primitiveCollisionManager._update();
             }
 
             if (this._primPointerInfo.canvasPointerPos) {

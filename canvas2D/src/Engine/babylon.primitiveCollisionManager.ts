@@ -1,26 +1,101 @@
 ﻿module BABYLON {
+
+    /**
+     * The base class for all implementation of a Primitive Collision Manager
+     */
     export abstract class PrimitiveCollisionManagerBase {
         constructor(owner: Canvas2D) {
             this._owner = owner;
         }
 
-        abstract addActor(actor: Prim2DBase, deep: boolean): ActorInfo;
-        abstract removeActor(actor: Prim2DBase);
+        abstract _addActor(actor: Prim2DBase, deep: boolean): ActorInfoBase;
+        abstract _removeActor(actor: Prim2DBase);
 
-        abstract update();
+        abstract _update();
 
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the left border
+         */
         abstract get leftBorderIntersectedActors(): ObservableStringDictionary<Prim2DBase>;
+
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the bottom border
+         */
         abstract get bottomBorderIntersectedActors(): ObservableStringDictionary<Prim2DBase>;
+
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the right border
+         */
         abstract get rightBorderIntersectedActors(): ObservableStringDictionary<Prim2DBase>;
+
+        /**
+         * If collisionManagerUseBorders is true during the Canvas creation, this dictionary contains all the primitives intersecting with the top border
+         */
         abstract get topBorderIntersectedActors(): ObservableStringDictionary<Prim2DBase>;
+
+        /**
+         * This dictionary contains all the couple of intersecting primitives
+         */
         abstract get intersectedActors(): ObservableStringDictionary<{ a: Prim2DBase, b: Prim2DBase }>;
 
-        protected _owner: Canvas2D;
+        /**
+         * Renders the World AABB of all Actors
+         */
+        abstract get debugRenderAABB(): boolean;
+        abstract set debugRenderAABB(val: boolean);
 
+        /**
+         * Renders the area of the Clusters
+         */
+        abstract get debugRenderClusters(): boolean;
+        abstract set debugRenderClusters(val: boolean);
+
+        /**
+         * Display stats about the PCM on screen
+         */
+        abstract get debugStats(): boolean;
+        abstract set debugStats(val: boolean);
+
+        public static allocBasicPCM(owner: Canvas2D, enableBorders: boolean): PrimitiveCollisionManagerBase {
+            return new BasicPrimitiveCollisionManager(owner, enableBorders);
+        }
+
+        protected _owner: Canvas2D;
     }
 
-    export class ActorInfo {
-        constructor(owner: BasicPrimitiviceCollisionManager, actor: Prim2DBase, deep: boolean) {
+    /**
+     * Base class of an Actor
+     */
+    export abstract class ActorInfoBase {
+        /**
+         * Access the World AABB of the Actor, the vector4 is x:left, y: bottom, z: right, w: top
+         */
+        abstract get worldAABB(): Vector4;
+
+        /**
+         * Return true if the actor is enable, false otherwise
+         */
+        abstract get isEnabled(): boolean;
+
+        /**
+         * Return true is the actor boundingInfo is use, false if its levelBoundingInfo is used.
+         */
+        abstract get isDeep(): boolean;
+
+        /**
+         * Return the primitive of the actor
+         */
+        abstract get prim(): Prim2DBase;
+
+        /**
+         * Return a dictionary containing all the actors intersecting with this one
+         */
+        abstract get intersectWith(): ObservableStringDictionary<ActorInfoBase>;
+    }
+
+    class ActorInfo extends ActorInfoBase {
+        constructor(owner: BasicPrimitiveCollisionManager, actor: Prim2DBase, deep: boolean) {
+            super();
             this.owner = owner;
             this.prim = actor;
             this.flags = 0;
@@ -91,9 +166,9 @@
 
         prim: Prim2DBase;
         flags: number;
-        owner: BasicPrimitiviceCollisionManager;
+        owner: BasicPrimitiveCollisionManager;
         presentInClusters: StringDictionary<ClusterInfo>;
-        intersectWith: ObservableStringDictionary<ActorInfo>;
+        intersectWith: ObservableStringDictionary<ActorInfoBase>;
 
         public static flagDeep       = 0x0001;      // set if the actor boundingInfo must be used instead of the levelBoundingInfo
         public static flagEnabled    = 0x0002;      // set if the actor is enabled and should be considered for intersection tests
@@ -101,7 +176,7 @@
         public static flagRemoved    = 0x0008;      // set if the actor was removed from the PCM
     }
 
-    export class ClusterInfo {
+    class ClusterInfo {
         constructor() {
             this.actors = new StringDictionary<ActorInfo>();
         }
@@ -113,7 +188,7 @@
         actors: StringDictionary<ActorInfo>;
     }
 
-    export class BasicPrimitiviceCollisionManager extends PrimitiveCollisionManagerBase {
+    class BasicPrimitiveCollisionManager extends PrimitiveCollisionManagerBase {
 
         constructor(owner: Canvas2D, enableBorders: boolean) {
             super(owner);
@@ -140,14 +215,14 @@
             }
             let flagId = Canvas2D.actualSizeProperty.flagId;
 
-            if (!BasicPrimitiviceCollisionManager.WAABBCorners) {
-                BasicPrimitiviceCollisionManager.WAABBCorners = new Array<Vector2>(4);
+            if (!BasicPrimitiveCollisionManager.WAABBCorners) {
+                BasicPrimitiveCollisionManager.WAABBCorners = new Array<Vector2>(4);
                 for (let i = 0; i < 4; i++) {
-                    BasicPrimitiviceCollisionManager.WAABBCorners[i] = Vector2.Zero();
+                    BasicPrimitiveCollisionManager.WAABBCorners[i] = Vector2.Zero();
                 }
-                BasicPrimitiviceCollisionManager.WAABBCornersCluster = new Array<Vector2>(4);
+                BasicPrimitiveCollisionManager.WAABBCornersCluster = new Array<Vector2>(4);
                 for (let i = 0; i < 4; i++) {
-                    BasicPrimitiviceCollisionManager.WAABBCornersCluster[i] = Vector2.Zero();
+                    BasicPrimitiveCollisionManager.WAABBCornersCluster[i] = Vector2.Zero();
                 }
             }
 
@@ -164,7 +239,7 @@
             this.debugStats = false;
         }
 
-        addActor(actor: Prim2DBase, deep: boolean): ActorInfo {
+        _addActor(actor: Prim2DBase, deep: boolean): ActorInfoBase {
             return this._actors.getOrAddWithFactory(actor.uid, () => {
                 let ai = new ActorInfo(this, actor, deep);
                 this.actorDirty(ai);
@@ -172,7 +247,7 @@
             });
         }
 
-        removeActor(actor: Prim2DBase) {
+        _removeActor(actor: Prim2DBase) {
             let ai = this._actors.getAndRemove(actor.uid);
             ai.setFlags(ActorInfo.flagRemoved);
             this.actorDirty(ai);
@@ -183,14 +258,17 @@
             this._dirtyActors.add(actor.prim.uid, actor);
         }
 
-        update() {
+        _update() {
             this._canvasSize.copyFrom(this._owner.actualSize);
 
             // Should we update the WireFrame2D Primitive that displays the WorldAABB ?
             if (this.debugRenderAABB) {
-                if (this._dirtyActors.count > 0) {
+                if (this._dirtyActors.count > 0 || this._debugRenderAABBDirty) {
                     this._updateAABBDisplay();
                 }
+            }
+            if (this._AABBRenderPrim) {
+                this._AABBRenderPrim.levelVisible = this.debugRenderAABB;
             }
 
             let cw = this._clusterSize.width;
@@ -216,6 +294,10 @@
             if (this.debugRenderClusters && this._clusterDirty) {
                 this._updateClusterDisplay(cw, ch);
             }
+            if (this._ClusterRenderPrim) {
+                this._ClusterRenderPrim.levelVisible = this.debugRenderClusters;
+            }
+
 
             let updateStats = this.debugStats && (this._dirtyActors.count > 0 || this._clusterDirty);
 
@@ -239,6 +321,10 @@
                 this._updateDebugStats();
             }
 
+            if (this._debugTextBackground) {
+                this._debugTextBackground.levelVisible = updateStats;
+            }
+
             // Reset the dirty actor list: everything is processed
             this._dirtyActors.clear();
         }
@@ -246,17 +332,28 @@
         /**
          * Renders the World AABB of all Actors
          */
-        public debugRenderAABB;
+        public get debugRenderAABB(): boolean {
+            return this._debugRenderAABB;
+        }
+
+        public set debugRenderAABB(val: boolean) {
+            if (this._debugRenderAABB === val) {
+                return;
+            }
+
+            this._debugRenderAABB = val;
+            this._debugRenderAABBDirty = true;
+        }
 
         /**
          * Renders the area of the Clusters
          */
-        public debugRenderClusters;
+        public debugRenderClusters: boolean;
 
         /**
          * Display stats about the PCM on screen
          */
-        public debugStats;
+        public debugStats: boolean;
 
         get intersectedActors(): ObservableStringDictionary<{ a: Prim2DBase; b: Prim2DBase }> {
             return this._intersectedActors;
@@ -334,14 +431,14 @@
             let wab = actor.worldAABB;
 
             // Build the worldAABB corners
-            let wac = BasicPrimitiviceCollisionManager.WAABBCorners;
+            let wac = BasicPrimitiveCollisionManager.WAABBCorners;
             wac[0].copyFromFloats(wab.x, wab.y); // Bottom/Left
             wac[1].copyFromFloats(wab.z, wab.y); // Bottom/Right
             wac[2].copyFromFloats(wab.z, wab.w); // Top/Right
             wac[3].copyFromFloats(wab.x, wab.w); // Top/Left
 
             let cs = this._clusterStep;
-            let wacc = BasicPrimitiviceCollisionManager.WAABBCornersCluster;
+            let wacc = BasicPrimitiveCollisionManager.WAABBCornersCluster;
             for (let i = 0; i < 4; i++) {
                 let p = wac[i];
                 let cx = (p.x - (p.x % cs.x)) / cs.x;
@@ -418,15 +515,15 @@
             }
         }
 
-        private static CandidatesActors = new StringDictionary<ActorInfo>();
-        private static PreviousIntersections = new StringDictionary<ActorInfo>();
+        private static CandidatesActors = new StringDictionary<ActorInfoBase>();
+        private static PreviousIntersections = new StringDictionary<ActorInfoBase>();
 
         // The algorithm is simple, we have previously partitioned the Actors in the Clusters: each actor has a list of the Cluster(s) it's inside.
         // Then for a given Actor that is dirty we evaluate the intersection with all the other actors present in the same Cluster(s)
         // So it's basically O(n²), BUT only inside a Cluster and only for dirty Actors.
         private _collisionDetection() {
-            let hash = BasicPrimitiviceCollisionManager.CandidatesActors;
-            let prev = BasicPrimitiviceCollisionManager.PreviousIntersections;
+            let hash = BasicPrimitiveCollisionManager.CandidatesActors;
+            let prev = BasicPrimitiveCollisionManager.PreviousIntersections;
             let opCount = 0;
 
             this._dirtyActors.forEach((k1, ai1) => {
@@ -509,6 +606,7 @@
                 });
                     
             } else {
+                this._debugTextBackground.levelVisible = true;
                 let text2d = this._debugTextBackground.children[0] as Text2D;
                 text2d.text = txt;
             }
@@ -542,11 +640,13 @@
             });
 
             if (!this._AABBRenderPrim) {
-                this._AABBRenderPrim = new WireFrame2D([g], { parent: this._owner, alignToPixel: true, id: "###DEBUG PCM AABB###" });
+                this._AABBRenderPrim = new WireFrame2D([g], { parent: this._owner, alignToPixel: false, id: "###DEBUG PCM AABB###" });
             } else {
                 this._AABBRenderPrim.wireFrameGroups.set("main", g);
                 this._AABBRenderPrim.wireFrameGroupsDirty();
             }
+
+            this._debugRenderAABBDirty = false;
         }
 
         private _updateClusterDisplay(cw: number, ch: number) {
@@ -621,6 +721,8 @@
         private _borderIntersecteddActors: ObservableStringDictionary<Prim2DBase>[];
         private _debugUpdateOpCount: PerfCounter;
         private _debugUpdateTime: PerfCounter;
+        private _debugRenderAABB: boolean;
+        private _debugRenderAABBDirty: boolean;
         private _AABBRenderPrim: WireFrame2D;
         private _ClusterRenderPrim: WireFrame2D;
         private _debugTextBackground: Rectangle2D;
