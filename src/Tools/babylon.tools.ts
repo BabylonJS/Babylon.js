@@ -740,8 +740,6 @@
             var offsetX = Math.max(0, width - newWidth) / 2;
             var offsetY = Math.max(0, height - newHeight) / 2;
 
-            renderContext.fillStyle = camera.getScene().clearColor.toHexString();
-            renderContext.fillRect(0, 0, width, height);
             renderContext.drawImage(engine.getRenderingCanvas(), offsetX, offsetY, newWidth, newHeight);
 
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
