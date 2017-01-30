@@ -715,10 +715,8 @@
                         let char = text[charNum];
                         let charWidth = charWidths[charNum];
 
-                        this.updateInstanceDataPart(d, offset);
-                        offset.x += charWidth;
-
-                        if (!this._isWhiteSpaceCharHoriz(char)) {
+                        if(!this._isWhiteSpaceCharHoriz(char) && !this._isWhiteSpaceCharVert(char)){ 
+                            this.updateInstanceDataPart(d, offset);
                             let ci = texture.getChar(char);
                             d.topLeftUV = ci.topLeftUV;
                             let suv = ci.bottomRightUV.subtract(ci.topLeftUV);
@@ -728,6 +726,8 @@
                             d.superSampleFactor = superSampleFactor;
                             ++d.curElement;
                         }
+
+                        offset.x += charWidth;
                         charNum++;
                     }
 
