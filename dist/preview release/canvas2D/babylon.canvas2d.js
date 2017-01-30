@@ -16432,6 +16432,9 @@ var BABYLON;
                 _this.applyCachedTexture(null, null);
             }
             _this.propertyChanged.add(function (e, st) {
+                if (e.propertyName !== "isVisible") {
+                    return;
+                }
                 var mesh = _this._worldSpaceNode;
                 if (mesh) {
                     mesh.isVisible = e.newValue;
