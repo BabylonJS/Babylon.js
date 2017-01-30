@@ -28,7 +28,7 @@ float fbm(vec2 n) {
 	return total;
 }
 
-float round(float number){
+float roundF(float number){
 	return sign(number)*floor(abs(number) + 0.5);
 }
 
@@ -40,14 +40,14 @@ void main(void)
 	float jointHPercentage = 0.05;
 	vec3 color = brickColor;
 	float yi = vUV.y / brickH;
-	float nyi = round(yi);
+	float nyi = roundF(yi);
 	float xi = vUV.x / brickW;
 
 	if (mod(floor(yi), 2.0) == 0.0){
 		xi = xi - 0.5;
 	}
 
-	float nxi = round(xi);
+	float nxi = roundF(xi);
 	vec2 brickvUV = vec2((xi - floor(xi)) / brickH, (yi - floor(yi)) /  brickW);
 
 	if (yi < nyi + jointHPercentage && yi > nyi - jointHPercentage){
