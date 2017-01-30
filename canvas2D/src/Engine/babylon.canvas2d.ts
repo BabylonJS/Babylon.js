@@ -1892,6 +1892,9 @@
             }
 
             this.propertyChanged.add((e, st) => {
+                if (e.propertyName !== "isVisible") {
+                    return;
+                }
                 let mesh = this._worldSpaceNode as AbstractMesh;
                 if (mesh) {
                     mesh.isVisible = e.newValue;
