@@ -13430,9 +13430,8 @@ var BABYLON;
                     for (var j = 0; j < numChars; j++) {
                         var char = text[charNum];
                         var charWidth = charWidths[charNum];
-                        this.updateInstanceDataPart(d, offset);
-                        offset.x += charWidth;
-                        if (!this._isWhiteSpaceCharHoriz(char)) {
+                        if (!this._isWhiteSpaceCharHoriz(char) && !this._isWhiteSpaceCharVert(char)) {
+                            this.updateInstanceDataPart(d, offset);
                             var ci = texture.getChar(char);
                             d.topLeftUV = ci.topLeftUV;
                             var suv = ci.bottomRightUV.subtract(ci.topLeftUV);
@@ -13442,6 +13441,7 @@ var BABYLON;
                             d.superSampleFactor = superSampleFactor;
                             ++d.curElement;
                         }
+                        offset.x += charWidth;
                         charNum++;
                     }
                     offset.x = offsetX;
