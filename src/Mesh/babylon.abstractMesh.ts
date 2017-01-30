@@ -329,7 +329,7 @@
             return 0;
         }
 
-        public getIndices(): number[] | Int32Array {
+        public getIndices(): IndicesArray {
             return null;
         }
 
