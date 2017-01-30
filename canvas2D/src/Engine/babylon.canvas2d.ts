@@ -1336,6 +1336,8 @@
                     if (scale) {
                         wsn.scaling = scale;
                     }
+                } else {
+                    throw new Error("Can't Track another Scene Node Type than AbstractMesh right now, call me lazy!");
                 }
             }
         }
@@ -1906,6 +1908,38 @@
                 this._worldSpaceNode.dispose();
                 this._worldSpaceNode = null;
             }
+        }
+
+        public get trackNode(): Node {
+            return this._trackNode;
+        }
+
+        public set trackNode(value: Node) {
+            if (this._trackNode === value) {
+                return;
+            }
+
+            this._trackNode = value;
+        }
+
+        public get trackNodeOffset(): Vector3 {
+            return this._trackNodeOffset;
+        }
+
+        public set trackNodeOffset(value: Vector3) {
+            if (!this._trackNodeOffset) {
+                this._trackNodeOffset = value.clone();
+            } else {
+                this._trackNodeOffset.copyFrom(value);
+            }
+        }
+
+        public get trackNodeBillboard(): boolean {
+            return this._trackNodeBillboard;
+        }
+
+        public set trackNodeBillboard(value: boolean) {
+            this._trackNodeBillboard = value;
         }
 
         private _customWorldSpaceNode: boolean;
