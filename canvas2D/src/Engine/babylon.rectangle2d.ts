@@ -28,6 +28,7 @@
                 }
                 this.effectsReady = true;
             }
+
             let canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
 
@@ -40,7 +41,6 @@
             var curAlphaMode = engine.getAlphaMode();
 
             if (this.effectFill) {
-
                 let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
                 let pid = context.groupInfoPartData[partIndex];
 
