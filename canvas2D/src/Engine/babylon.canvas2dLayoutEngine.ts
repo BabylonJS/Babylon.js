@@ -200,13 +200,12 @@
         rowSpan:number;
         columnSpan:number;
 
-        constructor(row:number, column:number, rowSpan:number, columnSpan:number){
+        constructor(row:number, column:number, rowSpan?:number, columnSpan?:number){
 
             this.row = row;
             this.column = column;
-
-            this.rowSpan = rowSpan === null ? 1 : rowSpan;
-            this.columnSpan = columnSpan === null ? 1 : columnSpan;
+            this.rowSpan = (rowSpan == null) ? 1 : rowSpan;
+            this.columnSpan = (columnSpan == null) ? 1 : columnSpan;
 
         }
 
@@ -407,8 +406,9 @@
                 for(let i = 0; i < cl; i++){
                     let child = children[rowNum][i];
                     if(child){
-                        if(maxHeight < child.actualHeight){
-                            maxHeight = child.actualHeight;
+                        let span = (<GridData>child.layoutData).rowSpan;
+                        if(maxHeight < child.actualHeight/span){
+                            maxHeight = child.actualHeight/span;
                         }
                     }
                 }
@@ -435,8 +435,9 @@
                 for(let i = 0; i < rl; i++){
                     let child = children[i][colNum];
                     if(child){
-                        if(maxWidth < child.actualWidth){
-                            maxWidth = child.actualWidth;
+                        let span = (<GridData>child.layoutData).columnSpan;
+                        if(maxWidth < child.actualWidth/span){
+                            maxWidth = child.actualWidth/span;
                         }
                     }
                 }
@@ -459,10 +460,12 @@
                 }
             }
 
+            let childrenThatSpan:Array<Prim2DBase>;
+
             //add prim.children to _children
             for(let child of prim.children){
                 
-                if(!child.layoutData || !child.parent){
+                if(!child.layoutData){
                     continue;
                 }
 
@@ -472,7 +475,21 @@
                     _children[gd.row] = [];
                 }
 
-                _children[gd.row][gd.column] = child;
+                if(gd.columnSpan == 1 && gd.rowSpan == 1){
+                    _children[gd.row][gd.column] = child;
+                }else{
+                    if(!childrenThatSpan){
+                        childrenThatSpan = [];
+                    }
+                    //when children span, we need to add them to _children whereever they span to so that 
+                    //_getMaxChildHeightInRow and _getMaxChildWidthInColumn will work correctly.
+                    childrenThatSpan.push(child);
+                    for(let i = gd.row; i < gd.row + gd.rowSpan; i++){
+                        for(let j = gd.column; j < gd.column + gd.columnSpan; j++){
+                            _children[i][j] = child;
+                        }
+                    }
+                }
 
             }
 
@@ -593,6 +610,26 @@
                 x += this._columnWidths[i-1];
                 this._columnLefts[i] = x;
 
+            }
+
+            //remove duplicate references to children that span
+            if(childrenThatSpan){
+                for(var i = 0; i < childrenThatSpan.length; i++){
+                    
+                    let child = childrenThatSpan[i];
+                    let gd = <GridData>child.layoutData;
+
+                    for(let i = gd.row; i < gd.row + gd.rowSpan; i++){
+                        for(let j = gd.column; j < gd.column + gd.columnSpan; j++){
+                            if(i == gd.row && j == gd.column){
+                                continue;
+                            }
+                            if(_children[i][j] == child){
+                                _children[i][j] = null;
+                            }
+                        }
+                    }
+                }
             }
 
         }
