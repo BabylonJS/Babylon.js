@@ -404,7 +404,7 @@
 
             if(children){
 
-                for(let i = 0; i > cl; i++){
+                for(let i = 0; i < cl; i++){
                     let child = children[rowNum][i];
                     if(child){
                         if(maxHeight < child.actualHeight){
@@ -432,7 +432,7 @@
 
             if(children){
 
-                for(let i = 0; i > rl; i++){
+                for(let i = 0; i < rl; i++){
                     let child = children[i][colNum];
                     if(child){
                         if(maxWidth < child.actualWidth){
