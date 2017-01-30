@@ -4411,6 +4411,9 @@ declare module BABYLON {
             padding?: string;
         });
         dispose(): boolean;
+        trackNode: Node;
+        trackNodeOffset: Vector3;
+        trackNodeBillboard: boolean;
         private _customWorldSpaceNode;
     }
     class ScreenSpaceCanvas2D extends Canvas2D {
