@@ -182,7 +182,11 @@
         }
 
         public set actualSize(value: Size) {
-            this._actualSize = value;
+            if (!this._actualSize) {
+                this._actualSize = value.clone();
+            } else {
+                this._actualSize.copyFrom(value);
+            }
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)
