@@ -2998,13 +2998,21 @@ var BABYLON;
     BABYLON.LayoutEngineBase = LayoutEngineBase;
     var CanvasLayoutEngine = CanvasLayoutEngine_1 = (function (_super) {
         __extends(CanvasLayoutEngine, _super);
-        /**
-         * The default Layout Engine, primitive are positioning into a Canvas, using their x/y coordinates.
-         * This layout must be used as a Singleton through the CanvasLayoutEngine.Singleton property.
-         */
         function CanvasLayoutEngine() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
+            _this.layoutDirtyOnPropertyChangedMask = BABYLON.Prim2DBase.sizeProperty.flagId | BABYLON.Prim2DBase.actualSizeProperty.flagId;
+            return _this;
         }
+        Object.defineProperty(CanvasLayoutEngine, "Singleton", {
+            get: function () {
+                if (!CanvasLayoutEngine_1._singleton) {
+                    CanvasLayoutEngine_1._singleton = new CanvasLayoutEngine_1();
+                }
+                return CanvasLayoutEngine_1._singleton;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // A very simple (no) layout computing...
         // The Canvas and its direct children gets the Canvas' size as Layout Area
         // Indirect children have their Layout Area to the actualSize (margin area) of their parent
@@ -3039,7 +3047,7 @@ var BABYLON;
         });
         return CanvasLayoutEngine;
     }(LayoutEngineBase));
-    CanvasLayoutEngine.Singleton = new CanvasLayoutEngine_1();
+    CanvasLayoutEngine._singleton = null;
     CanvasLayoutEngine = CanvasLayoutEngine_1 = __decorate([
         BABYLON.className("CanvasLayoutEngine", "BABYLON")
     ], CanvasLayoutEngine);
@@ -3049,7 +3057,7 @@ var BABYLON;
         function StackPanelLayoutEngine() {
             var _this = _super.call(this) || this;
             _this._isHorizontal = true;
-            _this.layoutDirtyOnPropertyChangedMask = BABYLON.Prim2DBase.sizeProperty.flagId;
+            _this.layoutDirtyOnPropertyChangedMask = BABYLON.Prim2DBase.sizeProperty.flagId | BABYLON.Prim2DBase.actualSizeProperty.flagId;
             return _this;
         }
         Object.defineProperty(StackPanelLayoutEngine, "Horizontal", {
@@ -4385,6 +4393,10 @@ var BABYLON;
                 var p = this._parent;
                 if (p != null && p.layoutEngine && (p.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
                     p._setLayoutDirty();
+                }
+                var that = this;
+                if (that.layoutEngine && (that.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
+                    this._setLayoutDirty();
                 }
             }
             // For type level compare, if there's a change of type it's a change of model, otherwise we issue an instance change
@@ -6149,7 +6161,12 @@ var BABYLON;
              * DO NOT INVOKE for internal purpose only
              */
             set: function (val) {
-                this._actualPosition = val;
+                if (!this._actualPosition) {
+                    this._actualPosition = val.clone();
+                }
+                else {
+                    this._actualPosition.copyFrom(val);
+                }
             },
             enumerable: true,
             configurable: true
@@ -6199,7 +6216,12 @@ var BABYLON;
                 if (!this._checkPositionChange()) {
                     return;
                 }
-                this._position = value;
+                if (!this._position) {
+                    this._position = value.clone();
+                }
+                else {
+                    this._position.copyFrom(value);
+                }
                 this._triggerPropertyChanged(Prim2DBase_1.actualPositionProperty, value);
             },
             enumerable: true,
@@ -6292,7 +6314,12 @@ var BABYLON;
             return this._size;
         };
         Prim2DBase.prototype.internalSetSize = function (value) {
-            this._size = value;
+            if (!this._size) {
+                this._size = (value != null) ? value.clone() : null;
+            }
+            else {
+                this._size.copyFrom(value);
+            }
         };
         Object.defineProperty(Prim2DBase.prototype, "width", {
             /**
@@ -6387,7 +6414,12 @@ var BABYLON;
                 if (this._actualSize.equals(value)) {
                     return;
                 }
-                this._actualSize = value;
+                if (!this._actualSize) {
+                    this._actualSize = value.clone();
+                }
+                else {
+                    this._actualSize.copyFrom(value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -6446,7 +6478,12 @@ var BABYLON;
                 if (this._minSize && value && this._minSize.equals(value)) {
                     return;
                 }
-                this._minSize = value;
+                if (!this._minSize) {
+                    this._minSize = value.clone();
+                }
+                else {
+                    this._minSize.copyFrom(value);
+                }
                 this._parentLayoutDirty();
             },
             enumerable: true,
@@ -6465,7 +6502,12 @@ var BABYLON;
                 if (this._maxSize && value && this._maxSize.equals(value)) {
                     return;
                 }
-                this._maxSize = value;
+                if (!this._maxSize) {
+                    this._maxSize = value.clone();
+                }
+                else {
+                    this._maxSize.copyFrom(value);
+                }
                 this._parentLayoutDirty();
             },
             enumerable: true,
@@ -6485,7 +6527,12 @@ var BABYLON;
                 return this._origin;
             },
             set: function (value) {
-                this._origin = value;
+                if (!this._origin) {
+                    this._origin = value.clone();
+                }
+                else {
+                    this._origin.copyFrom(value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -6765,7 +6812,7 @@ var BABYLON;
                 if (this.parent) {
                     this.parent._setFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
                 }
-                this._layoutArea = val;
+                this._layoutArea.copyFrom(val);
             },
             enumerable: true,
             configurable: true
@@ -6789,7 +6836,12 @@ var BABYLON;
                     this.parent._setFlags(BABYLON.SmartPropertyPrim.flagLayoutBoundingInfoDirty | BABYLON.SmartPropertyPrim.flagGlobalTransformDirty);
                 }
                 this._positioningDirty();
-                this._layoutAreaPos = val;
+                if (!this._layoutAreaPos) {
+                    this._layoutAreaPos = val.clone();
+                }
+                else {
+                    this._layoutAreaPos.copyFrom(val);
+                }
             },
             enumerable: true,
             configurable: true
@@ -9886,7 +9938,7 @@ var BABYLON;
              * BEWARE: if the Group is a RenderableGroup and its content is cache the texture will be resized each time the group is getting bigger. For performance reason the opposite won't be true: the texture won't shrink if the group does.
              */
             set: function (val) {
-                this._size = val;
+                this.internalSetSize(val);
             },
             enumerable: true,
             configurable: true
@@ -9923,7 +9975,12 @@ var BABYLON;
                 return actualSize;
             },
             set: function (value) {
-                this._actualSize = value;
+                if (!this._actualSize) {
+                    this._actualSize = value.clone();
+                }
+                else {
+                    this._actualSize.copyFrom(value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -10962,7 +11019,12 @@ var BABYLON;
                 return this.size;
             },
             set: function (value) {
-                this._actualSize = value;
+                if (!this._actualSize) {
+                    this._actualSize.clone();
+                }
+                else {
+                    this._actualSize.copyFrom(value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -11335,7 +11397,12 @@ var BABYLON;
                 return this.size;
             },
             set: function (value) {
-                this._actualSize = value;
+                if (!this._actualSize) {
+                    this._actualSize = value.clone();
+                }
+                else {
+                    this._actualSize.copyFrom(value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -12162,8 +12229,8 @@ var BABYLON;
             _this.texture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this.texture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             _this._useSize = false;
-            _this.spriteSize = (settings.spriteSize != null) ? settings.spriteSize.clone() : null;
-            _this.spriteLocation = (settings.spriteLocation != null) ? settings.spriteLocation.clone() : new BABYLON.Vector2(0, 0);
+            _this._spriteSize = (settings.spriteSize != null) ? settings.spriteSize.clone() : null;
+            _this._spriteLocation = (settings.spriteLocation != null) ? settings.spriteLocation.clone() : new BABYLON.Vector2(0, 0);
             if (settings.size != null) {
                 _this.size = settings.size;
             }
@@ -12246,7 +12313,12 @@ var BABYLON;
                 return this.size;
             },
             set: function (value) {
-                this._actualSize = value;
+                if (!this._actualSize) {
+                    this._actualSize = value.clone();
+                }
+                else {
+                    this._actualSize.copyFrom(value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -12256,7 +12328,12 @@ var BABYLON;
                 return this._spriteSize;
             },
             set: function (value) {
-                this._spriteSize = value;
+                if (!this._spriteSize) {
+                    this._spriteSize = value.clone();
+                }
+                else {
+                    this._spriteSize.copyFrom(value);
+                }
                 this._updateSpriteScaleFactor();
             },
             enumerable: true,
@@ -12267,7 +12344,12 @@ var BABYLON;
                 return this._spriteLocation;
             },
             set: function (value) {
-                this._spriteLocation = value;
+                if (!this._spriteLocation) {
+                    this._spriteLocation = value.clone();
+                }
+                else {
+                    this._spriteLocation.copyFrom(value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -13015,7 +13097,7 @@ var BABYLON;
                 _this._fontSuperSample = (settings.fontSuperSample != null && settings.fontSuperSample);
                 _this._fontSDF = (settings.fontSignedDistanceField != null && settings.fontSignedDistanceField);
             }
-            _this.defaultFontColor = (settings.defaultFontColor == null) ? new BABYLON.Color4(1, 1, 1, 1) : settings.defaultFontColor;
+            _this._defaultFontColor = (settings.defaultFontColor == null) ? new BABYLON.Color4(1, 1, 1, 1) : settings.defaultFontColor.clone();
             _this._tabulationSize = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             _this._textSize = null;
             _this.text = text;
@@ -13085,7 +13167,12 @@ var BABYLON;
                 return this._defaultFontColor;
             },
             set: function (value) {
-                this._defaultFontColor = value;
+                if (!this._defaultFontColor) {
+                    this._defaultFontColor = value.clone();
+                }
+                else {
+                    this._defaultFontColor.copyFrom(value);
+                }
             },
             enumerable: true,
             configurable: true
@@ -13116,7 +13203,7 @@ var BABYLON;
                 return this.textSize;
             },
             set: function (value) {
-                this._size = value;
+                this.internalSetSize(value);
             },
             enumerable: true,
             configurable: true
@@ -15740,6 +15827,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Canvas2D.prototype, "designSizeUseHorizeAxis", {
+            set: function (value) {
+                this._designUseHorizAxis = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Canvas2D.prototype, "overPrim", {
             /**
              * Return
@@ -16383,16 +16477,9 @@ var BABYLON;
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
-            if (settings.trackNode != null) {
-                _this._trackNode = settings.trackNode;
-                _this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : BABYLON.Vector3.Zero();
-                _this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
-            }
-            else {
-                _this._trackNode = null;
-                _this._trackNodeOffset = null;
-                _this._trackNodeBillboard = false;
-            }
+            _this._trackNode = (settings.trackNode != null) ? settings.trackNode : null;
+            _this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : BABYLON.Vector3.Zero();
+            _this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : true;
             var createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             _this._customWorldSpaceNode = !createWorldSpaceNode;
             var id = settings ? settings.id || null : null;

@@ -1052,6 +1052,10 @@
             return this._designUseHorizAxis;
         }
 
+        public set designSizeUseHorizeAxis(value: boolean) {
+            this._designUseHorizAxis = value;
+        }
+
         /**
          * Return 
          */
@@ -1840,15 +1844,9 @@
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
 
-            if (settings.trackNode != null) {
-                this._trackNode = settings.trackNode;
-                this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : Vector3.Zero();
-                this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
-            } else {
-                this._trackNode = null;
-                this._trackNodeOffset = null;
-                this._trackNodeBillboard = false;
-            }
+            this._trackNode          = (settings.trackNode != null)          ? settings.trackNode          : null;
+            this._trackNodeOffset    = (settings.trackNodeOffset != null)    ? settings.trackNodeOffset    : Vector3.Zero();
+            this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : true;
 
             let createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             this._customWorldSpaceNode = !createWorldSpaceNode;

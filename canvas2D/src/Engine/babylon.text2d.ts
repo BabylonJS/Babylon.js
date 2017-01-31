@@ -204,7 +204,11 @@
         }
 
         public set defaultFontColor(value: Color4) {
-            this._defaultFontColor = value;
+            if (!this._defaultFontColor) {
+                this._defaultFontColor = value.clone();
+            } else {
+                this._defaultFontColor.copyFrom(value);
+            }
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Text2D.textProperty = pi, false, true)
@@ -242,7 +246,7 @@
         }
 
         public set size(value: Size) {
-            this._size = value;
+            this.internalSetSize(value);
         }
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Text2D.fontSuperSampleProperty = pi, false, false)
@@ -456,7 +460,7 @@
                 this._fontSuperSample= (settings.fontSuperSample!=null && settings.fontSuperSample);
                 this._fontSDF        = (settings.fontSignedDistanceField!=null && settings.fontSignedDistanceField);
             }
-            this.defaultFontColor    = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
+            this._defaultFontColor   = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor.clone();
             this._tabulationSize     = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             this._textSize           = null;
             this.text                = text;

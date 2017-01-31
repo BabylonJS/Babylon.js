@@ -884,7 +884,9 @@ declare module BABYLON {
         private _isLocked;
     }
     class CanvasLayoutEngine extends LayoutEngineBase {
-        static Singleton: CanvasLayoutEngine;
+        private static _singleton;
+        static readonly Singleton: CanvasLayoutEngine;
+        constructor();
         updateLayout(prim: Prim2DBase): void;
         private _doUpdate(prim);
         readonly isChildPositionAllowed: boolean;
@@ -4194,6 +4196,7 @@ declare module BABYLON {
         readonly fitRenderingDevice: boolean;
         readonly designSize: Size;
         readonly designSizeUseHorizAxis: boolean;
+        designSizeUseHorizeAxis: boolean;
         /**
          * Return
          */

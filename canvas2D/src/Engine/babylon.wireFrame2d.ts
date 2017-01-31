@@ -245,7 +245,11 @@
         }
 
         public set actualSize(value: Size) {
-            this._actualSize = value;
+            if (!this._actualSize) {
+                this._actualSize.clone();
+            } else {
+                this._actualSize.copyFrom(value);
+            }
         }
 
         protected updateLevelBoundingInfo(): boolean {
