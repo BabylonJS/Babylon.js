@@ -16383,16 +16383,9 @@ var BABYLON;
             //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
-            if (settings.trackNode != null) {
-                _this._trackNode = settings.trackNode;
-                _this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : BABYLON.Vector3.Zero();
-                _this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
-            }
-            else {
-                _this._trackNode = null;
-                _this._trackNodeOffset = null;
-                _this._trackNodeBillboard = false;
-            }
+            _this._trackNode = (settings.trackNode != null) ? settings.trackNode : null;
+            _this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : BABYLON.Vector3.Zero();
+            _this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : true;
             var createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             _this._customWorldSpaceNode = !createWorldSpaceNode;
             var id = settings ? settings.id || null : null;
