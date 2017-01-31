@@ -1052,6 +1052,10 @@
             return this._designUseHorizAxis;
         }
 
+        public set designSizeUseHorizeAxis(value: boolean) {
+            this._designUseHorizAxis = value;
+        }
+
         /**
          * Return 
          */

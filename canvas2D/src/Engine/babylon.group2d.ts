@@ -253,7 +253,7 @@
          * BEWARE: if the Group is a RenderableGroup and its content is cache the texture will be resized each time the group is getting bigger. For performance reason the opposite won't be true: the texture won't shrink if the group does.
          */
         public set size(val: Size) {
-            this._size = val;
+            this.internalSetSize(val);
         }
 
         public get viewportSize(): ISize {
@@ -295,7 +295,11 @@
         }
 
         public set actualSize(value: Size) {
-            this._actualSize = value;
+            if (!this._actualSize) {
+                this._actualSize = value.clone();
+            } else {
+                this._actualSize.copyFrom(value);
+            }
         }
 
 

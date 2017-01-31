@@ -98,7 +98,7 @@
     export class StackPanelLayoutEngine extends LayoutEngineBase {
         constructor() {
             super();
-            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId;
+            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId | Prim2DBase.actualSizeProperty.flagId;
         }
 
         public static get Horizontal(): StackPanelLayoutEngine {
