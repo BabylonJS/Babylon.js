@@ -157,7 +157,11 @@
         }
 
         public set actualSize(value: Size) {
-            this._actualSize = value;
+            if (!this._actualSize) {
+                this._actualSize = value.clone();
+            } else {
+                this._actualSize.copyFrom(value);
+            }
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteSizeProperty = pi)
@@ -169,7 +173,11 @@
         }
 
         public set spriteSize(value: Size) {
-            this._spriteSize = value;
+            if (!this._spriteSize) {
+                this._spriteSize = value.clone();
+            } else {
+                this._spriteSize.copyFrom(value);
+            }
             this._updateSpriteScaleFactor();
         }
 
@@ -182,7 +190,11 @@
         }
 
         public set spriteLocation(value: Vector2) {
-            this._spriteLocation = value;
+            if (!this._spriteLocation) {
+                this._spriteLocation = value.clone();
+            } else {
+                this._spriteLocation.copyFrom(value);
+            }
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Sprite2D.spriteFrameProperty = pi)
@@ -364,8 +376,8 @@
             this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._useSize = false;
-            this.spriteSize = (settings.spriteSize!=null) ? settings.spriteSize.clone() : null;
-            this.spriteLocation = (settings.spriteLocation!=null) ? settings.spriteLocation.clone() : new Vector2(0, 0);
+            this._spriteSize = (settings.spriteSize!=null) ? settings.spriteSize.clone() : null;
+            this._spriteLocation = (settings.spriteLocation!=null) ? settings.spriteLocation.clone() : new Vector2(0, 0);
             if (settings.size != null) {
                 this.size = settings.size;
             }
