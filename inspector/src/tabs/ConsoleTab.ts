@@ -88,12 +88,7 @@ module INSPECTOR {
             callerLine.textContent = caller;
 
             let line = Helpers.CreateDiv(type, this._consolePanelContent);
-            if (typeof message === "string") {
-                line.textContent += message ; 
-            } else {
-                line.textContent += JSON.stringify(message) ;
-                line.classList.add('object')
-            }
+            line.textContent += message ; 
         }
 
         private _addConsoleLog(...params : any[]) {
