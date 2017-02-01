@@ -94,41 +94,37 @@ var Test = (function () {
      * Create the canvas2D
      */
     Test.prototype._createCanvas = function () {
-        var canvas = new BABYLON.ScreenSpaceCanvas2D(this.scene, {
-            id: "Hello world SC",
-            size: new BABYLON.Size(300, 100),
-            backgroundFill: "#4040408F",
-            backgroundRoundRadius: 50,
-            children: [
-                new BABYLON.Text2D("Hello World!", {
-                    id: "text",
-                    marginAlignment: "h: center, v:center",
-                    fontName: "20pt Arial",
-                })
-            ]
-        });
-        var infoCanvas = new BABYLON.ScreenSpaceCanvas2D(this.scene, { id: "PINK CUBE SC", size: new BABYLON.Size(500, 500) });
-        var text2 = new BABYLON.Text2D("UnbindTime", { parent: infoCanvas, id: "Text", marginAlignment: "h: left, v: bottom", fontName: "10pt Arial" });
-        canvas = new BABYLON.WorldSpaceCanvas2D(this.scene, new BABYLON.Size(150, 150), {
-            id: "WorldSpaceCanvas",
-            worldPosition: new BABYLON.Vector3(0, 0, 0),
-            worldRotation: BABYLON.Quaternion.RotationYawPitchRoll(Math.PI / 4, Math.PI / 4, 0),
-            enableInteraction: true,
-            backgroundFill: "#C0C0C040",
-            backgroundRoundRadius: 20,
-            children: [
-                new BABYLON.Text2D("World Space Canvas", { fontName: "8pt Arial", marginAlignment: "h: center, v: bottom", fontSuperSample: true })
-            ]
-        });
-        var rect = new BABYLON.Rectangle2D({ parent: canvas, x: 45, y: 45, width: 30, height: 30, fill: null, border: BABYLON.Canvas2D.GetGradientColorBrush(new BABYLON.Color4(0.9, 0.3, 0.9, 1), new BABYLON.Color4(1.0, 1.0, 1.0, 1)), borderThickness: 2 });
-        var buttonRect = new BABYLON.Rectangle2D({ parent: canvas, id: "button", x: 12, y: 12, width: 50, height: 15, fill: "#40C040FF", roundRadius: 2, children: [new BABYLON.Text2D("Click Me!", { fontName: "8pt Arial", marginAlignment: "h: center, v: center", fontSuperSample: true })] });
-        var button2Rect = new BABYLON.Rectangle2D({ parent: canvas, id: "button2", x: 70, y: 12, width: 40, height: 15, fill: "#4040C0FF", roundRadius: 2, isVisible: false, children: [new BABYLON.Text2D("Great!", { fontName: "8pt Arial", marginAlignment: "h: center, v: center", fontSuperSample: true })] });
-        ;
-        buttonRect.pointerEventObservable.add(function (d, s) {
-            button2Rect.levelVisible = !button2Rect.levelVisible;
-        }, BABYLON.PrimitivePointerInfo.PointerUp);
-        var insideRect = new BABYLON.Rectangle2D({ parent: rect, width: 10, height: 10, marginAlignment: "h: center, v: center", fill: "#0040F0FF" });
-        insideRect.roundRadius = 2;
+        // object hierarchy  g1 -> g2 -> rect
+            
+            // when cachingStrategy is 1 or 2 - everything is rendered
+            // when it is 3 - only direct children of g1 are rendered
+            var canvas = new BABYLON.ScreenSpaceCanvas2D(this.scene, 
+                { id: "ScreenCanvas", 
+                cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_DONTCACHE });           // 1
+                // cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS });      // 2 
+                // cachingStrategy: BABYLON.Canvas2D.CACHESTRATEGY_ALLGROUPS });           // 3
+            
+            canvas.createCanvasProfileInfoCanvas();
+
+            // parent group            
+            var g1 = new BABYLON.Group2D({parent: canvas, id: "G1",
+                x: 50, y: 50, size: new BABYLON.Size(60, 60)});
+
+            // just to see it    
+            let frame1 = new BABYLON.Rectangle2D({parent: g1, 
+                         x : 0, y: 0,  size: g1.size, border: "#FF0000FF" });
+            
+            // child group
+            let g2 = new BABYLON.Group2D({parent: g1, id: "G2",  
+                        x: 10, y: 10, size: new BABYLON.Size(40, 40)});
+
+            // just to see it
+            let frame2 = new BABYLON.Rectangle2D({parent: g2, x : 0, y: 0, size: g2.size, border: "#0000FFFF" }); 
+            
+            let rect =   new BABYLON.Rectangle2D({parent: g2, x : 10, y: 10, size: new BABYLON.Size(20, 20), 
+                                fill: "#00FF00FF" }) ;              
+                      
+            return canvas;
     };
     return Test;
 }());
