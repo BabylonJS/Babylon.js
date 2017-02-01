@@ -1779,7 +1779,7 @@ declare module BABYLON {
          * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
          * @param dstArea the new size of the content
          */
-        computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean): void;
+        computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, contentScale: Vector2, dstOffset: Vector4, dstArea: Size, computeLayoutArea?: boolean): void;
         /**
          * Compute an area and its position considering this thickness properties based on a given source area
          * @param sourceArea the source area
