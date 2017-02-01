@@ -49,7 +49,18 @@
      * This layout must be used as a Singleton through the CanvasLayoutEngine.Singleton property.
      */
     export class CanvasLayoutEngine extends LayoutEngineBase {
-        public static Singleton: CanvasLayoutEngine = new CanvasLayoutEngine();
+        private  static _singleton: CanvasLayoutEngine = null;
+        public static get Singleton(): CanvasLayoutEngine {
+            if (!CanvasLayoutEngine._singleton) {
+                CanvasLayoutEngine._singleton = new CanvasLayoutEngine();
+            }
+            return CanvasLayoutEngine._singleton;
+        } 
+
+        constructor() {
+            super();
+            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId | Prim2DBase.actualSizeProperty.flagId;
+        }
 
         // A very simple (no) layout computing...
         // The Canvas and its direct children gets the Canvas' size as Layout Area
@@ -58,7 +69,6 @@
 
             // If this prim is layoutDiry we update  its layoutArea and also the one of its direct children
             if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
-
                 for (let child of prim.children) {
                     this._doUpdate(child);
                 }
@@ -98,7 +108,7 @@
     export class StackPanelLayoutEngine extends LayoutEngineBase {
         constructor() {
             super();
-            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId;
+            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId | Prim2DBase.actualSizeProperty.flagId;
         }
 
         public static get Horizontal(): StackPanelLayoutEngine {

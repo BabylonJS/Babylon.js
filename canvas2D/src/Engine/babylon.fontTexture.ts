@@ -712,6 +712,8 @@
         // More info here: https://videlais.com/2014/03/16/the-many-and-varied-problems-with-measuring-font-height-for-html5-canvas/
         private getFontHeight(font: string): {height: number, offset: number} {
             var fontDraw = document.createElement("canvas");
+            fontDraw.width = 600;
+            fontDraw.height = 600;
             var ctx = fontDraw.getContext('2d');
             ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);
             ctx.textBaseline = 'top';
