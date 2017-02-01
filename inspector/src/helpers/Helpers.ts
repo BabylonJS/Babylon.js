@@ -128,7 +128,7 @@ module INSPECTOR {
             div.style.display = 'none';
             div.appendChild(clone);
             let value = Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
-            div.remove();
+            div.parentNode.removeChild(div);
             return value;
         }
         
