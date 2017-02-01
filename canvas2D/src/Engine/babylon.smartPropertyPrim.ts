@@ -1151,6 +1151,11 @@
                 if (p != null && p.layoutEngine && (p.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
                     p._setLayoutDirty();
                 }
+
+                let that = this as Prim2DBase;
+                if (that.layoutEngine && (that.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
+                    (<any>this)._setLayoutDirty();
+                }
             }
 
             // For type level compare, if there's a change of type it's a change of model, otherwise we issue an instance change

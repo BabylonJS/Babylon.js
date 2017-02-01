@@ -38,7 +38,7 @@
                 engine.setDepthFunctionToLessOrEqual();
             }
 
-            let curAlphaMode = engine.getAlphaMode();
+            var curAlphaMode = engine.getAlphaMode();
 
             if (this.effectFill) {
                 let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());

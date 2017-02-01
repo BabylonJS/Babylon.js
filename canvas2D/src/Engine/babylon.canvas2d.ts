@@ -1052,6 +1052,10 @@
             return this._designUseHorizAxis;
         }
 
+        public set designSizeUseHorizeAxis(value: boolean) {
+            this._designUseHorizAxis = value;
+        }
+
         /**
          * Return 
          */
@@ -1336,6 +1340,8 @@
                     if (scale) {
                         wsn.scaling = scale;
                     }
+                } else {
+                    throw new Error("Can't Track another Scene Node Type than AbstractMesh right now, call me lazy!");
                 }
             }
         }
@@ -1838,15 +1844,9 @@
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
 
-            if (settings.trackNode != null) {
-                this._trackNode = settings.trackNode;
-                this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : Vector3.Zero();
-                this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
-            } else {
-                this._trackNode = null;
-                this._trackNodeOffset = null;
-                this._trackNodeBillboard = false;
-            }
+            this._trackNode          = (settings.trackNode != null)          ? settings.trackNode          : null;
+            this._trackNodeOffset    = (settings.trackNodeOffset != null)    ? settings.trackNodeOffset    : Vector3.Zero();
+            this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : true;
 
             let createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             this._customWorldSpaceNode = !createWorldSpaceNode;
@@ -1890,6 +1890,9 @@
             }
 
             this.propertyChanged.add((e, st) => {
+                if (e.propertyName !== "isVisible") {
+                    return;
+                }
                 let mesh = this._worldSpaceNode as AbstractMesh;
                 if (mesh) {
                     mesh.isVisible = e.newValue;
@@ -1906,6 +1909,38 @@
                 this._worldSpaceNode.dispose();
                 this._worldSpaceNode = null;
             }
+        }
+
+        public get trackNode(): Node {
+            return this._trackNode;
+        }
+
+        public set trackNode(value: Node) {
+            if (this._trackNode === value) {
+                return;
+            }
+
+            this._trackNode = value;
+        }
+
+        public get trackNodeOffset(): Vector3 {
+            return this._trackNodeOffset;
+        }
+
+        public set trackNodeOffset(value: Vector3) {
+            if (!this._trackNodeOffset) {
+                this._trackNodeOffset = value.clone();
+            } else {
+                this._trackNodeOffset.copyFrom(value);
+            }
+        }
+
+        public get trackNodeBillboard(): boolean {
+            return this._trackNodeBillboard;
+        }
+
+        public set trackNodeBillboard(value: boolean) {
+            this._trackNodeBillboard = value;
         }
 
         private _customWorldSpaceNode: boolean;

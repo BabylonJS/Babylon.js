@@ -28,6 +28,7 @@
                 }
                 this.effectsReady = true;
             }
+
             let canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
 
@@ -40,7 +41,6 @@
             var curAlphaMode = engine.getAlphaMode();
 
             if (this.effectFill) {
-
                 let partIndex = instanceInfo.partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
                 let pid = context.groupInfoPartData[partIndex];
 
@@ -182,7 +182,11 @@
         }
 
         public set actualSize(value: Size) {
-            this._actualSize = value;
+            if (!this._actualSize) {
+                this._actualSize = value.clone();
+            } else {
+                this._actualSize.copyFrom(value);
+            }
         }
 
         @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)

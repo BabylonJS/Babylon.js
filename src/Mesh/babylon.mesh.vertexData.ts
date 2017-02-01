@@ -1,11 +1,14 @@
 ﻿module BABYLON {
-    export interface IGetSetVerticesData {
+    export type IndicesArray = number[] | Int32Array | Uint32Array | Uint16Array;
+
+    export interface IGetSetVerticesData
+    {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Int32Array | Float32Array;
-        getIndices(copyWhenShared?: boolean): number[] | Int32Array;
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array;
+        getIndices(copyWhenShared?: boolean): IndicesArray;
         setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: number[] | Int32Array): void;
+        setIndices(indices: IndicesArray): void;
     }
 
     export class VertexData {
@@ -22,7 +25,7 @@
         public matricesWeights: number[] | Float32Array;
         public matricesIndicesExtra: number[] | Float32Array;
         public matricesWeightsExtra: number[] | Float32Array;
-        public indices: number[] | Int32Array;
+        public indices: IndicesArray;
 
         public set(data: number[] | Float32Array, kind: string) {
             switch (kind) {
@@ -238,7 +241,7 @@
 
                 var offset = this.positions ? this.positions.length / 3 : 0;
                 for (var index = 0; index < other.indices.length; index++) {
-                    //TODO check type - if Int32Array!
+                    //TODO check type - if Int32Array | Uint32Array | Uint16Array!
                     (<number[]>this.indices).push(other.indices[index] + offset);
                 }
             }

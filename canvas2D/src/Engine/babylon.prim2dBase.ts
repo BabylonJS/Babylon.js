@@ -1866,7 +1866,11 @@
          * DO NOT INVOKE for internal purpose only
          */
         public set actualPosition(val: Vector2) {
-            this._actualPosition = val;
+            if (!this._actualPosition) {
+                this._actualPosition = val.clone();
+            } else {
+                this._actualPosition.copyFrom(val);
+            }
         }
 
         /**
@@ -1913,7 +1917,11 @@
             if (!this._checkPositionChange()) {
                 return;
             }
-            this._position = value;
+            if (!this._position) {
+                this._position = value.clone();
+            } else {
+                this._position.copyFrom(value);
+            }
             this._triggerPropertyChanged(Prim2DBase.actualPositionProperty, value);
         }
 
@@ -2013,7 +2021,11 @@
         }
 
         protected internalSetSize(value: Size) {
-            this._size = value;
+            if (!this._size) {
+                this._size = (value != null) ? value.clone() : null;
+            } else {
+                this._size.copyFrom(value);
+            }
         }
 
         /**
@@ -2115,7 +2127,11 @@
                 return;
             }
 
-            this._actualSize = value;
+            if (!this._actualSize) {
+                this._actualSize = value.clone();
+            } else {
+                this._actualSize.copyFrom(value);
+            }
         }
 
         /**
@@ -2168,7 +2184,11 @@
                 return;
             }
 
-            this._minSize = value;
+            if (!this._minSize) {
+                this._minSize = value.clone();
+            } else {
+                this._minSize.copyFrom(value);
+            }
             this._parentLayoutDirty();
         }
 
@@ -2186,7 +2206,11 @@
                 return;
             }
 
-            this._maxSize = value;
+            if (!this._maxSize) {
+                this._maxSize = value.clone();
+            } else {
+                this._maxSize.copyFrom(value);
+            }
             this._parentLayoutDirty();
         }
 
@@ -2205,7 +2229,11 @@
         }
 
         public set origin(value: Vector2) {
-            this._origin = value;
+            if (!this._origin) {
+                this._origin = value.clone();
+            } else {
+                this._origin.copyFrom(value);
+            }
         }
 
         @dynamicLevelProperty(SmartPropertyPrim.SMARTPROPERTYPRIM_PROPCOUNT + 15, pi => Prim2DBase.levelVisibleProperty = pi)
@@ -2482,7 +2510,7 @@
             if (this.parent) {
                 this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty | SmartPropertyPrim.flagGlobalTransformDirty);
             }
-            this._layoutArea = val;
+            this._layoutArea.copyFrom(val);
         }
 
         /**
@@ -2504,7 +2532,11 @@
                 this.parent._setFlags(SmartPropertyPrim.flagLayoutBoundingInfoDirty | SmartPropertyPrim.flagGlobalTransformDirty);
             }
             this._positioningDirty();
-            this._layoutAreaPos = val;
+            if (!this._layoutAreaPos) {
+                this._layoutAreaPos = val.clone();
+            } else {
+                this._layoutAreaPos.copyFrom(val);
+            }
         }
 
         /**
