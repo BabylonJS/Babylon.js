@@ -340,6 +340,8 @@
                         if (e.pickInfo.hit && e.pickInfo.pickedMesh === this._worldSpaceNode && this.worldSpaceToNodeLocal) {
                             let localPos = this.worldSpaceToNodeLocal(e.pickInfo.pickedPoint);
                             this._handlePointerEventForInteraction(e, localPos, s);
+                        } else if (this._actualIntersectionList && this._actualIntersectionList.length > 0) {
+                            this._handlePointerEventForInteraction(e, null, s);
                         }
                     });
                 }
@@ -468,15 +470,19 @@
             }
 
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            if (!this._updatePointerInfo(eventData, localPosition)) {
-                return;
+            if (localPosition) {
+                if (!this._updatePointerInfo(eventData, localPosition)) {
+                    return;
+                }
+            } else {
+                this._primPointerInfo.canvasPointerPos = null;
             }
 
             let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
+            this._updateIntersectionList(localPosition ? this._primPointerInfo.canvasPointerPos : null, capturedPrim !== null, true);
 
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus(true);
@@ -572,35 +578,38 @@
                 return;
             }
 
-            // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
-            if (!this._globalTransform) {
-                this.updateCachedStates(true);
-            }
-
             let ii = Canvas2D._interInfo;
-            ii.pickPosition.x = mouseLocalPos.x;
-            ii.pickPosition.y = mouseLocalPos.y;
-            ii.findFirstOnly = false;
+            let outCase = mouseLocalPos == null;
+            if (!outCase) {
+                // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
+                if (!this._globalTransform) {
+                    this.updateCachedStates(true);
+                }
 
-            // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
-            if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
-                // Reset intersection info as we don't hit anything
-                ii.intersectedPrimitives = new Array<PrimitiveIntersectedInfo>();
-                ii.topMostIntersectedPrimitive = null;
-            } else {
-                // The pointer is inside the Canvas, do an intersection test
-                this.intersect(ii);
+                ii.pickPosition.x = mouseLocalPos.x;
+                ii.pickPosition.y = mouseLocalPos.y;
+                ii.findFirstOnly = false;
 
-                // Sort primitives to get them from top to bottom
-                ii.intersectedPrimitives = ii.intersectedPrimitives.sort((a, b) => a.prim.actualZOffset - b.prim.actualZOffset);
+                // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
+                if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
+                    // Reset intersection info as we don't hit anything
+                    ii.intersectedPrimitives = new Array<PrimitiveIntersectedInfo>();
+                    ii.topMostIntersectedPrimitive = null;
+                } else {
+                    // The pointer is inside the Canvas, do an intersection test
+                    this.intersect(ii);
+
+                    // Sort primitives to get them from top to bottom
+                    ii.intersectedPrimitives = ii.intersectedPrimitives.sort((a, b) => a.prim.actualZOffset - b.prim.actualZOffset);
+                }
             }
 
             {
                 // Update prev/actual intersection info, fire "overPrim" property change if needed
                 this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList = ii.intersectedPrimitives;
-                this._previousOverPrimitive = this._actualOverPrimitive;
-                this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+                this._actualIntersectionList   = outCase ? new Array<PrimitiveIntersectedInfo>() : ii.intersectedPrimitives;
+                this._previousOverPrimitive    = this._actualOverPrimitive;
+                this._actualOverPrimitive      = outCase ? null : ii.topMostIntersectedPrimitive;
 
                 let prev = (this._previousOverPrimitive != null) ? this._previousOverPrimitive.prim : null;
                 let actual = (this._actualOverPrimitive != null) ? this._actualOverPrimitive.prim : null;
