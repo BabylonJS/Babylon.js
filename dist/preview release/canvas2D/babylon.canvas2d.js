@@ -15195,6 +15195,9 @@ var BABYLON;
                             var localPos = _this.worldSpaceToNodeLocal(e.pickInfo.pickedPoint);
                             _this._handlePointerEventForInteraction(e, localPos, s);
                         }
+                        else if (_this._actualIntersectionList && _this._actualIntersectionList.length > 0) {
+                            _this._handlePointerEventForInteraction(e, null, s);
+                        }
                     });
                 }
                 else {
@@ -15262,13 +15265,18 @@ var BABYLON;
                 return;
             }
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            if (!this._updatePointerInfo(eventData, localPosition)) {
-                return;
+            if (localPosition) {
+                if (!this._updatePointerInfo(eventData, localPosition)) {
+                    return;
+                }
+            }
+            else {
+                this._primPointerInfo.canvasPointerPos = null;
             }
             var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
+            this._updateIntersectionList(localPosition ? this._primPointerInfo.canvasPointerPos : null, capturedPrim !== null, true);
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus(true);
             // Check if we have nothing to raise
@@ -15353,32 +15361,35 @@ var BABYLON;
             if (!force && (this.scene.getRenderId() === this._intersectionRenderId)) {
                 return;
             }
-            // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
-            if (!this._globalTransform) {
-                this.updateCachedStates(true);
-            }
             var ii = Canvas2D_1._interInfo;
-            ii.pickPosition.x = mouseLocalPos.x;
-            ii.pickPosition.y = mouseLocalPos.y;
-            ii.findFirstOnly = false;
-            // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
-            if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
-                // Reset intersection info as we don't hit anything
-                ii.intersectedPrimitives = new Array();
-                ii.topMostIntersectedPrimitive = null;
-            }
-            else {
-                // The pointer is inside the Canvas, do an intersection test
-                this.intersect(ii);
-                // Sort primitives to get them from top to bottom
-                ii.intersectedPrimitives = ii.intersectedPrimitives.sort(function (a, b) { return a.prim.actualZOffset - b.prim.actualZOffset; });
+            var outCase = mouseLocalPos == null;
+            if (!outCase) {
+                // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
+                if (!this._globalTransform) {
+                    this.updateCachedStates(true);
+                }
+                ii.pickPosition.x = mouseLocalPos.x;
+                ii.pickPosition.y = mouseLocalPos.y;
+                ii.findFirstOnly = false;
+                // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
+                if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
+                    // Reset intersection info as we don't hit anything
+                    ii.intersectedPrimitives = new Array();
+                    ii.topMostIntersectedPrimitive = null;
+                }
+                else {
+                    // The pointer is inside the Canvas, do an intersection test
+                    this.intersect(ii);
+                    // Sort primitives to get them from top to bottom
+                    ii.intersectedPrimitives = ii.intersectedPrimitives.sort(function (a, b) { return a.prim.actualZOffset - b.prim.actualZOffset; });
+                }
             }
             {
                 // Update prev/actual intersection info, fire "overPrim" property change if needed
                 this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList = ii.intersectedPrimitives;
+                this._actualIntersectionList = outCase ? new Array() : ii.intersectedPrimitives;
                 this._previousOverPrimitive = this._actualOverPrimitive;
-                this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+                this._actualOverPrimitive = outCase ? null : ii.topMostIntersectedPrimitive;
                 var prev = (this._previousOverPrimitive != null) ? this._previousOverPrimitive.prim : null;
                 var actual = (this._actualOverPrimitive != null) ? this._actualOverPrimitive.prim : null;
                 if (prev !== actual) {
