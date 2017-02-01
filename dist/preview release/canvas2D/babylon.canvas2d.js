@@ -3110,7 +3110,7 @@ var BABYLON;
                     }
                     var layoutArea = void 0;
                     if (child._hasMargin) {
-                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine_1.dstOffset, StackPanelLayoutEngine_1.dstArea, true);
+                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, StackPanelLayoutEngine_1.dstOffset, StackPanelLayoutEngine_1.dstArea, true);
                         layoutArea = StackPanelLayoutEngine_1.dstArea.clone();
                         child.layoutArea = layoutArea;
                     }
@@ -5583,7 +5583,7 @@ var BABYLON;
          * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
          * @param dstArea the new size of the content
          */
-        PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea, computeLayoutArea) {
+        PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, contentScale, dstOffset, dstArea, computeLayoutArea) {
             if (computeLayoutArea === void 0) { computeLayoutArea = false; }
             // Fetch some data
             var topType = this._getType(0, true);
@@ -5592,6 +5592,8 @@ var BABYLON;
             var bottomType = this._getType(3, true);
             var hasWidth = contentSize && (contentSize.width != null);
             var hasHeight = contentSize && (contentSize.height != null);
+            var sx = contentScale.x;
+            var sy = contentScale.y;
             var width = hasWidth ? contentSize.width : 0;
             var height = hasHeight ? contentSize.height : 0;
             var isTopAuto = topType === PrimitiveThickness_1.Auto;
@@ -5612,17 +5614,17 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.width += this.leftPixels;
                         }
-                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
+                        dstOffset.z = sourceArea.width - (dstOffset.x + (width * sx));
                         break;
                     }
                 case PrimitiveAlignment.AlignRight:
                     {
                         if (isRightAuto) {
-                            dstOffset.x = Math.round(sourceArea.width - width);
+                            dstOffset.x = Math.round(sourceArea.width - (width * sx));
                         }
                         else {
                             this._computePixels(2, sourceArea, true);
-                            dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
+                            dstOffset.x = Math.round(sourceArea.width - ((width * sx) + this.rightPixels));
                         }
                         dstArea.width = width;
                         if (computeLayoutArea) {
@@ -5658,9 +5660,9 @@ var BABYLON;
                             this._computePixels(2, sourceArea, true);
                         }
                         var offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
-                        dstOffset.x = Math.round(((sourceArea.width - width) / 2) + offset);
+                        dstOffset.x = Math.round(((sourceArea.width - (width * sx)) / 2) + offset);
                         dstArea.width = width;
-                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
+                        dstOffset.z = sourceArea.width - (dstOffset.x + (width * sx));
                         break;
                     }
             }
@@ -5668,11 +5670,11 @@ var BABYLON;
                 case PrimitiveAlignment.AlignTop:
                     {
                         if (isTopAuto) {
-                            dstOffset.y = sourceArea.height - height;
+                            dstOffset.y = sourceArea.height - (height * sy);
                         }
                         else {
                             this._computePixels(0, sourceArea, true);
-                            dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
+                            dstOffset.y = Math.round(sourceArea.height - ((height * sy) + this.topPixels));
                         }
                         dstArea.height = height;
                         if (computeLayoutArea) {
@@ -5694,7 +5696,7 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.height += this.bottomPixels;
                         }
-                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
+                        dstOffset.w = sourceArea.height - (dstOffset.y + (height * sy));
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -5724,9 +5726,9 @@ var BABYLON;
                             this._computePixels(3, sourceArea, true);
                         }
                         var offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
-                        dstOffset.y = Math.round(((sourceArea.height - height) / 2) + offset);
+                        dstOffset.y = Math.round(((sourceArea.height - (height * sy)) / 2) + offset);
                         dstArea.height = height;
-                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
+                        dstOffset.w = sourceArea.height - (dstOffset.y + (height * sy));
                         break;
                     }
             }
@@ -7810,15 +7812,15 @@ var BABYLON;
             }
             // Apply margin
             if (this._hasMargin) {
-                this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase_1._size);
-                this.actualSize = Prim2DBase_1._size.clone();
+                var contentSize = this.size || this.actualSize;
+                this.margin.computeWithAlignment(this.layoutArea, contentSize, this.marginAlignment, this.actualScale, this._marginOffset, Prim2DBase_1._size);
             }
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so we resize the primitive itself
                 if (isSizeAuto) {
                     // Changing the padding has resize the prim, which forces us to recompute margin again
                     if (this._hasMargin) {
-                        this.margin.computeWithAlignment(this.layoutArea, Prim2DBase_1._size, this.marginAlignment, this._marginOffset, Prim2DBase_1._size);
+                        this.margin.computeWithAlignment(this.layoutArea, Prim2DBase_1._size, this.marginAlignment, this.actualScale, this._marginOffset, Prim2DBase_1._size);
                     }
                 }
                 else {
