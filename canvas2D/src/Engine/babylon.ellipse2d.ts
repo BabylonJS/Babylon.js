@@ -362,10 +362,10 @@
                 let ib = new Float32Array(triCount * 3);
                 for (let i = 0; i < triCount; i++) {
                     ib[i * 3 + 0] = 0;
-                    ib[i * 3 + 2] = i + 1;
-                    ib[i * 3 + 1] = i + 2;
+                    ib[i * 3 + 2] = i + 2;
+                    ib[i * 3 + 1] = i + 1;
                 }
-                ib[triCount * 3 - 2] = 1;
+                ib[triCount * 3 - 1] = 1;
 
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = triCount * 3;
