@@ -3110,7 +3110,7 @@ var BABYLON;
                     }
                     var layoutArea = void 0;
                     if (child._hasMargin) {
-                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, StackPanelLayoutEngine_1.dstOffset, StackPanelLayoutEngine_1.dstArea, true);
+                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, StackPanelLayoutEngine_1.dstOffset, StackPanelLayoutEngine_1.dstArea, true);
                         layoutArea = StackPanelLayoutEngine_1.dstArea.clone();
                         child.layoutArea = layoutArea;
                     }
@@ -5583,7 +5583,7 @@ var BABYLON;
          * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
          * @param dstArea the new size of the content
          */
-        PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, dstOffset, dstArea, computeLayoutArea) {
+        PrimitiveThickness.prototype.computeWithAlignment = function (sourceArea, contentSize, alignment, contentScale, dstOffset, dstArea, computeLayoutArea) {
             if (computeLayoutArea === void 0) { computeLayoutArea = false; }
             // Fetch some data
             var topType = this._getType(0, true);
@@ -5592,6 +5592,8 @@ var BABYLON;
             var bottomType = this._getType(3, true);
             var hasWidth = contentSize && (contentSize.width != null);
             var hasHeight = contentSize && (contentSize.height != null);
+            var sx = contentScale.x;
+            var sy = contentScale.y;
             var width = hasWidth ? contentSize.width : 0;
             var height = hasHeight ? contentSize.height : 0;
             var isTopAuto = topType === PrimitiveThickness_1.Auto;
@@ -5612,17 +5614,17 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.width += this.leftPixels;
                         }
-                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
+                        dstOffset.z = sourceArea.width - (dstOffset.x + (width * sx));
                         break;
                     }
                 case PrimitiveAlignment.AlignRight:
                     {
                         if (isRightAuto) {
-                            dstOffset.x = Math.round(sourceArea.width - width);
+                            dstOffset.x = Math.round(sourceArea.width - (width * sx));
                         }
                         else {
                             this._computePixels(2, sourceArea, true);
-                            dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
+                            dstOffset.x = Math.round(sourceArea.width - ((width * sx) + this.rightPixels));
                         }
                         dstArea.width = width;
                         if (computeLayoutArea) {
@@ -5658,9 +5660,9 @@ var BABYLON;
                             this._computePixels(2, sourceArea, true);
                         }
                         var offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
-                        dstOffset.x = Math.round(((sourceArea.width - width) / 2) + offset);
+                        dstOffset.x = Math.round(((sourceArea.width - (width * sx)) / 2) + offset);
                         dstArea.width = width;
-                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
+                        dstOffset.z = sourceArea.width - (dstOffset.x + (width * sx));
                         break;
                     }
             }
@@ -5668,11 +5670,11 @@ var BABYLON;
                 case PrimitiveAlignment.AlignTop:
                     {
                         if (isTopAuto) {
-                            dstOffset.y = sourceArea.height - height;
+                            dstOffset.y = sourceArea.height - (height * sy);
                         }
                         else {
                             this._computePixels(0, sourceArea, true);
-                            dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
+                            dstOffset.y = Math.round(sourceArea.height - ((height * sy) + this.topPixels));
                         }
                         dstArea.height = height;
                         if (computeLayoutArea) {
@@ -5694,7 +5696,7 @@ var BABYLON;
                         if (computeLayoutArea) {
                             dstArea.height += this.bottomPixels;
                         }
-                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
+                        dstOffset.w = sourceArea.height - (dstOffset.y + (height * sy));
                         break;
                     }
                 case PrimitiveAlignment.AlignStretch:
@@ -5724,9 +5726,9 @@ var BABYLON;
                             this._computePixels(3, sourceArea, true);
                         }
                         var offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
-                        dstOffset.y = Math.round(((sourceArea.height - height) / 2) + offset);
+                        dstOffset.y = Math.round(((sourceArea.height - (height * sy)) / 2) + offset);
                         dstArea.height = height;
-                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
+                        dstOffset.w = sourceArea.height - (dstOffset.y + (height * sy));
                         break;
                     }
             }
@@ -7810,15 +7812,15 @@ var BABYLON;
             }
             // Apply margin
             if (this._hasMargin) {
-                this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase_1._size);
-                this.actualSize = Prim2DBase_1._size.clone();
+                var contentSize = this.size || this.actualSize;
+                this.margin.computeWithAlignment(this.layoutArea, contentSize, this.marginAlignment, this.actualScale, this._marginOffset, Prim2DBase_1._size);
             }
             if (this._hasPadding) {
                 // Two cases from here: the size of the Primitive is Auto, its content can't be shrink, so we resize the primitive itself
                 if (isSizeAuto) {
                     // Changing the padding has resize the prim, which forces us to recompute margin again
                     if (this._hasMargin) {
-                        this.margin.computeWithAlignment(this.layoutArea, Prim2DBase_1._size, this.marginAlignment, this._marginOffset, Prim2DBase_1._size);
+                        this.margin.computeWithAlignment(this.layoutArea, Prim2DBase_1._size, this.marginAlignment, this.actualScale, this._marginOffset, Prim2DBase_1._size);
                     }
                 }
                 else {
@@ -10603,6 +10605,16 @@ var BABYLON;
                 }
             }
         };
+        Object.defineProperty(Group2D.prototype, "_cachedTexture", {
+            get: function () {
+                if (this._renderableData) {
+                    return this._renderableData._cacheTexture;
+                }
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Group2D;
     }(BABYLON.Prim2DBase));
     Group2D.GROUP2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
@@ -11992,10 +12004,10 @@ var BABYLON;
                 var ib = new Float32Array(triCount * 3);
                 for (var i = 0; i < triCount; i++) {
                     ib[i * 3 + 0] = 0;
-                    ib[i * 3 + 2] = i + 1;
-                    ib[i * 3 + 1] = i + 2;
+                    ib[i * 3 + 2] = i + 2;
+                    ib[i * 3 + 1] = i + 1;
                 }
-                ib[triCount * 3 - 2] = 1;
+                ib[triCount * 3 - 1] = 1;
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = triCount * 3;
                 // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
@@ -13696,6 +13708,7 @@ var BABYLON;
             }
             var canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
+            engine.setState(false, undefined, true);
             var depthFunction = 0;
             if (this.effectFill && this.effectBorder) {
                 depthFunction = engine.getDepthFunction();
@@ -15195,6 +15208,9 @@ var BABYLON;
                             var localPos = _this.worldSpaceToNodeLocal(e.pickInfo.pickedPoint);
                             _this._handlePointerEventForInteraction(e, localPos, s);
                         }
+                        else if (_this._actualIntersectionList && _this._actualIntersectionList.length > 0) {
+                            _this._handlePointerEventForInteraction(e, null, s);
+                        }
                     });
                 }
                 else {
@@ -15262,13 +15278,18 @@ var BABYLON;
                 return;
             }
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            if (!this._updatePointerInfo(eventData, localPosition)) {
-                return;
+            if (localPosition) {
+                if (!this._updatePointerInfo(eventData, localPosition)) {
+                    return;
+                }
+            }
+            else {
+                this._primPointerInfo.canvasPointerPos = null;
             }
             var capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
+            this._updateIntersectionList(localPosition ? this._primPointerInfo.canvasPointerPos : null, capturedPrim !== null, true);
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus(true);
             // Check if we have nothing to raise
@@ -15353,32 +15374,35 @@ var BABYLON;
             if (!force && (this.scene.getRenderId() === this._intersectionRenderId)) {
                 return;
             }
-            // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
-            if (!this._globalTransform) {
-                this.updateCachedStates(true);
-            }
             var ii = Canvas2D_1._interInfo;
-            ii.pickPosition.x = mouseLocalPos.x;
-            ii.pickPosition.y = mouseLocalPos.y;
-            ii.findFirstOnly = false;
-            // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
-            if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
-                // Reset intersection info as we don't hit anything
-                ii.intersectedPrimitives = new Array();
-                ii.topMostIntersectedPrimitive = null;
-            }
-            else {
-                // The pointer is inside the Canvas, do an intersection test
-                this.intersect(ii);
-                // Sort primitives to get them from top to bottom
-                ii.intersectedPrimitives = ii.intersectedPrimitives.sort(function (a, b) { return a.prim.actualZOffset - b.prim.actualZOffset; });
+            var outCase = mouseLocalPos == null;
+            if (!outCase) {
+                // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
+                if (!this._globalTransform) {
+                    this.updateCachedStates(true);
+                }
+                ii.pickPosition.x = mouseLocalPos.x;
+                ii.pickPosition.y = mouseLocalPos.y;
+                ii.findFirstOnly = false;
+                // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
+                if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
+                    // Reset intersection info as we don't hit anything
+                    ii.intersectedPrimitives = new Array();
+                    ii.topMostIntersectedPrimitive = null;
+                }
+                else {
+                    // The pointer is inside the Canvas, do an intersection test
+                    this.intersect(ii);
+                    // Sort primitives to get them from top to bottom
+                    ii.intersectedPrimitives = ii.intersectedPrimitives.sort(function (a, b) { return a.prim.actualZOffset - b.prim.actualZOffset; });
+                }
             }
             {
                 // Update prev/actual intersection info, fire "overPrim" property change if needed
                 this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList = ii.intersectedPrimitives;
+                this._actualIntersectionList = outCase ? new Array() : ii.intersectedPrimitives;
                 this._previousOverPrimitive = this._actualOverPrimitive;
-                this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+                this._actualOverPrimitive = outCase ? null : ii.topMostIntersectedPrimitive;
                 var prev = (this._previousOverPrimitive != null) ? this._previousOverPrimitive.prim : null;
                 var actual = (this._actualOverPrimitive != null) ? this._actualOverPrimitive.prim : null;
                 if (prev !== actual) {
@@ -16143,7 +16167,7 @@ var BABYLON;
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
                 this._updateOverStatus(false);
             }
-            this.engine.setState(false);
+            this.engine.setState(false, undefined, true);
             this._groupRender();
             if (!this._isScreenSpace) {
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagWorldCacheChanged)) {
