@@ -15,10 +15,6 @@
             this.layoutDirtyOnPropertyChangedMask = 0;
         }
 
-        public newChild(child: Prim2DBase, data: ILayoutData) {
-            
-        }
-
         public updateLayout(prim: Prim2DBase) {
         }
 
@@ -202,7 +198,9 @@
         }
     }
 
-
+    /**
+     * GridData is used specify what row(s) and column(s) a Primitive is placed in when its parent is using a Grid Panel Layout. 
+     */
     export class GridData implements ILayoutData{
 
         row:number;
@@ -250,11 +248,15 @@
         widthType: number;
     }
 
-    @className("GridPanelLayoutEngine")
+    @className("GridPanelLayoutEngine", "BABYLON")
+    /**
+     * A grid panel layout.  Grid panel is basically a table that has rows and columns.
+     * When adding children to a Primitive that is using grid panel layout, you must assign a GridData object to the child to indicate where the child will appear in the grid.
+     */
     export class GridPanelLayoutEngine extends LayoutEngineBase {
         constructor(settings: { rows: [{ height: string }], columns: [{ width: string }] }) {
             super();
-            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId;
+            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId | Prim2DBase.actualSizeProperty.flagId;
             this._rows = new Array<RowDefinition>();
             this._columns = new Array<ColumnDefinition>();
             if (settings.rows) {
