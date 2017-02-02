@@ -1082,7 +1082,7 @@
          * @param dstOffset the position of the content, x, y, z, w are left, bottom, right, top
          * @param dstArea the new size of the content
          */
-        public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, dstOffset: Vector4, dstArea: Size, computeLayoutArea = false) {
+        public computeWithAlignment(sourceArea: Size, contentSize: Size, alignment: PrimitiveAlignment, contentScale: Vector2, dstOffset: Vector4, dstArea: Size, computeLayoutArea = false) {
             // Fetch some data
             let topType = this._getType(0, true);
             let leftType = this._getType(1, true);
@@ -1090,6 +1090,8 @@
             let bottomType = this._getType(3, true);
             let hasWidth = contentSize && (contentSize.width != null);
             let hasHeight = contentSize && (contentSize.height != null);
+            let sx = contentScale.x;
+            let sy = contentScale.y;
             let width = hasWidth ? contentSize.width : 0;
             let height = hasHeight ? contentSize.height : 0;
             let isTopAuto = topType === PrimitiveThickness.Auto;
@@ -1110,17 +1112,17 @@
                         if (computeLayoutArea) {
                             dstArea.width += this.leftPixels;
                         }
-                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
+                        dstOffset.z = sourceArea.width - (dstOffset.x + (width * sx));
                         break;
 
                     }
                 case PrimitiveAlignment.AlignRight:
                     {
                         if (isRightAuto) {
-                            dstOffset.x = Math.round(sourceArea.width - width);
+                            dstOffset.x = Math.round(sourceArea.width - (width * sx));
                         } else {
                             this._computePixels(2, sourceArea, true);
-                            dstOffset.x = Math.round(sourceArea.width - (width + this.rightPixels));
+                            dstOffset.x = Math.round(sourceArea.width - ((width * sx) + this.rightPixels));
                         }
                         dstArea.width = width;
                         if (computeLayoutArea) {
@@ -1157,9 +1159,9 @@
                         }
 
                         let offset = (isLeftAuto ? 0 : this.leftPixels) - (isRightAuto ? 0 : this.rightPixels);
-                        dstOffset.x = Math.round(((sourceArea.width - width) / 2) + offset);
+                        dstOffset.x = Math.round(((sourceArea.width - (width*sx)) / 2) + offset);
                         dstArea.width = width;
-                        dstOffset.z = sourceArea.width - (dstOffset.x + width);
+                        dstOffset.z = sourceArea.width - (dstOffset.x + (width*sx));
                         break;
                     }
             }
@@ -1168,10 +1170,10 @@
                 case PrimitiveAlignment.AlignTop:
                     {
                         if (isTopAuto) {
-                            dstOffset.y = sourceArea.height - height;
+                            dstOffset.y = sourceArea.height - (height * sy);
                         } else {
                             this._computePixels(0, sourceArea, true);
-                            dstOffset.y = Math.round(sourceArea.height - (height + this.topPixels));
+                            dstOffset.y = Math.round(sourceArea.height - ((height * sy) + this.topPixels));
                         }
                         dstArea.height = height;
                         if (computeLayoutArea) {
@@ -1193,7 +1195,7 @@
                         if (computeLayoutArea) {
                             dstArea.height += this.bottomPixels;
                         }
-                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
+                        dstOffset.w = sourceArea.height - (dstOffset.y + (height * sy));
                         break;
 
                     }
@@ -1225,9 +1227,9 @@
                         }
 
                         let offset = (isBottomAuto ? 0 : this.bottomPixels) - (isTopAuto ? 0 : this.topPixels);
-                        dstOffset.y = Math.round(((sourceArea.height - height) / 2) + offset);
+                        dstOffset.y = Math.round(((sourceArea.height - (height * sy)) / 2) + offset);
                         dstArea.height = height;
-                        dstOffset.w = sourceArea.height - (dstOffset.y + height);
+                        dstOffset.w = sourceArea.height - (dstOffset.y + (height * sy));
                         break;
                     }
             }
@@ -3615,8 +3617,8 @@
 
             // Apply margin
             if (this._hasMargin) {
-                this.margin.computeWithAlignment(this.layoutArea, this.size || this.actualSize, this.marginAlignment, this._marginOffset, Prim2DBase._size);
-                this.actualSize = Prim2DBase._size.clone();
+                let contentSize = this.size || this.actualSize;
+                this.margin.computeWithAlignment(this.layoutArea, contentSize, this.marginAlignment, this.actualScale, this._marginOffset, Prim2DBase._size);
             }
 
             if (this._hasPadding) {
@@ -3624,7 +3626,7 @@
                 if (isSizeAuto) {
                     // Changing the padding has resize the prim, which forces us to recompute margin again
                     if (this._hasMargin) {
-                        this.margin.computeWithAlignment(this.layoutArea, Prim2DBase._size, this.marginAlignment, this._marginOffset, Prim2DBase._size);
+                        this.margin.computeWithAlignment(this.layoutArea, Prim2DBase._size, this.marginAlignment, this.actualScale, this._marginOffset, Prim2DBase._size);
                     }
 
                 } else {

@@ -30,6 +30,7 @@
             }
             let canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
+            engine.setState(false, undefined, true);
 
             let depthFunction = 0;
             if (this.effectFill && this.effectBorder) {

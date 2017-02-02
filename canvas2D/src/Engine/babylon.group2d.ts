@@ -1025,6 +1025,13 @@
             }
         }
 
+        public get _cachedTexture(): MapTexture {
+            if (this._renderableData) {
+                return this._renderableData._cacheTexture;
+            }
+            return null;
+        }
+
         private _trackedNode: Node;
         protected _isRenderableGroup: boolean;
         protected _isCachedGroup: boolean;
