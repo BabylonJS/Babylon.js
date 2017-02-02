@@ -2822,6 +2822,7 @@ declare module BABYLON {
         protected static _unS: Vector2;
         protected handleGroupChanged(prop: Prim2DPropInfo): void;
         private detectGroupStates();
+        readonly _cachedTexture: MapTexture;
         private _trackedNode;
         protected _isRenderableGroup: boolean;
         protected _isCachedGroup: boolean;

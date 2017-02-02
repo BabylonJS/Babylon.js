@@ -10605,6 +10605,16 @@ var BABYLON;
                 }
             }
         };
+        Object.defineProperty(Group2D.prototype, "_cachedTexture", {
+            get: function () {
+                if (this._renderableData) {
+                    return this._renderableData._cacheTexture;
+                }
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Group2D;
     }(BABYLON.Prim2DBase));
     Group2D.GROUP2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
@@ -11994,10 +12004,10 @@ var BABYLON;
                 var ib = new Float32Array(triCount * 3);
                 for (var i = 0; i < triCount; i++) {
                     ib[i * 3 + 0] = 0;
-                    ib[i * 3 + 2] = i + 1;
-                    ib[i * 3 + 1] = i + 2;
+                    ib[i * 3 + 2] = i + 2;
+                    ib[i * 3 + 1] = i + 1;
                 }
-                ib[triCount * 3 - 2] = 1;
+                ib[triCount * 3 - 1] = 1;
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = triCount * 3;
                 // Get the instanced version of the effect, if the engine does not support it, null is return and we'll only draw on by one
@@ -13698,6 +13708,7 @@ var BABYLON;
             }
             var canvas = instanceInfo.owner.owner;
             var engine = canvas.engine;
+            engine.setState(false, undefined, true);
             var depthFunction = 0;
             if (this.effectFill && this.effectBorder) {
                 depthFunction = engine.getDepthFunction();
@@ -16156,7 +16167,7 @@ var BABYLON;
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
                 this._updateOverStatus(false);
             }
-            this.engine.setState(false);
+            this.engine.setState(false, undefined, true);
             this._groupRender();
             if (!this._isScreenSpace) {
                 if (this._isFlagSet(BABYLON.SmartPropertyPrim.flagWorldCacheChanged)) {
