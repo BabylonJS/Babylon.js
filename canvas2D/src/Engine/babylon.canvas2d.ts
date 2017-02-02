@@ -1500,7 +1500,7 @@
                 this._updateOverStatus(false);
             }
 
-            this.engine.setState(false);
+            this.engine.setState(false, undefined, true);
             this._groupRender();
 
             if (!this._isScreenSpace) {
