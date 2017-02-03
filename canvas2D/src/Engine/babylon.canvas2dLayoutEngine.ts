@@ -199,15 +199,37 @@
     }
 
     /**
-     * GridData is used specify what row(s) and column(s) a Primitive is placed in when its parent is using a Grid Panel Layout. 
+     * GridData is used specify what row(s) and column(s) a primitive is placed in when its parent is using a Grid Panel Layout. 
      */
     export class GridData implements ILayoutData{
 
-        row:number;
-        column:number;
-        rowSpan:number;
-        columnSpan:number;
+        /**
+         * the row number of the grid
+         **/
+        public row:number;
 
+        /**
+         * the column number of the grid 
+         **/
+        public column:number;
+
+        /**
+         * the number of rows a primitive will occupy
+         **/
+        public rowSpan:number;
+
+        /**
+         * the number of columns a primitive will occupy 
+         **/
+        public columnSpan:number;
+
+        /**
+         * Create a Grid Data that describes where a primitive will be placed in a Grid Panel Layout.
+         * @param row the row number of the grid
+         * @param column the column number of the grid 
+         * @param rowSpan the number of rows a primitive will occupy
+         * @param columnSpan the number of columns a primitive will occupy 
+         **/
         constructor(row:number, column:number, rowSpan?:number, columnSpan?:number){
 
             this.row = row;
@@ -229,7 +251,10 @@
                 res(null, null, GridDimensionDefinition.Auto);
             } else if (v.indexOf("*") !== -1) {
                 let i = v.indexOf("*");
-                let w = parseFloat(v.substr(0, i));
+                let w = 1;
+                if(i > 0){
+                    w = parseFloat(v.substr(0, i));
+                }
                 res(w, null, GridDimensionDefinition.Stars);
             } else {
                 let w = parseFloat(v);
@@ -250,8 +275,8 @@
 
     @className("GridPanelLayoutEngine", "BABYLON")
     /**
-     * A grid panel layout.  Grid panel is basically a table that has rows and columns.
-     * When adding children to a Primitive that is using grid panel layout, you must assign a GridData object to the child to indicate where the child will appear in the grid.
+     * A grid panel layout.  Grid panel is a table that has rows and columns.
+     * When adding children to a primitive that is using grid panel layout, you must assign a GridData object to the child to indicate where the child will appear in the grid.
      */
     export class GridPanelLayoutEngine extends LayoutEngineBase {
         constructor(settings: { rows: [{ height: string }], columns: [{ width: string }] }) {
@@ -299,21 +324,23 @@
 
         public updateLayout(prim: Prim2DBase) {
             if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
-                
+
                 for (let child of prim.children) {
                     if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
                         continue;
                     }
                     let layoutArea: Size;
                     if (child._hasMargin) {
-                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea, true);
+                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea, true);
                         layoutArea = GridPanelLayoutEngine.dstArea.clone();
                         child.layoutArea = layoutArea;
                     } else {
                         layoutArea = child.layoutArea;
                         child.margin.computeArea(child.actualSize, layoutArea);
                     }
+
                 }
+
 
                 let _children = this._children;
 
@@ -327,7 +354,7 @@
 
                 let columnWidth = 0;
                 let rowHeight = 0;
-                
+
                 for(let i = 0; i < _children.length; i++){
                     let children = _children[i];
 
@@ -366,24 +393,29 @@
                                 }
 
                                 if(child.marginAlignment.horizontal === PrimitiveAlignment.AlignRight){
-                                    offsetX = columnWidth - child.actualWidth;
+                                    offsetX = columnWidth - child.layoutArea.width;
                                 }else if(child.marginAlignment.horizontal === PrimitiveAlignment.AlignCenter){
-                                    offsetX = columnWidth*.5 - child.actualWidth*.5;
+                                    offsetX = columnWidth*.5 - child.layoutArea.width*.5;
                                 }else{
                                     offsetX = 0;
                                 }
 
                                 if(child.marginAlignment.vertical === PrimitiveAlignment.AlignTop){
-                                    offsetY = rowHeight - child.actualHeight;
+                                    offsetY = rowHeight - child.layoutArea.height;
                                 }else if(child.marginAlignment.vertical === PrimitiveAlignment.AlignCenter){
-                                    offsetY = rowHeight*.5 - child.actualHeight*.5;
+                                    offsetY = rowHeight*.5 - child.layoutArea.height*.5;
                                 }else{
                                     offsetY = 0;
                                 }
 
-                                child.layoutAreaPos.x = left + offsetX;
-                                child.layoutAreaPos.y = bottom + offsetY;
+                                var posX = left + offsetX;
+                                var posY = bottom + offsetY;
 
+                                if(child.layoutAreaPos.x != posX || child.layoutAreaPos.y != posY){
+                                    //must set the layoutAreaPos with Vector2 in order for resizing to work (rather than simply setting the x and y of the layoutAreaPos)
+                                    child.layoutAreaPos = new Vector2(left + offsetX, bottom + offsetY);
+                                }
+                                
                                 bottom = oBottom;
                                 rowHeight = oRowHeight;
                                 
@@ -410,17 +442,17 @@
             let rl = this._rows.length;
             let children = this._children;
             let row = rows[rowNum];
-            
             let maxHeight = 0;
 
             if(children){
 
                 for(let i = 0; i < cl; i++){
                     let child = children[rowNum][i];
+                    
                     if(child){
                         let span = (<GridData>child.layoutData).rowSpan;
-                        if(maxHeight < child.actualHeight/span){
-                            maxHeight = child.actualHeight/span;
+                        if(maxHeight < child.layoutArea.height/span){
+                            maxHeight = child.layoutArea.height/span;
                         }
                     }
                 }
@@ -440,16 +472,14 @@
             let column = columns[colNum];
             let maxWidth = 0;
 
-            maxWidth = 0;
-
             if(children){
 
                 for(let i = 0; i < rl; i++){
                     let child = children[i][colNum];
                     if(child){
                         let span = (<GridData>child.layoutData).columnSpan;
-                        if(maxWidth < child.actualWidth/span){
-                            maxWidth = child.actualWidth/span;
+                        if(maxWidth < child.layoutArea.width/span){
+                            maxWidth = child.layoutArea.width/span;
                         }
                     }
                 }
@@ -547,7 +577,7 @@
 
             if(starIndexes.length > 0){
 
-                let remainingHeight = prim.contentArea.width - rowHeights;
+                let remainingHeight = prim.height - rowHeights;
 
                 for(let i = 0; i < starIndexes.length; i++){
 
@@ -592,7 +622,7 @@
 
             if(starIndexes.length > 0){
 
-                let remainingWidth = prim.contentArea.width - columnWidths;
+                let remainingWidth = prim.width - columnWidths;
 
                 for(let i = 0; i < starIndexes.length; i++){
 
