@@ -115,6 +115,9 @@
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
+            // CollisionFilter @ http://www.html5gamedevs.com/topic/28193-exclude-mesh-for-collision/
+            if(!this._collider.collisionFilter) this._collider.collisionFilter = this.collisionFilter ? this.collisionFilter : 1;
+		
             //no need for clone, as long as gravity is not on.
             var actualVelocity = velocity;
 			
