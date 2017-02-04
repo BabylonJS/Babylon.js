@@ -719,7 +719,8 @@
                         let char = text[charNum];
                         let charWidth = charWidths[charNum];
 
-                        if(!this._isWhiteSpaceCharHoriz(char) && !this._isWhiteSpaceCharVert(char)){ 
+                        if(char !== "\t" && !this._isWhiteSpaceCharVert(char)){ 
+                            //make sure space char gets processed here or overlapping can occur when text is set
                             this.updateInstanceDataPart(d, offset);
                             let ci = texture.getChar(char);
                             d.topLeftUV = ci.topLeftUV;
