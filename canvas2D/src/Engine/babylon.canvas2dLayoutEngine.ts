@@ -577,7 +577,7 @@
 
             if(starIndexes.length > 0){
 
-                let remainingHeight = prim.height - rowHeights;
+                let remainingHeight = prim.contentArea.height - rowHeights;
 
                 for(let i = 0; i < starIndexes.length; i++){
 
@@ -622,7 +622,7 @@
 
             if(starIndexes.length > 0){
 
-                let remainingWidth = prim.width - columnWidths;
+                let remainingWidth = prim.contentArea.width - columnWidths;
 
                 for(let i = 0; i < starIndexes.length; i++){
 
