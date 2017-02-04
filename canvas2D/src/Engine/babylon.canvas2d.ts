@@ -1295,6 +1295,8 @@
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
             let rh = this.engine.getRenderHeight();
             let v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
+            let tmpVec3:Vector3;
+            let tmpMtx:Matrix;
 
             // Compute the screen position of each group that track a given scene node
             for (let group of this._trackedGroups) {
@@ -1304,6 +1306,19 @@
 
                 let node = group.trackedNode;
                 let worldMtx = node.getWorldMatrix();
+
+                if(group.trackedNodeOffset){
+                    if(!tmpVec3){
+                        tmpVec3 = Vector3.Zero();
+                    }
+                    if(!tmpMtx){
+                        tmpMtx = Matrix.Identity();
+                    }
+                    Vector3.TransformCoordinatesToRef(group.trackedNodeOffset, worldMtx, tmpVec3);
+                    tmpMtx.copyFrom(worldMtx);
+                    worldMtx = tmpMtx;
+                    worldMtx.setTranslation(tmpVec3);
+                }
 
                 let proj = Vector3.Project(Canvas2D._v, worldMtx, Canvas2D._m, v);
 
