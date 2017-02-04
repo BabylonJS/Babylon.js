@@ -354,6 +354,9 @@ module BABYLON {
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;
             collider.initialPosition = this._scaledPosition;
+            
+            if(!collider.collisionFilter || collider.collisionFilter === 1) collider.collisionFilter = excludedMesh && excludedMesh.collisionFilter ? excludedMesh.collisionFilter  : 1;
+            
             this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, this._finalPosition, excludedMesh);
 
             this._finalPosition.multiplyInPlace(collider.radius);
@@ -390,7 +393,9 @@ module BABYLON {
             // Check all meshes
             for (var index = 0; index < this._scene.meshes.length; index++) {
                 var mesh = this._scene.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
+                
+                mesh.collisionFilter = mesh.collisionFilter ? mesh.collisionFilter : 1;
+                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh && ((collider.collisionFilter === 1 && mesh.collisionFilter === 1)  || collider.collisionFilter > mesh.collisionFilter)) {
                     mesh._checkCollision(collider);
                 }
             }
