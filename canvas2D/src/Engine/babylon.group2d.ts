@@ -134,8 +134,6 @@
                 rd._noResizeOnScale = (this.cacheBehavior & Group2D.GROUPCACHEBEHAVIOR_NORESIZEONSCALE) !== 0;                
             }
             this.size = size;
-            //set actualSize to null so that changing width and height will change contentArea
-            this._actualSize = null;
             this._viewportPosition = Vector2.Zero();
             this._viewportSize = Size.Zero();
         }

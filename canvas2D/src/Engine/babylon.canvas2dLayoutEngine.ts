@@ -329,31 +329,22 @@
                     if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
                         continue;
                     }
-                    let layoutArea: Size;
                     if (child._hasMargin) {
                         child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea, true);
-                        layoutArea = GridPanelLayoutEngine.dstArea.clone();
-                        child.layoutArea = layoutArea;
+                        child.layoutArea = GridPanelLayoutEngine.dstArea.clone();
                     } else {
-                        layoutArea = child.layoutArea;
-                        child.margin.computeArea(child.actualSize, layoutArea);
+                        child.margin.computeArea(child.actualSize, child.layoutArea);
                     }
-
                 }
-
-
-                let _children = this._children;
 
                 this._updateGrid(prim);
 
+                let _children = this._children;
                 let rl = this._rows.length;
                 let cl = this._columns.length;
-
-                let offsetX = 0;
-                let offsetY = 0;
-
                 let columnWidth = 0;
                 let rowHeight = 0;
+                let layoutArea = new BABYLON.Size(0, 0);
 
                 for(let i = 0; i < _children.length; i++){
                     let children = _children[i];
@@ -392,29 +383,11 @@
                                     
                                 }
 
-                                if(child.marginAlignment.horizontal === PrimitiveAlignment.AlignRight){
-                                    offsetX = columnWidth - child.layoutArea.width;
-                                }else if(child.marginAlignment.horizontal === PrimitiveAlignment.AlignCenter){
-                                    offsetX = columnWidth*.5 - child.layoutArea.width*.5;
-                                }else{
-                                    offsetX = 0;
-                                }
+                                layoutArea.width = columnWidth;
+                                layoutArea.height = rowHeight;                                
 
-                                if(child.marginAlignment.vertical === PrimitiveAlignment.AlignTop){
-                                    offsetY = rowHeight - child.layoutArea.height;
-                                }else if(child.marginAlignment.vertical === PrimitiveAlignment.AlignCenter){
-                                    offsetY = rowHeight*.5 - child.layoutArea.height*.5;
-                                }else{
-                                    offsetY = 0;
-                                }
-
-                                var posX = left + offsetX;
-                                var posY = bottom + offsetY;
-
-                                if(child.layoutAreaPos.x != posX || child.layoutAreaPos.y != posY){
-                                    //must set the layoutAreaPos with Vector2 in order for resizing to work (rather than simply setting the x and y of the layoutAreaPos)
-                                    child.layoutAreaPos = new Vector2(left + offsetX, bottom + offsetY);
-                                }
+                                child.margin.computeWithAlignment(layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea);
+                                child.layoutAreaPos = new BABYLON.Vector2(left + GridPanelLayoutEngine.dstOffset.x, bottom + GridPanelLayoutEngine.dstOffset.y);
                                 
                                 bottom = oBottom;
                                 rowHeight = oRowHeight;
