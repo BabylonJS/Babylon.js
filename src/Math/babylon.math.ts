@@ -1196,8 +1196,8 @@
             Matrix.FromValuesToRef(
                 cw / 2.0, 0, 0, 0,
                 0, -ch / 2.0, 0, 0,
-                0, 0, 1, 0,
-                cx + cw / 2.0, ch / 2.0 + cy, 0, 1, viewportMatrix);
+                0, 0, 0.5, 0,
+                cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
 
             var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
             world.multiplyToRef(transform, matrix);
