@@ -875,7 +875,6 @@ declare module BABYLON {
     }
     class LayoutEngineBase implements ILockable {
         constructor();
-        newChild(child: Prim2DBase, data: ILayoutData): void;
         updateLayout(prim: Prim2DBase): void;
         readonly isChildPositionAllowed: boolean;
         isLocked(): boolean;
@@ -903,6 +902,59 @@ declare module BABYLON {
         private static dstArea;
         updateLayout(prim: Prim2DBase): void;
         readonly isChildPositionAllowed: boolean;
+    }
+    /**
+     * GridData is used specify what row(s) and column(s) a primitive is placed in when its parent is using a Grid Panel Layout.
+     */
+    class GridData implements ILayoutData {
+        /**
+         * the row number of the grid
+         **/
+        row: number;
+        /**
+         * the column number of the grid
+         **/
+        column: number;
+        /**
+         * the number of rows a primitive will occupy
+         **/
+        rowSpan: number;
+        /**
+         * the number of columns a primitive will occupy
+         **/
+        columnSpan: number;
+        /**
+         * Create a Grid Data that describes where a primitive will be placed in a Grid Panel Layout.
+         * @param row the row number of the grid
+         * @param column the column number of the grid
+         * @param rowSpan the number of rows a primitive will occupy
+         * @param columnSpan the number of columns a primitive will occupy
+         **/
+        constructor(row: number, column: number, rowSpan?: number, columnSpan?: number);
+    }
+    class GridPanelLayoutEngine extends LayoutEngineBase {
+        constructor(settings: {
+            rows: [{
+                height: string;
+            }];
+            columns: [{
+                width: string;
+            }];
+        });
+        private _rows;
+        private _columns;
+        private _children;
+        private _rowBottoms;
+        private _columnLefts;
+        private _rowHeights;
+        private _columnWidths;
+        private static dstOffset;
+        private static dstArea;
+        updateLayout(prim: Prim2DBase): void;
+        readonly isChildPositionAllowed: boolean;
+        private _getMaxChildHeightInRow(rowNum);
+        private _getMaxChildWidthInColumn(colNum);
+        private _updateGrid(prim);
     }
 }
 
@@ -2331,6 +2383,10 @@ declare module BABYLON {
          * @param newPrimSize the new size of the primitive. PLEASE ROUND THE values, we're talking about pixels and fraction of them are not our friends!
          */
         protected _getActualSizeFromContentToRef(primSize: Size, newPrimSize: Size): void;
+        /**
+         * Get/set the layout data to use for this primitive.
+         */
+        layoutData: ILayoutData;
         private _owner;
         private _parent;
         private _actionManager;
@@ -2364,6 +2420,7 @@ declare module BABYLON {
         private _lastAutoSizeArea;
         private _layoutAreaPos;
         private _layoutArea;
+        private _layoutData;
         private _contentArea;
         private _rotation;
         private _scale;
@@ -2728,6 +2785,7 @@ declare module BABYLON {
             scaleY?: number;
             dontInheritParentScale?: boolean;
             trackNode?: Node;
+            trackNodeOffset?: Vector3;
             opacity?: number;
             zOrder?: number;
             origin?: Vector2;
@@ -2805,6 +2863,10 @@ declare module BABYLON {
          * Get/set the Scene's Node that should be tracked, the group's position will follow the projected position of the Node.
          */
         trackedNode: Node;
+        /**
+         * Get/set the offset of the tracked node in the tracked node's local space.
+         */
+        trackedNodeOffset: Vector3;
         protected levelIntersect(intersectInfo: IntersectInfo2D): boolean;
         protected updateLevelBoundingInfo(): boolean;
         protected _prepareGroupRender(context: PrepareRender2DContext): void;
@@ -2824,6 +2886,7 @@ declare module BABYLON {
         private detectGroupStates();
         readonly _cachedTexture: MapTexture;
         private _trackedNode;
+        private _trackedNodeOffset;
         protected _isRenderableGroup: boolean;
         protected _isCachedGroup: boolean;
         private _cacheGroupDirty;
