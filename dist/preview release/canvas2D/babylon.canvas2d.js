@@ -2969,8 +2969,6 @@ var BABYLON;
         function LayoutEngineBase() {
             this.layoutDirtyOnPropertyChangedMask = 0;
         }
-        LayoutEngineBase.prototype.newChild = function (child, data) {
-        };
         LayoutEngineBase.prototype.updateLayout = function (prim) {
         };
         Object.defineProperty(LayoutEngineBase.prototype, "isChildPositionAllowed", {
@@ -3156,7 +3154,352 @@ var BABYLON;
         BABYLON.className("StackPanelLayoutEngine", "BABYLON")
     ], StackPanelLayoutEngine);
     BABYLON.StackPanelLayoutEngine = StackPanelLayoutEngine;
-    var CanvasLayoutEngine_1, StackPanelLayoutEngine_1;
+    /**
+     * GridData is used specify what row(s) and column(s) a primitive is placed in when its parent is using a Grid Panel Layout.
+     */
+    var GridData = (function () {
+        /**
+         * Create a Grid Data that describes where a primitive will be placed in a Grid Panel Layout.
+         * @param row the row number of the grid
+         * @param column the column number of the grid
+         * @param rowSpan the number of rows a primitive will occupy
+         * @param columnSpan the number of columns a primitive will occupy
+         **/
+        function GridData(row, column, rowSpan, columnSpan) {
+            this.row = row;
+            this.column = column;
+            this.rowSpan = (rowSpan == null) ? 1 : rowSpan;
+            this.columnSpan = (columnSpan == null) ? 1 : columnSpan;
+        }
+        return GridData;
+    }());
+    BABYLON.GridData = GridData;
+    var GridDimensionDefinition = (function () {
+        function GridDimensionDefinition() {
+        }
+        GridDimensionDefinition.prototype._parse = function (value, res) {
+            var v = value.toLocaleLowerCase().trim();
+            if (v.indexOf("auto") === 0) {
+                res(null, null, GridDimensionDefinition.Auto);
+            }
+            else if (v.indexOf("*") !== -1) {
+                var i = v.indexOf("*");
+                var w = 1;
+                if (i > 0) {
+                    w = parseFloat(v.substr(0, i));
+                }
+                res(w, null, GridDimensionDefinition.Stars);
+            }
+            else {
+                var w = parseFloat(v);
+                res(w, w, GridDimensionDefinition.Pixels);
+            }
+        };
+        return GridDimensionDefinition;
+    }());
+    GridDimensionDefinition.Pixels = 1;
+    GridDimensionDefinition.Stars = 2;
+    GridDimensionDefinition.Auto = 3;
+    var RowDefinition = (function (_super) {
+        __extends(RowDefinition, _super);
+        function RowDefinition() {
+            return _super.apply(this, arguments) || this;
+        }
+        return RowDefinition;
+    }(GridDimensionDefinition));
+    var ColumnDefinition = (function (_super) {
+        __extends(ColumnDefinition, _super);
+        function ColumnDefinition() {
+            return _super.apply(this, arguments) || this;
+        }
+        return ColumnDefinition;
+    }(GridDimensionDefinition));
+    var GridPanelLayoutEngine = GridPanelLayoutEngine_1 = (function (_super) {
+        __extends(GridPanelLayoutEngine, _super);
+        function GridPanelLayoutEngine(settings) {
+            var _this = _super.call(this) || this;
+            _this._children = [];
+            _this._rowBottoms = [];
+            _this._columnLefts = [];
+            _this._rowHeights = [];
+            _this._columnWidths = [];
+            _this.layoutDirtyOnPropertyChangedMask = BABYLON.Prim2DBase.sizeProperty.flagId | BABYLON.Prim2DBase.actualSizeProperty.flagId;
+            _this._rows = new Array();
+            _this._columns = new Array();
+            if (settings.rows) {
+                var _loop_1 = function (row) {
+                    var r = new RowDefinition();
+                    r._parse(row.height, function (v, vp, t) {
+                        r.height = v;
+                        r.heightPixels = vp;
+                        r.heightType = t;
+                    });
+                    this_1._rows.push(r);
+                };
+                var this_1 = this;
+                for (var _i = 0, _a = settings.rows; _i < _a.length; _i++) {
+                    var row = _a[_i];
+                    _loop_1(row);
+                }
+            }
+            if (settings.columns) {
+                var _loop_2 = function (col) {
+                    var r = new ColumnDefinition();
+                    r._parse(col.width, function (v, vp, t) {
+                        r.width = v;
+                        r.widthPixels = vp;
+                        r.widthType = t;
+                    });
+                    this_2._columns.push(r);
+                };
+                var this_2 = this;
+                for (var _b = 0, _c = settings.columns; _b < _c.length; _b++) {
+                    var col = _c[_b];
+                    _loop_2(col);
+                }
+            }
+            return _this;
+        }
+        GridPanelLayoutEngine.prototype.updateLayout = function (prim) {
+            if (prim._isFlagSet(BABYLON.SmartPropertyPrim.flagLayoutDirty)) {
+                for (var _i = 0, _a = prim.children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (child._isFlagSet(BABYLON.SmartPropertyPrim.flagNoPartOfLayout)) {
+                        continue;
+                    }
+                    if (child._hasMargin) {
+                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine_1.dstOffset, GridPanelLayoutEngine_1.dstArea, true);
+                        child.layoutArea = GridPanelLayoutEngine_1.dstArea.clone();
+                    }
+                    else {
+                        child.margin.computeArea(child.actualSize, child.layoutArea);
+                    }
+                }
+                this._updateGrid(prim);
+                var _children = this._children;
+                var rl = this._rows.length;
+                var cl = this._columns.length;
+                var columnWidth = 0;
+                var rowHeight = 0;
+                var layoutArea = new BABYLON.Size(0, 0);
+                for (var i = 0; i < _children.length; i++) {
+                    var children = _children[i];
+                    if (children) {
+                        var bottom = this._rowBottoms[i];
+                        var rowHeight_1 = this._rowHeights[i];
+                        var oBottom = bottom;
+                        var oRowHeight = rowHeight_1;
+                        for (var j = 0; j < children.length; j++) {
+                            var left = this._columnLefts[j];
+                            var columnWidth_1 = this._columnWidths[j];
+                            var child = children[j];
+                            if (child) {
+                                var gd = child.layoutData;
+                                if (gd.columnSpan > 1) {
+                                    for (var k = j + 1; k < gd.columnSpan + j && k < cl; k++) {
+                                        columnWidth_1 += this._columnWidths[k];
+                                    }
+                                }
+                                if (gd.rowSpan > 1) {
+                                    for (var k = i + 1; k < gd.rowSpan + i && k < rl; k++) {
+                                        rowHeight_1 += this._rowHeights[k];
+                                        bottom = this._rowBottoms[k];
+                                    }
+                                }
+                                layoutArea.width = columnWidth_1;
+                                layoutArea.height = rowHeight_1;
+                                child.margin.computeWithAlignment(layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine_1.dstOffset, GridPanelLayoutEngine_1.dstArea);
+                                child.layoutAreaPos = new BABYLON.Vector2(left + GridPanelLayoutEngine_1.dstOffset.x, bottom + GridPanelLayoutEngine_1.dstOffset.y);
+                                bottom = oBottom;
+                                rowHeight_1 = oRowHeight;
+                            }
+                        }
+                    }
+                }
+                prim._clearFlags(BABYLON.SmartPropertyPrim.flagLayoutDirty);
+            }
+        };
+        Object.defineProperty(GridPanelLayoutEngine.prototype, "isChildPositionAllowed", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        GridPanelLayoutEngine.prototype._getMaxChildHeightInRow = function (rowNum) {
+            var rows = this._rows;
+            var cl = this._columns.length;
+            var rl = this._rows.length;
+            var children = this._children;
+            var row = rows[rowNum];
+            var maxHeight = 0;
+            if (children) {
+                for (var i = 0; i < cl; i++) {
+                    var child = children[rowNum][i];
+                    if (child) {
+                        var span = child.layoutData.rowSpan;
+                        if (maxHeight < child.layoutArea.height / span) {
+                            maxHeight = child.layoutArea.height / span;
+                        }
+                    }
+                }
+            }
+            return maxHeight;
+        };
+        GridPanelLayoutEngine.prototype._getMaxChildWidthInColumn = function (colNum) {
+            var columns = this._columns;
+            var cl = this._columns.length;
+            var rl = this._rows.length;
+            var children = this._children;
+            var column = columns[colNum];
+            var maxWidth = 0;
+            if (children) {
+                for (var i = 0; i < rl; i++) {
+                    var child = children[i][colNum];
+                    if (child) {
+                        var span = child.layoutData.columnSpan;
+                        if (maxWidth < child.layoutArea.width / span) {
+                            maxWidth = child.layoutArea.width / span;
+                        }
+                    }
+                }
+            }
+            return maxWidth;
+        };
+        GridPanelLayoutEngine.prototype._updateGrid = function (prim) {
+            var _children = this._children;
+            //remove prim.children from _children
+            for (var i_1 = 0; i_1 < _children.length; i_1++) {
+                var children = _children[i_1];
+                if (children) {
+                    children.length = 0;
+                }
+            }
+            var childrenThatSpan;
+            //add prim.children to _children
+            for (var _i = 0, _a = prim.children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                if (!child.layoutData) {
+                    continue;
+                }
+                var gd = child.layoutData;
+                if (!_children[gd.row]) {
+                    _children[gd.row] = [];
+                }
+                if (gd.columnSpan == 1 && gd.rowSpan == 1) {
+                    _children[gd.row][gd.column] = child;
+                }
+                else {
+                    if (!childrenThatSpan) {
+                        childrenThatSpan = [];
+                    }
+                    //when children span, we need to add them to _children whereever they span to so that 
+                    //_getMaxChildHeightInRow and _getMaxChildWidthInColumn will work correctly.
+                    childrenThatSpan.push(child);
+                    for (var i_2 = gd.row; i_2 < gd.row + gd.rowSpan; i_2++) {
+                        for (var j = gd.column; j < gd.column + gd.columnSpan; j++) {
+                            _children[i_2][j] = child;
+                        }
+                    }
+                }
+            }
+            var rows = this._rows;
+            var columns = this._columns;
+            var rl = this._rows.length;
+            var cl = this._columns.length;
+            //get fixed and auto row heights first
+            var starIndexes = [];
+            var totalStars = 0;
+            var rowHeights = 0;
+            var columnWidths = 0;
+            for (var i_3 = 0; i_3 < rl; i_3++) {
+                var row = this._rows[i_3];
+                if (row.heightType == GridDimensionDefinition.Auto) {
+                    this._rowHeights[i_3] = this._getMaxChildHeightInRow(i_3);
+                    rowHeights += this._rowHeights[i_3];
+                }
+                else if (row.heightType == GridDimensionDefinition.Pixels) {
+                    this._rowHeights[i_3] = row.heightPixels;
+                    rowHeights += this._rowHeights[i_3];
+                }
+                else if (row.heightType == GridDimensionDefinition.Stars) {
+                    starIndexes.push(i_3);
+                    totalStars += row.height;
+                }
+            }
+            //star row heights
+            if (starIndexes.length > 0) {
+                var remainingHeight = prim.contentArea.height - rowHeights;
+                for (var i_4 = 0; i_4 < starIndexes.length; i_4++) {
+                    var rowIndex = starIndexes[i_4];
+                    this._rowHeights[rowIndex] = (this._rows[rowIndex].height / totalStars) * remainingHeight;
+                }
+            }
+            //get fixed and auto column widths
+            starIndexes.length = 0;
+            totalStars = 0;
+            for (var i_5 = 0; i_5 < cl; i_5++) {
+                var column = this._columns[i_5];
+                if (column.widthType == GridDimensionDefinition.Auto) {
+                    this._columnWidths[i_5] = this._getMaxChildWidthInColumn(i_5);
+                    columnWidths += this._columnWidths[i_5];
+                }
+                else if (column.widthType == GridDimensionDefinition.Pixels) {
+                    this._columnWidths[i_5] = column.widthPixels;
+                    columnWidths += this._columnWidths[i_5];
+                }
+                else if (column.widthType == GridDimensionDefinition.Stars) {
+                    starIndexes.push(i_5);
+                    totalStars += column.width;
+                }
+            }
+            //star column widths
+            if (starIndexes.length > 0) {
+                var remainingWidth = prim.contentArea.width - columnWidths;
+                for (var i_6 = 0; i_6 < starIndexes.length; i_6++) {
+                    var columnIndex = starIndexes[i_6];
+                    this._columnWidths[columnIndex] = (this._columns[columnIndex].width / totalStars) * remainingWidth;
+                }
+            }
+            var y = 0;
+            this._rowBottoms[rl - 1] = y;
+            for (var i_7 = rl - 2; i_7 >= 0; i_7--) {
+                y += this._rowHeights[i_7 + 1];
+                this._rowBottoms[i_7] = y;
+            }
+            var x = 0;
+            this._columnLefts[0] = x;
+            for (var i_8 = 1; i_8 < cl; i_8++) {
+                x += this._columnWidths[i_8 - 1];
+                this._columnLefts[i_8] = x;
+            }
+            //remove duplicate references to children that span
+            if (childrenThatSpan) {
+                for (var i = 0; i < childrenThatSpan.length; i++) {
+                    var child = childrenThatSpan[i];
+                    var gd = child.layoutData;
+                    for (var i_9 = gd.row; i_9 < gd.row + gd.rowSpan; i_9++) {
+                        for (var j = gd.column; j < gd.column + gd.columnSpan; j++) {
+                            if (i_9 == gd.row && j == gd.column) {
+                                continue;
+                            }
+                            if (_children[i_9][j] == child) {
+                                _children[i_9][j] = null;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        return GridPanelLayoutEngine;
+    }(LayoutEngineBase));
+    GridPanelLayoutEngine.dstOffset = BABYLON.Vector4.Zero();
+    GridPanelLayoutEngine.dstArea = BABYLON.Size.Zero();
+    GridPanelLayoutEngine = GridPanelLayoutEngine_1 = __decorate([
+        BABYLON.className("GridPanelLayoutEngine", "BABYLON")
+    ], GridPanelLayoutEngine);
+    BABYLON.GridPanelLayoutEngine = GridPanelLayoutEngine;
+    var CanvasLayoutEngine_1, StackPanelLayoutEngine_1, GridPanelLayoutEngine_1;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.canvas2dLayoutEngine.js.map
@@ -5826,7 +6169,7 @@ var BABYLON;
     var Prim2DBase = Prim2DBase_1 = (function (_super) {
         __extends(Prim2DBase, _super);
         function Prim2DBase(settings) {
-            var _this = this;
+            var _this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -6030,10 +6373,7 @@ var BABYLON;
                 _this.padding.fromString(settings.padding);
             }
             if (settings.layoutData) {
-                var p = _this.parent;
-                if (p && p.layoutEngine) {
-                    p.layoutEngine.newChild(_this, settings.layoutData);
-                }
+                _this.layoutData = settings.layoutData;
             }
             // Dirty layout and positioning
             _this._parentLayoutDirty();
@@ -8074,6 +8414,22 @@ var BABYLON;
         Prim2DBase.prototype._getActualSizeFromContentToRef = function (primSize, newPrimSize) {
             newPrimSize.copyFrom(primSize);
         };
+        Object.defineProperty(Prim2DBase.prototype, "layoutData", {
+            /**
+             * Get/set the layout data to use for this primitive.
+             */
+            get: function () {
+                return this._layoutData;
+            },
+            set: function (value) {
+                if (this._layoutData === value) {
+                    return;
+                }
+                this._layoutData = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Prim2DBase;
     }(BABYLON.SmartPropertyPrim));
     Prim2DBase.PRIM2DBASE_PROPCOUNT = 25;
@@ -9623,7 +9979,7 @@ var BABYLON;
     var Shape2DInstanceData = (function (_super) {
         __extends(Shape2DInstanceData, _super);
         function Shape2DInstanceData() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         Object.defineProperty(Shape2DInstanceData.prototype, "fillSolidColor", {
             // FILL ATTRIBUTES
@@ -9796,7 +10152,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Group2D(settings) {
-            var _this = this;
+            var _this;
             if (settings == null) {
                 settings = {};
             }
@@ -9806,6 +10162,7 @@ var BABYLON;
             _this = _super.call(this, settings) || this;
             var size = (!settings.size && !settings.width && !settings.height) ? null : (settings.size || (new BABYLON.Size(settings.width || 0, settings.height || 0)));
             _this._trackedNode = (settings.trackNode == null) ? null : settings.trackNode;
+            _this._trackedNodeOffset = (settings.trackNodeOffset == null) ? null : settings.trackNodeOffset;
             if (_this._trackedNode && _this.owner) {
                 _this.owner._registerTrackedNode(_this);
             }
@@ -10028,6 +10385,24 @@ var BABYLON;
                         this.owner._unregisterTrackedNode(this);
                     }
                     this._trackedNode = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Group2D.prototype, "trackedNodeOffset", {
+            /**
+             * Get/set the offset of the tracked node in the tracked node's local space.
+             */
+            get: function () {
+                return this._trackedNodeOffset;
+            },
+            set: function (val) {
+                if (!this._trackedNodeOffset) {
+                    this._trackedNodeOffset = val.clone();
+                }
+                else {
+                    this._trackedNodeOffset.copyFrom(val);
                 }
             },
             enumerable: true,
@@ -10753,7 +11128,7 @@ var BABYLON;
     var WireFrame2DRenderCache = (function (_super) {
         __extends(WireFrame2DRenderCache, _super);
         function WireFrame2DRenderCache() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.vtxCount = 0;
@@ -10979,7 +11354,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WireFrame2D(wireFrameGroups, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -11380,7 +11755,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Rectangle2D(settings) {
-            var _this = this;
+            var _this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -11912,7 +12287,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Ellipse2D(settings) {
-            var _this = this;
+            var _this;
             // Avoid checking every time if the object exists
             if (settings == null) {
                 settings = {};
@@ -12112,7 +12487,7 @@ var BABYLON;
     var Sprite2DRenderCache = (function (_super) {
         __extends(Sprite2DRenderCache, _super);
         function Sprite2DRenderCache() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.ib = null;
@@ -12232,7 +12607,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Sprite2D(texture, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -12898,7 +13273,7 @@ var BABYLON;
     var Text2DRenderCache = (function (_super) {
         __extends(Text2DRenderCache, _super);
         function Text2DRenderCache() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.effectsReady = false;
             _this.vb = null;
             _this.ib = null;
@@ -13093,7 +13468,7 @@ var BABYLON;
          * - wordWrap: if true the text will wrap inside content area
          */
         function Text2D(text, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -13529,7 +13904,8 @@ var BABYLON;
                     for (var j = 0; j < numChars; j++) {
                         var char = text[charNum];
                         var charWidth = charWidths[charNum];
-                        if (!this._isWhiteSpaceCharHoriz(char) && !this._isWhiteSpaceCharVert(char)) {
+                        if (char !== "\t" && !this._isWhiteSpaceCharVert(char)) {
+                            //make sure space char gets processed here or overlapping can occur when text is set
                             this.updateInstanceDataPart(d, offset);
                             var ci = texture.getChar(char);
                             d.topLeftUV = ci.topLeftUV;
@@ -13883,7 +14259,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function Lines2D(points, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -16003,6 +16379,8 @@ var BABYLON;
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D_1._m);
             var rh = this.engine.getRenderHeight();
             var v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
+            var tmpVec3;
+            var tmpMtx;
             // Compute the screen position of each group that track a given scene node
             for (var _i = 0, _a = this._trackedGroups; _i < _a.length; _i++) {
                 var group = _a[_i];
@@ -16011,6 +16389,18 @@ var BABYLON;
                 }
                 var node = group.trackedNode;
                 var worldMtx = node.getWorldMatrix();
+                if (group.trackedNodeOffset) {
+                    if (!tmpVec3) {
+                        tmpVec3 = BABYLON.Vector3.Zero();
+                    }
+                    if (!tmpMtx) {
+                        tmpMtx = BABYLON.Matrix.Identity();
+                    }
+                    BABYLON.Vector3.TransformCoordinatesToRef(group.trackedNodeOffset, worldMtx, tmpVec3);
+                    tmpMtx.copyFrom(worldMtx);
+                    worldMtx = tmpMtx;
+                    worldMtx.setTranslation(tmpVec3);
+                }
                 var proj = BABYLON.Vector3.Project(Canvas2D_1._v, worldMtx, Canvas2D_1._m, v);
                 // Set the visibility state accordingly, if the position is outside the frustum (well on the Z planes only...) set the group to hidden
                 group.levelVisible = proj.z >= 0 && proj.z < 1.0;
@@ -16479,7 +16869,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see PrimitiveThickness.fromString)
          */
         function WorldSpaceCanvas2D(scene, size, settings) {
-            var _this = this;
+            var _this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             var s = settings;
             s.isScreenSpace = false;
@@ -16641,7 +17031,7 @@ var BABYLON;
          * - padding: top, left, right and bottom padding formatted as a single string (see BABYLON.PrimitiveThickness.fromString)
          */
         function ScreenSpaceCanvas2D(scene, settings) {
-            var _this = this;
+            var _this;
             BABYLON.Prim2DBase._isCanvasInit = true;
             _this = _super.call(this, scene, settings) || this;
             return _this;
@@ -17625,7 +18015,7 @@ var BABYLON;
     var StackPanel = StackPanel_1 = (function (_super) {
         __extends(StackPanel, _super);
         function StackPanel(settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -17688,7 +18078,7 @@ var BABYLON;
     var DefaultStackPanelRenderingTemplate = DefaultStackPanelRenderingTemplate_1 = (function (_super) {
         __extends(DefaultStackPanelRenderingTemplate, _super);
         function DefaultStackPanelRenderingTemplate() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         DefaultStackPanelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             return { root: visualPlaceholder, contentPlaceholder: visualPlaceholder };
@@ -17817,7 +18207,7 @@ var BABYLON;
     var ContentControl = ContentControl_1 = (function (_super) {
         __extends(ContentControl, _super);
         function ContentControl(settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -17972,7 +18362,7 @@ var BABYLON;
     var Window = Window_1 = (function (_super) {
         __extends(Window, _super);
         function Window(scene, settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -18157,7 +18547,7 @@ var BABYLON;
     var DefaultWindowRenderingTemplate = DefaultWindowRenderingTemplate_1 = (function (_super) {
         __extends(DefaultWindowRenderingTemplate, _super);
         function DefaultWindowRenderingTemplate() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         DefaultWindowRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             var r = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#808080FF" });
@@ -18188,7 +18578,7 @@ var BABYLON;
     var Label = Label_1 = (function (_super) {
         __extends(Label, _super);
         function Label(settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -18235,7 +18625,7 @@ var BABYLON;
     var DefaultLabelRenderingTemplate = DefaultLabelRenderingTemplate_1 = (function (_super) {
         __extends(DefaultLabelRenderingTemplate, _super);
         function DefaultLabelRenderingTemplate() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         DefaultLabelRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             var r = new BABYLON.Text2D("", { parent: visualPlaceholder });
@@ -18268,7 +18658,7 @@ var BABYLON;
     var Button = Button_1 = (function (_super) {
         __extends(Button, _super);
         function Button(settings) {
-            var _this = this;
+            var _this;
             if (!settings) {
                 settings = {};
             }
@@ -18422,7 +18812,7 @@ var BABYLON;
     var DefaultButtonRenderingTemplate = DefaultButtonRenderingTemplate_1 = (function (_super) {
         __extends(DefaultButtonRenderingTemplate, _super);
         function DefaultButtonRenderingTemplate() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         DefaultButtonRenderingTemplate.prototype.createVisualTree = function (owner, visualPlaceholder) {
             this._rect = new BABYLON.Rectangle2D({ parent: visualPlaceholder, fill: "#FF8080FF", border: "#FF8080FF", roundRadius: 10, borderThickness: 2 });
