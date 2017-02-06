@@ -15,10 +15,6 @@
             this.layoutDirtyOnPropertyChangedMask = 0;
         }
 
-        public newChild(child: Prim2DBase, data: ILayoutData) {
-            
-        }
-
         public updateLayout(prim: Prim2DBase) {
         }
 
@@ -201,4 +197,458 @@
             return false;
         }
     }
+
+    /**
+     * GridData is used specify what row(s) and column(s) a primitive is placed in when its parent is using a Grid Panel Layout. 
+     */
+    export class GridData implements ILayoutData{
+
+        /**
+         * the row number of the grid
+         **/
+        public row:number;
+
+        /**
+         * the column number of the grid 
+         **/
+        public column:number;
+
+        /**
+         * the number of rows a primitive will occupy
+         **/
+        public rowSpan:number;
+
+        /**
+         * the number of columns a primitive will occupy 
+         **/
+        public columnSpan:number;
+
+        /**
+         * Create a Grid Data that describes where a primitive will be placed in a Grid Panel Layout.
+         * @param row the row number of the grid
+         * @param column the column number of the grid 
+         * @param rowSpan the number of rows a primitive will occupy
+         * @param columnSpan the number of columns a primitive will occupy 
+         **/
+        constructor(row:number, column:number, rowSpan?:number, columnSpan?:number){
+
+            this.row = row;
+            this.column = column;
+            this.rowSpan = (rowSpan == null) ? 1 : rowSpan;
+            this.columnSpan = (columnSpan == null) ? 1 : columnSpan;
+
+        }
+
+    }
+
+    class GridDimensionDefinition {
+        public static Pixels = 1;
+        public static Stars = 2;
+        public static Auto = 3;
+        _parse(value: string, res: (v: number, vp: number, t: number) => void) {
+            let v = value.toLocaleLowerCase().trim();
+            if (v.indexOf("auto") === 0) {
+                res(null, null, GridDimensionDefinition.Auto);
+            } else if (v.indexOf("*") !== -1) {
+                let i = v.indexOf("*");
+                let w = 1;
+                if(i > 0){
+                    w = parseFloat(v.substr(0, i));
+                }
+                res(w, null, GridDimensionDefinition.Stars);
+            } else {
+                let w = parseFloat(v);
+                res(w, w, GridDimensionDefinition.Pixels);
+            }
+        }
+    }
+    class RowDefinition extends GridDimensionDefinition {
+        heightPixels: number;
+        height: number;
+        heightType: number;
+    }
+    class ColumnDefinition extends GridDimensionDefinition {
+        widthPixels: number;
+        width: number;
+        widthType: number;
+    }
+
+    @className("GridPanelLayoutEngine", "BABYLON")
+    /**
+     * A grid panel layout.  Grid panel is a table that has rows and columns.
+     * When adding children to a primitive that is using grid panel layout, you must assign a GridData object to the child to indicate where the child will appear in the grid.
+     */
+    export class GridPanelLayoutEngine extends LayoutEngineBase {
+        constructor(settings: { rows: [{ height: string }], columns: [{ width: string }] }) {
+            super();
+            this.layoutDirtyOnPropertyChangedMask = Prim2DBase.sizeProperty.flagId | Prim2DBase.actualSizeProperty.flagId;
+            this._rows = new Array<RowDefinition>();
+            this._columns = new Array<ColumnDefinition>();
+            if (settings.rows) {
+                for (let row of settings.rows) {
+                    let r = new RowDefinition();
+                    r._parse(row.height, (v, vp, t) => {
+                        r.height = v;
+                        r.heightPixels = vp;
+                        r.heightType = t;
+                    });
+                    this._rows.push(r);
+                }
+            }
+            if (settings.columns) {
+                for (let col of settings.columns) {
+                    let r = new ColumnDefinition();
+                    r._parse(col.width, (v, vp, t) => {
+                        r.width = v;
+                        r.widthPixels = vp;
+                        r.widthType = t;
+                    });
+                    this._columns.push(r);
+                }
+            }
+
+        }
+
+        private _rows: Array<RowDefinition>;
+        private _columns: Array<ColumnDefinition>;
+        private _children: Prim2DBase[][] = [];
+        
+        private _rowBottoms: Array<number> = [];
+        private _columnLefts: Array<number> = [];
+
+        private _rowHeights: Array<number> = [];
+        private _columnWidths: Array<number> = [];
+
+        private static dstOffset = Vector4.Zero();
+        private static dstArea = Size.Zero();
+
+        public updateLayout(prim: Prim2DBase) {
+            if (prim._isFlagSet(SmartPropertyPrim.flagLayoutDirty)) {
+
+                for (let child of prim.children) {
+                    if (child._isFlagSet(SmartPropertyPrim.flagNoPartOfLayout)) {
+                        continue;
+                    }
+                    if (child._hasMargin) {
+                        child.margin.computeWithAlignment(prim.layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea, true);
+                        child.layoutArea = GridPanelLayoutEngine.dstArea.clone();
+                    } else {
+                        child.margin.computeArea(child.actualSize, child.layoutArea);
+                    }
+                }
+
+                this._updateGrid(prim);
+
+                let _children = this._children;
+                let rl = this._rows.length;
+                let cl = this._columns.length;
+                let columnWidth = 0;
+                let rowHeight = 0;
+                let layoutArea = new BABYLON.Size(0, 0);
+
+                for(let i = 0; i < _children.length; i++){
+                    let children = _children[i];
+
+                    if(children){
+
+                        let bottom = this._rowBottoms[i];
+                        let rowHeight = this._rowHeights[i];
+
+                        let oBottom = bottom;
+                        let oRowHeight = rowHeight;
+
+                        for(let j = 0; j < children.length; j++){
+                            
+                            let left = this._columnLefts[j];
+                            let columnWidth = this._columnWidths[j];
+
+                            let child = children[j];
+
+                            if(child){
+
+                                let gd = <GridData>child.layoutData;
+
+                                if(gd.columnSpan > 1){
+                                    for(let k = j+1; k < gd.columnSpan + j && k < cl; k++){
+                                        columnWidth += this._columnWidths[k];
+                                    }
+                                }
+
+                                if(gd.rowSpan > 1){
+                                    
+                                    for(let k = i+1; k < gd.rowSpan + i && k < rl; k++){
+                                        rowHeight += this._rowHeights[k];
+                                        bottom = this._rowBottoms[k];
+                                    }
+                                    
+                                }
+
+                                layoutArea.width = columnWidth;
+                                layoutArea.height = rowHeight;                                
+
+                                child.margin.computeWithAlignment(layoutArea, child.actualSize, child.marginAlignment, child.actualScale, GridPanelLayoutEngine.dstOffset, GridPanelLayoutEngine.dstArea);
+                                child.layoutAreaPos = new BABYLON.Vector2(left + GridPanelLayoutEngine.dstOffset.x, bottom + GridPanelLayoutEngine.dstOffset.y);
+                                
+                                bottom = oBottom;
+                                rowHeight = oRowHeight;
+                                
+                            }
+
+                        }
+
+                    }
+                    
+                }
+
+                prim._clearFlags(SmartPropertyPrim.flagLayoutDirty);
+            }
+        }
+
+        get isChildPositionAllowed(): boolean {
+            return false;
+        }
+
+        private _getMaxChildHeightInRow(rowNum:number):number{
+
+            let rows = this._rows;
+            let cl = this._columns.length;
+            let rl = this._rows.length;
+            let children = this._children;
+            let row = rows[rowNum];
+            let maxHeight = 0;
+
+            if(children){
+
+                for(let i = 0; i < cl; i++){
+                    let child = children[rowNum][i];
+                    
+                    if(child){
+                        let span = (<GridData>child.layoutData).rowSpan;
+                        if(maxHeight < child.layoutArea.height/span){
+                            maxHeight = child.layoutArea.height/span;
+                        }
+                    }
+                }
+
+            }
+
+            return maxHeight;
+
+        }
+
+        private _getMaxChildWidthInColumn(colNum:number):number{
+
+            let columns = this._columns;
+            let cl = this._columns.length;
+            let rl = this._rows.length;
+            let children = this._children;
+            let column = columns[colNum];
+            let maxWidth = 0;
+
+            if(children){
+
+                for(let i = 0; i < rl; i++){
+                    let child = children[i][colNum];
+                    if(child){
+                        let span = (<GridData>child.layoutData).columnSpan;
+                        if(maxWidth < child.layoutArea.width/span){
+                            maxWidth = child.layoutArea.width/span;
+                        }
+                    }
+                }
+
+            }
+
+            return maxWidth;
+
+        }
+
+        private _updateGrid(prim:Prim2DBase){
+
+            let _children = this._children;
+
+            //remove prim.children from _children
+            for(let i = 0; i < _children.length; i++){
+                let children = _children[i];
+                if(children){
+                    children.length = 0;
+                }
+            }
+
+            let childrenThatSpan:Array<Prim2DBase>;
+
+            //add prim.children to _children
+            for(let child of prim.children){
+                
+                if(!child.layoutData){
+                    continue;
+                }
+
+                let gd = <GridData>child.layoutData;
+
+                if(!_children[gd.row]){
+                    _children[gd.row] = [];
+                }
+
+                if(gd.columnSpan == 1 && gd.rowSpan == 1){
+                    _children[gd.row][gd.column] = child;
+                }else{
+                    if(!childrenThatSpan){
+                        childrenThatSpan = [];
+                    }
+                    //when children span, we need to add them to _children whereever they span to so that 
+                    //_getMaxChildHeightInRow and _getMaxChildWidthInColumn will work correctly.
+                    childrenThatSpan.push(child);
+                    for(let i = gd.row; i < gd.row + gd.rowSpan; i++){
+                        for(let j = gd.column; j < gd.column + gd.columnSpan; j++){
+                            _children[i][j] = child;
+                        }
+                    }
+                }
+
+            }
+
+
+            let rows = this._rows;
+            let columns = this._columns;
+
+            let rl = this._rows.length;
+            let cl = this._columns.length;
+
+            //get fixed and auto row heights first
+
+            var starIndexes = [];
+            var totalStars = 0;
+            var rowHeights = 0;
+            let columnWidths = 0;
+
+            for (let i = 0; i < rl; i++) {
+
+                let row = this._rows[i];
+
+                if(row.heightType == GridDimensionDefinition.Auto){
+
+                    this._rowHeights[i] = this._getMaxChildHeightInRow(i);
+                    rowHeights += this._rowHeights[i];
+
+                }else if(row.heightType == GridDimensionDefinition.Pixels){
+
+                    this._rowHeights[i] = row.heightPixels;
+                    rowHeights += this._rowHeights[i];
+
+                }else if(row.heightType == GridDimensionDefinition.Stars){
+
+                    starIndexes.push(i);
+
+                    totalStars += row.height;
+
+                }
+
+            }
+
+            //star row heights
+
+            if(starIndexes.length > 0){
+
+                let remainingHeight = prim.contentArea.height - rowHeights;
+
+                for(let i = 0; i < starIndexes.length; i++){
+
+                    let rowIndex = starIndexes[i];
+
+                    this._rowHeights[rowIndex] = (this._rows[rowIndex].height / totalStars) * remainingHeight;
+
+                }
+            }
+
+
+            //get fixed and auto column widths
+
+            starIndexes.length = 0;
+            totalStars = 0;
+
+            for (let i = 0; i < cl; i++) {
+
+                let column = this._columns[i];
+
+                if(column.widthType == GridDimensionDefinition.Auto){
+
+                    this._columnWidths[i] = this._getMaxChildWidthInColumn(i);
+                    columnWidths += this._columnWidths[i];
+
+                }else if(column.widthType == GridDimensionDefinition.Pixels){
+
+                    this._columnWidths[i] = column.widthPixels;
+                    columnWidths += this._columnWidths[i];
+
+                }else if(column.widthType == GridDimensionDefinition.Stars){
+
+                    starIndexes.push(i);
+
+                    totalStars += column.width;
+
+                }
+
+            }
+
+            //star column widths
+
+            if(starIndexes.length > 0){
+
+                let remainingWidth = prim.contentArea.width - columnWidths;
+
+                for(let i = 0; i < starIndexes.length; i++){
+
+                    let columnIndex = starIndexes[i];
+
+                    this._columnWidths[columnIndex] = (this._columns[columnIndex].width / totalStars) * remainingWidth;
+
+                }
+            }
+
+
+            let y = 0;
+            this._rowBottoms[rl - 1] = y;
+
+            for (let i = rl - 2; i >= 0; i--) {
+
+                y += this._rowHeights[i+1];
+                this._rowBottoms[i] = y;
+
+            }
+
+            let x = 0;
+            this._columnLefts[0] = x;
+            
+            for (let i = 1; i < cl; i++) {
+
+                x += this._columnWidths[i-1];
+                this._columnLefts[i] = x;
+
+            }
+
+            //remove duplicate references to children that span
+            if(childrenThatSpan){
+                for(var i = 0; i < childrenThatSpan.length; i++){
+                    
+                    let child = childrenThatSpan[i];
+                    let gd = <GridData>child.layoutData;
+
+                    for(let i = gd.row; i < gd.row + gd.rowSpan; i++){
+                        for(let j = gd.column; j < gd.column + gd.columnSpan; j++){
+                            if(i == gd.row && j == gd.column){
+                                continue;
+                            }
+                            if(_children[i][j] == child){
+                                _children[i][j] = null;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+
 }
