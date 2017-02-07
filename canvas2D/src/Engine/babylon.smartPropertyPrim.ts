@@ -1170,6 +1170,7 @@
             // Set the dirty flags
             if (!instanceDirty && (propInfo.kind === Prim2DPropInfo.PROPKIND_MODEL)) {
                 if (!this.isDirty) {
+                    this.onPrimBecomesDirty();
                     this._setFlags(SmartPropertyPrim.flagModelDirty);
                 }
             } else if (instanceDirty || (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
