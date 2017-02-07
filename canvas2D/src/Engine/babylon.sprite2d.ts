@@ -164,7 +164,7 @@
             }
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteSizeProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteSizeProperty = pi, false, true)
         /**
          * Get/set the sprite location (in pixels) in the texture
          */
