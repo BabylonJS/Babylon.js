@@ -2272,6 +2272,7 @@ declare module BABYLON {
         readonly pointerEventObservable: Observable<PrimitivePointerInfo>;
         readonly zActualOrderChangedObservable: Observable<number>;
         displayDebugAreas: boolean;
+        private static _updatingDebugArea;
         private _updateDebugArea();
         findById(id: string): Prim2DBase;
         protected onZOrderChanged(): void;
