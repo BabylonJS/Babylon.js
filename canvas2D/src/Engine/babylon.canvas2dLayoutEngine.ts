@@ -417,7 +417,7 @@
             let row = rows[rowNum];
             let maxHeight = 0;
 
-            if(children){
+            if(children && children[rowNum]){
 
                 for(let i = 0; i < cl; i++){
                     let child = children[rowNum][i];
@@ -448,11 +448,13 @@
             if(children){
 
                 for(let i = 0; i < rl; i++){
-                    let child = children[i][colNum];
-                    if(child){
-                        let span = (<GridData>child.layoutData).columnSpan;
-                        if(maxWidth < child.layoutArea.width/span){
-                            maxWidth = child.layoutArea.width/span;
+                    if(children[i]){
+                        let child = children[i][colNum];
+                        if(child){
+                            let span = (<GridData>child.layoutData).columnSpan;
+                            if(maxWidth < child.layoutArea.width/span){
+                                maxWidth = child.layoutArea.width/span;
+                            }
                         }
                     }
                 }
