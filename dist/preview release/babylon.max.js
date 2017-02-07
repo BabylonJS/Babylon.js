@@ -16207,10 +16207,11 @@ var BABYLON;
                 yRotation = cameraTarget.rotation.y;
             }
             var radians = this.getRadians(this.rotationOffset) + yRotation;
-            var targetX = cameraTarget.position.x + Math.sin(radians) * this.radius;
-            var targetZ = cameraTarget.position.z + Math.cos(radians) * this.radius;
+            var targetPosition = cameraTarget.getAbsolutePosition();
+            var targetX = targetPosition.x + Math.sin(radians) * this.radius;
+            var targetZ = targetPosition.z + Math.cos(radians) * this.radius;
             var dx = targetX - this.position.x;
-            var dy = (cameraTarget.position.y + this.heightOffset) - this.position.y;
+            var dy = (targetPosition.y + this.heightOffset) - this.position.y;
             var dz = (targetZ) - this.position.z;
             var vx = dx * this.cameraAcceleration * 2; //this is set to .05
             var vy = dy * this.cameraAcceleration;
@@ -16225,7 +16226,7 @@ var BABYLON;
                 vz = vz < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
             }
             this.position = new BABYLON.Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
-            this.setTarget(cameraTarget.position);
+            this.setTarget(targetPosition);
         };
         FollowCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
