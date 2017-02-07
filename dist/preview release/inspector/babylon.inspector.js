@@ -621,7 +621,8 @@ var INSPECTOR;
             var toAddDirty = [
                 'actualZOffset', 'isSizeAuto', 'layoutArea', 'layoutAreaPos', 'contentArea',
                 'marginOffset', 'paddingOffset', 'isPickable', 'isContainer', 'boundingInfo',
-                'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo'
+                'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo',
+                '_cachedTexture'
             ];
             for (var _i = 0, toAddDirty_1 = toAddDirty; _i < toAddDirty_1.length; _i++) {
                 var dirty = toAddDirty_1[_i];
@@ -1886,7 +1887,7 @@ var INSPECTOR;
             div.style.display = 'none';
             div.appendChild(clone);
             var value = INSPECTOR.Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
-            div.remove();
+            div.parentNode.removeChild(div);
             return value;
         };
         Helpers.LoadScript = function () {
@@ -2713,6 +2714,7 @@ var INSPECTOR;
             _this._bjsPanelContent.innerHTML = BABYLON.Tools.LogCache;
             BABYLON.Tools.OnNewCacheEntry = function (entry) {
                 _this._bjsPanelContent.innerHTML += entry;
+                _this._bjsPanelContent.scrollTop = _this._bjsPanelContent.scrollHeight;
             };
             return _this;
             // Testing
@@ -2735,13 +2737,8 @@ var INSPECTOR;
             var callerLine = INSPECTOR.Helpers.CreateDiv('caller', this._consolePanelContent);
             callerLine.textContent = caller;
             var line = INSPECTOR.Helpers.CreateDiv(type, this._consolePanelContent);
-            if (typeof message === "string") {
-                line.textContent += message;
-            }
-            else {
-                line.textContent += JSON.stringify(message);
-                line.classList.add('object');
-            }
+            line.textContent += message;
+            this._consolePanelContent.scrollTop = this._consolePanelContent.scrollHeight;
         };
         ConsoleTab.prototype._addConsoleLog = function () {
             var params = [];

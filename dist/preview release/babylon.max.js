@@ -45306,15 +45306,15 @@ var BABYLON;
         };
         VirtualJoystick.prototype._onPointerUp = function (e) {
             if (this._joystickPointerID == e.pointerId) {
-                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 63, this._joystickPointerStartPos.y - 63, 126, 126);
-                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 41, this._joystickPreviousPointerPos.y - 41, 82, 82);
+                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 64, this._joystickPointerStartPos.y - 64, 128, 128);
+                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 42, this._joystickPreviousPointerPos.y - 42, 84, 84);
                 this._joystickPointerID = -1;
                 this.pressed = false;
             }
             else {
                 var touch = this._touches.get(e.pointerId.toString());
                 if (touch) {
-                    VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
+                    VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 44, touch.prevY - 44, 88, 88);
                 }
             }
             this._deltaJoystickVector.x = 0;
@@ -45370,8 +45370,8 @@ var BABYLON;
             if (this.pressed) {
                 this._touches.forEach(function (key, touch) {
                     if (touch.pointerId === _this._joystickPointerID) {
-                        VirtualJoystick.vjCanvasContext.clearRect(_this._joystickPointerStartPos.x - 63, _this._joystickPointerStartPos.y - 63, 126, 126);
-                        VirtualJoystick.vjCanvasContext.clearRect(_this._joystickPreviousPointerPos.x - 41, _this._joystickPreviousPointerPos.y - 41, 82, 82);
+                        VirtualJoystick.vjCanvasContext.clearRect(_this._joystickPointerStartPos.x - 64, _this._joystickPointerStartPos.y - 64, 128, 128);
+                        VirtualJoystick.vjCanvasContext.clearRect(_this._joystickPreviousPointerPos.x - 42, _this._joystickPreviousPointerPos.y - 42, 84, 84);
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.lineWidth = 6;
                         VirtualJoystick.vjCanvasContext.strokeStyle = _this._joystickColor;
@@ -45392,7 +45392,7 @@ var BABYLON;
                         _this._joystickPreviousPointerPos = _this._joystickPointerPos.clone();
                     }
                     else {
-                        VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
+                        VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 44, touch.prevY - 44, 88, 88);
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.fillStyle = "white";
                         VirtualJoystick.vjCanvasContext.beginPath();
