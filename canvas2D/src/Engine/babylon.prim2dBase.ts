@@ -2028,6 +2028,8 @@
             } else {
                 this._size.copyFrom(value);
             }
+            this._actualSize = null;
+            this._positioningDirty();
         }
 
         /**
@@ -2053,6 +2055,7 @@
                 this.size.width = value;
             }
 
+            this._actualSize = null;
             this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
             this._positioningDirty();
         }
@@ -2080,6 +2083,7 @@
                 this.size.height = value;
             }
 
+            this._actualSize = null;
             this._triggerPropertyChanged(Prim2DBase.sizeProperty, value);
             this._positioningDirty();
         }
@@ -2837,7 +2841,13 @@
             this._displayDebugAreas = value;
         }
 
+        private static _updatingDebugArea = false;
         private _updateDebugArea() {
+            if (Prim2DBase._updatingDebugArea === true) {
+                return;
+            }
+            Prim2DBase._updatingDebugArea = true;
+
             let areaNames = ["Layout", "Margin", "Padding", "Content"];
             let areaZones = ["Area", "Frame", "Top", "Left", "Right", "Bottom"];
 
@@ -3005,6 +3015,8 @@
                     ++curAreaIndex;
                 }
             }
+
+            Prim2DBase._updatingDebugArea = false;
         }
 
         public findById(id: string): Prim2DBase {
