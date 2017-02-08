@@ -107,7 +107,6 @@
                 if (idx > -1) {
 
                     var animations = this._animations;
-                    var numberOfAnimationsStopped = 0;
                     
                     for (var index = animations.length - 1; index >= 0; index--) {
                         if (typeof animationName === "string" && animations[index].name != animationName) {
@@ -116,7 +115,6 @@
 
                         animations[index].reset();
                         animations.splice(index, 1);
-                        numberOfAnimationsStopped++;
                     }
 
                     if (animations.length == 0) {
