@@ -7283,7 +7283,7 @@ var BABYLON;
             this.applyStates();
             var mode = 0;
             if (backBuffer && color) {
-                this._gl.clearColor(color.r, color.g, color.b, color.a);
+                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
             if (depth) {
@@ -10842,7 +10842,7 @@ var BABYLON;
         };
         Object.defineProperty(AbstractMesh.prototype, "rotation", {
             /**
-             * Ratation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
+             * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
              * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
              * Default : (0.0, 0.0, 0.0)
              */
@@ -10892,18 +10892,35 @@ var BABYLON;
             configurable: true
         });
         // Methods
+        /**
+         * Copies the paramater passed Matrix into the mesh Pose matrix.
+         * Returns nothing.
+         */
         AbstractMesh.prototype.updatePoseMatrix = function (matrix) {
             this._poseMatrix.copyFrom(matrix);
         };
+        /**
+         * Returns the mesh Pose matrix.
+         * Returned object : Matrix
+         */
         AbstractMesh.prototype.getPoseMatrix = function () {
             return this._poseMatrix;
         };
+        /**
+         * Disables the mesh edger rendering mode.
+         * Returns nothing.
+         */
         AbstractMesh.prototype.disableEdgesRendering = function () {
             if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
                 this._edgesRenderer = undefined;
             }
         };
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible.
+         * Returns nothing.
+         */
         AbstractMesh.prototype.enableEdgesRendering = function (epsilon, checkVerticesInsteadOfIndices) {
             if (epsilon === void 0) { epsilon = 0.95; }
             if (checkVerticesInsteadOfIndices === void 0) { checkVerticesInsteadOfIndices = false; }
@@ -10911,6 +10928,10 @@ var BABYLON;
             this._edgesRenderer = new BABYLON.EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
         };
         Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
+            /**
+             * Returns true if the mesh is blocked. Used by the class Mesh.
+             * Returns the boolean `false` by default.
+             */
             get: function () {
                 return false;
             },
@@ -10918,7 +10939,7 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Returns this by default, used by the class Mesh.
+         * Returns the mesh itself by default, used by the class Mesh.
          * Returned type : AbstractMesh
          */
         AbstractMesh.prototype.getLOD = function (camera) {
@@ -11091,6 +11112,7 @@ var BABYLON;
          * Adds a rotation step to the mesh current rotation.
          * x, y, z are Euler angles expressed in radians.
          * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
+         * This means this rotation is made in the mesh local space only.
          * It's useful to set a custom rotation order different from the BJS standard one YXZ.
          * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
          * ```javascript
@@ -11116,10 +11138,18 @@ var BABYLON;
             }
             return this;
         };
+        /**
+         * Retuns the mesh absolute position in the World.
+         * Returns a Vector3
+         */
         AbstractMesh.prototype.getAbsolutePosition = function () {
             this.computeWorldMatrix();
             return this._absolutePosition;
         };
+        /**
+         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
+         * Returns nothing.
+         */
         AbstractMesh.prototype.setAbsolutePosition = function (absolutePosition) {
             if (!absolutePosition) {
                 return;
@@ -11259,11 +11289,19 @@ var BABYLON;
             this._currentRenderId = Number.MAX_VALUE;
             this._isDirty = true;
         };
+        /**
+         * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.
+         * Returns nothing.
+         */
         AbstractMesh.prototype._updateBoundingInfo = function () {
             this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this.absolutePosition, this.absolutePosition);
             this._boundingInfo.update(this.worldMatrixFromCache);
             this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         };
+        /**
+         * Update a mesh's children BoundingInfo objects only.
+         * Returns nothing.
+         */
         AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
             if (!this.subMeshes) {
                 return;
@@ -11458,9 +11496,19 @@ var BABYLON;
             this._meshToBoneReferal = null;
             this.parent = null;
         };
+        /**
+         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
+         * A mesh is in the frustum if its bounding box intersects the frustum.
+         * Boolean returned.
+         */
         AbstractMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isInFrustum(frustumPlanes);
         };
+        /**
+         * Returns `true` if the mesh is completely in the frustum defined be the passed array of planes.
+         * A mesh is completely in the frustum if its bounding box it completely inside the frustum.
+         * Boolean returned.
+         */
         AbstractMesh.prototype.isCompletelyInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
             ;
@@ -11565,6 +11613,10 @@ var BABYLON;
         };
         Object.defineProperty(AbstractMesh.prototype, "checkCollisions", {
             // Collisions
+            /**
+             * Property checkCollisions : Boolean, whether the camera should check the collisions against the mesh.
+             * Default `false`.
+             */
             get: function () {
                 return this._checkCollisions;
             },
@@ -11586,8 +11638,8 @@ var BABYLON;
         };
         // Submeshes octree
         /**
-        * This function will create an octree to help select the right submeshes for rendering, picking and collisions
-        * Please note that you must have a decent number of submeshes to get performance improvements when using octree
+        * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.
+        * Please note that you must have a decent number of submeshes to get performance improvements when using an octree.
         */
         AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function (maxCapacity, maxDepth) {
             if (maxCapacity === void 0) { maxCapacity = 64; }
@@ -11656,6 +11708,10 @@ var BABYLON;
         AbstractMesh.prototype._generatePointsArray = function () {
             return false;
         };
+        /**
+         * Checks if the passed Ray intersects with the mesh.
+         * Returns an object PickingInfo.
+         */
         AbstractMesh.prototype.intersects = function (ray, fastCheck) {
             var pickingInfo = new BABYLON.PickingInfo();
             if (!this.subMeshes || !this._boundingInfo || !ray.intersectsSphere(this._boundingInfo.boundingSphere) || !ray.intersectsBox(this._boundingInfo.boundingBox)) {
@@ -11715,9 +11771,17 @@ var BABYLON;
             }
             return pickingInfo;
         };
+        /**
+         * Clones the mesh, used by the class Mesh.
+         * Just returns `null` for an AbstractMesh.
+         */
         AbstractMesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
             return null;
         };
+        /**
+         * Disposes all the mesh submeshes.
+         * Returns nothing.
+         */
         AbstractMesh.prototype.releaseSubMeshes = function () {
             if (this.subMeshes) {
                 while (this.subMeshes.length) {
@@ -11822,11 +11886,21 @@ var BABYLON;
             this._isDisposed = true;
             _super.prototype.dispose.call(this);
         };
+        /**
+         * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.
+         * This Vector3 is expressed in the World space.
+         */
         AbstractMesh.prototype.getDirection = function (localAxis) {
             var result = BABYLON.Vector3.Zero();
             this.getDirectionToRef(localAxis, result);
             return result;
         };
+        /**
+         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
+         * localAxis is expressed in the mesh local space.
+         * result is computed in the Wordl space from the mesh World matrix.
+         * Returns nothing.
+         */
         AbstractMesh.prototype.getDirectionToRef = function (localAxis, result) {
             BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         };
@@ -11847,21 +11921,35 @@ var BABYLON;
             this._pivotMatrix.m[14] = -point.z;
             this._cache.pivotMatrixUpdated = true;
         };
+        /**
+         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
+         */
         AbstractMesh.prototype.getPivotPoint = function () {
             var point = BABYLON.Vector3.Zero();
             this.getPivotPointToRef(point);
             return point;
         };
+        /**
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
+         */
         AbstractMesh.prototype.getPivotPointToRef = function (result) {
             result.x = -this._pivotMatrix.m[12];
             result.y = -this._pivotMatrix.m[13];
             result.z = -this._pivotMatrix.m[14];
         };
+        /**
+         * Returns a new Vector3 set with the mesh pivot point World coordinates.
+         */
         AbstractMesh.prototype.getAbsolutePivotPoint = function () {
             var point = BABYLON.Vector3.Zero();
             this.getAbsolutePivotPointToRef(point);
             return point;
         };
+        /**
+         * Defines the passed mesh as the parent of the current mesh.
+         * If keepWorldPositionRotation is set to `true` (default `false`), the current mesh position and rotation are kept.
+         * Returns nothing.
+         */
         AbstractMesh.prototype.setParent = function (mesh, keepWorldPositionRotation) {
             if (keepWorldPositionRotation === void 0) { keepWorldPositionRotation = false; }
             var child = this;
@@ -11913,14 +12001,25 @@ var BABYLON;
             }
             child.parent = parent;
         };
+        /**
+         * Adds the passed mesh as a child to the current mesh.
+         * If keepWorldPositionRotation is set to `true` (default `false`), the child world position and rotation are kept.
+         * Returns nothing.
+         */
         AbstractMesh.prototype.addChild = function (mesh, keepWorldPositionRotation) {
             if (keepWorldPositionRotation === void 0) { keepWorldPositionRotation = false; }
             mesh.setParent(this, keepWorldPositionRotation);
         };
+        /**
+         * Removes the passed mesh from the current mesh children list.
+         */
         AbstractMesh.prototype.removeChild = function (mesh, keepWorldPositionRotation) {
             if (keepWorldPositionRotation === void 0) { keepWorldPositionRotation = false; }
             mesh.setParent(null, keepWorldPositionRotation);
         };
+        /**
+         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
+         */
         AbstractMesh.prototype.getAbsolutePivotPointToRef = function (result) {
             result.x = this._pivotMatrix.m[12];
             result.y = this._pivotMatrix.m[13];
@@ -31069,16 +31168,14 @@ var BABYLON;
                 var idx = this._scene._activeAnimatables.indexOf(this);
                 if (idx > -1) {
                     var animations = this._animations;
-                    var numberOfAnimationsStopped = 0;
                     for (var index = animations.length - 1; index >= 0; index--) {
                         if (typeof animationName === "string" && animations[index].name != animationName) {
                             continue;
                         }
                         animations[index].reset();
                         animations.splice(index, 1);
-                        numberOfAnimationsStopped++;
                     }
-                    if (animations.length == numberOfAnimationsStopped) {
+                    if (animations.length == 0) {
                         this._scene._activeAnimatables.splice(idx, 1);
                         if (this.onAnimationEnd) {
                             this.onAnimationEnd();
@@ -31209,7 +31306,7 @@ var BABYLON;
     var CircleEase = (function (_super) {
         __extends(CircleEase, _super);
         function CircleEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         CircleEase.prototype.easeInCore = function (gradient) {
             gradient = Math.max(0, Math.min(1, gradient));
@@ -31269,7 +31366,7 @@ var BABYLON;
     var CubicEase = (function (_super) {
         __extends(CubicEase, _super);
         function CubicEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         CubicEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient);
@@ -31337,7 +31434,7 @@ var BABYLON;
     var QuadraticEase = (function (_super) {
         __extends(QuadraticEase, _super);
         function QuadraticEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         QuadraticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient);
@@ -31348,7 +31445,7 @@ var BABYLON;
     var QuarticEase = (function (_super) {
         __extends(QuarticEase, _super);
         function QuarticEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         QuarticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient * gradient);
@@ -31359,7 +31456,7 @@ var BABYLON;
     var QuinticEase = (function (_super) {
         __extends(QuinticEase, _super);
         function QuinticEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         QuinticEase.prototype.easeInCore = function (gradient) {
             return (gradient * gradient * gradient * gradient * gradient);
@@ -31370,7 +31467,7 @@ var BABYLON;
     var SineEase = (function (_super) {
         __extends(SineEase, _super);
         function SineEase() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            return _super.apply(this, arguments) || this;
         }
         SineEase.prototype.easeInCore = function (gradient) {
             return (1.0 - Math.sin(1.5707963267948966 * (1.0 - gradient)));
@@ -46305,7 +46402,7 @@ var BABYLON;
     var ShadowsOptimization = (function (_super) {
         __extends(ShadowsOptimization, _super);
         function ShadowsOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.shadowsEnabled = false;
                 return true;
@@ -46318,7 +46415,7 @@ var BABYLON;
     var PostProcessesOptimization = (function (_super) {
         __extends(PostProcessesOptimization, _super);
         function PostProcessesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.postProcessesEnabled = false;
                 return true;
@@ -46331,7 +46428,7 @@ var BABYLON;
     var LensFlaresOptimization = (function (_super) {
         __extends(LensFlaresOptimization, _super);
         function LensFlaresOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.lensFlaresEnabled = false;
                 return true;
@@ -46344,7 +46441,7 @@ var BABYLON;
     var ParticlesOptimization = (function (_super) {
         __extends(ParticlesOptimization, _super);
         function ParticlesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.particlesEnabled = false;
                 return true;
@@ -46357,7 +46454,7 @@ var BABYLON;
     var RenderTargetsOptimization = (function (_super) {
         __extends(RenderTargetsOptimization, _super);
         function RenderTargetsOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this.apply = function (scene) {
                 scene.renderTargetsEnabled = false;
                 return true;
@@ -46370,7 +46467,7 @@ var BABYLON;
     var MergeMeshesOptimization = (function (_super) {
         __extends(MergeMeshesOptimization, _super);
         function MergeMeshesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
             _this._canBeMerged = function (abstractMesh) {
                 if (!(abstractMesh instanceof BABYLON.Mesh)) {
                     return false;
@@ -48308,7 +48405,7 @@ var BABYLON;
         __extends(GamepadCamera, _super);
         //-- end properties for backward compatibility for inputs
         function GamepadCamera(name, position, scene) {
-            var _this = this;
+            var _this;
             BABYLON.Tools.Warn("Deprecated. Please use Universal Camera instead.");
             _this = _super.call(this, name, position, scene) || this;
             return _this;
@@ -53076,7 +53173,7 @@ var BABYLON;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=babylon.tools.pmremgenerator.js.map
+//# sourceMappingURL=babylon.tools.pmremGenerator.js.map
 
 
 
