@@ -1008,7 +1008,7 @@
 
             var mode = 0;
             if (backBuffer && color) {
-                this._gl.clearColor(color.r, color.g, color.b, color.a);
+                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
             if (depth) {
