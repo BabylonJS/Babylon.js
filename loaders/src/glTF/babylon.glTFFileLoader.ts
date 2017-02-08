@@ -669,7 +669,7 @@ module BABYLON {
                         var uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
                         var uvs = new Float32Array(buffer.length);
                         (<Float32Array>uvs).set(buffer);
-                        normalizeUVs(uvs);
+                        //normalizeUVs(uvs);
                         tempVertexData.set(uvs, uvKind);
                     }
                     else if (semantic === "JOINT") {
@@ -1346,7 +1346,7 @@ module BABYLON {
             var blob = new Blob([buffer]);
             var blobURL = URL.createObjectURL(blob);
             var revokeBlobURL = () => URL.revokeObjectURL(blobURL);
-            var newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
+            var newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, false, samplingMode, revokeBlobURL, revokeBlobURL);
             newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
             newTexture.wrapV = GLTFUtils.GetWrapMode(sampler.wrapT);
             newTexture.name = id;
