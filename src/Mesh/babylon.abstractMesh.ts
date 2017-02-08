@@ -267,7 +267,7 @@
         }
 
         /**
-         * Ratation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z. 
+         * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z. 
          * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
          * Default : (0.0, 0.0, 0.0)
          */
@@ -312,32 +312,53 @@
         }
 
         // Methods
+        /**
+         * Copies the paramater passed Matrix into the mesh Pose matrix.  
+         * Returns nothing.  
+         */
         public updatePoseMatrix(matrix: Matrix) {
             this._poseMatrix.copyFrom(matrix);
         }
 
+        /**
+         * Returns the mesh Pose matrix.  
+         * Returned object : Matrix
+         */
         public getPoseMatrix(): Matrix {
             return this._poseMatrix;
         }
 
+        /**
+         * Disables the mesh edger rendering mode.  
+         * Returns nothing.  
+         */
         public disableEdgesRendering(): void {
             if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
                 this._edgesRenderer = undefined;
             }
         }
+        /**
+         * Enables the edge rendering mode on the mesh.  
+         * This mode makes the mesh edges visible.  
+         * Returns nothing.  
+         */
         public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
             this.disableEdgesRendering();
 
             this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
         }
 
+        /**
+         * Returns true if the mesh is blocked. Used by the class Mesh.
+         * Returns the boolean `false` by default.  
+         */
         public get isBlocked(): boolean {
             return false;
         }
 
         /**
-         * Returns this by default, used by the class Mesh.  
+         * Returns the mesh itself by default, used by the class Mesh.  
          * Returned type : AbstractMesh
          */
         public getLOD(camera: Camera): AbstractMesh {
@@ -518,6 +539,7 @@
          * Adds a rotation step to the mesh current rotation.  
          * x, y, z are Euler angles expressed in radians.  
          * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.  
+         * This means this rotation is made in the mesh local space only.   
          * It's useful to set a custom rotation order different from the BJS standard one YXZ.  
          * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.  
          * ```javascript
@@ -544,11 +566,19 @@
             return this;
         }
 
+        /**
+         * Retuns the mesh absolute position in the World.  
+         * Returns a Vector3
+         */
         public getAbsolutePosition(): Vector3 {
             this.computeWorldMatrix();
             return this._absolutePosition;
         }
 
+        /**
+         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
+         * Returns nothing.  
+         */
         public setAbsolutePosition(absolutePosition: Vector3): void {
             if (!absolutePosition) {
                 return;
@@ -710,6 +740,10 @@
             this._isDirty = true;
         }
 
+        /**
+         * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.  
+         * Returns nothing.  
+         */
         public _updateBoundingInfo(): void {
             this._boundingInfo = this._boundingInfo || new BoundingInfo(this.absolutePosition, this.absolutePosition);
 
@@ -718,6 +752,10 @@
             this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         }
 
+        /**
+         * Update a mesh's children BoundingInfo objects only.  
+         * Returns nothing.  
+         */
         public _updateSubMeshesBoundingInfo(matrix: Matrix): void {
             if (!this.subMeshes) {
                 return;
@@ -951,10 +989,20 @@
             this.parent = null;
         }
 
+        /**
+         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.  
+         * A mesh is in the frustum if its bounding box intersects the frustum.  
+         * Boolean returned.  
+         */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             return this._boundingInfo.isInFrustum(frustumPlanes);
         }
 
+        /**
+         * Returns `true` if the mesh is completely in the frustum defined be the passed array of planes.  
+         * A mesh is completely in the frustum if its bounding box it completely inside the frustum.  
+         * Boolean returned.  
+         */
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
         }
@@ -1079,6 +1127,10 @@
 
         // Collisions
 
+        /**
+         * Property checkCollisions : Boolean, whether the camera should check the collisions against the mesh.  
+         * Default `false`.
+         */
         public get checkCollisions(): boolean {
             return this._checkCollisions;
         }
@@ -1121,8 +1173,8 @@
         // Submeshes octree
 
         /**
-        * This function will create an octree to help select the right submeshes for rendering, picking and collisions
-        * Please note that you must have a decent number of submeshes to get performance improvements when using octree
+        * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.  
+        * Please note that you must have a decent number of submeshes to get performance improvements when using an octree.  
         */
         public createOrUpdateSubmeshesOctree(maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
             if (!this._submeshesOctree) {
@@ -1203,6 +1255,10 @@
             return false;
         }
 
+        /**
+         * Checks if the passed Ray intersects with the mesh.  
+         * Returns an object PickingInfo.
+         */
         public intersects(ray: Ray, fastCheck?: boolean): PickingInfo {
             var pickingInfo = new PickingInfo();
 
@@ -1277,10 +1333,18 @@
             return pickingInfo;
         }
 
+        /**
+         * Clones the mesh, used by the class Mesh.  
+         * Just returns `null` for an AbstractMesh.  
+         */
         public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): AbstractMesh {
             return null;
         }
 
+        /**
+         * Disposes all the mesh submeshes.  
+         * Returns nothing.  
+         */
         public releaseSubMeshes(): void {
             if (this.subMeshes) {
                 while (this.subMeshes.length) {
@@ -1408,6 +1472,10 @@
             super.dispose();
         }
 
+        /**
+         * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.  
+         * This Vector3 is expressed in the World space.  
+         */
         public getDirection(localAxis:Vector3): Vector3 {
             var result = Vector3.Zero();
 
@@ -1416,6 +1484,12 @@
             return result;
         }
 
+        /**
+         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
+         * localAxis is expressed in the mesh local space.
+         * result is computed in the Wordl space from the mesh World matrix.
+         * Returns nothing.  
+         */
         public getDirectionToRef(localAxis:Vector3, result:Vector3): void {
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
         }
@@ -1444,34 +1518,38 @@
 
         }
 
+        /**
+         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.  
+         */
         public getPivotPoint(): Vector3 {
-
             var point = Vector3.Zero();
-
             this.getPivotPointToRef(point);
-
             return point;
-
         }
 
+        /**
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.  
+         */
         public getPivotPointToRef(result:Vector3): void{
-
             result.x = -this._pivotMatrix.m[12];
             result.y = -this._pivotMatrix.m[13];
             result.z = -this._pivotMatrix.m[14];
-
         }
 
+        /**
+         * Returns a new Vector3 set with the mesh pivot point World coordinates.  
+         */
         public getAbsolutePivotPoint(): Vector3 {
-
             var point = Vector3.Zero();
-
             this.getAbsolutePivotPointToRef(point);
-
             return point;
-
         }
 
+        /**
+         * Defines the passed mesh as the parent of the current mesh.  
+         * If keepWorldPositionRotation is set to `true` (default `false`), the current mesh position and rotation are kept.
+         * Returns nothing.  
+         */
         public setParent(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
 
             var child = this;
@@ -1541,33 +1619,34 @@
                 }
 
             }
-
             child.parent = parent;
-
         }
 
+        /**
+         * Adds the passed mesh as a child to the current mesh.  
+         * If keepWorldPositionRotation is set to `true` (default `false`), the child world position and rotation are kept.  
+         * Returns nothing.  
+         */
         public addChild(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
-
             mesh.setParent(this, keepWorldPositionRotation);
-
         }
 
+        /**
+         * Removes the passed mesh from the current mesh children list.  
+         */
         public removeChild(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
-
             mesh.setParent(null, keepWorldPositionRotation);
-
         }
 
+        /**
+         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.  
+         */
         public getAbsolutePivotPointToRef(result:Vector3): void{
-
             result.x = this._pivotMatrix.m[12];
             result.y = this._pivotMatrix.m[13];
             result.z = this._pivotMatrix.m[14];
-
             this.getPivotPointToRef(result);
-
             Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
-
         }
 
        // Facet data
