@@ -204,7 +204,11 @@
         }
 
         public set defaultFontColor(value: Color4) {
-            this._defaultFontColor = value;
+            if (!this._defaultFontColor) {
+                this._defaultFontColor = value.clone();
+            } else {
+                this._defaultFontColor.copyFrom(value);
+            }
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Text2D.textProperty = pi, false, true)
@@ -242,7 +246,7 @@
         }
 
         public set size(value: Size) {
-            this._size = value;
+            this.internalSetSize(value);
         }
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Text2D.fontSuperSampleProperty = pi, false, false)
@@ -370,6 +374,9 @@
          * - isPickable: if true the Primitive can be used with interaction mode and will issue Pointer Event. If false it will be ignored for interaction/intersection test. Default value is true.
          * - isContainer: if true the Primitive acts as a container for interaction, if the primitive is not pickable or doesn't intersection, no further test will be perform on its children. If set to false, children will always be considered for intersection/interaction. Default value is true.
          * - childrenFlatZOrder: if true all the children (direct and indirect) will share the same Z-Order. Use this when there's a lot of children which don't overlap. The drawing order IS NOT GUARANTED!
+         * - levelCollision: this primitive is an actor of the Collision Manager and only this level will be used for collision (i.e. not the children). Use deepCollision if you want collision detection on the primitives and its children.
+         * - deepCollision: this primitive is an actor of the Collision Manager, this level AND ALSO its children will be used for collision (note: you don't need to set the children as level/deepCollision).
+         * - layoutData: a instance of a class implementing the ILayoutData interface that contain data to pass to the primitive parent's layout engine
          * - marginTop: top margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginLeft: left margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
          * - marginRight: right margin, can be a number (will be pixels) or a string (see PrimitiveThickness.fromString)
@@ -415,6 +422,9 @@
             isPickable              ?: boolean,
             isContainer             ?: boolean,
             childrenFlatZOrder      ?: boolean,
+            levelCollision          ?: boolean,
+            deepCollision           ?: boolean,
+            layoutData              ?: ILayoutData,
             marginTop               ?: number | string,
             marginLeft              ?: number | string,
             marginRight             ?: number | string,
@@ -450,7 +460,7 @@
                 this._fontSuperSample= (settings.fontSuperSample!=null && settings.fontSuperSample);
                 this._fontSDF        = (settings.fontSignedDistanceField!=null && settings.fontSignedDistanceField);
             }
-            this.defaultFontColor    = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor;
+            this._defaultFontColor   = (settings.defaultFontColor==null) ? new Color4(1,1,1,1) : settings.defaultFontColor.clone();
             this._tabulationSize     = (settings.tabulationSize == null) ? 4 : settings.tabulationSize;
             this._textSize           = null;
             this.text                = text;
@@ -709,10 +719,9 @@
                         let char = text[charNum];
                         let charWidth = charWidths[charNum];
 
-                        this.updateInstanceDataPart(d, offset);
-                        offset.x += charWidth;
-
-                        if (!this._isWhiteSpaceCharHoriz(char)) {
+                        if(char !== "\t" && !this._isWhiteSpaceCharVert(char)){ 
+                            //make sure space char gets processed here or overlapping can occur when text is set
+                            this.updateInstanceDataPart(d, offset);
                             let ci = texture.getChar(char);
                             d.topLeftUV = ci.topLeftUV;
                             let suv = ci.bottomRightUV.subtract(ci.topLeftUV);
@@ -722,6 +731,8 @@
                             d.superSampleFactor = superSampleFactor;
                             ++d.curElement;
                         }
+
+                        offset.x += charWidth;
                         charNum++;
                     }
 

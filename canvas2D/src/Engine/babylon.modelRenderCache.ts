@@ -231,6 +231,10 @@
             return this._modelKey;
         }
 
+        public updateModelRenderCache(prim: Prim2DBase): boolean {
+            return false;
+        }
+
         /**
          * Render the model instances
          * @param instanceInfo

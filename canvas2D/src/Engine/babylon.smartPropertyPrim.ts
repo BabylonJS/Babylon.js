@@ -993,6 +993,7 @@
         constructor() {
             super();
             this._flags = 0;
+            this._uid = null;
             this._modelKey = null;
             this._levelBoundingInfo = new BoundingInfo2D();
             this._boundingInfo = new BoundingInfo2D();
@@ -1020,6 +1021,16 @@
          * Animation array, more info: http://doc.babylonjs.com/tutorials/Animations
          */
         public animations: Animation[];
+
+        /**
+         * return a unique identifier for the Canvas2D
+         */
+        public get uid(): string {
+            if (!this._uid) {
+                this._uid = Tools.RandomId();
+            }
+            return this._uid;
+        }
 
         /**
          * Returns as a new array populated with the Animatable used by the primitive. Must be overloaded by derived primitives.
@@ -1062,7 +1073,10 @@
                         if (v.typeLevelCompare) {
                             value = Tools.getClassName(propVal);
                         } else {
-                            if (propVal instanceof BaseTexture) {
+                            // String Dictionaries' content are too complex, with use a Random GUID to make the model unique
+                            if (propVal instanceof StringDictionary) {
+                                value = Tools.RandomId();
+                            } else if (propVal instanceof BaseTexture) {
                                 value = propVal.uid;
                             } else {
                                 value = propVal.toString();
@@ -1085,7 +1099,7 @@
          * @returns true is dirty, false otherwise
          */
         public get isDirty(): boolean {
-            return (this._instanceDirtyFlags !== 0) || this._areSomeFlagsSet(SmartPropertyPrim.flagModelDirty | SmartPropertyPrim.flagPositioningDirty | SmartPropertyPrim.flagLayoutDirty);
+            return (this._instanceDirtyFlags !== 0) || this._areSomeFlagsSet(SmartPropertyPrim.flagModelDirty | SmartPropertyPrim.flagModelUpdate | SmartPropertyPrim.flagPositioningDirty | SmartPropertyPrim.flagLayoutDirty);
         }
 
         protected _boundingBoxDirty() {
@@ -1137,6 +1151,11 @@
                 if (p != null && p.layoutEngine && (p.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
                     p._setLayoutDirty();
                 }
+
+                let that = this as Prim2DBase;
+                if (that.layoutEngine && (that.layoutEngine.layoutDirtyOnPropertyChangedMask & propInfo.flagId) !== 0) {
+                    (<any>this)._setLayoutDirty();
+                }
             }
 
             // For type level compare, if there's a change of type it's a change of model, otherwise we issue an instance change
@@ -1151,6 +1170,7 @@
             // Set the dirty flags
             if (!instanceDirty && (propInfo.kind === Prim2DPropInfo.PROPKIND_MODEL)) {
                 if (!this.isDirty) {
+                    this.onPrimBecomesDirty();
                     this._setFlags(SmartPropertyPrim.flagModelDirty);
                 }
             } else if (instanceDirty || (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) || (propInfo.kind === Prim2DPropInfo.PROPKIND_DYNAMIC)) {
@@ -1179,6 +1199,7 @@
         public get levelBoundingInfo(): BoundingInfo2D {
             if (this._isFlagSet(SmartPropertyPrim.flagLevelBoundingInfoDirty)) {
                 if (this.updateLevelBoundingInfo()) {
+                    this._boundingInfo.dirtyWorldAABB();
                     this._clearFlags(SmartPropertyPrim.flagLevelBoundingInfoDirty);
                 } else {
                     this._levelBoundingInfo.clear();
@@ -1282,7 +1303,10 @@
         public static flagDontInheritParentScale  = 0x0080000;    // set if the actualScale must not use its parent's scale to be computed
         public static flagGlobalTransformDirty    = 0x0100000;    // set if the global transform must be recomputed due to a local transform change
         public static flagLayoutBoundingInfoDirty = 0x0200000;    // set if the layout bounding info is dirty
+        public static flagCollisionActor          = 0x0400000;    // set if the primitive is part of the collision engine
+        public static flagModelUpdate             = 0x0800000;    // set if the primitive's model data is to update
 
+        private   _uid                : string;
         private   _flags              : number;
         private   _modelKey           : string;
         protected _levelBoundingInfo  : BoundingInfo2D;

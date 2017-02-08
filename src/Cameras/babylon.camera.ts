@@ -403,7 +403,7 @@
                 this._markSyncedWithParent();
             }
 
-            if (this._cameraRigParams.vrPreViewMatrix) {
+            if (this._cameraRigParams && this._cameraRigParams.vrPreViewMatrix) {
                 this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
             }
 

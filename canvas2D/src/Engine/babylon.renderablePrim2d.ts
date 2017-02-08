@@ -492,6 +492,11 @@
                 this.setupModelRenderCache(this._modelRenderCache);
             }
 
+            if (this._isFlagSet(SmartPropertyPrim.flagModelUpdate)) {
+                if (this._modelRenderCache.updateModelRenderCache(this)) {
+                    this._clearFlags(SmartPropertyPrim.flagModelUpdate);
+                }
+            }
             // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
 
             // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.

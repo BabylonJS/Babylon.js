@@ -1196,8 +1196,8 @@
             Matrix.FromValuesToRef(
                 cw / 2.0, 0, 0, 0,
                 0, -ch / 2.0, 0, 0,
-                0, 0, 1, 0,
-                cx + cw / 2.0, ch / 2.0 + cy, 0, 1, viewportMatrix);
+                0, 0, 0.5, 0,
+                cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
 
             var matrix = Vector3._matrixCache ? Vector3._matrixCache : (Vector3._matrixCache = new Matrix());
             world.multiplyToRef(transform, matrix);
@@ -4076,7 +4076,8 @@
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
             Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
         public static Vector4: Vector4[] = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()];  // 3 temp Vector4 at once should be enough
-        public static Quaternion: Quaternion[] = [new Quaternion(0, 0, 0, 0)];                // 1 temp Quaternion at once should be enough
+        public static Quaternion: Quaternion[] = [new Quaternion(0.0, 0.0, 0.0, 0.0), 
+            new Quaternion(0.0, 0.0, 0.0, 0.0)];                // 2 temp Quaternion at once should be enough
         public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero(),
