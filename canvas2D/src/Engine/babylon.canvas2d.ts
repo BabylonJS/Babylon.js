@@ -66,21 +66,24 @@
         private static _INSTANCES : Array<Canvas2D> = [];
 
         constructor(scene: Scene, settings?: {
-            id?: string,
-            children?: Array<Prim2DBase>,
-            size?: Size,
-            renderingPhase?: { camera: Camera, renderingGroupID: number },
-            designSize?: Size,
-            designUseHorizAxis?: boolean,
-            isScreenSpace?: boolean,
-            cachingStrategy?: number,
-            enableInteraction?: boolean,
-            origin?: Vector2,
-            isVisible?: boolean,
-            backgroundRoundRadius?: number,
-            backgroundFill?: IBrush2D | string,
-            backgroundBorder?: IBrush2D | string,
-            backgroundBorderThickNess?: number,
+            id                            ?: string,
+            children                      ?: Array<Prim2DBase>,
+            size                          ?: Size,
+            renderingPhase                ?: { camera: Camera, renderingGroupID: number },
+            designSize                    ?: Size,
+            designUseHorizAxis            ?: boolean,
+            isScreenSpace                 ?: boolean,
+            cachingStrategy               ?: number,
+            enableInteraction             ?: boolean,
+            enableCollisionManager        ?: boolean,
+            customCollisionManager        ?: (owner: Canvas2D, enableBorders: boolean) => PrimitiveCollisionManagerBase,
+            collisionManagerUseBorders    ?: boolean,
+            origin                        ?: Vector2,
+            isVisible                     ?: boolean,
+            backgroundRoundRadius         ?: number,
+            backgroundFill                ?: IBrush2D | string,
+            backgroundBorder              ?: IBrush2D | string,
+            backgroundBorderThickNess     ?: number,
         }) {
             super(settings);
 
@@ -97,7 +100,6 @@
             this._updateGlobalTransformCounter = new PerfCounter();
             this._boundingInfoRecomputeCounter = new PerfCounter();
 
-            this._uid = null;
             this._cachedCanvasGroup = null;
 
             this._renderingGroupObserver = null;
@@ -173,7 +175,6 @@
             }
             this._maxAdaptiveWorldSpaceCanvasSize = null;
             this._groupCacheMaps = new StringDictionary<MapTexture[]>();
-
             this._patchHierarchy(this);
 
             let enableInteraction = (settings.enableInteraction == null) ? true : settings.enableInteraction;
@@ -214,7 +215,14 @@
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
                         //this._supprtInstancedArray = false; // TODO REMOVE!!!
 
+            // Setup the canvas for interaction (or not)
             this._setupInteraction(enableInteraction);
+
+            // Initialize the Primitive Collision Manager
+            if (settings.enableCollisionManager) {
+                let enableBorders = settings.collisionManagerUseBorders;
+                this._primitiveCollisionManager = (settings.customCollisionManager==null) ? PrimitiveCollisionManagerBase.allocBasicPCM(this, enableBorders) : settings.customCollisionManager(this, enableBorders);
+            }
 
             // Register this instance
             Canvas2D._INSTANCES.push(this);
@@ -270,6 +278,10 @@
 
         public static get instances() : Array<Canvas2D> {
             return Canvas2D._INSTANCES;
+        }
+
+        public get primitiveCollisionManager(): PrimitiveCollisionManagerBase {
+            return this._primitiveCollisionManager;
         }
 
         protected _canvasPreInit(settings: any) {
@@ -328,6 +340,8 @@
                         if (e.pickInfo.hit && e.pickInfo.pickedMesh === this._worldSpaceNode && this.worldSpaceToNodeLocal) {
                             let localPos = this.worldSpaceToNodeLocal(e.pickInfo.pickedPoint);
                             this._handlePointerEventForInteraction(e, localPos, s);
+                        } else if (this._actualIntersectionList && this._actualIntersectionList.length > 0) {
+                            this._handlePointerEventForInteraction(e, null, s);
                         }
                     });
                 }
@@ -456,15 +470,19 @@
             }
 
             // Update the this._primPointerInfo structure we'll send to observers using the PointerEvent data
-            if (!this._updatePointerInfo(eventData, localPosition)) {
-                return;
+            if (localPosition) {
+                if (!this._updatePointerInfo(eventData, localPosition)) {
+                    return;
+                }
+            } else {
+                this._primPointerInfo.canvasPointerPos = null;
             }
 
             let capturedPrim = this.getCapturedPrimitive(this._primPointerInfo.pointerId);
 
             // Make sure the intersection list is up to date, we maintain this list either in response of a mouse event (here) or before rendering the canvas.
             // Why before rendering the canvas? because some primitives may move and get away/under the mouse cursor (which is not moving). So we need to update at both location in order to always have an accurate list, which is needed for the hover state change.
-            this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, capturedPrim !== null, true);
+            this._updateIntersectionList(localPosition ? this._primPointerInfo.canvasPointerPos : null, capturedPrim !== null, true);
 
             // Update the over status, same as above, it's could be done here or during rendering, but will be performed only once per render frame
             this._updateOverStatus(true);
@@ -560,35 +578,38 @@
                 return;
             }
 
-            // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
-            if (!this._globalTransform) {
-                this.updateCachedStates(true);
-            }
-
             let ii = Canvas2D._interInfo;
-            ii.pickPosition.x = mouseLocalPos.x;
-            ii.pickPosition.y = mouseLocalPos.y;
-            ii.findFirstOnly = false;
+            let outCase = mouseLocalPos == null;
+            if (!outCase) {
+                // A little safe guard, it might happens than the event is triggered before the first render and nothing is computed, this simple check will make sure everything will be fine
+                if (!this._globalTransform) {
+                    this.updateCachedStates(true);
+                }
 
-            // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
-            if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
-                // Reset intersection info as we don't hit anything
-                ii.intersectedPrimitives = new Array<PrimitiveIntersectedInfo>();
-                ii.topMostIntersectedPrimitive = null;
-            } else {
-                // The pointer is inside the Canvas, do an intersection test
-                this.intersect(ii);
+                ii.pickPosition.x = mouseLocalPos.x;
+                ii.pickPosition.y = mouseLocalPos.y;
+                ii.findFirstOnly = false;
 
-                // Sort primitives to get them from top to bottom
-                ii.intersectedPrimitives = ii.intersectedPrimitives.sort((a, b) => a.prim.actualZOffset - b.prim.actualZOffset);
+                // Fast rejection: test if the mouse pointer is outside the canvas's bounding Info
+                if (!isCapture && !this.levelBoundingInfo.doesIntersect(ii.pickPosition)) {
+                    // Reset intersection info as we don't hit anything
+                    ii.intersectedPrimitives = new Array<PrimitiveIntersectedInfo>();
+                    ii.topMostIntersectedPrimitive = null;
+                } else {
+                    // The pointer is inside the Canvas, do an intersection test
+                    this.intersect(ii);
+
+                    // Sort primitives to get them from top to bottom
+                    ii.intersectedPrimitives = ii.intersectedPrimitives.sort((a, b) => a.prim.actualZOffset - b.prim.actualZOffset);
+                }
             }
 
             {
                 // Update prev/actual intersection info, fire "overPrim" property change if needed
                 this._previousIntersectionList = this._actualIntersectionList;
-                this._actualIntersectionList = ii.intersectedPrimitives;
-                this._previousOverPrimitive = this._actualOverPrimitive;
-                this._actualOverPrimitive = ii.topMostIntersectedPrimitive;
+                this._actualIntersectionList   = outCase ? new Array<PrimitiveIntersectedInfo>() : ii.intersectedPrimitives;
+                this._previousOverPrimitive    = this._actualOverPrimitive;
+                this._actualOverPrimitive      = outCase ? null : ii.topMostIntersectedPrimitive;
 
                 let prev = (this._previousOverPrimitive != null) ? this._previousOverPrimitive.prim : null;
                 let actual = (this._actualOverPrimitive != null) ? this._actualOverPrimitive.prim : null;
@@ -881,16 +902,6 @@
         }
 
         /**
-         * return a unique identifier for the Canvas2D
-         */
-        public get uid(): string {
-            if (!this._uid) {
-                this._uid = Tools.RandomId();
-            }
-            return this._uid;
-        }
-
-        /**
          * And observable called during the Canvas rendering process.
          * This observable is called twice per render, each time with a different mask:
          *  - 1: before render is executed
@@ -1050,6 +1061,10 @@
             return this._designUseHorizAxis;
         }
 
+        public set designSizeUseHorizeAxis(value: boolean) {
+            this._designUseHorizAxis = value;
+        }
+
         /**
          * Return 
          */
@@ -1205,7 +1220,6 @@
             this._updateGlobalTransformCounter.addCount(count, false);
         }
 
-        private _uid: string;
         private _renderObservable: Observable<Canvas2D>;
         private __engineData: Canvas2DEngineBoundData;
         private _interactionEnabled: boolean;
@@ -1246,6 +1260,7 @@
         protected _maxAdaptiveWorldSpaceCanvasSize: number;
         private _designSize: Size;
         private _designUseHorizAxis: boolean;
+        public  _primitiveCollisionManager: PrimitiveCollisionManagerBase;
 
         public _renderingSize: Size;
 
@@ -1271,6 +1286,8 @@
         private static tS = Vector3.Zero();
         private static tT = Vector3.Zero();
         private static tR = Quaternion.Identity();
+        private static _tmpMtx = Matrix.Identity();
+        private static _tmpVec3 = Vector3.Zero();
 
         private _updateTrackedNodes() {
             // Get the used camera
@@ -1280,6 +1297,8 @@
             cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), Canvas2D._m);
             let rh = this.engine.getRenderHeight();
             let v = cam.viewport.toGlobal(this.engine.getRenderWidth(), rh);
+            let tmpVec3 = Canvas2D._tmpVec3;
+            let tmpMtx = Canvas2D._tmpMtx;
 
             // Compute the screen position of each group that track a given scene node
             for (let group of this._trackedGroups) {
@@ -1289,6 +1308,13 @@
 
                 let node = group.trackedNode;
                 let worldMtx = node.getWorldMatrix();
+
+                if(group.trackedNodeOffset){
+                    Vector3.TransformCoordinatesToRef(group.trackedNodeOffset, worldMtx, tmpVec3);
+                    tmpMtx.copyFrom(worldMtx);
+                    worldMtx = tmpMtx;
+                    worldMtx.setTranslation(tmpVec3);
+                }
 
                 let proj = Vector3.Project(Canvas2D._v, worldMtx, Canvas2D._m, v);
 
@@ -1334,6 +1360,8 @@
                     if (scale) {
                         wsn.scaling = scale;
                     }
+                } else {
+                    throw new Error("Can't Track another Scene Node Type than AbstractMesh right now, call me lazy!");
                 }
             }
         }
@@ -1415,8 +1443,8 @@
 
             // If the canvas fit the rendering size and it changed, update
             if (renderingSizeChanged && this._fitRenderingDevice) {
-                this._actualSize = this._renderingSize.clone();
-                this._size = this._renderingSize.clone();
+                this.actualSize = this._renderingSize.clone();
+                this.size = this._renderingSize.clone();
                 if (this._background) {
                     this._background.size = this.size;
                 }
@@ -1474,12 +1502,16 @@
 
             this._updateCanvasState(false);
 
+            if (this._primitiveCollisionManager) {
+                this._primitiveCollisionManager._update();
+            }
+
             if (this._primPointerInfo.canvasPointerPos) {
                 this._updateIntersectionList(this._primPointerInfo.canvasPointerPos, false, false);
                 this._updateOverStatus(false);
             }
 
-            this.engine.setState(false);
+            this.engine.setState(false, undefined, true);
             this._groupRender();
 
             if (!this._isScreenSpace) {
@@ -1832,15 +1864,9 @@
             //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
             //}
 
-            if (settings.trackNode != null) {
-                this._trackNode = settings.trackNode;
-                this._trackNodeOffset = (settings.trackNodeOffset != null) ? settings.trackNodeOffset : Vector3.Zero();
-                this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : false;
-            } else {
-                this._trackNode = null;
-                this._trackNodeOffset = null;
-                this._trackNodeBillboard = false;
-            }
+            this._trackNode          = (settings.trackNode != null)          ? settings.trackNode          : null;
+            this._trackNodeOffset    = (settings.trackNodeOffset != null)    ? settings.trackNodeOffset    : Vector3.Zero();
+            this._trackNodeBillboard = (settings.trackNodeBillboard != null) ? settings.trackNodeBillboard : true;
 
             let createWorldSpaceNode = !settings || (settings.customWorldSpaceNode == null);
             this._customWorldSpaceNode = !createWorldSpaceNode;
@@ -1884,6 +1910,9 @@
             }
 
             this.propertyChanged.add((e, st) => {
+                if (e.propertyName !== "isVisible") {
+                    return;
+                }
                 let mesh = this._worldSpaceNode as AbstractMesh;
                 if (mesh) {
                     mesh.isVisible = e.newValue;
@@ -1900,6 +1929,38 @@
                 this._worldSpaceNode.dispose();
                 this._worldSpaceNode = null;
             }
+        }
+
+        public get trackNode(): Node {
+            return this._trackNode;
+        }
+
+        public set trackNode(value: Node) {
+            if (this._trackNode === value) {
+                return;
+            }
+
+            this._trackNode = value;
+        }
+
+        public get trackNodeOffset(): Vector3 {
+            return this._trackNodeOffset;
+        }
+
+        public set trackNodeOffset(value: Vector3) {
+            if (!this._trackNodeOffset) {
+                this._trackNodeOffset = value.clone();
+            } else {
+                this._trackNodeOffset.copyFrom(value);
+            }
+        }
+
+        public get trackNodeBillboard(): boolean {
+            return this._trackNodeBillboard;
+        }
+
+        public set trackNodeBillboard(value: boolean) {
+            this._trackNodeBillboard = value;
         }
 
         private _customWorldSpaceNode: boolean;
@@ -1944,31 +2005,34 @@
          */
         constructor(scene: Scene, settings?: {
 
-            children?: Array<Prim2DBase>,
-            id?: string,
-            x?: number,
-            y?: number,
-            position?: Vector2,
-            origin?: Vector2,
-            width?: number,
-            height?: number,
-            size?: Size,
-            renderingPhase?: {camera: Camera, renderingGroupID: number },
-            designSize?: Size,
-            designUseHorizAxis?: boolean,
-            cachingStrategy?: number,
-            cacheBehavior?: number,
-            enableInteraction?: boolean,
-            isVisible?: boolean,
-            backgroundRoundRadius?: number,
-            backgroundFill?: IBrush2D | string,
-            backgroundBorder?: IBrush2D | string,
-            backgroundBorderThickNess?: number,
-            paddingTop?: number | string,
-            paddingLeft?: number | string,
-            paddingRight?: number | string,
-            paddingBottom?: number | string,
-            padding?: string,
+            children                   ?: Array<Prim2DBase>,
+            id                         ?: string,
+            x                          ?: number,
+            y                          ?: number,
+            position                   ?: Vector2,
+            origin                     ?: Vector2,
+            width                      ?: number,
+            height                     ?: number,
+            size                       ?: Size,
+            renderingPhase             ?: {camera: Camera, renderingGroupID: number },
+            designSize                 ?: Size,
+            designUseHorizAxis         ?: boolean,
+            cachingStrategy            ?: number,
+            cacheBehavior              ?: number,
+            enableInteraction          ?: boolean,
+            enableCollisionManager     ?: boolean,
+            customCollisionManager     ?: (owner: Canvas2D, enableBorders: boolean) => PrimitiveCollisionManagerBase,
+            collisionManagerUseBorders ?: boolean,
+            isVisible                  ?: boolean,
+            backgroundRoundRadius      ?: number,
+            backgroundFill             ?: IBrush2D | string,
+            backgroundBorder           ?: IBrush2D | string,
+            backgroundBorderThickNess  ?: number,
+            paddingTop                 ?: number | string,
+            paddingLeft                ?: number | string,
+            paddingRight               ?: number | string,
+            paddingBottom              ?: number | string,
+            padding                    ?: string,
 
         }) {
             Prim2DBase._isCanvasInit = true;

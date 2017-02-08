@@ -60,6 +60,7 @@ module INSPECTOR {
             this._bjsPanelContent.innerHTML = BABYLON.Tools.LogCache;
             BABYLON.Tools.OnNewCacheEntry = (entry: string) => {
                 this._bjsPanelContent.innerHTML += entry;
+                this._bjsPanelContent.scrollTop = this._bjsPanelContent.scrollHeight; 
             };
 
             // Testing
@@ -87,15 +88,11 @@ module INSPECTOR {
             let callerLine = Helpers.CreateDiv('caller', this._consolePanelContent);
             callerLine.textContent = caller;
 
-            let line = Helpers.CreateDiv(type, this._consolePanelContent);
-            if (typeof message === "string") {
-                line.textContent += message ; 
-            } else {
-                line.textContent += JSON.stringify(message) ;
-                line.classList.add('object')
-            }
-        }
+            let line = Helpers.CreateDiv(type, this._consolePanelContent); 
+            line.textContent += message ; 
 
+            this._consolePanelContent.scrollTop = this._consolePanelContent.scrollHeight; 
+        }
         private _addConsoleLog(...params : any[]) {
             
             // Get caller name if not null

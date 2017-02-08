@@ -19,6 +19,7 @@
     "babylon.max.js",
     "babylon.noworker.js",
     "babylon.core.js",
+    "babylon.canvas2d.js",
     "Oimo.js",
     "package.json"
   ],

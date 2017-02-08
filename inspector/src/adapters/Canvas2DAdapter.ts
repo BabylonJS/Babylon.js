@@ -36,7 +36,8 @@ module INSPECTOR {
             let toAddDirty = [
                 'actualZOffset', 'isSizeAuto', 'layoutArea', 'layoutAreaPos', 'contentArea', 
                 'marginOffset', 'paddingOffset', 'isPickable', 'isContainer', 'boundingInfo', 
-                'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo'];
+                'levelBoundingInfo', 'isSizedByContent', 'isPositionAuto', 'actualScale', 'layoutBoundingInfo', 
+                '_cachedTexture'];
             for (let dirty of toAddDirty) {
                 let infos = new Property(dirty, this.actualObject);
                 propertiesLines.push(new PropertyLine(infos));

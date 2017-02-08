@@ -129,7 +129,7 @@
          * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
          */
         public add(key: string, value: T): boolean {
-            return this._add(key, value, true, true);
+            return this._add(key, value, true, this._watchObjectsPropertyChange);
         }
 
         public getAndRemove(key: string): T {
@@ -218,11 +218,13 @@
          * Clear the whole content of the dictionary
          */
         public clear() {
-            this._watchedObjectList.forEach((k, v) => {
-                let el = this.get(k);
-                this._removeWatchedElement(k, el);
-            });
-            this._watchedObjectList.clear();
+            if (this._watchedObjectList) {
+                this._watchedObjectList.forEach((k, v) => {
+                    let el = this.get(k);
+                    this._removeWatchedElement(k, el);
+                });
+                this._watchedObjectList.clear();
+            }
 
             let oldCount = this.count;
             super.clear();

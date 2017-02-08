@@ -406,8 +406,8 @@
             this.rebuildAnglesAndRadius();
         }
 
-        public setTarget(target: Vector3, toBoundingCenter = false): void {            
-            if (this._getTargetPosition().equals(target)) {
+        public setTarget(target: Vector3, toBoundingCenter = false, allowSamePosition = false): void {            
+            if (!allowSamePosition && this._getTargetPosition().equals(target)) {
                 return;
             }
             

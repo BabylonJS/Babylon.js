@@ -119,7 +119,7 @@
             this._renderingMesh.render(this, enableAlphaMode);
         }
 
-        public getLinesIndexBuffer(indices: number[] | Int32Array, engine: Engine): WebGLBuffer {
+        public getLinesIndexBuffer(indices: IndicesArray, engine: Engine): WebGLBuffer {
             if (!this._linesIndexBuffer) {
                 var linesIndices = [];
 
@@ -139,7 +139,7 @@
             return ray.intersectsBox(this.getBoundingInfo().boundingBox);
         }
 
-        public intersects(ray: Ray, positions: Vector3[], indices: number[] | Int32Array, fastCheck?: boolean): IntersectionInfo {
+        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): IntersectionInfo {
             var intersectInfo: IntersectionInfo = null;
 
             // LineMesh first as it's also a Mesh...
