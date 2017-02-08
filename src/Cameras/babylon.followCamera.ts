@@ -92,8 +92,9 @@
             this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
             this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);
 
-            this.position = this.target.position.add(this._cartesianCoordinates);
-            this.setTarget(this.target.position);
+            var targetPosition = this.target.getAbsolutePosition();            
+            this.position = targetPosition.add(this._cartesianCoordinates);
+            this.setTarget(targetPosition);
         }
 
         public _checkInputs(): void {
