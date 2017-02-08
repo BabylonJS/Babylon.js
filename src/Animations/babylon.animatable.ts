@@ -119,7 +119,7 @@
                         numberOfAnimationsStopped++;
                     }
 
-                    if (animations.length == numberOfAnimationsStopped) {
+                    if (animations.length == 0) {
                         this._scene._activeAnimatables.splice(idx, 1);
 
                         if (this.onAnimationEnd) {
