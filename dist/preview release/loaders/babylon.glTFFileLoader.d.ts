@@ -494,3 +494,12 @@ declare module BABYLON {
         private _parseBinary(data);
     }
 }
+
+/// <reference path="../../../dist/preview release/babylon.d.ts" />
+declare module BABYLON {
+    class GLTFMaterialCommonExtension extends GLTFFileLoaderExtension {
+        constructor();
+        loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): boolean;
+        private _loadTexture(gltfRuntime, id, material, propertyPath, onSuccess, onError);
+    }
+}

@@ -638,7 +638,7 @@ var BABYLON;
                         var uvKind = BABYLON.VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
                         var uvs = new Float32Array(buffer.length);
                         uvs.set(buffer);
-                        normalizeUVs(uvs);
+                        //normalizeUVs(uvs);
                         tempVertexData.set(uvs, uvKind);
                     }
                     else if (semantic === "JOINT") {
@@ -1193,7 +1193,7 @@ var BABYLON;
             var blob = new Blob([buffer]);
             var blobURL = URL.createObjectURL(blob);
             var revokeBlobURL = function () { return URL.revokeObjectURL(blobURL); };
-            var newTexture = new BABYLON.Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
+            var newTexture = new BABYLON.Texture(blobURL, gltfRuntime.scene, !createMipMaps, false, samplingMode, revokeBlobURL, revokeBlobURL);
             newTexture.wrapU = BABYLON.GLTFUtils.GetWrapMode(sampler.wrapS);
             newTexture.wrapV = BABYLON.GLTFUtils.GetWrapMode(sampler.wrapT);
             newTexture.name = id;
@@ -2054,3 +2054,69 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.glTFBinaryExtension.js.map
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var BABYLON;
+(function (BABYLON) {
+    ;
+    ;
+    var GLTFMaterialCommonExtension = (function (_super) {
+        __extends(GLTFMaterialCommonExtension, _super);
+        function GLTFMaterialCommonExtension() {
+            return _super.call(this, "KHR_materials_common") || this;
+        }
+        GLTFMaterialCommonExtension.prototype.loadMaterialAsync = function (gltfRuntime, id, onSuccess, onError) {
+            var material = gltfRuntime.materials[id];
+            if (!material || !material.extensions)
+                return false;
+            var extension = material.extensions[this.name];
+            if (!extension)
+                return false;
+            var standardMaterial = new BABYLON.StandardMaterial(id, gltfRuntime.scene);
+            standardMaterial.ambientColor = BABYLON.Color3.FromArray(extension.values.ambient || [0, 0, 0]);
+            standardMaterial.backFaceCulling = extension.doubleSided === undefined ? false : !extension.doubleSided;
+            standardMaterial.alpha = extension.values.transparency === undefined ? 1.0 : extension.values.transparency;
+            standardMaterial.specularPower = extension.values.shininess === undefined ? 0.0 : extension.values.shininess;
+            debugger;
+            // Diffuse
+            if (typeof extension.values.diffuse === "string") {
+                this._loadTexture(gltfRuntime, extension.values.diffuse, standardMaterial, "diffuseTexture", onSuccess, onError);
+            }
+            else {
+                standardMaterial.diffuseColor = BABYLON.Color3.FromArray(extension.values.diffuse || [0, 0, 0]);
+            }
+            // Emission
+            if (typeof extension.values.emission === "string") {
+                this._loadTexture(gltfRuntime, extension.values.emission, standardMaterial, "emissiveTexture", onSuccess, onError);
+            }
+            else {
+                standardMaterial.emissiveColor = BABYLON.Color3.FromArray(extension.values.emission || [0, 0, 0]);
+            }
+            // Specular
+            if (typeof extension.values.specular === "string") {
+                this._loadTexture(gltfRuntime, extension.values.specular, standardMaterial, "specularTexture", onSuccess, onError);
+            }
+            else {
+                standardMaterial.specularColor = BABYLON.Color3.FromArray(extension.values.specular || [0, 0, 0]);
+            }
+            return true;
+        };
+        GLTFMaterialCommonExtension.prototype._loadTexture = function (gltfRuntime, id, material, propertyPath, onSuccess, onError) {
+            // Create buffer from texture url
+            BABYLON.GLTFFileLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, function (buffer) {
+                // Create texture from buffer
+                BABYLON.GLTFFileLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, function (texture) { return material[propertyPath] = texture; }, onError);
+            }, onError);
+        };
+        return GLTFMaterialCommonExtension;
+    }(BABYLON.GLTFFileLoaderExtension));
+    BABYLON.GLTFMaterialCommonExtension = GLTFMaterialCommonExtension;
+    BABYLON.GLTFFileLoader.RegisterExtension(new GLTFMaterialCommonExtension());
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.glTFMaterialCommonExtension.js.map
