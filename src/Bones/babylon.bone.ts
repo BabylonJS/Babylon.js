@@ -5,7 +5,7 @@
         public length: number;
 
         private _skeleton: Skeleton;
-        public _matrix: Matrix;
+        private _localMatrix: Matrix;
         private _restPose: Matrix;
         private _baseMatrix: Matrix;
         private _worldTransform = new Matrix();
@@ -17,11 +17,23 @@
         private _scaleVector = new Vector3(1, 1, 1);
         private _negateScaleChildren = new Vector3(1, 1, 1);
         private _scalingDeterminant = 1;
+
+        get _matrix():Matrix{
+            return this._localMatrix;
+        }
+
+        set _matrix(val:Matrix){
+            if(this._localMatrix){
+                this._localMatrix.copyFrom(val);
+            }else{
+                this._localMatrix = val;
+            }
+        }
         
         constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
-            this._matrix = matrix;
+            this._localMatrix = matrix;
             this._baseMatrix = matrix;
             this._restPose = restPose ? restPose : matrix.clone();
 
@@ -47,7 +59,7 @@
         }
 
         public getLocalMatrix(): Matrix {
-            return this._matrix;
+            return this._localMatrix;
         }
 
         public getBaseMatrix(): Matrix {
@@ -77,7 +89,7 @@
         // Methods
         public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true): void {
             this._baseMatrix = matrix.clone();
-            this._matrix = matrix.clone();
+            this._localMatrix = matrix.clone();
 
             this._skeleton._markAsDirty();
 
@@ -559,9 +571,9 @@
         public computeAbsoluteTransforms (): void {
 
             if (this._parent) {
-                this._matrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
+                this._localMatrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
             } else {
-                this._absoluteTransform.copyFrom(this._matrix);
+                this._absoluteTransform.copyFrom(this._localMatrix);
 
                 var poseMatrix = this._skeleton.getPoseMatrix();
 
