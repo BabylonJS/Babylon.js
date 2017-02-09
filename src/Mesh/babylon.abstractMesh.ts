@@ -50,7 +50,7 @@
             return this._facetNb;
         }
         /**
-         * The number of subdivisions per axis in the partioning space
+         * The number (integer) of subdivisions per axis in the partioning space
          */
         public get partitioningSubdivisions(): number {
             return this._partitioningSubdivisions;
@@ -59,7 +59,7 @@
             this._partitioningSubdivisions = nb;
         } 
         /**
-         * The ratio to apply to the bouding box size to set to the partioning space.  
+         * The ratio (float) to apply to the bouding box size to set to the partioning space.  
          * Ex : 1.01 (default) the partioning space is 1% bigger than the bounding box.
          */
         public get partitioningBBoxRatio(): number {
@@ -69,7 +69,7 @@
             this._partitioningBBoxRatio = ratio;
         }
         /**
-         * Read-only : is the feature facetData enabled ?
+         * Read-only boolean : is the feature facetData enabled ?
          */
         public get isFacetDataEnabled(): boolean {
             return this._facetDataEnabled;
@@ -314,10 +314,11 @@
         // Methods
         /**
          * Copies the paramater passed Matrix into the mesh Pose matrix.  
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public updatePoseMatrix(matrix: Matrix) {
+        public updatePoseMatrix(matrix: Matrix): AbstractMesh {
             this._poseMatrix.copyFrom(matrix);
+            return this;
         }
 
         /**
@@ -330,23 +331,24 @@
 
         /**
          * Disables the mesh edger rendering mode.  
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public disableEdgesRendering(): void {
+        public disableEdgesRendering(): AbstractMesh {
             if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
                 this._edgesRenderer = undefined;
             }
+            return this;
         }
         /**
          * Enables the edge rendering mode on the mesh.  
          * This mode makes the mesh edges visible.  
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
+        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
             this.disableEdgesRendering();
-
             this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+            return this;
         }
 
         /**
@@ -413,10 +415,11 @@
 
         /**
          * Sets a mesh new object BoundingInfo.
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public setBoundingInfo(boundingInfo: BoundingInfo): void {
+        public setBoundingInfo(boundingInfo: BoundingInfo): AbstractMesh {
             this._boundingInfo = boundingInfo;
+            return this;
         }
 
         public get useBones(): boolean {
@@ -441,7 +444,6 @@
             if (this._masterMesh) {
                 return this._masterMesh.getWorldMatrix();
             }
-
             if (this._currentRenderId !== this.getScene().getRenderId()) {
                 this.computeWorldMatrix();
             }
@@ -458,28 +460,30 @@
 
         /**
          * Returns the current mesh absolute position.
-         * Retuns a Vector3
+         * Retuns a Vector3.
          */
         public get absolutePosition(): Vector3 {
             return this._absolutePosition;
         }
         /**
          * Prevents the World matrix to be computed any longer.
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public freezeWorldMatrix() {
+        public freezeWorldMatrix(): AbstractMesh {
             this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
             this.computeWorldMatrix(true);
             this._isWorldMatrixFrozen = true;
+            return this;
         }
 
         /**
          * Allows back the World matrix computation. 
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
         public unfreezeWorldMatrix() {
             this._isWorldMatrixFrozen = false;
             this.computeWorldMatrix(true);
+            return this;
         }
 
         /**
@@ -493,11 +497,13 @@
         private static _rotationAxisCache = new Quaternion();
         /**
          * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.  
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
+         * The passed axis is also normalized.  
+         * Returns the AbstractMesh.
          */
-        public rotate(axis: Vector3, amount: number, space?: Space): void {
+        public rotate(axis: Vector3, amount: number, space?: Space): AbstractMesh {
             axis.normalize();
-
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = Vector3.Zero();
@@ -511,21 +517,21 @@
                 if (this.parent) {
                     var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
                     invertParentWorldMatrix.invert();
-
                     axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
                 }
                 rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
                 rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
+            return this;
         }
 
         /**
          * Translates the mesh along the axis vector for the passed distance in the given space.  
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Returns the AbstractMesh.
          */
-        public translate(axis: Vector3, distance: number, space?: Space): void {
+        public translate(axis: Vector3, distance: number, space?: Space): AbstractMesh {
             var displacementVector = axis.scale(distance);
-
             if (!space || (space as any) === Space.LOCAL) {
                 var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
                 this.setPositionWithLocalVector(tempV3);
@@ -533,6 +539,7 @@
             else {
                 this.setAbsolutePosition(this.getAbsolutePosition().add(displacementVector));
             }
+            return this;
         }
 
         /**
@@ -546,7 +553,8 @@
          * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
          * ```
          * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.  
-         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.  
+         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.   
+         * Returns the AbstractMesh.  
          */
         public addRotation(x: number, y: number, z: number): AbstractMesh {
             var rotationQuaternion;
@@ -568,7 +576,7 @@
 
         /**
          * Retuns the mesh absolute position in the World.  
-         * Returns a Vector3
+         * Returns a Vector3.
          */
         public getAbsolutePosition(): Vector3 {
             this.computeWorldMatrix();
@@ -577,17 +585,15 @@
 
         /**
          * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public setAbsolutePosition(absolutePosition: Vector3): void {
+        public setAbsolutePosition(absolutePosition: Vector3): AbstractMesh {
             if (!absolutePosition) {
                 return;
             }
-
             var absolutePositionX;
             var absolutePositionY;
             var absolutePositionZ;
-
             if (absolutePosition.x === undefined) {
                 if (arguments.length < 3) {
                     return;
@@ -601,20 +607,19 @@
                 absolutePositionY = absolutePosition.y;
                 absolutePositionZ = absolutePosition.z;
             }
-
             if (this.parent) {
                 var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
                 invertParentWorldMatrix.invert();
-
                 var worldPosition = new Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
-
                 this.position = Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
             } else {
                 this.position.x = absolutePositionX;
                 this.position.y = absolutePositionY;
                 this.position.z = absolutePositionZ;
             }
+            return this;
         }
+
         // ================================== Point of View Movement =================================
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
@@ -623,9 +628,12 @@
          * @param {number} amountRight
          * @param {number} amountUp
          * @param {number} amountForward
+         * 
+         * Returns the AbstractMesh.
          */
-        public movePOV(amountRight: number, amountUp: number, amountForward: number): void {
+        public movePOV(amountRight: number, amountUp: number, amountForward: number): AbstractMesh {
             this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
+            return this;
         }
 
         /**
@@ -634,7 +642,9 @@
          * Supports definition of mesh facing forward or backward.
          * @param {number} amountRight
          * @param {number} amountUp
-         * @param {number} amountForward
+         * @param {number} amountForward  
+         * 
+         * Returns a new Vector3.  
          */
         public calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3 {
             var rotMatrix = new Matrix();
@@ -653,9 +663,12 @@
          * @param {number} flipBack
          * @param {number} twirlClockwise
          * @param {number} tiltRight
+         * 
+         * Returns the AbstractMesh.  
          */
-        public rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): void {
+        public rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): AbstractMesh {
             this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
+            return this;
         }
 
         /**
@@ -664,6 +677,8 @@
          * @param {number} flipBack
          * @param {number} twirlClockwise
          * @param {number} tiltRight
+         * 
+         * Returns a new Vector3.
          */
         public calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3 {
             var defForwardMult = this.definedFacingForward ? 1 : -1;
@@ -672,11 +687,12 @@
 
         /**
          * Sets a new pivot matrix to the mesh.  
-         * Returns nothing.
+         * Returns the AbstractMesh.
          */
-        public setPivotMatrix(matrix: Matrix): void {
+        public setPivotMatrix(matrix: Matrix): AbstractMesh {
             this._pivotMatrix = matrix;
             this._cache.pivotMatrixUpdated = true;
+            return this;
         }
 
         /**
@@ -732,42 +748,41 @@
             this._cache.billboardMode = -1;
         }
 
-        public markAsDirty(property: string): void {
+        public markAsDirty(property: string): AbstractMesh {
             if (property === "rotation") {
                 this.rotationQuaternion = null;
             }
             this._currentRenderId = Number.MAX_VALUE;
             this._isDirty = true;
+            return this;
         }
 
         /**
          * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.  
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public _updateBoundingInfo(): void {
+        public _updateBoundingInfo(): AbstractMesh {
             this._boundingInfo = this._boundingInfo || new BoundingInfo(this.absolutePosition, this.absolutePosition);
-
             this._boundingInfo.update(this.worldMatrixFromCache);
-
             this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+            return this;
         }
 
         /**
          * Update a mesh's children BoundingInfo objects only.  
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public _updateSubMeshesBoundingInfo(matrix: Matrix): void {
+        public _updateSubMeshesBoundingInfo(matrix: Matrix): AbstractMesh {
             if (!this.subMeshes) {
                 return;
             }
-
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
-
                 if (!subMesh.IsGlobal) {
                     subMesh.updateBoundingInfo(matrix);
                 }
             }
+            return this;
         }
 
         /**
@@ -914,24 +929,33 @@
         }
 
         /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated
+        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.  
         * @param func: callback function to add
+        *
+        * Returns the AbstractMesh. 
         */
-        public registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void {
+        public registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): AbstractMesh {
             this.onAfterWorldMatrixUpdateObservable.add(func);
+            return this;
         }
 
         /**
-         * Removes a registered callback function
+         * Removes a registered callback function.  
+         * Returns the AbstractMesh.
          */
-        public unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void {
+        public unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): AbstractMesh {
             this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
+            return this;
         }
 
-        public setPositionWithLocalVector(vector3: Vector3): void {
+        /**
+         * Sets the mesh position in its local space.  
+         * Returns the AbstractMesh.  
+         */
+        public setPositionWithLocalVector(vector3: Vector3): AbstractMesh {
             this.computeWorldMatrix();
-
             this.position = Vector3.TransformNormal(vector3, this._localWorld);
+            return this;
         }
 
         /**
@@ -946,14 +970,18 @@
             return Vector3.TransformNormal(this.position, invLocalWorldMatrix);
         }
 
-        public locallyTranslate(vector3: Vector3): void {
+        /**
+         * Translates the mesh along the passed Vector3 in its local space.  
+         * Returns the AbstractMesh. 
+         */
+        public locallyTranslate(vector3: Vector3): AbstractMesh {
             this.computeWorldMatrix(true);
-
             this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
+            return this;
         }
 
         private static _lookAtVectorCache = new Vector3(0, 0, 0);
-        public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): void {
+        public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): AbstractMesh {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
             /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
             /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
@@ -969,24 +997,26 @@
             var pitch = Math.atan2(dv.y, len);
             this.rotationQuaternion = this.rotationQuaternion || new Quaternion();
             Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
+            return this;
         }
 
-        public attachToBone(bone: Bone, affectedMesh: AbstractMesh): void {
+        public attachToBone(bone: Bone, affectedMesh: AbstractMesh): AbstractMesh {
             this._meshToBoneReferal = affectedMesh;
             this.parent = bone;
 
             if (bone.getWorldMatrix().determinant() < 0) {
                 this.scalingDeterminant *= -1;
             }
+            return this;
         }
 
-        public detachFromBone(): void {
+        public detachFromBone(): AbstractMesh {
             if (this.parent.getWorldMatrix().determinant() < 0) {
                 this.scalingDeterminant *= -1;
             }
-
             this._meshToBoneReferal = null;
             this.parent = null;
+            return this;
         }
 
         /**
@@ -1079,32 +1109,35 @@
             return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
         }
 
+        /**
+         * Returns the distance from the mesh to the active camera.  
+         * Returns a float.  
+         */
         public getDistanceToCamera(camera?: Camera): number {
             if (!camera) {
                 camera = this.getScene().activeCamera;
             }
-
             return this.absolutePosition.subtract(camera.position).length();
         }
 
-        public applyImpulse(force: Vector3, contactPoint: Vector3): void {
+        public applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh {
             if (!this.physicsImpostor) {
                 return;
             }
-
             this.physicsImpostor.applyImpulse(force, contactPoint);
+            return this;
         }
 
-        public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): void {
+        public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh {
             if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
                 return;
             }
-
             this.physicsImpostor.createJoint(otherMesh.physicsImpostor, PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,
                 connectedPivot: pivot2,
                 nativeParams: options
-            })
+            });
+            return this;
         }
 
         /**
@@ -1142,7 +1175,7 @@
             }
         }
 
-        public moveWithCollisions(velocity: Vector3): void {
+        public moveWithCollisions(velocity: Vector3): AbstractMesh {
             var globalPosition = this.getAbsolutePosition();
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
@@ -1150,6 +1183,7 @@
             this._collider.radius = this.ellipsoid;
 
             this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            return this;
         }
 
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
@@ -1175,6 +1209,7 @@
         /**
         * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.  
         * Please note that you must have a decent number of submeshes to get performance improvements when using an octree.  
+        * Returns an Octree of submeshes.  
         */
         public createOrUpdateSubmeshesOctree(maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
             if (!this._submeshesOctree) {
@@ -1191,7 +1226,7 @@
         }
 
         // Collisions
-        public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): void {
+        public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh {
             this._generatePointsArray();
             // Transformation
             if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
@@ -1209,9 +1244,10 @@
             if (collider.collisionFound) {
                 collider.collidedMesh = this;
             }
+            return this;
         }
 
-        public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): void {
+        public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): AbstractMesh {
             var subMeshes: SubMesh[];
             var len: number;
 
@@ -1236,18 +1272,19 @@
 
                 this._collideForSubMesh(subMesh, transformMatrix, collider);
             }
+            return this;
         }
 
-        public _checkCollision(collider: Collider): void {
+        public _checkCollision(collider: Collider): AbstractMesh {
             // Bounding box test
             if (!this._boundingInfo._checkCollision(collider))
-                return;
+                return this;
 
             // Transformation matrix
             Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
             this.worldMatrixFromCache.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
-
             this._processCollisionsForSubMeshes(collider, this._collisionsTransformMatrix);
+            return this;
         }
 
         // Picking
@@ -1343,9 +1380,9 @@
 
         /**
          * Disposes all the mesh submeshes.  
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public releaseSubMeshes(): void {
+        public releaseSubMeshes(): AbstractMesh {
             if (this.subMeshes) {
                 while (this.subMeshes.length) {
                     this.subMeshes[0].dispose();
@@ -1353,6 +1390,7 @@
             } else {
                 this.subMeshes = new Array<SubMesh>();
             }
+            return this;
         }
 
         /**
@@ -1487,14 +1525,15 @@
         /**
          * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
          * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.
-         * Returns nothing.  
+         * result is computed in the Wordl space from the mesh World matrix.  
+         * Returns the AbstractMesh.  
          */
-        public getDirectionToRef(localAxis:Vector3, result:Vector3): void {
+        public getDirectionToRef(localAxis:Vector3, result:Vector3): AbstractMesh {
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+            return this;
         }
 
-        public setPivotPoint(point:Vector3, space:Space = Space.LOCAL): void{
+        public setPivotPoint(point:Vector3, space:Space = Space.LOCAL): AbstractMesh {
 
             if(this.getScene().getRenderId() == 0){
                 this.computeWorldMatrix(true);
@@ -1509,13 +1548,11 @@
             }
 
             Vector3.TransformCoordinatesToRef(point, wm, this.position);
-
             this._pivotMatrix.m[12] = -point.x;
             this._pivotMatrix.m[13] = -point.y;
             this._pivotMatrix.m[14] = -point.z;
-
             this._cache.pivotMatrixUpdated = true;
-
+            return this;
         }
 
         /**
@@ -1528,12 +1565,14 @@
         }
 
         /**
-         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.  
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.   
+         * Returns the AbstractMesh.   
          */
-        public getPivotPointToRef(result:Vector3): void{
+        public getPivotPointToRef(result:Vector3): AbstractMesh{
             result.x = -this._pivotMatrix.m[12];
             result.y = -this._pivotMatrix.m[13];
             result.z = -this._pivotMatrix.m[14];
+            return this;
         }
 
         /**
@@ -1548,9 +1587,9 @@
         /**
          * Defines the passed mesh as the parent of the current mesh.  
          * If keepWorldPositionRotation is set to `true` (default `false`), the current mesh position and rotation are kept.
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public setParent(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
+        public setParent(mesh:AbstractMesh, keepWorldPositionRotation = false): AbstractMesh {
 
             var child = this;
             var parent = mesh;
@@ -1620,38 +1659,45 @@
 
             }
             child.parent = parent;
+            return this;
         }
 
         /**
          * Adds the passed mesh as a child to the current mesh.  
          * If keepWorldPositionRotation is set to `true` (default `false`), the child world position and rotation are kept.  
-         * Returns nothing.  
+         * Returns the AbstractMesh.  
          */
-        public addChild(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
+        public addChild(mesh:AbstractMesh, keepWorldPositionRotation = false): AbstractMesh {
             mesh.setParent(this, keepWorldPositionRotation);
+            return this;
         }
 
         /**
          * Removes the passed mesh from the current mesh children list.  
+         * Returns the AbstractMesh.  
          */
-        public removeChild(mesh:AbstractMesh, keepWorldPositionRotation = false): void{
+        public removeChild(mesh:AbstractMesh, keepWorldPositionRotation = false): AbstractMesh {
             mesh.setParent(null, keepWorldPositionRotation);
+            return this;
         }
 
         /**
          * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.  
+         * Returns the AbstractMesh.  
          */
-        public getAbsolutePivotPointToRef(result:Vector3): void{
+        public getAbsolutePivotPointToRef(result:Vector3): AbstractMesh {
             result.x = this._pivotMatrix.m[12];
             result.y = this._pivotMatrix.m[13];
             result.z = this._pivotMatrix.m[14];
             this.getPivotPointToRef(result);
             Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
+            return this;
         }
 
        // Facet data
         /** 
-         *  Initialize the facet data arrays : facetNormals, facetPositions and facetPartitioning
+         *  Initialize the facet data arrays : facetNormals, facetPositions and facetPartitioning.   
+         * Returns the AbstractMesh.  
          */
         private _initFacetData(): AbstractMesh {
             if (!this._facetNormals) {
@@ -1677,7 +1723,8 @@
         /**
          * Updates the mesh facetData arrays and the internal partitioning when the mesh is morphed or updated.  
          * This method can be called within the render loop.  
-         * You don't need to call this method by yourself in the render loop when you update/morph a mesh with the methods CreateXXX() as they automatically manage this computation.  
+         * You don't need to call this method by yourself in the render loop when you update/morph a mesh with the methods CreateXXX() as they automatically manage this computation.   
+         * Returns the AbstractMesh.  
          */
         public updateFacetData(): AbstractMesh {
             if (!this._facetDataEnabled) {
@@ -1731,7 +1778,7 @@
             return this._facetPositions;           
         }
         /**
-         * Returns the facetLocalPartioning array
+         * Returns the facetLocalPartioning array.
          */
         public getFacetLocalPartitioning(): number[][] {
             if (!this._facetPartitioning) {
@@ -1750,7 +1797,7 @@
         }
         /**
          * Sets the reference Vector3 with the i-th facet position in the world system.  
-         * Returns the mesh.  
+         * Returns the AbstractMesh.  
          */
         public getFacetPositionToRef(i: number, ref: Vector3): AbstractMesh {
             var localPos = (this.getFacetLocalPositions())[i];
@@ -1769,7 +1816,7 @@
         }
         /**
          * Sets the reference Vector3 with the i-th facet normal in the world system.  
-         * Returns the mesh.  
+         * Returns the AbstractMesh.  
          */
         public getFacetNormalToRef(i: number, ref: Vector3) {
             var localNorm = (this.getFacetLocalNormals())[i];
@@ -1880,7 +1927,7 @@
         }
         /** 
          * Disables the feature FacetData and frees the related memory.  
-         * Returns the mesh.  
+         * Returns the AbstractMesh.  
          */
         public disableFacetData(): AbstractMesh {
             if (this._facetDataEnabled) {
