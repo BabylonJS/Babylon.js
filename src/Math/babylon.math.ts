@@ -8,11 +8,17 @@
 
 
     export class MathTools {
+        /**
+         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
+         */
         public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
             var num = a - b;
             return -epsilon <= num && num <= epsilon;
         }
 
+        /**
+         * Returns a string : the upper case translation of the number i to hexadecimal.  
+         */
         public static ToHex(i: number): string {
             var str = i.toString(16);
 
@@ -23,8 +29,10 @@
             return str.toUpperCase();
         }
 
-        // Returns -1 when value is a negative number and
-        // +1 when value is a positive number. 
+        /**
+         * Returns -1 if value is negative and +1 is value is positive.  
+         * Returns the value itself if it's equal to zero.  
+         */
         public static Sign(value: number): number {
             value = +value; // convert to a number
 
@@ -34,6 +42,11 @@
             return value > 0 ? 1 : -1;
         }
 
+        /**
+         * Returns the value itself if it's between min and max.  
+         * Returns min if the value is lower than min.
+         * Returns max if the value is greater than max.  
+         */
         public static Clamp(value: number, min = 0, max = 1): number {
             return Math.min(max, Math.max(min, value));
         }
@@ -41,17 +54,28 @@
 
 
     export class Color3 {
+        /**
+         * Creates a new Color3 object from red, green, blue values, all between 0 and 1.  
+         */
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
         }
 
+        /**
+         * Returns a string with the Color3 current values.  
+         */
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         }
 
+        /**
+         * Returns the string "Color3".
+         */
         public getClassName(): string {
             return "Color3";
         }
-
+        /**
+         * Returns the Color3 hash code.  
+         */
         public getHashCode(): number {
             let hash = this.r || 0;
             hash = (hash * 397) ^ (this.g || 0);
@@ -60,6 +84,10 @@
         }
 
         // Operators
+        /**
+         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
+         * Returns the Color3.  
+         */
         public toArray(array: number[], index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
@@ -72,10 +100,16 @@
             return this;
         }
 
+        /**
+         * Returns a new Color4 object from the current Color3 and the passed alpha.  
+         */
         public toColor4(alpha = 1): Color4 {
             return new Color4(this.r, this.g, this.b, alpha);
         }
 
+        /**
+         * Returns a new array populated with 3 numeric elements : red, green and blue values.  
+         */
         public asArray(): number[] {
             var result = [];
 
@@ -84,14 +118,25 @@
             return result;
         }
 
+        /**
+         * Returns the luminance value (float).  
+         */
         public toLuminance(): number {
             return this.r * 0.3 + this.g * 0.59 + this.b * 0.11;
         }
 
+        /**
+         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object.  
+         * Returns this new object.  
+         */
         public multiply(otherColor: Color3): Color3 {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         }
 
+        /**
+         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result".  
+         * Returns the current Color3.  
+         */
         public multiplyToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r * otherColor.r;
             result.g = this.g * otherColor.g;
@@ -100,18 +145,32 @@
             return this;
         }
 
+        /**
+         * Boolean : True if the rgb values are equal to the passed ones.  
+         */
         public equals(otherColor: Color3): boolean {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
         }
 
+        /**
+         * Boolean : True if the rgb values are equal to the passed ones.  
+         */
         public equalsFloats(r: number, g: number, b: number): boolean {
             return this.r === r && this.g === g && this.b === b;
         }
 
+        /**
+         * Multiplies in place each rgb value by scale.  
+         * Returns the updated Color3.  
+         */
         public scale(scale: number): Color3 {
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
         }
 
+        /**
+         * Multiplies the rgb values by scale and stores the result into "result".  
+         * Returns the unmodified current Color3.  
+         */
         public scaleToRef(scale: number, result: Color3): Color3 {
             result.r = this.r * scale;
             result.g = this.g * scale;
@@ -120,10 +179,17 @@
             return this;
         }
 
+        /**
+         * Returns a new Color3 set with the added values of the current Color3 and of the passed one.  
+         */
         public add(otherColor: Color3): Color3 {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
         }
 
+        /**
+         * Stores the result of the addition of the current Color3 and passed one rgb values into "result".  
+         * Returns the unmodified current Color3.  
+         */
         public addToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r + otherColor.r;
             result.g = this.g + otherColor.g;
@@ -132,10 +198,17 @@
             return this;
         }
 
+        /**
+         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3 .  
+         */
         public subtract(otherColor: Color3): Color3 {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
         }
 
+        /**
+         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result".  
+         * Returns the unmodified current Color3.  
+         */
         public subtractToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r - otherColor.r;
             result.g = this.g - otherColor.g;
@@ -144,10 +217,17 @@
             return this;
         }
 
+        /**
+         * Returns a new Color3 copied the current one.  
+         */
         public clone(): Color3 {
             return new Color3(this.r, this.g, this.b);
         }
 
+        /**
+         * Copies the rgb values from the source in the current Color3.  
+         * Returns the updated Color3.  
+         */
         public copyFrom(source: Color3): Color3 {
             this.r = source.r;
             this.g = source.g;
@@ -155,7 +235,10 @@
 
             return this;
         }
-
+        /**
+         * Updates the Color3 rgb values from the passed floats.  
+         * Returns the Color3.  
+         */
         public copyFromFloats(r: number, g: number, b: number): Color3 {
             this.r = r;
             this.g = g;
@@ -163,7 +246,9 @@
 
             return this;
         }
-
+        /**
+         * Returns the Color3 hexadecimal code as a string.  
+         */
         public toHexString(): string {
             var intR = (this.r * 255) | 0;
             var intG = (this.g * 255) | 0;
@@ -172,12 +257,19 @@
             return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB);
         }
 
+        /**
+         * Returns a new Color3 converted to linear space.  
+         */
         public toLinearSpace(): Color3 {
             var convertedColor = new Color3();
             this.toLinearSpaceToRef(convertedColor);
             return convertedColor;
         }
 
+        /**
+         * Converts the Color3 values to linear space and stores the result in "convertedColor".  
+         * Returns the unmodified Color3.  
+         */
         public toLinearSpaceToRef(convertedColor: Color3): Color3 {
             convertedColor.r = Math.pow(this.r, ToLinearSpace);
             convertedColor.g = Math.pow(this.g, ToLinearSpace);
@@ -186,12 +278,19 @@
             return this;
         }
 
+        /**
+         * Returns a new Color3 converted to gamma space.  
+         */
         public toGammaSpace(): Color3 {
             var convertedColor = new Color3();
             this.toGammaSpaceToRef(convertedColor);
             return convertedColor;
         }
 
+        /**
+         * Converts the Color3 values to gamma space and stores the result in "convertedColor".  
+         * Returns the unmodified Color3.  
+         */
         public toGammaSpaceToRef(convertedColor: Color3): Color3 {
             convertedColor.r = Math.pow(this.r, ToGammaSpace);
             convertedColor.g = Math.pow(this.g, ToGammaSpace);
@@ -201,6 +300,9 @@
         }
 
         // Statics
+        /**
+         * Creates a new Color3 from the string containing valid hexadecimal values.  
+         */
         public static FromHexString(hex: string): Color3 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
                 //Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
@@ -214,14 +316,23 @@
             return Color3.FromInts(r, g, b);
         }
 
+        /**
+         * Creates a new Vector3 from the startind index of the passed array.  
+         */
         public static FromArray(array: number[], offset: number = 0): Color3 {
             return new Color3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
+        /**
+         * Creates a new Color3 from integer values ( < 256).  
+         */
         public static FromInts(r: number, g: number, b: number): Color3 {
             return new Color3(r / 255.0, g / 255.0, b / 255.0);
         }
 
+        /**
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3.  
+         */
         public static Lerp(start: Color3, end: Color3, amount: number): Color3 {
             var r = start.r + ((end.r - start.r) * amount);
             var g = start.g + ((end.g - start.g) * amount);
@@ -243,10 +354,17 @@
     }
 
     export class Color4 {
+        /**
+         * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.  
+         */
         constructor(public r: number, public g: number, public b: number, public a: number) {
         }
 
         // Operators
+        /**
+         * Adds in place the passed Color4 values to the current Color4.  
+         * Returns the updated Color4.  
+         */
         public addInPlace(right): Color4 {
             this.r += right.r;
             this.g += right.g;
@@ -256,6 +374,9 @@
             return this;
         }
 
+        /**
+         * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.  
+         */
         public asArray(): number[] {
             var result = [];
 
@@ -264,6 +385,10 @@
             return result;
         }
 
+        /**
+         * Stores from the starting index in the passed array the Color4 successive values.  
+         * Returns the Color4.  
+         */
         public toArray(array: number[], index?: number): Color4 {
             if (index === undefined) {
                 index = 0;
@@ -276,14 +401,23 @@
             return this;
         }
 
+        /**
+         * Returns a new Color4 set with the added values of the current Color4 and of the passed one.  
+         */
         public add(right: Color4): Color4 {
             return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
         }
-
+        /**
+         * Returns a new Color4 set with the subtracted values of the passed one from the current Color4.    
+         */
         public subtract(right: Color4): Color4 {
             return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
         }
 
+        /**
+         * Subtracts the passed ones from the current Color4 values and stores the results in "result".  
+         * Returns the Color4.  
+         */
         public subtractToRef(right: Color4, result: Color4): Color4 {
             result.r = this.r - right.r;
             result.g = this.g - right.g;
@@ -292,11 +426,17 @@
 
             return this;
         }
-
+        /**
+         * Creates a new Color4 with the current Color4 values multiplied by scale.  
+         */
         public scale(scale: number): Color4 {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
         }
 
+        /**
+         * Multiplies the current Color4 values by scale and stores the result in "result".  
+         * Returns the Color4.  
+         */
         public scaleToRef(scale: number, result: Color4): Color4 {
             result.r = this.r * scale;
             result.g = this.g * scale;
@@ -329,15 +469,21 @@
 
             return result;
         }
-
+        /**
+         * Returns a string with the Color4 values.  
+         */
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
-
+        /**
+         * Returns the string "Color4"
+         */
         public getClassName(): string {
             return "Color4";
         }
-
+        /**
+         * Return the Color4 hash code as a number.  
+         */
         public getHashCode(): number {
             let hash = this.r || 0;
             hash = (hash * 397) ^ (this.g || 0);
@@ -345,11 +491,16 @@
             hash = (hash * 397) ^ (this.a || 0);
             return hash;
         }
-
+        /**
+         * Creates a new Color4 copied from the current one.  
+         */
         public clone(): Color4 {
             return new Color4(this.r, this.g, this.b, this.a);
         }
-
+        /**
+         * Copies the passed Color4 values into the current one.  
+         * Returns the updated Color4.  
+         */
         public copyFrom(source: Color4): Color4 {
             this.r = source.r;
             this.g = source.g;
@@ -358,7 +509,9 @@
 
             return this;
         }
-
+        /**
+         * Returns a string containing the hexadecimal Color4 code.  
+         */
         public toHexString(): string {
             var intR = (this.r * 255) | 0;
             var intG = (this.g * 255) | 0;
@@ -369,10 +522,13 @@
         }
 
         // Statics
+        /**
+         * Creates a new Color4 from the valid hexadecimal value contained in the passed string.  
+         */
         public static FromHexString(hex: string): Color4 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
                 //Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
-                return new Color4(0, 0, 0, 0);
+                return new Color4(0.0, 0.0, 0.0, 0.0);
             }
 
             var r = parseInt(hex.substring(1, 3), 16);
@@ -383,14 +539,19 @@
             return Color4.FromInts(r, g, b, a);
         }
 
+        /**
+         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 and the right Color4.  
+         */
         public static Lerp(left: Color4, right: Color4, amount: number): Color4 {
-            var result = new Color4(0, 0, 0, 0);
+            var result = new Color4(0.0, 0.0, 0.0, 0.0);
 
             Color4.LerpToRef(left, right, amount, result);
 
             return result;
         }
-
+        /**
+         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
+         */
         public static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void {
             result.r = left.r + (right.r - left.r) * amount;
             result.g = left.g + (right.g - left.g) * amount;
@@ -398,10 +559,16 @@
             result.a = left.a + (right.a - left.a) * amount;
         }
 
+        /**
+         * Creates a new Color4 from the starting index element of the passed array.  
+         */
         public static FromArray(array: number[], offset: number = 0): Color4 {
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }
 
+        /**
+         * Creates a new Color4 from the passed integers ( < 256 ).
+         */
         public static FromInts(r: number, g: number, b: number, a: number): Color4 {
             return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
         }
@@ -426,17 +593,27 @@
     }
 
     export class Vector2 {
+        /**
+         * Creates a new Vector2 from the passed x and y coordinates.  
+         */
         constructor(public x: number, public y: number) {
         }
-
+        /**
+         * Returns a string with the Vector2 coordinates.  
+         */
         public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + "}";
         }
-
+        /**
+         * Returns the string "Vector2"
+         */
         public getClassName(): string {
             return "Vector2";
         }
 
+        /**
+         * Returns the Vector2 hash code as a number. 
+         */
         public getHashCode(): number {
             let hash = this.x || 0;
             hash = (hash * 397) ^ (this.y || 0);
@@ -444,13 +621,19 @@
         }
 
         // Operators
+        /**
+         * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.  
+         * Returns the Vector2.  
+         */
         public toArray(array: number[] | Float32Array, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
 
             return this;
         }
-
+        /**
+         * Returns a new array with 2 elements : the Vector2 coordinates.  
+         */
         public asArray(): number[] {
             var result = [];
 
@@ -458,126 +641,186 @@
 
             return result;
         }
-
+        /**
+         *  Sets the Vector2 coordinates with the passed Vector2 coordinates.  
+         * Returns the updated Vector2.  
+         */
         public copyFrom(source: Vector2): Vector2 {
             this.x = source.x;
             this.y = source.y;
 
             return this;
         }
-
+        /**
+         * Sets the Vector2 coordinates with the passed floats.  
+         * Returns the updated Vector2.  
+         */
         public copyFromFloats(x: number, y: number): Vector2 {
             this.x = x;
             this.y = y;
 
             return this;
         }
-
+        /**
+         * Returns a new Vector2 set with the addition of the current Vector2 and the passed one coordinates.  
+         */
         public add(otherVector: Vector2): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
-
+        /**
+         * Sets the "result" coordinates with the addition of the current Vector2 and the passed one coordinates. 
+         * Returns the Vector2.   
+         */
         public addToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x + otherVector.x;
             result.y = this.y + otherVector.y;
 
             return this;
         }
-
+        /**
+         * Set the Vector2 coordinates by adding the passed Vector2 coordinates.  
+         * Returns the updated Vector2.  
+         */
         public addInPlace(otherVector: Vector2): Vector2 {
             this.x += otherVector.x;
             this.y += otherVector.y;
 
             return this;
         }
-
+        /**
+         * Returns a new Vector2 by adding the current Vector2 coordinates to the passed Vector3 x, y coordinates.  
+         */
         public addVector3(otherVector: Vector3): Vector2 {
             return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
         }
 
+        /**
+         * Returns a new Vector2 set with the subtracted coordinates of the passed one from the current Vector2.  
+         */
         public subtract(otherVector: Vector2): Vector2 {
             return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
         }
-
+        /**
+         * Sets the "result" coordinates with the subtraction of the passed one from the current Vector2 coordinates.  
+         * Returns the Vector2.  
+         */
         public subtractToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x - otherVector.x;
             result.y = this.y - otherVector.y;
 
             return this;
         }
-
+        /**
+         * Sets the current Vector2 coordinates by subtracting from it the passed one coordinates.  
+         * Returns the updated Vector2.  
+         */
         public subtractInPlace(otherVector: Vector2): Vector2 {
             this.x -= otherVector.x;
             this.y -= otherVector.y;
 
             return this;
         }
-
+        /**
+         * Multiplies in place the current Vector2 coordinates by the passed ones.  
+         * Returns the updated Vector2.  
+         */
         public multiplyInPlace(otherVector: Vector2): Vector2 {
             this.x *= otherVector.x;
             this.y *= otherVector.y;
 
             return this;
         }
-
+        /**
+         * Returns a new Vector2 set with the multiplication of the current Vector2 and the passed one coordinates.  
+         */
         public multiply(otherVector: Vector2): Vector2 {
             return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
         }
-
+        /**
+         * Sets "result" coordinates with the multiplication of the current Vector2 and the passed one coordinates.  
+         * Returns the Vector2.  
+         */
         public multiplyToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x * otherVector.x;
             result.y = this.y * otherVector.y;
 
             return this;
         }
-
+        /**
+         * Returns a new Vector2 set with the Vector2 coordinates multiplied by the passed floats.  
+         */
         public multiplyByFloats(x: number, y: number): Vector2 {
             return new Vector2(this.x * x, this.y * y);
         }
-
+        /**
+         * Returns a new Vector2 set with the Vector2 coordinates divided by the passed one coordinates.  
+         */
         public divide(otherVector: Vector2): Vector2 {
             return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
         }
-
+        /**
+         * Sets the "result" coordinates with the Vector2 divided by the passed one coordinates.   
+         * Returns the Vector2.  
+         */
         public divideToRef(otherVector: Vector2, result: Vector2): Vector2 {
             result.x = this.x / otherVector.x;
             result.y = this.y / otherVector.y;
 
             return this;
         }
-
+        /**
+         * Returns a new Vector2 with current Vector2 negative coordinates.  
+         */
         public negate(): Vector2 {
             return new Vector2(-this.x, -this.y);
         }
-
+        /**
+         * Multiply the Vector2 coordinates by scale.  
+         * Returns the updated Vector2.  
+         */
         public scaleInPlace(scale: number): Vector2 {
             this.x *= scale;
             this.y *= scale;
             return this;
         }
-
+        /**
+         * Returns a new Vector2 scaled by "scale" from the current Vector2.  
+         */
         public scale(scale: number): Vector2 {
             return new Vector2(this.x * scale, this.y * scale);
         }
-
+        /**
+         * Boolean : True if the passed vector coordinates strictly equal the current Vector2 ones.  
+         */
         public equals(otherVector: Vector2): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         }
-
+        /**
+         * Boolean : True if the passed vector coordinates are close to the current ones by a distance of epsilon.  
+         */
         public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
             return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon);
         }
 
         // Properties
+        /**
+         * Returns the vector length (float).  
+         */
         public length(): number {
             return Math.sqrt(this.x * this.x + this.y * this.y);
         }
-
+        /**
+         * Returns the vector squared length (float);
+         */
         public lengthSquared(): number {
             return (this.x * this.x + this.y * this.y);
         }
 
         // Methods
+        /**
+         * Normalize the vector.  
+         * Returns the updated Vector2.  
+         */
         public normalize(): Vector2 {
             var len = this.length();
 
@@ -591,20 +834,30 @@
 
             return this;
         }
-
+        /**
+         * Returns a new Vector2 copied from the Vector2.  
+         */
         public clone(): Vector2 {
             return new Vector2(this.x, this.y);
         }
 
         // Statics
+        /**
+         * Returns a new Vector2(0, 0)
+         */
         public static Zero(): Vector2 {
             return new Vector2(0, 0);
         }
-
+        /**
+         * Returns a new Vector2 set from the passed index element of the passed array or Float32Array.  
+         */
         public static FromArray(array: number[] | Float32Array, offset: number = 0): Vector2 {
             return new Vector2(array[offset], array[offset + 1]);
         }
-
+        /**
+         * Sets "result" from the passed index element of the passed array or Float32Array.  
+         * Returns the Vector2.  
+         */
         public static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector2): void {
             result.x = array[offset];
             result.y = array[offset + 1];
