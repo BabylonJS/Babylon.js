@@ -8687,8 +8687,10 @@ var BABYLON;
             texture._baseWidth = width;
             texture._baseHeight = height;
         };
-        Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback, mipmmapGenerator) {
+        Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback, mipmmapGenerator, onLoad, onError) {
             var _this = this;
+            if (onLoad === void 0) { onLoad = null; }
+            if (onError === void 0) { onError = null; }
             var gl = this._gl;
             var texture = gl.createTexture();
             scene._addPendingData(texture);
@@ -8713,6 +8715,9 @@ var BABYLON;
             texture._height = height;
             var onerror = function () {
                 scene._removePendingData(texture);
+                if (onError) {
+                    onError();
+                }
             };
             var internalCallback = function (data) {
                 var rgbeDataArrays = callback(data);
@@ -8783,6 +8788,9 @@ var BABYLON;
                 texture.isReady = true;
                 _this.resetTextureCache();
                 scene._removePendingData(texture);
+                if (onLoad) {
+                    onLoad();
+                }
             };
             BABYLON.Tools.LoadFile(url, function (data) {
                 internalCallback(data);
@@ -46036,6 +46044,41 @@ var BABYLON;
         return CubeTextureAssetTask;
     }());
     BABYLON.CubeTextureAssetTask = CubeTextureAssetTask;
+    var HDRCubeTextureAssetTask = (function () {
+        function HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
+            if (noMipmap === void 0) { noMipmap = false; }
+            if (generateHarmonics === void 0) { generateHarmonics = true; }
+            if (useInGammaSpace === void 0) { useInGammaSpace = false; }
+            if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
+            this.name = name;
+            this.url = url;
+            this.size = size;
+            this.noMipmap = noMipmap;
+            this.generateHarmonics = generateHarmonics;
+            this.useInGammaSpace = useInGammaSpace;
+            this.usePMREMGenerator = usePMREMGenerator;
+            this.isCompleted = false;
+        }
+        HDRCubeTextureAssetTask.prototype.run = function (scene, onSuccess, onError) {
+            var _this = this;
+            var onload = function () {
+                _this.isCompleted = true;
+                if (_this.onSuccess) {
+                    _this.onSuccess(_this);
+                }
+                onSuccess();
+            };
+            var onerror = function () {
+                if (_this.onError) {
+                    _this.onError(_this);
+                }
+                onError();
+            };
+            this.texture = new BABYLON.HDRCubeTexture(this.url, scene, this.size, this.noMipmap, this.generateHarmonics, this.useInGammaSpace, this.usePMREMGenerator, onload, onerror);
+        };
+        return HDRCubeTextureAssetTask;
+    }());
+    BABYLON.HDRCubeTextureAssetTask = HDRCubeTextureAssetTask;
     var AssetsManager = (function () {
         function AssetsManager(scene) {
             this.tasks = new Array();
@@ -53202,15 +53245,19 @@ var BABYLON;
          * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
          * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
          */
-        function HDRCubeTexture(url, scene, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
+        function HDRCubeTexture(url, scene, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator, onLoad, onError) {
             if (noMipmap === void 0) { noMipmap = false; }
             if (generateHarmonics === void 0) { generateHarmonics = true; }
             if (useInGammaSpace === void 0) { useInGammaSpace = false; }
             if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
+            if (onLoad === void 0) { onLoad = null; }
+            if (onError === void 0) { onError = null; }
             var _this = _super.call(this, scene) || this;
             _this._useInGammaSpace = false;
             _this._generateHarmonics = true;
             _this._isBABYLONPreprocessed = false;
+            _this._onLoad = null;
+            _this._onError = null;
             /**
              * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
              */
@@ -53232,6 +53279,8 @@ var BABYLON;
             _this.hasAlpha = false;
             _this.isCube = true;
             _this._textureMatrix = BABYLON.Matrix.Identity();
+            _this._onLoad = onLoad;
+            _this._onError = onError;
             if (size) {
                 _this._isBABYLONPreprocessed = false;
                 _this._noMipmap = noMipmap;
@@ -53366,7 +53415,7 @@ var BABYLON;
                 }
                 return results;
             };
-            this._texture = this.getScene().getEngine().createRawCubeTexture(this.url, this.getScene(), this._size, BABYLON.Engine.TEXTUREFORMAT_RGB, this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, this._noMipmap, callback, mipmapGenerator);
+            this._texture = this.getScene().getEngine().createRawCubeTexture(this.url, this.getScene(), this._size, BABYLON.Engine.TEXTUREFORMAT_RGB, this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, this._noMipmap, callback, mipmapGenerator, this._onLoad, this._onError);
         };
         /**
          * Occurs when the file is raw .hdr file.
@@ -53437,7 +53486,7 @@ var BABYLON;
                     return generator.filterCubeMap();
                 };
             }
-            this._texture = this.getScene().getEngine().createRawCubeTexture(this.url, this.getScene(), this._size, BABYLON.Engine.TEXTUREFORMAT_RGB, this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, this._noMipmap, callback, mipmapGenerator);
+            this._texture = this.getScene().getEngine().createRawCubeTexture(this.url, this.getScene(), this._size, BABYLON.Engine.TEXTUREFORMAT_RGB, this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, this._noMipmap, callback, mipmapGenerator, this._onLoad, this._onError);
         };
         /**
          * Starts the loading process of the texture.

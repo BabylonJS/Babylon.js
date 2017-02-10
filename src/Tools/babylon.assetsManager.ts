@@ -219,6 +219,40 @@
         }
     }
 
+      export class HDRCubeTextureAssetTask implements IAssetTask {
+        public onSuccess: (task: IAssetTask) => void;
+        public onError: (task: IAssetTask) => void;
+
+        public isCompleted = false;
+        public texture: HDRCubeTexture;
+
+        constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
+        }
+
+        public run(scene: Scene, onSuccess: () => void, onError: () => void) {
+
+            var onload = () => {
+                this.isCompleted = true;
+
+                if (this.onSuccess) {
+                    this.onSuccess(this);
+                }
+
+                onSuccess();
+            };
+
+            var onerror = () => {
+                if (this.onError) {
+                    this.onError(this);
+                }
+
+                onError();
+            };
+
+            this.texture = new HDRCubeTexture(this.url, scene, this.size, this.noMipmap, this.generateHarmonics, this.useInGammaSpace, this.usePMREMGenerator, onload, onerror);
+        }
+    }
+
     export class AssetsManager {
         private _scene: Scene;
 
