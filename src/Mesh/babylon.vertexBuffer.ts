@@ -59,55 +59,92 @@
             this._kind = kind;
         }
 
-
+        /**
+         * Returns the kind of the VertexBuffer (string).  
+         */
         public getKind(): string {
             return this._kind;
         }
 
         // Properties
+        /**
+         * Boolean : is the VertexBuffer updatable ?
+         */
         public isUpdatable(): boolean {
             return this._buffer.isUpdatable();
         }
 
+        /**
+         * Returns an array of numbers or a Float32Array containing the VertexBuffer data.  
+         */
         public getData(): number[] | Float32Array {
             return this._buffer.getData();
         }
 
+        /**
+         * Returns the WebGLBuffer associated to the VertexBuffer.  
+         */
         public getBuffer(): WebGLBuffer {
             return this._buffer.getBuffer();
         }
 
+        /**
+         * Returns the stride of the VertexBuffer (integer).  
+         */
         public getStrideSize(): number {
             return this._stride;
         }
 
+        /**
+         * Returns the offset (integer).  
+         */
         public getOffset(): number {
             return this._offset;
         }
 
+        /**
+         * Returns the VertexBuffer total size (integer).  
+         */
         public getSize(): number {
             return this._size;
         }
 
+        /**
+         * Boolean : is the WebGLBuffer of the VertexBuffer instanced now ?
+         */
         public getIsInstanced(): boolean {
             return this._buffer.getIsInstanced();
         }
 
         // Methods
 
-
+        /**
+         * Creates the underlying WebGLBuffer from the passed numeric array or Float32Array.  
+         * Returns the created WebGLBuffer.   
+         */
         public create(data?: number[] | Float32Array): void {
             return this._buffer.create(data);
         }
 
+        /**
+         * Updates the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
+         * Returns the updated WebGLBuffer.  
+         */
         public update(data: number[] | Float32Array): void {
             return this._buffer.update(data);
         }
 
+        /**
+         * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
+         * Returns the directly updated WebGLBuffer. 
+         */
         public updateDirectly(data: Float32Array, offset: number): void {
             return this._buffer.updateDirectly(data, offset);
         }
 
+        /** 
+         * Disposes the VertexBuffer and the underlying WebGLBuffer.  
+         */
         public dispose(): void {
             if (this._ownsBuffer) {
                 this._buffer.dispose();

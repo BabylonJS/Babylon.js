@@ -18,11 +18,17 @@ var BABYLON;
     var MathTools = (function () {
         function MathTools() {
         }
+        /**
+         * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
+         */
         MathTools.WithinEpsilon = function (a, b, epsilon) {
             if (epsilon === void 0) { epsilon = 1.401298E-45; }
             var num = a - b;
             return -epsilon <= num && num <= epsilon;
         };
+        /**
+         * Returns a string : the upper case translation of the number i to hexadecimal.
+         */
         MathTools.ToHex = function (i) {
             var str = i.toString(16);
             if (i <= 15) {
@@ -30,14 +36,21 @@ var BABYLON;
             }
             return str.toUpperCase();
         };
-        // Returns -1 when value is a negative number and
-        // +1 when value is a positive number. 
+        /**
+         * Returns -1 if value is negative and +1 is value is positive.
+         * Returns the value itself if it's equal to zero.
+         */
         MathTools.Sign = function (value) {
             value = +value; // convert to a number
             if (value === 0 || isNaN(value))
                 return value;
             return value > 0 ? 1 : -1;
         };
+        /**
+         * Returns the value itself if it's between min and max.
+         * Returns min if the value is lower than min.
+         * Returns max if the value is greater than max.
+         */
         MathTools.Clamp = function (value, min, max) {
             if (min === void 0) { min = 0; }
             if (max === void 0) { max = 1; }
@@ -47,6 +60,9 @@ var BABYLON;
     }());
     BABYLON.MathTools = MathTools;
     var Color3 = (function () {
+        /**
+         * Creates a new Color3 object from red, green, blue values, all between 0 and 1.
+         */
         function Color3(r, g, b) {
             if (r === void 0) { r = 0; }
             if (g === void 0) { g = 0; }
@@ -55,12 +71,21 @@ var BABYLON;
             this.g = g;
             this.b = b;
         }
+        /**
+         * Returns a string with the Color3 current values.
+         */
         Color3.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         };
+        /**
+         * Returns the string "Color3".
+         */
         Color3.prototype.getClassName = function () {
             return "Color3";
         };
+        /**
+         * Returns the Color3 hash code.
+         */
         Color3.prototype.getHashCode = function () {
             var hash = this.r || 0;
             hash = (hash * 397) ^ (this.g || 0);
@@ -68,6 +93,10 @@ var BABYLON;
             return hash;
         };
         // Operators
+        /**
+         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.
+         * Returns the Color3.
+         */
         Color3.prototype.toArray = function (array, index) {
             if (index === undefined) {
                 index = 0;
@@ -77,97 +106,170 @@ var BABYLON;
             array[index + 2] = this.b;
             return this;
         };
+        /**
+         * Returns a new Color4 object from the current Color3 and the passed alpha.
+         */
         Color3.prototype.toColor4 = function (alpha) {
             if (alpha === void 0) { alpha = 1; }
             return new Color4(this.r, this.g, this.b, alpha);
         };
+        /**
+         * Returns a new array populated with 3 numeric elements : red, green and blue values.
+         */
         Color3.prototype.asArray = function () {
             var result = [];
             this.toArray(result, 0);
             return result;
         };
+        /**
+         * Returns the luminance value (float).
+         */
         Color3.prototype.toLuminance = function () {
             return this.r * 0.3 + this.g * 0.59 + this.b * 0.11;
         };
+        /**
+         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object.
+         * Returns this new object.
+         */
         Color3.prototype.multiply = function (otherColor) {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         };
+        /**
+         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result".
+         * Returns the current Color3.
+         */
         Color3.prototype.multiplyToRef = function (otherColor, result) {
             result.r = this.r * otherColor.r;
             result.g = this.g * otherColor.g;
             result.b = this.b * otherColor.b;
             return this;
         };
+        /**
+         * Boolean : True if the rgb values are equal to the passed ones.
+         */
         Color3.prototype.equals = function (otherColor) {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
         };
+        /**
+         * Boolean : True if the rgb values are equal to the passed ones.
+         */
         Color3.prototype.equalsFloats = function (r, g, b) {
             return this.r === r && this.g === g && this.b === b;
         };
+        /**
+         * Multiplies in place each rgb value by scale.
+         * Returns the updated Color3.
+         */
         Color3.prototype.scale = function (scale) {
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
         };
+        /**
+         * Multiplies the rgb values by scale and stores the result into "result".
+         * Returns the unmodified current Color3.
+         */
         Color3.prototype.scaleToRef = function (scale, result) {
             result.r = this.r * scale;
             result.g = this.g * scale;
             result.b = this.b * scale;
             return this;
         };
+        /**
+         * Returns a new Color3 set with the added values of the current Color3 and of the passed one.
+         */
         Color3.prototype.add = function (otherColor) {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
         };
+        /**
+         * Stores the result of the addition of the current Color3 and passed one rgb values into "result".
+         * Returns the unmodified current Color3.
+         */
         Color3.prototype.addToRef = function (otherColor, result) {
             result.r = this.r + otherColor.r;
             result.g = this.g + otherColor.g;
             result.b = this.b + otherColor.b;
             return this;
         };
+        /**
+         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3 .
+         */
         Color3.prototype.subtract = function (otherColor) {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
         };
+        /**
+         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result".
+         * Returns the unmodified current Color3.
+         */
         Color3.prototype.subtractToRef = function (otherColor, result) {
             result.r = this.r - otherColor.r;
             result.g = this.g - otherColor.g;
             result.b = this.b - otherColor.b;
             return this;
         };
+        /**
+         * Returns a new Color3 copied the current one.
+         */
         Color3.prototype.clone = function () {
             return new Color3(this.r, this.g, this.b);
         };
+        /**
+         * Copies the rgb values from the source in the current Color3.
+         * Returns the updated Color3.
+         */
         Color3.prototype.copyFrom = function (source) {
             this.r = source.r;
             this.g = source.g;
             this.b = source.b;
             return this;
         };
+        /**
+         * Updates the Color3 rgb values from the passed floats.
+         * Returns the Color3.
+         */
         Color3.prototype.copyFromFloats = function (r, g, b) {
             this.r = r;
             this.g = g;
             this.b = b;
             return this;
         };
+        /**
+         * Returns the Color3 hexadecimal code as a string.
+         */
         Color3.prototype.toHexString = function () {
             var intR = (this.r * 255) | 0;
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
             return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB);
         };
+        /**
+         * Returns a new Color3 converted to linear space.
+         */
         Color3.prototype.toLinearSpace = function () {
             var convertedColor = new Color3();
             this.toLinearSpaceToRef(convertedColor);
             return convertedColor;
         };
+        /**
+         * Converts the Color3 values to linear space and stores the result in "convertedColor".
+         * Returns the unmodified Color3.
+         */
         Color3.prototype.toLinearSpaceToRef = function (convertedColor) {
             convertedColor.r = Math.pow(this.r, BABYLON.ToLinearSpace);
             convertedColor.g = Math.pow(this.g, BABYLON.ToLinearSpace);
             convertedColor.b = Math.pow(this.b, BABYLON.ToLinearSpace);
             return this;
         };
+        /**
+         * Returns a new Color3 converted to gamma space.
+         */
         Color3.prototype.toGammaSpace = function () {
             var convertedColor = new Color3();
             this.toGammaSpaceToRef(convertedColor);
             return convertedColor;
         };
+        /**
+         * Converts the Color3 values to gamma space and stores the result in "convertedColor".
+         * Returns the unmodified Color3.
+         */
         Color3.prototype.toGammaSpaceToRef = function (convertedColor) {
             convertedColor.r = Math.pow(this.r, BABYLON.ToGammaSpace);
             convertedColor.g = Math.pow(this.g, BABYLON.ToGammaSpace);
@@ -175,6 +277,9 @@ var BABYLON;
             return this;
         };
         // Statics
+        /**
+         * Creates a new Color3 from the string containing valid hexadecimal values.
+         */
         Color3.FromHexString = function (hex) {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
                 //Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
@@ -185,13 +290,22 @@ var BABYLON;
             var b = parseInt(hex.substring(5, 7), 16);
             return Color3.FromInts(r, g, b);
         };
+        /**
+         * Creates a new Vector3 from the startind index of the passed array.
+         */
         Color3.FromArray = function (array, offset) {
             if (offset === void 0) { offset = 0; }
             return new Color3(array[offset], array[offset + 1], array[offset + 2]);
         };
+        /**
+         * Creates a new Color3 from integer values ( < 256).
+         */
         Color3.FromInts = function (r, g, b) {
             return new Color3(r / 255.0, g / 255.0, b / 255.0);
         };
+        /**
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3.
+         */
         Color3.Lerp = function (start, end, amount) {
             var r = start.r + ((end.r - start.r) * amount);
             var g = start.g + ((end.g - start.g) * amount);
@@ -212,6 +326,9 @@ var BABYLON;
     }());
     BABYLON.Color3 = Color3;
     var Color4 = (function () {
+        /**
+         * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.
+         */
         function Color4(r, g, b, a) {
             this.r = r;
             this.g = g;
@@ -219,6 +336,10 @@ var BABYLON;
             this.a = a;
         }
         // Operators
+        /**
+         * Adds in place the passed Color4 values to the current Color4.
+         * Returns the updated Color4.
+         */
         Color4.prototype.addInPlace = function (right) {
             this.r += right.r;
             this.g += right.g;
@@ -226,11 +347,18 @@ var BABYLON;
             this.a += right.a;
             return this;
         };
+        /**
+         * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.
+         */
         Color4.prototype.asArray = function () {
             var result = [];
             this.toArray(result, 0);
             return result;
         };
+        /**
+         * Stores from the starting index in the passed array the Color4 successive values.
+         * Returns the Color4.
+         */
         Color4.prototype.toArray = function (array, index) {
             if (index === undefined) {
                 index = 0;
@@ -241,12 +369,22 @@ var BABYLON;
             array[index + 3] = this.a;
             return this;
         };
+        /**
+         * Returns a new Color4 set with the added values of the current Color4 and of the passed one.
+         */
         Color4.prototype.add = function (right) {
             return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
         };
+        /**
+         * Returns a new Color4 set with the subtracted values of the passed one from the current Color4.
+         */
         Color4.prototype.subtract = function (right) {
             return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
         };
+        /**
+         * Subtracts the passed ones from the current Color4 values and stores the results in "result".
+         * Returns the Color4.
+         */
         Color4.prototype.subtractToRef = function (right, result) {
             result.r = this.r - right.r;
             result.g = this.g - right.g;
@@ -254,9 +392,16 @@ var BABYLON;
             result.a = this.a - right.a;
             return this;
         };
+        /**
+         * Creates a new Color4 with the current Color4 values multiplied by scale.
+         */
         Color4.prototype.scale = function (scale) {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
         };
+        /**
+         * Multiplies the current Color4 values by scale and stores the result in "result".
+         * Returns the Color4.
+         */
         Color4.prototype.scaleToRef = function (scale, result) {
             result.r = this.r * scale;
             result.g = this.g * scale;
@@ -285,12 +430,21 @@ var BABYLON;
             result.a = this.a * color.a;
             return result;
         };
+        /**
+         * Returns a string with the Color4 values.
+         */
         Color4.prototype.toString = function () {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         };
+        /**
+         * Returns the string "Color4"
+         */
         Color4.prototype.getClassName = function () {
             return "Color4";
         };
+        /**
+         * Return the Color4 hash code as a number.
+         */
         Color4.prototype.getHashCode = function () {
             var hash = this.r || 0;
             hash = (hash * 397) ^ (this.g || 0);
@@ -298,9 +452,16 @@ var BABYLON;
             hash = (hash * 397) ^ (this.a || 0);
             return hash;
         };
+        /**
+         * Creates a new Color4 copied from the current one.
+         */
         Color4.prototype.clone = function () {
             return new Color4(this.r, this.g, this.b, this.a);
         };
+        /**
+         * Copies the passed Color4 values into the current one.
+         * Returns the updated Color4.
+         */
         Color4.prototype.copyFrom = function (source) {
             this.r = source.r;
             this.g = source.g;
@@ -308,6 +469,9 @@ var BABYLON;
             this.a = source.a;
             return this;
         };
+        /**
+         * Returns a string containing the hexadecimal Color4 code.
+         */
         Color4.prototype.toHexString = function () {
             var intR = (this.r * 255) | 0;
             var intG = (this.g * 255) | 0;
@@ -316,10 +480,13 @@ var BABYLON;
             return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
         };
         // Statics
+        /**
+         * Creates a new Color4 from the valid hexadecimal value contained in the passed string.
+         */
         Color4.FromHexString = function (hex) {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
                 //Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
-                return new Color4(0, 0, 0, 0);
+                return new Color4(0.0, 0.0, 0.0, 0.0);
             }
             var r = parseInt(hex.substring(1, 3), 16);
             var g = parseInt(hex.substring(3, 5), 16);
@@ -327,21 +494,33 @@ var BABYLON;
             var a = parseInt(hex.substring(7, 9), 16);
             return Color4.FromInts(r, g, b, a);
         };
+        /**
+         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
+         */
         Color4.Lerp = function (left, right, amount) {
-            var result = new Color4(0, 0, 0, 0);
+            var result = new Color4(0.0, 0.0, 0.0, 0.0);
             Color4.LerpToRef(left, right, amount, result);
             return result;
         };
+        /**
+         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
+         */
         Color4.LerpToRef = function (left, right, amount, result) {
             result.r = left.r + (right.r - left.r) * amount;
             result.g = left.g + (right.g - left.g) * amount;
             result.b = left.b + (right.b - left.b) * amount;
             result.a = left.a + (right.a - left.a) * amount;
         };
+        /**
+         * Creates a new Color4 from the starting index element of the passed array.
+         */
         Color4.FromArray = function (array, offset) {
             if (offset === void 0) { offset = 0; }
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         };
+        /**
+         * Creates a new Color4 from the passed integers ( < 256 ).
+         */
         Color4.FromInts = function (r, g, b, a) {
             return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
         };
@@ -10745,7 +10924,7 @@ var BABYLON;
         });
         Object.defineProperty(AbstractMesh.prototype, "partitioningSubdivisions", {
             /**
-             * The number of subdivisions per axis in the partioning space
+             * The number (integer) of subdivisions per axis in the partioning space
              */
             get: function () {
                 return this._partitioningSubdivisions;
@@ -10758,7 +10937,7 @@ var BABYLON;
         });
         Object.defineProperty(AbstractMesh.prototype, "partitioningBBoxRatio", {
             /**
-             * The ratio to apply to the bouding box size to set to the partioning space.
+             * The ratio (float) to apply to the bouding box size to set to the partioning space.
              * Ex : 1.01 (default) the partioning space is 1% bigger than the bounding box.
              */
             get: function () {
@@ -10772,7 +10951,7 @@ var BABYLON;
         });
         Object.defineProperty(AbstractMesh.prototype, "isFacetDataEnabled", {
             /**
-             * Read-only : is the feature facetData enabled ?
+             * Read-only boolean : is the feature facetData enabled ?
              */
             get: function () {
                 return this._facetDataEnabled;
@@ -10842,7 +11021,7 @@ var BABYLON;
         };
         Object.defineProperty(AbstractMesh.prototype, "rotation", {
             /**
-             * Ratation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
+             * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z.
              * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
              * Default : (0.0, 0.0, 0.0)
              */
@@ -10892,25 +11071,49 @@ var BABYLON;
             configurable: true
         });
         // Methods
+        /**
+         * Copies the paramater passed Matrix into the mesh Pose matrix.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.updatePoseMatrix = function (matrix) {
             this._poseMatrix.copyFrom(matrix);
+            return this;
         };
+        /**
+         * Returns the mesh Pose matrix.
+         * Returned object : Matrix
+         */
         AbstractMesh.prototype.getPoseMatrix = function () {
             return this._poseMatrix;
         };
+        /**
+         * Disables the mesh edger rendering mode.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.disableEdgesRendering = function () {
             if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
                 this._edgesRenderer = undefined;
             }
+            return this;
         };
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.enableEdgesRendering = function (epsilon, checkVerticesInsteadOfIndices) {
             if (epsilon === void 0) { epsilon = 0.95; }
             if (checkVerticesInsteadOfIndices === void 0) { checkVerticesInsteadOfIndices = false; }
             this.disableEdgesRendering();
             this._edgesRenderer = new BABYLON.EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+            return this;
         };
         Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
+            /**
+             * Returns true if the mesh is blocked. Used by the class Mesh.
+             * Returns the boolean `false` by default.
+             */
             get: function () {
                 return false;
             },
@@ -10918,7 +11121,7 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Returns this by default, used by the class Mesh.
+         * Returns the mesh itself by default, used by the class Mesh.
          * Returned type : AbstractMesh
          */
         AbstractMesh.prototype.getLOD = function (camera) {
@@ -10966,10 +11169,11 @@ var BABYLON;
         };
         /**
          * Sets a mesh new object BoundingInfo.
-         * Returns nothing.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.setBoundingInfo = function (boundingInfo) {
             this._boundingInfo = boundingInfo;
+            return this;
         };
         Object.defineProperty(AbstractMesh.prototype, "useBones", {
             get: function () {
@@ -11012,7 +11216,7 @@ var BABYLON;
         Object.defineProperty(AbstractMesh.prototype, "absolutePosition", {
             /**
              * Returns the current mesh absolute position.
-             * Retuns a Vector3
+             * Retuns a Vector3.
              */
             get: function () {
                 return this._absolutePosition;
@@ -11022,20 +11226,22 @@ var BABYLON;
         });
         /**
          * Prevents the World matrix to be computed any longer.
-         * Returns nothing.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.freezeWorldMatrix = function () {
             this._isWorldMatrixFrozen = false; // no guarantee world is not already frozen, switch off temporarily
             this.computeWorldMatrix(true);
             this._isWorldMatrixFrozen = true;
+            return this;
         };
         /**
          * Allows back the World matrix computation.
-         * Returns nothing.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.unfreezeWorldMatrix = function () {
             this._isWorldMatrixFrozen = false;
             this.computeWorldMatrix(true);
+            return this;
         };
         Object.defineProperty(AbstractMesh.prototype, "isWorldMatrixFrozen", {
             /**
@@ -11050,7 +11256,10 @@ var BABYLON;
         });
         /**
          * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.rotate = function (axis, amount, space) {
             axis.normalize();
@@ -11072,10 +11281,12 @@ var BABYLON;
                 rotationQuaternion = BABYLON.Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
                 rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
+            return this;
         };
         /**
          * Translates the mesh along the axis vector for the passed distance in the given space.
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD
+         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.translate = function (axis, distance, space) {
             var displacementVector = axis.scale(distance);
@@ -11086,11 +11297,13 @@ var BABYLON;
             else {
                 this.setAbsolutePosition(this.getAbsolutePosition().add(displacementVector));
             }
+            return this;
         };
         /**
          * Adds a rotation step to the mesh current rotation.
          * x, y, z are Euler angles expressed in radians.
          * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
+         * This means this rotation is made in the mesh local space only.
          * It's useful to set a custom rotation order different from the BJS standard one YXZ.
          * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
          * ```javascript
@@ -11098,6 +11311,7 @@ var BABYLON;
          * ```
          * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
          * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.addRotation = function (x, y, z) {
             var rotationQuaternion;
@@ -11116,10 +11330,18 @@ var BABYLON;
             }
             return this;
         };
+        /**
+         * Retuns the mesh absolute position in the World.
+         * Returns a Vector3.
+         */
         AbstractMesh.prototype.getAbsolutePosition = function () {
             this.computeWorldMatrix();
             return this._absolutePosition;
         };
+        /**
+         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.setAbsolutePosition = function (absolutePosition) {
             if (!absolutePosition) {
                 return;
@@ -11151,6 +11373,7 @@ var BABYLON;
                 this.position.y = absolutePositionY;
                 this.position.z = absolutePositionZ;
             }
+            return this;
         };
         // ================================== Point of View Movement =================================
         /**
@@ -11160,9 +11383,12 @@ var BABYLON;
          * @param {number} amountRight
          * @param {number} amountUp
          * @param {number} amountForward
+         *
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.movePOV = function (amountRight, amountUp, amountForward) {
             this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
+            return this;
         };
         /**
          * Calculate relative position change from the point of view of behind the front of the mesh.
@@ -11171,6 +11397,8 @@ var BABYLON;
          * @param {number} amountRight
          * @param {number} amountUp
          * @param {number} amountForward
+         *
+         * Returns a new Vector3.
          */
         AbstractMesh.prototype.calcMovePOV = function (amountRight, amountUp, amountForward) {
             var rotMatrix = new BABYLON.Matrix();
@@ -11188,9 +11416,12 @@ var BABYLON;
          * @param {number} flipBack
          * @param {number} twirlClockwise
          * @param {number} tiltRight
+         *
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.rotatePOV = function (flipBack, twirlClockwise, tiltRight) {
             this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
+            return this;
         };
         /**
          * Calculate relative rotation change from the point of view of behind the front of the mesh.
@@ -11198,6 +11429,8 @@ var BABYLON;
          * @param {number} flipBack
          * @param {number} twirlClockwise
          * @param {number} tiltRight
+         *
+         * Returns a new Vector3.
          */
         AbstractMesh.prototype.calcRotatePOV = function (flipBack, twirlClockwise, tiltRight) {
             var defForwardMult = this.definedFacingForward ? 1 : -1;
@@ -11205,11 +11438,12 @@ var BABYLON;
         };
         /**
          * Sets a new pivot matrix to the mesh.
-         * Returns nothing.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.setPivotMatrix = function (matrix) {
             this._pivotMatrix = matrix;
             this._cache.pivotMatrixUpdated = true;
+            return this;
         };
         /**
          * Returns the mesh pivot matrix.
@@ -11258,12 +11492,22 @@ var BABYLON;
             }
             this._currentRenderId = Number.MAX_VALUE;
             this._isDirty = true;
+            return this;
         };
+        /**
+         * Updates the mesh BoundingInfo object and all its children BoundingInfo objects also.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype._updateBoundingInfo = function () {
             this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this.absolutePosition, this.absolutePosition);
             this._boundingInfo.update(this.worldMatrixFromCache);
             this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+            return this;
         };
+        /**
+         * Update a mesh's children BoundingInfo objects only.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
             if (!this.subMeshes) {
                 return;
@@ -11274,6 +11518,7 @@ var BABYLON;
                     subMesh.updateBoundingInfo(matrix);
                 }
             }
+            return this;
         };
         /**
          * Computes the mesh World matrix and returns it.
@@ -11394,21 +11639,31 @@ var BABYLON;
             return this._worldMatrix;
         };
         /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated
+        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
         * @param func: callback function to add
+        *
+        * Returns the AbstractMesh.
         */
         AbstractMesh.prototype.registerAfterWorldMatrixUpdate = function (func) {
             this.onAfterWorldMatrixUpdateObservable.add(func);
+            return this;
         };
         /**
-         * Removes a registered callback function
+         * Removes a registered callback function.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
             this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
+            return this;
         };
+        /**
+         * Sets the mesh position in its local space.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.setPositionWithLocalVector = function (vector3) {
             this.computeWorldMatrix();
             this.position = BABYLON.Vector3.TransformNormal(vector3, this._localWorld);
+            return this;
         };
         /**
          * Returns the mesh position in the local space from the current World matrix values.
@@ -11420,9 +11675,14 @@ var BABYLON;
             invLocalWorldMatrix.invert();
             return BABYLON.Vector3.TransformNormal(this.position, invLocalWorldMatrix);
         };
+        /**
+         * Translates the mesh along the passed Vector3 in its local space.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.locallyTranslate = function (vector3) {
             this.computeWorldMatrix(true);
             this.position = BABYLON.Vector3.TransformCoordinates(vector3, this._localWorld);
+            return this;
         };
         AbstractMesh.prototype.lookAt = function (targetPoint, yawCor, pitchCor, rollCor, space) {
             /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
@@ -11443,6 +11703,7 @@ var BABYLON;
             var pitch = Math.atan2(dv.y, len);
             this.rotationQuaternion = this.rotationQuaternion || new BABYLON.Quaternion();
             BABYLON.Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
+            return this;
         };
         AbstractMesh.prototype.attachToBone = function (bone, affectedMesh) {
             this._meshToBoneReferal = affectedMesh;
@@ -11450,6 +11711,7 @@ var BABYLON;
             if (bone.getWorldMatrix().determinant() < 0) {
                 this.scalingDeterminant *= -1;
             }
+            return this;
         };
         AbstractMesh.prototype.detachFromBone = function () {
             if (this.parent.getWorldMatrix().determinant() < 0) {
@@ -11457,10 +11719,21 @@ var BABYLON;
             }
             this._meshToBoneReferal = null;
             this.parent = null;
+            return this;
         };
+        /**
+         * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
+         * A mesh is in the frustum if its bounding box intersects the frustum.
+         * Boolean returned.
+         */
         AbstractMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isInFrustum(frustumPlanes);
         };
+        /**
+         * Returns `true` if the mesh is completely in the frustum defined be the passed array of planes.
+         * A mesh is completely in the frustum if its bounding box it completely inside the frustum.
+         * Boolean returned.
+         */
         AbstractMesh.prototype.isCompletelyInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);
             ;
@@ -11526,6 +11799,10 @@ var BABYLON;
             }
             return BABYLON.Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
         };
+        /**
+         * Returns the distance from the mesh to the active camera.
+         * Returns a float.
+         */
         AbstractMesh.prototype.getDistanceToCamera = function (camera) {
             if (!camera) {
                 camera = this.getScene().activeCamera;
@@ -11537,6 +11814,7 @@ var BABYLON;
                 return;
             }
             this.physicsImpostor.applyImpulse(force, contactPoint);
+            return this;
         };
         AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2, options) {
             if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
@@ -11547,6 +11825,7 @@ var BABYLON;
                 connectedPivot: pivot2,
                 nativeParams: options
             });
+            return this;
         };
         /**
          * @Deprecated
@@ -11565,6 +11844,10 @@ var BABYLON;
         };
         Object.defineProperty(AbstractMesh.prototype, "checkCollisions", {
             // Collisions
+            /**
+             * Property checkCollisions : Boolean, whether the camera should check the collisions against the mesh.
+             * Default `false`.
+             */
             get: function () {
                 return this._checkCollisions;
             },
@@ -11583,11 +11866,13 @@ var BABYLON;
             this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
             this._collider.radius = this.ellipsoid;
             this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, velocity, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            return this;
         };
         // Submeshes octree
         /**
-        * This function will create an octree to help select the right submeshes for rendering, picking and collisions
-        * Please note that you must have a decent number of submeshes to get performance improvements when using octree
+        * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.
+        * Please note that you must have a decent number of submeshes to get performance improvements when using an octree.
+        * Returns an Octree of submeshes.
         */
         AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function (maxCapacity, maxDepth) {
             if (maxCapacity === void 0) { maxCapacity = 64; }
@@ -11620,6 +11905,7 @@ var BABYLON;
             if (collider.collisionFound) {
                 collider.collidedMesh = this;
             }
+            return this;
         };
         AbstractMesh.prototype._processCollisionsForSubMeshes = function (collider, transformMatrix) {
             var subMeshes;
@@ -11642,20 +11928,26 @@ var BABYLON;
                     continue;
                 this._collideForSubMesh(subMesh, transformMatrix, collider);
             }
+            return this;
         };
         AbstractMesh.prototype._checkCollision = function (collider) {
             // Bounding box test
             if (!this._boundingInfo._checkCollision(collider))
-                return;
+                return this;
             // Transformation matrix
             BABYLON.Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
             this.worldMatrixFromCache.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
             this._processCollisionsForSubMeshes(collider, this._collisionsTransformMatrix);
+            return this;
         };
         // Picking
         AbstractMesh.prototype._generatePointsArray = function () {
             return false;
         };
+        /**
+         * Checks if the passed Ray intersects with the mesh.
+         * Returns an object PickingInfo.
+         */
         AbstractMesh.prototype.intersects = function (ray, fastCheck) {
             var pickingInfo = new BABYLON.PickingInfo();
             if (!this.subMeshes || !this._boundingInfo || !ray.intersectsSphere(this._boundingInfo.boundingSphere) || !ray.intersectsBox(this._boundingInfo.boundingBox)) {
@@ -11715,9 +12007,17 @@ var BABYLON;
             }
             return pickingInfo;
         };
+        /**
+         * Clones the mesh, used by the class Mesh.
+         * Just returns `null` for an AbstractMesh.
+         */
         AbstractMesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
             return null;
         };
+        /**
+         * Disposes all the mesh submeshes.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.releaseSubMeshes = function () {
             if (this.subMeshes) {
                 while (this.subMeshes.length) {
@@ -11727,6 +12027,7 @@ var BABYLON;
             else {
                 this.subMeshes = new Array();
             }
+            return this;
         };
         /**
          * Disposes the AbstractMesh.
@@ -11822,13 +12123,24 @@ var BABYLON;
             this._isDisposed = true;
             _super.prototype.dispose.call(this);
         };
+        /**
+         * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.
+         * This Vector3 is expressed in the World space.
+         */
         AbstractMesh.prototype.getDirection = function (localAxis) {
             var result = BABYLON.Vector3.Zero();
             this.getDirectionToRef(localAxis, result);
             return result;
         };
+        /**
+         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
+         * localAxis is expressed in the mesh local space.
+         * result is computed in the Wordl space from the mesh World matrix.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.getDirectionToRef = function (localAxis, result) {
             BABYLON.Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+            return this;
         };
         AbstractMesh.prototype.setPivotPoint = function (point, space) {
             if (space === void 0) { space = BABYLON.Space.LOCAL; }
@@ -11846,22 +12158,39 @@ var BABYLON;
             this._pivotMatrix.m[13] = -point.y;
             this._pivotMatrix.m[14] = -point.z;
             this._cache.pivotMatrixUpdated = true;
+            return this;
         };
+        /**
+         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
+         */
         AbstractMesh.prototype.getPivotPoint = function () {
             var point = BABYLON.Vector3.Zero();
             this.getPivotPointToRef(point);
             return point;
         };
+        /**
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.getPivotPointToRef = function (result) {
             result.x = -this._pivotMatrix.m[12];
             result.y = -this._pivotMatrix.m[13];
             result.z = -this._pivotMatrix.m[14];
+            return this;
         };
+        /**
+         * Returns a new Vector3 set with the mesh pivot point World coordinates.
+         */
         AbstractMesh.prototype.getAbsolutePivotPoint = function () {
             var point = BABYLON.Vector3.Zero();
             this.getAbsolutePivotPointToRef(point);
             return point;
         };
+        /**
+         * Defines the passed mesh as the parent of the current mesh.
+         * If keepWorldPositionRotation is set to `true` (default `false`), the current mesh position and rotation are kept.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.setParent = function (mesh, keepWorldPositionRotation) {
             if (keepWorldPositionRotation === void 0) { keepWorldPositionRotation = false; }
             var child = this;
@@ -11912,25 +12241,43 @@ var BABYLON;
                 }
             }
             child.parent = parent;
+            return this;
         };
+        /**
+         * Adds the passed mesh as a child to the current mesh.
+         * If keepWorldPositionRotation is set to `true` (default `false`), the child world position and rotation are kept.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.addChild = function (mesh, keepWorldPositionRotation) {
             if (keepWorldPositionRotation === void 0) { keepWorldPositionRotation = false; }
             mesh.setParent(this, keepWorldPositionRotation);
+            return this;
         };
+        /**
+         * Removes the passed mesh from the current mesh children list.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.removeChild = function (mesh, keepWorldPositionRotation) {
             if (keepWorldPositionRotation === void 0) { keepWorldPositionRotation = false; }
             mesh.setParent(null, keepWorldPositionRotation);
+            return this;
         };
+        /**
+         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
+         * Returns the AbstractMesh.
+         */
         AbstractMesh.prototype.getAbsolutePivotPointToRef = function (result) {
             result.x = this._pivotMatrix.m[12];
             result.y = this._pivotMatrix.m[13];
             result.z = this._pivotMatrix.m[14];
             this.getPivotPointToRef(result);
             BABYLON.Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
+            return this;
         };
         // Facet data
         /**
-         *  Initialize the facet data arrays : facetNormals, facetPositions and facetPartitioning
+         *  Initialize the facet data arrays : facetNormals, facetPositions and facetPartitioning.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype._initFacetData = function () {
             if (!this._facetNormals) {
@@ -11956,6 +12303,7 @@ var BABYLON;
          * Updates the mesh facetData arrays and the internal partitioning when the mesh is morphed or updated.
          * This method can be called within the render loop.
          * You don't need to call this method by yourself in the render loop when you update/morph a mesh with the methods CreateXXX() as they automatically manage this computation.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.updateFacetData = function () {
             if (!this._facetDataEnabled) {
@@ -12009,7 +12357,7 @@ var BABYLON;
             return this._facetPositions;
         };
         /**
-         * Returns the facetLocalPartioning array
+         * Returns the facetLocalPartioning array.
          */
         AbstractMesh.prototype.getFacetLocalPartitioning = function () {
             if (!this._facetPartitioning) {
@@ -12028,7 +12376,7 @@ var BABYLON;
         };
         /**
          * Sets the reference Vector3 with the i-th facet position in the world system.
-         * Returns the mesh.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.getFacetPositionToRef = function (i, ref) {
             var localPos = (this.getFacetLocalPositions())[i];
@@ -12047,7 +12395,7 @@ var BABYLON;
         };
         /**
          * Sets the reference Vector3 with the i-th facet normal in the world system.
-         * Returns the mesh.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.getFacetNormalToRef = function (i, ref) {
             var localNorm = (this.getFacetLocalNormals())[i];
@@ -12160,7 +12508,7 @@ var BABYLON;
         };
         /**
          * Disables the feature FacetData and frees the related memory.
-         * Returns the mesh.
+         * Returns the AbstractMesh.
          */
         AbstractMesh.prototype.disableFacetData = function () {
             if (this._facetDataEnabled) {
@@ -20272,41 +20620,80 @@ var BABYLON;
             this._size = size ? size : stride;
             this._kind = kind;
         }
+        /**
+         * Returns the kind of the VertexBuffer (string).
+         */
         VertexBuffer.prototype.getKind = function () {
             return this._kind;
         };
         // Properties
+        /**
+         * Boolean : is the VertexBuffer updatable ?
+         */
         VertexBuffer.prototype.isUpdatable = function () {
             return this._buffer.isUpdatable();
         };
+        /**
+         * Returns an array of numbers or a Float32Array containing the VertexBuffer data.
+         */
         VertexBuffer.prototype.getData = function () {
             return this._buffer.getData();
         };
+        /**
+         * Returns the WebGLBuffer associated to the VertexBuffer.
+         */
         VertexBuffer.prototype.getBuffer = function () {
             return this._buffer.getBuffer();
         };
+        /**
+         * Returns the stride of the VertexBuffer (integer).
+         */
         VertexBuffer.prototype.getStrideSize = function () {
             return this._stride;
         };
+        /**
+         * Returns the offset (integer).
+         */
         VertexBuffer.prototype.getOffset = function () {
             return this._offset;
         };
+        /**
+         * Returns the VertexBuffer total size (integer).
+         */
         VertexBuffer.prototype.getSize = function () {
             return this._size;
         };
+        /**
+         * Boolean : is the WebGLBuffer of the VertexBuffer instanced now ?
+         */
         VertexBuffer.prototype.getIsInstanced = function () {
             return this._buffer.getIsInstanced();
         };
         // Methods
+        /**
+         * Creates the underlying WebGLBuffer from the passed numeric array or Float32Array.
+         * Returns the created WebGLBuffer.
+         */
         VertexBuffer.prototype.create = function (data) {
             return this._buffer.create(data);
         };
+        /**
+         * Updates the underlying WebGLBuffer according to the passed numeric array or Float32Array.
+         * Returns the updated WebGLBuffer.
+         */
         VertexBuffer.prototype.update = function (data) {
             return this._buffer.update(data);
         };
+        /**
+         * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.
+         * Returns the directly updated WebGLBuffer.
+         */
         VertexBuffer.prototype.updateDirectly = function (data, offset) {
             return this._buffer.updateDirectly(data, offset);
         };
+        /**
+         * Disposes the VertexBuffer and the underlying WebGLBuffer.
+         */
         VertexBuffer.prototype.dispose = function () {
             if (this._ownsBuffer) {
                 this._buffer.dispose();
@@ -20453,6 +20840,9 @@ var BABYLON;
             _this._syncSubMeshes();
             return _this;
         }
+        /**
+         * Returns the string "InstancedMesh".
+         */
         InstancedMesh.prototype.getClassName = function () {
             return "InstancedMesh";
         };
@@ -20492,6 +20882,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Returns the total number of vertices (integer).
+         */
         InstancedMesh.prototype.getTotalVertices = function () {
             return this._sourceMesh.getTotalVertices();
         };
@@ -20502,12 +20895,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
+         */
         InstancedMesh.prototype.getVerticesData = function (kind, copyWhenShared) {
             return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         };
+        /**
+         * Boolean : True if the mesh owns the requested kind of data.
+         */
         InstancedMesh.prototype.isVerticesDataPresent = function (kind) {
             return this._sourceMesh.isVerticesDataPresent(kind);
         };
+        /**
+         * Returns an array of indices (IndicesArray).
+         */
         InstancedMesh.prototype.getIndices = function () {
             return this._sourceMesh.getIndices();
         };
@@ -20518,21 +20920,31 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Sets a new updated BoundingInfo to the mesh.
+         * Returns the mesh.
+         */
         InstancedMesh.prototype.refreshBoundingInfo = function () {
             var meshBB = this._sourceMesh.getBoundingInfo();
             this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
             this._updateBoundingInfo();
+            return this;
         };
         InstancedMesh.prototype._preActivate = function () {
             if (this._currentLOD) {
                 this._currentLOD._preActivate();
             }
+            return this;
         };
         InstancedMesh.prototype._activate = function (renderId) {
             if (this._currentLOD) {
                 this._currentLOD._registerInstanceForRenderId(this, renderId);
             }
+            return this;
         };
+        /**
+         * Returns the current associated LOD AbstractMesh.
+         */
         InstancedMesh.prototype.getLOD = function (camera) {
             this._currentLOD = this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
             if (this._currentLOD === this.sourceMesh) {
@@ -20547,11 +20959,19 @@ var BABYLON;
                     this._sourceMesh.subMeshes[index].clone(this, this._sourceMesh);
                 }
             }
+            return this;
         };
         InstancedMesh.prototype._generatePointsArray = function () {
             return this._sourceMesh._generatePointsArray();
         };
-        // Clone
+        /**
+         * Creates a new InstancedMesh from the current mesh.
+         * - name (string) : the cloned mesh name
+         * - newParent (optional Node) : the optional Node to parent the clone to.
+         * - doNotCloneChildren (optional boolean, default `false`) : if `true` the model children aren't cloned.
+         *
+         * Returns the clone.
+         */
         InstancedMesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
             var result = this._sourceMesh.createInstance(name);
             // Deep copy
@@ -20574,7 +20994,10 @@ var BABYLON;
             result.computeWorldMatrix(true);
             return result;
         };
-        // Dispose
+        /**
+         * Disposes the InstancedMesh.
+         * Returns nothing.
+         */
         InstancedMesh.prototype.dispose = function (doNotRecurse) {
             // Remove from mesh
             var index = this._sourceMesh.instances.indexOf(this);
@@ -20798,10 +21221,14 @@ var BABYLON;
             configurable: true
         });
         // Methods
+        /**
+         * Returns the string "Mesh".
+         */
         Mesh.prototype.getClassName = function () {
             return "Mesh";
         };
         /**
+         * Returns a string.
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
         Mesh.prototype.toString = function (fullDetails) {
@@ -20819,6 +21246,10 @@ var BABYLON;
             return ret;
         };
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
+            /**
+             * True if the mesh has some Levels Of Details (LOD).
+             * Returns a boolean.
+             */
             get: function () {
                 return this._LODLevels.length > 0;
             },
@@ -20860,6 +21291,7 @@ var BABYLON;
          * Returns the LOD level mesh at the passed distance or null if not found.
          * It is related to the method `addLODLevel(distance, mesh)`.
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD
+         * Returns an object Mesh or `null`.
          */
         Mesh.prototype.getLODLevelAtDistance = function (distance) {
             for (var index = 0; index < this._LODLevels.length; index++) {
@@ -21112,17 +21544,21 @@ var BABYLON;
          * This function affects parametric shapes on vertex position update only : ribbons, tubes, etc.
          * It has no effect at all on other shapes.
          * It prevents the mesh normals from being recomputed on next `positions` array update.
+         * Returns the Mesh.
          */
         Mesh.prototype.freezeNormals = function () {
             this._areNormalsFrozen = true;
+            return this;
         };
         /**
          * This function affects parametric shapes on vertex position update only : ribbons, tubes, etc.
          * It has no effect at all on other shapes.
          * It reactivates the mesh normals computation if it was previously frozen.
+         * Returns the Mesh.
          */
         Mesh.prototype.unfreezeNormals = function () {
             this._areNormalsFrozen = false;
+            return this;
         };
         Object.defineProperty(Mesh.prototype, "overridenInstanceCount", {
             /**
@@ -21138,15 +21574,17 @@ var BABYLON;
         Mesh.prototype._preActivate = function () {
             var sceneRenderId = this.getScene().getRenderId();
             if (this._preActivateId === sceneRenderId) {
-                return;
+                return this;
             }
             this._preActivateId = sceneRenderId;
             this._visibleInstances = null;
+            return this;
         };
         Mesh.prototype._preActivateForIntermediateRendering = function (renderId) {
             if (this._visibleInstances) {
                 this._visibleInstances.intermediateDefaultRenderId = renderId;
             }
+            return this;
         };
         Mesh.prototype._registerInstanceForRenderId = function (instance, renderId) {
             if (!this._visibleInstances) {
@@ -21158,10 +21596,12 @@ var BABYLON;
                 this._visibleInstances[renderId] = new Array();
             }
             this._visibleInstances[renderId].push(instance);
+            return this;
         };
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
+         * Returns the Mesh.
          */
         Mesh.prototype.refreshBoundingInfo = function () {
             if (this._boundingInfo.isLocked) {
@@ -21178,6 +21618,7 @@ var BABYLON;
                 }
             }
             this._updateBoundingInfo();
+            return this;
         };
         Mesh.prototype._createGlobalSubMesh = function () {
             var totalVertices = this.getTotalVertices();
@@ -21230,6 +21671,8 @@ var BABYLON;
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         *
+         * Returns the Mesh.
          */
         Mesh.prototype.setVerticesData = function (kind, data, updatable, stride) {
             if (!this._geometry) {
@@ -21241,13 +21684,19 @@ var BABYLON;
             else {
                 this._geometry.setVerticesData(kind, data, updatable, stride);
             }
+            return this;
         };
+        /**
+         * Sets the mesh VertexBuffer.
+         * Returns the Mesh.
+         */
         Mesh.prototype.setVerticesBuffer = function (buffer) {
             if (!this._geometry) {
                 var scene = this.getScene();
                 new BABYLON.Geometry(BABYLON.Geometry.RandomId(), scene).applyToMesh(this);
             }
             this._geometry.setVerticesBuffer(buffer);
+            return this;
         };
         /**
          * Updates the existing vertex data of the mesh geometry for the requested `kind`.
@@ -21270,6 +21719,8 @@ var BABYLON;
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         *
+         * Returns the Mesh.
          */
         Mesh.prototype.updateVerticesData = function (kind, data, updateExtends, makeItUnique) {
             if (!this._geometry) {
@@ -21282,6 +21733,7 @@ var BABYLON;
                 this.makeGeometryUnique();
                 this.updateVerticesData(kind, data, updateExtends, false);
             }
+            return this;
         };
         /**
          * Deprecated since BabylonJS v2.3
@@ -21304,6 +21756,7 @@ var BABYLON;
          * tuto : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
          * The parameter `positionFunction` is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything.
          * The parameter `computeNormals` is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update.
+         * Returns the Mesh.
          */
         Mesh.prototype.updateMeshPositions = function (positionFunction, computeNormals) {
             if (computeNormals === void 0) { computeNormals = true; }
@@ -21316,7 +21769,12 @@ var BABYLON;
                 BABYLON.VertexData.ComputeNormals(positions, indices, normals);
                 this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
             }
+            return this;
         };
+        /**
+         * Creates a un-shared specific occurence of the geometry for the mesh.
+         * Returns the Mesh.
+         */
         Mesh.prototype.makeGeometryUnique = function () {
             if (!this._geometry) {
                 return;
@@ -21325,12 +21783,14 @@ var BABYLON;
             var geometry = this._geometry.copy(BABYLON.Geometry.RandomId());
             oldGeometry.releaseForMesh(this, true);
             geometry.applyToMesh(this);
+            return this;
         };
         /**
          * Sets the mesh indices.
          * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
          * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
          * This method creates a new index buffer each call.
+         * Returns the Mesh.
          */
         Mesh.prototype.setIndices = function (indices, totalVertices) {
             if (!this._geometry) {
@@ -21342,15 +21802,18 @@ var BABYLON;
             else {
                 this._geometry.setIndices(indices, totalVertices);
             }
+            return this;
         };
         /**
          * Invert the geometry to move from a right handed system to a left handed one.
+         * Returns the Mesh.
          */
         Mesh.prototype.toLeftHanded = function () {
             if (!this._geometry) {
                 return;
             }
             this._geometry.toLeftHanded();
+            return this;
         };
         Mesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
@@ -21375,10 +21838,11 @@ var BABYLON;
             }
             // VBOs
             this._geometry._bind(effect, indexToBind);
+            return this;
         };
         Mesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
-                return;
+                return this;
             }
             this.onBeforeDrawObservable.notifyObservers(this);
             var engine = this.getScene().getEngine();
@@ -21403,34 +21867,43 @@ var BABYLON;
                         engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
                     }
             }
+            return this;
         };
         /**
          * Registers for this mesh a javascript function called just before the rendering process.
-         * This function is passed the current mesh and doesn't return anything.
+         * This function is passed the current mesh.
+         * Return the Mesh.
          */
         Mesh.prototype.registerBeforeRender = function (func) {
             this.onBeforeRenderObservable.add(func);
+            return this;
         };
         /**
          * Disposes a previously registered javascript function called before the rendering.
-         * This function is passed the current mesh and doesn't return anything.
+         * This function is passed the current mesh.
+         * Returns the Mesh.
          */
         Mesh.prototype.unregisterBeforeRender = function (func) {
             this.onBeforeRenderObservable.removeCallback(func);
+            return this;
         };
         /**
          * Registers for this mesh a javascript function called just after the rendering is complete.
-         * This function is passed the current mesh and doesn't return anything.
+         * This function is passed the current mesh.
+         * Returns the Mesh.
          */
         Mesh.prototype.registerAfterRender = function (func) {
             this.onAfterRenderObservable.add(func);
+            return this;
         };
         /**
          * Disposes a previously registered javascript function called after the rendering.
-         * This function is passed the current mesh and doesn't return anything.
+         * This function is passed the current mesh.
+         * Return the Mesh.
          */
         Mesh.prototype.unregisterAfterRender = function (func) {
             this.onAfterRenderObservable.removeCallback(func);
+            return this;
         };
         Mesh.prototype._getInstancesRenderList = function (subMeshId) {
             var scene = this.getScene();
@@ -21505,6 +21978,7 @@ var BABYLON;
             this.geometry._bind(effect);
             this._draw(subMesh, fillMode, instancesCount);
             engine.unbindInstanceAttributes();
+            return this;
         };
         Mesh.prototype._processRendering = function (subMesh, effect, fillMode, batch, hardwareInstancedRendering, onBeforeDraw, effectiveMaterial) {
             var scene = this.getScene();
@@ -21533,21 +22007,23 @@ var BABYLON;
                     }
                 }
             }
+            return this;
         };
         /**
          * Triggers the draw call for the mesh.
          * Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager.
+         * Returns the Mesh.
          */
         Mesh.prototype.render = function (subMesh, enableAlphaMode) {
             var scene = this.getScene();
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
             if (batch.mustReturn) {
-                return;
+                return this;
             }
             // Checking geometry state
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
-                return;
+                return this;
             }
             var callbackIndex;
             this.onBeforeRenderObservable.notifyObservers(this);
@@ -21556,7 +22032,7 @@ var BABYLON;
             // Material
             var effectiveMaterial = subMesh.getMaterial();
             if (!effectiveMaterial || !effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
-                return;
+                return this;
             }
             // Outline - step 1
             var savedDepthWrite = engine.getDepthWrite();
@@ -21595,11 +22071,13 @@ var BABYLON;
                 engine.setAlphaMode(currentMode);
             }
             this.onAfterRenderObservable.notifyObservers(this);
+            return this;
         };
         Mesh.prototype._onBeforeDraw = function (isInstance, world, effectiveMaterial) {
             if (isInstance) {
                 effectiveMaterial.bindOnlyWorldMatrix(world);
             }
+            return this;
         };
         /**
          * Returns an array populated with ParticleSystem objects whose the mesh is the emitter.
@@ -21638,6 +22116,7 @@ var BABYLON;
                 this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADING;
                 this._queueLoad(this, scene);
             }
+            return this;
         };
         Mesh.prototype._queueLoad = function (mesh, scene) {
             var _this = this;
@@ -21653,6 +22132,7 @@ var BABYLON;
                 _this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
                 scene._removePendingData(_this);
             }, function () { }, scene.database, getBinaryData);
+            return this;
         };
         /**
          * Boolean, true is the mesh in the frustum defined by the Plane objects from the `frustumPlanes` array parameter.
@@ -21670,7 +22150,7 @@ var BABYLON;
         /**
          * Sets the mesh material by the material or multiMaterial `id` property.
          * The material `id` is a string identifying the material or the multiMaterial.
-         * This method returns nothing.
+         * This method returns the Mesh.
          */
         Mesh.prototype.setMaterialByID = function (id) {
             var materials = this.getScene().materials;
@@ -21678,7 +22158,7 @@ var BABYLON;
             for (index = 0; index < materials.length; index++) {
                 if (materials[index].id === id) {
                     this.material = materials[index];
-                    return;
+                    return this;
                 }
             }
             // Multi
@@ -21686,9 +22166,10 @@ var BABYLON;
             for (index = 0; index < multiMaterials.length; index++) {
                 if (multiMaterials[index].id === id) {
                     this.material = multiMaterials[index];
-                    return;
+                    return this;
                 }
             }
+            return this;
         };
         /**
          * Returns as a new array populated with the mesh material and/or skeleton, if any.
@@ -21709,11 +22190,12 @@ var BABYLON;
          * The mesh normals are modified accordingly the same transformation.
          * tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform
          * Note that, under the hood, this method sets a new VertexBuffer each call.
+         * Returns the Mesh.
          */
         Mesh.prototype.bakeTransformIntoVertices = function (transform) {
             // Position
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-                return;
+                return this;
             }
             var submeshes = this.subMeshes.splice(0);
             this._resetPointsArrayCache();
@@ -21726,7 +22208,7 @@ var BABYLON;
             this.setVerticesData(BABYLON.VertexBuffer.PositionKind, temp, this.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).isUpdatable());
             // Normals
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                return;
+                return this;
             }
             data = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             temp = [];
@@ -21741,6 +22223,7 @@ var BABYLON;
             // Restore submeshes
             this.releaseSubMeshes();
             this.subMeshes = submeshes;
+            return this;
         };
         /**
          * Modifies the mesh geometry according to its own current World Matrix.
@@ -21748,6 +22231,7 @@ var BABYLON;
          * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
          * tuto : tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform
          * Note that, under the hood, this method sets a new VertexBuffer each call.
+         * Returns the Mesh.
          */
         Mesh.prototype.bakeCurrentTransformIntoVertices = function () {
             this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
@@ -21759,10 +22243,12 @@ var BABYLON;
                 this.rotationQuaternion = BABYLON.Quaternion.Identity();
             }
             this._worldMatrix = BABYLON.Matrix.Identity();
+            return this;
         };
         // Cache
         Mesh.prototype._resetPointsArrayCache = function () {
             this._positions = null;
+            return this;
         };
         Mesh.prototype._generatePointsArray = function () {
             if (this._positions)
@@ -21835,6 +22321,8 @@ var BABYLON;
          * The parameter `onSuccess` is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
          * The parameter `uvOffset` is an optional vector2 used to offset UV.
          * The parameter `uvScale` is an optional vector2 used to scale UV.
+         *
+         * Returns the Mesh.
          */
         Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight, onSuccess, uvOffset, uvScale) {
             var _this = this;
@@ -21858,6 +22346,7 @@ var BABYLON;
                 }
             };
             BABYLON.Tools.LoadImage(url, onload, function () { }, scene.database);
+            return this;
         };
         /**
          * Modifies the mesh geometry according to a displacementMap buffer.
@@ -21869,13 +22358,15 @@ var BABYLON;
          * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
          * The parameter `uvOffset` is an optional vector2 used to offset UV.
          * The parameter `uvScale` is an optional vector2 used to scale UV.
+         *
+         * Returns the Mesh.
          */
         Mesh.prototype.applyDisplacementMapFromBuffer = function (buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight, uvOffset, uvScale) {
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)
                 || !this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)
                 || !this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                 BABYLON.Tools.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing");
-                return;
+                return this;
             }
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
@@ -21905,11 +22396,12 @@ var BABYLON;
             BABYLON.VertexData.ComputeNormals(positions, this.getIndices(), normals);
             this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions);
             this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
+            return this;
         };
         /**
          * Modify the mesh to get a flat shading rendering.
          * This means each mesh facet will then have its own normals. Usually new vertices are added in the mesh geometry to get this result.
-         * This method returns nothing.
+         * This method returns the Mesh.
          * Warning : the mesh is really modified even if not set originally as updatable and, under the hood, a new VertexBuffer is allocated.
          */
         Mesh.prototype.convertToFlatShadedMesh = function () {
@@ -21985,13 +22477,13 @@ var BABYLON;
                 var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
             this.synchronizeInstances();
+            return this;
         };
         /**
          * This method removes all the mesh indices and add new vertices (duplication) in order to unfold facets into buffers.
          * In other words, more vertices, no more indices and a single bigger VBO.
-         * This method returns nothing.
          * The mesh is really modified even if not set originally as updatable. Under the hood, a new VertexBuffer is allocated.
-         *
+         * Returns the Mesh.
          */
         Mesh.prototype.convertToUnIndexedMesh = function () {
             /// <summary>Remove indices by unfolding faces into buffers</summary>
@@ -22046,10 +22538,11 @@ var BABYLON;
             }
             this._unIndexed = true;
             this.synchronizeInstances();
+            return this;
         };
         /**
          * Inverses facet orientations and inverts also the normals with `flipNormals` (default `false`) if true.
-         * This method returns nothing.
+         * This method returns the Mesh.
          * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
          */
         Mesh.prototype.flipFaces = function (flipNormals) {
@@ -22069,6 +22562,7 @@ var BABYLON;
                 vertex_data.indices[i + 2] = temp;
             }
             vertex_data.applyToMesh(this);
+            return this;
         };
         // Instances
         /**
@@ -22089,17 +22583,18 @@ var BABYLON;
         /**
          * Synchronises all the mesh instance submeshes to the current mesh submeshes, if any.
          * After this call, all the mesh instances have the same submeshes than the current mesh.
-         * This method returns nothing.
+         * This method returns the Mesh.
          */
         Mesh.prototype.synchronizeInstances = function () {
             for (var instanceIndex = 0; instanceIndex < this.instances.length; instanceIndex++) {
                 var instance = this.instances[instanceIndex];
                 instance._syncSubMeshes();
             }
+            return this;
         };
         /**
          * Simplify the mesh according to the given array of settings.
-         * Function will return immediately and will simplify async. It returns nothing.
+         * Function will return immediately and will simplify async. It returns the Mesh.
          * @param settings a collection of simplification settings.
          * @param parallelProcessing should all levels calculate parallel or one after the other.
          * @param type the type of simplification to run.
@@ -22115,11 +22610,13 @@ var BABYLON;
                 simplificationType: simplificationType,
                 successCallback: successCallback
             });
+            return this;
         };
         /**
          * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
          * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
          * This should be used together with the simplification to avoid disappearing triangles.
+         * Returns the Mesh.
          * @param successCallback an optional success callback to be called after the optimization finished.
          */
         Mesh.prototype.optimizeIndices = function (successCallback) {
@@ -22153,6 +22650,7 @@ var BABYLON;
                     successCallback(_this);
                 }
             });
+            return this;
         };
         // Statics
         /**
@@ -22845,15 +23343,17 @@ var BABYLON;
             return this._sourceNormals;
         };
         /**
-         * Update the vertex buffers by applying transformation from the bones
+         * Updates the vertex buffer by applying transformation from the bones.
+         * Returns the Mesh.
+         *
          * @param {skeleton} skeleton to apply
          */
         Mesh.prototype.applySkeleton = function (skeleton) {
             if (!this.geometry) {
-                return;
+                return this;
             }
             if (this.geometry._softwareSkinningRenderId == this.getScene().getRenderId()) {
-                return;
+                return this;
             }
             this.geometry._softwareSkinningRenderId = this.getScene().getRenderId();
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
@@ -23062,21 +23562,38 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Returns the submesh BoudingInfo object.
+         */
         SubMesh.prototype.getBoundingInfo = function () {
             if (this.IsGlobal) {
                 return this._mesh.getBoundingInfo();
             }
             return this._boundingInfo;
         };
+        /**
+         * Sets the submesh BoundingInfo.
+         * Return the SubMesh.
+         */
         SubMesh.prototype.setBoundingInfo = function (boundingInfo) {
             this._boundingInfo = boundingInfo;
+            return this;
         };
+        /**
+         * Returns the mesh of the current submesh.
+         */
         SubMesh.prototype.getMesh = function () {
             return this._mesh;
         };
+        /**
+         * Returns the rendering mesh of the submesh.
+         */
         SubMesh.prototype.getRenderingMesh = function () {
             return this._renderingMesh;
         };
+        /**
+         * Returns the submesh material.
+         */
         SubMesh.prototype.getMaterial = function () {
             var rootMaterial = this._renderingMesh.material;
             if (rootMaterial && rootMaterial instanceof BABYLON.MultiMaterial) {
@@ -23089,6 +23606,10 @@ var BABYLON;
             return rootMaterial;
         };
         // Methods
+        /**
+         * Sets a new updated BoundingInfo object to the submesh.
+         * Returns the SubMesh.
+         */
         SubMesh.prototype.refreshBoundingInfo = function () {
             this._lastColliderWorldVertices = null;
             if (this.IsGlobal) {
@@ -23110,25 +23631,48 @@ var BABYLON;
                 extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount, this._renderingMesh.geometry.boundingBias);
             }
             this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+            return this;
         };
         SubMesh.prototype._checkCollision = function (collider) {
             return this.getBoundingInfo()._checkCollision(collider);
         };
+        /**
+         * Updates the submesh BoundingInfo.
+         * Returns the Submesh.
+         */
         SubMesh.prototype.updateBoundingInfo = function (world) {
             if (!this.getBoundingInfo()) {
                 this.refreshBoundingInfo();
             }
             this.getBoundingInfo().update(world);
+            return this;
         };
+        /**
+         * True is the submesh bounding box intersects the frustum defined by the passed array of planes.
+         * Boolean returned.
+         */
         SubMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this.getBoundingInfo().isInFrustum(frustumPlanes);
         };
+        /**
+         * True is the submesh bounding box is completely inside the frustum defined by the passed array of planes.
+         * Boolean returned.
+         */
         SubMesh.prototype.isCompletelyInFrustum = function (frustumPlanes) {
             return this.getBoundingInfo().isCompletelyInFrustum(frustumPlanes);
         };
+        /**
+         * Renders the submesh.
+         * Returns it.
+         */
         SubMesh.prototype.render = function (enableAlphaMode) {
             this._renderingMesh.render(this, enableAlphaMode);
+            return this;
         };
+        /**
+         * Returns a new Index Buffer.
+         * Type returned : WebGLBuffer.
+         */
         SubMesh.prototype.getLinesIndexBuffer = function (indices, engine) {
             if (!this._linesIndexBuffer) {
                 var linesIndices = [];
@@ -23140,9 +23684,16 @@ var BABYLON;
             }
             return this._linesIndexBuffer;
         };
+        /**
+         * True is the passed Ray intersects the submesh bounding box.
+         * Boolean returned.
+         */
         SubMesh.prototype.canIntersects = function (ray) {
             return ray.intersectsBox(this.getBoundingInfo().boundingBox);
         };
+        /**
+         * Returns an object IntersectionInfo.
+         */
         SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
             var intersectInfo = null;
             // LineMesh first as it's also a Mesh...
@@ -23188,6 +23739,9 @@ var BABYLON;
             return intersectInfo;
         };
         // Clone    
+        /**
+         * Creates a new Submesh from the passed Mesh.
+         */
         SubMesh.prototype.clone = function (newMesh, newRenderingMesh) {
             var result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
             if (!this.IsGlobal) {
@@ -23196,6 +23750,10 @@ var BABYLON;
             return result;
         };
         // Dispose
+        /**
+         * Disposes the Submesh.
+         * Returns nothing.
+         */
         SubMesh.prototype.dispose = function () {
             if (this._linesIndexBuffer) {
                 this._mesh.getScene().getEngine()._releaseBuffer(this._linesIndexBuffer);
@@ -23206,6 +23764,14 @@ var BABYLON;
             this._mesh.subMeshes.splice(index, 1);
         };
         // Statics
+        /**
+         * Creates a new Submesh from the passed parameters :
+         * - materialIndex (integer) : the index of the main mesh material.
+         * - startIndex (integer) : the index where to start the copy in the mesh indices array.
+         * - indexCount (integer) : the number of indices to copy then from the startIndex.
+         * - mesh (Mesh) : the main mesh to create the submesh from.
+         * - renderingMesh (optional Mesh) : rendering mesh.
+         */
         SubMesh.CreateFromIndices = function (materialIndex, startIndex, indexCount, mesh, renderingMesh) {
             var minVertexIndex = Number.MAX_VALUE;
             var maxVertexIndex = -Number.MAX_VALUE;
@@ -31069,16 +31635,14 @@ var BABYLON;
                 var idx = this._scene._activeAnimatables.indexOf(this);
                 if (idx > -1) {
                     var animations = this._animations;
-                    var numberOfAnimationsStopped = 0;
                     for (var index = animations.length - 1; index >= 0; index--) {
                         if (typeof animationName === "string" && animations[index].name != animationName) {
                             continue;
                         }
                         animations[index].reset();
                         animations.splice(index, 1);
-                        numberOfAnimationsStopped++;
                     }
-                    if (animations.length == numberOfAnimationsStopped) {
+                    if (animations.length == 0) {
                         this._scene._activeAnimatables.splice(idx, 1);
                         if (this.onAnimationEnd) {
                             this.onAnimationEnd();
@@ -33737,17 +34301,39 @@ var BABYLON;
                     break;
             }
         };
+        /**
+         * Associates the vertexData to the passed Mesh.
+         * Sets it as updatable or not (default `false`).
+         * Returns the VertexData.
+         */
         VertexData.prototype.applyToMesh = function (mesh, updatable) {
             this._applyTo(mesh, updatable);
+            return this;
         };
+        /**
+         * Associates the vertexData to the passed Geometry.
+         * Sets it as updatable or not (default `false`).
+         * Returns the VertexData.
+         */
         VertexData.prototype.applyToGeometry = function (geometry, updatable) {
             this._applyTo(geometry, updatable);
+            return this;
         };
+        /**
+         * Updates the associated mesh.
+         * Returns the VertexData.
+         */
         VertexData.prototype.updateMesh = function (mesh, updateExtends, makeItUnique) {
             this._update(mesh);
+            return this;
         };
+        /**
+         * Updates the associated geometry.
+         * Returns the VertexData.
+         */
         VertexData.prototype.updateGeometry = function (geometry, updateExtends, makeItUnique) {
             this._update(geometry);
+            return this;
         };
         VertexData.prototype._applyTo = function (meshOrGeometry, updatable) {
             if (this.positions) {
@@ -33792,6 +34378,7 @@ var BABYLON;
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
             }
+            return this;
         };
         VertexData.prototype._update = function (meshOrGeometry, updateExtends, makeItUnique) {
             if (this.positions) {
@@ -33836,7 +34423,12 @@ var BABYLON;
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
             }
+            return this;
         };
+        /**
+         * Transforms each position and each normal of the vertexData according to the passed Matrix.
+         * Returns the VertexData.
+         */
         VertexData.prototype.transform = function (matrix) {
             var transformed = BABYLON.Vector3.Zero();
             var index;
@@ -33860,7 +34452,12 @@ var BABYLON;
                     this.normals[index + 2] = transformed.z;
                 }
             }
+            return this;
         };
+        /**
+         * Merges the passed VertexData into the current one.
+         * Returns the modified VertexData.
+         */
         VertexData.prototype.merge = function (other) {
             if (other.indices) {
                 if (!this.indices) {
@@ -33885,6 +34482,7 @@ var BABYLON;
             this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
             this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
             this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
+            return this;
         };
         VertexData.prototype._mergeElement = function (source, other) {
             if (!other)
@@ -33912,6 +34510,10 @@ var BABYLON;
                 return ret;
             }
         };
+        /**
+         * Serializes the VertexData.
+         * Returns a serialized object.
+         */
         VertexData.prototype.serialize = function () {
             var serializationObject = this.serialize();
             if (this.positions) {
@@ -33959,9 +34561,15 @@ var BABYLON;
             return serializationObject;
         };
         // Statics
+        /**
+         * Returns the object VertexData associated to the passed mesh.
+         */
         VertexData.ExtractFromMesh = function (mesh, copyWhenShared) {
             return VertexData._ExtractFrom(mesh, copyWhenShared);
         };
+        /**
+         * Returns the object VertexData associated to the passed geometry.
+         */
         VertexData.ExtractFromGeometry = function (geometry, copyWhenShared) {
             return VertexData._ExtractFrom(geometry, copyWhenShared);
         };
@@ -34009,6 +34617,9 @@ var BABYLON;
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
             return result;
         };
+        /**
+         * Creates the vertexData of the Ribbon.
+         */
         VertexData.CreateRibbon = function (options) {
             var pathArray = options.pathArray;
             var closeArray = options.closeArray || false;
@@ -34192,6 +34803,9 @@ var BABYLON;
             }
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the Box.
+         */
         VertexData.CreateBox = function (options) {
             var normalsSource = [
                 new BABYLON.Vector3(0, 0, 1),
@@ -34280,6 +34894,9 @@ var BABYLON;
             }
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the Sphere.
+         */
         VertexData.CreateSphere = function (options) {
             var segments = options.segments || 32;
             var diameterX = options.diameterX || options.diameter || 1;
@@ -34333,7 +34950,9 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        // Cylinder and cone
+        /**
+         * Creates the VertexData of the Cylinder or Cone.
+         */
         VertexData.CreateCylinder = function (options) {
             var height = options.height || 2;
             var diameterTop = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
@@ -34562,6 +35181,9 @@ var BABYLON;
             }
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the Torus.
+         */
         VertexData.CreateTorus = function (options) {
             var indices = [];
             var positions = [];
@@ -34611,6 +35233,9 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the LineSystem.
+         */
         VertexData.CreateLineSystem = function (options) {
             var indices = [];
             var positions = [];
@@ -34632,6 +35257,9 @@ var BABYLON;
             vertexData.positions = positions;
             return vertexData;
         };
+        /**
+         * Create the VertexData of the DashedLines.
+         */
         VertexData.CreateDashedLines = function (options) {
             var dashSize = options.dashSize || 3;
             var gapSize = options.gapSize || 1;
@@ -34671,6 +35299,9 @@ var BABYLON;
             vertexData.indices = indices;
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the Ground.
+         */
         VertexData.CreateGround = function (options) {
             var indices = [];
             var positions = [];
@@ -34708,6 +35339,9 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the TiledGround.
+         */
         VertexData.CreateTiledGround = function (options) {
             var xmin = options.xmin || -1.0;
             var zmin = options.zmin || -1.0;
@@ -34775,6 +35409,9 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the Ground designed from a heightmap.
+         */
         VertexData.CreateGroundFromHeightMap = function (options) {
             var indices = [];
             var positions = [];
@@ -34821,6 +35458,9 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the Plane.
+         */
         VertexData.CreatePlane = function (options) {
             var indices = [];
             var positions = [];
@@ -34861,6 +35501,9 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the Disc or regular Polygon.
+         */
         VertexData.CreateDisc = function (options) {
             var positions = [];
             var indices = [];
@@ -34902,6 +35545,9 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        /**
+         * Creates the VertexData of the IcoSphere.
+         */
         VertexData.CreateIcoSphere = function (options) {
             var sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
@@ -35137,6 +35783,9 @@ var BABYLON;
             return vertexData;
         };
         // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
+        /**
+         * Creates the VertexData of the Polyhedron.
+         */
         VertexData.CreatePolyhedron = function (options) {
             // provided polyhedron types :
             // 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
@@ -35257,6 +35906,9 @@ var BABYLON;
             return vertexData;
         };
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
+        /**
+         * Creates the VertexData of the Torus Knot.
+         */
         VertexData.CreateTorusKnot = function (options) {
             var indices = [];
             var positions = [];
@@ -35556,6 +36208,9 @@ var BABYLON;
                     break;
             }
         };
+        /**
+         * Creates a new VertexData from the imported parameters.
+         */
         VertexData.ImportVertexData = function (parsedVertexData, geometry) {
             var vertexData = new VertexData();
             // positions
@@ -38846,13 +39501,15 @@ var BABYLON;
         /**
         * Force the heights to be recomputed for getHeightAtCoordinates() or getNormalAtCoordinates()
         * if the ground has been updated.
-        * This can be used in the render loop
+        * This can be used in the render loop.
+        * Returns the GroundMesh.
         */
         GroundMesh.prototype.updateCoordinateHeights = function () {
             if (!this._heightQuads || this._heightQuads.length == 0) {
                 this._initHeightQuads();
             }
             this._computeHeightQuads();
+            return this;
         };
         // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
         GroundMesh.prototype._getFacetAt = function (x, z) {
@@ -38875,7 +39532,8 @@ var BABYLON;
         // a quad is two triangular facets separated by a slope, so a "facet" element is 1 slope + 2 facets
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
+        // Returns the GroundMesh.  
         GroundMesh.prototype._initHeightQuads = function () {
             var subdivisionsX = this._subdivisionsX;
             var subdivisionsY = this._subdivisionsY;
@@ -38886,11 +39544,13 @@ var BABYLON;
                     this._heightQuads[row * subdivisionsX + col] = quad;
                 }
             }
+            return this;
         };
         // Compute each quad element values and update the the heightMap array :
         // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
         // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
-        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0  
+        // Returns the GroundMesh.  
         GroundMesh.prototype._computeHeightQuads = function () {
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var v1 = BABYLON.Tmp.Vector3[3];
@@ -38951,6 +39611,7 @@ var BABYLON;
                     quad.facet2.copyFromFloats(norm2.x, norm2.y, norm2.z, d2);
                 }
             }
+            return this;
         };
         return GroundMesh;
     }(BABYLON.Mesh));
@@ -39015,6 +39676,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Returns the string "LineMesh"
+         */
         LinesMesh.prototype.getClassName = function () {
             return "LinesMesh";
         };
@@ -39043,19 +39707,24 @@ var BABYLON;
             engine.bindBuffers(this._positionBuffer, this._geometry.getIndexBuffer(), this._colorShader.getEffect());
             // Color
             this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
+            return this;
         };
         LinesMesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
-                return;
+                return this;
             }
             var engine = this.getScene().getEngine();
             // Draw order
             engine.draw(false, subMesh.indexStart, subMesh.indexCount);
+            return this;
         };
         LinesMesh.prototype.dispose = function (doNotRecurse) {
             this._colorShader.dispose();
             _super.prototype.dispose.call(this, doNotRecurse);
         };
+        /**
+         * Returns a new LineMesh object cloned from the current one.
+         */
         LinesMesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         };
