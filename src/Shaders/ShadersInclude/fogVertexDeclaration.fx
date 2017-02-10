@@ -1,3 +1,3 @@
 ﻿#ifdef FOG
-	varying float fFogDistance;
+	varying vec3 vFogDistance;
 #endif

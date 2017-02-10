@@ -12,6 +12,7 @@
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's ([jcpalmer](https://github.com/Palmer-JC))
 
 ### Updates
+- Engine now uses range based fog ([deltakosh](https://github.com/deltakosh))
 - `VertexBuffer.updatable` is now serialized ([deltakosh](https://github.com/deltakosh))
 - Added intersectsMeshes to Ray ([abow](https://github.com/abow))
 - New RayHelper class for easily viewing and attaching a ray to a mesh.  [Demo](http://www.babylonjs-playground.com/#ZHDBJ#34) - ([abow](https://github.com/abow))

@@ -1,3 +1,3 @@
 ﻿#ifdef FOG
-fFogDistance = abs((view * worldPos).z);
+vFogDistance = (view * worldPos).xyz;
 #endif
