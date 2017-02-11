@@ -354,7 +354,7 @@ module BABYLON {
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;
             collider.initialPosition = this._scaledPosition;
-                        
+
             this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, this._finalPosition, excludedMesh);
 
             this._finalPosition.multiplyInPlace(collider.radius);
