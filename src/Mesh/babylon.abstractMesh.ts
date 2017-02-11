@@ -174,11 +174,11 @@
         private _newPositionForCollisions = new Vector3(0, 0, 0);
         
         public set setCollisionGroup(mask: number) {
-            this._collisionGroup = !isNaN(mask) ? mask : -1;
+            this._collisionGroup = mask && !isNaN(mask) ? mask : -1;
         }
         
         public set setCollisionMask(mask: number) {
-            this._collisionMask = !isNaN(mask) ? mask : -1;
+            this._collisionMask = mask && !isNaN(mask) ? mask : -1;
         }
 
         // Attach to bone
