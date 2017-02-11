@@ -164,12 +164,22 @@
 
         // Collisions
         private _checkCollisions = false;
+        private _collisionGroup = -1;
+        private _collisionMask = -1;
         public ellipsoid = new Vector3(0.5, 1, 0.5);
         public ellipsoidOffset = new Vector3(0, 0, 0);
         private _collider = new Collider();
         private _oldPositionForCollisions = new Vector3(0, 0, 0);
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
         private _newPositionForCollisions = new Vector3(0, 0, 0);
+        
+        public set setCollisionGroup(mask: number) {
+            this._collisionGroup = !isNaN(mask) ? mask : -1;
+        }
+        
+        public set setCollisionMask(mask: number) {
+            this._collisionMask = !isNaN(mask) ? mask : -1;
+        }
 
         // Attach to bone
         private _meshToBoneReferal: AbstractMesh;
