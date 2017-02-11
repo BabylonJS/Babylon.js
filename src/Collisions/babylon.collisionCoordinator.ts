@@ -377,7 +377,23 @@ module BABYLON {
         public onGeometryUpdated(geometry: Geometry) { }
         public onGeometryDeleted(geometry: Geometry) { }
 
+        public checkCollisionFilters(collider: Collider, mesh: AbstractMesh){
+            if(!collider.collisionFilter) { 
+                collider.collisionFilter = 1;
+            }
+            if(!mesh.collisionFilter) {
+                mesh.collisionFilter = 1;
+            }
+            if(!(collider.collisionFilter === 1 && mesh.collisionFilter === 1) && !(collider.collisionFilter > mesh.collisionFilter)) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+
         private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: AbstractMesh = null): void {
+            if (excludedMesh === void 0) { excludedMesh = null; }
             var closeDistance = Engine.CollisionsEpsilon * 10.0;
 
             if (collider.retry >= maximumRetry) {
@@ -390,7 +406,7 @@ module BABYLON {
             // Check all meshes
             for (var index = 0; index < this._scene.meshes.length; index++) {
                 var mesh = this._scene.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
+                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh && checkCollisionFilters(collider, mesh)) {
                     mesh._checkCollision(collider);
                 }
             }
