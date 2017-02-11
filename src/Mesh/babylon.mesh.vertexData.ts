@@ -71,23 +71,45 @@
             }
         }
 
-        public applyToMesh(mesh: Mesh, updatable?: boolean): void {
+        /**
+         * Associates the vertexData to the passed Mesh.  
+         * Sets it as updatable or not (default `false`).  
+         * Returns the VertexData.  
+         */
+        public applyToMesh(mesh: Mesh, updatable?: boolean): VertexData {
             this._applyTo(mesh, updatable);
+            return this;
         }
 
-        public applyToGeometry(geometry: Geometry, updatable?: boolean): void {
+        /**
+         * Associates the vertexData to the passed Geometry.  
+         * Sets it as updatable or not (default `false`).  
+         * Returns the VertexData.  
+         */
+        public applyToGeometry(geometry: Geometry, updatable?: boolean): VertexData {
             this._applyTo(geometry, updatable);
+            return this;
         }
 
-        public updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): void {
+        /**
+         * Updates the associated mesh.  
+         * Returns the VertexData.  
+         */
+        public updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
             this._update(mesh);
+            return this;
         }
 
-        public updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): void {
+        /**
+         * Updates the associated geometry.  
+         * Returns the VertexData.  
+         */
+        public updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
             this._update(geometry);
+            return this;
         }
 
-        private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable?: boolean) {
+        private _applyTo(meshOrGeometry: IGetSetVerticesData, updatable?: boolean): VertexData {
             if (this.positions) {
                 meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
             }
@@ -143,9 +165,10 @@
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
             }
+            return this;
         }
 
-        private _update(meshOrGeometry: IGetSetVerticesData, updateExtends?: boolean, makeItUnique?: boolean) {
+        private _update(meshOrGeometry: IGetSetVerticesData, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
             if (this.positions) {
                 meshOrGeometry.updateVerticesData(VertexBuffer.PositionKind, this.positions, updateExtends, makeItUnique);
             }
@@ -201,9 +224,14 @@
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
             }
+            return this;
         }
 
-        public transform(matrix: Matrix): void {
+        /**
+         * Transforms each position and each normal of the vertexData according to the passed Matrix.  
+         * Returns the VertexData.  
+         */
+        public transform(matrix: Matrix): VertexData {
             var transformed = Vector3.Zero();
             var index: number;
             if (this.positions) {
@@ -231,9 +259,14 @@
                     this.normals[index + 2] = transformed.z;
                 }
             }
+            return this;
         }
 
-        public merge(other: VertexData): void {
+        /**
+         * Merges the passed VertexData into the current one.  
+         * Returns the modified VertexData.  
+         */
+        public merge(other: VertexData): VertexData {
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
@@ -259,6 +292,7 @@
             this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
             this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
             this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
+            return this;
         }
 
         private _mergeElement(source: number[] | Float32Array, other: number[] | Float32Array): number[] | Float32Array {
@@ -290,6 +324,10 @@
             }
         }
 
+        /**
+         * Serializes the VertexData.  
+         * Returns a serialized object.  
+         */
         public serialize(): any {
             var serializationObject = this.serialize();
 
@@ -353,10 +391,16 @@
         }
 
         // Statics
+        /**
+         * Returns the object VertexData associated to the passed mesh.  
+         */
         public static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean): VertexData {
             return VertexData._ExtractFrom(mesh, copyWhenShared);
         }
 
+        /**
+         * Returns the object VertexData associated to the passed geometry.  
+         */
         public static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean): VertexData {
             return VertexData._ExtractFrom(geometry, copyWhenShared);
         }
@@ -421,6 +465,9 @@
             return result;
         }
 
+        /**
+         * Creates the vertexData of the Ribbon.  
+         */
         public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, invertUV?: boolean }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
@@ -624,6 +671,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the Box.  
+         */
         public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
             var normalsSource = [
                 new Vector3(0, 0, 1),
@@ -730,6 +780,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the Sphere.  
+         */
         public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number }): VertexData {
             var segments: number = options.segments || 32;
             var diameterX: number = options.diameterX || options.diameter || 1;
@@ -799,7 +852,9 @@
             return vertexData;
         }
 
-        // Cylinder and cone
+        /**
+         * Creates the VertexData of the Cylinder or Cone.  
+         */
         public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
@@ -1047,6 +1102,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the Torus.  
+         */
         public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number }) {
             var indices = [];
             var positions = [];
@@ -1115,6 +1173,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the LineSystem.  
+         */
         public static CreateLineSystem(options: { lines: Vector3[][] }): VertexData {
             var indices = [];
             var positions = [];
@@ -1139,6 +1200,9 @@
             return vertexData;
         }
 
+        /**
+         * Create the VertexData of the DashedLines.  
+         */
         public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
             var dashSize = options.dashSize || 3;
             var gapSize = options.gapSize || 1;
@@ -1183,6 +1247,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the Ground.  
+         */
         public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
             var indices = [];
             var positions = [];
@@ -1229,6 +1296,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the TiledGround.  
+         */
         public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
             var xmin = options.xmin || -1.0;
             var zmin = options.zmin || -1.0;
@@ -1313,6 +1383,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the Ground designed from a heightmap.  
+         */
         public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
             var indices = [];
             var positions = [];
@@ -1372,6 +1445,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the Plane.  
+         */
         public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number }): VertexData {
             var indices = [];
             var positions = [];
@@ -1425,6 +1501,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the Disc or regular Polygon.  
+         */
         public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number }): VertexData {
             var positions = [];
             var indices = [];
@@ -1475,6 +1554,9 @@
             return vertexData;
         }
 
+        /**
+         * Creates the VertexData of the IcoSphere.  
+         */
         public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number }): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
@@ -1736,6 +1818,9 @@
 
 
         // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
+        /**
+         * Creates the VertexData of the Polyhedron.  
+         */
         public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number }): VertexData {
             // provided polyhedron types :
             // 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
@@ -1868,6 +1953,9 @@
         }
 
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
+        /**
+         * Creates the VertexData of the Torus Knot.  
+         */
         public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number }): VertexData {
             var indices = [];
             var positions = [];
@@ -2208,6 +2296,9 @@
             }
         }
 
+        /**
+         * Creates a new VertexData from the imported parameters.  
+         */
         public static ImportVertexData(parsedVertexData: any, geometry: Geometry) {
             var vertexData = new VertexData();
 
@@ -2287,4 +2378,3 @@
         }
     }
 }
-
