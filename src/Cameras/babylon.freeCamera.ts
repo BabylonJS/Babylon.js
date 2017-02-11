@@ -8,7 +8,7 @@
 
         @serialize()
         public applyGravity = false;
-                
+	    
         public inputs : FreeCameraInputsManager;
         
         //-- begin properties for backward compatibility for inputs
@@ -102,7 +102,13 @@
             this.cameraDirection = new Vector3(0, 0, 0);
             this.cameraRotation = new Vector2(0, 0);
         }
-
+	
+	 // CollisionMask
+	public _collisionMask = -1;
+	public setCollisionMask(mask: number): void {
+	    this._collisionMask = !isNaN(mask) ? mask : -1;
+	}
+	 
         public _collideWithWorld(velocity: Vector3): void {
             var globalPosition: Vector3;
 
@@ -114,7 +120,6 @@
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
-
 	    this._collider._collisionMask = this._collisionMask ? this._collisionMask : -1;
 		
             //no need for clone, as long as gravity is not on.
