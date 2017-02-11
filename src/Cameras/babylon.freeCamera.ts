@@ -105,8 +105,13 @@
 	
 	 // Collisions
 	private _collisionMask = -1;
-	public set setCollisionMask(mask: number) {
-	    this._collisionMask = mask && !isNaN(mask) ? mask : -1;
+	 
+	public get collisionMask() {
+	    return this._collisionMask;
+	}
+	 
+	public set collisionMask(mask: number) {
+	    this._collisionMask = !isNaN(mask) ? mask : -1;
 	}
 	 
         public _collideWithWorld(velocity: Vector3): void {
