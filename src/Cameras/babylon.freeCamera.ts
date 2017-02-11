@@ -8,7 +8,7 @@
 
         @serialize()
         public applyGravity = false;
-
+                
         public inputs : FreeCameraInputsManager;
         
         //-- begin properties for backward compatibility for inputs
