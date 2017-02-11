@@ -106,7 +106,7 @@
 	 // Collisions
 	private _collisionMask = -1;
 	 
-	public get collisionMask() {
+	public get collisionMask(): number {
 	    return this._collisionMask;
 	}
 	 
