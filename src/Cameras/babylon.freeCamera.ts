@@ -103,10 +103,10 @@
             this.cameraRotation = new Vector2(0, 0);
         }
 	
-	 // Collision
+	 // Collisions
 	private _collisionMask = -1;
 	public set setCollisionMask(mask: number) {
-	    this._collisionMask = !isNaN(mask) ? mask : -1;
+	    this._collisionMask = mask && !isNaN(mask) ? mask : -1;
 	}
 	 
         public _collideWithWorld(velocity: Vector3): void {
