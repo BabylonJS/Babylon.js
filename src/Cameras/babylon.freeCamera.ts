@@ -102,7 +102,7 @@
             this.cameraDirection = new Vector3(0, 0, 0);
             this.cameraRotation = new Vector2(0, 0);
         }
-	
+
 	 // Collisions
 	private _collisionMask = -1;
 	 
