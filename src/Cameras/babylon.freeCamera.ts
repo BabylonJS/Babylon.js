@@ -125,7 +125,7 @@
 
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
-	    this._collider._collisionMask = !isNaN(this._collisionMask) ? this._collisionMask : -1;
+	    this._collider._collisionMask = (!isNaN(this._collisionMask) ? this._collisionMask : -1);
 		
             //no need for clone, as long as gravity is not on.
             var actualVelocity = velocity;
