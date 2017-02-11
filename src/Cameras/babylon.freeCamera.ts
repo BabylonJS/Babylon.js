@@ -8,7 +8,7 @@
 
         @serialize()
         public applyGravity = false;
-	    
+
         public inputs : FreeCameraInputsManager;
         
         //-- begin properties for backward compatibility for inputs
@@ -103,9 +103,9 @@
             this.cameraRotation = new Vector2(0, 0);
         }
 	
-	 // CollisionMask
-	public _collisionMask = -1;
-	public setCollisionMask(mask: number): void {
+	 // Collision
+	private _collisionMask = -1;
+	public set setCollisionMask(mask: number) {
 	    this._collisionMask = !isNaN(mask) ? mask : -1;
 	}
 	 
