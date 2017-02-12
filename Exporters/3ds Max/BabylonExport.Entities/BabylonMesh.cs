@@ -132,6 +132,8 @@ namespace BabylonExport.Entities
             skeletonId = -1;
 
             pickable = true;
+
+            numBoneInfluencers = 4;
         }
     }
 }
