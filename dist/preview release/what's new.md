@@ -12,6 +12,8 @@
  - Multi-platform Compressed Textures for Desktops & Mobile Devices with fall back.  Batch (dos) scripts to convert entire directories of .jpg's & .png's ([jcpalmer](https://github.com/Palmer-JC))
 
 ### Updates
+- Added `HDRCubeTextureAssetTask` to AssetManager ([deltakosh](https://github.com/deltakosh))
+- Engine now uses range based fog ([deltakosh](https://github.com/deltakosh))
 - `VertexBuffer.updatable` is now serialized ([deltakosh](https://github.com/deltakosh))
 - Added intersectsMeshes to Ray ([abow](https://github.com/abow))
 - New RayHelper class for easily viewing and attaching a ray to a mesh.  [Demo](http://www.babylonjs-playground.com/#ZHDBJ#34) - ([abow](https://github.com/abow))
@@ -20,6 +22,7 @@
 - `Effect.getVertexShaderSource()` and `Effect.getFragmentShaderSource()` now returns the effective shader code (including evaluation of #define) ([deltakosh](https://github.com/deltakosh))
 - GroundMesh : `getHeightAtCoordinates()`, `getNormalAtCoordinates()` and `getNormalAtCoordinatesToRef()` can now work with rotated grounds ([jerome](https://github.com/jbousquie))  
 - `GroundMesh`, `facetData` and `SolidParticleSystem` improvement in normal computations ([jerome](https://github.com/jbousquie))   
+- Added `AbstractMesh.addRotation()` ([jerome](https://github.com/jbousquie))  
  
 ### Canvas2D
 

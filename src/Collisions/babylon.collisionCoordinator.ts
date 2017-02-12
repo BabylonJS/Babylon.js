@@ -385,12 +385,15 @@ module BABYLON {
                 return;
             }
 
+            // Check if this is a mesh else camera or -1
+            var collisionMask = (excludedMesh ? excludedMesh.collisionMask : collider.collisionMask);
+
             collider._initialize(position, velocity, closeDistance);
 
             // Check all meshes
             for (var index = 0; index < this._scene.meshes.length; index++) {
                 var mesh = this._scene.meshes[index];
-                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh) {
+                if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh &&  ((collisionMask & mesh.collisionMask) !== 0)) {
                     mesh._checkCollision(collider);
                 }
             }
