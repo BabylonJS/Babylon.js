@@ -86,6 +86,16 @@
         private _slidePlaneNormal = Vector3.Zero();
         private _displacementVector = Vector3.Zero();
 
+        private _collisionMask = -1;
+        
+        public get collisionMask(): number {
+            return this._collisionMask;
+        }
+        
+        public set collisionMask(mask: number) {
+            this._collisionMask = !isNaN(mask) ? mask : -1;
+        }
+
         // Methods
         public _initialize(source: Vector3, dir: Vector3, e: number): void {
             this.velocity = dir;
