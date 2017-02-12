@@ -1008,7 +1008,7 @@
 
             var mode = 0;
             if (backBuffer && color) {
-                this._gl.clearColor(color.r, color.g, color.b, color.a);
+                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
                 mode |= this._gl.COLOR_BUFFER_BIT;
             }
             if (depth) {
@@ -2724,7 +2724,7 @@
 
         public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => ArrayBufferView[],
-            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
+            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][]), onLoad: () => void = null, onError: () => void = null): WebGLTexture {
             var gl = this._gl;
             var texture = gl.createTexture();
             scene._addPendingData(texture);
@@ -2754,6 +2754,9 @@
 
             var onerror = () => {
                 scene._removePendingData(texture);
+                if (onError){
+                    onError();
+                }
             };
 
             var internalCallback = (data) => {
@@ -2838,6 +2841,10 @@
 
                 this.resetTextureCache();
                 scene._removePendingData(texture);
+
+                if (onLoad) {
+                    onLoad();
+                }
             };
 
             Tools.LoadFile(url, data => {
