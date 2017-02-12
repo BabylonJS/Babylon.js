@@ -4139,6 +4139,10 @@
         public toGlobal(renderWidth: number, renderHeight: number): Viewport {
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         }
+
+        public clone(): Viewport {
+            return new Viewport(this.x, this.y, this.width, this.height);
+        }
     }
 
     export class Frustum {
