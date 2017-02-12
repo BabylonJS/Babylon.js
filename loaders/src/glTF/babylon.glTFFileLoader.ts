@@ -1175,6 +1175,7 @@ module BABYLON {
     export class GLTFFileLoaderBase {
         public static CreateRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime {
             var gltfRuntime: IGLTFRuntime = {
+                extensions: {},
                 accessors: {},
                 buffers: {},
                 bufferViews: {},
@@ -1212,6 +1213,10 @@ module BABYLON {
             }
 
             // Parse
+            if (parsedData.extensions) {
+                parseObject(parsedData.extensions, "extensions", gltfRuntime);
+            }
+
             if (parsedData.extensionsUsed) {
                 parseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
             }
@@ -1628,24 +1633,27 @@ module BABYLON {
             scene.useRightHandedSystem = true;
 
             GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
-                // Create nodes
-                this._createNodes(gltfRuntime);
+                // Load runtime extensios
+                GLTFFileLoaderExtension.LoadRuntimeExtensionsAsync(gltfRuntime, () => {
+                    // Create nodes
+                    this._createNodes(gltfRuntime);
 
-                // Load buffers, shaders, materials, etc.
-                this._loadBuffersAsync(gltfRuntime, () => {
-                    this._loadShadersAsync(gltfRuntime, () => {
-                        importMaterials(gltfRuntime);
-                        postLoad(gltfRuntime);
+                    // Load buffers, shaders, materials, etc.
+                    this._loadBuffersAsync(gltfRuntime, () => {
+                        this._loadShadersAsync(gltfRuntime, () => {
+                            importMaterials(gltfRuntime);
+                            postLoad(gltfRuntime);
 
-                        if (!GLTFFileLoader.IncrementalLoading) {
-                            onSuccess();
-                        }
+                            if (!GLTFFileLoader.IncrementalLoading) {
+                                onSuccess();
+                            }
+                        });
                     });
-                });
 
-                if (GLTFFileLoader.IncrementalLoading) {
-                    onSuccess();
-                }
+                    if (GLTFFileLoader.IncrementalLoading) {
+                        onSuccess();
+                    }
+                }, onError);
             }, onError);
 
             return true;
