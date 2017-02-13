@@ -437,7 +437,8 @@
         "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
         "../../loaders/src/glTF/babylon.glTFFileLoaderUtils.ts",
         "../../loaders/src/glTF/babylon.glTFFileLoaderExtension.ts",
-        "../../loaders/src/glTF/babylon.glTFBinaryExtension.ts"
+        "../../loaders/src/glTF/babylon.glTFBinaryExtension.ts",
+        "../../loaders/src/glTF/babylon.glTFMaterialCommonExtension.ts"
       ],
       "output": "babylon.glTFFileLoader.js"
     }],
