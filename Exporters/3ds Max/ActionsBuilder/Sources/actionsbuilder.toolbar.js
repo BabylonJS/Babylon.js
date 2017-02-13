@@ -80,7 +80,7 @@ var ActionsBuilder;
             this.saveActionGraphElement.style.display = draw ? "block" : "none";
         };
         return Toolbar;
-    })();
+    }());
     ActionsBuilder.Toolbar = Toolbar;
 })(ActionsBuilder || (ActionsBuilder = {}));
 //# sourceMappingURL=actionsbuilder.toolbar.js.map
